@@ -66,8 +66,16 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
-                                                  'popup');
+                    //var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
+                    //                              'popup');
+                    var authWindow = window.open(''),
+                        authDoc = authWindow.document,
+                        authBody = authDoc.body,
+                        authIframe = authDoc.createElement('iframe');
+
+                        authIframe.src = '{{BASE_URL}}/oauth/twitter/login';
+                        authBody.appendChild(authIframe);
+                        
                 } else {
                     // style shareArea according to different social loader
                 }
