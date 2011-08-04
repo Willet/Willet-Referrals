@@ -17,7 +17,7 @@ from models.campaign import get_campaign_by_id
 from models.user import get_or_create_user_by_twitter
 
 # helpers
-from util.helpers import set_clicked_cookie, is_blacklisted, set_referral_cookie
+from util.helpers import set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.consts import *
 
 class TrackWilltURL( webapp.RequestHandler ):
@@ -37,6 +37,7 @@ class TrackWilltURL( webapp.RequestHandler ):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
             link.increment_clicks()
             logging.info('After Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
+            set_referrer_cookie(self.response.headers, link.campaign.uuid, link.supplied_user_id)
             set_clicked_cookie(self.response.headers, code)
 
             # Tell Mixplanel that we got a click
