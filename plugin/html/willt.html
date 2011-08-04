@@ -30,7 +30,6 @@
         shareFrame, shareText, charsLeft;
 
     window.onload = function() {
-        console.log("Working?");
         iframeBody = document.getElementById('willt');
         shareFrame = document.getElementById('willt-frame');
         shareArea = document.getElementById('share-area'),
@@ -39,7 +38,7 @@
 
         willet_conversion = function () {
             $.ajax({
-                url: "{{URL}}/conversion",
+                url: "{{BASE_URL}}/conversion",
                 type: 'post',
                 data: { "referree_uid" : "{{supplied_user_id}}", "campaign_uuid" : "{{campaign_uuid}}" }
             });// end ajax
