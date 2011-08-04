@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Data models for our Users
 # our Users are our client's clients
 import logging

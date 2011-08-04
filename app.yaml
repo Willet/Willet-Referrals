@@ -8,7 +8,7 @@ handlers:
 - url: /(willet.html|trackErr)
   script: clicks/track.py
 
-- url: /(willt|share)
+- url: /(willt|share|oauth.*)
   script: plugin/plugin.py
 
 # queues that check our models for dead references
