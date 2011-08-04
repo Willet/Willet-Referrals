@@ -60,7 +60,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
         if self.request.url.startswith('http://localhost:8080'):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:
-            template_values['BASE_URL'] = template_values['willt_url']
+            template_values['BASE_URL'] = URL
 
         path = os.path.join(os.path.dirname(__file__), 'html/willt.html')
         self.response.out.write(template.render(path, template_values))
