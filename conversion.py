@@ -20,7 +20,7 @@ from util.consts import *
 class PostConversion( URIHandler ):
     
     def post(self):
-        logging.info('asdasdasdasdasd')
+        logging.info('Posting a conversion notification to a Client!')
         referree_uid  = self.request.get( 'referree_uid' )
         campaign_uuid = self.request.get( 'campaign_uuid' )
         campaign      = get_campaign_by_id( campaign_uuid )
@@ -29,14 +29,14 @@ class PostConversion( URIHandler ):
             # What do we do here?
             return
         
-        referrer_uid  = self.request.cookies.get(campaign_uuid, False)
+        referrer_uid  = self.request.cookies.get("referrer_%s" % campaign_uuid, False)
 
         data = { 'timestamp' : str( time() ),
                  'referrer_id' : referrer_uid,
                  'referree_id' : referree_uid }
         payload = urllib.urlencode( data )
 
-        logging.info("Conversion: Posting to %s (%s -> %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+        logging.info("Conversion: Posting to %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
         result = urlfetch.fetch( url     = campaign.webhook_url,
                                  payload = payload,
                                  method  = urlfetch.POST,
@@ -44,7 +44,7 @@ class PostConversion( URIHandler ):
         
         if result.status_code != 200:
             # What do we do here?
-            logging.error("Conversion POST failed: %s (%s -> %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+            logging.error("Conversion POST failed: %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
 
 ##---------------------------------------------------------------------------##
 ##------------------------- The URI Router ----------------------------------##
