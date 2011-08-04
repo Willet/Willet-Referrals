@@ -5,7 +5,7 @@
 __author__      = "Sy Khader"
 __copyright__   = "Copyright 2011, The Willet Corporation"
 
-import os, logging, tweepy
+import os, logging
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
