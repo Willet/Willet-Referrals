@@ -118,10 +118,21 @@ class DynamicSocialLoader(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+class TwitterOAuthHandler(webapp.RequestHandler):
+
+    def get(self, service, action=''):
+        
+        client = OAuthClient(service, self)
+
+        if action in client.__public__:
+            self.response.out.write(getattr(client, action)())
+        else:
+            self.response.out.write(client.login())
 
 def main():
     application = webapp.WSGIApplication([
         (r'/share', DynamicSocialLoader),
+        ('/oauth/(.*)/(.*)', TwitterOAuthHandler),
         (r'/willt', ServeSharingPlugin)],
         debug=USING_DEV_SERVER)
     run_wsgi_app(application)

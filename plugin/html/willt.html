@@ -66,67 +66,66 @@
                     }, {scope: 'publish_stream'});
                 } else if (medium === 'twitter'){
                     // begin oauth handshake
-                    $.ajax(
-                } else {
-                    iframeBody.style.visibility = 'hidden';
-                    shareSrc += 'type=' + medium + '&uid=' + uid;
-                    shareFrame.src = shareSrc;
-                    // style shareArea according to different social loader
-                    if (medium === 'twitter' || medium === 'fb') {
-                        shareFrame.style.width = '550px';
-                        shareFrame.style.height = '260';
-                        shareFrame.style.scrollbars = 'no';
-                        shareFrame.style.frameBorder = 0;
-                        shareFrame.style.border = 0;
+                    } else {
+                        iframeBody.style.visibility = 'hidden';
+                        shareSrc += 'type=' + medium + '&uid=' + uid;
+                        shareFrame.src = shareSrc;
+                        // style shareArea according to different social loader
+                        if (medium === 'twitter' || medium === 'fb') {
+                            shareFrame.style.width = '550px';
+                            shareFrame.style.height = '260';
+                            shareFrame.style.scrollbars = 'no';
+                            shareFrame.style.frameBorder = 0;
+                            shareFrame.style.border = 0;
+                        }
                     }
+                    shareArea.style.visibility = 'visible';
+                } else {
+                    // social media provider not found
                 }
-                shareArea.style.visibility = 'visible';
-            } else {
-                // social media provider not found
-            }
-            
+                
+            };
+
+            countChars = function() {
+                var count = 140 - shareText.value.length;
+                charsLeft.innerHTML = count + " characters left";
+            };
+
+            reset = function() { 
+                iframeBody.style.visibility = 'visible';
+                shareArea.style.visibility = 'hidden';
+                shareFrame.src = '';
+            };
+            countChars();
         };
+     </script>
 
-        countChars = function() {
-            var count = 140 - shareText.value.length;
-            charsLeft.innerHTML = count + " characters left";
+
+     <style>
+        #share-area {
+            visibility: hidden;
+        }
+     </style>
+        <script>
+        willet_conversion = function ( ) {
+            $.ajax({
+                url: "{{URL}}/conversion",
+                type: 'post',
+                data: { "referree_uid" : "{{supplied_user_id}}", "campaign_uuid" : "{{campaign_uuid}}" }
+            });// end ajax
         };
+        </script>
+    </head>
+    <body onLoad="willet_conversion( );">
+        <div id="fb-root"></div>
 
-        reset = function() { 
-            iframeBody.style.visibility = 'visible';
-            shareArea.style.visibility = 'hidden';
-            shareFrame.src = '';
-        };
-        countChars();
-    };
- </script>
-
-
- <style>
-    #share-area {
-        visibility: hidden;
-    }
- </style>
-    <script>
-    willet_conversion = function ( ) {
-        $.ajax({
-            url: "{{URL}}/conversion",
-            type: 'post',
-            data: { "referree_uid" : "{{supplied_user_id}}", "campaign_uuid" : "{{campaign_uuid}}" }
-        });// end ajax
-    };
-    </script>
-</head>
-<body onLoad="willet_conversion( );">
-    <div id="fb-root"></div>
-
-    <div id='willt'>
-    
-    <h1>How would you like to share?</h1>
-
-     <div id="share-selection">
+        <div id='willt'>
         
-        <div id="by-email">
+        <h1>How would you like to share?</h1>
+
+         <div id="share-selection">
+            
+            <div id="by-email">
             <p>Invite your contacts (Gmail, AOL, Hotmail, Yahoo, etc.)</p>
             <label for="email">Email
                 <input type="text" id="email" name="email" />
