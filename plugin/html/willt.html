@@ -36,7 +36,7 @@
         charsLeft = document.getElementById('chars-left');
 
         FB.init({
-            appId: '181838945216160',
+            appId: '4077e465d5d50e87aa0fbd2d472f60ea',
             status: true,
             cookie: true,
             xfbml: true,
@@ -65,7 +65,10 @@
                         }
                     }, {scope: 'publish_stream'});
                 } else if (medium === 'twitter'){
-                    
+                    // begin oauth
+                    var options = {
+                        consumerKey: 
+                    };
                 } else {
                     iframeBody.style.visibility = 'hidden';
                     shareSrc += 'type=' + medium + '&uid=' + uid;
