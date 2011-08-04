@@ -18,6 +18,9 @@ handlers:
 - url: /(campaignClicksCounter|updateLanding|updateCounts|updateTweets|updateClicks)
   script: processes.py
 
+- url: /conversion
+  script: conversion.py
+
 - url: /t/
   static_dir: clicks/static
 
