@@ -12,7 +12,7 @@ from wsgiref.handlers import CGIHandler
 
 sys.path.insert(0, join_path(dirname(__file__), 'lib')) # extend sys.path
 
-from demjson import decode as decode_json
+from simplejson import loads as decode_json
 
 from google.appengine.api.urlfetch import fetch as urlfetch, GET, POST
 from google.appengine.ext import db
