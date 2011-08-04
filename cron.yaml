@@ -1,0 +1,22 @@
+cron:
+- description: check recently tweeted urls to see if they were actually tweeted
+  url: /getTweets
+  schedule: every 5 minutes
+- description: Updating landing page results
+  url: /updateLanding
+  schedule: every 15 minutes
+- description: Clean bad links
+  url: /cleanBadLinks
+  schedule: every 30 minutes
+- description: Email results out
+  url: /emailerCron
+  schedule: every 2 hours
+- description: Updating login page stats (counts)
+  url: /updateCounts
+  schedule: every 6 hours
+- description: Updating login page stats (tweets)
+  url: /updateTweets
+  schedule: every 6 hours
+- description: Updating login page stats (clicks)
+  url: /updateClicks
+  schedule: every 6 hours

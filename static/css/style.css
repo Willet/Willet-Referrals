@@ -1,0 +1,778 @@
+/*
+-*  Willet Social CSS
+-*  Author: Fraser Harris
+-*  Copyright Willet Inc, 2011
+*/
+
+@import url("/static/css/fonts.css");
+
+/* ------------------------- SECTION POSITIONING ---------------------------- */
+/*      This section is only for positioning the header, main and footer      */
+html, body {
+    height: 100%;
+}
+body > div#wrap {
+    height: auto;
+    min-height: 100%;
+}
+div#main {
+    position: relative;
+    padding-top: 0;
+    padding-bottom: 180px; /* must be same height as the footer + gap */
+    
+}
+div#header {
+    position: absolute;
+}
+div#header > div {
+}
+div#footer {
+    height: 145px;
+    margin-top: -145px;
+}
+div#footer > div {
+    position: relative;
+    margin-top: -145px; /* negative value of footer height */
+    min-height:20%;
+    clear: both;
+}
+
+/* ------------------------------ DEFAULTS ---------------------------------- */
+
+html {
+    color: #FFF;
+    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    background: #1f7973 url(/static/imgs/bg-dark.png) repeat fixed;
+}
+
+body {
+    font-size: 62.5%;
+    /*background: #323232 url(/static/imgs/bg-dark.png) repeat fixed; */
+    background: #1f7973 url(/static/imgs/bg-dark.png) repeat fixed;
+}
+h1 {
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-size: 4.0em;
+    font-style: italic;
+    font-weight: bold;
+    color: #FFF;
+    margin: 0 0 30px 0;
+    letter-spacing: -2px;
+    text-shadow: #251f21 2px 2px 2px;
+}
+
+h2 {
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    color: white; 
+    font-size: 2.8em;
+    font-weight: bold;
+    font-style: italic;
+    margin-bottom: 15px;
+    letter-spacing: 0px;
+    text-shadow: #251f21 2px 2px 2px;
+
+}
+h3 {
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-size: 2.0em;
+    letter-spacing: -1px;
+    color: white;
+    text-shadow: #251f21 2px 2px 2px;
+}
+p, td, ul li {
+    font-size: 1.7em;
+    color: #FFF;
+}
+li {
+    margin-bottom: 1.0em;
+}
+p+p {
+    text-indent: 0;
+}
+a, a:link, a:visited {
+    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    text-decoration: none;
+    color: white;
+    text-shadow: black 1px 1px 1px;
+}
+a:hover {
+    color: grey;
+    text-shadow: black 4px 4px 4px;
+}
+a:active {
+    color: #B00C0B;
+}
+ul.bar {
+    float: right;
+    list-style-type: none;
+    list-style-position: outside;
+    list-style-image: none;
+    margin-top: 10px;
+}
+ul.bar>li {
+    float: right;
+    display: inline;
+}
+ul.bar>li.last {
+    padding-right: none;
+}
+ol {
+    font-size:1.5em;
+}
+
+/* -------------------- GENERALLY USEFUL CLASSES ---------------------------- */
+
+.hidden {
+    display: none;
+}
+.lower-5 {
+    padding-top: 5px;
+}
+.lower-10 {
+    padding-top: 10px;
+}
+.lower-25 {
+    padding-top: 25px;
+}
+.lower-50 {
+    padding-top: 50px;
+}
+.lower-75 {
+    padding-top: 75px;
+}
+.lower-100 {
+    padding-top: 100px;
+}
+.lower-150 {
+    padding-top: 150px;
+}
+.indent-20 {
+    text-indent: 20px;
+}
+.indent-40 {
+    text-indent: 40px;
+}
+.indent-60 {
+    text-indent: 60px;
+}
+.center {
+    text-align: center;
+}
+.super {
+    vertical-align: text-bottom;
+    font-size: 0.9em;
+}
+.sub {
+    vertical-align: text-bottom;
+    font-size: 0.9em;
+}
+.right {
+    float: right;
+}
+.left {
+    float: left;
+}
+.tip {
+    border: 1px solid #21847D;
+    background: #18605C;
+    color: white;
+    padding: 5px;
+}
+.code {
+    font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+    background: #EEE;
+    color: #222;
+    padding: 2px;
+}
+span.code {
+    font-size: 0.9em;
+}
+p.code {
+    font-size: 1.2em;
+    text-indent: 0;
+    padding: 5px;
+}
+.code span.purple {
+    color: #881280;
+}
+.code span.brown {
+    color: #994500;
+}
+.code span.blue {
+    color: #1A1AA6;
+}
+.code span.green {
+    color: #236E25;
+}
+.code span.grey {
+    color: #555;
+}
+.code span.black {
+    color: #222;
+}
+.number {
+    font-family: "New Courier", Courier, serif;
+    font-size: 1.1em;
+}
+.logout {
+    margin-left:10px;
+    font-size:.9em;
+}
+.left_33, .mid_33, .right_33 {
+    float: left:
+    width: 30%;
+}
+/* CLEAR FIX*/
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.clearfix {
+    display: inline-block;
+}
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;}
+.clearfix {display: block;}
+/* End hide from IE-mac */
+
+/*----------------------------- SITE WIDE CLASS ------------------------------*/
+
+.back_link {
+    float: left;
+    text-align: left;
+    margin-top: -20px;
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    color: white;
+    font-size: 2.0em;
+    letter-spacing: -1px;
+}
+.back_link:hover {
+    color: grey;
+}
+.back_link:active {
+    color: #B00C0B;
+}
+
+/*--------------------------------- CALL TO ACTION ---------------------------*/
+
+.call_to_action {
+    border: 2px solid #FFF;
+    padding: 10px 30px 10px 20px;
+    max-height: 100px;
+    font-size: 0.9em;
+    color: #FFF;
+    text-align: center;
+    text-shadow: none;
+    background-image: -moz-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -webkit-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -ms-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -o-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: linear-gradient(top, #d03f31 14%, #ae0909);
+    -pie-background: linear-gradient(top, #d03f31 14%, #ae0909);
+    -khtml-box-shadow: 0 0 10px #C0C0C0;
+    -o-box-shadow: 0 0 10px #C0C0C0;
+    -webkit-box-shadow: 0 0 10px #C0C0C0;
+    -moz-box-shadow: 0 0 10px #C0C0C0;
+    box-shadow: 0 0 10px #C0C0C0;
+    -khtml-border-radius: 20px;
+    -o-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    behavior: ("../js/PIE.htc");
+}
+.call_to_action.big {
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-size: 3.0em;
+    font-style: italic;
+    font-weight: bold;
+    padding: 10px 20px 10px 20px;
+}
+a.call_to_action {
+    text-shadow: none;
+}
+.call_to_action:hover {
+    cursor: pointer;
+    background-image: -moz-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -webkit-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -ms-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -o-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: linear-gradient(top, #ae0909 14%, #d03f31);
+    -pie-background: linear-gradient(top, #ae0909 14%, #d03f31);
+    behavior: ("../js/PIE.htc");
+}
+a.call_to_action:hover {
+    color: #FFF;
+}
+.call_to_action:active {
+    background-image: none;
+    background-color: #d03f31;
+}
+a.call_to_action:active {
+    color: #FFF;
+}
+.call_to_action.secondary {
+    border: 2px solid #FFF;
+    padding: 10px 20px 10px 20px;
+    color: #FFF;
+    font-size: 22pt;
+    text-align: center;
+    background-image: -moz-linear-gradient(top, #cfcaad 14%, #a7a37e);
+    background-image: -webkit-linear-gradient(top, #cfcaad 14%, #a7a37e);
+    background-image: -ms-linear-gradient(top, #cfcaad 14%, #a7a37e);
+    background-image: -o-linear-gradient(top, #cfcaad 14%, #a7a37e);
+    background-image: linear-gradient(top, #cfcaad 14%, #a7a37e);
+    -pie-background: linear-gradient(top, #cfcaad 14%, #a7a37e);
+    -khtml-box-shadow: 0 0 10px #C0C0C0;
+    -o-box-shadow: 0 0 10px #C0C0C0;
+    -webkit-box-shadow: 0 0 10px #C0C0C0;
+    -moz-box-shadow: 0 0 10px #C0C0C0;
+    box-shadow: 0 0 10px #C0C0C0;
+    -khtml-border-radius: 15px;
+    -o-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    behavior: url("../js/PIE.htc");
+    margin-top: -10px;
+    height: 60px; /* so it's the same size as primary */
+}
+div.call_to_action.secondary:hover {
+    cursor: pointer;
+    background-image: -moz-linear-gradient(top, #a7a37e 14%, #cfcaad);
+    background-image: -webkit-linear-gradient(top, #a7a37e 14%, #cfcaad);
+    background-image: -ms-linear-gradient(top, #a7a37e 14%, #cfcaad);
+    background-image: -o-linear-gradient(top, #a7a37e 14%, #cfcaad);
+    background-image: linear-gradient(top, #a7a37e 14%, #cfcaad);
+}
+div.call_to_action.secondary:active {
+    background-image: none;
+}
+div.call_to_action div.title {
+    font-size: 30px;
+    line-height: 40px;
+    text-align: center;
+}
+div.call_to_action div.subtitle {
+    font-size: 16px;
+    line-height: 20px;
+    text-align: center;
+}
+
+/*--------------------- TWEET TO ACTION --------------------------------------*/
+
+.tweet_to_action {
+    border: 2px solid #A4CCE5;
+    padding: 8px 8px 8px 8px;
+    width: 290px;
+    height: 50px;
+    position: relative;
+    font-size: 0.9em;
+    color: #186487;
+    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    text-align: center;
+    text-shadow: none;
+    background-color: #E8F3F9;
+    background-image: -moz-linear-gradient(top, #FFF 14%, #D5E6EF);
+    background-image: -webkit-linear-gradient(top, #FFF 14%, #D5E6EF);
+    background-image: -ms-linear-gradient(top, #FFF 14%, #D5E6EF);
+    background-image: -o-linear-gradient(top, #FFF 14%, #D5E6EF);
+    background-image: linear-gradient(top, #FFF 14%, #D5E6EF);
+    -pie-background: linear-gradient(top, #FFF 14%, #D5E6EF);
+    -khtml-box-shadow: 0 0 10px #C0C0C0;
+    -o-box-shadow: 0 0 10px #C0C0C0;
+    -webkit-box-shadow: 0 0 10px #C0C0C0;
+    -moz-box-shadow: 0 0 10px #C0C0C0;
+    box-shadow: 0 0 10px #C0C0C0;
+    -khtml-border-radius: 20px;
+    -o-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    behavior: ("../js/PIE.htc");
+}
+.tweet_to_action:hover {
+    border: 2px solid #53A3D6;
+    color: #0B3752;
+    cursor: pointer;
+    background-color: #D8EBF6;
+    background-image: -moz-linear-gradient(top, #FFF 14%, #BFDFED);
+    background-image: -webkit-linear-gradient(top, #FFF 14%, #BFDFED);
+    background-image: -ms-linear-gradient(top, #FFF 14%, #BFDFED);
+    background-image: -o-linear-gradient(top, #FFF 14%, #BFDFED);
+    background-image: linear-gradient(top, #FFF 14%, #BFDFED);
+    -pie-background: linear-gradient(top, #FFF 14%, #BFDFED);
+    behavior: ("../js/PIE.htc");
+}
+.tweet_to_action:active {
+    color: #658A9D;
+    border: 2px solid #7AB8DF;
+    background-color: #CEE5F4;
+    background-image: none;
+    -pie-background: none;
+    behavior: ("../js/PIE.htc");
+}
+.tweet_to_action div.title {
+    float: left;
+    width: 240px;
+    font-size: 25px;
+    line-height: 30px;
+    text-align: center;
+    text-shadow: 1px 1px white;
+}
+.tweet_to_action div.subtitle {
+    float: left;
+    width: 240px;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    text-shadow: 1px 1px white;
+}
+.tweet_to_action div.title:hover, .tweet_to_action div.subtitle:hover {
+    text-shadow: 1px 1px #F5F7F9;
+}
+.tweet_to_action div.title:active, .tweet_to_action div.subtitle:active {
+    text-shadow: 1px 1px #DEECF3;
+}
+.tweet_to_action div.bird {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 50px;
+    height: 50px;
+    background-image: url('../imgs/willet_bird_50.png');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+}
+.tweet_to_action:hover div.bird {
+    background-position: 0 -50px;
+}
+.tweet_to_action:active div.bird {
+    background-position: 0 -100px;
+}
+
+/* -------------------------------- BASE -------------------------------------*/
+
+div#header {
+    height: 0;
+    width: 100%;
+}
+div#header div {
+    position: relative;
+    background: url(/static/imgs/gradient.png) center top repeat-x;
+    width: 100%;
+    height: 400px;
+}
+div#wrap {
+}
+div#content {
+}
+div#footer {
+    background-color: #212121;
+    background-image: url('../imgs/footer.png');
+    -moz-box-shadow: 0 -5px 5px #222;
+    -webkit-box-shadow: 0 -5px 5px #222;
+    box-shadow: 0 -5px 5px #222;
+}
+div#footer button {
+    font-size: 0.9em;
+    margin-left: -5px;
+    margin-top: 10px;
+}
+.right_col {
+    height: 100%;
+}
+.left_col {
+    height: 100%;
+    background: black;
+    padding: 30px 5px 30px 5px;
+    -khtml-border-bottom-right-radius: 30px;
+    -o-border-bottom-right-radius: 30px;
+    -webkit-border-bottom-right-radius: 30px;
+    -moz-border-bottom-right-radius: 30px;
+    border-bottom-right-radius: 30px;
+    -khtml-border-bottom-left-radius: 30px;
+    -o-border-bottom-left-radius: 30px;
+    -webkit-border-bottom-left-radius: 30px;
+    -moz-border-bottom-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+    behavior: ("../js/PIE.htc");
+
+    -moz-box-shadow: 0 -5px 5px #222;
+    -webkit-box-shadow: 0 -5px 5px #222;
+    box-shadow: 0 -5px 5px #222;
+}
+
+/*******************************************************************************
+|                                   PAGES                                      |
+|******************************************************************************/
+
+/* ------------------------ LANDING ------------------------------------------*/
+
+img#bird_arrow {
+    padding: 0 0 0 50px;
+}
+img#img1 {
+    padding-left: 30px;
+    margin: 0;
+}
+img#img2 {
+    margin: 0;
+}
+img#img3 {
+    margin: 20px 0 0 -30px;
+}
+
+/* ------------------------ ACCOUNT ------------------------------------------*/
+
+tr.bottom_border td {
+    border-bottom: 1px solid grey;
+}
+
+/* ------------------------ CODE ---------------------------------------------*/
+
+div.edit_button {
+    float: right;
+    width: 0;
+    height: 0;
+}
+div.edit_button a {
+    margin-left: -30px;
+}
+
+/* ------------------------ OTHER ------------------------------------------- */
+
+input[type="text"], textarea {
+    color: black;
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    max-width: 300px;
+    width: 300px;
+    height: 24px;
+    max-height: 100px;
+    padding: 5px;
+    border: 1px solid #999;
+    font-size: 20px;
+    margin-right: 5px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+
+.submit {
+    left: 130px;
+}
+
+.campaign_link {
+    font-size: 1.9em;
+    width: 100%;
+}
+
+.default_label {
+    color: white;
+    font-size: 1.5em;
+    margin-top: 30px;
+}
+
+#share_text {
+    height: 100px;
+}
+
+#get_started {
+    width: 910px;
+    border-radius: 10px;
+}
+
+li {
+    background-image: none;
+    list-style: none;
+}
+ul.disc li {
+    list-style-type: disc;
+}
+td{
+    text-align: center;
+    min-width: 125px;
+}
+td.title {
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-size: 1.6em;
+    letter-spacing: -1px;
+    color: white;
+}
+
+#encourage {
+    color: white;
+    font-size: 1.5em;
+    text-align: center;
+
+}
+
+#twitter_foo {
+    position: fixed:
+    top 500px;
+    left: 500px;
+    width: 500px;
+    height: 700px;
+    border-radius: 10px;
+}   
+
+#twitter_foo textarea {
+    max-width: 500px;
+    width: 100%;
+    height: 75px;
+    border-radius: 10px;
+}
+.style {
+    color: #ae0909;
+}
+
+#landing_influencer_title {
+    text-align: center;
+    font-size: 1.0em;
+    color: white;
+}
+#influencer_title {
+    font-size: 1.6em;
+    color: white;
+}
+
+.influencer {
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 1px;
+    color: black;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+.influencer a {
+    text-shadow: none;
+    color: black;
+}
+
+.profile_pic {
+    height: 30px;
+    margin: 5px 0px 0px 0px;
+    padding: -10px 0px 0px 0px;
+}
+
+.number {
+    text-align: center;
+    color: black;
+    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-size: 1.7em;
+    font-style: italic;
+    font-weight: bold;
+    letter-spacing: -2px;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
+.smaller_data {
+    font-size: 1.3em;
+}
+
+.klout_logo {
+    height: 15px;
+    margin-top: 5px
+}
+
+.klout_score {
+    color: black;
+}
+
+.click_ratio {
+    font-size: 1.5em;
+}
+
+.clicks {
+    font-size: 1.5em;
+}
+
+.about {
+    font-size: 1.5em;
+    color: white;
+}
+
+.about .link, .about .link:visited {
+    font-size: 1.8em;
+    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    text-decoration: none;
+    color: white;
+    text-shadow: black 2px 2px 2px;
+}
+.about .link:hover {
+    color: grey;
+    text-shadow: black 4px 4px 4px;
+}
+.about .link:active {
+    color: #B00C0B;
+}
+
+.role {
+    font-size: 2.5em;
+    font-weight: bold;
+}
+#twitter-preview {
+    border-radius: 5px;
+}
+
+button {
+    font-style: normal;
+    letter-spacing: 0px;
+    border: 2px solid #FFF;
+    padding: 5px 5px 5px 5px;
+    font-size: 1.7em;
+    color: #FFF;
+    text-align: center;
+    background-image: -moz-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -webkit-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -ms-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: -o-linear-gradient(top, #d03f31 14%, #ae0909);
+    background-image: linear-gradient(top, #d03f31 14%, #ae0909);
+    -pie-background: linear-gradient(top, #d03f31 14%, #ae0909);
+    -khtml-box-shadow: 0 0 10px #C0C0C0;
+    -o-box-shadow: 0 0 10px #C0C0C0;
+    -webkit-box-shadow: 0 0 10px #C0C0C0;
+    -moz-box-shadow: 0 0 10px #C0C0C0;
+    box-shadow: 0 0 10px #C0C0C0;
+    -khtml-border-radius: 5px;
+    -o-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    behavior: ("../js/PIE.htc");
+}
+button:hover {
+    cursor: pointer;
+    background-image: -moz-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -webkit-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -ms-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: -o-linear-gradient(top, #ae0909 14%, #d03f31);
+    background-image: linear-gradient(top, #ae0909 14%, #d03f31);
+    -pie-background: linear-gradient(top, #ae0909 14%, #d03f31);
+    behavior: ("../js/PIE.htc");
+}
+button:active {
+    background-image: none;
+    background-color: #d03f31;
+}
+
+.landing {
+    font-size: 1.2em;
+}
+
+.landing .number {
+    margin-top: 6px;
+}
+
+#right_header {
+    float: right;
+}
+#right_header p {
+    float: right;
+    padding-left: 20px;
+}

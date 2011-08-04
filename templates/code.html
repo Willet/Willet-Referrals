@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">"{{campaign.title|escape}}"</h1>
+    <div class="prepend-top center">
+        <p>Button appears like:</p>
+        <iframe allowtransparency="true" frameborder="0" scrolling="no" src="{{BASE_URL}}/button?ca_id={{campaign.uuid}}&uid=" style="margin-left: -8px; width:325px; height:85px;"> </iframe>
+
+        <br /><br />
+        <p>Default tweet text:<br />{{campaign.share_text|escape}}</p>
+        <p>Tweet url:<br/>{{campaign.target_url|escape}}</p>
+        <a class="call_to_action big" href="/account">Finish</a>
+        <div class="edit_button">
+            <a class="edit_button" href="/edit?id={{campaign.uuid}}" title="Edit Campaign">
+                <img src="/static/imgs/edit.png" width=20 height=20 />
+            </a>
+        </div>
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/account">Your Campaigns</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-25 center">Embed Code</h1>
+
+        <div class="prepend-top prepend-1 span-14 last">
+            <p>
+                This <span class='code'>iframe</span> is for the large button (demonstrated on left).
+                Place it in the <span class='code'>body</span> of the page where you would like the button to be:
+            </p>
+            <p class="code">
+                &lt;iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://www.wil.lt/button?ca_id={{ campaign.uuid }}&amp;uid=" style="width:325px; height:85px;"&gt; &lt;/iframe&gt;
+            </p>
+            <p>
+                If you want to be able to tie an internal user identifier to the influencer results,
+                add the user identifier to the query string as the field <span class="code">uid</span>.
+            </p>
+            <p class="tip">
+                Note: If you would like to use your own button, use an onclick or anchor href to load this url:
+                <br />
+                <span class='code'>http://www.wil.lt/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
+                <br />
+                The tweeting window is 520px wide and 160px high.
+            <p>
+            <p class="tip">
+                Note: If you are integrating wil.lt into an Unbounce template, us this link:
+                <br />
+                <span class='code'>http://www.wil.lt/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
+                <br />
+            <p>
+        </div>
+
+{% endblock right_content %}

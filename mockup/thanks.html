@@ -1,0 +1,108 @@
+<script>
+function getCookie(c_name)
+{
+var i,x,y,ARRcookies=document.cookie.split(";");
+for (i=0;i<ARRcookies.length;i++)
+{
+  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+  x=x.replace(/^\s+|\s+$/g,"");
+  if (x==c_name)
+    {
+    return unescape(y);
+    }
+  }
+}
+
+var msg = getCookie("msg");
+
+
+</script>
+
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+        <title>Willet Social</title>
+        <meta name="description" content="What's the social value of your users?" />
+        <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
+        tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
+        <link rel="start" href="http://www.wil.lt" title="Willet Social" />
+        <link rel="bookmark" href="http://www.capption.tv" title="cAPPtion: Video Reviews of Web Apps" />
+        <link rel="bookmark" href="http://www.getwillet.com" title="Willet: Monetization Simplified" />
+        <link rel="bookmark" href="http://www.bitwillet.com" title="BitWillet: Accept Bitcoins on your website!" />
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+
+        <!-- Blueprint CSS -->
+        <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+
+        <!-- CSS -->
+        <link href='http://fonts.googleapis.com/css?family=Rokkitt' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="/mockup/css/mockup.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="/mockup/css/lion-buttons/styles.css" type="text/css" media="screen" />
+        <!-- Scripts -->
+        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23344375-6']);
+            _gaq.push(['_trackPageview']);
+            
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+        
+      
+            
+        <script type="text/javascript">
+            document.write(unescape("%3Cscript src='" + ((document.location.protocol=="https:")?"https://snapabug.appspot.com":"http://www.snapengage.com") + "/snapabug.js' type='text/javascript'%3E%3C/script%3E"));</script><script type="text/javascript">
+            SnapABug.addButton("a9fae0a0-daea-42c5-a125-eafa1ffd0ac8","0","100%");
+        </script>
+        
+        
+	</head>
+	<body>
+        <!-- CONTENT -->
+        <div id='header'>
+            <div></div>
+        </div>
+       
+            <div id='main' class='container'>
+                <div class="span-24 append-bottom last">
+                    
+                   
+                        <h1>Thanks for Sharing!</h1>
+                        <h2>You will receive an email with your purchase details.</h2>
+                       
+                       
+                        
+                     
+                    
+                </div>
+            
+        </div>
+        <!-- END CONTENT -->
+        
+        <!-- FOOTER -->
+        <div id='footer' class='stripe'>
+            <div class='container'>
+               
+            </div>
+        </div>
+        <!-- END FOOTER -->
+        
+       
+	</body>
+	
+	 <script>
+            document.getElementById("twitter_box").innerText = msg;
+    </script>
+</html>

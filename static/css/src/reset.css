@@ -1,0 +1,46 @@
+/* -------------------------------------------------------------- 
+  
+   reset.css
+   * Resets default browser CSS.
+   
+-------------------------------------------------------------- */
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, code,
+del, dfn, em, img, q, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td, 
+.reset html, .reset body, .reset div, .reset span, .reset object, .reset iframe,
+.reset h1, .reset h2, .reset h3, .reset h4, .reset h5, .reset h6, .reset p, .reset blockquote, .reset pre,
+.reset a, .reset abbr, .reset acronym, .reset address, .reset code,
+.reset del, .reset dfn, .reset em, .reset img, .reset q, .reset dl, .reset dt, .reset dd, .reset ol, .reset ul, .reset li,
+.reset fieldset, .reset form, .reset label, .reset legend,
+.reset table, .reset caption, .reset tbody, .reset tfoot, .reset thead, .reset tr, .reset h, .reset td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+}
+
+body, .reset body { 
+  line-height: 1.5; 
+}
+
+/* Tables still need 'cellspacing="0"' in the markup. */
+table, .reset table { border-collapse: separate; border-spacing: 0; }
+caption, th, td, .reset caption, .reset th, .reset td { text-align: left; font-weight: normal; }
+table, td, th, .reset table, .reset td, .reset th { vertical-align: middle; }
+
+/* Remove possible quote marks (") from <q>, <blockquote>. */
+blockquote:before, blockquote:after, q:before, q:after,
+.reset blockquote:before, .reset blockquote:after, .reset q:before,
+.reset q:after { content: ""; }
+blockquote, q, .reset blockquote, .reset q { quotes: "" ""; }
+
+/* Remove annoying border on linked images. */
+a img, .reset a img { border: none; }

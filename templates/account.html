@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="prepend-top span-8 last center"><a href="/">Willet Social</a></h1>
+    
+    <h2 class="span-8 last center">What's the social value of your users?</h2>
+    
+    <div class="prepend-1 span-6 append-1 last append-bottom center">
+        <p>
+            You want to directly engage your top social influencers, but how do you know who they are?
+        </p>
+        <p>
+            Measure the social impact of your users with Willet Social.
+        </p>
+    </div>
+    
+    <div class="prepend-top span-8 last center">
+        <a class="call_to_action big" href="/edit">New Campaign</a>
+    </div>
+
+{% endblock left_content %}
+{% block right_content %}
+    <h1 class="span-15 last lower-25 center">Your Campaigns</h1>
+
+    <div class="prepend-top span-15 last">
+        {% if has_campaigns %}
+            <table>
+                <tr>
+                    <td class="title"> Title </td>
+                    <td class="title"> Tweets</td>
+                    <td class="title"> Clickthroughs </td>
+                    <td> </td>
+                </tr>
+                {% for c in campaigns %}
+                <tr class="bottom_border">
+                    <td>
+                        <a href="/campaign?id={{c.uuid}}" title="See Campaign Results">{{c.title}}</a>
+                    </td>
+                    <td>
+                        {{c.shares}}
+                    </td>
+                    <td>
+                        {{c.clicks}}
+                    </td>
+                    <td>
+                        <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                    </td>
+                    <td>
+                         <form action="/deleteCampaign" method="post" class="center">
+                            <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
+                            <input type="submit" value="Delete"/>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+        
+            <h3 class="center">
+                Start learning about your customers by <a href="/edit">creating a campaign</a>.
+            </h3>
+
+        {% endif %}
+    </div>
+
+{% endblock right_content %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        .left {
+        }
+        .right {
+        }
+        textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+    </style>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="prepend-top center">Contact Us</h1>
+    
+    <div class="center">
+        
+        <p><a href="mailto:info@wil.lt">info@wil.lt</a></p>
+        
+        <p><a href="http://twitter.com/#!/getWillt"> @getWillt</a></p>
+
+        <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
+        
+        <hr style="width: 75%; margin-left: 40px;" class="center" />
+        <br />
+
+        <p style="margin-bottom: 0px;"> Give Us Feedback: </p>
+        <form action="/doFeedback" method="post" class="center">
+            <textarea style="height: 100px" name="message" id="message"></textarea> </br >
+            <input type="submit" value="Submit" />
+        </form>
+    </div>
+{% endblock left_content %}
+{% block right_content %}
+    <h1 class="span-15 last lower-25 center">Partnership</h1>
+
+    <div class="prepend-2 span-12 last">
+        {% if thanks %}
+            <p class="error"> Thanks! We'll be in touch! </p>
+        {% endif %}
+        
+        <p>Here's what companies we've worked with us have said: </p>
+
+        
+        <p>"Awesome" - Dan Holowack, CEO of <a href="http://www.twitsprout.com/">TwitSprout</a> </p>
+        <p>"Awesome" - Ted Livingston, CEO of <a href="http://www.kik.com/">Kik Messenger</a> </p>
+        <p>"Awesome" - Dan Arrizzia, CEO of <a href="http://www.groupeffect.com/">GroupEffect</a> </p>
+        
+        <hr>
+
+        <p>Interested in partnering with us? Let us know! </p>
+
+        <form action="/doPartner" method="post" class="center">
+            <label class="default_label" for="name"> Name: </label> <br /><input type="text" name="name" id="name"></input><br />
+            <label class="default_label" for="email"> Email: </label> <br /><input type="text" name="email" id="email"></input> </br >
+            <label class="default_label" for="message"> Message: </label> <br /><textarea style="height: 150px" name="message" id="message"></textarea> </br >
+
+            <input type="submit" value="Submit" />
+        </form>
+    </div>
+{% endblock right_content %}

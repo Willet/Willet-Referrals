@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Willet Social: Button</title>
+        <meta name="description" content="What's the social value of your users?" />
+        <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
+        tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
+        <link rel="start" href="http://www.wil.lt" title="Willet Social" />
+        <link rel="bookmark" href="http://www.capption.tv" title="cAPPtion: Video Reviews of Web Apps" />
+        <link rel="bookmark" href="http://www.getwillet.com" title="Willet: Monetization Simplified" />
+        <link rel="bookmark" href="http://www.bitwillet.com" title="BitWillet: Accept Bitcoins on your website!" />
+        <style>
+            .tweet_to_action {
+                border: 2px solid #A4CCE5;
+                padding: 8px 8px 8px 8px;
+                width: 290px;
+                height: 50px;
+                position: relative;
+                font-size: 0.9em;
+                color: #186487;
+                font-family: 'trebuchet ms', helvetica, sans-serif; 
+                text-align: center;
+                text-shadow: none;
+                background-color: #E8F3F9;
+                background-image: -moz-linear-gradient(top, #FFF 14%, #D5E6EF);
+                background-image: -webkit-linear-gradient(top, #FFF 14%, #D5E6EF);
+                background-image: -ms-linear-gradient(top, #FFF 14%, #D5E6EF);
+                background-image: -o-linear-gradient(top, #FFF 14%, #D5E6EF);
+                background-image: linear-gradient(top, #FFF 14%, #D5E6EF);
+                -pie-background: linear-gradient(top, #FFF 14%, #D5E6EF);
+                -khtml-box-shadow: 0 0 10px #C0C0C0;
+                -o-box-shadow: 0 0 10px #C0C0C0;
+                -webkit-box-shadow: 0 0 10px #C0C0C0;
+                -moz-box-shadow: 0 0 10px #C0C0C0;
+                box-shadow: 0 0 10px #C0C0C0;
+                -khtml-border-radius: 20px;
+                -o-border-radius: 20px;
+                -webkit-border-radius: 20px;
+                -moz-border-radius: 20px;
+                border-radius: 20px;
+                behavior: ("../js/PIE.htc");
+            }
+            .tweet_to_action:hover {
+                border: 2px solid #53A3D6;
+                color: #0B3752;
+                cursor: pointer;
+                background-color: #D8EBF6;
+                background-image: -moz-linear-gradient(top, #FFF 14%, #BFDFED);
+                background-image: -webkit-linear-gradient(top, #FFF 14%, #BFDFED);
+                background-image: -ms-linear-gradient(top, #FFF 14%, #BFDFED);
+                background-image: -o-linear-gradient(top, #FFF 14%, #BFDFED);
+                background-image: linear-gradient(top, #FFF 14%, #BFDFED);
+                -pie-background: linear-gradient(top, #FFF 14%, #BFDFED);
+                behavior: ("../js/PIE.htc");
+            }
+            .tweet_to_action:active, .tweet_to_action.used {
+                color: #658A9D;
+                border: 2px solid #7AB8DF;
+                background-color: #CEE5F4;
+                background-image: none;
+                -pie-background: none;
+                behavior: ("../js/PIE.htc");
+            }
+            .tweet_to_action div.title {
+                float: left;
+                width: 240px;
+                font-size: 25px;
+                line-height: 30px;
+                text-align: center;
+                text-shadow: 1px 1px white;
+            }
+            .tweet_to_action div.subtitle {
+                float: left;
+                width: 240px;
+                font-size: 14px;
+                line-height: 20px;
+                text-align: center;
+                text-shadow: 1px 1px white;
+            }
+            .tweet_to_action div.title:hover, .tweet_to_action div.subtitle:hover {
+                text-shadow: 1px 1px #F5F7F9;
+            }
+            .tweet_to_action div.title:active, .tweet_to_action div.subtitle:active,
+            .tweet_to_action.used div.title, .tweet_to_action.used div.subtitle {
+                text-shadow: 1px 1px #DEECF3;
+            }
+            .tweet_to_action div.bird {
+                position: absolute;
+                top: 10px;
+                right: 12px;
+                width: 50px;
+                height: 50px;
+                background-image: url('/static/imgs/willet_bird_50.png');
+                background-repeat: no-repeat;
+                background-position: 0 0;
+            }
+            .tweet_to_action:hover div.bird {
+                background-position: 0 -50px;
+            }
+            .tweet_to_action:active div.bird,
+            .tweet_to_action.used div.bird {
+                background-position: 0 -100px;
+            }
+        </style>
+        <script type="text/javascript">
+            button_clicked = function() {
+                var t, st, tta;
+                t = document.getElementById('title');
+                t.innerHTML = "Thanks!";
+                t.className = "title used";
+                st = document.getElementById('subtitle');
+                st.innerHTML = "We really appreciate your support!";
+                st.className = "subtitle used";
+                tta = document.getElementById('tweet_to_action');
+                tta.className = "tweet_to_action used";
+                tta.onclick = "";
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="tweet_to_action" id="tweet_to_action" onclick="window.open('{{BASE_URL}}/willet?ca_id={{campaign_id|escape}}','popup','width=550,height=260,scrollbars=no,resizable=no,toolbar=no,directories=no,location=no,menubar=no,status=no,left=0,top=0'); button_clicked();">
+            <div class="title" id="title"> {{button_text|escape}} </div>
+            <div class="subtitle" id="subtitle">{{button_subtext|escape}}</div>
+            
+            <div id="button_bird" class="bird"></div>
+        </div>
+    </body>
+</html>

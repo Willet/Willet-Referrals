@@ -1,0 +1,61 @@
+application: sy-willet
+version: 9
+runtime: python
+api_version: 1
+
+handlers:
+# serving tracking tweet generation iframe
+- url: /(willet.html|trackErr)
+  script: clicks/track.py
+
+- url: /(willt|share)
+  script: plugin/plugin.py
+
+# queues that check our models for dead references
+- url: /(StartRefCheck|CheckRef)
+  script: util/db_queues.py
+
+- url: /(campaignClicksCounter|updateLanding|updateCounts|updateTweets|updateClicks)
+  script: processes.py
+
+- url: /t/
+  static_dir: clicks/static
+
+- url: /mockup/
+  static_dir: mockup
+
+- url: /static
+  static_dir: static
+
+- url: /mixpanel
+  script: mixpanel.py
+
+- url: /(emailerCron|emailerQueue)
+  script: emailer.py
+
+- url: /klout
+  script: klout.py
+
+# cron for checking if users tweeted
+- url: /getTweets
+  script: tweets/twitter.py
+
+# client interaction with our website
+- url: /
+  script: main.py
+
+# further client interactions
+- url: /(about|account|deleteCampaign|button|login|logout|auth|register|tweet_button|campaign|campaign.json|contact|demo|edit|doUpdateOrCreateCampaign|partner|doPartner|doFeedback|test|twitterPreview|code)
+  script: main.py
+
+# website initialization
+- url: /init.*
+  script: init/setup.py
+  
+- url: /(admin|cleanBadLinks)
+  script: admin.py
+
+# links to track
+- url: /.*
+  script: clicks/track.py
+
