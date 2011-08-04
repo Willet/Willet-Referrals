@@ -256,6 +256,8 @@ class ShowEditCampaignPage( URIHandler ):
         redirect_url = self.request.get( 'redirect_url' ) # optionally redirect popup after tweet
         webhook_url = self.request.get( 'webhook_url' ) 
 
+        logging.info("HOOK %s" % webhook_url)
+
         template_values = { 'campaign' : None }
 
         if client and client.campaigns.count() == 0:
@@ -295,7 +297,7 @@ class ShowEditCampaignPage( URIHandler ):
                                             'redirect_url' : redirect_url }
 
         # If there is no campaign_id, then we are creating a new one:
-        if campaign_id:
+        elif campaign_id:
             
             # Updating an existing campaign here:
             campaign = get_campaign_by_id( campaign_id )
