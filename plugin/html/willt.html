@@ -28,6 +28,15 @@
 
     var share, reset, countChars, willet_conversion, iframeBody, shareArea, 
         shareFrame, shareText, charsLeft;
+    
+    var sendGmail = function(opts){
+        var str = 'http://mail.google.com/mail/?view=cm&fs=1'+
+                  /*'&to=' + opts.to +
+                  '&su=' + opts.subject + 
+                  */'&body=' + opts.message.replace(/\n/g,'%0A') + 
+                  '&ui=2';
+        location.href = str;
+    };
 
     window.onload = function() {
         iframeBody = document.getElementById('willt');
@@ -123,15 +132,15 @@
         font-weight: normal;
     }
     label { cursor: default; }
-    .textinput { 
+    textarea { 
         background: #fff url("http://dropbox.com/static/images/topfade.gif") repeat-x top; 
         border-style: none solid solid;
         vertical-align: middle; 
         border: 1px solid #aaa; 
         padding: 4px; 
         color: #555;
-        width: 160px; 
         margin: 0;
+        height: 100px;
     }
     a { 
         display: -moz-inline-stack;
@@ -172,12 +181,16 @@
     }
     a img {
         float: left;
+        height: 20px;
         padding-right: 6px;
         margin-top: 1px;
     }
     a div {
         float: left;
         margin-top: -1px;
+    }
+    #gmail-div {
+        float: left;
     }
 
     #share-area {
@@ -191,16 +204,30 @@
     <div class="span-24 last" id='willt'>
         <div class="span-12">
             <h2>Invite by email</h2>
-            <div id="by-email">
-                <p>Invite your contacts (Gmail, AOL, Hotmail, Yahoo, etc.)</p>
-                <label for="email">Email
-                    <input type="text" id="email" name="email" />
-                </label>
-                <br />
-                <label for="to-emails">invite email addresses
-                    <textarea id="share-text">Type a list of invitee email addresses.</textarea>
-                </label>
-            </div>
+                <div class="span-12 last" id="gmail-div">
+                    <a href="#" onClick="sendGmail({message: '{{text}}'});"> 
+                        <img src="/static/imgs/gmail-logo.png" />
+                        <div> Via Gmail </div>
+                    </a>
+                </div>
+                OR
+                <div class="span-12 last" id="other-email-div">
+                    <label for="email">Your Email
+                        <input type="text" id="email" name="email" />
+                    </label>
+                    <br />
+                    <label for="to-emails">Invite Email Addresses
+                        <input id="to-emails" type="text" value="Enter a comma-separated list of email addresses."></input>
+                    </label>
+                    <br />
+                    <label for="email-share-text">Message
+                        <textarea id="email-share-text">{{ text }}</textarea>
+                    </label>
+
+                    <div class="prepend-8 span-3 last" style="margin-top: 5px;" >
+                        <a href="#" onClick="sendEmail();"> Email Invites </a>
+                    </div>
+                </div>
         </div>
 
         <div class="span-12 last" id="by-fb-twitter">
@@ -210,11 +237,11 @@
             <div class="prepend-7 span-5 last" id="chars-left">140 chars remaining</div>
             <div class="prepend-1 span-10 last">
                 <a href="#" onclick="share('fb');">
-                    <img src="/static/imgs/fb-logo.png" height="20px" />
+                    <img src="/static/imgs/fb-logo.png" />
                     <div> Share on Facebook </div>
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
-                    <img src="/static/imgs/twitter-logo.jpg" height="20px" />
+                    <img src="/static/imgs/twitter-logo.jpg" />
                     <div>Tweet on Twitter</div>
                 </a>
             </div>
