@@ -2,6 +2,8 @@
 
 <head>
  <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script>
+ <script src="{{ BASE_URL }}/static/js/jsOAuth-1.3.1.min.js" type="text/javascript">
+ </script>
 <script type="text/javascript">
     /*!
  * jQuery JavaScript Library v1.5.2
@@ -34,7 +36,7 @@
         charsLeft = document.getElementById('chars-left');
 
         FB.init({
-            appId: '181838945216160',
+            appId: '4077e465d5d50e87aa0fbd2d472f60ea',
             status: true,
             cookie: true,
             xfbml: true,
@@ -63,64 +65,10 @@
                         }
                     }, {scope: 'publish_stream'});
                 } else if (medium === 'twitter'){
-                    twttr.anywhere(function (T) {
-                    var t = function(uc){
-                        $.ajax({
-                            url: "/tweet",
-                            type: 'post',
-                            data: uc,
-                            success: function ( data ) {
-                                mpq.push(["track", "Tweets_{{campaign_uuid}}", {'bucket': '{{campaign_uuid}}', 'campaign_uuid' : '{{campaign_uuid}}', 'user': uc.handle}]);
-                                // add an element to the DOM to notify the chrome
-                                // extension that we received confirmation
-                                var cDiv = document.createElement('input');
-                                cDiv.id = 'willet-confirmation-buffer';
-                                cDiv.type = 'hidden';
-                                cDiv.value = uc.willet_c;
-                                document.body.appendChild(cDiv);
-                                console.log(data);
-                                
-                                if ( "{{redirect_url}}".length > 0 ) {
-                                    location.href = "{{redirect_url}}";
-                                    self.moveTo(0,0);
-                                    self.resizeTo(screen.availWidth,screen.availHeight);
-                                } else {
-                                    window.close();
-                                }
-                            },
-                            error: function(d, m){
-                                $.ajax({
-                                    url: "/trackErr",
-                                    type: 'post',
-                                    data: { 'payload': uc,
-                                            'data': d,
-                                            'msg': m },
-                                    success: function (d){
-                                        console.log("Server response -> " + d);
-                                    }
-                                }); //end error reporting ajax
-                            }
-                        });// end graph update ajax
-                    } // end t()
-                    var tweetListener = function(plain_tweet, html_tweet){
-                        if (T.isConnected()) {
-                            user = T.currentUser;
-                            t({ handle: user.data('screen_name'),
-                                name: user.data('name'),
-                                follows: user.data('followers_count'),
-                                img: user.data('profile_image_url_https'),
-                                tweet: plain_tweet,
-                                willt_c: '{{ willt_code }}' });
-                        } else {
-                            alert("No longer connected to twitter");
-                        }
+                    // begin oauth
+                    var options = {
+                        consumerKey: 
                     };
-                    T("#willet-tbox").tweetBox({defaultContent: "{{text}}",
-                                               label: 'Share on Twitter using Willet Social',
-                                               data: { url: '{{ willt_url }}'},
-                                               onTweet: tweetListener });
-                });
-
                 } else {
                     iframeBody.style.visibility = 'hidden';
                     shareSrc += 'type=' + medium + '&uid=' + uid;
