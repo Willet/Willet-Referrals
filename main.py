@@ -254,6 +254,7 @@ class ShowEditCampaignPage( URIHandler ):
         share_text  = self.request.get( 'share_text' )
         target_url  = self.request.get( 'target_url' )
         redirect_url = self.request.get( 'redirect_url' ) # optionally redirect popup after tweet
+        webhook_url = self.request.get( 'webhook_url' ) 
 
         template_values = { 'campaign' : None }
 
@@ -270,6 +271,7 @@ class ShowEditCampaignPage( URIHandler ):
                                             'button_subtext' : button_subtext,
                                             'share_text': share_text, 
                                             'target_url' : target_url,
+                                            'webhook_url' : webhook_url,
                                             'redirect_url' : redirect_url }
         elif error == '2':
             template_values['show_guiders'] = False
@@ -279,6 +281,7 @@ class ShowEditCampaignPage( URIHandler ):
                                             'button_subtext' : button_subtext,
                                             'share_text': share_text, 
                                             'target_url' : target_url,
+                                            'webhook_url' : webhook_url,
                                             'redirect_url' : redirect_url }
         elif error == '3':
             template_values['show_guiders'] = False
@@ -288,6 +291,7 @@ class ShowEditCampaignPage( URIHandler ):
                                             'button_subtext' : button_subtext,
                                             'share_text': share_text, 
                                             'target_url' : target_url,
+                                            'webhook_url' : webhook_url,
                                             'redirect_url' : redirect_url }
 
         # If there is no campaign_id, then we are creating a new one:
@@ -357,44 +361,46 @@ class DoUpdateOrCreateCampaign( URIHandler ):
     def post( self ):
         client = self.get_client() # might be None
 
-        campaign_id = self.request.get( 'uuid' )
-        title       = self.request.get( 'title' )
-        button_text = self.request.get( 'button_text' )
-        button_subtext = self.request.get( 'button_subtext' )
-        share_text  = self.request.get( 'share_text' )
-        target_url  = self.request.get( 'target_url' )
-        redirect_url = self.request.get( 'redirect_url' )
+        campaign_id     = self.request.get( 'uuid' )
+        title           = self.request.get( 'title' )
+        button_text     = self.request.get( 'button_text' )
+        button_subtext  = self.request.get( 'button_subtext' )
+        share_text      = self.request.get( 'share_text' )
+        target_url      = self.request.get( 'target_url' )
+        redirect_url    = self.request.get( 'redirect_url' )
+        webhook_url     = self.request.get( 'webhook_url' )
         
-        logging.info(" %s %s %s %s %s %s %s" % (campaign_id, share_text, button_text, button_subtext, title, target_url, redirect_url) )
+        logging.info(" %s %s %s %s %s %s %s %s" % (campaign_id, share_text, button_text, button_subtext, title, target_url, webhook_url, redirect_url) )
         
         campaign = get_campaign_by_id( campaign_id )
         
         title = title.capitalize() # caps it!
         
         if title == '' or button_text == '' or button_subtext == '' or share_text == '' or target_url == '':
-            self.redirect( '/edit?id=%s&error=2&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url) )
+            self.redirect( '/edit?id=%s&error=2&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s&webhook_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url) )
             return
             
         if not isGoodURL( target_url ):
-            self.redirect( '/edit?id=%s&error=1&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url) )
+            self.redirect( '/edit?id=%s&error=1&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s&webhook_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url) )
             return
-        
+
         # If campaign doesn't exist,
         if campaign == None:
         
             # Create a new one!
             try:
                 campaign = Campaign( uuid = generate_uuid(16),
-                                 client=client, 
-                                 title=title[:100], 
-                                 button_text=button_text,
-                                 button_subtext=button_subtext,
-                                 share_text=share_text[:140],
-                                 target_url=target_url,
-                                 redirect_url=redirect_url)
+                                     client=client, 
+                                     title=title[:100], 
+                                     button_text=button_text,
+                                     button_subtext=button_subtext,
+                                     share_text=share_text[:140],
+                                     target_url=target_url,
+                                     redirect_url=redirect_url,
+                                     webhook_url=webhook_url)
                 campaign.put()
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url) )
+                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&webhook_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, webhook_url, redirect_url) )
                 return
         
         # Otherwise, update the existing campaign.
@@ -405,9 +411,10 @@ class DoUpdateOrCreateCampaign( URIHandler ):
                              button_text=button_text, 
                              button_subtext=button_subtext,
                              target_url=target_url,
-                             redirect_url=redirect_url)
+                             redirect_url=redirect_url,
+                             webhook_url=webhook_url)
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url) )
+                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&webhook_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, webhook_url, redirect_url) )
                 return
         
         if client == None:
@@ -565,3 +572,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

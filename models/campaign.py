@@ -25,16 +25,17 @@ NUM_SHARE_SHARDS = 15
 
 class Campaign(Model):
     """Model storing the data for a client's sharing campaign"""
-    uuid        = db.StringProperty( indexed = True )
-    title       = db.StringProperty( indexed = False )
-    button_text = db.StringProperty( indexed = False )
-    button_subtext = db.StringProperty( indexed = False )
-    share_text  = db.StringProperty( indexed = False )
-    target_url  = db.LinkProperty( indexed = False )
-    redirect_url = db.LinkProperty( required = False, default = None, indexed = False )
-    created     = db.DateTimeProperty(auto_now_add=True)
-    emailed_at_10 = db.BooleanProperty( default = False )
-    client      = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
+    uuid            = db.StringProperty( indexed = True )
+    title           = db.StringProperty( indexed = False )
+    button_text     = db.StringProperty( indexed = False )
+    button_subtext  = db.StringProperty( indexed = False )
+    share_text      = db.StringProperty( indexed = False )
+    target_url      = db.LinkProperty( indexed = False )
+    redirect_url    = db.LinkProperty( default = None, indexed = False, required = False )
+    webhook_url     = db.LinkProperty( indexed = False, required = False )
+    created         = db.DateTimeProperty(auto_now_add=True)
+    emailed_at_10   = db.BooleanProperty( default = False )
+    client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
     cached_clicks_count = db.IntegerProperty( default = 0 )
 
     # Defaults to None, only set if this Campaign has been deleted
@@ -51,17 +52,18 @@ class Campaign(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Campaign).filter('uuid =', uuid).get()
     
-    def update( self, title, button_text, button_subtext, share_text, target_url, redirect_url ):
+    def update( self, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url ):
+        """Update the campaign with new data"""
         if redirect_url == 'http://':
             redirect_url = None
         
-        """Update the campaign with new data"""
-        self.title       = title
-        self.button_text = button_text
+        self.title          = title
+        self.button_text    = button_text
         self.button_subtext = button_subtext
-        self.share_text  = share_text
-        self.target_url  = target_url
-        self.redirect_url = redirect_url
+        self.share_text     = share_text
+        self.target_url     = target_url
+        self.redirect_url   = redirect_url
+        self.webhook_url    = webhook_url
         self.put()
     
     def delete( self ):
@@ -176,4 +178,3 @@ class ShareCounter(db.Model):
 
     campaign_id = db.StringProperty(indexed=True, required=True)
     count = db.IntegerProperty(indexed=False, required=True, default=0)
-
