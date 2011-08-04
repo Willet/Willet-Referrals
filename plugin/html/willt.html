@@ -69,6 +69,9 @@
                     // begin oauth handshake
                     $.ajax({ url: '{{BASE_URL}}/oauth/twitter/login',
                         type: 'get',
+                        success: function(r) {
+                            console.log(r);
+                        }
                     });
                 } else {
                     // style shareArea according to different social loader
