@@ -14,6 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from models.campaign import get_campaign_by_id
 from models.link import create_link
+from models.oauth import OAuthClient
 
 # helpers
 from util.consts import *
