@@ -116,6 +116,11 @@
     <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
     <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
     <style>
+    #willt {
+        padding: 10px 10px 10px 10px;
+        background-color: #f4faff;
+        border: 1px solid #aeceef;
+    }
     a, a * { 
         cursor: pointer;
         outline: none; 
@@ -193,6 +198,9 @@
     #gmail-div {
         float: left;
     }
+    #to-emails, #email-share-text {
+        width: 416px;
+    }
 
     #share-area {
         visibility: hidden;
@@ -202,40 +210,43 @@
 <body>
     <div id="fb-root"></div>
 
-    <div class="span-24 last" id='willt'>
+    <div class="span-23 last" id='willt'>
         <div class="span-12">
             <h2>Invite by email</h2>
                 <div class="span-12 last" id="gmail-div">
+                    <div class="span-4">
                     <a href="#" onClick="sendGmail({message: '{{text}}'});"> 
                         <img src="/static/imgs/gmail-logo.png" />
                         <div> Via Gmail </div>
                     </a>
+                    </div>
+                    <div class="span-7 last" id="your_email">
+                        OR
+                        <label for="email">Your Email:
+                            <input type="text" id="email" name="email" />
+                        </label>
+                    </div>
                 </div>
-                OR
                 <div class="span-12 last" id="other-email-div">
-                    <label for="email">Your Email
-                        <input type="text" id="email" name="email" />
-                    </label>
+                    
+                    <input  id="to-emails" type="text" value="Enter a comma-separated list of email addresses."></input>
                     <br />
-                    <label for="to-emails">Invite Email Addresses
-                        <input id="to-emails" type="text" value="Enter a comma-separated list of email addresses."></input>
-                    </label>
-                    <br />
-                    <label for="email-share-text">Message
-                        <textarea id="email-share-text">{{ text }}</textarea>
-                    </label>
+                    <textarea id="email-share-text">{{ text }}</textarea>
 
-                    <div class="prepend-8 span-3 last" style="margin-top: 5px;" >
-                        <a href="#" onClick="sendEmail();"> Email Invites </a>
+                    <div class="prepend-7 span-4 last" style="margin-top: 5px;" >
+                        <a href="#" onClick="sendEmail();"> 
+                            <img src="/static/imgs/email-logo.jpg" />
+                            <div>Email Invites</div>
+                        </a>
                     </div>
                 </div>
         </div>
 
-        <div class="span-12 last" id="by-fb-twitter">
+        <div class="span-11 last" id="by-fb-twitter">
             <h2>Invite friends from Facebook or Twitter</h2>
             <textarea id="tf-share-text" onkeydown="countChars();">{{ text }}</textarea>
             
-            <div class="prepend-7 span-5 last" id="chars-left">140 chars remaining</div>
+            <div class="prepend-6 span-4 last" id="chars-left">140 characters left</div>
             <div class="prepend-1 span-10 last">
                 <a href="#" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" />
