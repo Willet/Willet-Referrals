@@ -107,8 +107,17 @@
         visibility: hidden;
     }
  </style>
+    <script>
+    willet_conversion = function ( ) {
+        $.ajax({
+            url: "{{URL}}/conversion",
+            type: 'post',
+            data: { "referree_uid" : "{{supplied_user_id}}", "campaign_uuid" : "{{campaign_uuid}}" }
+        });// end ajax
+    };
+    </script>
 </head>
-<body>
+<body onLoad="willet_conversion( );">
     <div id="fb-root"></div>
 
     <div id='willt'>
@@ -118,7 +127,7 @@
      <div id="share-selection">
         
         <div id="by-email">
-            <p>Invite your contacts (Gmail, AOL, Hotmail, Yaho, etc.)</p>
+            <p>Invite your contacts (Gmail, AOL, Hotmail, Yahoo, etc.)</p>
             <label for="email">Email
                 <input type="text" id="email" name="email" />
             </label>

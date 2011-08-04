@@ -51,7 +51,9 @@ class ServeSharingPlugin(webapp.RequestHandler):
             template_values = {
                 'campaign_uuid' : campaign.uuid,
                 'text': share_text,
-                'willt_code': link.willt_url_code
+                'willt_code': link.willt_url_code,
+                'URL' : URL,
+                'supplied_user_id' : user_id,
             }
         
         if self.request.url.startswith('http://localhost:8080'):
