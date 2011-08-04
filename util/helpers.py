@@ -53,6 +53,14 @@ def set_referral_cookie(headers, code):
     refCookie['referral']['expires'] = 31556928
     headers['Set-Cookie'] = refCookie.output()
 
+def set_referrer_cookie(headers, campaign_uuid, user_id):
+    """Sets a referral cookie that signifies who referred this user """
+    refCookie = Cookie.SimpleCookie()
+    refCookie['referrer_%s' % campaign_uuid] = user_id
+    refCookie.name = 'referrer_%s' % campaign_uuid
+    refCookie['referral']['expires'] = 31556928
+    headers['Set-Cookie'] = refCookie.output()
+
 # Decorators
 def login_required( fn ):
     def check(self, param=None):

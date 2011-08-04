@@ -29,7 +29,7 @@ class PostConversion( URIHandler ):
             # What do we do here?
             return
         
-        referrer_uid  = self.request.cookies.get("referrer_%s" % campaign_uuid, False)
+        referrer_uid  = self.request.cookies.get('referrer_%s' % campaign_uuid, False)
 
         data = { 'timestamp' : str( time() ),
                  'referrer_id' : referrer_uid,
