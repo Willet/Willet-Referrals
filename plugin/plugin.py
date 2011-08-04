@@ -132,7 +132,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
 def main():
     application = webapp.WSGIApplication([
         (r'/share', DynamicSocialLoader),
-        ('/oauth/(.*)/(.*)', TwitterOAuthHandler),
+        (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
         (r'/willt', ServeSharingPlugin)],
         debug=USING_DEV_SERVER)
     run_wsgi_app(application)

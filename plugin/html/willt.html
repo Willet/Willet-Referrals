@@ -61,43 +61,36 @@
                                 function (pr) {
                                 console.log(pr);
                             });
-
                         }
-                    }, {scope: 'publish_stream'});
+                    }, {scope: 'publish_stream'}
+                    );
                 } else if (medium === 'twitter'){
                     // begin oauth handshake
-                    } else {
-                        iframeBody.style.visibility = 'hidden';
-                        shareSrc += 'type=' + medium + '&uid=' + uid;
-                        shareFrame.src = shareSrc;
-                        // style shareArea according to different social loader
-                        if (medium === 'twitter' || medium === 'fb') {
-                            shareFrame.style.width = '550px';
-                            shareFrame.style.height = '260';
-                            shareFrame.style.scrollbars = 'no';
-                            shareFrame.style.frameBorder = 0;
-                            shareFrame.style.border = 0;
-                        }
-                    }
-                    shareArea.style.visibility = 'visible';
+                    $.ajax({ url: '{{BASE_URL}}/oauth/twitter/login',
+                        type: 'get',
+                    });
                 } else {
-                    // social media provider not found
+                    // style shareArea according to different social loader
                 }
+                shareArea.style.visibility = 'visible';
+            } else {
+                // social media provider not found
+            }
                 
-            };
-
-            countChars = function() {
-                var count = 140 - shareText.value.length;
-                charsLeft.innerHTML = count + " characters left";
-            };
-
-            reset = function() { 
-                iframeBody.style.visibility = 'visible';
-                shareArea.style.visibility = 'hidden';
-                shareFrame.src = '';
-            };
-            countChars();
         };
+        
+        countChars = function() {
+            var count = 140 - shareText.value.length;
+            charsLeft.innerHTML = count + " characters left";
+        };
+
+        reset = function() { 
+            iframeBody.style.visibility = 'visible';
+            shareArea.style.visibility = 'hidden';
+            shareFrame.src = '';
+        };
+        countChars();
+    };
      </script>
 
 
