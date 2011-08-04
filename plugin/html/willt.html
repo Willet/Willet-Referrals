@@ -65,10 +65,8 @@
                         }
                     }, {scope: 'publish_stream'});
                 } else if (medium === 'twitter'){
-                    // begin oauth
-                    var options = {
-                        consumerKey: 
-                    };
+                    // begin oauth handshake
+                    $.ajax(
                 } else {
                     iframeBody.style.visibility = 'hidden';
                     shareSrc += 'type=' + medium + '&uid=' + uid;
