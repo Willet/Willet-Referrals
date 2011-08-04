@@ -97,54 +97,140 @@
         countChars();
 
         FB.init({
-            appId: '4077e465d5d50e87aa0fbd2d472f60ea',
-            status: true,
-            cookie: true,
-            xfbml: true,
-            oauth: true
-        });
-        willet_conversion();
-    };
-     </script>
+                appId: '4077e465d5d50e87aa0fbd2d472f60ea',
+                status: true,
+                cookie: true,
+                xfbml: true,
+                oauth: true
+            });
+            willet_conversion();
+        };
+    </script>
 
+    <!-- Blueprint CSS -->
+    <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
+    <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+    <style>
+    a, a * { 
+        cursor: pointer;
+        outline: none; 
+        text-decoration: none;
+    }
+    h1, h2, h3, h4, h5 { 
+        color: #1f75cc;
+        margin: 0 0 10px 0;
+        line-height: 1.6em;
+    }
+    body, input,textarea,select, .normal {
+        font-family: "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
+        font-size: 8pt; 
+        color: #444; 
+        font-weight: normal;
+    }
+    label { cursor: default; }
+    .textinput { 
+        background: #fff url("http://dropbox.com/static/images/topfade.gif") repeat-x top; 
+        border-style: none solid solid;
+        vertical-align: middle; 
+        border: 1px solid #aaa; 
+        padding: 4px; 
+        color: #555;
+        width: 160px; 
+        margin: 0;
+    }
+    a { 
+        display: -moz-inline-stack;
+        display: inline-block !important;
+        position: relative;
+        color: #1f75cc;
+        background-color: #fafcff;
+        margin: 1px -1px 0 0; 
+        border: 1px solid #aeceef;
+        border-width: 1px 1px;  
+        _padding: 3px; 
+        _text-align:center; 
+        _border-width: 1px; 
+        _display: inline;  
+        height: 23px; 
+        line-height: 23px;
+        padding: 1px 20px 1px 20px; 
+        text-align: center; 
+        _border:none;
+    }
+    a:hover { 
+        color: #1f75cc;
+        text-decoration: none;
+        border-color: #4291df; 
+        position: relative; 
+        z-index:2;
+    }
+    a:active {
+        background-color: #4291df;
+        color: #fff;
+    }
+    #chars-left {
+        float: right;
+        margin: 10px 0px 10px 0px;
+    }
+    #tf-share-text {
+        height: 100px;
+    }
+    a img {
+        float: left;
+        padding-right: 6px;
+        margin-top: 1px;
+    }
+    a div {
+        float: left;
+        margin-top: -1px;
+    }
 
-     <style>
-        #share-area {
-            visibility: hidden;
-        }
-     </style>
-    </head>
-    <body>
-        <div id="fb-root"></div>
+    #share-area {
+        visibility: hidden;
+    }
+ </style>
+</head>
+<body>
+    <div id="fb-root"></div>
 
-        <div id='willt'>
-        
-        <h1>How would you like to share?</h1>
-
-         <div id="share-selection">
-            
+    <div class="span-24 last" id='willt'>
+        <div class="span-12">
+            <h2>Invite by email</h2>
             <div id="by-email">
-            <p>Invite your contacts (Gmail, AOL, Hotmail, Yahoo, etc.)</p>
-            <label for="email">Email
-                <input type="text" id="email" name="email" />
-            </label>
-            <br />
-            <label for="to-emails">invite email addresses
-                <textarea id="share-text">Type a list of invitee email addresses.</textarea>
-            </label>
+                <p>Invite your contacts (Gmail, AOL, Hotmail, Yahoo, etc.)</p>
+                <label for="email">Email
+                    <input type="text" id="email" name="email" />
+                </label>
+                <br />
+                <label for="to-emails">invite email addresses
+                    <textarea id="share-text">Type a list of invitee email addresses.</textarea>
+                </label>
+            </div>
         </div>
-        <div id="by-fb-twitter">
+
+        <div class="span-12 last" id="by-fb-twitter">
             <h2>Invite friends from Facebook or Twitter</h2>
             <textarea id="tf-share-text" onkeydown="countChars();">{{ text }}</textarea>
-            <div id="chars-left">140 chars remaining</div>
+            
+            <div class="prepend-7 span-5 last" id="chars-left">140 chars remaining</div>
+            <div class="prepend-1 span-10 last">
+                <a href="#" onclick="share('fb');">
+                    <img src="/static/imgs/fb-logo.png" height="20px" />
+                    <div> Share on Facebook </div>
+                </a>
+                <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                    <img src="/static/imgs/twitter-logo.jpg" height="20px" />
+                    <div>Tweet on Twitter</div>
+                </a>
+            </div>
         </div>
-        <button value="Share on Facebook" onclick="share('fb');">Share on Facebook</button>
-        <button value="Share on Twitter" onclick="share('twitter');">Share on Twitter</button>
-     </div>
     </div>
+    
     <div id="share-area">
         <iframe id="willt-frame"></iframe>
         <p onclick="reset();">Reset</p>
     </div>
+
 </body>
 </html>
