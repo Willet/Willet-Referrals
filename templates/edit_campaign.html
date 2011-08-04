@@ -82,12 +82,17 @@
             </div>
             
             <div>
+                <label class="default_label" for="webhook_url">Webhook URL</label> <br />
+                <input type="text" name="webhook_url" id="webhook_url" value="{% if campaign %}{{campaign.webhook_url|escape}}{% else %}http://{% endif %}" />
+            </div>
+            
+            <div>
                 <label class="default_label" for="redirect_url">Redirect URL (Optional)</label> <br />
                 <p style="font-size: 1.0em; margin-bottom: 0px;">If you want us to redirect a user to a URL upon a successful Tweet, enter the URL here. Otherwise, the Tweet window will simply close afterwards.</p>
                 <input type="text" name="redirect_url" id="redirect_url" value="{% if campaign and campaign.redirect_url %}{{campaign.redirect_url|escape}}{% endif %}" />
                 <span class="defaultValue hidden">http://</span>
             </div>
-            
+
             <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
             
             {% if client %}
