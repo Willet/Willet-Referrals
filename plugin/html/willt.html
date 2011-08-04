@@ -66,13 +66,7 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    // begin oauth handshake
-                    $.ajax({ url: '{{BASE_URL}}/oauth/twitter/login',
-                        type: 'get',
-                        success: function(r) {
-                            console.log(r);
-                        }
-                    });
+                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login');
                 } else {
                     // style shareArea according to different social loader
                 }
