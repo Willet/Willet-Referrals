@@ -75,7 +75,8 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login');
+                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
+                                                  'popup');
                 } else {
                     // style shareArea according to different social loader
                 }
