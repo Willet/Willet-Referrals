@@ -13,8 +13,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
 from models.campaign import get_campaign_by_id
-from models.link import create_link
+from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
+from models.user import get_or_create_user_by_email
 
 # helpers
 from util.consts import *
@@ -140,8 +141,28 @@ class SendEmailInvites( webapp.RequestHandler ):
         to_addrs  = self.request.get( 'to_addrs' )
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
+        willt_url_code = self.request.get( 'willt_url_code' )
+        
+        # check to see if this user has a referral cookie set
+        referrer_code = self.request.cookies.get('referral', None)
+        referrer = None
+        logging.info(referrer_code)
+        if referrer_code:
+            referral_link = get_link_by_willt_code(referrer_code)
+            if referral_link and referral_link.user:
+                referrer = referral_link.user
+        
+        user = get_or_create_user_by_email(from_addr, referrer)
+        
+        link = get_link_by_willt_code(willt_url_code)
+        if link:
+            link.user = user
+            link.put()
 
-        # TODO: User cookies to determine who this is and
+            for i in range(0, to_addrs.count(',')):
+                link.campaign.increment_shares()
+
+        # TODO: Use cookies to determine who this is and
         # store their email!!
         Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 

@@ -60,7 +60,7 @@ class Email():
         body = template.render(os.path.join(os.path.dirname(__file__), 'email_templates/invite.html'),
             {
                 'from_addr' : infrom_addr,
-                'from_name' : '%s %s' % (user.first_name, user.second_name) if user else '',
+                'from_name' : '%s %s' % (user.first_name, user.last_name) if user else '',
                 'msg' : msg
             }
         )
