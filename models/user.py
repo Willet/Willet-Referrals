@@ -155,15 +155,16 @@ def get_user_by_email( email ):
 def create_user_by_twitter(t_handle, name, followers, profile_pic, referrer):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
-    OAuthToken = oauth.get_oauth_by_twitter(t_handle)
+    OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
 
     user = User(uuid=generate_uuid(16),
                 twitter_handle=t_handle,
                 twitter_name=name, 
                 twitter_followers_count=followers, 
                 twitter_pic_url=profile_pic, 
-                referrer=referrer,
-                twitter_access_token=OAuthToken)
+                referrer=referrer)
+    if OAuthToken:
+        user.twitter_access_token=OAuthToken
     user.put()
 
     # Query the SocialGraphAPI
@@ -203,7 +204,7 @@ def create_user_by_email(email, referrer):
     return user
 
 # Get or Create by X
-def get_or_create_user_by_twitter(t_handle, name='', followers='', profile_pic='', referrer=None, request_handler=None):
+def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic='', referrer=None, request_handler=None):
     """Retrieve a user object if it is in the datastore, othereise create
       a new object"""
 
