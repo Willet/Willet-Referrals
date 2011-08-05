@@ -10,9 +10,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 
 from models.model import Model
-
 from util.helpers import generate_uuid
-
 
 class Testimonial(Model):
     """Model storing the data for a client's sharing campaign"""
@@ -31,9 +29,10 @@ class Testimonial(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Testimonial).filter('uuid =', uuid).get()
 
+def create_testimonial( user,  message, link ):
+    campaign = link.campaign
 
-def create_testimonial( user, campaign, message, link ):
-    
+    # Create the default share text
     if campaign.target_url in campaign.share_text:
         share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
     else:
@@ -41,8 +40,10 @@ def create_testimonial( user, campaign, message, link ):
 
     # If the testimonial is not the same as the share text:
     if message != share_text:
+        # Make a new testimonial
         t = Testimonial( uuid=generate_uuid(16),
                          user=user,
                          message=message,
                          campaign=campaign )
+        # Save it!
         t.put()

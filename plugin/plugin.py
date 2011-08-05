@@ -15,6 +15,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient, tweet
+from models.testimonial import create_testimonial
 from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid
 
 # helpers
@@ -34,6 +35,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
         campaign = get_campaign_by_id(campaign_id)
+        
         # If they give a bogus campaign id, show the landing page campaign!
         logging.info(campaign)
         if campaign == None:
@@ -169,7 +171,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         # Get the User
         user = get_or_create_user_by_email(from_addr, referrer, self)
         
-        # Get the Link
+        # Get the Link & update it
         link = get_link_by_willt_code(willt_url_code)
         if link:
             link.user = user
@@ -178,6 +180,10 @@ class SendEmailInvites( webapp.RequestHandler ):
             for i in range(0, to_addrs.count(',')):
                 link.campaign.increment_shares()
 
+        # Save this Testimonial
+        create_testimonial(user=user, message=msg, link=link)
+
+        # Send off the email if they don't want to use Gmail
         if not via_gmail and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 
@@ -189,6 +195,7 @@ class FacebookCallback( webapp.RequestHandler ):
         last_name       = self.request.get( 'last_name' )
         email           = self.request.get( 'email' )
         willt_url_code  = self.request.get( 'willt_url_code' )
+        msg       = self.request.get( 'msg' )
 
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
@@ -199,14 +206,19 @@ class FacebookCallback( webapp.RequestHandler ):
             if referral_link and referral_link.user:
                 referrer = referral_link.user
         
+        # Grab the User!
         user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, self)
         
+        # Grab the Link & update it!
         link = get_link_by_willt_code(willt_url_code)
         if link:
             link.user = user
             link.put()
 
             link.campaign.increment_shares()
+
+        # Save this Testimonial
+        create_testimonial(user=user, message=msg, link=link)
 
 def main():
     application = webapp.WSGIApplication([
