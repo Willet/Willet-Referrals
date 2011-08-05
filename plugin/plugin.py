@@ -166,8 +166,10 @@ class SendEmailInvites( webapp.RequestHandler ):
             if referral_link and referral_link.user:
                 referrer = referral_link.user
         
+        # Get the User
         user = get_or_create_user_by_email(from_addr, referrer, self)
         
+        # Get the Link
         link = get_link_by_willt_code(willt_url_code)
         if link:
             link.user = user

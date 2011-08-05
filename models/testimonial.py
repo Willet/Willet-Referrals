@@ -11,17 +11,38 @@ from google.appengine.ext import db
 
 from models.model import Model
 
+from util.helpers import generate_uuid
+
+
 class Testimonial(Model):
     """Model storing the data for a client's sharing campaign"""
-    created = db.DateTimeProperty(auto_now_add=True)
-    message = db.StringProperty(multiline=True)
-    client  = db.ReferenceProperty( db.Model, collection_name = 'testimonial' )
+    uuid     = db.StringProperty( indexed = True )
+    created  = db.DateTimeProperty(auto_now_add=True)
+    message  = db.StringProperty(multiline=True)
+    user     = db.ReferenceProperty( db.Model, collection_name = 'user_testimonials' )
+    campaign = db.ReferenceProperty( db.Model, collection_name = 'campaign_testimonials' )
     
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['created'] if 'created' in kwargs else None 
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Testimonial, self).__init__(*args, **kwargs)
     
     @staticmethod
-    def _get_from_datastore(created):
+    def _get_from_datastore( uuid ):
         """Datastore retrieval using memcache_key"""
-        return db.Query(Testimonial).filter('created =', created).get()
+        return db.Query(Testimonial).filter('uuid =', uuid).get()
+
+
+def create_testimonial( user, campaign, message, link ):
+    
+    if campaign.target_url in campaign.share_text:
+        share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+    else:
+        share_text = campaign.share_text + " " + link.get_willt_url()
+
+    # If the testimonial is not the same as the share text:
+    if message != share_text:
+        t = Testimonial( uuid=generate_uuid(16),
+                         user=user,
+                         message=message,
+                         campaign=campaign )
+        t.put()
