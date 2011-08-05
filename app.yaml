@@ -48,11 +48,11 @@ handlers:
 
 # client interaction with our website
 - url: /
-  script: main.py
+  script: website.py
 
 # further client interactions
 - url: /(about|account|deleteCampaign|button|login|logout|auth|register|tweet_button|campaign|campaign.json|contact|demo|edit|doUpdateOrCreateCampaign|partner|doPartner|doFeedback|test|twitterPreview|code)
-  script: main.py
+  script: website.py
 
 # website initialization
 - url: /init.*
