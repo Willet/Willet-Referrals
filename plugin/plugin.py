@@ -168,8 +168,37 @@ class SendEmailInvites( webapp.RequestHandler ):
         if not via_gmail:
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 
+class FacebookCallback( webapp.RequestHandler ):
+
+    def post( self ):
+        fb_id           = self.request.get( 'fb_id' )
+        first_name      = self.request.get( 'first_name' )
+        last_name       = self.request.get( 'last_name' )
+        email           = self.request.get( 'email' )
+        willt_url_code  = self.request.get( 'willt_url_code' )
+
+        # check to see if this user has a referral cookie set
+        referrer_code = self.request.cookies.get('referral', None)
+        referrer = None
+        logging.info(referrer_code)
+        if referrer_code:
+            referral_link = get_link_by_willt_code(referrer_code)
+            if referral_link and referral_link.user:
+                referrer = referral_link.user
+        
+        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer)
+        
+        link = get_link_by_willt_code(willt_url_code)
+        if link:
+            link.user = user
+            link.put()
+
+            link.campaign.increment_shares()
+
+
 def main():
     application = webapp.WSGIApplication([
+        (r'/fbCallback', FacebookCallback),
         (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
         (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
