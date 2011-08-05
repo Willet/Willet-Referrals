@@ -50,9 +50,6 @@ class Email():
 
     @staticmethod
     def invite( infrom_addr, to_addrs, msg, url ):
-        # Try to grab a user via email address if we can
-        user = get_user_by_email( infrom_addr )
-
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.
         to_addr = to_addrs.split(',')
@@ -60,7 +57,6 @@ class Email():
         body = template.render(os.path.join(os.path.dirname(__file__), 'email_templates/invite.html'),
             {
                 'from_addr' : infrom_addr,
-                'from_name' : '%s %s' % (user.first_name, user.last_name) if user else '',
                 'msg' : msg
             }
         )
