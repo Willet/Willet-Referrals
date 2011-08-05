@@ -167,7 +167,7 @@ class OAuthClient(object):
 
     def logout(self, return_to='/'):
         self.expire_cookie()
-        self.handler.redirect(self.handler.request.get("return_to", return_to))
+        self.handler.eedirect(self.handler.request.get("return_to", return_to))
 
     # oauth workflow
 
@@ -193,7 +193,7 @@ class OAuthClient(object):
             self.service_info['user_auth_url'], token, **oauth_callback
             ))
 
-    def callback(self, return_to='/'):
+    def callback(self, return_to='/account'):
 
         oauth_token = self.handler.request.get("oauth_token")
 
