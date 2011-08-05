@@ -141,9 +141,9 @@ class SendEmailInvites( webapp.RequestHandler ):
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
 
+        # TODO: User cookies to determine who this is and
+        # store their email!!
         Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
-
-
 
 def main():
     application = webapp.WSGIApplication([
