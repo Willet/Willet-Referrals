@@ -11,7 +11,6 @@ import os
 from google.appengine.ext.webapp import template
 from google.appengine.api.mail import EmailMessage
 
-from models.user import get_user_by_email, User
 from util.consts import *
 
 
