@@ -163,9 +163,7 @@ class SendEmailInvites( webapp.RequestHandler ):
             for i in range(0, to_addrs.count(',')):
                 link.campaign.increment_shares()
 
-        # TODO: Use cookies to determine who this is and
-        # store their email!!
-        if not via_gmail:
+        if not via_gmail and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 
 class FacebookCallback( webapp.RequestHandler ):
