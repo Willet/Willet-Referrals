@@ -264,7 +264,7 @@ class OAuthClient(object):
 
         self.token.put()
         # check to see if we have a user with this twitter handle
-        user = models.user.get_or_create_user_by_twitter(self.token.specifier)
+        user = models.user.get_or_create_user_by_twitter(self.token.specifier, self.handler)
         user.twitter_access_token = self.token
         user.put
         tweet(user.twitter_access_token, message)
