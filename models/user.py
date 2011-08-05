@@ -85,20 +85,17 @@ class User(Model):
        return db.Query(User).filter('uuid =', twitter_handle).get()
         
     def update( self, **kwargs ):
-        if 'twitter_name' in kwargs and kwargs['twitter_name'] != '':
-            self.twitter_name = kwargs['twitter_name']
-        
         if 'twitter_handle' in kwargs and  kwargs['twitter_handle']:
             self.twitter_handle = kwargs['twitter_handle']
         
+        if 'twitter_name' in kwargs and kwargs['twitter_name'] != '':
+            self.twitter_name = kwargs['twitter_name']
+        
+        if 'twitter_profile_pic' in kwargs and kwargs['twitter_profile_pic'] != '':
+            self.twitter_name = kwargs['twitter_profile_pic']
+
         if 'twitter_follower_count' in kwargs and kwargs['twitter_follower_count']:
             self.twitter_follower_count = kwargs['twitter_follower_count']
-
-        if 'email' in kwargs and kwargs['email'] != '':
-            create_email_model( self, kwargs['email'] )
-
-        if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
-            self.referrer = kwargs['referrer']
 
         if 'fb_identity' in kwargs and kwargs['fb_identity'] != '':
             self.fb_identity = kwargs['fb_identity']
@@ -109,6 +106,12 @@ class User(Model):
         if 'last_name' in kwargs and kwargs['last_name'] != '':
             self.last_name = kwargs['last_name']
 
+        if 'email' in kwargs and kwargs['email'] != '':
+            create_email_model( self, kwargs['email'] )
+
+        if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
+            self.referrer = kwargs['referrer']
+        
         self.put()
 
 # Gets by X
