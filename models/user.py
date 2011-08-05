@@ -60,7 +60,7 @@ class User(Model):
     # Twitter Junk
     twitter_handle  = db.StringProperty(indexed = True)
     twitter_name    = db.StringProperty()
-    twitter_pic_url = db.LinkProperty( required = False )
+    twitter_pic_url = db.LinkProperty(required = False)
     twitter_followers_count = db.IntegerProperty(default = 0)
     twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
 
