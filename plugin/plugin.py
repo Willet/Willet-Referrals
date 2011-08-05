@@ -15,11 +15,11 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient, tweet
-from models.user import get_or_create_user_by_email, get_user_by_uuid
+from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook
 
 # helpers
 from util.consts import *
-from util.email import Email
+from util.emails import Email
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -165,7 +165,7 @@ class SendEmailInvites( webapp.RequestHandler ):
             if referral_link and referral_link.user:
                 referrer = referral_link.user
         
-        user = get_or_create_user_by_email(from_addr, referrer)
+        user = get_or_create_user_by_email(from_addr, referrer, self)
         
         link = get_link_by_willt_code(willt_url_code)
         if link:
@@ -175,9 +175,7 @@ class SendEmailInvites( webapp.RequestHandler ):
             for i in range(0, to_addrs.count(',')):
                 link.campaign.increment_shares()
 
-        # TODO: Use cookies to determine who this is and
-        # store their email!!
-        if not via_gmail:
+        if not via_gmail and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 
 class FacebookCallback( webapp.RequestHandler ):
@@ -198,7 +196,7 @@ class FacebookCallback( webapp.RequestHandler ):
             if referral_link and referral_link.user:
                 referrer = referral_link.user
         
-        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer)
+        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, self)
         
         link = get_link_by_willt_code(willt_url_code)
         if link:
@@ -206,7 +204,6 @@ class FacebookCallback( webapp.RequestHandler ):
             link.put()
 
             link.campaign.increment_shares()
-
 
 def main():
     application = webapp.WSGIApplication([
