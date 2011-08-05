@@ -16,7 +16,7 @@ from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient, tweet
 from models.testimonial import create_testimonial
-from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid
+from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_user_by_cookie
 
 # helpers
 from util.consts import *
@@ -47,19 +47,27 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'target_url' : URL
             }
         else:
+            # Make a new Link
             link = create_link(campaign.target_url, campaign, origin_domain, user_id)
             logging.info("link created is %s" % link.willt_url_code)
 
+            # Create the share text
             if campaign.target_url in campaign.share_text:
                 share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
             else:
                 share_text = campaign.share_text + " " + link.get_willt_url()
+            
+            # Grab a User if we have a cookie!
+            user = get_user_by_cookie(self)
+            
             template_values = {
                 'campaign_uuid' : campaign.uuid,
                 'text': share_text,
+                'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
                 'URL' : URL,
                 'supplied_user_id' : user_id,
+                'user_email' : user.get_email() if user else 'Your Email'
             }
         
         if self.request.url.startswith('http://localhost:8080'):

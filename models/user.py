@@ -118,6 +118,9 @@ class User(Model):
         
         self.put()
 
+    def get_email( self ):
+        return self.emails[0].address if self.emails.count() > 0 else ''
+
 # Gets by X
 def get_user_by_uuid( uuid ):
     logging.info("Getting user by uuid " + str(uuid))
