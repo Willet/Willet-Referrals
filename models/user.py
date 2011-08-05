@@ -137,7 +137,7 @@ def get_user_by_twitter(t_handle):
             # Query Klout API for data
             taskqueue.add( queue_name='socialAPI', 
                            url='/klout', 
-                           name= 'klout%s%s' % (t_handle + generate_uuid( 10 )),
+                           name= 'klout%s%s' % (t_handle, generate_uuid( 10 )),
                            params={'twitter_handle' : t_handle} )
     return user
 

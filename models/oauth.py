@@ -1,4 +1,4 @@
-import sys, logging
+import sys, logging, urllib, urllib2
 
 from datetime import datetime, timedelta
 from hashlib import sha1
@@ -18,8 +18,9 @@ from google.appengine.api.urlfetch import fetch as urlfetch, GET, POST
 from google.appengine.ext import db
 from google.appengine.ext.webapp import RequestHandler, WSGIApplication
 
-#from models.user import get_or_create_user_by_twitter
 import models.user
+from util.consts import *
+from util.helpers import generate_uuid
 
 # ------------------------------------------------------------------------------
 # configuration -- SET THESE TO SUIT YOUR APP!!
@@ -101,12 +102,11 @@ def get_oauth_by_twitter(t_handle):
 
 # send a tweet to twitter on behalf of a user
 def tweet(token, message):
-    token = user.twitter_access_token
-    twitter_post_url = 'http://twitter.com/statuses/update.json'
-    params = { "oath_consumer_key": TWITTER_KEY,
+    twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+    params = { "oauth_consumer_key": TWITTER_KEY,
         "oauth_nonce": generate_uuid(16),
         "oauth_signature_method": "HMAC-SHA1",
-        "oauth_timestamp": str(int(time.time())),
+        "oauth_timestamp": str(int(time())),
         "oauth_token": token.oauth_token,
         "oauth_version": "1.0"
     }
@@ -117,9 +117,9 @@ def tweet(token, message):
                     urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
                         for k in sorted(params)]),
                                  "-._~")])
-    signature = hmac.new(key, msg, haslib.sha1).digest().encode("base64").strip()
+    signature = hmac(key, msg, sha1).digest().encode("base64").strip()
     params["oauth_signature"] = signature
-    req = urllib2.Request(url,
+    req = urllib2.Request(twitter_post_url,
                           headers={"Authorization":"OAuth",
                                    "Content-type":"application/x-www-form-urlencoded"})
     req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
