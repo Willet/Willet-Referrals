@@ -18,6 +18,7 @@ from models.oauth import OAuthClient
 
 # helpers
 from util.consts import *
+from util.email import Email
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -132,8 +133,21 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         else:
             self.response.out.write(client.login())
 
+class SendEmailInvites( webapp.RequestHandler ):
+
+    def post( self ):
+        from_addr = self.request.get( 'from_addr' )
+        to_addrs  = self.request.get( 'to_addrs' )
+        msg       = self.request.get( 'msg' )
+        url       = self.request.get( 'url' )
+
+        # TODO: User cookies to determine who this is and
+        # store their email!!
+        Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
+
 def main():
     application = webapp.WSGIApplication([
+        (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
         (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
         (r'/willt', ServeSharingPlugin)],

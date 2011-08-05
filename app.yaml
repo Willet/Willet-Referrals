@@ -8,14 +8,14 @@ handlers:
 - url: /(willet.html|trackErr)
   script: clicks/track.py
 
-- url: /(willt|share|oauth.*)
+- url: /(sendEmailInvites|willt|share|oauth.*)
   script: plugin/plugin.py
 
 # queues that check our models for dead references
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|updateLanding|updateCounts|updateTweets|updateClicks)
+- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks)
   script: processes.py
 
 - url: /conversion
@@ -33,8 +33,8 @@ handlers:
 - url: /mixpanel
   script: mixpanel.py
 
-- url: /(emailerCron|emailerQueue)
-  script: emailer.py
+- url: /(socialGraphAPI|klout)
+  script: social_api.py
 
 - url: /klout
   script: klout.py
@@ -45,11 +45,11 @@ handlers:
 
 # client interaction with our website
 - url: /
-  script: main.py
+  script: website.py
 
 # further client interactions
 - url: /(about|account|deleteCampaign|button|login|logout|auth|register|tweet_button|campaign|campaign.json|contact|demo|edit|doUpdateOrCreateCampaign|partner|doPartner|doFeedback|test|twitterPreview|code)
-  script: main.py
+  script: website.py
 
 # website initialization
 - url: /init.*

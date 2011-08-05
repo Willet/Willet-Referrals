@@ -34,7 +34,7 @@
                 Place it in the <span class='code'>body</span> of the page where you would like the button to be:
             </p>
             <p class="code">
-                &lt;iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://www.wil.lt/button?ca_id={{ campaign.uuid }}&amp;uid=" style="width:325px; height:85px;"&gt; &lt;/iframe&gt;
+                &lt;iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://{{BASE_URL}}/button?ca_id={{ campaign.uuid }}&amp;uid=" style="width:325px; height:85px;"&gt; &lt;/iframe&gt;
             </p>
             <p>
                 If you want to be able to tie an internal user identifier to the influencer results,
@@ -43,14 +43,14 @@
             <p class="tip">
                 Note: If you would like to use your own button, use an onclick or anchor href to load this url:
                 <br />
-                <span class='code'>http://www.wil.lt/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
+                <span class='code'>http://{{BASE_URL}}/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
                 <br />
                 The tweeting window is 520px wide and 160px high.
             <p>
             <p class="tip">
                 Note: If you are integrating wil.lt into an Unbounce template, us this link:
                 <br />
-                <span class='code'>http://www.wil.lt/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
+                <span class='code'>http://{{BASE_URL}}/willet?ca_id={{campaign.uuid}}&amp;uid=</span>
                 <br />
             <p>
         </div>

@@ -1,5 +1,5 @@
 queue:
- - name: klout
+ - name: socialAPI
    rate: 2/s
    bucket_size: 10
    retry_parameters:

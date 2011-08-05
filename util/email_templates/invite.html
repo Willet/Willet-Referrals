@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Check This Out!{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:110%">
+                    <p> Hi, </p>
+                    <p> You've been invited by {% ifnotequal from_name ''%} {{from_name}} {% else %} {{from_addr}} {% endifnotequal %} to join them on
+                    <a href="{{url}}">{{url}}</a>!</p>
+
+                    <p> Here is why: </p>
+
+                    <p>{{msg}}</p>
+                    
+                    <p> Go join them!</p>
+                    <p> -- Willet Team </p>
+				</div>
+			</td>
+        </tr>
+    </table>
+{% endblock %}
