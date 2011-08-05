@@ -16,7 +16,6 @@ from util.helpers         import *
 
 import models.oauth
 
-
 class EmailModel(Model):
     created = db.DateTimeProperty(auto_now_add=True)
     address = db.EmailProperty(indexed=True)
@@ -121,7 +120,7 @@ class User(Model):
 
 # Gets by X
 def get_user_by_uuid( uuid ):
-    logging.info("Getting user by uuid " + uuid)
+    logging.info("Getting user by uuid " + str(uuid))
     user = User.all().filter('uuid =', uuid).get()
     if user != None:
         logging.info('Pulled user: %s %s %s %s' % (uuid, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))

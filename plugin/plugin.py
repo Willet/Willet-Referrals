@@ -15,11 +15,12 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient, tweet
-from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook
+from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid
 
 # helpers
 from util.consts import *
 from util.emails import Email
+from util.helpers import read_user_cookie
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -127,7 +128,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
 
     def get(self, service, action=''):
         
-        wuid = self.request.get('wuid');
+        wuid = read_user_cookie(self)
         message = self.request.get('m')
 
         user = get_user_by_uuid(wuid);
