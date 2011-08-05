@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
-from models.oauth import OAuthClient
+from models.oauth import OAuthClient, tweet
 from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook
 
 # helpers
@@ -127,12 +127,24 @@ class TwitterOAuthHandler(webapp.RequestHandler):
 
     def get(self, service, action=''):
         
-        client = OAuthClient(service, self)
+        wuid = self.request.get('wuid');
+        message = self.request.get('m')
 
-        if action in client.__public__:
-            self.response.out.write(getattr(client, action)())
-        else:
-            self.response.out.write(client.login())
+        user = get_user_by_uuid(wuid);
+        if user and user.twitter_access_token:
+            twitter_response = tweet(user.twitter_access_token, message)
+            logging.info(res);
+            
+        else: 
+            client = OAuthClient(service, self)
+
+            if action in client.__public__:
+                if action == 'login':
+                    self.response.out.write(getattr(client, action)(message))
+                else:
+                    self.response.out.write(getattr(client, action)())
+            else:
+                self.response.out.write(client.login())
 
 class SendEmailInvites( webapp.RequestHandler ):
 

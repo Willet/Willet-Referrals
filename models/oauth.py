@@ -1,4 +1,4 @@
-import sys
+import sys, logging
 
 from datetime import datetime, timedelta
 from hashlib import sha1
@@ -17,6 +17,9 @@ from simplejson import loads as decode_json
 from google.appengine.api.urlfetch import fetch as urlfetch, GET, POST
 from google.appengine.ext import db
 from google.appengine.ext.webapp import RequestHandler, WSGIApplication
+
+#from models.user import get_or_create_user_by_twitter
+import models.user
 
 # ------------------------------------------------------------------------------
 # configuration -- SET THESE TO SUIT YOUR APP!!
@@ -80,15 +83,49 @@ class OAuthRequestToken(db.Model):
     oauth_token = db.StringProperty()
     oauth_token_secret = db.StringProperty()
     created = db.DateTimeProperty(auto_now_add=True)
+    message = db.StringProperty(indexed=False)
 
 class OAuthAccessToken(db.Model):
     """OAuth Access Token."""
 
     service = db.StringProperty()
-    specifier = db.StringProperty()
+    specifier = db.StringProperty(indexed=True)
     oauth_token = db.StringProperty()
     oauth_token_secret = db.StringProperty()
     created = db.DateTimeProperty(auto_now_add=True)
+
+
+def get_oauth_by_twitter(t_handle):
+    return OAuthAccessToken.all().filter('specifier =', t_handle).get()
+
+
+# send a tweet to twitter on behalf of a user
+def tweet(token, message):
+    token = user.twitter_access_token
+    twitter_post_url = 'http://twitter.com/statuses/update.json'
+    params = { "oath_consumer_key": TWITTER_KEY,
+        "oauth_nonce": generate_uuid(16),
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp": str(int(time.time())),
+        "oauth_token": token.oauth_token,
+        "oauth_version": "1.0"
+    }
+    status = {"status": message.encode("UTF-8")}
+    params.update(status)
+    key = "&".join([TWITTER_SECRET, token.oauth_token_secret])
+    msg = "&".join(["POST", urllib.quote(twitter_post_url, ""),
+                    urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
+                        for k in sorted(params)]),
+                                 "-._~")])
+    signature = hmac.new(key, msg, haslib.sha1).digest().encode("base64").strip()
+    params["oauth_signature"] = signature
+    req = urllib2.Request(url,
+                          headers={"Authorization":"OAuth",
+                                   "Content-type":"application/x-www-form-urlencoded"})
+    req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
+    res = urllib2.urlopen(req).read()
+
+    return res
 
 # ------------------------------------------------------------------------------
 # oauth client
@@ -155,17 +192,15 @@ class OAuthClient(object):
 
         return decode_json(fetch.content)
 
-    def login(self):
+    def login(self, message):
 
         proxy_id = self.get_cookie()
-        we = self.request.get('we');
-        console.log(we);
 
         if proxy_id:
             return "FOO%rFF" % proxy_id
             self.expire_cookie()
 
-        return self.get_request_token()
+        return self.get_request_token(message)
 
     def logout(self, return_to='/'):
         self.expire_cookie()
@@ -173,13 +208,14 @@ class OAuthClient(object):
 
     # oauth workflow
 
-    def get_request_token(self):
+    def get_request_token(self, msg=''):
 
         token_info = self.get_data_from_signed_url(
             self.service_info['request_token_url'], **self.request_params
             )
 
         token = OAuthRequestToken(
+            message=msg,
             service=self.service,
             **dict(token.split('=') for token in token_info.split('&'))
             )
@@ -198,6 +234,7 @@ class OAuthClient(object):
     def callback(self, return_to='/account'):
 
         oauth_token = self.handler.request.get("oauth_token")
+        message = ''
 
         if not oauth_token:
             return get_request_token()
@@ -205,6 +242,7 @@ class OAuthClient(object):
         oauth_token = OAuthRequestToken.all().filter(
             'oauth_token =', oauth_token).filter(
             'service =', self.service).fetch(1)[0]
+        message = oauth_token.message
 
         token_info = self.get_data_from_signed_url(
             self.service_info['access_token_url'], oauth_token
@@ -225,6 +263,11 @@ class OAuthClient(object):
             db.delete(old)
 
         self.token.put()
+        # check to see if we have a user with this twitter handle
+        user = models.user.get_or_create_user_by_twitter(self.token.specifier)
+        user.twitter_access_token = self.token
+        user.put
+        tweet(user.twitter_access_token, message)
         self.set_cookie(key_name)
         self.handler.redirect(return_to)
 

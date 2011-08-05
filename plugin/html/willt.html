@@ -109,7 +109,7 @@
         // use the selected medium to share about your purchase
         share = function(medium, uid) {
             uid = uid || '';
-            var shareSrc = '/share?ca_id={{campaign_uuid}}&'; 
+            var message = shareText.value.substring(0,141);
             if (['twitter', 'fb', 'email'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
@@ -120,8 +120,8 @@
                             // we weren't given permission
                             window.close();
                         } else { 
-                            toShare = shareText.value.substring(0,141)
-                            FB.api('/me/feed', 'post', { message: toShare },
+                            //toShare = shareText.value.substring(0,141)
+                            FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
                                 console.log(pr);
                             });
@@ -129,12 +129,9 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    console.log(document.cookie);
-                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login?we=willt',
-                                                  '_blank');
-                    //var authWindow = window.open('','',"status=1,toolbar=0,location=0,menubar=0,directories=0", false),
-                    //    authBody = authWindow.document.getElementsByTagName('body')[0],
-                    //    authIframe = authWindow.document.createElement('iframe');
+                    var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                                    + '&m=' + message,
+                        AuthWindow = window.open(OAuthURL, '_blank');
 
                     //authIframe.src = '{{ BASE_URL }}/oauth/twitter/login';
                     //authBody.appendChild(authIframe);
