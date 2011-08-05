@@ -96,7 +96,7 @@ class User(Model):
             self.twitter_name = kwargs['twitter_name']
         
         if 'twitter_profile_pic' in kwargs and kwargs['twitter_profile_pic'] != '':
-            self.twitter_name = kwargs['twitter_profile_pic']
+            self.twitter_profile_pic = kwargs['twitter_profile_pic']
 
         if 'twitter_follower_count' in kwargs and kwargs['twitter_follower_count']:
             self.twitter_follower_count = kwargs['twitter_follower_count']
