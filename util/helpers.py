@@ -1,4 +1,9 @@
+#!/usr/bin/env python
+
 import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
+
+from util.consts  import *
+from util.cookies import LilCookies
 
 def isGoodURL(url):
     if len(url) < 11:
@@ -35,6 +40,16 @@ def encode_base62(num):
     ret.reverse()
     return ''.join(ret)
 
+# Cookie Stuff
+def set_user_cookie(request_handler, user_uuid):
+    """Sets a cookie to identify a user"""
+    cookieutil = LilCookies(request_handler, COOKIE_SECRET)
+    cookieutil.set_secure_cookie(name = 'uuid', value = user_uuid, expires_days= 365*10)
+
+def read_user_cookie( request_handler ):
+    """Sets a cookie to identify a user"""
+    cookieutil = LilCookies(request_handler, COOKIE_SECRET)
+    return cookieutil.get_secure_cookie(name = 'uuid')
 
 def set_clicked_cookie(headers, code):
     """Sets a cookie that signifies that this url has indeed been clicked"""
@@ -60,6 +75,16 @@ def set_referrer_cookie(headers, campaign_uuid, user_id):
     refCookie.name = 'referrer_%s' % campaign_uuid
     refCookie['referral']['expires'] = 31556928
     headers['Set-Cookie'] = refCookie.output()
+
+def set_visited_cookie(headers):
+    """Sets the approcity visited cookie so that registereud
+       users are not presented with the 'register' tab again"""
+
+    appCookie = Cookie.SimpleCookie()
+    appCookie['willt-registered'] = True
+    appCookie.name = "willt-registered"
+    appCookie['willt-registered']['expires'] = 2629744
+    headers['Set-Cookie'] = appCookie.output()
 
 # Decorators
 def login_required( fn ):
@@ -111,13 +136,3 @@ def is_blacklisted( header ):
     else:
         return header in user_agent_blacklist
 
-# pass self.response.headers
-def set_visited_cookie(headers):
-    """Sets the approcity visited cookie so that registereud
-       users are not presented with the 'register' tab again"""
-
-    appCookie = Cookie.SimpleCookie()
-    appCookie['willt-registered'] = True
-    appCookie.name = "willt-registered"
-    appCookie['willt-registered']['expires'] = 2629744
-    headers['Set-Cookie'] = appCookie.output()

@@ -125,30 +125,42 @@ def create_user_by_email(email, referrer):
     return user
 
 # Get or Create by X
-def get_or_create_user_by_twitter(t_handle, name='', followers='', profile_pic='', referrer=None):
+def get_or_create_user_by_twitter(t_handle, name='', followers='', profile_pic='', referrer=None, request_handler=None):
     """Retrieve a user object if it is in the datastore, othereise create
       a new object"""
     user = get_user_by_twitter(t_handle)    
     if user is None:
         logging.info("Creating user: " + t_handle)
         user = create_user_by_twitter(t_handle, name, followers, profile_pic, referrer)
+
+    # Set a cookie to identify the user in the future
+    set_user_cookie( request_handler, user.uuid )
+
     logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
     return user
 
-def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None):
+def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None, request_handler=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
     user = get_user_by_facebook(fb_id)
     if user is None:
         logging.info("Creating user: " + fb_id)
         user = create_user_by_facebook(fb_id, first_name, last_name, email, referrer)
+    
+    # Set a cookie to identify the user in the future
+    set_user_cookie( request_handler, user.uuid )
+    
     return user
 
-def get_or_create_user_by_email(email, referrer=None):
+def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
     user = get_user_by_email(email)    
     if user is None:
         logging.info("Creating user: " + email)
         user = create_user_by_email(email, referrer)
+    
+    # Set a cookie to identify the user in the future
+    set_user_cookie( request_handler, user.uuid )
+    
     return user

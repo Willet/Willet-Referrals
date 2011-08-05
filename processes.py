@@ -22,7 +22,7 @@ from models.stats import Stats
 from models.user import User
 
 from util.consts import *
-from util.email import Email
+from util.emails import Email
 from util.helpers import *
 
 class CampaignClicksCounter( webapp.RequestHandler ):
