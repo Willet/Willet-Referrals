@@ -26,12 +26,11 @@
 
  <script type="text/javascript">
 
-    var share, reset, countChars, willet_conversion, iframeBody, shareArea, 
-        shareFrame, shareText, charsLeft, sendGmail, sendEmail;
-    
-
+    var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
+        shareArea, shareFrame, shareText, charsLeft;
 
     window.onload = function() {
+
         iframeBody = document.getElementById('willt');
         shareFrame = document.getElementById('willt-frame');
         shareArea = document.getElementById('share-area'),
@@ -42,7 +41,8 @@
             $.ajax({
                 url: "/conversion",
                 type: 'post',
-                data: { "referree_uid" : "{{supplied_user_id}}", "campaign_uuid" : "{{campaign_uuid}}" }
+                data: { referree_uid : "{{supplied_user_id}}",
+                        campaign_uuid : "{{campaign_uuid}}" }
             });// end ajax
         }; 
         
@@ -78,6 +78,16 @@
             });// end ajax
         };
 
+        sendGmail = function(opts){
+            var str = 'http://mail.google.com/mail/?view=cm&fs=1'+
+                      /*'&to=' + opts.to +
+                      '&su=' + opts.subject + 
+                      */'&body=' + opts.message.replace(/\n/g,'%0A') + 
+                      '&ui=2';
+            location.href = str;
+        };
+
+        // use the selected medium to share about your purchase
         share = function(medium, uid) {
             uid = uid || '';
             var shareSrc = '/share?ca_id={{campaign_uuid}}&'; 
@@ -100,16 +110,14 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    //var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
-                    //                              'popup');
-                    var authWindow = window.open(''),
-                        authDoc = authWindow.document,
-                        authBody = authDoc.body,
-                        authIframe = authDoc.createElement('iframe');
+                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
+                                                  '_blank');
+                    //var authWindow = window.open('','',"status=1,toolbar=0,location=0,menubar=0,directories=0", false),
+                    //    authBody = authWindow.document.getElementsByTagName('body')[0],
+                    //    authIframe = authWindow.document.createElement('iframe');
 
-                        authIframe.src = '{{BASE_URL}}/oauth/twitter/login';
-                        authBody.appendChild(authIframe);
-                        
+                    //authIframe.src = '{{ BASE_URL }}/oauth/twitter/login';
+                    //authBody.appendChild(authIframe);
                 } else {
                     // style shareArea according to different social loader
                 }
