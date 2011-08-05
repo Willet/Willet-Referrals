@@ -54,13 +54,13 @@ class User(Model):
     first_name      = db.StringProperty(indexed=False)
     last_name       = db.StringProperty(indexed=False)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
-    about_me_url    = db.LinkProperty( required = False )
+    about_me_url    = db.LinkProperty( required = False, default = None )
     referrer        = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
 
     # Twitter Junk
     twitter_handle  = db.StringProperty(indexed = True)
     twitter_name    = db.StringProperty()
-    twitter_pic_url = db.LinkProperty( required = False )
+    twitter_pic_url = db.LinkProperty( required = False, default = None )
     twitter_followers_count = db.IntegerProperty(default = 0)
     twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
 
@@ -74,7 +74,7 @@ class User(Model):
     topics              = db.ListProperty( str, indexed = False )
 
     # Facebook Junk
-    fb_identity = db.LinkProperty( required = False, indexed = True )
+    fb_identity = db.LinkProperty( required = False, indexed = True, default = None )
 
     # ReferenceProperty
     #emails = db.EmailProperty(indexed=True)
