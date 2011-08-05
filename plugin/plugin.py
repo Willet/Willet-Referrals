@@ -142,6 +142,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
         willt_url_code = self.request.get( 'willt_url_code' )
+        via_gmail = self.request.get( 'via_gmail' )
         
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
@@ -164,7 +165,8 @@ class SendEmailInvites( webapp.RequestHandler ):
 
         # TODO: Use cookies to determine who this is and
         # store their email!!
-        Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
+        if not via_gmail:
+            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
 
 def main():
     application = webapp.WSGIApplication([

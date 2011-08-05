@@ -46,11 +46,34 @@
             });// end ajax
         }; 
         
-        sendGmail = function(opts){
+        sendGmail = function(){
+            var from_addr = document.getElementById( 'from-email' ).value;
+            var to_addrs  = document.getElementById( 'to-emails' ).value;
+            var msg       = document.getElementById( 'email-share-text' ).value;
+
+            $.ajax({
+                url: "/sendEmailInvites",
+                type: 'post',
+                data: { "from_addr" : from_addr, 
+                        "to_addrs"  : to_addrs,
+                        "msg"       : msg,
+                        "url"       : "{{willt_url}}",
+                        "willt_url_code" : "{{willt_url_code}}",
+                        "via_gmail" : true },
+                success: function(msg){
+                    var to_addrs  = document.getElementById( 'to-emails' );
+                    var msg       = document.getElementById( 'email-share-text' );
+
+                    to_addrs.value = "";
+                    msg.value = "Thank You! Invites sent!";
+                }
+
+            });// end ajax
+
             var str = 'http://mail.google.com/mail/?view=cm&fs=1'+
-                      /*'&to=' + opts.to +
-                      '&su=' + opts.subject + 
-                      */'&body=' + opts.message.replace(/\n/g,'%0A') + 
+                      '&to=' + to_addrs + 
+                      '&su=' + "sub" + 
+                      '&body=' + msg.replace(/\n/g,'%0A') + 
                       '&ui=2';
             location.href = str;
         };
@@ -66,7 +89,8 @@
                 data: { "from_addr" : from_addr, 
                         "to_addrs"  : to_addrs,
                         "msg"       : msg,
-                        "url"       : "{{willt_url}}" },
+                        "url"       : "{{willt_url}}",
+                        "willt_url_code" : "{{willt_url_code}}" },
                 success: function(msg){
                     var to_addrs  = document.getElementById( 'to-emails' );
                     var msg       = document.getElementById( 'email-share-text' );
@@ -76,15 +100,6 @@
                 }
 
             });// end ajax
-        };
-
-        sendGmail = function(opts){
-            var str = 'http://mail.google.com/mail/?view=cm&fs=1'+
-                      /*'&to=' + opts.to +
-                      '&su=' + opts.subject + 
-                      */'&body=' + opts.message.replace(/\n/g,'%0A') + 
-                      '&ui=2';
-            location.href = str;
         };
 
         // use the selected medium to share about your purchase
@@ -236,9 +251,6 @@
         float: left;
         margin-top: -1px;
     }
-    #gmail-div {
-        float: left;
-    }
     #to-emails, #email-share-text {
         width: 416px;
     }
@@ -253,29 +265,21 @@
     <div class="span-23 last" id='willt'>
         <div class="span-12">
             <h2>Invite by email</h2>
-            <div class="span-12 last" id="gmail-div">
-                <div class="span-4">
-                <a href="#" onClick="sendGmail({message: '{{text}}'});"> 
-                    <img src="/static/imgs/gmail-logo.png" />
-                    <div> Via Gmail </div>
-                </a>
-                </div>
-                <div class="span-7 last" id="your_email">
-                    or 
-                    <label for="from-email">Your Email:
-                        <input type="text" id="from-email" name="email" />
-                    </label>
-                </div>
-            </div>
-            <div class="span-12 last" id="other-email-div">
+            <div class="span-12 last">
+                <input class="span-11 last" id="from-email" type="text" name="email" value="Your Email"/>
                 
-                <input id="to-emails" type="text" value="Enter a comma-separated list of email addresses."></input>
-                <br />
-                <textarea id="email-share-text">{{ text }}</textarea>
+                <input class="span-11 last" id="to-emails" type="text" value="Invitee email addresses, separated by commas."></input>
+                
+                <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="prepend-7 span-4 last" style="margin-top: 5px;" >
+                <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
+                    <a href="#" onClick="sendGmail();"> 
+                        <img src="/static/imgs/gmail-logo.png" />
+                        <div> Via Gmail </div>
+                    </a>
+                    
                     <a href="#" onClick="sendEmail();"> 
-                        <div>Send Invites</div>
+                        <div> Via Willet</div>
                     </a>
                 </div>
             </div>
