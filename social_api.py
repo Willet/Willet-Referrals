@@ -11,7 +11,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter
+from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.link import *
 from util.helpers import *
@@ -144,13 +144,13 @@ class QueryKloutAPI( URIHandler ):
         
         logging.info("Klout: User is %s %s" % (user.twitter_name, user.twitter_handle))
 
-        data = { 'key'   : '6gs66hdaj6vmung5mtg3aeka',
+        data = { 'key'   : KLOUT_API_KEY,
                  'users' : twitter_handle }
 
         payload = urllib.urlencode( data )
 
         logging.info("Klout: Fetching user data for %s" % twitter_handle)
-        result = urlfetch.fetch( url = 'http://api.klout.com/1/users/show.json',
+        result = urlfetch.fetch( url = KLOUT_API_URL,
                                  payload = payload,
                                  method  = urlfetch.POST,
                                  headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
@@ -208,12 +208,49 @@ class QueryKloutAPI( URIHandler ):
                     user.topics = u['topics']
                     user.put()
 
+class QueryGoogleSocialGraphAPI( URIHandler ):
+    def post( self ):
+        id   = self.request.get( 'id' )
+        uuid = self.request.get( 'uuid' )
+        user = get_user_by_uuid( uuid )
+
+        if user == None:
+            return # Bad data, just exitc:w
+
+        logging.info("Fetching Social Graph API for %s" % id)
+
+        data = { 'q' : id }
+        payload = urllib.urlencode( data )
+
+        result = urlfetch.fetch( url     = GOOGLE_SOCIAL_GRAPH_API_URL + payload,
+                                 method  = urlfetch.GET,
+                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
+
+        if result.status_code != 200:
+            logging.info("Social Graph API for %s failed" % id)
+        else:
+            #loaded_json = json.loads( result.content )
+
+            for i in result.content:
+                if 'about.me' in i and user.about_me_url == '':
+                    user.about_me_url = i
+                
+                elif 'facebook' in i and user.fb_identity == '':
+                    user.fb_identity = i
+                
+                elif 'twitter' in i and user.twitter_handle == '':
+                    tmp = i.split( '/' )
+                    user.twitter_handle = tmp[ len(tmp) - 1 ]
+
+            user.put()
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
         (r'/klout', QueryKloutAPI),
+        (r'/socialGraphAPI', QueryGoogleSocialGraphAPI,
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
 

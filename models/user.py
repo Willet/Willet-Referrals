@@ -20,12 +20,13 @@ class User(Model):
     last_name       = db.StringProperty(indexed=False)
     email           = db.EmailProperty(indexed=True)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
+    about_me_url    = db.LinkProperty( required = False )
     referrer        = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
 
     # Twitter Junk
     twitter_handle  = db.StringProperty(indexed = True)
     twitter_name    = db.StringProperty()
-    twitter_pic_url = db.LinkProperty()
+    twitter_pic_url = db.LinkProperty( required = False )
     twitter_followers_count = db.IntegerProperty(default = 0)
 
     # Klout Junk
@@ -38,7 +39,7 @@ class User(Model):
     topics              = db.ListProperty( str, indexed = False )
 
     # Facebook Junk
-    fb_identity = db.LinkProperty( indexed = True )
+    fb_identity = db.LinkProperty( required = False, indexed = True )
     
     def __init__(self, *args, **kwargs):
        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -50,11 +51,26 @@ class User(Model):
        return db.Query(User).filter('uuid =', twitter_handle).get()
 
 # Gets by X
+def get_user_by_uuid( uuid ):
+    logging.info("Getting user by uuid " + uuid)
+    user = User.all().filter('uuid =', uuid).get()
+    if user != None:
+        logging.info('Pulled user: %s %s %s %s' % (uuid, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
+    return user
+
 def get_user_by_twitter(t_handle):
     logging.info("Getting user by T: " + t_handle)
     user = User.all().filter('twitter_handle =', t_handle).get()
     if user != None:
         logging.info('Pulled user: %s %s %s %s' % (t_handle, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
+        
+        # If we don't have Klout data, let's fetch it!
+        if user.kscore == 1.0:
+            # Query Klout API for data
+            taskqueue.add( queue_name='socialAPI', 
+                           url='/klout', 
+                           name= 'klout%s%s' % (t_handle + generate_uuid( 10 )),
+                           params={'twitter_handle' : t_handle} )
     return user
 
 def get_user_by_facebook(fb_id):
@@ -78,11 +94,11 @@ def create_user_by_twitter(t_handle, name, followers, profile_pic, referrer):
                 referrer=referrer)
     user.put()
 
-    # Query Klout API for data
-    taskqueue.add( queue_name='klout', 
-                   url='/klout', 
-                   name= t_handle + generate_uuid( 10 ),
-                   params={'twitter_handle' : t_handle} )
+    # Query the SocialGraphAPI
+    taskqueue.add( queue_name='socialAPI', 
+                   url='/socialGraphAPI', 
+                   name= 'soc%s%s' % (t_handle + generate_uuid( 10 )),
+                   params={'id' : 'http://www.twitter.com/%s' % t_handle, 'uuid' : user.uuid} )
 
     return user
 
@@ -92,6 +108,12 @@ def create_user_by_facebook(fb_id, first_name, last_name, email, referrer):
                 first_name=first_name, last_name=last_name, email=email, 
                 referrer=referrer)
     user.put()
+
+    # Query the SocialGraphAPI
+    taskqueue.add( queue_name='socialAPI', 
+                   url='/socialGraphAPI', 
+                   name= fb_id + generate_uuid( 10 ),
+                   params={'id' : fb_id, 'uuid' : user.uuid} )
 
     return user
 

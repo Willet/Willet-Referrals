@@ -9,7 +9,7 @@ DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else 'www.' + 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 
 # Campaign Stuff
-LANDING_CAMPAIGN_UUID = 'e179cc102f904c92'
+LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 
 # Twitter Stuff
 TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
@@ -20,8 +20,13 @@ MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
 MIXPANEL_SECRET  = '27da75953193e14e626d67906b1a5148'
 MIXPANEL_TOKEN   = '8e365da676bb7e48929dfb9e649cf9d4'
 
-
 # Facebook Stuff
 FACEBOOK_APP_ID = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
+# Klout Stuff
+KLOUT_API_KEY = '6gs66hdaj6vmung5mtg3aeka'
+KLOUT_API_URL = 'http://api.klout.com/1/users/show.json'
+
+# Google Social Graph API Stuff
+GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'

@@ -33,6 +33,9 @@ handlers:
 - url: /mixpanel
   script: mixpanel.py
 
+- url: /(socialGraphAPI|klout)
+  script: social_api.py
+
 - url: /(emailerCron|emailerQueue)
   script: emailer.py
 
