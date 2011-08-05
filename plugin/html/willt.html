@@ -27,7 +27,7 @@
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft;
+        shareArea, shareFrame, shareText, charsLeft, clear;
 
     window.onload = function() {
 
@@ -46,6 +46,10 @@
             });// end ajax
         }; 
         
+        clearText = function( elem ) {
+            elem.value = "";
+        };
+
         sendGmail = function(){
             var from_addr = document.getElementById( 'from-email' ).value;
             var to_addrs  = document.getElementById( 'to-emails' ).value;
@@ -266,9 +270,10 @@
         <div class="span-12">
             <h2>Invite by email</h2>
             <div class="span-12 last">
-                <input class="span-11 last" id="from-email" type="text" name="email" value="Your Email"/>
+                <input class="span-11 last" id="from-email" type="text" name="email" value="Your Email" onFocus="clearText(this);" />
                 
-                <input class="span-11 last" id="to-emails" type="text" value="Invitee email addresses, separated by commas."></input>
+                <input class="span-11 last" id="to-emails" type="text" value="Invitee email addresses, separated by commas."
+                onFocus="clearText(this);" />
                 
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
