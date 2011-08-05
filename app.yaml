@@ -15,7 +15,7 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|updateLanding|updateCounts|updateTweets|updateClicks)
+- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks)
   script: processes.py
 
 - url: /conversion
@@ -35,9 +35,6 @@ handlers:
 
 - url: /(socialGraphAPI|klout)
   script: social_api.py
-
-- url: /(emailerCron|emailerQueue)
-  script: emailer.py
 
 - url: /klout
   script: klout.py
