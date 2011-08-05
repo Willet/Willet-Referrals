@@ -98,7 +98,7 @@ class User(Model):
         if 'twitter_profile_pic' in kwargs and kwargs['twitter_profile_pic'] != '':
             self.twitter_profile_pic = kwargs['twitter_profile_pic']
 
-        if 'twitter_follower_count' in kwargs and kwargs['twitter_follower_count']:
+        if 'twitter_follower_count' in kwargs and kwargs['twitter_follower_count'] != None:
             self.twitter_follower_count = kwargs['twitter_follower_count']
 
         if 'fb_identity' in kwargs and kwargs['fb_identity'] != '':
@@ -152,19 +152,18 @@ def get_user_by_email( email ):
     return email_model.user if email_model else None
 
 # Create by X
-def create_user_by_twitter(t_handle, name, followers, profile_pic, referrer):
+def create_user_by_twitter(t_handle, referrer):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
     OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
 
     user = User(uuid=generate_uuid(16),
                 twitter_handle=t_handle,
-                twitter_name=name, 
-                twitter_followers_count=followers, 
-                twitter_pic_url=profile_pic, 
                 referrer=referrer)
+    
     if OAuthToken:
         user.twitter_access_token=OAuthToken
+    
     user.put()
 
     # Query the SocialGraphAPI
@@ -223,7 +222,7 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + t_handle)
-        user = create_user_by_twitter(t_handle, name, followers, profile_pic, referrer)
+        user = create_user_by_twitter(t_handle, referrer)
 
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
