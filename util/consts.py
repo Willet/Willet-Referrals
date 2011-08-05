@@ -13,6 +13,8 @@ LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 
 # Twitter Stuff
 TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
+TWITTER_KEY = '2O3uHYkLKlHdy2PECgP3Q'
+TWITTER_SECRET = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
 
 # Mixpanel Stuff
 MIXPANEL_API_KEY = '2792aa08e5efaf4e406d8a4ac224565d'

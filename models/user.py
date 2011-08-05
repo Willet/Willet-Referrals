@@ -13,6 +13,9 @@ from google.appengine.ext import db
 from models.model         import Model
 from util.helpers         import *
 
+#from models.oauth import get_oauth_by_twitter
+import models.oauth
+
 class User(Model):
     # General Junk
     uuid            = db.StringProperty( indexed = True )
@@ -28,6 +31,7 @@ class User(Model):
     twitter_name    = db.StringProperty()
     twitter_pic_url = db.LinkProperty( required = False )
     twitter_followers_count = db.IntegerProperty(default = 0)
+    twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
 
     # Klout Junk
     twitter_id          = db.StringProperty( indexed = False )
@@ -86,12 +90,16 @@ def get_user_by_email( email ):
 # Create by X
 def create_user_by_twitter(t_handle, name, followers, profile_pic, referrer):
     """Create a new User object with the given attributes"""
+    # check to see if this t_handle has an oauth token
+    OAuthToken = oauth.get_oauth_by_twitter(t_handle)
+
     user = User(uuid=generate_uuid(16),
                 twitter_handle=t_handle,
                 twitter_name=name, 
                 twitter_followers_count=followers, 
                 twitter_pic_url=profile_pic, 
-                referrer=referrer)
+                referrer=referrer,
+                twitter_access_token=OAuthToken)
     user.put()
 
     # Query the SocialGraphAPI
