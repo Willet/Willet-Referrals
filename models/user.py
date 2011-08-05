@@ -137,7 +137,7 @@ def get_user_by_twitter(t_handle):
             # Query Klout API for data
             taskqueue.add( queue_name='socialAPI', 
                            url='/klout', 
-                           name= 'klout%s%s' % (t_handle + generate_uuid( 10 )),
+                           name= 'klout%s%s' % (t_handle, generate_uuid( 10 )),
                            params={'twitter_handle' : t_handle} )
     return user
 
@@ -169,7 +169,7 @@ def create_user_by_twitter(t_handle, referrer):
     # Query the SocialGraphAPI
     taskqueue.add( queue_name='socialAPI', 
                    url='/socialGraphAPI', 
-                   name= 'soc%s%s' % (t_handle + generate_uuid( 10 )),
+                   name= 'soc%s%s' % (t_handle, generate_uuid( 10 )),
                    params={'id' : 'http://www.twitter.com/%s' % t_handle, 'uuid' : user.uuid} )
 
     return user

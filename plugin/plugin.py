@@ -20,7 +20,7 @@ from models.user import get_or_create_user_by_email, get_or_create_user_by_faceb
 # helpers
 from util.consts import *
 from util.emails import Email
-from util.helpers import read_user_cookie
+from util.helpers import read_user_cookie, generate_uuid
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
