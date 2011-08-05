@@ -158,6 +158,8 @@ class OAuthClient(object):
     def login(self):
 
         proxy_id = self.get_cookie()
+        we = self.request.get('we');
+        console.log(we);
 
         if proxy_id:
             return "FOO%rFF" % proxy_id

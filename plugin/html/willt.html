@@ -90,11 +90,11 @@
             $.ajax({
                 url: "/sendEmailInvites",
                 type: 'post',
-                data: { "from_addr" : from_addr, 
-                        "to_addrs"  : to_addrs,
-                        "msg"       : msg,
-                        "url"       : "{{willt_url}}",
-                        "willt_url_code" : "{{willt_url_code}}" },
+                data: { from_addr : from_addr, 
+                        to_addrs  : to_addrs,
+                        msg       : msg,
+                        url       : "{{willt_url}}",
+                        willt_url_code : "{{willt_url_code}}" },
                 success: function(msg){
                     var to_addrs  = document.getElementById( 'to-emails' );
                     var msg       = document.getElementById( 'email-share-text' );
@@ -129,7 +129,8 @@
                     }, {scope: 'publish_stream'}
                     );
                 } else if (medium === 'twitter'){
-                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login',
+                    console.log(document.cookie);
+                    var OAuthWindow = window.open('{{BASE_URL}}/oauth/twitter/login?we=willt',
                                                   '_blank');
                     //var authWindow = window.open('','',"status=1,toolbar=0,location=0,menubar=0,directories=0", false),
                     //    authBody = authWindow.document.getElementsByTagName('body')[0],
