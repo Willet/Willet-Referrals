@@ -6,7 +6,6 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re
 import urllib
 
-from google.appengine.api.mail import EmailMessage
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.api import taskqueue
@@ -17,6 +16,7 @@ from models.campaign    import Campaign, get_campaign_by_id
 from util.helpers       import *
 from util.urihandler    import URIHandler
 from util.consts        import *
+from util.email         import Email
 
 class EmailerCron( URIHandler ):
 
@@ -44,12 +44,8 @@ class EmailerQueue( URIHandler ):
         email_addr  = self.request.get('email')
         campaign_id = self.request.get('campaign_id')
 
-        body = template.render(os.path.join(os.path.dirname(__file__), 'templates/email.html'), {'campaign_id': campaign_id})
-        to_addr =  email_addr
-        subject = '[Willet Social] We Have Some Results!'
-        
-        e = EmailMessage(sender="Barbara@wil.lt", to=email_addr, subject=subject, html=body)
-        e.send()
+        # Send out the email.
+        Email.first10Shares( email_addr )
 
         # Set the emailed flag.
         campaign = get_campaign_by_id( campaign_id )

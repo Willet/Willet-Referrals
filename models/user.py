@@ -62,7 +62,7 @@ def get_user_by_facebook(fb_id):
     user = User.all().filter('fb_identity =', fb_id).get()
     return user
 
-def get_user_by_emaill( email ):
+def get_user_by_email( email ):
     logging.info("Getting user by email: " + email)
     user = User.all().filter('email =', email).get()
     return user
