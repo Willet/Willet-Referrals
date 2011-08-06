@@ -1,15 +1,16 @@
 #!/usr/bin/python
 
-__author__      = "Barbara Macdonald"
-__copyright__   = "Copyright 2011, Barbara "
+__author__      = "Willet Inc."
+__copyright__   = "Copyright 2011, Willet Inc."
 
 import os
 
-from gaesessions import get_current_session
-from google.appengine.ext import webapp
+from gaesessions                 import get_current_session
+from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
 from models.client   import get_client_by_email
+from util.consts     import *
 
 class URIHandler( webapp.RequestHandler ):
 
@@ -41,6 +42,8 @@ class URIHandler( webapp.RequestHandler ):
         template_values = {
             'login_url'  : '/login',
             'logout_url' : '/logout',
+            'URL'        : URL,
+            'NAME'       : NAME,
             'client'     : client
         }
         merged_values = dict(template_values)

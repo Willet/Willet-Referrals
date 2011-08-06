@@ -1,6 +1,9 @@
 import os
 from urlparse import urlunsplit
 
+# Product Stuff
+NAME = 'ReferPlug'
+
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 

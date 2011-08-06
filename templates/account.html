@@ -4,7 +4,7 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="prepend-top span-8 last center"><a href="/">Willet Social</a></h1>
+    <h1 class="prepend-top span-8 last center"><a href="/">{{NAME}}</a></h1>
     
     <h2 class="span-8 last center">What's the social value of your users?</h2>
     
@@ -13,7 +13,7 @@
             You want to directly engage your top social influencers, but how do you know who they are?
         </p>
         <p>
-            Measure the social impact of your users with Willet Social.
+            Measure the social impact of your users with {{NAME}}.
         </p>
     </div>
     
@@ -23,7 +23,7 @@
 
 {% endblock left_content %}
 {% block right_content %}
-    <h1 class="span-15 last lower-25 center">Your Campaigns</h1>
+    <h1 class="span-15 last lower-75 center">Your Campaigns</h1>
 
     <div class="prepend-top span-15 last">
         {% if has_campaigns %}
@@ -32,6 +32,7 @@
                     <td class="title"> Title </td>
                     <td class="title"> Tweets</td>
                     <td class="title"> Clickthroughs </td>
+                    <td> </td>
                     <td> </td>
                 </tr>
                 {% for c in campaigns %}
@@ -52,7 +53,7 @@
                     <td>
                          <form action="/deleteCampaign" method="post" class="center">
                             <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
-                            <input type="submit" value="Delete"/>
+                            <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
                         </form>
                     </td>
                 </tr>
