@@ -93,7 +93,7 @@ class ShowLoginPage( URIHandler ):
 class ShowDemoPage( URIHandler ):
     # Renders the main template
     def get(self):
-        template_values = { }
+        template_values = { 'BASE_URL' : URL }
         
         self.response.out.write(self.render_page('demo.html', template_values))
 
