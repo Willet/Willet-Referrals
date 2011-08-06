@@ -47,8 +47,8 @@
             var step1r = document.getElementById( 'step1_right' );
             var step2l = document.getElementById( 'step2_left' );
             var step2r = document.getElementById( 'step2_right' );
-            var btn1  = document.getElementById( 'goToStep2Button' );
-            var btn2  = document.getElementById( 'goToStep3Button' );
+            var btn1   = document.getElementById( 'goToStep2Button' );
+            var btn2   = document.getElementById( 'goToStep3Button' );
 
             step1l.style.display="none";
             step1r.style.display="none";
@@ -56,7 +56,7 @@
             
             step2l.style.display="block";
             step2r.style.display="block";
-            btn2.style.display="block";
+            btn2.style.display  ="block";
         };
         goToStep3 = function () {
             var step2l = document.getElementById( 'step2_left' );
@@ -102,22 +102,22 @@
 
             <div id="step2_left" class="hidden">
                 <div>
-                    <label class="default_label" for="blurb_text">
+                    <label class="default_label" for="blurb_title">
                         Blurb Title
                     </label> 
                     
                     <br />
                     
-                    <input type="text" name="blurb_text" id="blurb_text" value="{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}" onKeyUp="blurb_title_text();" />
+                    <input type="text" name="blurb_title" id="blurb_title" value="{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}" onKeyUp="update_blurb_title();" />
                     
                     <span class="defaultValue hidden">Get 3 months free</span>
                 </div>
                 <div>
-                    <label class="default_label" for="blurb_subtext">
+                    <label class="default_label" for="blurb_text">
                         Blurb Text
                     </label>
                     <br />
-                    <textarea name="blurb_subtext" id="blurb_subtext" onKeyUp="blurb_subtitle_text();">{% if campaign %}{{campaign.blurb_subtext|escape}}{% endif %}</textarea>
+                    <textarea name="blurb_text" id="blurb_text" onKeyUp="update_blurb_text();">{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}</textarea>
                     
                     <span class="defaultValue hidden">by sharing your love</span>
                 </div>
@@ -162,6 +162,10 @@
 
         <div id="step1_right" class="prepend-1 span-14 last">
             Welcome! It only takes 3 steps to create a Campaign! We'll walk you through it!
+
+            <p>
+                After entering details about a deal you'd like to track, we'll give you a button.  </p> <p> Add the button to your website and direct your customers to it! It's that simple!  </p> <p> When your customers tweet about your product, we'll track their impact and clickthrough rate.  </p> <p> Visit this site once we have data to view your top influencers!</p> <p> <br /><em>Target your customers with the highest clickthroughs to help with your Internet marketing!</em></p> <br />
+            </p>
         </div>
 
         <div id="step2_right" class="hidden prepend-1 span-14 last">
@@ -170,9 +174,8 @@
             </p>
             <br />
             <div class="center">
-                TOP PART
-                <iframe src='/willt' id="preview" frameBorder="1" scrolling="no" 
-                        width=600 height=250 style="overflow: hidden;" onload="update_iframe_fields()"></iframe>
+                <iframe src='/widget' id="blurb" frameBorder="1" scrolling="no" 
+                        width="940px" height="151px" style="overflow: hidden;" onload="update_iframe_fields()"></iframe>
             </div>
         </div>
         <div id="step3_right" class="hidden prepend-1 span-14 last">
@@ -192,29 +195,33 @@
         
         <script>
             // Fill examples
-            var i_status, i_twitter_url,
+            var i_status, i_blurb_title, i_blurb_text, i_twitter_url,
                 blurb_title = document.getElementById('blurb_title'),
-                blurb_subtitle = document.getElementById('blurb_subtitle'),
-                title_text = document.getElementById('blurb_text'),
-                subtitle_text = document.getElementById('blurb_subtext'),
+                blurb_text = document.getElementById('blurb_text'),
                 target_url = document.getElementById('target_url'),
                 share_text = document.getElementById('share_text'),
-                i_frame = document.getElementById('twitter-preview');
+                blurb_i_frame = document.getElementById('blurb');
             
             function update_text_value(el, val) {
-                if (typeof el.innerText !== "undefined") {
-                    el.innerText = val;
+                if (typeof el.innerHTML !== "undefined") {
+                    el.innerHTML = val;
                 } else if (typeof el.textContent !== "undefined") {
                     el.textContent = val;
                 }
             }
             
-            function blurb_title_text() {
-                update_text_value(blurb_title, title_text.value);
+            function update_blurb_title() {
+                if (!i_blurb_title) {
+                    i_blurb_title= blurb_i_frame.contentWindow.document.getElementById('blurb_title');
+                }
+                i_blurb_title.innerHTML = blurb_title.value;
             }
             
-            function blurb_subtitle_text() {
-                update_text_value(blurb_subtitle, subtitle_text.value);
+            function update_blurb_text() {
+                if (!i_blurb_text) {
+                    i_blurb_text = blurb_i_frame.contentWindow.document.getElementById('blurb_text');
+                }
+                i_blurb_text.innerHTML = blurb_text.value;
             }
             
             function twitter_text() {
@@ -222,9 +229,6 @@
                     remaining = 140,
                     countColor = '#056380',
                     tweet_text = share_text.value;
-                if (!i_status) {
-                    i_status = i_frame.contentWindow.document.getElementById('status');
-                }
 
                 if ( share_text.value.indexOf( target_url.value ) == -1 ) {
                     remaining = 140 - share_text.value.length - target_url.value.length - 1;
@@ -256,56 +260,6 @@
                 twitter_text();
                 url_text();
             }
-            
-           // Guiders.js code
-           guiders.createGuider({
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
-              description: "<p> After entering details about a deal you'd like to track, we'll give you a button.  </p> <p> Add the button to your website and direct your customers to it! It's that simple!  </p> <p> When your customers tweet about your product, we'll track their impact and clickthrough rate.  </p> <p> Visit this site once we have data to view your top influencers!</p> <p> <br /><em>Target your customers with the highest clickthroughs to help with your Internet marketing!</em></p> <br />",
-              id: "first",
-              next: "second",
-              overlay: true,
-              width: 600,
-              title: "How Willet Social Works"
-            })
-            {% if show_guiders %}
-                .show()
-            {% endif %};
-        
-            guiders.createGuider({
-              attachTo: "#title",
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
-              description: "Enter some quick details about a URL you'd like to track.",
-              id: "second",
-              next: "third",
-              width: 300,
-              position: 3,
-              title: "Start a Campaign"
-            });
-         
-            guiders.createGuider({
-              attachTo: "#twitter-preview",
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
-              description: "When your customers visit your site and click to open our plugin, here is what they'll see. It looks just like a regular 'Tweet' dialog!",
-              id: "third",
-              next: "fourth",
-              position: 1,
-              width: 300,
-              title: "Look!"
-            });
-         
-            guiders.createGuider({
-              attachTo: "#submit",
-              buttons: [{name: "Close"}],
-              description: "When you've entered all information, click here and we'll give you a button to put on your website.",
-              id: "fourth",
-              next: "finally",
-              position: 3,
-              width: 300,
-              title: "All Done!"
-            });
         </script>
 
 {% endblock right_content %}
