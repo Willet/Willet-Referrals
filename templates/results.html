@@ -33,12 +33,12 @@
 {% endblock head %}
 
 {% block content %}
-    <div class="span-22 last lower-25" id="right_header">
+    <div class="span-22 last lower-15" id="right_header">
         <p><a href='{{logout_url}}'>Logout</a></p>
         <p><a href='/account'>Your Campaigns</a></p>
     </div>
-
-    <h1 class="span-24 last lower-10 center">Your Best Influencers</h1>
+    
+    <h1 class="span-24 last lower-100 center">Your Best Influencers</h1>
     <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}"</h2>
 
     {% if has_results %}
