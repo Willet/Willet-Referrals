@@ -27,7 +27,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
 
-    def get(self):
+    def get(self, input_path):
         template_values = {}
         campaign_id = self.request.get('ca_id')
         user_id = self.request.get('uid')
@@ -75,7 +75,10 @@ class ServeSharingPlugin(webapp.RequestHandler):
         else:
             template_values['BASE_URL'] = URL
 
-        path = os.path.join(os.path.dirname(__file__), 'html/willt.html')
+        if 'widget' in input_path:
+            path = os.path.join(os.path.dirname(__file__), 'html/top.html')
+        else:
+            path = os.path.join(os.path.dirname(__file__), 'html/bottom.html')
         self.response.out.write(template.render(path, template_values))
         return
 
@@ -234,7 +237,7 @@ def main():
         (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
         (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
-        (r'/willt', ServeSharingPlugin)],
+        (r'/(.*)', ServeSharingPlugin)],
         debug=USING_DEV_SERVER)
     run_wsgi_app(application)
 
