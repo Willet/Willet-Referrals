@@ -26,24 +26,26 @@ NUM_SHARE_SHARDS = 15
 class Campaign(Model):
     """Model storing the data for a client's sharing campaign"""
     uuid            = db.StringProperty( indexed = True )
-    title           = db.StringProperty( indexed = False )
-    button_text     = db.StringProperty( indexed = False )
-    button_subtext  = db.StringProperty( indexed = False )
-    share_text      = db.StringProperty( indexed = False )
-    target_url      = db.LinkProperty( indexed = False )
-    redirect_url    = db.LinkProperty( default = None, indexed = False, required = False )
-    webhook_url     = db.LinkProperty( indexed = False, required = False )
     created         = db.DateTimeProperty(auto_now_add=True)
     emailed_at_10   = db.BooleanProperty( default = False )
     client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
+    
     cached_clicks_count = db.IntegerProperty( default = 0 )
+    
+    title           = db.StringProperty( indexed = False )
+    product_name    = db.StringProperty( indexed = False )
+    target_url      = db.LinkProperty  ( indexed = False )
+    
+    blurb_text      = db.StringProperty( indexed = False )
+    blurb_subtext   = db.StringProperty( indexed = False )
+    share_text      = db.StringProperty( indexed = False )
+    
+    webhook_url     = db.LinkProperty( indexed = False, required = False )
 
     # Defaults to None, only set if this Campaign has been deleted
-    old_client  = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
+    old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
     
     def __init__(self, *args, **kwargs):
-        if kwargs.get('redirect_url', None) == 'http://':
-            kwargs['redirect_url'] = None
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Campaign, self).__init__(*args, **kwargs)
     
@@ -52,17 +54,16 @@ class Campaign(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Campaign).filter('uuid =', uuid).get()
     
-    def update( self, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url ):
+    def update( self, title, product_name, target_url, blurb_text, blurb_subtext, share_text, webhook_url ):
         """Update the campaign with new data"""
-        if redirect_url == 'http://':
-            redirect_url = None
-        
         self.title          = title
-        self.button_text    = button_text
-        self.button_subtext = button_subtext
-        self.share_text     = share_text
+        self.product_name   = product_name
         self.target_url     = target_url
-        self.redirect_url   = redirect_url
+        
+        self.blurb_text     = blurb_text
+        self.blurb_subtext  = blurb_subtext
+        self.share_text     = share_text
+
         self.webhook_url    = webhook_url
         self.put()
     

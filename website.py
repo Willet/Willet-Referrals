@@ -99,39 +99,6 @@ class ShowDemoPage( URIHandler ):
 ##------------------------- The Shows -----------------------------------------##
 ##-----------------------------------------------------------------------------##
 
-class ShowButton( URIHandler ):
-    # Renders the main template
-    def get(self):
-        template_values = {}
-        campaign_id     = self.request.get('ca_id')
-        user_id         = self.request.get('uid')
-
-        campaign = get_campaign_by_id( campaign_id )
-        if campaign == None:
-            campaign = get_campaign_by_id( LANDING_CAMPAIGN_UUID )
-        
-        template_values = { 'campaign_id' : campaign_id,
-                            'button_text' : campaign.button_text,
-                            'button_subtext' : campaign.button_subtext,
-                            'uid' : user_id }
-    
-        self.response.out.write(self.render_page('button.html', template_values))
-
-class ShowTweetButton( URIHandler ):
-    def get(self):
-        template_values = {}
-        campaign_id     = self.request.get('ca_id')
-        user_id         = self.request.get('uid')
-
-        campaign = get_campaign_by_id( campaign_id )
-        if campaign == None:
-            template_values['error'] = True
-        else:
-            template_values = { 'campaign_id' : campaign_id, 'uid' : user_id }
-        
-        self.response.out.write(self.render_page('tweet_button.html', template_values))
-
-
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
     def get(self):
@@ -159,7 +126,7 @@ class ShowAccountPage( URIHandler ):
         self.response.out.write(self.render_page('account.html', template_values))
 
 
-class ShowViewCampaignPage( URIHandler ):
+class ShowResultsPage( URIHandler ):
     # Renders a campaign page
     def get(self):
         client          = self.get_client()
@@ -189,9 +156,9 @@ class ShowViewCampaignPage( URIHandler ):
 
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('view_campaign.html', template_values))
+        self.response.out.write(self.render_page('results.html', template_values))
 
-class ShowViewCampaignJSONPage( URIHandler ):
+class ShowResultsJSONPage( URIHandler ):
     # Renders a campaign page
     def get(self):
         client = self.get_client() # May be None
@@ -240,7 +207,7 @@ class ShowViewCampaignJSONPage( URIHandler ):
         
         self.response.out.write(json.dumps(template_values))
 
-class ShowEditCampaignPage( URIHandler ):
+class ShowEditPage( URIHandler ):
     # Renders a campaign page
     def get(self):
         client      = self.get_client() # may be None
@@ -310,7 +277,7 @@ class ShowEditCampaignPage( URIHandler ):
         
         template_values['BASE_URL'] = URL
         
-        self.response.out.write(self.render_page('edit_campaign.html', template_values))
+        self.response.out.write(self.render_page('edit.html', template_values))
 
 
 class ShowCodePage( URIHandler ):
@@ -337,15 +304,6 @@ class ShowCodePage( URIHandler ):
         template_values['BASE_URL'] = URL
 
         self.response.out.write(self.render_page('code.html', template_values))
-
-class ShowTestPage(URIHandler):
-    # Renders plugin test page
-    def get(self):
-        ca_id = self.request.get('ca_id')
-        template_values = {'ca_id': ca_id}
-        template_values['BASE_URL'] = URL
-        self.response.out.write(self.render_page('test.html', template_values))
-
 
 class ShowTwitterPreviewPage( URIHandler ):
     # Renders the main template
@@ -423,14 +381,6 @@ class DoUpdateOrCreateCampaign( URIHandler ):
             self.redirect( '/login?u=/code?id=%s' % campaign.uuid )
         else:
             self.redirect( '/code?id=%s' % campaign.uuid )
-
- 
-class TestPage(URIHandler):
-    def get(self):
-        ca_id = self.request.get('ca_id')
-        template_values = {'ca_id': ca_id}
-        template_values['BASE_URL'] = URL
-        self.response.out.write(self.render_page('test.html', template_values))
 
 class DoAddFeedback( URIHandler ):
     def post( self ):
@@ -548,16 +498,13 @@ def main():
     application = webapp.WSGIApplication([
         (r'/about', ShowAboutPage),
         (r'/account', ShowAccountPage),
-        (r'/button', ShowButton),
-        (r'/campaign', ShowViewCampaignPage),
-        (r'/campaign.json', ShowViewCampaignJSONPage),
+        (r'/campaign', ShowResultsPage),
+        (r'/campaign.json', ShowResultsJSONPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),
         (r'/demo', ShowDemoPage),
-        (r'/edit', ShowEditCampaignPage),
+        (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
-        (r'/test', ShowTestPage),
-        (r'/tweet_button', ShowTweetButton),
         (r'/twitterPreview', ShowTwitterPreviewPage),
         
         (r'/auth', DoAuthenticate),
