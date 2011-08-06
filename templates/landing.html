@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="prepend-22 span-2 last lower-15" id="right_header">
+    <div class="span-24 last lower-15" id="right_header">
         {% if client %}
             <p><a href='{{logout_url}}'>Logout</a></p>
+            <p><a href='/account'>Account</a></p>
         {% else %}
             <p><a href='{{login_url}}'>Login</a></p>
         {% endif %}
+        <p><a href='/about'>About Us</a></p>
     </div>
     <div class="lower-75 span-24 last">
         <h1 class="center">Which Of Your Users Are Referrers?</h1>

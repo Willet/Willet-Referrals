@@ -30,6 +30,14 @@
         </form>
     </div>
 {% endblock left_content %}
+
+{% block right_head %}
+    {% if client %}
+        <p><a href='/account'>Account</a></p>
+    {% endif %}
+    <p><a href="/">Home</a></p>
+{% endblock right_head %}
+
 {% block right_content %}
     <h1 class="span-15 last lower-75 center">About Us</h1>
 
