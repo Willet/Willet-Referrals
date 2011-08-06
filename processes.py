@@ -24,6 +24,7 @@ from models.user import User
 from util.consts import *
 from util.emails import Email
 from util.helpers import *
+from util.urihhandler import URIHandler
 
 class CampaignClicksCounter( webapp.RequestHandler ):
     def post( self ): 
