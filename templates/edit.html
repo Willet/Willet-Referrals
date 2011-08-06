@@ -6,7 +6,9 @@
     <script src="/static/guiders/guiders-1.1.0.js" type="text/javascript"></script>
     <script>
         $(document).ready(function(){
-            function toggleDefaultValue ($this, onoff) {
+            var toggleDefaultValue;
+
+            toggleDefaultValue = function ($this, onoff) {
                 if (onoff) {
                     $this.css('color', 'grey');
                     $this.val($this.siblings('.defaultValue').attr('innerHTML'));
@@ -42,35 +44,73 @@
             );
         });
 
+        goToStep1 = function () {
+            var step1l = document.getElementById( 'step1_left' );
+            var step1r = document.getElementById( 'step1_right' );
+            var step2l = document.getElementById( 'step2_left' );
+            var step2r = document.getElementById( 'step2_right' );
+            var step3l = document.getElementById( 'step3_left' );
+            var step3r = document.getElementById( 'step3_right' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
+
+            step1l.style.display="block";
+            step1r.style.display="block";
+            step2l.style.display="none";
+            step2r.style.display="none";
+            step3l.style.display="none";
+            step3r.style.display="none";
+            
+            btn1.style.display  ="none";
+            btn2.style.display  ="block";
+            btn2.innerText      ="Next";
+            btn3.style.display  ="none";
+        };
         goToStep2 = function () {
             var step1l = document.getElementById( 'step1_left' );
             var step1r = document.getElementById( 'step1_right' );
             var step2l = document.getElementById( 'step2_left' );
             var step2r = document.getElementById( 'step2_right' );
-            var btn1   = document.getElementById( 'goToStep2Button' );
-            var btn2   = document.getElementById( 'goToStep3Button' );
+            var step3l = document.getElementById( 'step3_left' );
+            var step3r = document.getElementById( 'step3_right' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
 
             step1l.style.display="none";
             step1r.style.display="none";
-            btn1.style.display  ="none";
-            
             step2l.style.display="block";
             step2r.style.display="block";
-            btn2.style.display  ="block";
+            step3l.style.display="none";
+            step3r.style.display="none";
+
+            btn1.style.display  ="block";
+            btn2.style.display  ="none";
+            btn3.style.display  ="block";
         };
         goToStep3 = function () {
+            var step1l = document.getElementById( 'step1_left' );
+            var step1r = document.getElementById( 'step1_right' );
             var step2l = document.getElementById( 'step2_left' );
             var step2r = document.getElementById( 'step2_right' );
             var step3l = document.getElementById( 'step3_left' );
             var step3r = document.getElementById( 'step3_right' );
-            var btn  = document.getElementById( 'goToStep3Button' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
 
+            step1l.style.display="none";
+            step1r.style.display="none";
             step2l.style.display="none";
             step2r.style.display="none";
-            btn.style.display   ="none";
-            
             step3l.style.display="block";
             step3r.style.display="block";
+            
+            btn1.style.display  ="none";
+            btn2.innerText      ="Back";
+            btn2.style.display  ="block";
+            btn3.style.display  ="none";
         };
 
     </script>
@@ -96,7 +136,7 @@
                 </div> 
                 <div>
                     <label class="default_label" for="target_url">Your Website URL</label> <br />
-                    <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onKeyUp="url_text(); twitter_text();" />
+                    <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onBlur="url_text();" />
                 </div>
             </div>
 
@@ -128,8 +168,8 @@
                     <label class="default_label" for="share_text">Default Share Text</label>
                     <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
                     <br />
-                    <textarea id="share_text" name="share_text" onKeyDown="twitter_text();" onClick="twitter_text()">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                    <span class="defaultValue hidden">I love http://www.YOUR_URL_HERE.com because ...! You should check them out!</span>
+                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                    <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
                 </div>
 
                 <div>
@@ -148,7 +188,10 @@
         </form>
         
         <button id="goToStep2Button" onClick="goToStep2();" title="Next Step">Next</button>
+
         <button class="hidden" id="goToStep3Button" onClick="goToStep3();" title="Next Step" >Next</button>
+        <button class="hidden" id="goToStep1Button" onClick="goToStep1();" title="Previous Step">Back</button>
+
     </div>
 
 {% endblock left_content %}
@@ -161,8 +204,9 @@
         <h1 class="span-15 last lower-75 center">Sneak Peek</h1>
 
         <div id="step1_right" class="prepend-1 span-14 last">
-            Welcome! It only takes 3 steps to create a Campaign! We'll walk you through it!
-
+            <p>
+                Welcome! It only takes 3 steps to create a Campaign! We'll walk you through it!
+            </p>
             <p>
                 After entering details about a deal you'd like to track, we'll give you a button.  </p> <p> Add the button to your website and direct your customers to it! It's that simple!  </p> <p> When your customers tweet about your product, we'll track their impact and clickthrough rate.  </p> <p> Visit this site once we have data to view your top influencers!</p> <p> <br /><em>Target your customers with the highest clickthroughs to help with your Internet marketing!</em></p> <br />
             </p>
@@ -173,9 +217,8 @@
                 Here's what your users will be greeted with:
             </p>
             <br />
-            <div class="center">
-                <iframe src='/widget' id="blurb" frameBorder="1" scrolling="no" 
-                        width="940px" height="151px" style="overflow: hidden;" onload="update_iframe_fields()"></iframe>
+            <div class="center" id="blurb_iframe_container">
+                <iframe src='/widget' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
             </div>
         </div>
         <div id="step3_right" class="hidden prepend-1 span-14 last">
@@ -183,10 +226,8 @@
                 Here's what your users will be able to edit:
             </p>
             <br />
-            <div class="center">
-                BOTTOM PART
-                <iframe src='/willt' id="preview" frameBorder="1" scrolling="no"
-                        width=500 height=250 style="overflow: hidden;" onload="update_iframe_fields()"></iframe>
+            <div class="center" id="share_iframe_container">
+                <iframe src='/willt' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
             <div class="center lower-50">
                 <button onClick="guiders.show('first');"> How it Works </button>
@@ -195,20 +236,13 @@
         
         <script>
             // Fill examples
-            var i_status, i_blurb_title, i_blurb_text, i_twitter_url,
-                blurb_title = document.getElementById('blurb_title'),
-                blurb_text = document.getElementById('blurb_text'),
-                target_url = document.getElementById('target_url'),
-                share_text = document.getElementById('share_text'),
-                blurb_i_frame = document.getElementById('blurb');
-            
-            function update_text_value(el, val) {
-                if (typeof el.innerHTML !== "undefined") {
-                    el.innerHTML = val;
-                } else if (typeof el.textContent !== "undefined") {
-                    el.textContent = val;
-                }
-            }
+            var i_share_text, i_blurb_title, i_blurb_text, i_twitter_url,
+                blurb_title   = document.getElementById('blurb_title'),
+                blurb_text    = document.getElementById('blurb_text'),
+                share_text    = document.getElementById('share_text'),
+                target_url    = document.getElementById('target_url'),
+                blurb_i_frame = document.getElementById('blurb_iframe'),
+                share_i_frame = document.getElementById('share_iframe');
             
             function update_blurb_title() {
                 if (!i_blurb_title) {
@@ -224,42 +258,24 @@
                 i_blurb_text.innerHTML = blurb_text.value;
             }
             
-            function twitter_text() {
-                var leftVisualCounter = document.getElementById('tweet-counter-left'),
-                    remaining = 140,
-                    countColor = '#056380',
-                    tweet_text = share_text.value;
-
-                if ( share_text.value.indexOf( target_url.value ) == -1 ) {
-                    remaining = 140 - share_text.value.length - target_url.value.length - 1;
-                    tweet_text = share_text.value + " " + target_url.value;
-                } else {
-                    remaining = 140 - share_text.value.length;
-                    tweet_text = share_text.value
+            function update_share_text() {
+              if (!i_share_text) {
+                    i_share_text = share_i_frame.contentWindow.document.getElementById('tf-share-text');
                 }
-
-                leftVisualCounter.innerHTML = remaining;
-                if (remaining < 0){
-                    countColor = 'pink';
-                } else {
-                    countColor = '#056380';
-                    update_text_value(i_status, tweet_text);
-                }
-                leftVisualCounter.style.color = countColor;
-
-            };
-            
-            function url_text() {
-                if (!i_twitter_url) {
-                    i_twitter_url = i_frame.contentWindow.document.getElementById('twitter_url');
-                }
-                update_text_value(i_twitter_url, target_url.value);
-            };
-            
-            function update_iframe_fields() {
-                twitter_text();
-                url_text();
+                i_share_text.innerHTML = share_text.value;
             }
+            
+            function update_blurb_iframe() {
+                update_blurb_title();
+                update_blurb_text();
+            }
+            function url_text() {
+                document.getElementById('share_text_span').innerText = 'I love ' + target_url.value + ' because ...! You should check them out!';
+                $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
+
+                update_share_text();
+            }
+
         </script>
 
 {% endblock right_content %}

@@ -838,3 +838,33 @@ button:active {
     float: right;
     padding-left: 20px;
 }
+
+/* EDIT PAGE STUFF */
+#blurb_iframe_container {
+    width:660px;
+    height:151px;
+    border: 1px solid #aeceef;
+    overflow:hidden;
+    margin:auto;
+}
+
+#blurb_iframe_container iframe {
+    width: 934px;
+    height:151px;
+    border:0 solid;
+ }
+
+#share_iframe_container {
+    width:460px;
+    height:268px;
+    border: 1px solid #aeceef;
+    overflow:hidden;
+    margin:auto;
+}
+
+#share_iframe_container iframe {
+    width: 934px;
+    height:268px;
+    margin-left:-463px;
+    border:0 solid;
+ }
