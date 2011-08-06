@@ -113,6 +113,9 @@ ol {
 
 /* -------------------- GENERALLY USEFUL CLASSES ---------------------------- */
 
+.no_scroll {
+    overflow: hidden;
+}
 .hidden {
     display: none;
 }
