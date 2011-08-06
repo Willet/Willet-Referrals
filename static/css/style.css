@@ -168,7 +168,7 @@ ol {
 }
 .tip {
     border: 1px solid #21847D;
-    background: #18605C;
+    background: #006280;
     color: white;
     padding: 5px;
 }
@@ -647,6 +647,8 @@ input[type="text"], textarea {
 }
 
 .default_label {
+    color: white;
+    text-shadow: #474747 1px 1px 1px;
     font-size: 1.5em;
     margin-top: 30px;
 }

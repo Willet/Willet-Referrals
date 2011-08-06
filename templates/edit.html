@@ -41,6 +41,28 @@
                 }
             );
         });
+
+        goToStep2 = function () {
+            var step1 = document.getElementById( 'step1' );
+            var step2 = document.getElementById( 'step2' );
+            var btn1  = document.getElementById( 'goToStep2Button' );
+            var btn2  = document.getElementById( 'goToStep3Button' );
+
+            step1.style.display="none";
+            step2.style.display="block";
+            btn1.style.display="none";
+            btn2.style.display="block";
+        };
+        goToStep3 = function () {
+            var step2 = document.getElementById( 'step2' );
+            var step3 = document.getElementById( 'step3' );
+            var btn  = document.getElementById( 'goToStep3Button' );
+
+            step2.style.display="none";
+            step3.style.display="block";
+            btn.style.display="none";
+        };
+
     </script>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
 {% endblock head %}
@@ -51,56 +73,72 @@
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/doUpdateOrCreateCampaign" class="offer_form" method="post">
-            <div id="bar">
-                <label class="default_label" for="title">Name This Campaign</label>
-                <input type="text" id="title" name="title" value="{{campaign.title|escape}}"/>  <br />
-                <span class="defaultValue hidden">Invite List</span>
-            </div>
-            <div>
-                <label class="default_label" for="button_text">Button Title</label> <br />
-                <input type="text" name="button_text" id="button_text" value="{% if campaign %}{{campaign.button_text|escape}}{% endif %}" onKeyUp="button_title_text();" />
-                <span class="defaultValue hidden">Get 3 months free</span>
-            </div>
-            
-            <div>
-                <label class="default_label" for="button_subtext">Button Subtitle</label> <br />
-                <input type="text" name="button_subtext" id="button_subtext" value="{% if campaign %}{{campaign.button_subtext|escape}}{% endif %}" onKeyUp="button_subtitle_text();" />
-                <span class="defaultValue hidden">by sharing your love</span>
-            </div>
-            
-            <div>
-                <label class="default_label" for="share_text">Default Tweet Text</label>
-                <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
-                <br />
-                <textarea id="share_text" name="share_text" value="" id="share_text" onKeyDown="twitter_text();" onClick="twitter_text()">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea> <br />
-                <span class="defaultValue hidden">I love http://www.YOUR_URL_HERE.com because ...! You should check them out!</span>
-            </div>
-            
-            <div>
-                <label class="default_label" for="target_url">Target URL</label> <br />
-                <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onKeyUp="url_text(); twitter_text();" />
-            </div>
-            
-            <div>
-                <label class="default_label" for="webhook_url">Webhook URL</label> <br />
-                <input type="text" name="webhook_url" id="webhook_url" value="{% if campaign %}{{campaign.webhook_url|escape}}{% else %}http://{% endif %}" />
-            </div>
-            
-            <div>
-                <label class="default_label" for="redirect_url">Redirect URL (Optional)</label> <br />
-                <p style="font-size: 1.0em; margin-bottom: 0px;">If you want us to redirect a user to a URL upon a successful Tweet, enter the URL here. Otherwise, the Tweet window will simply close afterwards.</p>
-                <input type="text" name="redirect_url" id="redirect_url" value="{% if campaign and campaign.redirect_url %}{{campaign.redirect_url|escape}}{% endif %}" />
-                <span class="defaultValue hidden">http://</span>
+            <div id="step1">
+                <div>
+                    <label class="default_label" for="title">Name This Campaign</label>
+                    <input type="text" id="title" name="title" value="{{campaign.title|escape}}"/>  <br />
+                    <span class="defaultValue hidden">Invite List</span>
+                </div>
+                <div>
+                    <label class="default_label" for="title">Your Product / Service Name</label>
+                    <input type="text" id="title" name="title" value="{{campaign.product_name|escape}}"/>  <br />
+                    <span class="defaultValue hidden">FooBoxes</span>
+                </div> 
+                <div>
+                    <label class="default_label" for="target_url">Your Website URL</label> <br />
+                    <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onKeyUp="url_text(); twitter_text();" />
+                </div>
             </div>
 
-            <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
+            <div id="step2" class="hidden">
+                <div>
+                    <label class="default_label" for="blurb_text">
+                        Blurb Title
+                    </label> 
+                    
+                    <br />
+                    
+                    <input type="text" name="blurb_text" id="blurb_text" value="{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}" onKeyUp="blurb_title_text();" />
+                    
+                    <span class="defaultValue hidden">Get 3 months free</span>
+                </div>
+                <div>
+                    <label class="default_label" for="blurb_subtext">
+                        Blurb Text
+                    </label>
+                    <br />
+                    <textarea name="blurb_subtext" id="blurb_subtext" onKeyUp="blurb_subtitle_text();">{% if campaign %}{{campaign.blurb_subtext|escape}}{% endif %}</textarea>
+                    
+                    <span class="defaultValue hidden">by sharing your love</span>
+                </div>
+           </div>
             
-            {% if client %}
-                <input class="call_to_action big submit" id="submit" type="submit" value="Save & Continue" title="Submit" />
-            {% else %}
-                <input class="call_to_action big submit" id="submit" type="submit" value="Login & Continue" title="Login" />
-            {% endif %}
+            <div id="step3" class="hidden">
+                <div>
+                    <label class="default_label" for="share_text">Default Share Text</label>
+                    <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
+                    <br />
+                    <textarea id="share_text" name="share_text" onKeyDown="twitter_text();" onClick="twitter_text()">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                    <span class="defaultValue hidden">I love http://www.YOUR_URL_HERE.com because ...! You should check them out!</span>
+                </div>
+
+                <div>
+                    <label class="default_label" for="webhook_url">Webhook URL</label> <br />
+                    <input type="text" name="webhook_url" id="webhook_url" value="{% if campaign %}{{campaign.webhook_url|escape}}{% else %}http://{% endif %}" />
+                </div>
+                
+                {% if client %}
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Save & Continue" title="Submit" />
+                {% else %}
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Login & Continue" title="Login" />
+                {% endif %}
+            </div>
+            
+            <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
         </form>
+        
+        <button id="goToStep2Button" onClick="goToStep2();" title="Next Step">Next</button>
+        <button class="hidden" id="goToStep3Button" onClick="goToStep3();" title="Next Step" >Next</button>
     </div>
 
 {% endblock left_content %}
@@ -112,18 +150,6 @@
 {% block right_content %}
         <h1 class="span-15 last lower-25 center">Sneak Peek</h1>
         <div class="prepend-1 span-14 last">
-            <p>
-                The embeddable button looks like this:
-            </p>
-            <div class="tweet_to_action" style="margin: 0 auto;">
-                <div id="button_title" class="title">{% if campaign %}{{campaign.button_text|escape}}{% else %}Get 3 months free{% endif %}</div>
-                <div id="button_subtitle" class="subtitle">{% if campaign %}{{campaign.button_subtext|escape}}{% else %}by sharing your love{% endif %}</div>
-                <div id="button_bird" class="bird"></div>
-            </div>
-            <br />
-            <p class="tip">
-                Note: You can use your own button. See code page for details.
-            </p>
             <p>
                 Here's what your users will see when they open our plugin:
             </p>
@@ -140,10 +166,10 @@
         <script>
             // Fill examples
             var i_status, i_twitter_url,
-                button_title = document.getElementById('button_title'),
-                button_subtitle = document.getElementById('button_subtitle'),
-                title_text = document.getElementById('button_text'),
-                subtitle_text = document.getElementById('button_subtext'),
+                blurb_title = document.getElementById('blurb_title'),
+                blurb_subtitle = document.getElementById('blurb_subtitle'),
+                title_text = document.getElementById('blurb_text'),
+                subtitle_text = document.getElementById('blurb_subtext'),
                 target_url = document.getElementById('target_url'),
                 share_text = document.getElementById('share_text'),
                 i_frame = document.getElementById('twitter-preview');
@@ -156,12 +182,12 @@
                 }
             }
             
-            function button_title_text() {
-                update_text_value(button_title, title_text.value);
+            function blurb_title_text() {
+                update_text_value(blurb_title, title_text.value);
             }
             
-            function button_subtitle_text() {
-                update_text_value(button_subtitle, subtitle_text.value);
+            function blurb_subtitle_text() {
+                update_text_value(blurb_subtitle, subtitle_text.value);
             }
             
             function twitter_text() {
