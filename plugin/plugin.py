@@ -67,7 +67,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'willt_code': link.willt_url_code,
                 'URL' : URL,
                 'supplied_user_id' : user_id,
-                'user_email' : user.get_email() if user else 'Your Email'
+                'user_email' : user.get_email() if user else 'Your Email',
+                'campaign' : campaign
             }
         
         if self.request.url.startswith('http://localhost:8080'):
