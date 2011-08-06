@@ -36,10 +36,10 @@ class Campaign(Model):
     product_name    = db.StringProperty( indexed = False )
     target_url      = db.LinkProperty  ( indexed = False )
     
+    blurb_title     = db.StringProperty( indexed = False )
     blurb_text      = db.StringProperty( indexed = False )
-    blurb_subtext   = db.StringProperty( indexed = False )
-    share_text      = db.StringProperty( indexed = False )
     
+    share_text      = db.StringProperty( indexed = False )
     webhook_url     = db.LinkProperty( indexed = False, required = False )
 
     # Defaults to None, only set if this Campaign has been deleted
@@ -54,14 +54,14 @@ class Campaign(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Campaign).filter('uuid =', uuid).get()
     
-    def update( self, title, product_name, target_url, blurb_text, blurb_subtext, share_text, webhook_url ):
+    def update( self, title, product_name, target_url, blurb_title, blurb_text, share_text, webhook_url ):
         """Update the campaign with new data"""
         self.title          = title
         self.product_name   = product_name
         self.target_url     = target_url
         
+        self.blurb_title    = blurb_title
         self.blurb_text     = blurb_text
-        self.blurb_subtext  = blurb_subtext
         self.share_text     = share_text
 
         self.webhook_url    = webhook_url

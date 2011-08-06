@@ -130,8 +130,8 @@
                     <span class="defaultValue hidden">Invite List</span>
                 </div>
                 <div>
-                    <label class="default_label" for="title">Your Product / Service Name</label>
-                    <input type="text" id="title" name="title" value="{{campaign.product_name|escape}}"/>  <br />
+                    <label class="default_label" for="product_name">Your Product / Service Name</label>
+                    <input type="text" id="product_name" name="product_name" value="{{campaign.product_name|escape}}"/>  <br />
                     <span class="defaultValue hidden">FooBoxes</span>
                 </div> 
                 <div>
@@ -229,9 +229,10 @@
             <div class="center" id="share_iframe_container">
                 <iframe src='/willt' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
-            <div class="center lower-50">
-                <button onClick="guiders.show('first');"> How it Works </button>
-            </div>
+        </div>
+        
+        <div class="center lower-50">
+            How it works button? I've removed the guiders.
         </div>
         
         <script>

@@ -253,7 +253,8 @@ div.input_box button:hover {
                         type: "POST",
                         url: '/auth',
                         data: { email: form.email.value,
-                                passphrase: Sha256.hash(form.passphrase.value) },
+                                passphrase: Sha256.hash(form.passphrase.value),
+                                url: form.url.value },
                         success: function(msg){
                             window.location.href = msg;
                         }
@@ -292,7 +293,8 @@ div.input_box button:hover {
                     var dataObj = {
                         email: form.email.value,
                         passphrase: Sha256.hash(form.passphrase.value),
-                        passphrase2: Sha256.hash(form.passphrase2.value)
+                        passphrase2: Sha256.hash(form.passphrase2.value),
+                        url: form.url.value
                     };
                     
                     $.ajax({
@@ -314,13 +316,13 @@ div.input_box button:hover {
     
     <div class="center">
         <p>
-            Willet Social has
+            {{NAME}} has
             <br /><br />
             {{stats.total_campaigns}} campaigns
             <br />
             {{total_users}} users
             <br />
-             {{stats.total_tweets}} Tweets 
+             {{stats.total_tweets}} shares 
              <br />
              {{stats.total_links}} shortened links
             <br />
@@ -333,7 +335,7 @@ div.input_box button:hover {
     </div>
 {% endblock left_content %}
 {% block right_content %}
-    <h1 class="span-15 last lower-25 center">Welcome to Willet Social</h1>
+    <h1 class="span-15 last lower-75 center">Welcome to {{NAME}}</h1>
 
     <div class=" prepend-3 prepend-top span-10 last">
         <div class="span-10">
@@ -416,8 +418,5 @@ div.input_box button:hover {
             </div>
 
         </div>
-
-        <p class="center">If you have already used Willet Social, please create a new account using your Google Account email and any password you wish.</p>
-
     </div>
 {% endblock right_content %}

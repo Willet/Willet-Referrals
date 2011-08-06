@@ -56,10 +56,11 @@ class ShowLoginPage( URIHandler ):
         session.regenerate_id()
         user_email = session.get('email', '');
         url        = self.request.get( 'u' )
+        client     = self.get_client()
 
-        logging.info("URL : %s" % url )
+        logging.info("URL : %s EMAIL: %s" % (url, user_email) )
 
-        if len(user_email) > 0:
+        if len(user_email) > 0 and client:
             previousAuthErrors = session.get('auth-errors', False)
             previousRegErrors  = session.get('reg-errors', False)
             
@@ -68,6 +69,7 @@ class ShowLoginPage( URIHandler ):
                 session['auth-errors'] = []
                 session['reg-errors']  = [] 
             
+
             self.redirect( url if url else '/account' )
         
         else:
@@ -181,10 +183,13 @@ class ShowResultsJSONPage( URIHandler ):
             logging.info('results :%s' % results)
             
             # Campaign details
-            template_values['campaign'] = {'title' : campaign.title, 
-                                           'button_text' : campaign.button_text,
-                                           'share_text': campaign.share_text, 
-                                           'target_url' : campaign.target_url}
+            template_values['campaign'] = { 'title' : campaign.title, 
+                                            'product_name' : campaign.product_name,
+                                            'target_url' : campaign.target_url,
+                                            'blurb_title' : campaign.blurb_title,
+                                            'blurb_text' : campaign.blurb_text,
+                                            'share_text': campaign.share_text, 
+                                            'webhook_url' : campaign.webhook_url }
             template_values['total_clicks'] = total_clicks
             template_values['has_results']  = has_results
             
@@ -210,58 +215,50 @@ class ShowResultsJSONPage( URIHandler ):
 class ShowEditPage( URIHandler ):
     # Renders a campaign page
     def get(self):
-        client      = self.get_client() # may be None
+        client       = self.get_client() # may be None
 
-        campaign_id = self.request.get( 'id' )
-        error       = self.request.get( 'error' )
-        error_msg   = self.request.get('error_msg')
-        title       = self.request.get( 'title' )
-        button_text = self.request.get( 'button_text' )
-        button_subtext = self.request.get( 'button_subtext' )
-        share_text  = self.request.get( 'share_text' )
-        target_url  = self.request.get( 'target_url' )
-        redirect_url = self.request.get( 'redirect_url' ) # optionally redirect popup after tweet
-        webhook_url = self.request.get( 'webhook_url' ) 
-
-        logging.info("HOOK %s" % webhook_url)
-
+        campaign_id  = self.request.get( 'id' )
+        error        = self.request.get( 'error' )
+        error_msg    = self.request.get( 'error_msg')
+        title        = self.request.get( 'title' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
+        blurb_title  = self.request.get( 'blurb_title' )
+        blurb_text   = self.request.get( 'blurb_text' )
+        share_text   = self.request.get( 'share_text' )
+        webhook_url  = self.request.get( 'webhook_url' ) 
+        
         template_values = { 'campaign' : None }
-
-        if client and client.campaigns.count() == 0:
-            template_values['show_guiders'] = True
 
         # Fake a campaign to put data in if there is an error
 
         if error == '1':
-            template_values['show_guiders'] = False
             template_values['error'] = 'Invalid url.'
-            template_values['campaign'] = { 'title' : title, 
-                                            'button_text' : button_text,
-                                            'button_subtext' : button_subtext,
-                                            'share_text': share_text, 
+            template_values['campaign'] = { 'title' : title,
+                                            'product_name' : product_name,
                                             'target_url' : target_url,
-                                            'webhook_url' : webhook_url,
-                                            'redirect_url' : redirect_url }
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
         elif error == '2':
-            template_values['show_guiders'] = False
             template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['campaign'] = { 'title' : title, 
-                                            'button_text' : button_text,
-                                            'button_subtext' : button_subtext,
-                                            'share_text': share_text, 
+            template_values['campaign'] = { 'title' : title,
+                                            'product_name' : product_name,
                                             'target_url' : target_url,
-                                            'webhook_url' : webhook_url,
-                                            'redirect_url' : redirect_url }
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
         elif error == '3':
-            template_values['show_guiders'] = False
             template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['campaign'] = { 'title' : title, 
-                                            'button_text' : button_text,
-                                            'button_subtext' : button_subtext,
-                                            'share_text': share_text, 
+            template_values['campaign'] = { 'title' : title,
+                                            'product_name' : product_name,
                                             'target_url' : target_url,
-                                            'webhook_url' : webhook_url,
-                                            'redirect_url' : redirect_url }
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
 
         # If there is no campaign_id, then we are creating a new one:
         elif campaign_id:
@@ -273,7 +270,6 @@ class ShowEditPage( URIHandler ):
                 return
             
             template_values['campaign'] = campaign
-            template_values['show_guiders'] = False
         
         template_values['BASE_URL'] = URL
         
@@ -299,7 +295,6 @@ class ShowCodePage( URIHandler ):
                 campaign.put()
 
             template_values['campaign'] = campaign
-            template_values['show_guiders'] = False
         
         template_values['BASE_URL'] = URL
 
@@ -322,26 +317,27 @@ class DoUpdateOrCreateCampaign( URIHandler ):
         client = self.get_client() # might be None
 
         campaign_id     = self.request.get( 'uuid' )
-        title           = self.request.get( 'title' )
-        button_text     = self.request.get( 'button_text' )
-        button_subtext  = self.request.get( 'button_subtext' )
-        share_text      = self.request.get( 'share_text' )
-        target_url      = self.request.get( 'target_url' )
-        redirect_url    = self.request.get( 'redirect_url' )
-        webhook_url     = self.request.get( 'webhook_url' )
-        
-        logging.info(" %s %s %s %s %s %s %s %s" % (campaign_id, share_text, button_text, button_subtext, title, target_url, webhook_url, redirect_url) )
+        title        = self.request.get( 'title' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
+        blurb_title  = self.request.get( 'blurb_title' )
+        blurb_text   = self.request.get( 'blurb_text' )
+        share_text   = self.request.get( 'share_text' )
+        webhook_url  = self.request.get( 'webhook_url' ) 
         
         campaign = get_campaign_by_id( campaign_id )
         
         title = title.capitalize() # caps it!
+        product_name = product_name.capitalize() # caps it!
         
-        if title == '' or button_text == '' or button_subtext == '' or share_text == '' or target_url == '':
-            self.redirect( '/edit?id=%s&error=2&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s&webhook_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url) )
+        if title == '' or product_name == '' or target_url == '' or blurb_title == '' or blurb_text == '' or share_text == '' or webhook_url == '':
+            self.redirect( '/edit?id=%s&error=2&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            % (campaign_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
             
-        if not isGoodURL( target_url ):
-            self.redirect( '/edit?id=%s&error=1&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&redirect_url=%s&webhook_url=%s' % (campaign_id, title, button_text, button_subtext, share_text, target_url, redirect_url, webhook_url) )
+        if not isGoodURL( target_url ) or not isGoodURL( webhook_url ):
+            self.redirect( '/edit?id=%s&error=1&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            % (campaign_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
 
         # If campaign doesn't exist,
@@ -352,29 +348,29 @@ class DoUpdateOrCreateCampaign( URIHandler ):
                 campaign = Campaign( uuid = generate_uuid(16),
                                      client=client, 
                                      title=title[:100], 
-                                     button_text=button_text,
-                                     button_subtext=button_subtext,
-                                     share_text=share_text[:140],
+                                     product_name=product_name,
                                      target_url=target_url,
-                                     redirect_url=redirect_url,
+                                     blurb_title=blurb_title,
+                                     blurb_text=blurb_text,
+                                     share_text=share_text,
                                      webhook_url=webhook_url)
                 campaign.put()
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&webhook_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, webhook_url, redirect_url) )
+                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), campaign_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
         # Otherwise, update the existing campaign.
         else:
             try:
-                campaign.update( title=title, 
-                             share_text=share_text, 
-                             button_text=button_text, 
-                             button_subtext=button_subtext,
-                             target_url=target_url,
-                             redirect_url=redirect_url,
-                             webhook_url=webhook_url)
+                campaign.update( title=title[:100], 
+                                 product_name=product_name,
+                                 target_url=target_url,
+                                 blurb_title=blurb_title, 
+                                 blurb_text=blurb_text,
+                                 share_text=share_text, 
+                                 webhook_url=webhook_url)
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&button_text=%s&button_subtext=%s&share_text=%s&target_url=%s&webhook_url=%s&redirect_url=%s' % (str(e), campaign_id, title, button_text, button_subtext, share_text, target_url, webhook_url, redirect_url) )
+                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), campaign_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
         if client == None:
@@ -416,7 +412,7 @@ class DoAuthenticate( URIHandler ):
             errors.append(errStr) 
             session['correctEmail'] = userEmail
             session['auth-errors'] = errors
-            self.response.out.write("/login")
+            self.response.out.write("/login?u=%s" % url)
             return
 
         # authentication successful
@@ -450,13 +446,13 @@ class DoRegisterClient( URIHandler ):
             session['reg-errors'] = errors
             # set 'visited' cookie since this is a known address
             set_visited_cookie(self.response.headers) 
-            self.response.out.write("/login")
+            self.response.out.write("/login?u=%s" % url)
             return
         elif status == "UNMATCHING_PASS":
             errors.append(errMsg)
             session['reg-errors'] = errors
             session['auth-errors'] = []
-            self.response.out.write("/login")
+            self.response.out.write("/login?u=%s" % url)
             return
         else:
             # set visited cookie so 'register' tab does not appear again
