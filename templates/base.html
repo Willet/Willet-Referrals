@@ -49,6 +49,9 @@
         {% block head %}{% endblock head %}
 	</head>
 	<body>
+        <div id="background"></div>
+        <div id="starburst"><div><div></div></div></div>
+
         <!-- CONTENT -->
         <div id='header'>
             <div id="white"></div>
@@ -64,12 +67,12 @@
                         {% endblock left_content %}
                     </div>
                     <div class="prepend-top span-15 last right_col">
-                        <div id="right_header" class="span-15 last lower-10">
+                        <div id="right_header" class="span-15 last">
                             
                             {% if client %}
-                                <p><a href='{{logout_url}}'>Logout</a></p>
+                                <p><a class="login" href='{{logout_url}}'>Logout</a></p>
                             {% else %}
-                                <p><a href='{{login_url}}'>Login</a></p>
+                                <p><a class="login" href='{{login_url}}'>Login</a></p>
                             {% endif %}
                             
                             {% block right_head %}{% endblock right_head %}

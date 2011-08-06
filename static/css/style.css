@@ -40,48 +40,41 @@ div#footer > div {
 /* ------------------------------ DEFAULTS ---------------------------------- */
 
 html {
-    color: #FFF;
+    color:#484848;
+	background-color: #E8F7FB;
     font-family: 'trebuchet ms', helvetica, sans-serif; 
-    background: #1f7973 url(/static/imgs/bg-dark.png) repeat fixed;
 }
 
 body {
     font-size: 62.5%;
-    /*background: #323232 url(/static/imgs/bg-dark.png) repeat fixed; */
-    background: #1f7973 url(/static/imgs/bg-dark.png) repeat fixed;
 }
 h1 {
     font-family: 'trebuchet ms', helvetica, sans-serif;
     font-size: 4.0em;
     font-style: italic;
     font-weight: bold;
-    color: #FFF;
+    color: #474747;
     margin: 0 0 30px 0;
     letter-spacing: -2px;
-    text-shadow: #251f21 2px 2px 2px;
 }
 
 h2 {
     font-family: 'trebuchet ms', helvetica, sans-serif;
-    color: white; 
+    color: #006280;
     font-size: 2.8em;
     font-weight: bold;
     font-style: italic;
     margin-bottom: 15px;
     letter-spacing: 0px;
-    text-shadow: #251f21 2px 2px 2px;
-
 }
+
 h3 {
     font-family: 'trebuchet ms', helvetica, sans-serif;
     font-size: 2.0em;
     letter-spacing: -1px;
-    color: white;
-    text-shadow: #251f21 2px 2px 2px;
 }
 p, td, ul li {
     font-size: 1.7em;
-    color: #FFF;
 }
 li {
     margin-bottom: 1.0em;
@@ -91,13 +84,11 @@ p+p {
 }
 a, a:link, a:visited {
     font-family: 'trebuchet ms', helvetica, sans-serif; 
+    color: #056380;
     text-decoration: none;
-    color: white;
-    text-shadow: black 1px 1px 1px;
 }
 a:hover {
-    color: grey;
-    text-shadow: black 4px 4px 4px;
+    text-shadow: #474747 1px 1px 1px;
 }
 a:active {
     color: #B00C0B;
@@ -130,6 +121,9 @@ ol {
 }
 .lower-10 {
     padding-top: 10px;
+}
+.lower-15 {
+    padding-top: 15px;
 }
 .lower-25 {
     padding-top: 25px;
@@ -238,22 +232,40 @@ p.code {
 .clearfix {display: block;}
 /* End hide from IE-mac */
 
-/*----------------------------- SITE WIDE CLASS ------------------------------*/
-
-.back_link {
-    float: left;
-    text-align: left;
-    margin-top: -20px;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
-    color: white;
-    font-size: 2.0em;
-    letter-spacing: -1px;
+/* ------------------------------ BACKGROUND -------------------------------- */
+div#background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #dcf0f4; /* Old browsers */
+    background: -moz-linear-gradient(left, #dcf0f4 0%, #e8f7fb 50%, #dcf0f4 100%); /* FF 3.6+ */
+    background: -webkit-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* Chrome 10+, Safari 5.1+ */
+    background: -o-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* IE 10+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcf0f4', endColorstr='#dcf0f4',GradientType=1 ); /* IE 6-9 */
+    background: linear-gradient(left, #dcf0f4 0%,#e8f7fb 50%,#dcf0f4 100%); /* W3C */
 }
-.back_link:hover {
-    color: grey;
+div#starburst {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
 }
-.back_link:active {
-    color: #B00C0B;
+div#starburst>div {
+    position: relative;
+    top: 0;
+    width: 960px;
+    margin: 0 auto;
+}
+div#starburst>div>div {
+    width: 1994px;
+    height: 1012px;
+    margin-top: -170px;
+    margin-left: -840px;
+    background-image: url("/static/imgs/starburst.png");
 }
 
 /*--------------------------------- CALL TO ACTION ---------------------------*/
@@ -460,8 +472,17 @@ div#header {
     height: 0;
     width: 100%;
 }
+div#header>div#white {
+    position: absolute;
+    top: 0px;
+    height:20px;
+    width:100%;
+    z-index: 1;
+    background:#FFFFFF;
+}
 div#header>div#cloud_bottom {
-    position: relative;
+    position: absolute;
+    top: 20px;
     width:100%;
     height:86px;
     background:transparent;
@@ -470,10 +491,11 @@ div#header>div#cloud_bottom {
 
 div#header>div#cloud_top {
     position: absolute;
-    top: 0px;
+    margin-top: 20px;
     width:100%;
     height:77px;
-    background:transparent;
+    z-index: 1;
+    background: transparent;
     background: url(/static/imgs/cloud_top.png) center top repeat-x;
 }
 div#wrap {
@@ -537,7 +559,7 @@ div#footer button {
 }
 .left_col {
     height: 100%;
-    background: black;
+    background: #006280;
     padding: 30px 5px 30px 5px;
     -khtml-border-bottom-right-radius: 30px;
     -o-border-bottom-right-radius: 30px;
@@ -610,7 +632,6 @@ input[type="text"], textarea {
     margin-bottom: 20px;
 }
 
-
 .submit {
     left: 130px;
 }
@@ -621,7 +642,6 @@ input[type="text"], textarea {
 }
 
 .default_label {
-    color: white;
     font-size: 1.5em;
     margin-top: 30px;
 }
@@ -650,14 +670,6 @@ td.title {
     font-family: 'trebuchet ms', helvetica, sans-serif;
     font-size: 1.6em;
     letter-spacing: -1px;
-    color: white;
-}
-
-#encourage {
-    color: white;
-    font-size: 1.5em;
-    text-align: center;
-
 }
 
 #twitter_foo {
@@ -679,28 +691,22 @@ td.title {
     color: #ae0909;
 }
 
-#landing_influencer_title {
-    text-align: center;
-    font-size: 1.0em;
-    color: white;
-}
 #influencer_title {
     font-size: 1.6em;
-    color: white;
 }
 
 .influencer {
-    background-color: white;
+    background-color: #4747474;
     border-radius: 5px;
     margin-bottom: 1px;
-    color: black;
+    color: white;
     text-align: center;
     font-size: 1.4em;
 }
 
 .influencer a {
     text-shadow: none;
-    color: black;
+    color: white;
 }
 
 .profile_pic {
@@ -744,22 +750,15 @@ td.title {
 
 .about {
     font-size: 1.5em;
-    color: white;
 }
 
 .about .link, .about .link:visited {
     font-size: 1.8em;
     font-family: 'trebuchet ms', helvetica, sans-serif; 
     text-decoration: none;
-    color: white;
-    text-shadow: black 2px 2px 2px;
 }
 .about .link:hover {
-    color: grey;
-    text-shadow: black 4px 4px 4px;
-}
-.about .link:active {
-    color: #B00C0B;
+    text-shadow: #474747 1px 1px 1px;
 }
 
 .role {
@@ -820,6 +819,8 @@ button:active {
 }
 
 #right_header {
+    position: relative;
+    z-index: 2;
     float: right;
 }
 #right_header p {
