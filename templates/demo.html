@@ -4,7 +4,16 @@
 {% endblock head %}
 
 {% block content %}
-
+    <div class="span-22 last lower-15" id="right_header">
+        {% if client %}
+        <p><a href='{{logout_url}}'>Logout</a></p>
+        {% else %}
+        <p><a href='{{login_url}}'>Login</a></p>
+        {% endif %}
+        <p><a href='/account'>Your Campaigns</a></p>
+        <p><a href='/'>Home</a></p>
+    </div>
+    
     <div class="prepend-top span-24 center last lower-100">
          <iframe allowtransparency="true" frameborder="0" scrolling="no" src="{{BASE_URL}}/widget?ca_id=8bbde18994564320&uid=" style="width:932px; height:
          434px;"> </iframe>   
