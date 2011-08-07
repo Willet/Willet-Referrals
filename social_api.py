@@ -14,6 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.link import *
+from models.oauth import *
 from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
@@ -250,7 +251,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
 def main():
     application = webapp.WSGIApplication([
         (r'/klout', QueryKloutAPI),
-        (r'/socialGraphAPI', QueryGoogleSocialGraphAPI,
+        (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
 
