@@ -30,21 +30,31 @@ class PostConversion( URIHandler ):
             return
         
         referrer_uid  = self.request.cookies.get('referrer_%s' % campaign_uuid, False)
+        # Only POST if they have a referrer cookie!
+        if referrer_uid:
 
-        data = { 'timestamp' : str( time() ),
-                 'referrer_id' : referrer_uid,
-                 'referree_id' : referree_uid }
-        payload = urllib.urlencode( data )
+            data = { 'timestamp' : str( time() ),
+                     'referrer_id' : referrer_uid,
+                     'referree_id' : referree_uid }
+            payload = urllib.urlencode( data )
 
-        logging.info("Conversion: Posting to %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
-        result = urlfetch.fetch( url     = campaign.webhook_url,
-                                 payload = payload,
-                                 method  = urlfetch.POST,
-                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
-        
-        if result.status_code != 200:
-            # What do we do here?
-            logging.error("Conversion POST failed: %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+            logging.info("Conversion: Posting to %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+            result = urlfetch.fetch( url     = campaign.webhook_url,
+                                     payload = payload,
+                                     method  = urlfetch.POST,
+                                     headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
+            
+            if result.status_code != 200:
+                # What do we do here?
+                logging.error("Conversion POST failed: %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+                return
+
+            # Tell Mixplanel a client has a conversion
+            taskqueue.add( queue_name = 'mixpanel', 
+                           url        = '/mixpanel', 
+                           params     = {'event'            : 'Conversion', 
+                                         'campaign_uuid'    : campaign_uuid,
+                                         'supplied_user_id' : referrer_uid} ) 
 
 ##---------------------------------------------------------------------------##
 ##------------------------- The URI Router ----------------------------------##

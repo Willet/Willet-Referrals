@@ -42,11 +42,10 @@ class TrackWilltURL( webapp.RequestHandler ):
 
             # Tell Mixplanel that we got a click
             taskqueue.add( queue_name = 'mixpanel', 
-                           url  = '/mixpanel', 
-                           params = {'event' : 'Clicks', 
-                                     'campaign_uuid' : link.campaign.uuid,
-                                     'twitter_handle' : link.user.twitter_handle
-                            })
+                           url        = '/mixpanel', 
+                           params     = {'event'          : 'Clicks', 
+                                         'campaign_uuid'  : link.campaign.uuid,
+                                         'twitter_handle' : link.user.twitter_handle} )
 
         set_referral_cookie(self.response.headers, code)
         self.redirect(link.target_url)
