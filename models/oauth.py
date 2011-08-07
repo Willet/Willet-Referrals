@@ -288,7 +288,8 @@ class OAuthClient(object):
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
-        self.response.out.write("<script type=\"text/javascript\">\nwindow.opener.document.getElementById('tweet-complete').click();</script>")
+        self.response.headers.add_header("Content-type": 'text/javascript')
+        self.response.out.write("window.opener.document.getElementById('tweet-complete').click();")
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(
