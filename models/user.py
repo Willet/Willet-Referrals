@@ -91,6 +91,13 @@ class User( db.Expando ):
         for k in kwargs:
             if k == 'email':
                 create_email_model( self, kwargs['email'] )
+            elif k == 'twitter_access_token':
+                self.twitter_access_token = kwargs['twitter_access_token']
+            elif k == 'client':
+                self.client = kwargs['client']
+            elif k == 'referrer':
+                self.referrer = kwargs['referrer']
+            
             else:
                 setattr( self, k, kwargs[k] )
         """
