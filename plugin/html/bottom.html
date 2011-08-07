@@ -71,39 +71,45 @@
             elem.value = "";
         };
 
-        sendGmail = function(){
+        sendEmailVia = function( who ){
             var from_addr = document.getElementById( 'from-email' ).value;
             var to_addrs  = document.getElementById( 'to-emails' ).value;
             var msg       = document.getElementById( 'email-share-text' ).value;
+            var str;
 
-            $.ajax({
-                url: "/sendEmailInvites",
-                type: 'post',
-                data: { "from_addr" : from_addr, 
-                        "to_addrs"  : to_addrs,
-                        "msg"       : msg,
-                        "url"       : "{{willt_url}}",
-                        "willt_url_code" : "{{willt_code}}",
-                        "via_gmail" : true },
-                success: function(msg){
-                    var to_addrs  = document.getElementById( 'to-emails' );
-                    var msg       = document.getElementById( 'email-share-text' );
+            // Tell the Server
+            sendEmail( false );
 
-                    to_addrs.value = "";
-                    msg.value = "Thank You! Invites sent!";
-                }
-
-            });// end ajax
-
-            var str = 'http://mail.google.com/mail/?view=cm&fs=1'+
+            if ( who == 'gmail' ) {
+                // Make a Gmail String
+                str = 'https://mail.google.com/mail/?view=cm&fs=1' +
                       '&to=' + to_addrs + 
                       '&su=' + "Check This Out!" + 
                       '&body=' + msg.replace(/\n/g,'%0A') + 
-                      '&ui=2';
-            location.href = str;
+                      '&ui=2&tf=1';
+            } else if (who == 'yahoo') {
+                // Make a Yahoo string
+                str = "http://us.mc1216.mail.yahoo.com/mc/compose?.rand=1915749995" + 
+                      "&to=" + to_addrs +
+                      "&subject=" + "Check This Out!" + 
+                      '&body=' + msg.replace(/\n/g,'%0A');
+            } else if (who == 'hotmail') {
+                str = 'http://by156w.bay156.mail.live.com/default.aspx?rru=compose' + 
+                      "&to=" + to_addrs +
+                      "&subject=" + "Check This Out!" + 
+                      '&body=' + msg.replace(/\n/g,'%0A');
+            } else if (who == 'aol') {
+                str = "http://mail.aol.com/34007-211/aol-6/en-us/mail/compose-message.aspx?" + 
+                      "&to=" + to_addrs +
+                      "&subject=" + "Check This Out!" + 
+                      '&body=' + msg.replace(/\n/g,'%0A');
+            }
+            window.open( str );
         };
 
-        sendEmail = function() {
+        
+
+        sendEmail = function( via_willet ) {
             var from_addr = document.getElementById( 'from-email' ).value;
             var to_addrs  = document.getElementById( 'to-emails' ).value;
             var msg       = document.getElementById( 'email-share-text' ).value;
@@ -115,7 +121,8 @@
                         to_addrs  : to_addrs,
                         msg       : msg,
                         url       : "{{willt_url}}",
-                        willt_url_code : "{{willt_code}}" },
+                        willt_url_code : "{{willt_code}}",
+                        via_willet : via_willet },
                 success: function(msg){
                     var to_addrs  = document.getElementById( 'to-emails' );
                     var msg       = document.getElementById( 'email-share-text' );
@@ -302,14 +309,21 @@
                 
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
-                    <a href="#" onClick="sendGmail();"> 
+                <div class="span-11 last" style="margin-top: 5px;" >
+                    <a href="#" onClick="sendEmailVia( 'gmail' );"> 
                         <img src="/static/imgs/gmail-logo.png" />
-                        <div> Via Gmail </div>
                     </a>
-                    
-                    <a href="#" onClick="sendEmail();"> 
-                        <div> Via Willet</div>
+                    <a href="#" onClick="sendEmailVia( 'yahoo' );"> 
+                        <img src="/static/imgs/yahoo_logo.jpg" />
+                    </a>
+                    <a href="#" onClick="sendEmailVia( 'hotmail' );"> 
+                        <img src="/static/imgs/hotmail_logo.png" />
+                    </a>
+                    <a href="#" onClick="sendEmailVia( 'aol' );"> 
+                        <img src="/static/imgs/aol_logo.jpg" />
+                    </a>
+                    <a href="#" onClick="sendEmail(true);"> 
+                        <img src="/static/imgs/email_logo.png" />
                     </a>
                 </div>
             </div>
