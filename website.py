@@ -107,6 +107,13 @@ class ShowAccountPage( URIHandler ):
         client  = self.get_client() # may be None
         to_show = []
 
+        # If we have a Client, see if they've ever been a User & connect
+        if client and not hasattr( client, 'client_user' ):
+            user = get_user_by_cookie( )
+            if user:
+                user.client = client
+                user.put()
+
         # Show the Clients campaigns
         if hasattr( client, 'campaigns' ) and client.campaigns.count() > 0:
             has_campaigns = True 

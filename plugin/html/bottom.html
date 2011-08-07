@@ -71,14 +71,37 @@
             elem.value = "";
         };
 
+        errorCheckEmails = function (from, to, msg) {
+            var ret = true;
+            var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;  
+            
+            if( !emailPattern.test(from.value) ) {
+                from.value = "Please enter your email address.";
+                ret = false; 
+            }  
+
+            if ( to.value == "" ) {
+                to.value = "Please enter your friends' email addresses!";
+                ret = false;
+            }
+
+            if ( msg.value == "" ) {
+                msg.value = "Enter a message for your friends!";
+                ret = false;
+            }
+            return ret;
+        }
+
         sendEmailVia = function( who ){
-            var from_addr = document.getElementById( 'from-email' ).value;
+            var from_addr = document.getElementById( 'from-email' );
             var to_addrs  = document.getElementById( 'to-emails' ).value;
             var msg       = document.getElementById( 'email-share-text' ).value;
             var str;
 
             // Tell the Server
-            sendEmail( false );
+            if ( !sendEmail( false ) ) {
+                return;
+            }
 
             if ( who == 'gmail' ) {
                 // Make a Gmail String
@@ -108,16 +131,21 @@
         };
 
         sendEmail = function( via_willet ) {
-            var from_addr = document.getElementById( 'from-email' ).value;
-            var to_addrs  = document.getElementById( 'to-emails' ).value;
-            var msg       = document.getElementById( 'email-share-text' ).value;
+            var from_addr = document.getElementById( 'from-email' );
+            var to_addrs  = document.getElementById( 'to-emails' );
+            var msg       = document.getElementById( 'email-share-text' );
+
+            // Check the fields.
+            if ( !errorCheckEmails(from_addr, to_addrs, msg) ) {
+                return false;
+            }
 
             $.ajax({
                 url: "/sendEmailInvites",
                 type: 'post',
-                data: { from_addr : from_addr, 
-                        to_addrs  : to_addrs,
-                        msg       : msg,
+                data: { from_addr : from_addr.value, 
+                        to_addrs  : to_addrs.value,
+                        msg       : msg.value,
                         url       : "{{willt_url}}",
                         willt_url_code : "{{willt_code}}",
                         via_willet : via_willet },

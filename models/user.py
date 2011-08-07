@@ -56,6 +56,7 @@ class User(Model):
     creation_time   = db.DateTimeProperty(auto_now_add = True)
     about_me_url    = db.LinkProperty( required = False, default = None )
     referrer        = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
+    client          = db.ReferenceProperty(db.Model, collection_name='client_user')
 
     # Twitter Junk
     twitter_handle  = db.StringProperty(indexed = True)
