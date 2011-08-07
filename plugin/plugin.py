@@ -166,6 +166,8 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
                 twitter_name=twitter_result['user']['name'],
                 twitter_followers_count=twitter_result['user']['followers_count'])
+                self.response.out.write("<script type=\"text/javascript\">\nwindow.opener.document.getElementById('tweet-complete').click();</script>")
+
             link = get_link_by_willt_code(willt_code)
             if link:
                 link.tweet_id = twitter_result['id_str']

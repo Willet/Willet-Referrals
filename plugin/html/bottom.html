@@ -64,8 +64,8 @@
         shareText = document.getElementById('tf-share-text'),
         charsLeft = document.getElementById('chars-left');
 
-        tweet_complete = function() {
-
+        tweetComplete = function() {
+            console.log("Done tweeting!");
         };
 
         willet_conversion = function () {
@@ -428,7 +428,7 @@
             </div>
         </div>
     </div>
-    
+    <div id="tweet-complete" onclick="tweetComplete();"></div>
     <div id="share-area">
         <iframe id="willt-frame"></iframe>
         <p onclick="reset();">Reset</p>
