@@ -21,7 +21,6 @@ from util.consts import *
 class PostConversion( URIHandler ):
     
     def post(self):
-        logging.info('Posting a conversion notification to a Client!')
         referree_uid  = self.request.get( 'referree_uid' )
         campaign_uuid = self.request.get( 'campaign_uuid' )
         campaign      = get_campaign_by_id( campaign_uuid )
@@ -34,6 +33,7 @@ class PostConversion( URIHandler ):
         referrer_uid  = self.request.cookies.get('referrer_%s' % campaign_uuid, False)
         # Only POST if they have a referrer cookie!
         if referrer_uid:
+            logging.info('Posting a conversion notification to a Client!')
 
             # Store a 'Conversion' in our DB for tracking purposes
             create_conversion( referrer_uid, campaign, user )
