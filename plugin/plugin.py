@@ -157,8 +157,8 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         message = self.request.get('m')
 
         user = get_user_by_cookie(self)
-        logging.info("Plugin id user -> " + str(user))
-        if user and user.twitter_access_token:
+        if user and user.twitter_access_token and message:
+            logging.info("tweeting: " + message)
             twitter_response = tweet(user.twitter_access_token, message)
             logging.info(twitter_response)
         else: 

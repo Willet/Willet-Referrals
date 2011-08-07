@@ -270,7 +270,7 @@ class OAuthClient(object):
         user.twitter_access_token = self.token
         user.put()
         twitter_result = tweet(user.twitter_access_token, message)
-        console.log(twitter_result)
+        logging.info(twitter_result)
         self.set_cookie(key_name)
         self.handler.redirect(return_to)
 
