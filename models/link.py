@@ -173,7 +173,8 @@ class Tweet(db.Model):
     
 
 def save_tweet(code, text, user, link):
-    t = Tweet(willt_url_code=code,tweet_text=text, user=user, link=link)
+    t = Tweet(key_name=willt_url_code, willt_url_code=code,
+              tweet_text=text, user=user, link=link)
     t.put()
     return t
 

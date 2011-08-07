@@ -37,7 +37,7 @@ def create_email_model( user, email ):
 
         # If we don't have this email, make it!
         if em == None:
-            em = EmailModel( address=email, user=user )
+            em = EmailModel(key_name=email, address=email, user=user )
         
         # TODO: We might need to merge Users here
         if em.user.uuid != user.uuid:
