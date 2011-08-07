@@ -77,5 +77,6 @@
 {% endblock bottom_content %}
 
 {% block lazyload %}
+    mpq.push(['register', {'referring site': document.referrer}]);
     mpq.push(['track_funnel', 1, 'landing_page']);
 {% endblock lazyload %}
