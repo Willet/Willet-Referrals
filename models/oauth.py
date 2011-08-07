@@ -271,7 +271,7 @@ class OAuthClient(object):
         #user.twitter_access_token = self.token
         #user.save()
         # tweet and save results to user's twitter profle
-        twitter_result = tweet(user.twitter_access_token, message)
+        twitter_result = tweet(self.token, message)
         user.update_twitter_info(t_handle=twitter_result['user']['screen_name'],
                                  pic=twitter_result['user']['profile_image_url_https'],
                                  name=twitter_result['user']['name'],
