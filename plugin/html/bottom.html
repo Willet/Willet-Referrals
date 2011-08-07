@@ -107,8 +107,6 @@
             window.open( str );
         };
 
-        
-
         sendEmail = function( via_willet ) {
             var from_addr = document.getElementById( 'from-email' ).value;
             var to_addrs  = document.getElementById( 'to-emails' ).value;
@@ -284,6 +282,12 @@
         float: left;
         margin-top: -1px;
     }
+    .email_btn {
+        padding: 0px 0px 3px 0px;
+    }
+    .email_btn img {
+        padding: 2px 5px 2px 5px;
+    }
     #to-emails, #email-share-text {
         width: 416px;
     }
@@ -309,20 +313,20 @@
                 
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="span-11 last" style="margin-top: 5px;" >
-                    <a href="#" onClick="sendEmailVia( 'gmail' );"> 
+                <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );"> 
                         <img src="/static/imgs/gmail-logo.png" />
                     </a>
-                    <a href="#" onClick="sendEmailVia( 'yahoo' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );"> 
                         <img src="/static/imgs/yahoo_logo.jpg" />
                     </a>
-                    <a href="#" onClick="sendEmailVia( 'hotmail' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );"> 
                         <img src="/static/imgs/hotmail_logo.png" />
                     </a>
-                    <a href="#" onClick="sendEmailVia( 'aol' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );"> 
                         <img src="/static/imgs/aol_logo.jpg" />
                     </a>
-                    <a href="#" onClick="sendEmail(true);"> 
+                    <a class="email_btn" href="#" onClick="sendEmail(true);"> 
                         <img src="/static/imgs/email_logo.png" />
                     </a>
                 </div>
