@@ -15,7 +15,7 @@ from models.client   import Client, get_client_by_email, authenticate, register
 from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
-from models.user     import User
+from models.user     import User, get_user_by_cookie
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
@@ -107,14 +107,7 @@ class ShowAccountPage( URIHandler ):
         client  = self.get_client() # may be None
         to_show = []
 
-        # If we have a Client, see if they've ever been a User & connect
-        if client and not hasattr( client, 'client_user' ):
-            user = get_user_by_cookie( )
-            if user:
-                user.client = client
-                user.put()
-
-        # Show the Clients campaigns
+        # Show the Client's campaigns
         if hasattr( client, 'campaigns' ) and client.campaigns.count() > 0:
             has_campaigns = True 
             campaigns     = client.campaigns.order( '-created' )
@@ -425,6 +418,15 @@ class DoAuthenticate( URIHandler ):
         # authentication successful
         session['email'] = userEmail
         session['auth-errors'] = [ ]
+        
+        # If we have a Client, see if they've ever been a User & connect
+        client = self.get_client()
+        if client and  hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
+            user = get_user_by_cookie( self )
+            if user:
+                user.client = client
+                user.put()
+
         self.response.out.write( url if url else '/account' )
         return
 
