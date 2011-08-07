@@ -123,7 +123,7 @@ def tweet(token, message):
                           headers={"Authorization":"OAuth",
                                    "Content-type":"application/x-www-form-urlencoded"})
     req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
-    res = urllib2.urlopen(req).read()
+    res = decode_json(urllib2.urlopen(req).read())
 
     return res
 
@@ -269,7 +269,7 @@ class OAuthClient(object):
                                                          request_handler=self.handler)
         logging.info("Just got user " + str(user) + " so I should have a cookie now")
         user.twitter_access_token = self.token
-        user.put()
+        user.save()
         twitter_result = tweet(user.twitter_access_token, message)
         logging.info(twitter_result)
         self.set_cookie(key_name)
