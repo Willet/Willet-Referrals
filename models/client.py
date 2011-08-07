@@ -18,7 +18,6 @@ from models.model         import Model
 
 class Client(Model):
     """A WilletSocial Client"""
-    google_user   = db.UserProperty()
     email         = db.StringProperty(indexed=True)
     creation_time = db.DateTimeProperty(auto_now_add = True)
     passphrase    = db.StringProperty(indexed=True)
