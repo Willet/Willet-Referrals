@@ -54,7 +54,7 @@ def register(email, pass1, pass2):
     elif pass1 != pass2: # unmatching passwords
         status, errMsg = 'UNMATCHING_PASS', 'Those passwords don\'t match.'
     else:
-        client = Client( uuid=generate_uuid(16), email=email.lower(), passphrase=pass1 )
+        client = Client( key_name=email.lower(), uuid=generate_uuid(16), email=email.lower(), passphrase=pass1 )
         client.put()
 
     return [status, client, errMsg]

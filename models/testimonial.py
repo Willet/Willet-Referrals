@@ -41,7 +41,9 @@ def create_testimonial( user,  message, link ):
     # If the testimonial is not the same as the share text:
     if message != share_text:
         # Make a new testimonial
-        t = Testimonial( uuid=generate_uuid(16),
+        uuid = generate_uuid(16)
+        t = Testimonial( key_name = uuid,
+                         uuid = uuid,
                          user=user,
                          message=message,
                          campaign=campaign )

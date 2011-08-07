@@ -337,7 +337,9 @@ class DoUpdateOrCreateCampaign( URIHandler ):
         
             # Create a new one!
             try:
-                campaign = Campaign( uuid = generate_uuid(16),
+                uuid = generate_uuid(16)
+                campaign = Campaign( key_name=uuid,
+                                     uuid=uuid,
                                      client=client, 
                                      title=title[:100], 
                                      product_name=product_name,

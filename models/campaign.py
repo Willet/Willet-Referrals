@@ -173,7 +173,6 @@ class Campaign(Model):
 def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
 
-
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
 

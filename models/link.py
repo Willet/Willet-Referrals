@@ -98,7 +98,8 @@ def create_link(targetURL, camp, domain, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
 
     code = encode_base62(get_a_willt_code())
-    link = Link(target_url = targetURL,
+    link = Link(key_name = code,
+                target_url = targetURL,
                 willt_url_code = code,
                 supplied_user_id = usr,
                 campaign = camp,

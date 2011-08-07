@@ -35,8 +35,10 @@ class Conversion(Model):
 
 def create_conversion( referrer_supplied_user_id, campaign, referree ):
     link = get_link_by_supplied_user_id( referrer_supplied_user_id )
-
-    c = Conversion( uuid     = generate_uuid(16),
+    uuid = generate_uuid(16)
+    
+    c = Conversion( key_name = uuid,
+                    uuid     = uuid,
                     link     = link,
                     referrer = link.user,
                     referree = referree,
