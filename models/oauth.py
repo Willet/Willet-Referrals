@@ -268,9 +268,15 @@ class OAuthClient(object):
         user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
                                                          request_handler=self.handler)
         logging.info("Just got user " + str(user) + " so I should have a cookie now")
-        user.twitter_access_token = self.token
-        user.save()
+        #user.twitter_access_token = self.token
+        #user.save()
+        # tweet and save results to user's twitter profle
         twitter_result = tweet(user.twitter_access_token, message)
+        user.update_twitter_info(t_handle=twitter_result['user']['screen_name'],
+                                 pic=twitter_result['user']['profile_image_url_https'],
+                                 name=twitter_result['user']['name'],
+                                 followers=twitter_result['user']['followers_count'],
+                                 access_token=self.token)
         logging.info(twitter_result)
         self.set_cookie(key_name)
         self.handler.redirect(return_to)

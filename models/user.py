@@ -130,6 +130,14 @@ class User( db.Expando ):
         if hasattr( self, attr_name ):
             return getattr( self, attr_name )
 
+    def update_twitter_info(self, **kwargs):
+        fields = ['handle', 'pic', 'followers', 'name', 'access_token']
+        insertion = {}
+        for k in kwargs:
+            if k in fields:
+                insertion[k] = kwargs[k]
+        self.update(**insertion)
+
 # Gets by X
 def get_user_by_uuid( uuid ):
     logging.info("Getting user by uuid " + str(uuid))
