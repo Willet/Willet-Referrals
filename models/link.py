@@ -113,6 +113,9 @@ def get_link_by_url( url_arg ):
 def get_link_by_willt_code( code ):
     return Link.all().filter('willt_url_code =', code).get()
 
+def get_link_by_supplied_user_id( uid ):
+    return Link.all().filter('supplied_user_id =', uid)
+
 def get_links_by_user(user):
     """Return all links owned by user. 
     

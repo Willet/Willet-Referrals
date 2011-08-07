@@ -13,6 +13,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
 from models.campaign import Campaign, get_campaign_by_id
+from models.user import get_user_by_cookie
 from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
@@ -24,6 +25,7 @@ class PostConversion( URIHandler ):
         referree_uid  = self.request.get( 'referree_uid' )
         campaign_uuid = self.request.get( 'campaign_uuid' )
         campaign      = get_campaign_by_id( campaign_uuid )
+        user          = get_user_by_cookie( self ) # probably None, but why not try it!
 
         if campaign == None:
             # What do we do here?
@@ -33,6 +35,10 @@ class PostConversion( URIHandler ):
         # Only POST if they have a referrer cookie!
         if referrer_uid:
 
+            # Store a 'Conversion' in our DB for tracking purposes
+            create_conversion( referrer_uid, campaign, user )
+
+            # Tell the Client by POSTing to their webhook URL
             data = { 'timestamp' : str( time() ),
                      'referrer_id' : referrer_uid,
                      'referree_id' : referree_uid }
