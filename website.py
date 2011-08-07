@@ -300,14 +300,6 @@ class ShowCodePage( URIHandler ):
 
         self.response.out.write(self.render_page('code.html', template_values))
 
-class ShowTwitterPreviewPage( URIHandler ):
-    # Renders the main template
-    def get(self):
-        template_values = []
-        
-        self.response.out.write(self.render_page('twitter-preview.html', template_values))
-
-
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Dos -------------------------------------------##
 ##-----------------------------------------------------------------------------##
@@ -524,7 +516,6 @@ def main():
         (r'/demo', ShowDemoPage),
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
-        (r'/twitterPreview', ShowTwitterPreviewPage),
         
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),
@@ -540,4 +531,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

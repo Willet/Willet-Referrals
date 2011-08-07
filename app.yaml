@@ -48,7 +48,7 @@ handlers:
   script: website.py
 
 # further client interactions
-- url: /(about|account|deleteCampaign|button|login|logout|auth|register|tweet_button|campaign|campaign.json|contact|demo|edit|doUpdateOrCreateCampaign|partner|doPartner|doFeedback|test|twitterPreview|code)
+- url: /(about|account|deleteCampaign|login|logout|auth|register|campaign|campaign.json|contact|demo|edit|doUpdateOrCreateCampaign|doFeedback|code)
   script: website.py
 
 # website initialization
