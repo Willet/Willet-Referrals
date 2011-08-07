@@ -8,7 +8,7 @@ NAME = 'ReferredU'
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
 APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
-DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else 'www.' + APP_DOMAIN 
+DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 
 # Campaign Stuff
