@@ -14,7 +14,13 @@
         );
         {% if has_results %}
             {{mixpanel}}
+
+            platform.create_pie_chart('pie_chart', 
+                                     ['Email{{campaign.uuid}}', 'Twitter{{campaign.uuid}}', 'Facebook{{campaign.uuid}}'],
+                                     {labels: true, 
+                                     mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
         {% endif %}
+
         /*
         platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
         {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
@@ -38,68 +44,18 @@
         <p><a href='/account'>Your Campaigns</a></p>
     </div>
     
-    <h1 class="span-24 last lower-100 center">Your Best Influencers</h1>
-    <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}"</h2>
+    <h1 class="span-24 last lower-100 center">Your Referral Results</h1>
+    <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
 
     {% if has_results %}
 
         <div class="prepend-2 span-20 append-1 last" id="results">
-            <p style="color:white;margin-bottom: 5px;"> Here is a list of all people who have tweeted your campaign! </p>
-            <p style="color:white;"> <a href="/campaign.json?id={{campaign.uuid}}">To get this list as a JSON object, click here</a>.</p>
-    
             <div class="prepend-1 span-17 last append-bottom" id="graph_div" > </div>
-            
-            <div class="span-20 last center" id="influencer_title">
-                <div class="span-2"> Place </div>
-                <div class="span-2"> &nbsp;</div>
-                <div class="span-5">Name</div>
-                <div class="span-5">Twitter</div>
-                <div class="span-2">Percentage of All Clicks</div>
-                <div class="span-2">Click Throughs</div>
-                <div class="span-2 last">Klout Score</div>
-            </div>
+         
 
-            {% for r in results %}
-                <div class="span-21 last influencer">
-                    <div class="span-2 number" title="{{r.user.twitter_handle}}'s place for this campaign."> {{r.num}} </div>
-                    {% if r.user %}
-                        <div class="span-2" title="Click to visit {{r.user.twitter_handle}} on Twitter.com!">
-                            <a href="https://twitter.com/#!/{{r.user.twitter_handle}}">
-                                <img class="profile_pic" src="{{r.user.twitter_pic_url}}"> </img> 
-                            </a> 
-                        </div>
-                        
-                        <div class="span-5 lower-10" title="{{r.user.twitter_handle}}'s Real Name">
-                            {{r.user.twitter_name}}
-                        </div>
-                        <div class="span-5 lower-10" title="Click to visit {{r.user.twitter_handle}} on Twitter!">
-                            <a class="twitter_link" href="https://twitter.com/#!/{{r.user.twitter_handle}}">@{{r.user.twitter_handle}}</a>
-                        </div>
-                        <div class="span-2 lower-10" title="{{r.user.twitter_handle}}'s percentage of all clicks for this campaign.">
-                            {{r.clicks_ratio}}% 
-                        </div>
-                        <div class="span-2 lower-10" title="A count of all clicks this user received for this campaign.">
-                            {{r.clicks}}
-                        </div>
-                        <div class="span-2 lower-5 last" title="Click to visit {{r.user.twitter_handle}} on Klout.com!">
-                            <a class="klout_link" href="http://klout.com/#/{{r.user.twitter_handle}}">
-                                <img class="klout_logo" src="/static/imgs/klout_logo.jpg"> </img>
-                                <object class="klout_score">{{r.kscore}}</object>
-                            </a>
-                        </div>
-                    {% else %}
-                        <div class="prepend-2 span-10" style="margin-top: 10px;">
-                            <a class="twitter_link" href="https://twitter.com">Fetching user's data.</a>
-                        </div>
-                        <div class="span-2 lower-10" title="percentage of all clicks for this campaign.">
-                            {{r.clicks_ratio}}% 
-                        </div>
-                        <div class="span-2 lower-10" title="A count of all clicks this user received for this campaign.">
-                            {{r.clicks}}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+            <div class="span-20 last" id="pie_chart"> </div>
+
+
         </div>
     {% else %}
         <p class="center"> We haven't received any shares or clicks yet. </p>
