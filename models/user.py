@@ -138,7 +138,7 @@ class User( db.Expando ):
             return getattr( self, attr_name )
 
     def update_twitter_info(self, **kwargs):
-        fields = ['handle', 'pic', 'followers', 'name', 'access_token']
+        fields = ['twitter_handle', 'twitter_profile_pic', 'twitter_followers_count', 'twitter_name', 'twitter_access_token']
         insertion = {}
         for k in kwargs:
             if k in fields:

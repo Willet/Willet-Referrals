@@ -159,10 +159,10 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         if user and getattr(user, 'twitter_access_token', None) and message:
             logging.info("tweeting: " + message)
             twitter_result = tweet(user.twitter_access_token, message)
-            user.update_twitter_info(t_handle=twitter_result['user']['screen_name'],
-                                 pic=twitter_result['user']['profile_image_url_https'],
-                                 name=twitter_result['user']['name'],
-                                 followers=twitter_result['user']['followers_count'])
+            user.update_twitter_info(twitter_handle=twitter_result['user']['screen_name'],
+                twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
+                twitter_name=twitter_result['user']['name'],
+                twitter_followers_count=twitter_result['user']['followers_count'])
         else: 
             client = OAuthClient(service, self)
 
