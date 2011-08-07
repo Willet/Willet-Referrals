@@ -64,7 +64,7 @@ class SendToMixpanel( webapp.RequestHandler ):
                  'user'     : user,
                  'campaign' : campaign_uuid }
 
-        params = {"event": "%s_%s" % (event, campaign_uuid), "properties": data}
+        params = {"event": "%s" % (event), "properties": data}
         payload = base64.b64encode(json.dumps(params))
 
         result = urlfetch.fetch( url     = '%sdata=%s' % (MIXPANEL_API_URL, payload),

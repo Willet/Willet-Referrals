@@ -34,17 +34,26 @@ class ServeSharingPlugin(webapp.RequestHandler):
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
+        # Grab a User if we have a cookie!
+        user = get_user_by_cookie(self)
+        
         campaign = get_campaign_by_id(campaign_id)
         
         # If they give a bogus campaign id, show the landing page campaign!
         logging.info(campaign)
         if campaign == None:
             template_values = {
+                'NAME' : NAME,
+                
                 'text': "",
                 'willt_url' : URL,
                 'willt_code': "",
                 'campaign_uuid' : "",
-                'target_url' : URL
+                'target_url' : URL,
+                
+                'user' : user,
+                'user_email' : user.get_email() if user else 'Your Email',
+                'supplied_user_id' : user_id,
             }
         else:
             # Make a new Link
@@ -57,18 +66,19 @@ class ServeSharingPlugin(webapp.RequestHandler):
             else:
                 share_text = campaign.share_text + " " + link.get_willt_url()
             
-            # Grab a User if we have a cookie!
-            user = get_user_by_cookie(self)
-            
             template_values = {
+                'URL' : URL,
+                'NAME' : NAME,
+                
+                'campaign' : campaign,
                 'campaign_uuid' : campaign.uuid,
                 'text': share_text,
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'URL' : URL,
+                
+                'user' : user,
                 'supplied_user_id' : user_id,
                 'user_email' : user.get_email() if user else 'Your Email',
-                'campaign' : campaign
             }
         
         if self.request.url.startswith('http://localhost:8080'):
