@@ -37,6 +37,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
 
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
+        user_email = user.get_attr('email') if user and user.get_attr('email') != '' else "Your Email"
         
         campaign = get_campaign_by_id(campaign_id)
         
@@ -53,7 +54,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'target_url' : URL,
                 
                 'user' : user,
-                'user_email' : user.get_attr('email') if user else 'Your Email',
+                'user_email' : user_email,
                 'supplied_user_id' : user_id,
             }
         else:
@@ -79,7 +80,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 
                 'user' : user,
                 'supplied_user_id' : user_id,
-                'user_email' : user.get_attr('email') if user else 'Your Email',
+                'user_email' : user_email
             }
         
         if self.request.url.startswith('http://localhost:8080'):
