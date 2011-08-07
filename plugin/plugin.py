@@ -159,7 +159,6 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         if user and user.twitter_access_token and message:
             logging.info("tweeting: " + message)
             twitter_response = tweet(user.twitter_access_token, message)
-            logging.info(twitter_response)
         else: 
             client = OAuthClient(service, self)
 
