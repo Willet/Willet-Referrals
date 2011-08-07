@@ -54,7 +54,7 @@
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear;
+        shareArea, shareFrame, shareText, charsLeft, clear, tweetComplete;
 
     window.onload = function() {
 
@@ -63,6 +63,10 @@
         shareArea = document.getElementById('share-area'),
         shareText = document.getElementById('tf-share-text'),
         charsLeft = document.getElementById('chars-left');
+
+        tweet_complete = function() {
+
+        };
 
         willet_conversion = function () {
             $.ajax({
