@@ -53,7 +53,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'target_url' : URL,
                 
                 'user' : user,
-                'user_email' : user.get_email() if user else 'Your Email',
+                'user_email' : user.get_attr('email') if user else 'Your Email',
                 'supplied_user_id' : user_id,
             }
         else:
@@ -79,7 +79,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 
                 'user' : user,
                 'supplied_user_id' : user_id,
-                'user_email' : user.get_email() if user else 'Your Email',
+                'user_email' : user.get_attr('email') if user else 'Your Email',
             }
         
         if self.request.url.startswith('http://localhost:8080'):

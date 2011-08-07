@@ -41,7 +41,7 @@ class Admin( URIHandler ):
                         # Tell Mixplanel that we got a click
                         taskqueue.add( queue_name = 'mixpanel', 
                                        url        = '/mixpanel', 
-                                       params     = {'event' : 'Clicks', 'num' : c, 'campaign_uuid' : l.campaign.uuid, 'twitter_handle' : l.user.twitter_handle} )
+                                       params     = {'event' : 'Clicks', 'num' : c, 'campaign_uuid' : l.campaign.uuid, 'twitter_handle' : l.user.get_attr('twitter_handle')} )
 
         return
         str = ""

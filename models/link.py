@@ -123,7 +123,7 @@ def get_links_by_user(user):
     TODO: In the future this method will have to analyze user to determine 
           which social media providers we have their identifiers for OR it
           will need to be passed more information."""
-    return Link.all().filter('user_id =', user.twitter_handle)
+    return Link.all().filter('user_id =', user.get_attr('twitter_handle'))
 
 def get_unchecked_links():
     """Return all unchecked links that are older than a minute"""
@@ -173,7 +173,8 @@ class Tweet(db.Model):
     
 
 def save_tweet(code, text, user, link):
-    t = Tweet(willt_url_code=code,tweet_text=text, user=user, link=link)
+    t = Tweet(key_name=willt_url_code, willt_url_code=code,
+              tweet_text=text, user=user, link=link)
     t.put()
     return t
 

@@ -90,24 +90,24 @@ class Campaign(Model):
             
             #logging.info('Looking at Link: %s (%d)' % (l.willt_url_code, clicks))
             if clicks > 0 and l.user:
-                #logging.info("Link %d has user: %s" % (clicks, l.user.twitter_handle) )
+                #logging.info("Link %d has user: %s" % (clicks, l.user.get_attr('twitter_handle')) )
 
-                if l.user.twitter_handle in users:
+                if l.user.get_attr('twitter_handle') in users:
                     for foo in ret:
                         if foo['user']:
-                            if foo['user'].twitter_handle == l.user.twitter_handle:
+                            if foo['user'].get_attr('twitter_handle') == l.user.get_attr('twitter_handle'):
                                 foo['clicks'] += clicks
                                 foo['clicks_ratio'] += round( (float(clicks)/total_clicks)*100.0, 2)
                 else:
-                    users.append( l.user.twitter_handle )
+                    users.append( l.user.get_attr('twitter_handle') )
                     
-                    mixpanel_top += "'Clicks_%s_%s', " % (self.uuid, l.user.twitter_handle)
-                    mixpanel_end += "'Clicks_%s_%s' : \"%s's Clickthroughs\", " % (self.uuid, l.user.twitter_handle, l.user.twitter_handle)
+                    mixpanel_top += "'Clicks_%s_%s', " % (self.uuid, l.user.get_attr('twitter_handle'))
+                    mixpanel_end += "'Clicks_%s_%s' : \"%s's Clickthroughs\", " % (self.uuid, l.user.get_attr('twitter_handle'), l.user.get_attr('twitter_handle'))
                     
                     ret.append( {'num' : 0, # placeholder since list isn't in order yet
                                  'user' : l.user,
                                  'link' : l,
-                                 'kscore' : "<10" if l.user.kscore < 10 else int(round(l.user.kscore)),
+                                 'kscore' : "<10" if l.user.get_attr('kscore') == "1.0" else l.user.get_attr('kscore'),
                                  'clicks' : clicks,
                                  'clicks_ratio' : round( (float(clicks)/total_clicks)*100.0, 2)
                                  } )
