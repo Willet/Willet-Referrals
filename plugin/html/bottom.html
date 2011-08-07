@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
+        <!-- Mixpanel -->
+        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
+        <!-- End Mixpanel -->
+
+       <!-- Google Analytics -->
         <script type="text/javascript">
-            var mpq = [];
-            mpq.push(["init", "{{MIXPANEL_TOKEN}}"]);
-            (function() {
-            var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true;
-            mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js";
-            var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s);
-            })();
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-23764505-9']);
+          _gaq.push(['_trackPageview']);
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
         </script>
         
         <!-- Favicon -->
@@ -16,7 +22,7 @@
         
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Share an experience on Twitter.</title>
+        <title>{{NAME}}</title>
         <meta name="description" content="What's the social value of your users?" />
         <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
         tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
