@@ -170,6 +170,9 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             if link:
                 link.tweet_id = twitter_result['id_str']
                 link.save()
+            self.response.headers.add_header("Content-type", 'text/javascript')
+            self.response.out.write("window.opener.document.getElementById('tweet-complete').click();")
+
         else: 
             client = OAuthClient(service, self)
 
