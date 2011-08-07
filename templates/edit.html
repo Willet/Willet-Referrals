@@ -280,3 +280,7 @@
         </script>
 
 {% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 2, 'edit_page']);
+{% endblock mixpanelTracking %}

@@ -129,12 +129,18 @@
         <div class='hidden'>
         {% block hidden %}{% endblock %}
         </div>
-        <!-- Late loading scripts -->
-        {% block lazyload %}{% endblock %}
-
+     
         <script>
         // Tell Mixpanel who this person is!
-        {% if client %} mpq.push(['name_tag', '{{client.email}}']); {% endif %}
+        {% if client %} 
+            mpq.push(['name_tag', '{{client.email}}']);
+            mpq.push(['identify', '{{client.email}}']);
+        {% endif %}
+        {% block mixpanelTracking %} {% endblock mixpanelTracking %}
         </script>
+     
+         <!-- Late loading scripts -->
+        {% block lazyload %}{% endblock %}
+
 	</body>
 </html>
