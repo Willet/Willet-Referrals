@@ -75,11 +75,11 @@ class ShowLoginPage( URIHandler ):
         else:
             stats      = Stats.all().get()
             registered = self.request.cookies.get('willt-registered', False)
-            userEmail  = session.get('correctEmail', '')
+            clientEmail  = session.get('correctEmail', '')
             authErrors = session.get('auth-errors', [])
             regErrors  = session.get('reg-errors', [])
             
-            template_values = {  'email': userEmail,
+            template_values = {  'email': clientEmail,
                                  'authErrors': authErrors,
                                  'regErrors': regErrors,
                                  'loggedIn': False,
@@ -391,7 +391,7 @@ class DoAddFeedback( URIHandler ):
 class DoAuthenticate( URIHandler ):
     def post( self ):
         url        = self.request.get( 'url' )
-        userEmail  = cgi.escape(self.request.get("email"))
+        clientEmail  = cgi.escape(self.request.get("email"))
         passphrase = cgi.escape(self.request.get("passphrase"))
         errors = [ ] # potential login errors
 
@@ -406,24 +406,27 @@ class DoAuthenticate( URIHandler ):
         set_visited_cookie(self.response.headers) 
                 
         # user authentication
-        code, user, errStr = authenticate(userEmail, passphrase)
+        code, client, errStr = authenticate(clientEmail, passphrase)
 
         if code != 'OK': # authentication failed
             errors.append(errStr) 
-            session['correctEmail'] = userEmail
+            session['correctEmail'] = clientEmail
             session['auth-errors'] = errors
             self.response.out.write("/login?u=%s" % url)
             return
 
         # authentication successful
-        session['email'] = userEmail
+        session['email'] = clientEmail
         session['auth-errors'] = [ ]
         
-        # If we have a Client, see if they've ever been a User & connect
-        client = self.get_client()
-        if client and  hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
+        # Cache the client!
+        self.db_client = client
+
+        # Link Client -> User if we have a User cookie
+        if hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
             user = get_user_by_cookie( self )
             if user:
+                logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_email()))
                 user.client = client
                 user.put()
 
@@ -433,23 +436,22 @@ class DoAuthenticate( URIHandler ):
 
 class DoRegisterClient( URIHandler ):
     def post( self ):
-        url       = self.request.get( 'url' )
-        userEmail = cgi.escape(self.request.get("email"))
-        passwords = [cgi.escape(self.request.get("passphrase")),
-                     cgi.escape(self.request.get("passphrase2"))]
-        errors = []
+        url         = self.request.get( 'url' )
+        clientEmail = cgi.escape(self.request.get("email"))
+        passwords   = [cgi.escape(self.request.get("passphrase")),
+                       cgi.escape(self.request.get("passphrase2"))]
+        errors      = []
         
         # initialize session
         session = get_current_session()
         session.regenerate_id()
 
         # remember form values
-        session['correctEmail'] = userEmail
+        session['correctEmail'] = clientEmail
 
         # attempt to register the user
-        status, user, errMsg = register(userEmail, passwords[0], passwords[1])
+        status, client, errMsg = register(clientEmail, passwords[0], passwords[1])
 
-        userCheck = Client.all().filter('email =', userEmail).get()
         if status == 'EMAIL_TAKEN': # username taken
             errors.append(errMsg)
             session['reg-errors'] = errors
@@ -466,8 +468,20 @@ class DoRegisterClient( URIHandler ):
         else:
             # set visited cookie so 'register' tab does not appear again
             set_visited_cookie(self.response.headers) 
-            session['email']      = user.email
+            session['email']      = client.email
             session['reg-errors'] = [ ]
+
+            # Cache the client!
+            self.db_client = client
+
+            # Link Client -> User if we have a User cookie
+            if hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
+                user = get_user_by_cookie( self )
+                if user:
+                    logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_email()))
+                    user.client = client
+                    user.put()
+            
             self.response.out.write( url if url else '/account' )
             return
 
