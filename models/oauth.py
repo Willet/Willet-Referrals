@@ -19,6 +19,7 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp import RequestHandler, WSGIApplication
 
 import models.user
+from models.link import get_link_by_willt_code
 from util.consts import *
 from util.helpers import generate_uuid
 
@@ -283,7 +284,7 @@ class OAuthClient(object):
         # update link with tweet id
         link = get_link_by_willt_code(willt_code)
         if link:
-            link.tweet_id = twitter_result['id']
+            link.tweet_id = twitter_result['id_str']
             link.save()
         self.set_cookie(key_name)
         self.handler.redirect(return_to)

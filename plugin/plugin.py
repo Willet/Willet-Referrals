@@ -168,7 +168,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 twitter_followers_count=twitter_result['user']['followers_count'])
             link = get_link_by_willt_code(willt_code)
             if link:
-                link.tweet_id = twitter_result['id']
+                link.tweet_id = twitter_result['id_str']
                 link.save()
         else: 
             client = OAuthClient(service, self)
