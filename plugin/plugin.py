@@ -23,6 +23,7 @@ from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid
 
+
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
@@ -155,16 +156,17 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         wuid = read_user_cookie(self)
         message = self.request.get('m')
 
-        user = get_user_by_uuid(wuid);
+        user = get_user_by_cookie(self)
+        logging.info("Plugin id user -> " + str(user))
         if user and user.twitter_access_token:
             twitter_response = tweet(user.twitter_access_token, message)
-            logging.info(res);
-            
+            logging.info(twitter_response)
         else: 
             client = OAuthClient(service, self)
 
             if action in client.__public__:
                 if action == 'login':
+                    logging.info("We didn't recognize you so we're sending you to oauth with your message: " + message)
                     self.response.out.write(getattr(client, action)(message))
                 else:
                     self.response.out.write(getattr(client, action)())

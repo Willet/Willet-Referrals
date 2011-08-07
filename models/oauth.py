@@ -200,6 +200,7 @@ class OAuthClient(object):
             return "FOO%rFF" % proxy_id
             self.expire_cookie()
 
+        logging.info("We're sending you to get your request token with your message: " + message)
         return self.get_request_token(message)
 
     def logout(self, return_to='/'):
@@ -212,13 +213,13 @@ class OAuthClient(object):
 
         token_info = self.get_data_from_signed_url(
             self.service_info['request_token_url'], **self.request_params
-            )
+        )
 
         token = OAuthRequestToken(
             message=msg,
             service=self.service,
             **dict(token.split('=') for token in token_info.split('&'))
-            )
+        )
 
         token.put()
 
@@ -246,14 +247,14 @@ class OAuthClient(object):
 
         token_info = self.get_data_from_signed_url(
             self.service_info['access_token_url'], oauth_token
-            )
+        )
 
         key_name = create_uuid()
 
         self.token = OAuthAccessToken(
             key_name=key_name, service=self.service,
             **dict(token.split('=') for token in token_info.split('&'))
-            )
+        )
 
         if 'specifier_handler' in self.service_info:
             specifier = self.token.specifier = self.service_info['specifier_handler'](self)
@@ -264,10 +265,12 @@ class OAuthClient(object):
 
         self.token.put()
         # check to see if we have a user with this twitter handle
-        user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier, request_handler=self.handler)
+        user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
+                                                         request_handler=self.handler)
         user.twitter_access_token = self.token
         user.put()
-        tweet(user.twitter_access_token, message)
+        twitter_result = tweet(user.twitter_access_token, message)
+        console.log(twitter_result)
         self.set_cookie(key_name)
         self.handler.redirect(return_to)
 
