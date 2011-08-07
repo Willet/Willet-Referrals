@@ -154,22 +154,29 @@ class TwitterOAuthHandler(webapp.RequestHandler):
     def get(self, service, action=''):
         
         message = self.request.get('m')
+        willt_code = self.request.get('wcode')
         user = get_user_by_cookie(self)
 
-        if user and getattr(user, 'twitter_access_token', None) and message:
+        if user and getattr(user, 'twitter_access_token', None) and message and\
+            willt_code:
             logging.info("tweeting: " + message)
             twitter_result = tweet(user.twitter_access_token, message)
             user.update_twitter_info(twitter_handle=twitter_result['user']['screen_name'],
                 twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
                 twitter_name=twitter_result['user']['name'],
                 twitter_followers_count=twitter_result['user']['followers_count'])
+            link = get_link_by_willt_code(willt_code)
+            if link:
+                link.tweet_id = twitter_result['id']
+                link.save()
         else: 
             client = OAuthClient(service, self)
 
             if action in client.__public__:
                 if action == 'login':
                     logging.info("We didn't recognize you so we're sending you to oauth with your message: " + message)
-                    self.response.out.write(getattr(client, action)(message))
+                    self.response.out.write(getattr(client, action)(message,
+                                                                    willt_code))
                 else:
                     self.response.out.write(getattr(client, action)())
             else:

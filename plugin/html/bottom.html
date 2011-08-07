@@ -230,7 +230,7 @@
                     );
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                    + '&m=' + message,
+                                    + '&m=' + message + '&wcode={{willt_code}}',
                         AuthWindow = window.open(OAuthURL, '_blank');
 
                     //authIframe.src = '{{ BASE_URL }}/oauth/twitter/login';

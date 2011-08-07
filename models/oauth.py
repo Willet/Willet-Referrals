@@ -192,7 +192,7 @@ class OAuthClient(object):
 
         return decode_json(fetch.content)
 
-    def login(self, message):
+    def login(self, message, willt_code):
 
         proxy_id = self.get_cookie()
 
@@ -201,7 +201,7 @@ class OAuthClient(object):
             self.expire_cookie()
 
         logging.info("We're sending you to get your request token with your message: " + message)
-        return self.get_request_token(message)
+        return self.get_request_token(message, willt_code)
 
     def logout(self, return_to='/'):
         self.expire_cookie()
@@ -209,7 +209,7 @@ class OAuthClient(object):
 
     # oauth workflow
 
-    def get_request_token(self, msg=''):
+    def get_request_token(self, msg='', wcode=''):
 
         token_info = self.get_data_from_signed_url(
             self.service_info['request_token_url'], **self.request_params
@@ -217,6 +217,7 @@ class OAuthClient(object):
 
         token = OAuthRequestToken(
             message=msg,
+            willt_code=wcode,
             service=self.service,
             **dict(token.split('=') for token in token_info.split('&'))
         )
@@ -236,6 +237,7 @@ class OAuthClient(object):
 
         oauth_token = self.handler.request.get("oauth_token")
         message = ''
+        willt_code = ''
 
         if not oauth_token:
             return get_request_token()
@@ -244,6 +246,7 @@ class OAuthClient(object):
             'oauth_token =', oauth_token).filter(
             'service =', self.service).fetch(1)[0]
         message = oauth_token.message
+        willt_code = oauth_token.willt_code
 
         token_info = self.get_data_from_signed_url(
             self.service_info['access_token_url'], oauth_token
@@ -268,8 +271,6 @@ class OAuthClient(object):
         user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
                                                          request_handler=self.handler)
         logging.info("Just got user " + str(user) + " so I should have a cookie now")
-        #user.twitter_access_token = self.token
-        #user.save()
         # tweet and save results to user's twitter profle
         twitter_result = tweet(self.token, message)
         user.update_twitter_info(t_handle=twitter_result['user']['screen_name'],
@@ -278,6 +279,11 @@ class OAuthClient(object):
             twitter_followers_count=twitter_result['user']['followers_count'],
             twitter_access_token=self.token)
         logging.info(twitter_result)
+        # update link with tweet id
+        link = get_link_by_willt_code(willt_code)
+        if link:
+            link.tweet_id = twitter_result['id']
+            link.save()
         self.set_cookie(key_name)
         self.handler.redirect(return_to)
 
