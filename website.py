@@ -420,7 +420,7 @@ class DoAuthenticate( URIHandler ):
         if hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
             user = get_user_by_cookie( self )
             if user:
-                logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_email()))
+                logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_attr('email')))
                 user.client = client
                 user.put()
 
@@ -472,7 +472,7 @@ class DoRegisterClient( URIHandler ):
             if hasattr( client, 'client_user' ) and client.client_user.count() == 0: 
                 user = get_user_by_cookie( self )
                 if user:
-                    logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_email()))
+                    logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_attr('email')))
                     user.client = client
                     user.put()
             

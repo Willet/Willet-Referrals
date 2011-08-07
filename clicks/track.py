@@ -45,7 +45,7 @@ class TrackWilltURL( webapp.RequestHandler ):
                            url        = '/mixpanel', 
                            params     = {'event'          : 'Clicks', 
                                          'campaign_uuid'  : link.campaign.uuid,
-                                         'twitter_handle' : link.user.twitter_handle} )
+                                         'twitter_handle' : link.user.get_attr('twitter_handle')} )
 
         set_referral_cookie(self.response.headers, code)
         self.redirect(link.target_url)
@@ -149,12 +149,12 @@ class UpdateTwitterGraph(webapp.RequestHandler):
             #logging.info("NO TWITTER HANDLE PROVIDED. EXCEPTION")
             raise Exception("No twitter handle provided")
 
-        if len(screen_name) == 0 or user.twitter_name == '' or user.twitter_pic_url == '':
+        if len(screen_name) == 0 or user.get_attr('twitter_name') == '' or user.get_attr('twitter_pic_url') == '':
             logging.error("invalid data provided " + str(self.request))
             mail.send_mail(sender="wil.lt error reporting <Barbara@wil.lt>",
                        to="wil.lt tech support <support@wil.lt>",
                        subject="Javascript /t callback error",
-                       body= user.twitter_handle + str(self.request))
+                       body= user.get_attr('twitter_handle') + str(self.request))
 
         # save the tweet text that we received from the @anywhere callback
         # to the Link. It will late be looked up for a tweet id

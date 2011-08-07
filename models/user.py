@@ -47,50 +47,54 @@ def create_email_model( user, email ):
 
         em.put()
 
-
-class User(Model):
+class User( db.Expando ):
     # General Junk
     uuid            = db.StringProperty(indexed = True)
-    first_name      = db.StringProperty(indexed=False)
-    last_name       = db.StringProperty(indexed=False)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
-    about_me_url    = db.LinkProperty( required = False, default = None )
+    #first_name      = db.StringProperty(indexed=False)
+    #last_name       = db.StringProperty(indexed=False)
+    #about_me_url    = db.LinkProperty( required = False, default = None )
     referrer        = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
     client          = db.ReferenceProperty(db.Model, collection_name='client_user')
 
     # Twitter Junk
-    twitter_handle  = db.StringProperty(indexed = True)
-    twitter_name    = db.StringProperty()
-    twitter_pic_url = db.LinkProperty( required = False, default = None )
-    twitter_followers_count = db.IntegerProperty(default = 0)
+    #twitter_handle  = db.StringProperty(indexed = True)
+    #twitter_name    = db.StringProperty()
+    #twitter_pic_url = db.LinkProperty( required = False, default = None )
+    #twitter_followers_count = db.IntegerProperty(default = 0)
     twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
 
     # Klout Junk
-    twitter_id          = db.StringProperty( indexed = False )
-    kscore              = db.FloatProperty( indexed = False, default = 1.0 )
-    slope               = db.FloatProperty( indexed = False )
-    network_score       = db.FloatProperty( indexed = False )
-    amplification_score = db.FloatProperty( indexed = False )
-    true_reach          = db.IntegerProperty( indexed = False )
-    topics              = db.ListProperty( str, indexed = False )
+    #twitter_id          = db.StringProperty( indexed = False )
+    #kscore              = db.FloatProperty( indexed = False, default = 1.0 )
+    #slope               = db.FloatProperty( indexed = False )
+    #network_score       = db.FloatProperty( indexed = False )
+    #amplification_score = db.FloatProperty( indexed = False )
+    #true_reach          = db.IntegerProperty( indexed = False )
+    #topics              = db.ListProperty( str, indexed = False )
 
     # Facebook Junk
-    fb_identity = db.LinkProperty( required = False, indexed = True, default = None )
+    #fb_identity = db.LinkProperty( required = False, indexed = True, default = None )
 
     # ReferenceProperty
     #emails = db.EmailProperty(indexed=True)
     
     def __init__(self, *args, **kwargs):
-       self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-       super(User, self).__init__(*args, **kwargs)
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
 
-    @staticmethod
-    def _get_from_datastore(twitter_handle):
-       """Datastore retrieval using memcache_key"""
-       return db.Query(User).filter('uuid =', twitter_handle).get()
-        
+        #if 'email' in kwargs and kwargs['email'] != '':
+        #    create_email_model( self, kwargs['email'] )
+       
+        super(User, self).__init__(*args, **kwargs)
+
     def update( self, **kwargs ):
-        if 'twitter_handle' in kwargs and  kwargs['twitter_handle']:
+        for k in kwargs:
+            if k == 'email':
+                create_email_model( self, kwargs['email'] )
+            else:
+                setattr( self, k, kwargs[k] )
+        """
+        if 'twitter_handle' in kwargs and kwargs['twitter_handle'] != '':
             self.twitter_handle = kwargs['twitter_handle']
         
         if 'twitter_name' in kwargs and kwargs['twitter_name'] != '':
@@ -116,28 +120,30 @@ class User(Model):
 
         if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
             self.referrer = kwargs['referrer']
-        
+        """
         self.put()
 
-    def get_email( self ):
-        return self.emails[0].address if self.emails.count() > 0 else ''
+    def get_attr( self, attr_name ):
+        if attr_name == 'email':
+            return self.emails[0].address if self.emails.count() > 0 else ''
+
+        if hasattr( self, attr_name ):
+            return getattr( self, attr_name )
 
 # Gets by X
 def get_user_by_uuid( uuid ):
     logging.info("Getting user by uuid " + str(uuid))
     user = User.all().filter('uuid =', uuid).get()
-    if user != None:
-        logging.info('Pulled user: %s %s %s %s' % (uuid, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
     return user
 
 def get_user_by_twitter(t_handle):
     logging.info("Getting user by T: " + t_handle)
     user = User.all().filter('twitter_handle =', t_handle).get()
     if user != None:
-        logging.info('Pulled user: %s %s %s %s' % (t_handle, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
+        logging.info('Pulled user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
         
         # If we don't have Klout data, let's fetch it!
-        if user.kscore == 1.0:
+        if user.get_attr('kscore') == '1.0':
             # Query Klout API for data
             taskqueue.add( queue_name='socialAPI', 
                            url='/klout', 
@@ -161,7 +167,8 @@ def create_user_by_twitter(t_handle, referrer):
     # check to see if this t_handle has an oauth token
     OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
 
-    user = User(uuid=generate_uuid(16),
+    user = User(key_name=t_handle,
+                uuid=generate_uuid(16),
                 twitter_handle=t_handle,
                 referrer=referrer)
     
@@ -180,13 +187,11 @@ def create_user_by_twitter(t_handle, referrer):
 
 def create_user_by_facebook(fb_id, first_name, last_name, email, referrer):
     """Create a new User object with the given attributes"""
-    user = User(uuid=generate_uuid(16), fb_identity=fb_id, 
+    user = User(key_name=fb_id,
+                uuid=generate_uuid(16), fb_identity=fb_id, 
                 first_name=first_name, last_name=last_name,
                 referrer=referrer)
     user.put()
-
-    if email != '':
-        create_email_model( user, email )
 
     # Query the SocialGraphAPI
     taskqueue.add( queue_name='socialAPI', 
@@ -198,11 +203,9 @@ def create_user_by_facebook(fb_id, first_name, last_name, email, referrer):
 
 def create_user_by_email(email, referrer):
     """Create a new User object with the given attributes"""
-    user = User(uuid=generate_uuid(16), referrer=referrer)
+    user = User(key_name=email, uuid=generate_uuid(16), 
+                email=email, referrer=referrer)
     user.put()
-
-    if email != '':
-        create_email_model( user, email )
 
     return user
 
@@ -231,7 +234,7 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
 
-    logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.twitter_pic_url, user.twitter_name, user.twitter_followers_count))
+    logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
     return user
 
 def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None, request_handler=None):
@@ -247,6 +250,8 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     # Try looking by FB identity
     if user is None:
         user = get_user_by_facebook(fb_id)
+        if email != '':    
+            create_email_model( self, email )
     
     # Otherwise, make a new one
     if user is None:
@@ -269,7 +274,7 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     
     # Then find via email
     if user is None:
-        user = get_user_by_email(email)    
+        user = get_user_by_email(email)  
     
     # Otherwise, make a new one
     if user is None:

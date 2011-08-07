@@ -45,7 +45,7 @@ class getUncheckedTweets( URIHandler ):
             params = urllib.urlencode({
                 'include_entities': False,
                 'include_rts': False,
-                'screen_name': ut.user.twitter_handle
+                'screen_name': ut.user.get_attr('twitter_handle')
             })
             logging.info(TWITTER_SEARCH_URL + params)
             twitter_response = urllib.urlopen(TWITTER_SEARCH_URL + params)
@@ -81,7 +81,7 @@ class getUncheckedTweets( URIHandler ):
 
                 if link:
 
-                    if link.user.twitter_handle != earliest['user']:#should never happen
+                    if link.user.get_attr('twitter_handle') != earliest['user']:#should never happen
                         tweet.delete()
                         counters['user-deleted'] += 1
                         counters['deleted'] += 1

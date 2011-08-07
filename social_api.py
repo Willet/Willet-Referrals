@@ -142,7 +142,7 @@ class QueryKloutAPI( URIHandler ):
         logging.info("Klout: Fetching for twitter: %s" % twitter_handle )
         user = get_or_create_user_by_twitter( twitter_handle )
         
-        logging.info("Klout: User is %s %s" % (user.twitter_name, user.twitter_handle))
+        logging.info("Klout: User is %s %s" % (user.get_attr('twitter_name'), user.get_attr('twitter_handle')))
 
         data = { 'key'   : KLOUT_API_KEY,
                  'users' : twitter_handle }
@@ -215,7 +215,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
         user = get_user_by_uuid( uuid )
 
         if user == None:
-            return # Bad data, just exitc:w
+            return # Bad data, just exit
 
         logging.info("Fetching Social Graph API for %s" % id)
 
@@ -232,13 +232,13 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
             #loaded_json = json.loads( result.content )
 
             for i in result.content:
-                if 'about.me' in i and user.about_me_url == '':
+                if 'about.me' in i:
                     user.about_me_url = i
                 
-                elif 'facebook' in i and user.fb_identity == '':
+                elif 'facebook' in i:
                     user.fb_identity = i
                 
-                elif 'twitter' in i and user.twitter_handle == '':
+                elif 'twitter' in i:
                     tmp = i.split( '/' )
                     user.twitter_handle = tmp[ len(tmp) - 1 ]
 
