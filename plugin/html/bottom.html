@@ -225,7 +225,8 @@
                             // we weren't given permission
                             window.close();
                         } else { 
-                            var fbData = { wcode: '{{willt_code}}' },
+                            var fbData = { wcode: '{{willt_code}}',
+                                           fbt: lr.authResponse.accessToken },
                                 fields = ['first_name', 'last_name', 'id',
                                           'gender', 'verified']
                             // query for user profile
@@ -237,11 +238,6 @@
                                         fbData[attr] = resp[attr];
                                     }
                                 }
-                                //fbData.first_name = resp.first_name;
-                                //fbData.last_name = resp.last_name
-                                //fbData.id = resp.id;
-                                //fbData.gender = resp.gender;
-                                //fbData.verified = resp.verified;
                             });
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
@@ -257,7 +253,7 @@
                             mixpanelTrack( 'Facebook' );
                             mixpanelTrack( 'Share' );
                         }
-                    }, {scope: 'publish_stream'}
+                    }, {scope: 'publish_stream,offline_access'}
                     );
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
