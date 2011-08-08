@@ -285,6 +285,7 @@ class OAuthClient(object):
         link = get_link_by_willt_code(willt_code)
         if link:
             link.tweet_id = twitter_result['id_str']
+            link.user = user
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)

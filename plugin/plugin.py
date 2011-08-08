@@ -169,6 +169,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             link = get_link_by_willt_code(willt_code)
             if link:
                 link.tweet_id = twitter_result['id_str']
+                link.user = user
                 link.save()
             self.response.headers.add_header("Content-type", 'text/javascript')
             self.response.out.write("<script type='text/javascript'>console.log(window.opener.tweetComplete()); window.close();</script>")
