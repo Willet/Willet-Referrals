@@ -265,9 +265,29 @@ class FacebookCallback( webapp.RequestHandler ):
             # Save this Testimonial
             create_testimonial(user=user, message=msg, link=link)
 
+
+class FacebookShare(webapp.RequestHandler):
+    """This handler attempts to share a status message for a given user
+       based on a pre-stored oauth key"""
+
+    def post(self):
+        fb_id = self.request.get('fb_id')
+        fb_token = self.request.get('fb_token')
+        msg = self.request.get('msg')
+
+        facebook_share_url = "https://graph.facebook.com/%s/feed" % fb_id
+        params = urllib.urlencode({ 'access_token': fb_token,
+                                    'message': msg })
+        fb_response = urllib.urlopen(faceboob_share_url + params)
+        fb_results = simplejson.loads(fb_response.read())
+        logging.info(fb_results)
+        self.response.out.write(fb_results)
+
+
 def main():
     application = webapp.WSGIApplication([
         (r'/fbCallback', FacebookCallback),
+        (r'/fbShare', FacebookShare),
         (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
         (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
