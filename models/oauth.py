@@ -207,7 +207,7 @@ class OAuthClient(object):
 
     def logout(self, return_to='/'):
         self.expire_cookie()
-        self.handler.eedirect(self.handler.request.get("return_to", return_to))
+        self.handler.redirect(self.handler.request.get("return_to", return_to))
 
     # oauth workflow
 
@@ -289,8 +289,8 @@ class OAuthClient(object):
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
-        self.handler.headers.add_header("Content-type", 'text/javascript')
-        self.handler.out.write("window.opener.document.getElementById('tweet-complete').click();")
+        self.handler.response.headers.add_header("Content-type", 'text/javascript')
+        self.handler.response.out.write('console.log(window.opener.shareComplete()); window.close();')
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(
