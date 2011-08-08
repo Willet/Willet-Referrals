@@ -30,8 +30,8 @@ from util.helpers import generate_uuid
 OAUTH_APP_SETTINGS = {
     'twitter': {
 
-        'consumer_key': '2O3uHYkLKlHdy2PECgP3Q',
-        'consumer_secret': 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078',
+        'consumer_key': TWITTER_KEY,
+        'consumer_secret': TWITTER_SECRET,
 
         'request_token_url': 'https://twitter.com/oauth/request_token',
         'access_token_url': 'https://twitter.com/oauth/access_token',
@@ -207,7 +207,7 @@ class OAuthClient(object):
 
     def logout(self, return_to='/'):
         self.expire_cookie()
-        self.handler.eedirect(self.handler.request.get("return_to", return_to))
+        self.handler.redirect(self.handler.request.get("return_to", return_to))
 
     # oauth workflow
 
@@ -289,8 +289,8 @@ class OAuthClient(object):
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
-        self.handler.headers.add_header("Content-type", 'text/javascript')
-        self.handler.out.write("window.opener.document.getElementById('tweet-complete').click();")
+        self.handler.response.headers.add_header("Content-type", 'text/javascript')
+        self.handler.response.out.write("console.log(window.opener.shareComplete()); window.close();")
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(
