@@ -3,10 +3,11 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
+import logging, re
 
+from google.appengine.api import urlfetch
 from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
+from google.appengine.api import memcache
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -14,7 +15,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.link import *
-from models.oauth import *
 from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
@@ -43,7 +43,7 @@ class QueryKloutAPI( URIHandler ):
         data = { 'key'   : KLOUT_API_KEY,
                  'users' : twitter_handle }
 
-        payload = urllib.urlencode( data )
+        #payload = urllib.urlencode( data )
 
         logging.info("Klout: Fetching user data for %s" % twitter_handle)
         result = urlfetch.fetch( url     = KLOUT_API_URL,
@@ -87,7 +87,7 @@ class QueryKloutAPI( URIHandler ):
 
         # Now grab topics
         logging.info("Klout: Fetching topics data for %s" % twitter_handle)
-        result = urlfetch.fetch( url = 'http://api.klout.com/1/users/topics.json',
+        result = urlfetch.fetch( url     = 'http://api.klout.com/1/users/topics.json',
                                  payload = payload,
                                  method  = urlfetch.POST,
                                  headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
@@ -105,7 +105,7 @@ class QueryKloutAPI( URIHandler ):
                     user.put()
 
 class QueryGoogleSocialGraphAPI( URIHandler ):
-    def post( self ):
+    def get( self ):
         id   = self.request.get( 'id' )
         uuid = self.request.get( 'uuid' )
         user = get_user_by_uuid( uuid )
@@ -113,14 +113,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
         if user == None:
             return # Bad data, just exit
 
-        logging.info("Fetching Social Graph API for %s" % id)
-
-        data = { 'q' : id }
-        payload = urllib.urlencode( data )
-
-        result = urlfetch.fetch( url     = GOOGLE_SOCIAL_GRAPH_API_URL + payload,
-                                 method  = urlfetch.GET,
-                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
+        result = urlfetch.fetch( "%sq=%s" % (GOOGLE_SOCIAL_GRAPH_API_URL, id) )
 
         if result.status_code != 200:
             logging.info("Social Graph API for %s failed" % id)
@@ -128,16 +121,63 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
             loaded_json = json.loads( result.content )
             
             logging.info("Social Graph back: %r" % loaded_json)
-            for i in result.content:
+            for i in loaded_json:
+                logging.info("%r %s"% (i, 'about.me' in i) )
+                # Social Networks
                 if 'about.me' in i:
                     user.about_me_url = i
-                
                 elif 'facebook' in i:
                     user.fb_identity = i
-                
                 elif 'twitter' in i:
                     tmp = i.split( '/' )
                     user.twitter_handle = tmp[ len(tmp) - 1 ]
+                elif 'linkedin' in i:
+                    user.linkedin_url = i
+                elif 'quora' in i:
+                    user.quora_url = i
+                elif 'youtube' in i:
+                    user.youtube_url = i
+                
+                # Other Stuff 
+                elif 'openid' in i:
+                    user.openid_url = i
+                elif 'github' in i:
+                    user.github_url = i
+                
+                # Profiles
+                elif 'aol' in i or 'aim' in i:
+                    user.aol_profile_url = i
+                elif 'profiles.google' in i:
+                    user.google_profile_url = i
+                elif 'crunchbase' in i:
+                    user.crunchbase_url = i
+
+                # Photos
+                elif 'flickr' in i:
+                    user.flickr_url = i
+
+                # Blogs
+                elif 'blogspot' in i:
+                    user.blogspot_url = i
+                elif 'blogger' in i:
+                    user.blogger_url = i
+                elif 'tumblr' in i or 'tumblelog' in i:
+                    user.tumblr_url = i
+                elif 'typepad' in i:
+                    user.typepad_url = i
+                elif 'posterous' in i:
+                    user.posterous_url = i
+                elif 'wordpress' in i:
+                    user.wordpress_url = i
+                elif 'blog' in i:
+                    user.blog_url = i
+                
+                # News Sites
+                elif 'google.com/reader' in i:
+                    user.google_reader_url = i
+
+                else:
+                    user.other_data.append(i)
 
             user.put()
 
