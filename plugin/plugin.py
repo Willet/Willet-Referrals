@@ -171,8 +171,8 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 link.tweet_id = twitter_result['id_str']
                 link.user = user
                 link.save()
-            self.response.headers.add_header("Content-type", 'text/javascript')
-            self.response.out.write("<script type='text/javascript'>console.log(window.opener.shareComplete()); window.close();</script>")
+            self.handler.response.headers.add_header("Content-type", 'text/javascript')
+            self.handler.response.out.write("<script type='text/javascript'>console.log(window.opener.shareComplete()); window.close();</script>")
 
         else: 
             client = OAuthClient(service, self)
