@@ -225,7 +225,8 @@
                             // we weren't given permission
                             window.close();
                         } else { 
-                            var fbData = { wcode: '{{willt_code}}' },
+                            var fbData = { wcode: '{{willt_code}}',
+                                           fbt: lr.authResponse.accessToken },
                                 fields = ['first_name', 'last_name', 'id',
                                           'gender', 'verified']
                             // query for user profile
