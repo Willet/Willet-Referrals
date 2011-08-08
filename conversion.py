@@ -13,6 +13,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
 from models.campaign import Campaign, get_campaign_by_id
+from models.link import Link, get_link_by_willt_code
 from models.user import get_user_by_cookie
 from util.helpers import *
 from util.urihandler import URIHandler
@@ -30,21 +31,23 @@ class PostConversion( URIHandler ):
             # What do we do here?
             return
         
-        referrer_uid  = self.request.cookies.get('referrer_%s' % campaign_uuid, False)
+        referrer_willt_url = self.request.cookies.get('referrer_%s' % campaign_uuid, False)
+
         # Only POST if they have a referrer cookie!
-        if referrer_uid:
+        if referrer_willt_url:
+            link = get_link_by_willt_code( referrer_willt_url )
             logging.info('Posting a conversion notification to a Client!')
 
             # Store a 'Conversion' in our DB for tracking purposes
-            create_conversion( referrer_uid, campaign, user )
+            create_conversion( link, campaign, referree_uid, user )
 
             # Tell the Client by POSTing to their webhook URL
-            data = { 'timestamp' : str( time() ),
-                     'referrer_id' : referrer_uid,
+            data = { 'timestamp'   : str( time() ),
+                     'referrer_id' : link.supplied_user_id,
                      'referree_id' : referree_uid }
             payload = urllib.urlencode( data )
 
-            logging.info("Conversion: Posting to %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+            logging.info("Conversion: Posting to %s (%s referred %s)" % (campaign.webhook_url, link.supplied_user_id, referree_uid) )
             result = urlfetch.fetch( url     = campaign.webhook_url,
                                      payload = payload,
                                      method  = urlfetch.POST,
@@ -52,7 +55,7 @@ class PostConversion( URIHandler ):
             
             if result.status_code != 200:
                 # What do we do here?
-                logging.error("Conversion POST failed: %s (%s referred %s)" % (campaign.webhook_url, referrer_uid, referree_uid) )
+                logging.error("Conversion POST failed: %s (%s referred %s)" % (campaign.webhook_url, link.supplied_user_id, referree_uid) )
                 return
 
             # Tell Mixplanel a client has a conversion
@@ -60,7 +63,7 @@ class PostConversion( URIHandler ):
                            url        = '/mixpanel', 
                            params     = {'event'            : 'Conversion', 
                                          'campaign_uuid'    : campaign_uuid,
-                                         'supplied_user_id' : referrer_uid} ) 
+                                         'supplied_user_id' : link.supplied_user_id} ) 
 
 ##---------------------------------------------------------------------------##
 ##------------------------- The URI Router ----------------------------------##
