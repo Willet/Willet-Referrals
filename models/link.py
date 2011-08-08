@@ -84,7 +84,7 @@ class Link(Model):
         self.add_clicks(1)
 
     def get_willt_url(self):
-        return 'http://www.wil.lt/' + self.willt_url_code
+        return 'http://social-referral.appspot.com' + self.willt_url_code
 
     def count_retweets(self):
         return len(self.retweets)
