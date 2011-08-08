@@ -230,10 +230,31 @@
                             // we weren't given permission
                             window.close();
                         } else { 
-                            //toShare = shareText.value.substring(0,141)
+                            var first_name = '',
+                                last_name = '',
+                                id = '',
+                                shareID = '';
+
+                            FB.api('/me', function(resp) {
+                                console.log(resp);
+                                first_name = resp.first_name;
+                                last_name = resp.last_name;
+                                id = resp.id
+                            });
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
-                                console.log(pr);
+                                    shareID = pr.id;
+                                    $.ajax({url: "/fbCallback",
+                                        type: 'post',
+                                        data: { fb_id: id,
+                                                share_id: shareID,
+                                                first_name: first_name,
+                                                last_name: last_name,
+                                                wcode: '{{ willt_code }}' },
+                                        success: function (sr) {
+                                            console.log(sr);
+                                        }
+                                    });
                             });
                             mixpanelTrack( 'Facebook' );
                             mixpanelTrack( 'Share' );

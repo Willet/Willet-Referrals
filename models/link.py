@@ -39,6 +39,8 @@ class Link(Model):
     retweets = db.ListProperty(str, required=True)
     # the location of the button that spawned this link
     origin_domain = db.StringProperty(str, required=False)
+    # facebook's id for the share
+    facebook_share_id = db.StringProperty()
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 
