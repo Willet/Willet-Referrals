@@ -97,6 +97,14 @@ class ShowDemoPage( URIHandler ):
         
         self.response.out.write(self.render_page('demo.html', template_values))
 
+
+class ShowDemoSitePage( URIHandler ):
+    # Renders the main template
+    def get(self, page):
+        template_values = { }
+        
+        self.response.out.write(self.render_page('demo_site/%s.html' % page, template_values))
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Shows -----------------------------------------##
 ##-----------------------------------------------------------------------------##
@@ -518,7 +526,7 @@ def main():
         (r'/demo', ShowDemoPage),
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
-        
+        (r'/demosite/(.*)',ShowDemoSitePage),
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),
         (r'/deleteCampaign', DoDeleteCampaign),

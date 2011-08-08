@@ -295,6 +295,11 @@
         padding: 10px 10px 10px 10px;
         background-color: #f4faff;
         border: 1px solid #aeceef;
+        -khtml-border-radius: 5px;
+        -o-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
     }
     a, a * { 
         cursor: pointer;
@@ -303,11 +308,13 @@
     }
     h1 {
         font-size: 2.5em;
+        font-weight: bold;
     }
     h1, h2, h3, h4, h5 { 
         color: #1f75cc;
         margin: 0 0 10px 0;
         line-height: 1.6em;
+        font-weight: bold;
     }
     body, input,textarea,select, .normal {
         font-family: "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
@@ -405,19 +412,19 @@
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
                 <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                         <img src="/static/imgs/gmail-logo.png" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
                         <img src="/static/imgs/yahoo_logo.jpg" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
                         <img src="/static/imgs/hotmail_logo.png" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );"> 
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
                         <img src="/static/imgs/aol_logo.jpg" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmail(true);"> 
+                    <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send the email on your behalf"> 
                         <img src="/static/imgs/email_logo.png" />
                     </a>
                 </div>
