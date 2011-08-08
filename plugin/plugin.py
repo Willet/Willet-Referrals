@@ -228,10 +228,13 @@ class FacebookCallback( webapp.RequestHandler ):
 
     def post( self ):
         fb_id           = self.request.get( 'fb_id' )
+        share_id        = self.request.get( 'share_id' )
         first_name      = self.request.get( 'first_name' )
         last_name       = self.request.get( 'last_name' )
-        email           = self.request.get( 'email' )
-        willt_url_code  = self.request.get( 'willt_url_code' )
+        willt_url_code  = self.request.get( 'wcode' )
+        gender          = self.request.get('gender')
+        verified        = self.request.get('verified')
+        email           = self.request.get('email')
         msg       = self.request.get( 'msg' )
 
         # check to see if this user has a referral cookie set
@@ -244,18 +247,19 @@ class FacebookCallback( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Grab the User!
-        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, self)
+        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, verified, gender, self)
         
         # Grab the Link & update it!
         link = get_link_by_willt_code(willt_url_code)
         if link:
             link.user = user
-            link.put()
+            link.facebook_share_id = share_id
+            link.save()
 
             link.campaign.increment_shares()
 
-        # Save this Testimonial
-        create_testimonial(user=user, message=msg, link=link)
+            # Save this Testimonial
+            create_testimonial(user=user, message=msg, link=link)
 
 def main():
     application = webapp.WSGIApplication([

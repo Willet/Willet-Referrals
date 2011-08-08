@@ -230,10 +230,27 @@
                             // we weren't given permission
                             window.close();
                         } else { 
-                            //toShare = shareText.value.substring(0,141)
+                            var fbData = {wcode: '{{willt_code}}'};
+
+                            FB.api('/me', function(resp) {
+                                console.log(resp);
+                                fbData.first_name = resp.first_name;
+                                fbData.last_name = resp.last_name
+                                fbData.id = resp.id;
+                                fbData.gender = resp.gender;
+                                fbData.verified = resp.verified;
+                            });
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
-                                console.log(pr);
+                                    shareID = pr.id;
+                                    fbData.share_id = pr.id;
+                                    $.ajax({url: "/fbCallback",
+                                        type: 'post',
+                                        data: fbData,
+                                        success: function (sr) {
+                                            console.log(sr);
+                                        }
+                                    });
                             });
                             mixpanelTrack( 'Facebook' );
                             mixpanelTrack( 'Share' );
@@ -245,8 +262,6 @@
                                     + '&m=' + message + '&wcode={{willt_code}}',
                         AuthWindow = window.open(OAuthURL, '_blank');
 
-                    //authIframe.src = '{{ BASE_URL }}/oauth/twitter/login';
-                    //authBody.appendChild(authIframe);
                 } else {
                     // style shareArea according to different social loader
                 }
