@@ -195,7 +195,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
         willt_url_code = self.request.get( 'willt_url_code' )
-        via_gmail = self.request.get( 'via_gmail' )
+        via_willet = self.request.get( 'via_willet' )
         
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
@@ -222,8 +222,8 @@ class SendEmailInvites( webapp.RequestHandler ):
         create_testimonial(user=user, message=msg, link=link)
 
         # Send off the email if they don't want to use Gmail
-        if not via_gmail and to_addrs != '':
-            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url)
+        if via_willet and to_addrs != '':
+            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
 class FacebookCallback( webapp.RequestHandler ):
 
