@@ -228,7 +228,7 @@ class SendEmailInvites( webapp.RequestHandler ):
 class FacebookCallback( webapp.RequestHandler ):
 
     def post( self ):
-        fb_id           = self.request.get( 'fb_id' )
+        fb_id           = self.request.get( 'id' )
         fb_token        = self.request.get('fbt')
         share_id        = self.request.get( 'share_id' )
         first_name      = self.request.get( 'first_name' )
