@@ -291,8 +291,8 @@
     <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
     <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
     <style>
-    #willt {
-        padding: 10px 10px 10px 10px;
+    .willt {
+        padding: 20px 0px 20px 20px;
         background-color: #f4faff;
         border: 1px solid #aeceef;
         -khtml-border-radius: 5px;
@@ -309,6 +309,9 @@
     h1 {
         font-size: 2.5em;
         font-weight: bold;
+    }
+    h2 {
+        font-size: 1.7em;
     }
     h1, h2, h3, h4, h5 { 
         color: #1f75cc;
@@ -330,8 +333,8 @@
         border: 1px solid #aaa; 
         padding: 4px; 
         color: #555;
-        margin: 0;
-        height: 100px;
+        margin: 0px;
+        height: 65px;
     }
     a { 
         display: -moz-inline-stack;
@@ -367,9 +370,6 @@
         float: right;
         margin: 10px 0px 10px 0px;
     }
-    #tf-share-text {
-        height: 100px;
-    }
     a img {
         float: left;
         height: 20px;
@@ -392,6 +392,9 @@
     #share-area {
         visibility: hidden;
     }
+    #from-email, #tf-share-text {
+        margin-top: 5px;
+    }
  </style>
 </head>
 <body>
@@ -400,9 +403,10 @@
 
     {% block top %} {% endblock top %}
     
-    <div class="span-23 last" id='willt'>
+    <div class="span-23 last willt">
         <div class="span-12">
             <h2>Invite by email</h2>
+ 
             <div class="span-12 last">
                 <input class="span-11 last" id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
                 
