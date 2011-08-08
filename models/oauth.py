@@ -199,7 +199,7 @@ class OAuthClient(object):
         proxy_id = self.get_cookie()
 
         if proxy_id:
-            return "FOO%rFF" % proxy_id
+            #return "FOO%rFF" % proxy_id
             self.expire_cookie()
 
         logging.info("We're sending you to get your request token with your message: " + message)
@@ -288,8 +288,8 @@ class OAuthClient(object):
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
-        self.response.headers.add_header("Content-type", 'text/javascript')
-        self.response.out.write("window.opener.document.getElementById('tweet-complete').click();")
+        self.handler.headers.add_header("Content-type", 'text/javascript')
+        self.handler.out.write("window.opener.document.getElementById('tweet-complete').click();")
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(
