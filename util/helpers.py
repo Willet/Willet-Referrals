@@ -74,11 +74,10 @@ def set_referral_cookie(headers, code, partialCookie):
 
 def set_referrer_cookie(campaign_uuid, code, partialCookie):
     """Sets a referral cookie that signifies who referred this user """
-    if partialCookie is None:
-        partialCookie = Cookie.SimpleCookie()
-    partialCookie['referrer_%s' % campaign_uuid] = code
-    partialCookie.name = 'referrer_%s' % campaign_uuid
-    partialCookie['referral']['expires'] = 31556928
+    partialCookie = Cookie.SimpleCookie() if partialCookie is None else partialCookie
+    partialCookie[campaign_uuid] = code
+    partialCookie.name =  str(campaign_uuid)
+    partialCookie[campaign_uuid]['expires'] = 31556928
     return partialCookie
 
 def set_visited_cookie(headers):
