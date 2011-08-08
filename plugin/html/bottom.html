@@ -64,6 +64,13 @@
         shareText = document.getElementById('tf-share-text'),
         charsLeft = document.getElementById('chars-left');
 
+        FB.init({ appId: '141990385884645',
+            status: true,
+            cookie: true,
+            xfbml: true,
+            oauth: true
+        });
+
         tweetComplete = function() {
             console.log("Done tweeting!");
             return true;
@@ -262,15 +269,7 @@
         };
 
         countChars();
-
-        FB.init({
-                appId: '4077e465d5d50e87aa0fbd2d472f60ea',
-                status: true,
-                cookie: true,
-                xfbml: true,
-                oauth: true
-            });
-            willet_conversion();
+        willet_conversion();
         };
     </script>
 
