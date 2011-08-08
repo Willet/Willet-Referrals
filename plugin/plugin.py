@@ -258,8 +258,8 @@ class FacebookCallback( webapp.RequestHandler ):
 
             link.campaign.increment_shares()
 
-        # Save this Testimonial
-        create_testimonial(user=user, message=msg, link=link)
+            # Save this Testimonial
+            create_testimonial(user=user, message=msg, link=link)
 
 def main():
     application = webapp.WSGIApplication([
