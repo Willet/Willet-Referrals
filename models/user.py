@@ -253,7 +253,7 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
     return user
 
-def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None, verified=None, gender='', token='' request_handler=None):
+def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None, verified=None, gender='', token='', request_handler=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
      
