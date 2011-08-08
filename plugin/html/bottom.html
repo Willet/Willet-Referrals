@@ -131,17 +131,17 @@
         }
 
         sendEmailVia = function( who ){
-            var from_addr = document.getElementById( 'from-email' );
-            var to_addrs  = document.getElementById( 'to-emails' ).value;
-            var msg       = document.getElementById( 'email-share-text' ).value;
-            var str;
+            var from_addr = document.getElementById( 'from-email' ),
+                to_addrs  = document.getElementById( 'to-emails' ).value,
+                msg       = document.getElementById( 'email-share-text' ).value,
+                str;
 
             // Tell the Server
             if ( !sendEmail( false ) ) {
                 return;
             }
 
-            if ( who == 'gmail' ) {
+            if ( who === 'gmail' ) {
                 // Make a Gmail String
                 str = 'https://mail.google.com/mail/?view=cm&fs=1' +
                       '&to=' + to_addrs + 
@@ -151,7 +151,7 @@
 
                 mixpanelTrack( 'Gmail' );
 
-            } else if (who == 'yahoo') {
+            } else if (who === 'yahoo') {
                 // Make a Yahoo string
                 str = "http://us.mc1216.mail.yahoo.com/mc/compose?.rand=1915749995" + 
                       "&to=" + to_addrs +
@@ -160,14 +160,14 @@
 
                 mixpanelTrack( 'Yahoo' );
 
-            } else if (who == 'hotmail') {
+            } else if (who === 'hotmail') {
                 str = 'http://by156w.bay156.mail.live.com/default.aspx?rru=compose' + 
                       "&to=" + to_addrs +
                       "&subject=" + "Check This Out!" + 
                       '&body=' + msg.replace(/\n/g,'%0A');
                 
                 mixpanelTrack( 'Hotmail' );
-            } else if (who == 'aol') {
+            } else if (who === 'aol') {
                 str = "http://mail.aol.com/34007-211/aol-6/en-us/mail/compose-message.aspx?" + 
                       "&to=" + to_addrs +
                       "&subject=" + "Check This Out!" + 
@@ -179,17 +179,16 @@
         };
 
         sendEmail = function( via_willet ) {
-            var from_addr = document.getElementById( 'from-email' );
-            var to_addrs  = document.getElementById( 'to-emails' );
-            var msg       = document.getElementById( 'email-share-text' );
+            var from_addr = document.getElementById( 'from-email' ),
+                to_addrs  = document.getElementById( 'to-emails' ),
+                msg       = document.getElementById( 'email-share-text' );
 
             // Check the fields.
             if ( !errorCheckEmails(from_addr, to_addrs, msg) ) {
                 return false;
             }
 
-            $.ajax({
-                url: "/sendEmailInvites",
+            $.ajax({url: "/sendEmailInvites",
                 type: 'post',
                 data: { from_addr : from_addr.value, 
                         to_addrs  : to_addrs.value,
@@ -197,22 +196,19 @@
                         url       : "{{willt_url}}",
                         willt_url_code : "{{willt_code}}",
                         via_willet : via_willet },
-                success: function(msg){
-                    var to_addrs  = document.getElementById( 'to-emails' );
-                    var msg       = document.getElementById( 'email-share-text' );
+                success: function(msg) {
+                    var to_addrs  = document.getElementById( 'to-emails' ),
+                        msg       = document.getElementById( 'email-share-text' );
 
                     to_addrs.value = "";
                     msg.value = "Thank You! Invites sent!";
                 }
-
             });// end ajax
 
             // Track 'email' event
             mixpanelTrack( 'Email' );
-
             // Also track more general 'share' event
             mixpanelTrack( 'Share' );
-
             return true;
         };
 
@@ -223,26 +219,32 @@
             if (['twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
-                    var accessToken, userID, toShare;
                     // confirm auth with fb
                     FB.login(function(lr) {
                         if (!lr.authResponse) {
                             // we weren't given permission
                             window.close();
                         } else { 
-                            var fbData = {wcode: '{{willt_code}}'};
-
+                            var fbData = { wcode: '{{willt_code}}' },
+                                fields = ['first_name', 'last_name', 'id',
+                                          'gender', 'verified']
+                            // query for user profile
                             FB.api('/me', function(resp) {
                                 console.log(resp);
-                                fbData.first_name = resp.first_name;
-                                fbData.last_name = resp.last_name
-                                fbData.id = resp.id;
-                                fbData.gender = resp.gender;
-                                fbData.verified = resp.verified;
+                                for (var attr in resp) {
+                                    if (resp.hasOwnProperty(attr) &&
+                                        fields.indexOf(attr) !== -1) {
+                                        fbData[attr] = resp[attr];
+                                    }
+                                }
+                                //fbData.first_name = resp.first_name;
+                                //fbData.last_name = resp.last_name
+                                //fbData.id = resp.id;
+                                //fbData.gender = resp.gender;
+                                //fbData.verified = resp.verified;
                             });
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
-                                    shareID = pr.id;
                                     fbData.share_id = pr.id;
                                     $.ajax({url: "/fbCallback",
                                         type: 'post',
