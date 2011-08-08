@@ -61,6 +61,7 @@ def set_clicked_cookie(headers, code):
     clickCookie.name = code
     clickCookie[code]['expires'] = 31556928
     headers['Set-Cookie'] = clickCookie.output()
+    logging.info("Setting clicked cookie: " + code)
 
 def set_referral_cookie(headers, code):
     """Sets a referral cookie that signifies that this user has been referred
