@@ -81,7 +81,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'user': user,
                 'supplied_user_id': user_id,
                 'user_email': user_email,
-                'fb_token': getattr(user, 'facebook_access_token', '')
+                'fb_token': getattr(user, 'facebook_access_token', ''),
+                'fb_handle': getattr(user, 'facebook_handle', '')
             }
         
         if self.request.url.startswith('http://localhost:8080'):
@@ -229,7 +230,7 @@ class SendEmailInvites( webapp.RequestHandler ):
 class FacebookCallback( webapp.RequestHandler ):
 
     def post( self ):
-        fb_id           = self.request.get( 'fb_id' )
+        fb_id           = self.request.get( 'id' )
         fb_token        = self.request.get('fbt')
         share_id        = self.request.get( 'share_id' )
         first_name      = self.request.get( 'first_name' )
