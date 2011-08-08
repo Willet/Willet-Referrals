@@ -232,6 +232,8 @@ class FacebookCallback( webapp.RequestHandler ):
         first_name      = self.request.get( 'first_name' )
         last_name       = self.request.get( 'last_name' )
         willt_url_code  = self.request.get( 'wcode' )
+        gender          = self.request.get('gender')
+        verified        = self.request.get('verified')
         email           = self.request.get('email')
         msg       = self.request.get( 'msg' )
 
@@ -245,8 +247,7 @@ class FacebookCallback( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Grab the User!
-        logging.info("fb_id: " + fb_id + " share_id: " + share_id)
-        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, self)
+        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, verified, gender, self)
         
         # Grab the Link & update it!
         link = get_link_by_willt_code(willt_url_code)
