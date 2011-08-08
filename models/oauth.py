@@ -30,8 +30,8 @@ from util.helpers import generate_uuid
 OAUTH_APP_SETTINGS = {
     'twitter': {
 
-        'consumer_key': '2O3uHYkLKlHdy2PECgP3Q',
-        'consumer_secret': 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078',
+        'consumer_key': TWITTER_KEY,
+        'consumer_secret': TWITTER_SECRET,
 
         'request_token_url': 'https://twitter.com/oauth/request_token',
         'access_token_url': 'https://twitter.com/oauth/access_token',

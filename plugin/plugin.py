@@ -78,9 +78,11 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
                 
-                'user' : user,
-                'supplied_user_id' : user_id,
-                'user_email' : user_email
+                'user': user,
+                'supplied_user_id': user_id,
+                'user_email': user_email,
+                'fb_token': getattr(user, 'facebook_access_token', ''),
+                'fb_handle': getattr(user, 'facebook_handle', '')
             }
         
         if self.request.url.startswith('http://localhost:8080'):

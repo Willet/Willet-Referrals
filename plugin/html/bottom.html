@@ -54,7 +54,7 @@
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete;
+        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken;
 
     window.onload = function() {
 
@@ -62,9 +62,10 @@
         shareFrame = document.getElementById('willt-frame');
         shareArea = document.getElementById('share-area'),
         shareText = document.getElementById('tf-share-text'),
-        charsLeft = document.getElementById('chars-left');
+        charsLeft = document.getElementById('chars-left'),
+        fbToken = '{{ fb_token }}';
 
-        FB.init({ appId: '141990385884645',
+        FB.init({ appId: '175144029215141',
             status: true,
             cookie: true,
             xfbml: true,
@@ -219,8 +220,13 @@
             if (['twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
+                    // first attempt server-provided token
+                    if (fbToken) {
+                        //$.ajax({url: "https://graph.facebook.com/
+                    }
                     // confirm auth with fb
                     FB.login(function(lr) {
+                        console.log(lr);
                         if (!lr.authResponse) {
                             // we weren't given permission
                             window.close();
@@ -228,7 +234,7 @@
                             var fbData = { wcode: '{{willt_code}}',
                                            fbt: lr.authResponse.accessToken },
                                 fields = ['first_name', 'last_name', 'id',
-                                          'gender', 'verified']
+                                          'gender', 'verified', 'email']
                             // query for user profile
                             FB.api('/me', function(resp) {
                                 console.log(resp);
@@ -253,7 +259,7 @@
                             mixpanelTrack( 'Facebook' );
                             mixpanelTrack( 'Share' );
                         }
-                    }, {scope: 'publish_stream,offline_access'}
+                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                     );
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
@@ -331,7 +337,7 @@
         border-style: none solid solid;
         vertical-align: middle; 
         border: 1px solid #aaa; 
-        padding: 4px; 
+        Padding: 4px; 
         color: #555;
         margin: 0px;
         height: 65px;
