@@ -90,12 +90,15 @@ class ShowLoginPage( URIHandler ):
 
             self.response.out.write(self.render_page('login.html', template_values))
 
-class ShowDemoPage( URIHandler ):
+class ShowDemoSitePage( URIHandler ):
     # Renders the main template
-    def get(self):
-        template_values = { 'BASE_URL' : URL }
+    def get(self, page):
+        template_values = { }
+
+        if page == '':
+            page = 'thanks'
         
-        self.response.out.write(self.render_page('demo.html', template_values))
+        self.response.out.write(self.render_page('demo_site/%s.html' % page, template_values))
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Shows -----------------------------------------##
@@ -515,10 +518,9 @@ def main():
         (r'/campaign.json', ShowResultsJSONPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),
-        (r'/demo', ShowDemoPage),
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
-        
+        (r'/demo(.*)',ShowDemoSitePage),
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),
         (r'/deleteCampaign', DoDeleteCampaign),

@@ -290,7 +290,7 @@ class OAuthClient(object):
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
         self.handler.response.headers.add_header("Content-type", 'text/javascript')
-        self.handler.response.out.write("console.log(window.opener.shareComplete()); window.close();")
+        self.handler.response.out.write('<script type="text/javascript">console.log(window.opener.shareComplete()); window.close();</script>')
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(

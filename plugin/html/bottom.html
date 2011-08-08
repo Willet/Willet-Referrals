@@ -305,10 +305,15 @@
     <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
     <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
     <style>
-    #willt {
-        padding: 10px 10px 10px 10px;
+    .willt {
+        padding: 20px 0px 20px 20px;
         background-color: #f4faff;
         border: 1px solid #aeceef;
+        -khtml-border-radius: 5px;
+        -o-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
     }
     a, a * { 
         cursor: pointer;
@@ -317,11 +322,16 @@
     }
     h1 {
         font-size: 2.5em;
+        font-weight: bold;
+    }
+    h2 {
+        font-size: 1.7em;
     }
     h1, h2, h3, h4, h5 { 
         color: #1f75cc;
         margin: 0 0 10px 0;
         line-height: 1.6em;
+        font-weight: bold;
     }
     body, input,textarea,select, .normal {
         font-family: "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
@@ -337,8 +347,8 @@
         border: 1px solid #aaa; 
         Padding: 4px; 
         color: #555;
-        margin: 0;
-        height: 100px;
+        margin: 0px;
+        height: 65px;
     }
     a { 
         display: -moz-inline-stack;
@@ -370,12 +380,20 @@
         background-color: #4291df;
         color: #fff;
     }
+    .right {
+        float: right;
+    }
+    .clear {
+        clear: both;
+    }
+    div#use_us {
+        padding: 0;
+        margin: 0;
+        line-height: 30px;
+    }
     #chars-left {
         float: right;
         margin: 10px 0px 10px 0px;
-    }
-    #tf-share-text {
-        height: 100px;
     }
     a img {
         float: left;
@@ -399,6 +417,9 @@
     #share-area {
         visibility: hidden;
     }
+    #from-email, #tf-share-text {
+        margin-top: 5px;
+    }
  </style>
 </head>
 <body>
@@ -407,9 +428,10 @@
 
     {% block top %} {% endblock top %}
     
-    <div class="span-23 last" id='willt'>
+    <div class="span-23 last willt">
         <div class="span-12">
             <h2>Invite by email</h2>
+ 
             <div class="span-12 last">
                 <input class="span-11 last" id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
                 
@@ -418,22 +440,29 @@
                 
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );"> 
-                        <img src="/static/imgs/gmail-logo.png" />
+                <div class="span-5" style="margin-top: 5px;" >
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
+                        <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );"> 
-                        <img src="/static/imgs/yahoo_logo.jpg" />
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
+                        <img src="/static/imgs/hotmail_logo.png" width="29px" height="20px" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );"> 
-                        <img src="/static/imgs/hotmail_logo.png" />
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
+                        <img src="/static/imgs/yahoo_mail_logo.png" width="27px" height="20px" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );"> 
-                        <img src="/static/imgs/aol_logo.jpg" />
+                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
+                        <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                     </a>
-                    <a class="email_btn" href="#" onClick="sendEmail(true);"> 
-                        <img src="/static/imgs/email_logo.png" />
-                    </a>
+                </div>
+                <div class="span-6" style="margin-top: 5px;">
+                    <div class="right">
+                        <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send the email on your behalf"> 
+                            <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
+                        </a>
+                    </div>
+                    <div id="use_us" class="right">Or let us send it on your behalf:&nbsp;&nbsp;
+                    </div>
+                    <div class="clear"></div>
                 </div>
             </div>
         </div>
