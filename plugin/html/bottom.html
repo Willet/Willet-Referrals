@@ -54,7 +54,7 @@
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear, tweetComplete;
+        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete;
 
     window.onload = function() {
 
@@ -71,8 +71,8 @@
             oauth: true
         });
 
-        tweetComplete = function() {
-            console.log("Done tweeting!");
+        shareComplete = function() {
+            shareText.value = 'Thanks for sharing!';
             return true;
         };
 
@@ -441,7 +441,7 @@
             </div>
         </div>
     </div>
-    <div id="tweet-complete" onclick="tweetComplete();"></div>
+    <div id="tweet-complete" onclick="shareComplete();"></div>
     <div id="share-area">
         <iframe id="willt-frame"></iframe>
     </div>
