@@ -366,6 +366,17 @@
         background-color: #4291df;
         color: #fff;
     }
+    .right {
+        float: right;
+    }
+    .clear {
+        clear: both;
+    }
+    div#use_us {
+        padding: 0;
+        margin: 0;
+        line-height: 30px;
+    }
     #chars-left {
         float: right;
         margin: 10px 0px 10px 0px;
@@ -415,9 +426,9 @@
                 
                 <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="prepend-2 span-9 last" style="margin-top: 5px;" >
+                <div class="span-5" style="margin-top: 5px;" >
                     <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
-                        <img src="/static/imgs/gmail)logo.png" width="25px" height="20px" />
+                        <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
                     </a>
                     <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
                         <img src="/static/imgs/hotmail_logo.png" width="29px" height="20px" />
@@ -428,10 +439,16 @@
                     <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
                         <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                     </a>
-                    Or let us send it on your behalf:
-                    <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send the email on your behalf"> 
-                        <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
-                    </a>
+                </div>
+                <div class="span-6" style="margin-top: 5px;">
+                    <div class="right">
+                        <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send the email on your behalf"> 
+                            <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
+                        </a>
+                    </div>
+                    <div id="use_us" class="right">Or let us send it on your behalf:&nbsp;&nbsp;
+                    </div>
+                    <div class="clear"></div>
                 </div>
             </div>
         </div>
