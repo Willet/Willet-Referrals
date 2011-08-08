@@ -121,8 +121,9 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
             loaded_json = json.loads( result.content )
             
             logging.info("Social Graph back: %r" % loaded_json)
-            for i in loaded_json:
-                logging.info("%r %s"% (i, 'about.me' in i) )
+
+            for i, value in loaded_json.iteritems():
+                
                 # Social Networks
                 if 'about.me' in i:
                     user.about_me_url = i
@@ -179,7 +180,39 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
                 else:
                     user.other_data.append(i)
 
+                unpacker( value['attributes'], user ) 
+
             user.put()
+
+def unpacker(obj, user):
+    r = []
+    logging.info('v:%r'% obj)
+    for k, v in obj.iteritems():
+
+        logging.info("k:%s v:%r" % (k, v))
+        if 'location' in k:
+            user.location = v
+        elif 'fn' == k:
+            user.full_name = v
+            
+            tmp = v.split(' ')
+            l = len(tmp)
+            if l >= 2:
+                user.first_name = tmp[0]
+                user.last_name  = tmp[l-1]
+        elif 'photo' in k:
+            user.photo = v
+
+        elif isinstance(v, object) and not isinstance(v, str)\
+            and not isinstance(v, int):
+            try:
+                r += unpacker(v, user)
+            except:
+                continue
+        else:
+            continue
+    return r
+
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
