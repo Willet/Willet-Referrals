@@ -222,7 +222,15 @@
                 if (medium === 'fb') {
                     // first attempt server-provided token
                     if (fbToken) {
-                        //$.ajax({url: "https://graph.facebook.com/
+                        $.ajax({url: "https://graph.facebook.com/{{fb_id}}/feed",
+                            type: 'get',
+                            data: { access_token: fbToken,
+                                    message: message },
+                            success: function (tr) {
+                                console.log(tr);
+                            }
+                        });
+                        return;
                     }
                     // confirm auth with fb
                     FB.login(function(lr) {
