@@ -54,31 +54,32 @@ def read_user_cookie( request_handler ):
     logging.info("Reading a user cookie: %s" % user_uuid)
     return user_uuid
 
-def set_clicked_cookie(headers, code):
+def set_clicked_cookie(code, partialCookie):
     """Sets a cookie that signifies that this url has indeed been clicked"""
-    clickCookie = Cookie.SimpleCookie()
-    clickCookie[code] = True
-    clickCookie.name = code
-    clickCookie[code]['expires'] = 31556928
-    headers['Set-Cookie'] = clickCookie.output()
-    logging.info("Setting clicked cookie: " + code)
+    if partialCookie is None:
+        parialCookie = Cookie.SimpleCookie()
+    partialCookie[code] = True
+    partialCookie.name = code
+    partialCookie[code]['expires'] = 31556928
+    return partialCookie
 
-def set_referral_cookie(headers, code):
+def set_referral_cookie(headers, code, partialCookie):
     """Sets a referral cookie that signifies that this user has been referred
        by the user that owns the link with url_willt_code == code"""
-    refCookie = Cookie.SimpleCookie()
-    refCookie['referral'] = code
-    refCookie.name = 'referral'
-    refCookie['referral']['expires'] = 31556928
+    partialCookie = Cookie.SimpleCookie() if partialCookie is None else partialCookie
+    partialCookie['referral'] = code
+    partialCookie.name = 'referral'
+    partialCookie['referral']['expires'] = 31556928
     headers['Set-Cookie'] = refCookie.output()
 
-def set_referrer_cookie(headers, campaign_uuid, code):
+def set_referrer_cookie(campaign_uuid, code, partialCookie):
     """Sets a referral cookie that signifies who referred this user """
-    refCookie = Cookie.SimpleCookie()
-    refCookie['referrer_%s' % campaign_uuid] = code
-    refCookie.name = 'referrer_%s' % campaign_uuid
-    refCookie['referral']['expires'] = 31556928
-    headers['Set-Cookie'] = refCookie.output()
+    if partialCookie is None:
+        partialCookie = Cookie.SimpleCookie()
+    partialCookie['referrer_%s' % campaign_uuid] = code
+    partialCookie.name = 'referrer_%s' % campaign_uuid
+    partialCookie['referral']['expires'] = 31556928
+    return partialCookie
 
 def set_visited_cookie(headers):
     """Sets the approcity visited cookie so that registereud

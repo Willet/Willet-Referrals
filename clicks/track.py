@@ -33,12 +33,13 @@ class TrackWilltURL( webapp.RequestHandler ):
         #logging.info('Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
         
         clickCookie = self.request.cookies.get(code, False)
+        partialCookie = None
         if not clickCookie and not is_blacklisted(self.request.headers['User-Agent']):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
             link.increment_clicks()
             logging.info('After Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
-            set_referrer_cookie(self.response.headers, link.campaign.uuid, link.willt_url_code)
-            set_clicked_cookie(self.response.headers, code)
+            set_referrer_cookie(link.campaign.uuid, link.willt_url_code, partialCookie)
+            set_clicked_cookie(code, partialCookie)
 
             # Tell Mixplanel that we got a click
             taskqueue.add( queue_name = 'mixpanel', 
@@ -47,7 +48,7 @@ class TrackWilltURL( webapp.RequestHandler ):
                                          'campaign_uuid'  : link.campaign.uuid,
                                          'twitter_handle' : link.user.get_attr('twitter_handle')} )
 
-        set_referral_cookie(self.response.headers, code)
+        set_referral_cookie(self.response.headers, code, partialCookie)
         self.redirect(link.target_url)
         return
             
