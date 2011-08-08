@@ -243,7 +243,7 @@
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
                                     shareID = pr.id;
-                                    fbData.shareID = pr.id;
+                                    fbData.share_id = pr.id;
                                     $.ajax({url: "/fbCallback",
                                         type: 'post',
                                         data: fbData,
