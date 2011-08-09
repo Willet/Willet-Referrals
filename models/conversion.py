@@ -22,6 +22,7 @@ class Conversion(Model):
     link     = db.ReferenceProperty( db.Model, collection_name="link_conversions" )
     referrer = db.ReferenceProperty( db.Model, collection_name="users_referrals" )
     referree = db.ReferenceProperty( db.Model, default = None, collection_name="users_been_referred" )
+    referree_uid = db.StringProperty()
     campaign = db.ReferenceProperty( db.Model, collection_name="campaign_conversions" )
 
     def __init__(self, *args, **kwargs):
@@ -33,16 +34,16 @@ class Conversion(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Conversion).filter('uuid =', uuid).get()
 
-def create_conversion( referrer_supplied_user_id, campaign, referree ):
-    link = get_link_by_supplied_user_id( referrer_supplied_user_id )
+def create_conversion( link, campaign, referree_uid, referree ):
     uuid = generate_uuid(16)
     
-    c = Conversion( key_name = uuid,
-                    uuid     = uuid,
-                    link     = link,
-                    referrer = link.user,
-                    referree = referree,
-                    campaign = campaign )
+    c = Conversion( key_name     = uuid,
+                    uuid         = uuid,
+                    link         = link,
+                    referrer     = link.user,
+                    referree     = referree,
+                    referree_uid = referree_uid,
+                    campaign     = campaign )
     c.put()
 
     return c # return incase the caller wants it

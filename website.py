@@ -95,7 +95,7 @@ class ShowDemoSitePage( URIHandler ):
     def get(self, page):
         template_values = { }
 
-        if page == '':
+        if page == '' or page == '/':
             page = 'thanks'
         
         self.response.out.write(self.render_page('demo_site/%s.html' % page, template_values))
