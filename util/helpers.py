@@ -40,6 +40,15 @@ def encode_base62(num):
     ret.reverse()
     return ''.join(ret)
 
+
+def get_request_variables(targets, rh):
+    """Grab 'targets' from the request headers if present. Return
+       a dictionary"""
+    rd = {}
+    for t in targets:
+        rd[t] = rh.request.get(t) 
+    return rd
+
 # Cookie Stuff
 def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""

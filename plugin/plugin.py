@@ -5,7 +5,7 @@
 __author__      = "Sy Khader"
 __copyright__   = "Copyright 2011, The Willet Corporation"
 
-import os, logging
+import os, logging, urllib, simplejson
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -21,7 +21,7 @@ from models.user import get_or_create_user_by_email, get_or_create_user_by_faceb
 # helpers
 from util.consts import *
 from util.emails import Email
-from util.helpers import read_user_cookie, generate_uuid
+from util.helpers import read_user_cookie, generate_uuid, get_request_variables
 
 
 class ServeSharingPlugin(webapp.RequestHandler):
@@ -37,7 +37,9 @@ class ServeSharingPlugin(webapp.RequestHandler):
 
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
-        user_email = user.get_attr('email') if user and user.get_attr('email') != '' else "Your Email"
+        user_email = user.get_attr('email') if user and\
+            user.get_attr('email') != '' else "Your Email"
+        user_found = True if user is not None else False
         
         campaign = get_campaign_by_id(campaign_id)
         
@@ -81,8 +83,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'user': user,
                 'supplied_user_id': user_id,
                 'user_email': user_email,
-                'fb_token': getattr(user, 'facebook_access_token', ''),
-                'fb_id': getattr(user, 'fb_identity', '')
+                'user_found': str(user_found).lower()
             }
         
         if self.request.url.startswith('http://localhost:8080'):
@@ -152,6 +153,7 @@ class DynamicSocialLoader(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class TwitterOAuthHandler(webapp.RequestHandler):
 
     def get(self, service, action=''):
@@ -188,6 +190,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                     self.response.out.write(getattr(client, action)())
             else:
                 self.response.out.write(client.login())
+
 
 class SendEmailInvites( webapp.RequestHandler ):
 
@@ -227,19 +230,14 @@ class SendEmailInvites( webapp.RequestHandler ):
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
+
 class FacebookCallback( webapp.RequestHandler ):
 
     def post( self ):
-        fb_id           = self.request.get( 'id' )
-        fb_token        = self.request.get('fbt')
-        share_id        = self.request.get( 'share_id' )
-        first_name      = self.request.get( 'first_name' )
-        last_name       = self.request.get( 'last_name' )
-        willt_url_code  = self.request.get( 'wcode' )
-        gender          = self.request.get('gender')
-        verified        = self.request.get('verified')
-        email           = self.request.get('email')
-        msg       = self.request.get( 'msg' )
+        rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
+                                         'first_name', 'last_name', 
+                                         'willt_url_code', 'gender', 'verified',
+                                         'email', 'msg'], self)
 
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
@@ -251,38 +249,61 @@ class FacebookCallback( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Grab the User!
-        user = get_or_create_user_by_facebook(fb_id, first_name, last_name, email, referrer, verified, gender, fb_token, self)
+        user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['first_name'], 
+                                              rq_vars['last_name'], rq_vars['email'], 
+                                              rq_vars['referrer'], rq_vars['verified'], 
+                                              rq_vars['gender'], rq_vars['fb_token'], self)
         
         # Grab the Link & update it!
-        link = get_link_by_willt_code(willt_url_code)
+        link = get_link_by_willt_code(rq_vars['willt_url_code'])
         if link:
             link.user = user
-            link.facebook_share_id = share_id
+            link.facebook_share_id = rq_vars['share_id']
             link.save()
 
             link.campaign.increment_shares()
 
             # Save this Testimonial
-            create_testimonial(user=user, message=msg, link=link)
+            create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
-       based on a pre-stored oauth key"""
+       based on a pre-stored oauth key.
+       Responses:
+            ok - facebook share successful
+            fail - facebook denied post request
+            deadlink - link not found
+            notfound - user not found"""
 
     def post(self):
-        fb_id = self.request.get('fb_id')
-        fb_token = self.request.get('fb_token')
-        msg = self.request.get('msg')
+        rq_vars = get_request_variables('msg', 'wcode', self)
+        user = get_user_by_cookie(self)
+        if user:
 
-        facebook_share_url = "https://graph.facebook.com/%s/feed" % fb_id
-        params = urllib.urlencode({ 'access_token': fb_token,
-                                    'message': msg })
-        fb_response = urllib.urlopen(faceboob_share_url + params)
-        fb_results = simplejson.loads(fb_response.read())
-        logging.info(fb_results)
-        self.response.out.write(fb_results)
+            link = get_link_by_willt_code(rq_vars['wcode'])
 
+            if link:
+                facebook_share_url = "https://graph.facebook.com/%s/feed" %\
+                                        rq_vars['fb_id']
+                params = urllib.urlencode({'access_token': rq_vars['fb_token'],
+                                           'message': rq_vars['msg'] })
+                fb_response = urllib.urlopen(facebook_share_url, params)
+                fb_results = simplejson.loads(fb_response.read())
+
+                if hasattr(fb_results, 'id', False):
+                    link.facebook_share_id = fb_results['id']
+                    self.response.out.write({'r': 'ok'})
+                else:
+                    self.response.out.write({'r': 'fail'})
+
+            else: 
+                self.response.out.write(simplejson.dumps({'r': 'deadlink'}))
+
+        else:
+            self.response.out.write(simplejson.dumps({'r': 'notfound'})
+
+        
 
 def main():
     application = webapp.WSGIApplication([
