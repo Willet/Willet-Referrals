@@ -195,7 +195,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
         willt_url_code = self.request.get( 'willt_url_code' )
-        via_willet = self.request.get( 'via_willet' )
+        via_willet = True if self.request.get( 'via_willet' ) == 'true' else False
         
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
