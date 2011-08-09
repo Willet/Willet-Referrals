@@ -223,7 +223,16 @@
                 if (medium === 'fb') {
                     // first attempt server-provided token
                     if (fbToken) {
-                        //$.ajax({url: "https://graph.facebook.com/
+                        $.ajax({url: "/fbShare",
+                            type: 'post',
+                            data: { fb_token: fbToken,
+                                    fb_id: '{{ fb_id }}',
+                                    msg: message },
+                            success: function (tr) {
+                                console.log(tr);
+                            }
+                        });
+                        return;
                     }
                     if ( !FB ) {
                         alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
