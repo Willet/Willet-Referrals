@@ -294,15 +294,16 @@ class FacebookShare(webapp.RequestHandler):
                 if fb_results.has_key('id'):
                     link.facebook_share_id = fb_results['id']
                     link.save()
-                    self.response.out.write({'r': 'ok'})
+                    self.response.out.write('ok')
                 else:
-                    self.response.out.write({'r': 'fail'})
+                    self.response.out.write('fail')
+                    logging.info(fb_results)
 
             else: 
-                self.response.out.write(simplejson.dumps({'r': 'deadlink'}))
+                self.response.out.write('deadlink')
 
         else:
-            self.response.out.write(simplejson.dumps({'r': 'notfound'}))
+            self.response.out.write('notfound')
 
         
 

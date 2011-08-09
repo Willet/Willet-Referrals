@@ -228,7 +228,13 @@
                             data: { msg: message,
                                     wcode:'{{willt_code}}' },
                             success: function (tr) {
-                                if (tr
+                                console.log(tr);
+                                console.log(typeof(tr));
+                                if (tr === 'ok') {
+                                    shareComplete();
+                                } else {
+                                    console.log("Facebook post failure");
+                                }
                             }
                         });
                         return;
