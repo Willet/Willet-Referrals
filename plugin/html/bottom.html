@@ -294,7 +294,11 @@
     .willt {
         padding: 20px 0px 20px 20px;
         background-color: #f4faff;
-        border: 1px solid #aeceef;
+        border: 1px solid #AECEEF;
+        -khtml-box-shadow: inset 0 0 2px #AECEEF;
+        -o-box-shadow: inset 0 0 2px #AECEEF;
+        -webkit-box-shadow: inset 0 0 2px #AECEEF;
+        -moz-box-shadow: inset 0 0 2px #AECEEF;
         -khtml-border-radius: 5px;
         -o-border-radius: 5px;
         -webkit-border-radius: 5px;
@@ -397,7 +401,20 @@
     .email_btn img {
         padding: 2px 5px 2px 5px;
     }
-    #to-emails, #email-share-text {
+    .input-label {
+        float: left;
+        width: 100px;
+        line-height: 33px;
+    }
+    .input-content {
+        width: 300px;
+        float: right;
+    }
+    .input-content input {
+        width: 290px;
+        padding: 4px;
+    }
+    #email-share-text {
         width: 416px;
     }
     #share-area {
@@ -417,39 +434,45 @@
     <div class="span-23 last willt">
         <div class="span-12">
             <h2>Invite by email</h2>
- 
-            <div class="span-12 last">
-                <input class="span-11 last" id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
-                
-                <input class="span-11 last" id="to-emails" type="text" value="Invitee email addresses, separated by commas."
-                onFocus="clearText(this);" />
-                
-                <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
+            <div class="span-11 append-1 last">
+                <div class="input-label">Your Email</div>
+                <div class="input-content">
+                    <input id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
+                </div>
+            </div>
+            <div class="span-11 append-1 append-bottom last">
+                <div class="input-label">Invitee Emails</div>
+                <div class="input-content">
+                    <input id="to-emails" type="text" value="Invitee email addresses, separated by commas."
+                        onFocus="clearText(this);" />
+                </div>
+            </div>
+            
+            <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
 
-                <div class="span-5" style="margin-top: 5px;" >
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
-                        <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
-                    </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
-                        <img src="/static/imgs/hotmail_logo.png" width="29px" height="20px" />
-                    </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
-                        <img src="/static/imgs/yahoo_mail_logo.png" width="27px" height="20px" />
-                    </a>
-                    <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
-                        <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
+            <div class="span-5" style="margin-top: 5px;" >
+                <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
+                    <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
+                </a>
+                <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
+                    <img src="/static/imgs/hotmail_logo.png" width="29px" height="20px" />
+                </a>
+                <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
+                    <img src="/static/imgs/yahoo_mail_logo.png" width="27px" height="20px" />
+                </a>
+                <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
+                    <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
+                </a>
+            </div>
+            <div class="span-6 last" style="margin-top: 5px;">
+                <div class="right">
+                    <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
+                        <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                     </a>
                 </div>
-                <div class="span-6" style="margin-top: 5px;">
-                    <div class="right">
-                        <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
-                            <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
-                        </a>
-                    </div>
-                    <div id="use_us" class="right">Or let us mail it on your behalf:&nbsp;&nbsp;
-                    </div>
-                    <div class="clear"></div>
+                <div id="use_us" class="right">Or let us mail it on your behalf:&nbsp;&nbsp;
                 </div>
+                <div class="clear"></div>
             </div>
         </div>
 
@@ -460,11 +483,11 @@
             <div class="prepend-6 span-4 last" id="chars-left">140 characters left</div>
             <div class="prepend-1 span-10 last">
                 <a href="#" onclick="share('fb');">
-                    <img src="/static/imgs/fb-logo.png" />
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     <div> Share on Facebook </div>
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
-                    <img src="/static/imgs/twitter-logo.jpg" />
+                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     <div>Tweet on Twitter</div>
                 </a>
             </div>
