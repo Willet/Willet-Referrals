@@ -56,31 +56,31 @@ def read_user_cookie( request_handler ):
 
 def set_referrer_cookie(headers, campaign_uuid, code):
     """Sets a referral cookie that signifies who referred this user """
-    partialCookie = Cookie.SimpleCookie()
-    partialCookie[str(campaign_uuid)] = code
-    partialCookie.name = str(campaign_uuid)
-    partialCookie[str(campaign_uuid)]['expires'] = 31556928
+    cookieUtil = Cookie.SimpleCookie()
+    cookieUtil[str(campaign_uuid)] = code
+    cookieUtil.name = str(campaign_uuid)
+    cookieUtil[str(campaign_uuid)]['expires'] = 31556928
     
-    headers.add_header('Set-Cookie', partialCookie.output())
+    headers.add_header('Set-Cookie', cookieUtil.output())
 
 def set_clicked_cookie(headers, code):
     """Sets a cookie that signifies that this url has indeed been clicked"""
-    partialCookie = Cookie.SimpleCookie()
-    partialCookie[code] = True
-    partialCookie.name = code
-    partialCookie[code]['expires'] = 31556928
+    cookieUtil = Cookie.SimpleCookie()
+    cookieUtil[code] = True
+    cookieUtil.name = code
+    cookieUtil[code]['expires'] = 31556928
     
-    headers.add_header('Set-Cookie', partialCookie.output())
+    headers.add_header('Set-Cookie', cookieUtil.output())
 
 def set_referral_cookie(headers, code):
     """Sets a referral cookie that signifies that this user has been referred
        by the user that owns the link with url_willt_code == code"""
-    partialCookie = Cookie.SimpleCookie()
-    partialCookie['referral'] = code
-    partialCookie.name = 'referral'
-    partialCookie['referral']['expires'] = 31556928
+    cookieUtil = Cookie.SimpleCookie()
+    cookieUtil['referral'] = code
+    cookieUtil.name = 'referral'
+    cookieUtil['referral']['expires'] = 31556928
     
-    headers.add_header('Set-Cookie', partialCookie.output())
+    headers.add_header('Set-Cookie', cookieUtil.output())
 
 
 def set_visited_cookie(headers):
