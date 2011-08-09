@@ -274,25 +274,26 @@ class FacebookShare(webapp.RequestHandler):
             ok - facebook share successful
             fail - facebook denied post request
             deadlink - link not found
-            notfound - user not found"""
+            notfound - user or fb info not found"""
 
     def post(self):
-        rq_vars = get_request_variables('msg', 'wcode', self)
+        rq_vars = get_request_variables(['msg', 'wcode'], self)
         user = get_user_by_cookie(self)
-        if user:
+        logging.info(user)
+        if user and hasattr(user, 'facebook_access_token')\
+            and hasattr(user, 'fb_identity'):
 
             link = get_link_by_willt_code(rq_vars['wcode'])
 
             if link:
-                facebook_share_url = "https://graph.facebook.com/%s/feed" %\
-                                        rq_vars['fb_id']
-                params = urllib.urlencode({'access_token': rq_vars['fb_token'],
+                facebook_share_url = "https://graph.facebook.com/%s/feed"%user.fb_identity
+                params = urllib.urlencode({'access_token': user.facebook_access_token,
                                            'message': rq_vars['msg'] })
                 fb_response = urllib.urlopen(facebook_share_url, params)
                 fb_results = simplejson.loads(fb_response.read())
-
-                if hasattr(fb_results, 'id', False):
+                if fb_results.has_key('id'):
                     link.facebook_share_id = fb_results['id']
+                    link.save()
                     self.response.out.write({'r': 'ok'})
                 else:
                     self.response.out.write({'r': 'fail'})
@@ -301,7 +302,7 @@ class FacebookShare(webapp.RequestHandler):
                 self.response.out.write(simplejson.dumps({'r': 'deadlink'}))
 
         else:
-            self.response.out.write(simplejson.dumps({'r': 'notfound'})
+            self.response.out.write(simplejson.dumps({'r': 'notfound'}))
 
         
 

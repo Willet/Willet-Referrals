@@ -201,12 +201,12 @@ def create_user_by_twitter(t_handle, referrer):
 
     return user
 
-def create_user_by_facebook(fb_id, first_name, last_name, email, referrer):
+def create_user_by_facebook(fb_id, first_name, last_name, email, referrer, token):
     """Create a new User object with the given attributes"""
     user = User(key_name=fb_id,
                 uuid=generate_uuid(16), fb_identity=fb_id, 
                 first_name=first_name, last_name=last_name,
-                referrer=referrer)
+                referrer=referrer, fb_access_token=token)
     user.put()
 
     # Query the SocialGraphAPI
@@ -273,7 +273,8 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + fb_id)
-        user = create_user_by_facebook(fb_id, first_name, last_name, email, referrer)
+        user = create_user_by_facebook(fb_id, first_name, last_name, 
+                                       email, referrer, token)
     
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
