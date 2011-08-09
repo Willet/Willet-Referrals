@@ -64,12 +64,14 @@
         shareText = document.getElementById('tf-share-text'),
         charsLeft = document.getElementById('chars-left');
 
-        FB.init({ appId: '141990385884645',
-            status: true,
-            cookie: true,
-            xfbml: true,
-            oauth: true
-        });
+        if ( FB ) {
+            FB.init({ appId: '141990385884645',
+                status: true,
+                cookie: true,
+                xfbml: true,
+                oauth: true
+            });
+        }
 
         shareComplete = function() {
             shareText.value = 'Thanks for sharing!';
@@ -219,6 +221,11 @@
             if (['twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
+                    if ( !FB ) {
+                        alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
+                        return;
+                    }
+
                     // confirm auth with fb
                     FB.login(function(lr) {
                         if (!lr.authResponse) {
