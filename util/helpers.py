@@ -54,31 +54,34 @@ def read_user_cookie( request_handler ):
     logging.info("Reading a user cookie: %s" % user_uuid)
     return user_uuid
 
-def set_clicked_cookie(code, partialCookie):
+def set_referrer_cookie(headers, campaign_uuid, code):
+    """Sets a referral cookie that signifies who referred this user """
+    partialCookie = Cookie.SimpleCookie()
+    partialCookie[str(campaign_uuid)] = code
+    partialCookie.name = str(campaign_uuid)
+    partialCookie[str(campaign_uuid)]['expires'] = 31556928
+    
+    headers.add_header('Set-Cookie', partialCookie.output())
+
+def set_clicked_cookie(headers, code):
     """Sets a cookie that signifies that this url has indeed been clicked"""
-    if partialCookie is None:
-        parialCookie = Cookie.SimpleCookie()
+    partialCookie = Cookie.SimpleCookie()
     partialCookie[code] = True
     partialCookie.name = code
     partialCookie[code]['expires'] = 31556928
-    return partialCookie
+    
+    headers.add_header('Set-Cookie', partialCookie.output())
 
-def set_referral_cookie(headers, code, partialCookie):
+def set_referral_cookie(headers, code):
     """Sets a referral cookie that signifies that this user has been referred
        by the user that owns the link with url_willt_code == code"""
-    partialCookie = Cookie.SimpleCookie() if partialCookie is None else partialCookie
+    partialCookie = Cookie.SimpleCookie()
     partialCookie['referral'] = code
     partialCookie.name = 'referral'
     partialCookie['referral']['expires'] = 31556928
-    headers['Set-Cookie'] = refCookie.output()
+    
+    headers.add_header('Set-Cookie', partialCookie.output())
 
-def set_referrer_cookie(campaign_uuid, code, partialCookie):
-    """Sets a referral cookie that signifies who referred this user """
-    partialCookie = Cookie.SimpleCookie() if partialCookie is None else partialCookie
-    partialCookie[campaign_uuid] = code
-    partialCookie.name =  str(campaign_uuid)
-    partialCookie[campaign_uuid]['expires'] = 31556928
-    return partialCookie
 
 def set_visited_cookie(headers):
     """Sets the approcity visited cookie so that registereud
