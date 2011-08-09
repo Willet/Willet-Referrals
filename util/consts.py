@@ -28,6 +28,7 @@ MIXPANEL_TOKEN   = '5e7c1fdd252ecdccfecf1682df9f76a2'
 # Facebook Stuff
 FACEBOOK_APP_ID = '175144029215141'
 FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
+FACEBOOK_QUERY_URL = 'https://graph.facebook.com/'
 
 # Klout Stuff
 KLOUT_API_KEY = '6gs66hdaj6vmung5mtg3aeka'

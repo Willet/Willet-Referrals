@@ -30,8 +30,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
 
     def get(self, input_path):
         template_values = {}
-        campaign_id = self.request.get('ca_id')
-        user_id = self.request.get('uid')
+        rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
@@ -41,7 +40,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if user is not None else False
         
-        campaign = get_campaign_by_id(campaign_id)
+        campaign = get_campaign_by_id(rq_vars['ca_id'])
         
         # If they give a bogus campaign id, show the landing page campaign!
         logging.info(campaign)
@@ -61,7 +60,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             }
         else:
             # Make a new Link
-            link = create_link(campaign.target_url, campaign, origin_domain, user_id)
+            link = create_link(campaign.target_url, campaign, origin_domain, rq_vars['uid'])
             logging.info("link created is %s" % link.willt_url_code)
 
             # Create the share text
@@ -81,7 +80,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'willt_code': link.willt_url_code,
                 
                 'user': user,
-                'supplied_user_id': user_id,
+                'supplied_user_id': rq_vars['uid'],
                 'user_email': user_email,
                 'user_found': str(user_found).lower()
             }
@@ -158,19 +157,18 @@ class TwitterOAuthHandler(webapp.RequestHandler):
 
     def get(self, service, action=''):
         
-        message = self.request.get('m')
-        willt_code = self.request.get('wcode')
+        rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
 
         if user and getattr(user, 'twitter_access_token', None) and message and\
             willt_code:
             logging.info("tweeting: " + message)
-            twitter_result = tweet(user.twitter_access_token, message)
+            twitter_result = tweet(user.twitter_access_token, rq_vars['m'])
             user.update_twitter_info(twitter_handle=twitter_result['user']['screen_name'],
                 twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
                 twitter_name=twitter_result['user']['name'],
                 twitter_followers_count=twitter_result['user']['followers_count'])
-            link = get_link_by_willt_code(willt_code)
+            link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link.tweet_id = twitter_result['id_str']
                 link.user = user
@@ -184,8 +182,8 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             if action in client.__public__:
                 if action == 'login':
                     logging.info("We didn't recognize you so we're sending you to oauth with your message: " + message)
-                    self.response.out.write(getattr(client, action)(message,
-                                                                    willt_code))
+                    self.response.out.write(getattr(client, action)(rq_vars['m'],
+                                                                    rq_vars['wcode']))
                 else:
                     self.response.out.write(getattr(client, action)())
             else:

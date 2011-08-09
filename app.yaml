@@ -15,7 +15,7 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks)
+- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB)
   script: processes.py
 
 - url: /conversion

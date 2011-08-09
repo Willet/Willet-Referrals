@@ -234,9 +234,9 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     user = get_user_by_cookie( request_handler )
     if user:
         # Update the info
-        user.update( twitter_handle=t_handle, twitter_name=name, 
-                     twitter_follower_count=followers, 
-                     twitter_profile_pic=profile_pic, referrer=referrer)
+        user.update(twitter_handle=t_handle, twitter_name=name, 
+                    twitter_follower_count=followers, 
+                    twitter_profile_pic=profile_pic, referrer=referrer)
 
     # Then, search by Twitter handle
     if user is None:

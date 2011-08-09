@@ -19,7 +19,7 @@ from models.client import Client
 from models.link import Link, LinkCounter
 from models.model import Model
 from models.stats import Stats
-from models.user import User
+from models.user import User, get_user_by_facebook
 
 from util.consts import *
 from util.emails import Email
@@ -150,6 +150,24 @@ class EmailerQueue( URIHandler ):
         campaign.put()
 
 
+class FetchFacebookData(webapp.RequestHandler):
+    """Fetch facebook information about the given user"""
+
+    def get(self):
+        rq_vars = get_request_variables(['fb_id'], self)
+        user = get_user_by_facebook(rq_vars['fb_id'])
+        if user:
+            url = FACEBOOK_QUERY_URL + rq_vars['fb_id']
+            fb_response = json.loads(urllib.urlopen(url).read())
+            target_data = ['first_name', 'last_name', 'gender'] 
+            collected_data = {}
+            for td in target_data:
+                if fb_response.has_key(td):
+                    collected_data[td] = fb_response[td]
+                
+
+            
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
@@ -161,6 +179,7 @@ def main():
         (r'/updateClicks',  UpdateClicks),
         (r'/updateTweets',  UpdateTweets),
         (r'/emailerCron', EmailerCron),
+        (r'/fetchFB', FetchFacebookData),
         (r'/emailerQueue', EmailerQueue),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
