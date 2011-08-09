@@ -164,7 +164,7 @@ class FetchFacebookData(webapp.RequestHandler):
             for td in target_data:
                 if fb_response.has_key(td):
                     collected_data[td] = fb_response[td]
-                
+            user.update(**collected_data)
 
             
 

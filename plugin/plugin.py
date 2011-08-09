@@ -7,6 +7,7 @@ __copyright__   = "Copyright 2011, The Willet Corporation"
 
 import os, logging, urllib, simplejson
 
+from google.appengine.api import taskqueue
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -291,8 +292,12 @@ class FacebookShare(webapp.RequestHandler):
                 fb_results = simplejson.loads(fb_response.read())
                 if fb_results.has_key('id'):
                     link.facebook_share_id = fb_results['id']
+                    link.user = user;
                     link.save()
                     self.response.out.write('ok')
+                    taskqueue.add(url = '/fetchFB',
+                                  params = {'fb_id': user.fb_identity})
+                                            
                 else:
                     self.response.out.write('fail')
                     logging.info(fb_results)
@@ -302,7 +307,6 @@ class FacebookShare(webapp.RequestHandler):
 
         else:
             self.response.out.write('notfound')
-
         
 
 def main():

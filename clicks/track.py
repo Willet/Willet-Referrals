@@ -5,8 +5,7 @@ __copyright__   = "Copyright 2011, The Willet Corporation"
 
 import re, logging, Cookie, os, urllib, simplejson
 
-from google.appengine.api import taskqueue
-from google.appengine.api import mail
+from google.appengine.api import mail, taskqueue
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -19,6 +18,7 @@ from models.user import get_or_create_user_by_twitter
 # helpers
 from util.helpers import set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.consts import *
+
 
 class TrackWilltURL( webapp.RequestHandler ):
     """This handler tracks click-throughs on a given code. It tests

@@ -146,6 +146,7 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
 
+
 # Gets by X
 def get_user_by_uuid( uuid ):
     logging.info("Getting user by uuid " + str(uuid))

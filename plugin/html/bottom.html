@@ -228,8 +228,6 @@
                             data: { msg: message,
                                     wcode:'{{willt_code}}' },
                             success: function (tr) {
-                                console.log(tr);
-                                console.log(typeof(tr));
                                 if (tr === 'ok') {
                                     shareComplete();
                                 } else {
