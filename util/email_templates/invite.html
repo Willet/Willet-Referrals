@@ -8,15 +8,14 @@
             <td valign="top">
                 <div style="font-size:110%">
                     <p> Hi, </p>
-                    <p> You've been invited by {% ifnotequal from_name ''%} {{from_name}} {% else %} {{from_addr}} {% endifnotequal %} to join them on
+                    <p> You've been invited by {{from_addr}} to join them on
                     <a href="{{url}}">{{campaign.product_name}}</a>!</p>
 
-                    <p> Here is why: </p>
+                    <p> Here's why: </p>
 
                     <p>{{msg}}</p>
                     
-                    <p> Go join them!</p>
-                    <p> -- Willet Team </p>
+                    <p>I hear {{campaign.product_name}} is pretty cool! Go join them! </p>
 				</div>
 			</td>
         </tr>
