@@ -54,14 +54,14 @@
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete;
+        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, chooseShareType;
 
     window.onload = function() {
 
         iframeBody = document.getElementById('willt');
         shareFrame = document.getElementById('willt-frame');
         shareArea = document.getElementById('share-area'),
-        shareText = document.getElementById('tf-share-text'),
+        shareText = document.getElementById('share-text'),
         charsLeft = document.getElementById('chars-left');
 
         if ( FB ) {
@@ -183,7 +183,7 @@
         sendEmail = function( via_willet ) {
             var from_addr = document.getElementById( 'from-email' ),
                 to_addrs  = document.getElementById( 'to-emails' ),
-                msg       = document.getElementById( 'email-share-text' );
+                msg       = document.getElementById( 'share-text' );
 
             // Check the fields.
             if ( !errorCheckEmails(from_addr, to_addrs, msg) ) {
@@ -200,7 +200,7 @@
                         via_willet : via_willet },
                 success: function(msg) {
                     var to_addrs  = document.getElementById( 'to-emails' ),
-                        msg       = document.getElementById( 'email-share-text' );
+                        msg       = document.getElementById( 'share-text' );
 
                     to_addrs.value = "";
                     msg.value = "Thank You! Invites sent!";
@@ -212,6 +212,17 @@
             // Also track more general 'share' event
             mixpanelTrack( 'Share' );
             return true;
+        };
+
+        chooseShareType = function( type ) {
+            document.getElementById( 'choose_share_type' ).style.display = "none";
+            if ( type == "email" ){
+                document.getElementById( 'email_div' ).style.display     = "block";
+                document.getElementById( 'by-fb-twitter' ).style.display = "none";
+            } else {
+                document.getElementById( 'email_div' ).style.display     = "none";
+                document.getElementById( 'by-fb-twitter' ).style.display = "block";
+            }
         };
 
         // use the selected medium to share about your purchase
@@ -299,8 +310,10 @@
     <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
     <style>
     .willt {
-        padding: 20px 0px 20px 20px;
+        padding: 10px 10px 10px 10px;
+        margin: 0px 0px 0px 0px;
         background-color: #f4faff;
+        
         border: 1px solid #AECEEF;
         -khtml-box-shadow: inset 0 0 2px #AECEEF;
         -o-box-shadow: inset 0 0 2px #AECEEF;
@@ -319,14 +332,15 @@
     }
     h1 {
         font-size: 2.5em;
-        font-weight: bold;
     }
     h2 {
         font-size: 1.5em;
     }
     h1, h2, h3, h4, h5 { 
+        text-align: center;
         color: #1f75cc;
-        margin: 0 0 10px 0;
+        margin: 0 0 5px 0;
+        padding: 0px 0px 0px 0px;
         line-height: 1.6em;
         font-weight: bold;
     }
@@ -344,8 +358,9 @@
         border: 1px solid #aaa; 
         padding: 4px; 
         color: #555;
-        margin: 0px;
-        height: 65px;
+        margin: 0px 0px 0px 0px;
+        max-height: 75px;
+        max-width: 380px;
     }
     a { 
         display: -moz-inline-stack;
@@ -378,6 +393,7 @@
         color: #fff;
     }
     .right {
+        text-align: right;
         float: right;
     }
     .clear {
@@ -389,16 +405,17 @@
         line-height: 30px;
     }
     #chars-left {
+        text-align: right;
         float: right;
-        margin: 10px 0px 10px 0px;
     }
     a img {
         float: left;
         height: 20px;
-        padding-right: 6px;
+        padding: 0px 5px 0px 5px;
         margin-top: 1px;
     }
     a div {
+        padding: 0px 5px 0px 5px;
         float: left;
         margin-top: -1px;
     }
@@ -408,27 +425,52 @@
     .email_btn img {
         padding: 2px 5px 2px 5px;
     }
+    .choose_btn {
+        padding: 0px 20px 0px 20px;
+    }
     .input-label {
         float: left;
-        width: 100px;
         line-height: 33px;
     }
     .input-content {
-        width: 300px;
         float: right;
     }
     .input-content input {
+        float: right;
         width: 290px;
         padding: 4px;
-    }
-    #email-share-text {
-        width: 416px;
     }
     #share-area {
         visibility: hidden;
     }
-    #from-email, #tf-share-text {
-        margin-top: 5px;
+    #share-text {
+        margin: 5px 0px 5px 0px;
+    }
+    .hidden {
+        display: none;
+    }
+    #choose_share_type {
+        text-align: center;    
+    }
+    #by-fb-twitter {
+            text-align:center;
+    }
+    .social {
+        float: right;
+        margin: 0px 0px 0px 0px;
+        text-align: right;
+        padding: 0px 0px 0px 0px;
+    }
+    #gfd {
+        height: 1px;
+        width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        background-color: #AECEEF;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        padding: 0px 0px 0px 0px;
     }
  </style>
 </head>
@@ -438,16 +480,31 @@
 
     {% block top %} {% endblock top %}
     
-    <div class="span-23 last willt">
-        <div class="span-12">
-            <h2>Invite by email</h2>
-            <div class="span-11 append-1 last">
+    <div class="span-10 last willt">
+        <div class="span-10 last">
+            <h2>Invite Your Friends To Use {{campaign.product_name}}</h2>
+            
+            <div class="prepend-6 span-4 last" id="chars-left">140 characters left</div>
+            <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
+
+            <div class="span-10 last" id="choose_share_type">
+                <a class="choose_btn" href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
+                    Share Via Email
+                </a>
+                <a class="choose_btn" href="#" onClick="chooseShareType('social');" title="Share using your favourite social network!"> 
+                    Share Via Social Network
+                </a>
+            </div>
+        </div>
+
+        <div class="span-10 last hidden" id="email_div">
+            <div class="span-10 last">
                 <div class="input-label">Your Email</div>
                 <div class="input-content">
                     <input id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
                 </div>
             </div>
-            <div class="span-11 append-1 append-bottom last">
+            <div class="span-10 append-bottom last">
                 <div class="input-label">Invitee Emails</div>
                 <div class="input-content">
                     <input id="to-emails" type="text" value="Invitee email addresses, separated by commas."
@@ -455,8 +512,8 @@
                 </div>
             </div>
             
-            <textarea class="span-11 last" id="email-share-text">{{ text }}</textarea>
-
+            <div class="span-6"> &nbsp;Choose your email provider: </div>
+            <div class="span-4 last right"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
                 <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                     <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
@@ -471,24 +528,28 @@
                     <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                 </a>
             </div>
-            <div class="span-6 last" style="margin-top: 5px;">
+            <div class="span-5 last" style="margin-top: 5px;">
                 <div class="right">
                     <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
                         <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                     </a>
                 </div>
-                <div id="use_us" class="right">Or let us mail it on your behalf:&nbsp;&nbsp;
-                </div>
                 <div class="clear"></div>
+            </div>
+    
+            <hr id="gfd" />
+            
+            <div class="span-8"> {{campaign.product_name}} really appreciates your support!  </div>
+            <div class="span-2 last">
+                <a class="social" href="#" onClick="chooseShareType('social');" title="Share using your favourite social network!"> 
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                </a>
             </div>
         </div>
 
-        <div class="span-11 last" id="by-fb-twitter">
-            <h2>Invite friends from Facebook or Twitter</h2>
-            <textarea id="tf-share-text" onkeydown="countChars();">{{ text }}</textarea>
-            
-            <div class="prepend-6 span-4 last" id="chars-left">140 characters left</div>
-            <div class="prepend-1 span-10 last">
+        <div class="span-10 last hidden" id="by-fb-twitter">
+            <div class="span-10 last">
                 <a href="#" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     <div> Share on Facebook </div>
