@@ -331,7 +331,7 @@
         text-decoration: none;
     }
     h1 {
-        font-size: 2.5em;
+        font-size: 2.0em;
     }
     h2 {
         font-size: 1.5em;
@@ -360,7 +360,7 @@
         color: #555;
         margin: 0px 0px 0px 0px;
         max-height: 75px;
-        max-width: 380px;
+        max-width: 340px;
     }
     a { 
         display: -moz-inline-stack;
@@ -415,7 +415,7 @@
         margin-top: 1px;
     }
     a div {
-        padding: 0px 5px 0px 5px;
+        padding: 0px 0px 0px 0px;
         float: left;
         margin-top: -1px;
     }
@@ -437,7 +437,7 @@
     }
     .input-content input {
         float: right;
-        width: 290px;
+        width: 260px;
         padding: 4px;
     }
     #share-area {
@@ -480,14 +480,14 @@
 
     {% block top %} {% endblock top %}
     
-    <div class="span-10 last willt">
-        <div class="span-10 last">
+    <div class="span-9 last willt">
+        <div class="span-9 last">
             <h2>Invite Your Friends To Use {{campaign.product_name}}</h2>
             
-            <div class="prepend-6 span-4 last" id="chars-left">140 characters left</div>
+            <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
 
-            <div class="span-10 last" id="choose_share_type">
+            <div class="span-9 last" id="choose_share_type">
                 <a class="choose_btn" href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
                     Share Via Email
                 </a>
@@ -497,14 +497,14 @@
             </div>
         </div>
 
-        <div class="span-10 last hidden" id="email_div">
-            <div class="span-10 last">
+        <div class="span-9 last hidden" id="email_div">
+            <div class="span-9 last">
                 <div class="input-label">Your Email</div>
                 <div class="input-content">
                     <input id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
                 </div>
             </div>
-            <div class="span-10 append-bottom last">
+            <div class="span-9 append-bottom last">
                 <div class="input-label">Invitee Emails</div>
                 <div class="input-content">
                     <input id="to-emails" type="text" value="Invitee email addresses, separated by commas."
@@ -512,7 +512,7 @@
                 </div>
             </div>
             
-            <div class="span-6"> &nbsp;Choose your email provider: </div>
+            <div class="span-5"> &nbsp;Choose your email provider: </div>
             <div class="span-4 last right"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
                 <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
@@ -528,7 +528,7 @@
                     <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                 </a>
             </div>
-            <div class="span-5 last" style="margin-top: 5px;">
+            <div class="span-4 last" style="margin-top: 5px;">
                 <div class="right">
                     <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
                         <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
@@ -539,7 +539,7 @@
     
             <hr id="gfd" />
             
-            <div class="span-8"> {{campaign.product_name}} really appreciates your support!  </div>
+            <div class="span-7"> {{campaign.product_name}} really appreciates your support!  </div>
             <div class="span-2 last">
                 <a class="social" href="#" onClick="chooseShareType('social');" title="Share using your favourite social network!"> 
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
@@ -548,8 +548,8 @@
             </div>
         </div>
 
-        <div class="span-10 last hidden" id="by-fb-twitter">
-            <div class="span-10 last">
+        <div class="span-9 last hidden" id="by-fb-twitter">
+            <div class="span-9 last">
                 <a href="#" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     <div> Share on Facebook </div>
