@@ -1,14 +1,9 @@
 {% extends "bottom.html" %}
     
 {% block top %}
-    <div class="span-9 append-15 append-bottom willt last">
-        <div class="span-7 lower-25">
-            <h1 id="blurb_title"> {{campaign.blurb_title}}</h1>
-            <p id="blurb_text" style="font-size: 1.2em;"> {{campaign.blurb_text}} </p>
-        </div>
-        <div class="span-2 last">
-            <img src="/static/imgs/gift.png" width="75px" />
-        </div>
+    <div class="span-9 append-15 append-bottom willt last lower-25">
+        <h1 id="blurb_title"> {{campaign.blurb_title}}</h1>
+        <p id="blurb_text" style="font-size: 1.2em; text-align: left;"> {{campaign.blurb_text}} </p>
     </div>
     <!-- Hack, I know. CSS wasn't working! -->
     <br /><br /> <br /><br /><br /> <br /><br />
