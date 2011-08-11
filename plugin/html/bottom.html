@@ -310,6 +310,8 @@
     <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
     <style>
     .willt {
+        text-align: center;
+
         padding: 10px 10px 10px 10px;
         margin: 0px 0px 0px 0px;
         background-color: #f4faff;
@@ -324,6 +326,8 @@
         -webkit-border-radius: 5px;
         -moz-border-radius: 5px;
         border-radius: 5px;
+
+        float: none;
     }
     a, a * { 
         cursor: pointer;
@@ -461,7 +465,7 @@
         text-align: right;
         padding: 0px 0px 0px 0px;
     }
-    #gfd {
+    .hor_line {
         height: 1px;
         width: 300px;
         margin-left: auto;
@@ -480,7 +484,7 @@
 
     {% block top %} {% endblock top %}
     
-    <div class="span-9 last willt">
+    <div class="span-9 append-15 last willt">
         <div class="span-9 last">
             <h2>Invite Your Friends To Use {{campaign.product_name}}</h2>
             
@@ -537,7 +541,8 @@
                 <div class="clear"></div>
             </div>
     
-            <hr id="gfd" />
+            <!--
+            <hr class="hor_line" />
             
             <div class="span-7"> {{campaign.product_name}} really appreciates your support!  </div>
             <div class="span-2 last">
@@ -546,6 +551,7 @@
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                 </a>
             </div>
+            -->
         </div>
 
         <div class="span-9 last hidden" id="by-fb-twitter">
@@ -559,6 +565,11 @@
                     <div>Tweet on Twitter</div>
                 </a>
             </div>
+        </div>
+
+        <div class="span-9 last"> 
+            <hr class="hor_line" />
+            Or, share your unique code: {{willt_url}}
         </div>
     </div>
     <div id="tweet-complete" onclick="shareComplete();"></div>
