@@ -502,11 +502,14 @@
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
 
             <div class="span-9 last" id="choose_share_type">
-                <a class="choose_btn" href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
-                    Share Via Email
+                <a href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
+                    <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                 </a>
-                <a class="choose_btn" href="#" onClick="chooseShareType('social');" title="Share using your favourite social network!"> 
-                    Share Via Social Network
+                <a href="#" onclick="share('fb');">
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                </a>
+                <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                 </a>
             </div>
         </div>
@@ -521,7 +524,7 @@
             <div class="span-9 append-bottom last">
                 <div class="input-label">Invitee Emails</div>
                 <div class="input-content">
-                    <input id="to-emails" type="text" value="Invitee email addresses, separated by commas."
+                    <input id="to-emails" type="text" value="Email addresses, separated by commas."
                         onFocus="clearText(this);" />
                 </div>
             </div>
@@ -568,11 +571,9 @@
             <div class="span-9 last">
                 <a href="#" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                    <div> Share on Facebook </div>
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                    <div>Tweet on Twitter</div>
                 </a>
             </div>
         </div>
