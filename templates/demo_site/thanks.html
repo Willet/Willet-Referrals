@@ -1,14 +1,74 @@
 {% extends "base.html" %}
 
 {% block head %}
+    <style>
+        p {
+            text-indent: 0px;
+        }
+    </style>
 {% endblock head %}
 
 {% block content %}
-    <div class="prepend-top span-24 center last">
-        <h2>Thanks for you purchase!</h2>
-    </div>
     <div class="prepend-top span-24 center last lower-100">
-        <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://social-referral.appspot.com/widget?ca_id=c8e166c12a2e4f19&uid=" style="width:932px;
-        height:435px;"> </iframe>
+        <div class="span-15" style="text-align: left">
+        
+        <h3> Thanks for shopping at My Store.ca, and we hope to see you again soon! </h3>
+
+        <p> You can track the status of this order, and all of your orders, online by visiting the Your Account page at http://www.mystore.ca/your-account/. </p>
+
+        <p>There, you can:
+            <ul>
+                <li>track order and shipment status.</li>
+                <li>review estimated delivery dates.</li>
+                <li>cancel unshipped items.</li>
+                <li>return items, and do much more!</li>
+            </ul>
+        </p>
+        <p> The following items were included in this shipment: </p>
+
+            <ol>
+                <li>1 Official Book Of Hanjie CDN$ 9.43 1 CDN$ 9.43</li>
+                <li>1 Paint-doku CDN$ 11.66 1 CDN$ 11.66</li>
+                <li>1 More O'Ekaki: Paint by Number CDN$ 11.66 1 CDN$ 11.66 </li>
+            </ol>
+        <hr>
+
+        <p style="text-align: right"> 
+            Sold by My Store.ca, Inc - taxed <br />
+            Item Subtotal: CDN$ 32.75<br />
+            Shipping and handling: CDN$ 0.00<br />
+            Total Tax: CDN$ 1.63<br />
+            GST: CDN$ 1.63<br />
+            PST: CDN$ 0.00<br />
+            Total: CDN$ 34.38<br />
+            Paid by Visa: CDN$ 34.38<br />
+        </p>
+        
+        <hr>
+        <p>
+            This shipment was sent to: <br />
+
+            Snoopy the Dog<br />
+            9 Privett Drive<br />
+            Little Whinging, UK<br />
+            
+            via UPS.
+        </p>
+
+        <pc>
+            For your reference, the number you can use to track your package is 1Z8WW102032668. You can refer to our Web site's Help page or: http://www.mystore.ca/wheres-my-stuff/ to retrieve current tracking information. Please note that tracking information might not be available immediately.
+
+            <br /><br />
+            
+            If you've explored the links on the Your Account page, but still need to get in touch with us about your order, you can find an e-mail form in our Help department at http://www.mystore.ca/help/.
+        </p>
+
+        <h2> Thank you for shopping with us! </h2>
+
+        </div>
+        <div class="span-9 last">
+            <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://social-referral.appspot.com/widget?ca_id=c8e166c12a2e4f19&uid=" style="width:372px; min-height:
+            520px;"> </iframe>
+        </div>
     </div>
 {% endblock content %}

@@ -45,7 +45,7 @@ class TrackWilltURL( webapp.RequestHandler ):
                            url        = '/mixpanel', 
                            params     = {'event'          : 'Clicks', 
                                          'campaign_uuid'  : link.campaign.uuid,
-                                         'twitter_handle' : link.user.get_attr('twitter_handle')} )
+                                         'twitter_handle' : link.user.get_attr('twitter_handle') if link.user else ''} )
 
         set_referral_cookie(self.response.headers, code)
         self.redirect(link.target_url)
