@@ -7,7 +7,7 @@ __copyright__   = "Copyright 2011, The Willet Corporation"
 
 import os, logging, urllib, simplejson
 
-from google.appengine.api import taskqueue
+from google.appengine.api import taskqueue, urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -161,9 +161,9 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
 
-        if user and getattr(user, 'twitter_access_token', None) and message and\
-            willt_code:
-            logging.info("tweeting: " + message)
+        if user and getattr(user, 'twitter_access_token', None)\
+            and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
+            logging.info("tweeting: " + rq_vars['wcode'])
             twitter_result = tweet(user.twitter_access_token, rq_vars['m'])
             user.update_twitter_info(twitter_handle=twitter_result['user']['screen_name'],
                 twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
@@ -182,7 +182,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
 
             if action in client.__public__:
                 if action == 'login':
-                    logging.info("We didn't recognize you so we're sending you to oauth with your message: " + message)
+                    logging.info("We didn't recognize you so we're sending you to oauth with your message: " + rq_vars['m'])
                     self.response.out.write(getattr(client, action)(rq_vars['m'],
                                                                     rq_vars['wcode']))
                 else:
@@ -283,29 +283,52 @@ class FacebookShare(webapp.RequestHandler):
             and hasattr(user, 'fb_identity'):
 
             link = get_link_by_willt_code(rq_vars['wcode'])
+            # add the user to the link now as we may not get a respone
+            link.add_user(user)
 
             if link:
                 facebook_share_url = "https://graph.facebook.com/%s/feed"%user.fb_identity
+                #params = { 'access_token': user.facebook_access_token,
+                #           'message': rq_vars['msg'] }
                 params = urllib.urlencode({'access_token': user.facebook_access_token,
                                            'message': rq_vars['msg'] })
-                fb_response = urllib.urlopen(facebook_share_url, params)
-                fb_results = simplejson.loads(fb_response.read())
-                if fb_results.has_key('id'):
-                    link.facebook_share_id = fb_results['id']
-                    link.user = user;
-                    link.save()
-                    self.response.out.write('ok')
-                    taskqueue.add(url = '/fetchFB',
-                                  params = {'fb_id': user.fb_identity})
-                                            
-                else:
-                    self.response.out.write('fail')
-                    logging.info(fb_results)
+                logging.info(facebook_share_url)
+                logging.info(params)
 
-            else: 
+                fb_response = None
+                try:
+                    logging.info(facebook_share_url + params)
+                    fb_response = urlfetch.fetch(facebook_share_url, #params,
+                                                 params,
+                                                 method=urlfetch.POST,
+                                                 deadline=7)
+                    #fb_response = urllib.urlopen(facebook_share_url, params)
+                except urlfetch.DownloadError, e: 
+                    logging.info(e)
+                    return
+                    # No response from facebook
+
+                if fb_response is not None:
+
+                    fb_results = simplejson.loads(fb_response.content)
+                    if fb_results.has_key('id'):
+                        link.facebook_share_id = fb_results['id']
+                        link.save()
+                        self.response.out.write('ok')
+                        taskqueue.add(url = '/fetchFB',
+                                      params = {'fb_id': user.fb_identity})
+                    else:
+                        self.response.out.write('fail')
+                        logging.info(fb_results)
+
+                else:
+                    # we are assuming a nil response means timeout and success
+                    self.response,out.wite('ok')
+
+            else: # no link found
                 self.response.out.write('deadlink')
 
-        else:
+        else: # no user found
             self.response.out.write('notfound')
         
 
