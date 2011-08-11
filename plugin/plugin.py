@@ -248,10 +248,11 @@ class FacebookCallback( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Grab the User!
-        user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['first_name'], 
-                                              rq_vars['last_name'], rq_vars['email'], 
-                                              rq_vars['referrer'], rq_vars['verified'], 
-                                              rq_vars['gender'], rq_vars['fb_token'], self)
+        #user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['first_name'], 
+        #                                      rq_vars['last_name'], rq_vars['email'], 
+        #                                      rq_vars['referrer'], rq_vars['verified'], 
+        #                                      rq_vars['gender'], rq_vars['fb_token'], self)
+        user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['fb_token'], self)
         
         # Grab the Link & update it!
         link = get_link_by_willt_code(rq_vars['willt_url_code'])
