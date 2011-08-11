@@ -73,7 +73,10 @@
                 oauth: true
             });
         }
+        
+        // clear the share text
         shareComplete = function() {
+            console.log("Sharing complete!");
             shareText.value = 'Thanks for sharing!';
             return true;
         };

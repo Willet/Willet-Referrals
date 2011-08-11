@@ -89,6 +89,11 @@ class Link(Model):
     def count_retweets(self):
         return len(self.retweets)
 
+    def add_user(self, user):
+        if user:
+            self.user = user
+            self.save()
+
     # Delete entity and counters
     def purge(self):
         c = self.willt_url_code
