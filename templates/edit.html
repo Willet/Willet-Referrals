@@ -218,7 +218,7 @@
             </p>
             <br />
             <div class="center" id="blurb_iframe_container">
-                <iframe src='/widget' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
+                <iframe src='/widget?ca_id={{campaign.uuid}}' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
             </div>
         </div>
         <div id="step3_right" class="hidden prepend-1 span-14 last">
@@ -227,7 +227,7 @@
             </p>
             <br />
             <div class="center" id="share_iframe_container">
-                <iframe src='/willt' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
+                <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
         </div>
         
