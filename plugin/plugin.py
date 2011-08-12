@@ -24,6 +24,7 @@ from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
 
+
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
@@ -177,7 +178,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 # TODO: come up with something to do when a link isn't found fo
                 #       a message that was /just/ tweeted
                 pass 
-        else: 
+        else:
             client = OAuthClient(service, self)
 
             if action in client.__public__:
@@ -280,10 +281,17 @@ class FacebookShare(webapp.RequestHandler):
             notfound - user or fb info not found"""
 
     def post(self):
-        rq_vars = get_request_variables(['msg', 'wcode'], self)
+        logging.info("We are posting to facebook")
+        rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id']
+                                        , self)
         user = get_user_by_cookie(self)
-        if user and hasattr(user, 'facebook_access_token')\
-            and hasattr(user, 'fb_identity'):
+        logging.info(user)
+        if user is None:
+            logging.info("creating a new user")
+            user = get_or_create_user_by_facebook(rq_vars['fb_id'],
+                                                  token=rq_vars['fb_token'],
+                                                  request_handler=self)
+        if hasattr(user, 'facebook_access_token') and hasattr(user, 'fb_identity'):
             facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:

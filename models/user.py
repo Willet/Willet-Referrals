@@ -295,7 +295,7 @@ def create_user_by_facebook(fb_id, first_name, last_name, email, referrer, token
     user = User(key_name=fb_id,
                 uuid=generate_uuid(16), fb_identity=fb_id, 
                 first_name=first_name, last_name=last_name,
-                referrer=referrer, fb_access_token=token)
+                referrer=referrer, facebook_access_token=token)
     user.put()
 
     # Query the SocialGraphAPI
@@ -315,7 +315,7 @@ def create_user_by_email(email, referrer):
     return user
 
 # Get or Create by X
-def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic='', referrer=None, request_handler=None):
+def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic='', referrer=None, request_handler=None, token=None):
     """Retrieve a user object if it is in the datastore, othereise create
       a new object"""
 
@@ -325,7 +325,8 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
         # Update the info
         user.update(twitter_handle=t_handle, twitter_name=name, 
                     twitter_follower_count=followers, 
-                    twitter_profile_pic=profile_pic, referrer=referrer)
+                    twitter_profile_pic=profile_pic, referrer=referrer,
+                    twitter_access_token=token)
 
     # Then, search by Twitter handle
     if user is None:
