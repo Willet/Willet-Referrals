@@ -23,6 +23,7 @@ if os.environ['HTTP_HOST'] == 'social-referral.appspot.com':
     # Facebook Stuff
     FACEBOOK_APP_ID = '181838945216160'
     FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
+
 elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
