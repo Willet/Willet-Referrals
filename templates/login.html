@@ -294,7 +294,10 @@ div.input_box button:hover {
                         email: form.email.value,
                         passphrase: Sha256.hash(form.passphrase.value),
                         passphrase2: Sha256.hash(form.passphrase2.value),
-                        url: form.url.value
+                        url: form.url.value,
+                        shopify_url: '{{shopify_url}}',
+                        shopify_sig: '{{shopify_sig}}',
+                        shopify_token: '{{shopify_token}}'
                     };
                     
                     $.ajax({
