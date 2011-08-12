@@ -70,7 +70,6 @@ class UpdateClicks( webapp.RequestHandler ):
 
 class UpdateLanding( webapp.RequestHandler ):
     def get( self ):
-        #campaign    = get_campaign_by_id( '5a066f533e684705' )
         campaign     = get_campaign_by_id( LANDING_CAMPAIGN_UUID )
         
         if campaign == None:

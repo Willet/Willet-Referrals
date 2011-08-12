@@ -264,19 +264,19 @@
                             window.close();
                         } else { 
                             var fbData = { wcode: '{{willt_code}}',
-                                           fbt: lr.authResponse.accessToken },
+                                           fb_token: lr.authResponse.accessToken },
                                 fields = ['first_name', 'last_name', 'id',
-                                          'gender', 'verified', 'email']
+                                          'gender', 'verified', 'email'];
                             // query for user profile
-                            FB.api('/me', function(resp) {
-                                console.log(resp);
-                                for (var attr in resp) {
-                                    if (resp.hasOwnProperty(attr) &&
-                                        fields.indexOf(attr) !== -1) {
-                                        fbData[attr] = resp[attr];
-                                    }
-                                }
-                            });
+                            //FB.api('/me', function(resp) {
+                            //    console.log(resp);
+                            //    for (var attr in resp) {
+                            //        if (resp.hasOwnProperty(attr) &&
+                            //            fields.indexOf(attr) !== -1) {
+                            //            fbData[attr] = resp[attr];
+                            //        }
+                            //    }
+                            //});
                             FB.api('/me/feed', 'post', { message: message },
                                 function (pr) {
                                     fbData.share_id = pr.id;
