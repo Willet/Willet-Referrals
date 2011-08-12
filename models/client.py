@@ -24,6 +24,11 @@ class Client(Model):
     creation_time = db.DateTimeProperty(auto_now_add = True)
     passphrase    = db.StringProperty(indexed=True)
 
+    # Shopify will pass us this info to /login.
+    shopify_url   = db.StringProperty( default='' )
+    shopify_sig   = db.StringProperty( default='' )
+    shopify_token = db.StringProperty( default='' )
+
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Client, self).__init__(*args, **kwargs)
@@ -39,7 +44,7 @@ class Client(Model):
 def get_client_by_email( email ):
     return Client.all().filter( 'email =', email ).get()
 
-def register(email, pass1, pass2):
+def register(email, pass1, pass2, shopify_url, shopify_sig, shopify_token):
     """ Attempt to create a new user. Returns [status, user, errMsg] -
         if status is 'ok' and user is a User model.
         Otherwise returns err-status for status, None for user and 
@@ -54,7 +59,10 @@ def register(email, pass1, pass2):
     elif pass1 != pass2: # unmatching passwords
         status, errMsg = 'UNMATCHING_PASS', 'Those passwords don\'t match.'
     else:
-        client = Client( key_name=email.lower(), uuid=generate_uuid(16), email=email.lower(), passphrase=pass1 )
+        client = Client( key_name=email.lower(), uuid=generate_uuid(16),
+                         email=email.lower(), passphrase=pass1,
+                         shopify_url=shopify_url, shopify_sig=shopify_sig,
+                         shopify_token=shopify_token)
         client.put()
 
     return [status, client, errMsg]

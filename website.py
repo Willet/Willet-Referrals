@@ -57,6 +57,9 @@ class ShowLoginPage( URIHandler ):
         user_email = session.get('email', '');
         url        = self.request.get( 'u' )
         client     = self.get_client()
+        shopify_url = self.request.get( 'shop' )
+        shopify_sig = self.request.get( 'signature' )
+        shopify_token = self.request.get( 't' )
 
         logging.info("URL : %s EMAIL: %s" % (url, user_email) )
 
@@ -68,14 +71,13 @@ class ShowLoginPage( URIHandler ):
             if previousAuthErrors or previousRegErrors:
                 session['auth-errors'] = []
                 session['reg-errors']  = [] 
-            
 
             self.redirect( url if url else '/account' )
         
         else:
             stats      = Stats.all().get()
             registered = self.request.cookies.get('willt-registered', False)
-            clientEmail  = session.get('correctEmail', '')
+            clientEmail = session.get('correctEmail', '')
             authErrors = session.get('auth-errors', [])
             regErrors  = session.get('reg-errors', [])
             
@@ -85,6 +87,9 @@ class ShowLoginPage( URIHandler ):
                                  'loggedIn': False,
                                  'registered': str(registered).lower(),
                                  'url' : url,
+                                 'shopify_url' : shopify_url,
+                                 'shopify_sig' : shopify_sig,
+                                 'shopify_token' : shopify_token,
                                  'stats' : stats,
                                  'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
 
@@ -437,6 +442,9 @@ class DoRegisterClient( URIHandler ):
         clientEmail = cgi.escape(self.request.get("email"))
         passwords   = [cgi.escape(self.request.get("passphrase")),
                        cgi.escape(self.request.get("passphrase2"))]
+        shopify_url = self.request.get( 'shopify_url' )
+        shopify_sig = self.request.get( 'shopify_sig' )
+        shopify_token = self.request.get( 'shopify_token' )
         errors      = []
         
         # initialize session
@@ -447,7 +455,8 @@ class DoRegisterClient( URIHandler ):
         session['correctEmail'] = clientEmail
 
         # attempt to register the user
-        status, client, errMsg = register(clientEmail, passwords[0], passwords[1])
+        status, client, errMsg = register(clientEmail, passwords[0], passwords[1],
+                                          shopify_url, shopify_sig, shopify_token)
 
         if status == 'EMAIL_TAKEN': # username taken
             errors.append(errMsg)
