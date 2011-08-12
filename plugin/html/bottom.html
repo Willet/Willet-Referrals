@@ -231,9 +231,10 @@
         // use the selected medium to share about your purchase
         share = function(medium, uid) {
             var fb_share_handler = function(payload) {
+                console.log(payload)
                 $.ajax({url: "/fbShare",
                         type: 'post',
-                        data:payload,
+                        data: payload,
                         success: function (tr) {
                             if (tr === 'ok') {
                                 shareComplete();
@@ -265,6 +266,7 @@
                                 window.close();
                             } else { 
                                 fbData.fb_token = lr.authResponse.accessToken;
+                                fbData.fb_id = lr.authResponse.userID;
                                 fb_share_handler(fbData);
                                 mixpanelTrack( 'Facebook' );
                                 mixpanelTrack( 'Share' );
