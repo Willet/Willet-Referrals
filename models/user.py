@@ -99,8 +99,9 @@ class User( db.Expando ):
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
             
-            else:
+            else if kwargs[k] != '':
                 setattr( self, k, kwargs[k] )
+        self.put()
         """
         if 'twitter_handle' in kwargs and kwargs['twitter_handle'] != '':
             self.twitter_handle = kwargs['twitter_handle']
@@ -129,7 +130,6 @@ class User( db.Expando ):
         if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
             self.referrer = kwargs['referrer']
         """
-        self.put()
 
     def get_attr( self, attr_name ):
         if attr_name == 'email':
