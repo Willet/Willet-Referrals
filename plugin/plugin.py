@@ -15,7 +15,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
-from models.oauth import OAuthClient, tweet
+from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
 from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_user_by_cookie
 
@@ -23,7 +23,6 @@ from models.user import get_or_create_user_by_email, get_or_create_user_by_faceb
 from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
-
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -161,22 +160,23 @@ class TwitterOAuthHandler(webapp.RequestHandler):
         rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
 
-        if user and getattr(user, 'twitter_access_token', None)\
+        if user and getattr(user, 'twitter_access_token', False)\
             and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
             logging.info("tweeting: " + rq_vars['wcode'])
-            twitter_result = tweet(user.twitter_access_token, rq_vars['m'])
-            user.update_twitter_info(twitter_handle=twitter_result['user']['screen_name'],
-                twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
-                twitter_name=twitter_result['user']['name'],
-                twitter_followers_count=twitter_result['user']['followers_count'])
+            # tweet and update user model from twitter
+            tweet_id, res = user.tweet(rq_vars['m'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
-                link.tweet_id = twitter_result['id_str']
                 link.user = user
+                self.response.headers.add_header("Content-type", 'text/javascript')
+                if tweet_id is not None:
+                    link.tweet_id = tweet_id
                 link.save()
-            self.response.headers.add_header("Content-type", 'text/javascript')
-            self.response.out.write("<script type='text/javascript'>console.log(window.opener.shareComplete()); window.close();</script>")
-
+                self.response.out.write(res)
+            else:
+                # TODO: come up with something to do when a link isn't found fo
+                #       a message that was /just/ tweeted
+                pass 
         else: 
             client = OAuthClient(service, self)
 
@@ -233,10 +233,11 @@ class SendEmailInvites( webapp.RequestHandler ):
 class FacebookCallback( webapp.RequestHandler ):
 
     def post( self ):
-        rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
-                                         'first_name', 'last_name', 
-                                         'willt_url_code', 'gender', 'verified',
-                                         'email', 'msg'], self)
+        #rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
+        #                                 'first_name', 'last_name', 
+        #                                 'willt_url_code', 'gender', 'verified',
+        #                                 'email', 'msg'], self)
+        rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
 
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
@@ -252,10 +253,12 @@ class FacebookCallback( webapp.RequestHandler ):
         #                                      rq_vars['last_name'], rq_vars['email'], 
         #                                      rq_vars['referrer'], rq_vars['verified'], 
         #                                      rq_vars['gender'], rq_vars['fb_token'], self)
-        user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['fb_token'], self)
+        user = get_or_create_user_by_facebook(rq_vars['fb_id'], 
+                                              token=rq_vars['fb_token'],
+                                              request_handler=self)
         
         # Grab the Link & update it!
-        link = get_link_by_willt_code(rq_vars['willt_url_code'])
+        link = get_link_by_willt_code(rq_vars['wcode'])
         if link:
             link.user = user
             link.facebook_share_id = rq_vars['share_id']
@@ -279,56 +282,15 @@ class FacebookShare(webapp.RequestHandler):
     def post(self):
         rq_vars = get_request_variables(['msg', 'wcode'], self)
         user = get_user_by_cookie(self)
-        logging.info(user)
         if user and hasattr(user, 'facebook_access_token')\
             and hasattr(user, 'fb_identity'):
-
+            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
             link = get_link_by_willt_code(rq_vars['wcode'])
-            # add the user to the link now as we may not get a respone
-            link.add_user(user)
-
             if link:
-                facebook_share_url = "https://graph.facebook.com/%s/feed"%user.fb_identity
-                #params = { 'access_token': user.facebook_access_token,
-                #           'message': rq_vars['msg'] }
-                params = urllib.urlencode({'access_token': user.facebook_access_token,
-                                           'message': rq_vars['msg'] })
-                logging.info(facebook_share_url)
-                logging.info(params)
-
-                fb_response = None
-                try:
-                    logging.info(facebook_share_url + params)
-                    fb_response = urlfetch.fetch(facebook_share_url, #params,
-                                                 params,
-                                                 method=urlfetch.POST,
-                                                 deadline=7)
-                    #fb_response = urllib.urlopen(facebook_share_url, params)
-                except urlfetch.DownloadError, e: 
-                    logging.info(e)
-                    return
-                    # No response from facebook
-
-                if fb_response is not None:
-
-                    fb_results = simplejson.loads(fb_response.content)
-                    if fb_results.has_key('id'):
-                        link.facebook_share_id = fb_results['id']
-                        link.save()
-                        self.response.out.write('ok')
-                        taskqueue.add(url = '/fetchFB',
-                                      params = {'fb_id': user.fb_identity})
-                    else:
-                        self.response.out.write('fail')
-                        logging.info(fb_results)
-
-                else:
-                    # we are assuming a nil response means timeout and success
-                    self.response,out.wite('ok')
-
-            else: # no link found
-                self.response.out.write('deadlink')
-
+                link = get_link_by_willt_code(rq_vars['wcode'])
+                # add the user to the link now as we may not get a respone
+                link.add_user(user)
+            self.response.out.write(plugin_response)
         else: # no user found
             self.response.out.write('notfound')
         
