@@ -23,8 +23,6 @@ from models.user import get_or_create_user_by_email, get_or_create_user_by_faceb
 from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
-from utitl.social_helpers import tweet, facebook_share
-
 
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
