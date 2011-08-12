@@ -152,8 +152,9 @@ class EmailerQueue( URIHandler ):
 class FetchFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
 
-    def get(self):
+    def post(self):
         rq_vars = get_request_variables(['fb_id'], self)
+        logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
         user = get_user_by_facebook(rq_vars['fb_id'])
         if user:
             url = FACEBOOK_QUERY_URL + rq_vars['fb_id']
@@ -164,6 +165,7 @@ class FetchFacebookData(webapp.RequestHandler):
                 if fb_response.has_key(td):
                     collected_data[td] = fb_response[td]
             user.update(**collected_data)
+        logging.info("done updating")
 
             
 

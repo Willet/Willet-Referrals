@@ -284,7 +284,8 @@ class FacebookShare(webapp.RequestHandler):
         user = get_user_by_cookie(self)
         if user and hasattr(user, 'facebook_access_token')\
             and hasattr(user, 'fb_identity'):
-            facebook_share_id, plugin_response = user.facebook_share(msg)
+            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
+            link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
                 # add the user to the link now as we may not get a respone

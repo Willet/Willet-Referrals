@@ -242,13 +242,13 @@
                             }
                         }
                 });
-            };
+            },
             uid = uid || '';
             var message = shareText.value.substring(0,141);
             if (['twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
-                    var fbData = {msg: message, wcode='{{willt_code}}'};
+                    var fbData = {msg: message, wcode: '{{willt_code}}'};
                     // first attempt server-provided token
                     if (userFound) {
                         fb_share_handler(fbData)
@@ -271,6 +271,7 @@
                             }
                         }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                         );
+                    } // if (userFound u
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
                                     + '&m=' + message + '&wcode={{willt_code}}',

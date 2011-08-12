@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # Data models for our Users
 # our Users are our client's clients
-import logging
+import logging, simplejson
 
 from datetime import datetime
 from decimal  import *
+from time import time
+from hmac import new as hmac
+from hashlib import sha1
 
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
@@ -150,7 +153,7 @@ class User( db.Expando ):
     # Social Networking Functionality
     # 
 
-    def tweet(self, message)
+    def tweet(self, message):
         """Tweet on behalf of a user. returns tweet_id, html_response.
            invocation: tweet_id, resp = user.tweet(message)
                        . . . self response.out.write(resp)"""
@@ -166,7 +169,7 @@ class User( db.Expando ):
         }
         status = {"status": message.encode("UTF-8")}
         params.update(status)
-        key = "&".join([TWITTER_SECRET, self.titter_access_token.oauth_token_secret])
+        key = "&".join([TWITTER_SECRET, self.twitter_access_token.oauth_token_secret])
         msg = "&".join(["POST", urllib.quote(twitter_post_url, ""),
                         urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
                             for k in sorted(params)]),
@@ -178,7 +181,7 @@ class User( db.Expando ):
                                        "Content-type":"application/x-www-form-urlencoded"})
         req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
         # make POST to twitter and parse response
-        res = decode_json(urllib2.urlopen(req).read())
+        res = simplejson.loads(urllib2.urlopen(req).read())
         # TODO: handle failure response from twitter more gracefully
 
         # update user with info from twitter
@@ -187,11 +190,11 @@ class User( db.Expando ):
                     twitter_profile_pic=res['user']['profile_image_url_https'],
                     twitter_name=res['user']['name'],
                     twitter_followers_count=res['user']['followers_count'])
-            resp = "<script type='text/javascript'>" + 
+            resp = "<script type='text/javascript'>" +\
                       "window.opener.shareComplete(); window.close();</script>"
             return res['id_str'], resp
         else:
-            resp = "<script type='text/javascript'>" +
+            resp = "<script type='text/javascript'>" +\
                 "window.opener.alert('Tweeting not successful');</script>"
             return None, resp
 
