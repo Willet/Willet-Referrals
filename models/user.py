@@ -146,6 +146,91 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
 
+    #
+    # Social Networking Functionality
+    # 
+
+    def tweet(self, message)
+        """Tweet on behalf of a user. returns tweet_id, html_response.
+           invocation: tweet_id, resp = user.tweet(message)
+                       . . . self response.out.write(resp)"""
+
+        # prepare the signed message to be sent to twitter
+        twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+        params = { "oauth_consumer_key": TWITTER_KEY,
+            "oauth_nonce": generate_uuid(16),
+            "oauth_signature_method": "HMAC-SHA1",
+            "oauth_timestamp": str(int(time())),
+            "oauth_token": self.twitter_access_token.oauth_token,
+            "oauth_version": "1.0"
+        }
+        status = {"status": message.encode("UTF-8")}
+        params.update(status)
+        key = "&".join([TWITTER_SECRET, self.titter_access_token.oauth_token_secret])
+        msg = "&".join(["POST", urllib.quote(twitter_post_url, ""),
+                        urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
+                            for k in sorted(params)]),
+                                     "-._~")])
+        signature = hmac(key, msg, sha1).digest().encode("base64").strip()
+        params["oauth_signature"] = signature
+        req = urllib2.Request(twitter_post_url,
+                              headers={"Authorization":"OAuth",
+                                       "Content-type":"application/x-www-form-urlencoded"})
+        req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
+        # make POST to twitter and parse response
+        res = decode_json(urllib2.urlopen(req).read())
+        # TODO: handle failure response from twitter more gracefully
+
+        # update user with info from twitter
+        if res.has_key('id_str'):
+            self.update_twitter_info(twitter_handle=res['user']['screen_name'],
+                    twitter_profile_pic=res['user']['profile_image_url_https'],
+                    twitter_name=res['user']['name'],
+                    twitter_followers_count=res['user']['followers_count'])
+            resp = "<script type='text/javascript'>" + 
+                      "window.opener.shareComplete(); window.close();</script>"
+            return res['id_str'], resp
+        else:
+            resp = "<script type='text/javascript'>" +
+                "window.opener.alert('Tweeting not successful');</script>"
+            return None, resp
+
+    def facebook_share(self, msg):
+        """Share 'message' on behalf of this user. returns share_id, html_response
+           invoation: fb_share_id, res = self.facebook_share(msg)...
+                        ... self.response.out.write(res) """
+
+        facebook_share_url = "https://graph.facebook.com/%s/feed"%self.fb_identity
+        params = urllib.urlencode({'access_token': self.facebook_access_token,
+                                   'message': msg })
+        fb_response, plugin_response, fb_share_id = None, None, None
+        try:
+            logging.info(facebook_share_url + params)
+            fb_response = urlfetch.fetch(facebook_share_url, 
+                                         params,
+                                         method=urlfetch.POST,
+                                         deadline=7)
+        except urlfetch.DownloadError, e: 
+            logging.info(e)
+            return
+            # No response from facebook
+
+        if fb_response is not None:
+
+            fb_results = simplejson.loads(fb_response.content)
+            if fb_results.has_key('id'):
+                fb_share_id, plugin_response = fb_results['id'], 'ok'
+                taskqueue.add(url = '/fetchFB',
+                              params = {'fb_id': self.fb_identity})
+            else:
+                fb_share_id, plugin_response = None, 'fail'
+                logging.info(fb_results)
+        else:
+            # we are assuming a nil response means timeout and success
+            fb_share_id, plugin_response = None, 'ok'
+
+
+        return fb_share_id, plugin_response
 
 # Gets by X
 def get_user_by_uuid( uuid ):

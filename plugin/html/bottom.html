@@ -230,69 +230,47 @@
 
         // use the selected medium to share about your purchase
         share = function(medium, uid) {
+            var fb_share_handler = function(payload) {
+                $.ajax({url: "/fbShare",
+                        type: 'post',
+                        data:payload,
+                        success: function (tr) {
+                            if (tr === 'ok') {
+                                shareComplete();
+                            } else {
+                                console.log("Facebook post failure");
+                            }
+                        }
+                });
+            };
             uid = uid || '';
             var message = shareText.value.substring(0,141);
             if (['twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
+                    var fbData = {msg: message, wcode='{{willt_code}}'};
                     // first attempt server-provided token
                     if (userFound) {
-                        $.ajax({url: "/fbShare",
-                            type: 'post',
-                            data: { msg: message,
-                                    wcode:'{{willt_code}}' },
-                            success: function (tr) {
-                                if (tr === 'ok') {
-                                    shareComplete();
-                                } else {
-                                    console.log("Facebook post failure");
-                                }
-                            }
-                        });
+                        fb_share_handler(fbData)
                         return;
-                    }
-                    if (!FB) {
-                        alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
-                        return;
-                    }
-
-                    // confirm auth with fb
-                    FB.login(function(lr) {
-                        console.log(lr);
-                        if (!lr.authResponse) {
-                            // we weren't given permission
-                            window.close();
-                        } else { 
-                            var fbData = { wcode: '{{willt_code}}',
-                                           fb_token: lr.authResponse.accessToken },
-                                fields = ['first_name', 'last_name', 'id',
-                                          'gender', 'verified', 'email'];
-                            // query for user profile
-                            //FB.api('/me', function(resp) {
-                            //    console.log(resp);
-                            //    for (var attr in resp) {
-                            //        if (resp.hasOwnProperty(attr) &&
-                            //            fields.indexOf(attr) !== -1) {
-                            //            fbData[attr] = resp[attr];
-                            //        }
-                            //    }
-                            //});
-                            FB.api('/me/feed', 'post', { message: message },
-                                function (pr) {
-                                    fbData.share_id = pr.id;
-                                    $.ajax({url: "/fbCallback",
-                                        type: 'post',
-                                        data: fbData,
-                                        success: function (sr) {
-                                            console.log(sr);
-                                        }
-                                    });
-                            });
-                            mixpanelTrack( 'Facebook' );
-                            mixpanelTrack( 'Share' );
+                    } else {
+                        if (!FB) {
+                            alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
+                            return;
                         }
-                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-                    );
+                        FB.login(function(lr) {
+                            console.log(lr);
+                            if (!lr.authResponse) {
+                                // we weren't given permission
+                                window.close();
+                            } else { 
+                                fbData.fb_token = lr.authResponse.accessToken;
+                                fb_share_handler(fbData);
+                                mixpanelTrack( 'Facebook' );
+                                mixpanelTrack( 'Share' );
+                            }
+                        }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                        );
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
                                     + '&m=' + message + '&wcode={{willt_code}}',

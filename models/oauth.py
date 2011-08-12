@@ -102,33 +102,6 @@ def get_oauth_by_twitter(t_handle):
     return OAuthAccessToken.all().filter('specifier =', t_handle).get()
 
 
-# send a tweet to twitter on behalf of a user
-def tweet(token, message):
-    twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
-    params = { "oauth_consumer_key": TWITTER_KEY,
-        "oauth_nonce": generate_uuid(16),
-        "oauth_signature_method": "HMAC-SHA1",
-        "oauth_timestamp": str(int(time())),
-        "oauth_token": token.oauth_token,
-        "oauth_version": "1.0"
-    }
-    status = {"status": message.encode("UTF-8")}
-    params.update(status)
-    key = "&".join([TWITTER_SECRET, token.oauth_token_secret])
-    msg = "&".join(["POST", urllib.quote(twitter_post_url, ""),
-                    urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
-                        for k in sorted(params)]),
-                                 "-._~")])
-    signature = hmac(key, msg, sha1).digest().encode("base64").strip()
-    params["oauth_signature"] = signature
-    req = urllib2.Request(twitter_post_url,
-                          headers={"Authorization":"OAuth",
-                                   "Content-type":"application/x-www-form-urlencoded"})
-    req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
-    res = decode_json(urllib2.urlopen(req).read())
-
-    return res
-
 # ------------------------------------------------------------------------------
 # oauth client
 # ------------------------------------------------------------------------------
@@ -272,25 +245,19 @@ class OAuthClient(object):
         # check to see if we have a user with this twitter handle
         user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
                                                          request_handler=self.handler)
-        logging.info("Just got user " + str(user) + " so I should have a cookie now")
         # tweet and save results to user's twitter profle
-        twitter_result = tweet(self.token, message)
-        user.update_twitter_info(t_handle=twitter_result['user']['screen_name'],
-            twitter_profile_pic=twitter_result['user']['profile_image_url_https'],
-            twitter_name=twitter_result['user']['name'],
-            twitter_followers_count=twitter_result['user']['followers_count'],
-            twitter_access_token=self.token)
-        logging.info(twitter_result)
+        tweet_id, res = user.tweet(message)
         # update link with tweet id
         link = get_link_by_willt_code(willt_code)
         if link:
-            link.tweet_id = twitter_result['id_str']
             link.user = user
+            if tweet_id is not None:
+                link.tweet_id = tweet_id
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
         self.handler.response.headers.add_header("Content-type", 'text/javascript')
-        self.handler.response.out.write('<script type="text/javascript">console.log(window.opener.shareComplete()); window.close();</script>')
+        self.handler.response.out.write(res)
 
     def cleanup(self):
         query = OAuthRequestToken.all().filter(
