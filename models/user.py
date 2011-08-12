@@ -99,7 +99,7 @@ class User( db.Expando ):
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
             
-            else if kwargs[k] != '':
+            else if kwargs[k] != '' and kwargs[k] != None:
                 setattr( self, k, kwargs[k] )
         self.put()
         """
