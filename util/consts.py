@@ -17,6 +17,7 @@ DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAI
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
+
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
