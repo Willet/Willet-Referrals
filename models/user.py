@@ -352,7 +352,7 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     if user:
         user.update( fb_identity=fb_id, first_name=first_name, 
                      last_name=last_name, email=email, referrer=referrer,
-                     gender=gender, verifed=verified, facebook_access_token=token )
+                     gender=gender, verified=verified, facebook_access_token=token )
 
     # Try looking by FB identity
     if user is None:
