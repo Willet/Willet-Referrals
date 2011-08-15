@@ -34,12 +34,17 @@ class ServeSharingPlugin(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+<<<<<<< HEAD
+        logging.info(KEYS)
+
+=======
             
+>>>>>>> master
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
             user.get_attr('email') != '' else "Your Email"
-        user_found = True if user is not None else False
+        user_found = True if hasattr(user, 'fb_access_token') else False
         
         campaign = get_campaign_by_id(rq_vars['ca_id'])
         
@@ -48,7 +53,6 @@ class ServeSharingPlugin(webapp.RequestHandler):
         if campaign == None:
             template_values = {
                 'NAME' : NAME,
-                'LINKEDIN_KEY': LINKEDIN_KEY,
                 
                 'text': "",
                 'willt_url' : URL,
@@ -74,7 +78,6 @@ class ServeSharingPlugin(webapp.RequestHandler):
             template_values = {
                 'URL' : URL,
                 'NAME' : NAME,
-                'LINKEDIN_KEY': LINKEDIN_KEY,
                 
                 'campaign' : campaign,
                 'campaign_uuid' : campaign.uuid,
@@ -83,6 +86,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'willt_code': link.willt_url_code,
                 
                 'user': user,
+                'FACEBOOK_APP_ID': FACEBOOK_APP_ID,
                 'supplied_user_id': rq_vars['uid'],
                 'user_email': user_email,
                 'user_found': str(user_found).lower()
@@ -235,47 +239,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         # Send off the email if they don't want to use Gmail
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
-
-
-class FacebookCallback( webapp.RequestHandler ):
     
-    def post( self ):
-        #rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
-        #                                 'first_name', 'last_name', 
-        #                                 'willt_url_code', 'gender', 'verified',
-        #                                 'email', 'msg'], self)
-        rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
-        
-        # check to see if this user has a referral cookie set
-        referrer_code = self.request.cookies.get('referral', None)
-        referrer = None
-        logging.info(referrer_code)
-        if referrer_code:
-            referral_link = get_link_by_willt_code(referrer_code)
-            if referral_link and referral_link.user:
-                referrer = referral_link.user
-        
-        # Grab the User!
-        #user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['first_name'], 
-        #                                      rq_vars['last_name'], rq_vars['email'], 
-        #                                      rq_vars['referrer'], rq_vars['verified'], 
-        #                                      rq_vars['gender'], rq_vars['fb_token'], self)
-        user = get_or_create_user_by_facebook(rq_vars['fb_id'], 
-                                              token=rq_vars['fb_token'],
-                                              request_handler=self)
-        
-        # Grab the Link & update it!
-        link = get_link_by_willt_code(rq_vars['wcode'])
-        if link:
-            link.user = user
-            link.facebook_share_id = rq_vars['share_id']
-            link.save()
-            
-            link.campaign.increment_shares()
-            
-            # Save this Testimonial
-            create_testimonial(user=user, message=rq_vars['msg'], link=link)
-
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
@@ -291,7 +255,6 @@ class FacebookShare(webapp.RequestHandler):
         rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id']
                                         , self)
         user = get_user_by_cookie(self)
-        logging.info(user)
         if user is None:
             logging.info("creating a new user")
             user = get_or_create_user_by_facebook(rq_vars['fb_id'],
@@ -311,7 +274,6 @@ class FacebookShare(webapp.RequestHandler):
 
 def main():
     application = webapp.WSGIApplication([
-        (r'/fbCallback', FacebookCallback),
         (r'/fbShare', FacebookShare),
         (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
