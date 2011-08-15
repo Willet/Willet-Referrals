@@ -31,7 +31,10 @@ if os.environ['HTTP_HOST'] == 'social-referral.appspot.com' or USING_DEV_SERVER:
     # Facebook Stuff
     FACEBOOK_APP_ID = '141990385884645'
     FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
-
+    
+    # LINKEDIN API JAZZ
+    LINKEDIN_KEY = 'j2isiwa49dkz'
+    LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
 elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
@@ -41,6 +44,23 @@ elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # Facebook Stuff
     FACEBOOK_APP_ID = '175144029215141'
     FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
+    
+    # LINKEDIN API JAZZ
+    LINKEDIN_KEY = 'j2isiwa49dkz'
+    LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
+else:
+    # Twitter Stuff
+    TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
+    TWITTER_KEY = 'AGjI5z0RZFX7pq3i7nJgtg'
+    TWITTER_SECRET = 'aCUHHM1ZWcM4z35OORhbPuzIEsGlEB2QIl8Ysl3xn1o'
+    
+    # Facebook Stuff
+    FACEBOOK_APP_ID = '175144029215141'
+    FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
+    
+    # LINKEDIN API JAZZ
+    LINKEDIN_KEY = 'j2isiwa49dkz'
+    LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
 
 # Mixpanel Stuff
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
