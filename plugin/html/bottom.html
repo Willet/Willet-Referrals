@@ -27,9 +27,8 @@
         <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
         tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
         <link rel="start" href="http://www.wil.lt" title="Willet Social" />
-        
-        {% include "javascript_includes.html" %}
-        
+
+      {% include "javascript_includes.html" %}
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
@@ -45,7 +44,7 @@
         charsLeft = document.getElementById('chars-left');
 
         if ( FB ) {
-            FB.init({ appId: '175144029215141',
+            FB.init({ appId: '{{FACEBOOK_APP_ID}}',
                 status: true,
                 cookie: true,
                 xfbml: true,
@@ -166,12 +165,12 @@
             var from_addr = document.getElementById( 'from-email' ),
                 to_addrs  = document.getElementById( 'to-emails' ),
                 msg       = document.getElementById( 'share-text' );
-
+            
             // Check the fields.
             if ( !errorCheckEmails(from_addr, to_addrs, msg) ) {
                 return false;
             }
-
+            
             $.ajax({url: "/sendEmailInvites",
                 type: 'post',
                 data: { from_addr : from_addr.value, 
@@ -183,12 +182,12 @@
                 success: function(msg) {
                     var to_addrs  = document.getElementById( 'to-emails' ),
                         msg       = document.getElementById( 'share-text' );
-
+                        
                     to_addrs.value = "";
                     msg.value = "Thank You! Invites sent!";
                 }
             });// end ajax
-
+            
             // Track 'email' event
             mixpanelTrack( 'Email' );
             // Also track more general 'share' event
@@ -225,7 +224,7 @@
             },
             uid = uid || '';
             var message = shareText.value.substring(0,141);
-            if (['twitter', 'fb'].indexOf(medium) !== -1) {
+            if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
                     var fbData = {msg: message, wcode: '{{willt_code}}'};
@@ -256,8 +255,12 @@
                 } else if (medium === 'twitter'){
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
                                     + '&m=' + message + '&wcode={{willt_code}}',
-                        AuthWindow = window.open(OAuthURL, '_blank');
-
+                                    AuthWindow = window.open(OAuthURL, '_blank');
+                } else if (medium === 'linkedin') {
+                    console.log('linkedin share', message);
+                    var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
+                                    + '&m=' + message + '&wcode={{willt_code}}',
+                                    AuthWindow = window.open(OAuthURL, '_blank');
                 } else {
                     // style shareArea according to different social loader
                 }
@@ -446,7 +449,7 @@
         margin-bottom: 5px;
         padding: 0px 0px 0px 0px;
     }
- </style>
+    </style>
 </head>
 <body>
 
@@ -463,13 +466,16 @@
 
             <div class="span-9 last" id="choose_share_type">
                 <a href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
-                    <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
+                    <img src="/static/imgs/email_logo.png" width="27px" `height="20px" />
                 </a>
                 <a href="#" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                </a>
+                <a href="#" title="Share on LinkedIn" onclick="share('linkedin');">
+                    <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
                 </a>
             </div>
         </div>
