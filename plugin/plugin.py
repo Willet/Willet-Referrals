@@ -48,6 +48,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
         if campaign == None:
             template_values = {
                 'NAME' : NAME,
+                'LINKEDIN_KEY': LINKEDIN_KEY,
                 
                 'text': "",
                 'willt_url' : URL,
@@ -73,6 +74,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             template_values = {
                 'URL' : URL,
                 'NAME' : NAME,
+                'LINKEDIN_KEY': LINKEDIN_KEY,
                 
                 'campaign' : campaign,
                 'campaign_uuid' : campaign.uuid,
