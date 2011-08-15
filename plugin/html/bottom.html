@@ -561,7 +561,8 @@
 
         <div class="span-9 last"> 
             <hr class="hor_line" />
-            Or, share your unique code: {{willt_url}}
+            Or, share your unique link: <input id="to-emails" type="text" value="{{ willt_url }}"
+                        onFocus="clearText(this);" />
         </div>
     </div>
     <div id="tweet-complete" onclick="shareComplete();"></div>

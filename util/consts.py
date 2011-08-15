@@ -15,7 +15,7 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 
-if os.environ['HTTP_HOST'] == 'social-referral.appspot.com':
+if os.environ['HTTP_HOST'] == 'social-referral.appspot.com' or USING_DEV_SERVER:
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
     TWITTER_KEY = '2O3uHYkLKlHdy2PECgP3Q'
