@@ -5,6 +5,7 @@
 __author__      = "Sy Khader"
 __copyright__   = "Copyright 2011, The Willet Corporation"
 
+
 import os, logging, urllib, simplejson
 
 from google.appengine.api import taskqueue, urlfetch
@@ -34,12 +35,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-<<<<<<< HEAD
         logging.info(KEYS)
-
-=======
-            
->>>>>>> master
+        
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
@@ -197,10 +194,12 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             else:
                 self.response.out.write(client.login())
 
+
 class LinkedInOAuthHandler(webapp.RequestHandler):
     def get(self, service, action=''):
         """handles oath requests for linkedin"""
         pass
+
 
 class SendEmailInvites( webapp.RequestHandler ):
     
@@ -241,8 +240,6 @@ class SendEmailInvites( webapp.RequestHandler ):
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
 
-<<<<<<< HEAD
-=======
 class FacebookCallback( webapp.RequestHandler ):
     
     def post( self ):
@@ -283,7 +280,6 @@ class FacebookCallback( webapp.RequestHandler ):
             create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
 
->>>>>>> master
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
        based on a pre-stored oauth key.
@@ -313,7 +309,7 @@ class FacebookShare(webapp.RequestHandler):
             self.response.out.write(plugin_response)
         else: # no user found
             self.response.out.write('notfound')
-        
+
 
 def main():
     application = webapp.WSGIApplication([
