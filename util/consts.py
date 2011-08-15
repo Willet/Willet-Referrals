@@ -15,6 +15,8 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 
+FACEBOOK_QUERY_URL='https://graph.facebook.com/'
+
 if os.environ['HTTP_HOST'] == 'social-referral.appspot.com':
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
@@ -22,8 +24,8 @@ if os.environ['HTTP_HOST'] == 'social-referral.appspot.com':
     TWITTER_SECRET = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
     
     # Facebook Stuff
-    FACEBOOK_APP_ID = '181838945216160'
-    FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
+    FACEBOOK_APP_ID = '141990385884645'
+    FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
 
 elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # Twitter Stuff
