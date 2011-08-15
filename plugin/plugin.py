@@ -28,13 +28,13 @@ from util.helpers import read_user_cookie, generate_uuid, get_request_variables
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-
+    
     def get(self, input_path):
         template_values = {}
         rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-
+            
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
@@ -57,13 +57,13 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 
                 'user' : user,
                 'user_email' : user_email,
-                'supplied_user_id' : user_id,
+                'supplied_user_id' : rq_vars['uid'],
             }
         else:
             # Make a new Link
             link = create_link(campaign.target_url, campaign, origin_domain, rq_vars['uid'])
             logging.info("link created is %s" % link.willt_url_code)
-
+            
             # Create the share text
             if campaign.target_url in campaign.share_text:
                 share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
@@ -90,7 +90,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:
             template_values['BASE_URL'] = URL
-
+            
         if 'widget' in input_path:
             path = os.path.join(os.path.dirname(__file__), 'html/top.html')
         else:
@@ -102,7 +102,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
 class DynamicSocialLoader(webapp.RequestHandler):
     """Dynamically loads the source of an iframe containing a campaign's
        share text. Currently supports: tweet, facebook share, email"""
-
+    
     def get(self):
         template_values = {}
         campaign_id = self.request.get('ca_id')
@@ -110,10 +110,10 @@ class DynamicSocialLoader(webapp.RequestHandler):
         social_type = self.request.get('type')
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-
+            
         if self.request.url.startswith('http://localhost:8080'):
             template_values['BASE_URL'] = self.request.url[0:21]
-
+            
         campaign = get_campaign_by_id(campaign_id)
         
         # If they give a bogus campaign id, show the landing page campaign!
@@ -128,12 +128,12 @@ class DynamicSocialLoader(webapp.RequestHandler):
         else:
             link = create_link(campaign.target_url, campaign, origin_domain, user_id)
             logging.info("link created is %s" % link.willt_url_code)
-
+            
             if campaign.target_url in campaign.share_text:
                 share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
             else:
                 share_text = campaign.share_text + " " + link.get_willt_url()
-
+                
             template_values = {
                 'text': share_text.replace("\"", "'"),
                 'willt_url' : link.get_willt_url(),
@@ -148,19 +148,19 @@ class DynamicSocialLoader(webapp.RequestHandler):
             template_file = 'facebook.html'
         elif social_type == 'e':
             template_file = 'email.html'
-
+            
         path = os.path.join(os.path.dirname(__file__), 'html/%s' % template_file)
         self.response.out.write(template.render(path, template_values))
         return
 
 
 class TwitterOAuthHandler(webapp.RequestHandler):
-
+    
     def get(self, service, action=''):
         
         rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
-
+        
         if user and getattr(user, 'twitter_access_token', False)\
             and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
             logging.info("tweeting: " + rq_vars['wcode'])
@@ -180,7 +180,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 pass 
         else:
             client = OAuthClient(service, self)
-
+            
             if action in client.__public__:
                 if action == 'login':
                     logging.info("We didn't recognize you so we're sending you to oauth with your message: " + rq_vars['m'])
@@ -191,9 +191,13 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             else:
                 self.response.out.write(client.login())
 
+class LinkedInOAuthHandler(webapp.RequestHandler):
+    def get(self, service, action=''):
+        """handles oath requests for linkedin"""
+        pass
 
 class SendEmailInvites( webapp.RequestHandler ):
-
+    
     def post( self ):
         from_addr = self.request.get( 'from_addr' )
         to_addrs  = self.request.get( 'to_addrs' )
@@ -219,27 +223,27 @@ class SendEmailInvites( webapp.RequestHandler ):
         if link:
             link.user = user
             link.put()
-
+            
             for i in range(0, to_addrs.count(',')):
                 link.campaign.increment_shares()
-
+                
         # Save this Testimonial
         create_testimonial(user=user, message=msg, link=link)
-
+        
         # Send off the email if they don't want to use Gmail
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
 
 class FacebookCallback( webapp.RequestHandler ):
-
+    
     def post( self ):
         #rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
         #                                 'first_name', 'last_name', 
         #                                 'willt_url_code', 'gender', 'verified',
         #                                 'email', 'msg'], self)
         rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
-
+        
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
         referrer = None
@@ -264,9 +268,9 @@ class FacebookCallback( webapp.RequestHandler ):
             link.user = user
             link.facebook_share_id = rq_vars['share_id']
             link.save()
-
+            
             link.campaign.increment_shares()
-
+            
             # Save this Testimonial
             create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
@@ -279,7 +283,7 @@ class FacebookShare(webapp.RequestHandler):
             fail - facebook denied post request
             deadlink - link not found
             notfound - user or fb info not found"""
-
+    
     def post(self):
         logging.info("We are posting to facebook")
         rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id']
@@ -309,7 +313,8 @@ def main():
         (r'/fbShare', FacebookShare),
         (r'/sendEmailInvites', SendEmailInvites),
         (r'/share', DynamicSocialLoader),
-        (r'/oauth/(.*)/(.*)', TwitterOAuthHandler),
+        (r'/oauth/twitter/(.*)', TwitterOAuthHandler),
+        (r'/oauth/linkedin/(.*)', LinkedInOAuthHandler),
         (r'/(.*)', ServeSharingPlugin)],
         debug=USING_DEV_SERVER)
     run_wsgi_app(application)
