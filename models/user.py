@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # Data models for our Users
 # our Users are our client's clients
-import logging, simplejson
+import logging
+
+from django.utils import simplejson
 
 from datetime import datetime
 from decimal  import *
@@ -101,9 +103,8 @@ class User( db.Expando ):
                 self.client = kwargs['client']
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
-            
             elif kwargs[k] != '' and kwargs[k] != None:
-                setattr( self, k, kwargs[k] )
+                setattr(self, k, kwargs[k])
         self.put()
         """
         if 'twitter_handle' in kwargs and kwargs['twitter_handle'] != '':
