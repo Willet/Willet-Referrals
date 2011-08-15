@@ -15,6 +15,8 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 
+FACEBOOK_QUERY_URL='https://graph.facebook.com/'
+
 if os.environ['HTTP_HOST'] == 'social-referral.appspot.com':
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
