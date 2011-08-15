@@ -160,7 +160,7 @@ class FetchFacebookData(webapp.RequestHandler):
             url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
                 ",gender,username,timezone,updated_time,verified,birthday"+\
                 ",email,interested_in,location,relationship_status,religion"+\
-                ",website,work"
+                ",website,work&access_token=" + getattr(user, 'facebook_access_token')
             fb_response = json.loads(urllib.urlopen(url).read())
             logging.info(fb_response)
             target_data = ['first_name', 'last_name', 'gender'] 
