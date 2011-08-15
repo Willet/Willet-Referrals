@@ -143,6 +143,10 @@ class RenameFacebookData(webapp.RequestHandler):
                 if hasattr(user, t):
                     setattr(user, 'fb_'+t, getattr(user, t))
                     delattr(user, t)
+            for err, correction in [('verifed', 'verified')]:
+                if hasattr(user, err):
+                    setattr(user, correction, getattr(user, err))
+                    delattr(user, err)
             user.save()
             logging.info(user)
          
