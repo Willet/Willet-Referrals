@@ -53,3 +53,6 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 # LilCookies (secure cookies) Stuff
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
 
+
+# Shopify API Stuff
+
