@@ -37,6 +37,10 @@ elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     FACEBOOK_APP_ID = '175144029215141'
     FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
 
+# LINKEDIN API JAZZ
+LINKEDIN_KEY = 'j2isiwa49dkz'
+LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
+
 # Mixpanel Stuff
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
 MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
