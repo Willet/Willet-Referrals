@@ -110,12 +110,39 @@ class CleanBadLinks( webapp.RequestHandler ):
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
 
+class InitRenameFacebookData(webapp.RequestHandler):
+    """Ensure all user models have their facebook properties prefixed exactly
+       'fb_' and not 'facebook_' """
+
+    def get(self):
+
+        users = User.all()
+        for u in [u.uiid for u in users if hasattr(u, 'facebook_access_token')\
+            or hasattr(u, 'first_name') or hasattr(u, 'gender') or\
+            hasattr(u, 'last_name') or hasattr(u, 'verified')]:
+            taskqueue.add(url = '/renameFBData',
+                          params = {'uuid': u})
+            
+class RenameFacebookData(webapp.RequestHandler):
+    """Fetch facebook information about the given user"""
+
+    def post(self):
+        rq_vars = get_request_variables(['uuid'], self)
+        user = get_user_by_uuid(rq_vars['uuid'])
+        if user:
+            for prop, val in u.__dict__.iteritems():
+                logging.info(prop)
+                logging.info(val)
+         
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
         (r'/admin', Admin),
+        (r'/initrenamefb', InitRenameFacebookData),
+        (r'/renamefb', RenameFacebookData),
         (r'/cleanBadLinks', CleanBadLinks),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)

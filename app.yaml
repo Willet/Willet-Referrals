@@ -55,7 +55,7 @@ handlers:
 - url: /init.*
   script: init/setup.py
   
-- url: /(admin|cleanBadLinks)
+- url: /(admin|cleanBadLinks|renamefb)
   script: admin.py
 
 # links to track
