@@ -350,9 +350,9 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
     if user:
-        user.update( fb_identity=fb_id, first_name=first_name, 
-                     last_name=last_name, email=email, referrer=referrer,
-                     gender=gender, verifed=verified, facebook_access_token=token )
+        user.update( fb_identity=fb_id, fb_first_name=first_name, 
+                     fb_last_name=last_name, fb_email=email, referrer=referrer,
+                     fb_gender=gender, fb_verified=verified, fb_access=token )
 
     # Try looking by FB identity
     if user is None:
