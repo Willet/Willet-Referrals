@@ -157,13 +157,18 @@ class FetchFacebookData(webapp.RequestHandler):
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
         user = get_user_by_facebook(rq_vars['fb_id'])
         if user:
-            url = FACEBOOK_QUERY_URL + rq_vars['fb_id']
+            url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
+                ",gender,username,timezone,updated_time,verified,birthday"+\
+                ",email,interested_in,location,relationship_status,religion"+\
+                ",website,work&access_token=" + getattr(user, 'facebook_access_token')
             fb_response = json.loads(urllib.urlopen(url).read())
-            target_data = ['first_name', 'last_name', 'gender'] 
+            logging.info(fb_response)
+            target_data = ['first_name', 'last_name', 'gender', 'verified',
+                'timezone', 'email'] 
             collected_data = {}
             for td in target_data:
                 if fb_response.has_key(td):
-                    collected_data[td] = fb_response[td]
+                    collected_data['fb_'+td] = fb_response[td]
             user.update(**collected_data)
         logging.info("done updating")
 

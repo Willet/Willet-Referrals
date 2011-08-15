@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # Data models for our Users
 # our Users are our client's clients
-import logging, simplejson
+import logging
+
+from django.utils import simplejson
 
 from datetime import datetime
 from decimal  import *
@@ -101,7 +103,6 @@ class User( db.Expando ):
                 self.client = kwargs['client']
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
-            
             elif kwargs[k] != '' and kwargs[k] != None:
                 setattr( self, k, kwargs[k] )
         self.put()
@@ -352,7 +353,7 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     if user:
         user.update( fb_identity=fb_id, first_name=first_name, 
                      last_name=last_name, email=email, referrer=referrer,
-                     gender=gender, verifed=verified, facebook_access_token=token )
+                     gender=gender, verified=verified, facebook_access_token=token )
 
     # Try looking by FB identity
     if user is None:
