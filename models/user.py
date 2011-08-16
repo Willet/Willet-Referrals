@@ -340,6 +340,10 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     if user is None:
         logging.info("Creating user: " + t_handle)
         user = create_user_by_twitter(t_handle, referrer)
+        if request_handler is not None:
+            ip = request_handler.request.remote_addr
+            logging.info(ip)
+
 
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
