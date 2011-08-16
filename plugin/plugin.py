@@ -156,8 +156,9 @@ class DynamicSocialLoader(webapp.RequestHandler):
 
 class TwitterOAuthHandler(webapp.RequestHandler):
     
-    def get(self, service, action=''):
+    def get(self, action=''):
         
+	service = 'twitter'
         rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
         
