@@ -22,20 +22,7 @@ KEYS                = os.environ['HTTP_HOST']
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
 
-if os.environ['HTTP_HOST'] == 'social-referral.appspot.com' or USING_DEV_SERVER:
-    # Twitter Stuff
-    TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
-    TWITTER_KEY = '2O3uHYkLKlHdy2PECgP3Q'
-    TWITTER_SECRET = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
-    
-    # Facebook Stuff
-    FACEBOOK_APP_ID = '141990385884645'
-    FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
-    
-    # LINKEDIN API JAZZ
-    LINKEDIN_KEY = 'j2isiwa49dkz'
-    LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
-elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
+if os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
     TWITTER_KEY = 'AGjI5z0RZFX7pq3i7nJgtg'
@@ -48,18 +35,19 @@ elif os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # LINKEDIN API JAZZ
     LINKEDIN_KEY = 'j2isiwa49dkz'
     LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
+
 else:
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
-    TWITTER_KEY = 'AGjI5z0RZFX7pq3i7nJgtg'
-    TWITTER_SECRET = 'aCUHHM1ZWcM4z35OORhbPuzIEsGlEB2QIl8Ysl3xn1o'
+    TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
+    TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
     
     # Facebook Stuff
-    FACEBOOK_APP_ID = '175144029215141'
-    FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
+    FACEBOOK_APP_ID     = '141990385884645'
+    FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
     
     # LINKEDIN API JAZZ
-    LINKEDIN_KEY = 'j2isiwa49dkz'
+    LINKEDIN_KEY    = 'j2isiwa49dkz'
     LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
 
 # Mixpanel Stuff
