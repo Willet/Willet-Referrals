@@ -28,19 +28,23 @@ class Campaign(Model):
     uuid            = db.StringProperty( indexed = True )
     created         = db.DateTimeProperty(auto_now_add=True)
     emailed_at_10   = db.BooleanProperty( default = False )
+    is_shopify      = db.BooleanProperty( default = False )
     client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
     
     cached_clicks_count = db.IntegerProperty( default = 0 )
     
     title           = db.StringProperty( indexed = False )
+    # If is_shopify, this is the store name
     product_name    = db.StringProperty( indexed = False )
+    # If is_shopify, this is the store URL
     target_url      = db.LinkProperty  ( indexed = False )
     
     blurb_title     = db.StringProperty( indexed = False )
     blurb_text      = db.StringProperty( indexed = False )
     
     share_text      = db.StringProperty( indexed = False )
-    webhook_url     = db.LinkProperty( indexed = False, required = False )
+    # If is_shopify, this is None
+    webhook_url     = db.LinkProperty( indexed = False, default = None, required = False )
 
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
