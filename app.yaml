@@ -15,7 +15,7 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB)
+- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends)
   script: processes.py
 
 - url: /conversion
@@ -55,7 +55,7 @@ handlers:
 - url: /init.*
   script: init/setup.py
   
-- url: /(admin|cleanBadLinks)
+- url: /(admin|cleanBadLinks|renameinit|renamefb)
   script: admin.py
 
 # links to track

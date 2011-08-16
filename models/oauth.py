@@ -29,18 +29,18 @@ from util.helpers import generate_uuid
 
 OAUTH_APP_SETTINGS = {
     'twitter': {
-
+        
         'consumer_key': TWITTER_KEY,
         'consumer_secret': TWITTER_SECRET,
-
+        
         'request_token_url': 'https://twitter.com/oauth/request_token',
         'access_token_url': 'https://twitter.com/oauth/access_token',
         'user_auth_url': 'http://twitter.com/oauth/authorize',
-
+        
         'default_api_prefix': 'http://twitter.com',
         'default_api_suffix': '.json',
-
-        },
+        
+    }, 
     'linkedin': {
         'consumer_key': LINKEDIN_KEY,
         'consumer_secret': LINKEDIN_SECRET,
@@ -51,8 +51,10 @@ OAUTH_APP_SETTINGS = {
         
         'default_api_prefix': 'https://api.linkedin.com',
         'default_api_suffix': '.json',
-        }
+        
+        'oauth_callback': '%s/oauth/linkedin/callback' % URL
     }
+}
 
 CLEANUP_BATCH_SIZE = 100
 EXPIRATION_WINDOW = timedelta(seconds=60*60*1) # 1 hour
@@ -155,28 +157,38 @@ class OAuthClient(object):
         
         return decode_json(fetch.content)
     
-    def post(self, api_method, http_method='POST', expected_status=(200,), **extra_params):
+    def post(self, api_method, http_method='POST', expected_status=(200,), return_json=True, **extra_params):
         
         if not (api_method.startswith('http://') or api_method.startswith('https://')):
             api_method = '%s%s%s' % (
-                self.service_info['default_api_prefix'], api_method,
+                self.service_info['default_api_prefix'],
+                api_method,
                 self.service_info['default_api_suffix']
-                )
+            )
         
         if self.token is None:
             self.token = OAuthAccessToken.get_by_key_name(self.get_cookie())
         
-        fetch = urlfetch(url=api_method, payload=self.get_signed_body(
-            api_method, self.token, http_method, **extra_params
-            ), method=http_method)
+        fetch = urlfetch(
+            url=api_method, 
+            payload=self.get_signed_body(
+                api_method, 
+                self.token, 
+                http_method, 
+                **extra_params
+            ), method=http_method
+        )
         
         if fetch.status_code not in expected_status:
             raise ValueError(
-                "Error calling... Got return status: %i [%r]" %
-                (fetch.status_code, fetch.content)
+                "Error calling... Got return status: %i [%r]" % (
+                    fetch.status_code, 
+                    fetch.content
                 )
-        
-        return decode_json(fetch.content)
+            )
+        if return_json:            
+            return decode_json(fetch.content)
+        return fetch # else
     
     def login(self, message, willt_code):
         
@@ -212,12 +224,18 @@ class OAuthClient(object):
         
         if self.oauth_callback:
             oauth_callback = {'oauth_callback': self.oauth_callback}
+        elif 'oauth_callback' in self.service_info:
+            oauth_callback = {'oauth_callback': self.service_info['oauth_callback']}
         else:
             oauth_callback = {}
         
-        self.handler.redirect(self.get_signed_url(
-            self.service_info['user_auth_url'], token, **oauth_callback
-            ))
+        redirect_url = self.get_signed_url(
+            self.service_info['user_auth_url'],
+            token,
+            **oauth_callback
+        )
+        logging.info('redirecting to: %s' % redirect_url)
+        self.handler.redirect(redirect_url)
     
     def callback(self, return_to='/account'):
         
@@ -279,6 +297,7 @@ class OAuthClient(object):
         db.delete(query.fetch(CLEANUP_BATCH_SIZE))
         return "Cleaned %i entries" % count
     
+    
     # request marshalling
     
     def get_data_from_signed_url(self, __url, __token=None, __meth='GET', **extra_params):
@@ -299,7 +318,7 @@ class OAuthClient(object):
             'oauth_version': '1.0',
             'oauth_timestamp': int(time()),
             'oauth_nonce': getrandbits(64),
-            }
+        }
             
         kwargs.update(extra_params)
         
@@ -334,9 +353,12 @@ class OAuthClient(object):
     def set_cookie(self, value, path='/'):
         self.handler.response.headers.add_header(
             'Set-Cookie', 
-            '%s=%s; path=%s; expires="Fri, 31-Dec-2021 23:59:59 GMT"' %
-            ('oauth.%s' % self.service, value, path)
+            'oauth.%s=%s; path=%s; expires="Fri, 31-Dec-2021 23:59:59 GMT"' % (
+                self.service,
+                value,
+                path
             )
+        )
     
     def expire_cookie(self, path='/'):
         self.handler.response.headers.add_header(

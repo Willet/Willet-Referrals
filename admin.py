@@ -15,7 +15,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.client import Client
 from models.link import *
-from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter
+from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter,\
+    get_user_by_uuid
 
 from util.consts import *
 from util.helpers import *
@@ -110,12 +111,55 @@ class CleanBadLinks( webapp.RequestHandler ):
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
 
-##-----------------------------------------------------------------------------##
-##------------------------- The URI Router ------------------------------------##
+
+class InitRenameFacebookData(webapp.RequestHandler):
+    """Ensure all user models have their facebook properties prefixed exactly
+       'fb_' and not 'facebook_' """
+
+    def get(self):
+
+        users = User.all()
+        logging.info("Fired")
+        for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\
+            or hasattr(u, 'first_name') or hasattr(u, 'gender') or\
+            hasattr(u, 'last_name') or hasattr(u, 'verifed')]:
+            taskqueue.add(url = '/renamefb',
+                          params = {'uuid': u})
+        self.response.out.write("update dispatched")
+            
+
+class RenameFacebookData(webapp.RequestHandler):
+    """Fetch facebook information about the given user"""
+
+    def post(self):
+        rq_vars = get_request_variables(['uuid'], self)
+        user = get_user_by_uuid(rq_vars['uuid'])
+        if user:
+            if hasattr(user, 'facebook_access_token'):
+                user.fb_access_token = user.facebook_access_token
+                delattr(user, 'facebook_access_token')
+            for t in ['first_name', 'last_name', 'name', 'verified', 'gender'\
+                , 'email']:
+                if hasattr(user, t):
+                    setattr(user, 'fb_'+t, getattr(user, t))
+                    delattr(user, t)
+            for err, correction in [('verifed', 'verified')]:
+                if hasattr(user, err):
+                    setattr(user, correction, getattr(user, err))
+                    delattr(user, err)
+            user.save()
+            logging.info(user)
+            logging.info(user.uuid)
+         
+
+##----------------------------------------------------------------------------##
+##------------------------ The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
         (r'/admin', Admin),
+        (r'/renamefb', RenameFacebookData),
+        (r'/renameinit', InitRenameFacebookData),
         (r'/cleanBadLinks', CleanBadLinks),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
