@@ -327,13 +327,11 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
     # Update the info
-    ip = request_handler.request.remote_addr if request_handler is not None\
-        else getattr(user, 'ip', None)
     if user:
         user.update(twitter_handle=t_handle, twitter_name=name, 
                     twitter_follower_count=followers, 
                     twitter_profile_pic=profile_pic, referrer=referrer,
-                    twitter_access_token=token, ip=ip)
+                    twitter_access_token=token)
 
     # Then, search by Twitter handle
     if user is None:
@@ -342,7 +340,7 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + t_handle)
-        user = create_user_by_twitter(t_handle, referrer, ip)
+        user = create_user_by_twitter(t_handle, referrer)
 
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
@@ -410,8 +408,14 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     return user
 
 def get_user_by_cookie(request_handler):
+    """Read a user by cookie. Update IP address if present"""
     uuid = read_user_cookie( request_handler )
     if uuid:
-        return get_user_by_uuid( uuid )
+        user = get_user_by_uuid(uuid)
+        ip = request_handler.request.remote_addr if request_handler is not None\
+            else getattr(user, 'ip', None)
+        user.ip = ip
+        user.save()
+        return user
     return None
 
