@@ -19,7 +19,7 @@ from models.client import Client
 from models.link import Link, LinkCounter
 from models.model import Model
 from models.stats import Stats
-from models.user import User, get_user_by_facebook
+from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook
 
 from util.consts import *
 from util.emails import Email
@@ -173,6 +173,24 @@ class FetchFacebookData(webapp.RequestHandler):
         logging.info("done updating")
 
             
+class FetchFacebookFriends(webapp.RequestHandler):
+    """Fetch and save the facebook friends of a given user"""
+
+    def get(self):
+        rq_vars = get_request_variables(['fb_id'], self)
+        user = get_user_by_facebook(rq_vars['fb_id'])
+        if user:
+            friends = []
+            url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "/friends"+\
+                "?access_token=" + getattr(user, 'fb_access_token')
+            fb_response = json.loads(urllib.urlopen(url).read())
+            if fb_response.has_key('data'):
+                for friend in fb_response['data']:
+                    willet_friend = get_or_create_user_by_facebook(friend['id'],
+                        name=friend['name'], would_be=True)
+                    friends.append(willet_friend.key())
+                user.update(fb_friends=friends)
+            logging.info(fb_response)
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
@@ -186,6 +204,7 @@ def main():
         (r'/updateTweets',  UpdateTweets),
         (r'/emailerCron', EmailerCron),
         (r'/fetchFB', FetchFacebookData),
+        (r'/fetchFriends', FetchFacebookFriends),
         (r'/emailerQueue', EmailerQueue),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)

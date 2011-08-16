@@ -238,10 +238,6 @@ class SendEmailInvites( webapp.RequestHandler ):
 class FacebookCallback( webapp.RequestHandler ):
     
     def post( self ):
-        #rq_vars = get_request_variables(['fb_id', 'fb_token', 'share_id',
-        #                                 'first_name', 'last_name', 
-        #                                 'willt_url_code', 'gender', 'verified',
-        #                                 'email', 'msg'], self)
         rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
         
         # check to see if this user has a referral cookie set
@@ -254,10 +250,6 @@ class FacebookCallback( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Grab the User!
-        #user = get_or_create_user_by_facebook(rq_vars['fb_id'], rq_vars['first_name'], 
-        #                                      rq_vars['last_name'], rq_vars['email'], 
-        #                                      rq_vars['referrer'], rq_vars['verified'], 
-        #                                      rq_vars['gender'], rq_vars['fb_token'], self)
         user = get_or_create_user_by_facebook(rq_vars['fb_id'], 
                                               token=rq_vars['fb_token'],
                                               request_handler=self)
