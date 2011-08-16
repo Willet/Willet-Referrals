@@ -24,7 +24,6 @@ from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
 
-
 class ServeSharingPlugin(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
@@ -34,12 +33,9 @@ class ServeSharingPlugin(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-<<<<<<< HEAD
+        
         logging.info(KEYS)
-
-=======
-            
->>>>>>> master
+        
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
@@ -103,7 +99,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             path = os.path.join(os.path.dirname(__file__), 'html/bottom.html')
         self.response.out.write(template.render(path, template_values))
         return
-
+    
 
 class DynamicSocialLoader(webapp.RequestHandler):
     """Dynamically loads the source of an iframe containing a campaign's
@@ -158,12 +154,13 @@ class DynamicSocialLoader(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'html/%s' % template_file)
         self.response.out.write(template.render(path, template_values))
         return
-
+    
 
 class TwitterOAuthHandler(webapp.RequestHandler):
     
-    def get(self, service, action=''):
+    def get(self, action=''):
         
+        service = 'twitter' # hardcoded because we aded the linkedin handler
         rq_vars = get_request_variables(['m', 'wcode'], self)
         user = get_user_by_cookie(self)
         
@@ -198,9 +195,45 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 self.response.out.write(client.login())
 
 class LinkedInOAuthHandler(webapp.RequestHandler):
-    def get(self, service, action=''):
+    
+    def get(self, action=''):
         """handles oath requests for linkedin"""
-        pass
+        
+        service = 'linkedin' # hardcoded because we aded the linkedin handler
+        rq_vars = get_request_variables(['m', 'wcode'], self)
+        user = get_user_by_cookie(self)
+        
+        if user and getattr(user, 'linkedin_access_token', False)\
+            and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
+            logging.info("LI sharing: " + rq_vars['wcode'])
+            # tweet and update user model from twitter
+            linkedin_share_id, res = user.linkedin_share(rq_vars['m'])
+            link = get_link_by_willt_code(rq_vars['wcode'])
+            if link:
+                link.user = user
+                self.response.headers.add_header("Content-type", 'text/javascript')
+                if linkedin_share_id is not None:
+                    link.linkedin_share_id = linkedin_share_id
+                link.save()
+                self.response.out.write(res)
+            else:
+                # TODO: come up with something to do when a link isn't found fo
+                #       a message that was /just/ tweeted
+                pass 
+        else:
+            client = OAuthClient(service, self)
+            
+            if action in client.__public__:
+                if action == 'login':
+                    logging.info("We didn't recognize you so we're sending you to oauth with your message: " + rq_vars['m'])
+                    self.response.out.write(
+                        getattr(client, action)(rq_vars['m'], rq_vars['wcode'])
+                    )
+                else:
+                    self.response.out.write(getattr(client, action)())
+            else:
+                self.response.out.write(client.login())
+    
 
 class SendEmailInvites( webapp.RequestHandler ):
     
