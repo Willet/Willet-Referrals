@@ -26,7 +26,6 @@ from util.helpers import generate_uuid
 # ------------------------------------------------------------------------------
 # configuration -- SET THESE TO SUIT YOUR APP!!
 # ------------------------------------------------------------------------------
-
 OAUTH_APP_SETTINGS = {
     'twitter': {
         
@@ -51,8 +50,6 @@ OAUTH_APP_SETTINGS = {
         
         'default_api_prefix': 'https://api.linkedin.com',
         'default_api_suffix': '.json',
-        
-        'oauth_callback': '%s/oauth/linkedin/callback' % URL
     }
 }
 
@@ -140,20 +137,20 @@ class OAuthClient(object):
             api_method = '%s%s%s' % (
                 self.service_info['default_api_prefix'], api_method,
                 self.service_info['default_api_suffix']
-                )
+            )
         
         if self.token is None:
             self.token = OAuthAccessToken.get_by_key_name(self.get_cookie())
         
         fetch = urlfetch(self.get_signed_url(
             api_method, self.token, http_method, **extra_params
-            ))
+        ))
         
         if fetch.status_code not in expected_status:
             raise ValueError(
                 "Error calling... Got return status: %i [%r]" %
                 (fetch.status_code, fetch.content)
-                )
+            )
         
         return decode_json(fetch.content)
     
@@ -348,7 +345,7 @@ class OAuthClient(object):
     def get_cookie(self):
         return self.handler.request.cookies.get(
             'oauth.%s' % self.service, ''
-            )
+        )
     
     def set_cookie(self, value, path='/'):
         self.handler.response.headers.add_header(

@@ -223,6 +223,10 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
         else:
             client = OAuthClient(service, self)
             
+            logging.info('linkedin_access_token %s' % str(getattr(user, 'linkedin_access_token', False)))
+            logging.info('user: %s' % user)
+            logging.info('rq_vars: %s' % rq_vars)
+            
             if action in client.__public__:
                 if action == 'login':
                     logging.info("We didn't recognize you so we're sending you to oauth with your message: " + rq_vars['m'])
