@@ -268,7 +268,7 @@ def get_user_by_email( email ):
     return email_model.user if email_model else None
 
 # Create by X
-def create_user_by_twitter(t_handle, referrer):
+def create_user_by_twitter(t_handle, referrer, ip=''):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
     OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
@@ -276,7 +276,8 @@ def create_user_by_twitter(t_handle, referrer):
     user = User(key_name=t_handle,
                 uuid=generate_uuid(16),
                 twitter_handle=t_handle,
-                referrer=referrer)
+                referrer=referrer,
+                ip=ip)
     
     if OAuthToken:
         user.twitter_access_token=OAuthToken
@@ -325,12 +326,14 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
 
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
+    # Update the info
+    ip = request_handler.request.remote_addr if request_handler is not None\
+        else getattr(user, 'ip', None)
     if user:
-        # Update the info
         user.update(twitter_handle=t_handle, twitter_name=name, 
                     twitter_follower_count=followers, 
                     twitter_profile_pic=profile_pic, referrer=referrer,
-                    twitter_access_token=token)
+                    twitter_access_token=token, ip=ip)
 
     # Then, search by Twitter handle
     if user is None:
@@ -339,11 +342,7 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + t_handle)
-        user = create_user_by_twitter(t_handle, referrer)
-        if request_handler is not None:
-            ip = request_handler.request.remote_addr
-            logging.info(ip)
-
+        user = create_user_by_twitter(t_handle, referrer, ip)
 
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
