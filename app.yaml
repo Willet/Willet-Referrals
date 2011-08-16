@@ -1,4 +1,4 @@
-application: mch-social-referral
+application: sy-willet
 version: 9
 runtime: python
 api_version: 1
@@ -15,7 +15,7 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB)
+- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends)
   script: processes.py
 
 - url: /conversion

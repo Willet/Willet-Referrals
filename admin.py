@@ -120,9 +120,9 @@ class InitRenameFacebookData(webapp.RequestHandler):
 
         users = User.all()
         logging.info("Fired")
-        for u in [u.uuid for u in users if hasattr(u, 'facebook_access_token')\
+        for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\
             or hasattr(u, 'first_name') or hasattr(u, 'gender') or\
-            hasattr(u, 'last_name') or hasattr(u, 'verified')]:
+            hasattr(u, 'last_name') or hasattr(u, 'verifed')]:
             taskqueue.add(url = '/renamefb',
                           params = {'uuid': u})
         self.response.out.write("update dispatched")
@@ -149,6 +149,7 @@ class RenameFacebookData(webapp.RequestHandler):
                     delattr(user, err)
             user.save()
             logging.info(user)
+            logging.info(user.uuid)
          
 
 ##----------------------------------------------------------------------------##
