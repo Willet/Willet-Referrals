@@ -41,6 +41,8 @@ class Link(Model):
     origin_domain = db.StringProperty(str, required=False)
     # facebook's id for the share
     facebook_share_id = db.StringProperty()
+    # linkedin's id for the share
+    linkedin_share_id = db.StringProperty(required=False, default='', indexed=True)
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 

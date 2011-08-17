@@ -28,24 +28,30 @@ class Campaign(Model):
     uuid            = db.StringProperty( indexed = True )
     created         = db.DateTimeProperty(auto_now_add=True)
     emailed_at_10   = db.BooleanProperty( default = False )
+    is_shopify      = db.BooleanProperty( default = False )
     client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
     
     cached_clicks_count = db.IntegerProperty( default = 0 )
     
     title           = db.StringProperty( indexed = False )
-    product_name    = db.StringProperty( indexed = False )
+    # If is_shopify, this is the store name
+    product_name    = db.StringProperty( indexed = True )
+    # If is_shopify, this is the store URL
     target_url      = db.LinkProperty  ( indexed = False )
     
     blurb_title     = db.StringProperty( indexed = False )
     blurb_text      = db.StringProperty( indexed = False )
     
     share_text      = db.StringProperty( indexed = False )
-    webhook_url     = db.LinkProperty( indexed = False, required = False )
+    # If is_shopify, this is None
+    webhook_url     = db.LinkProperty( indexed = False, default = None, required = False )
 
     analytics       = db.ReferenceProperty(db.Model,collection_name='canalytics')
 
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
+
+    prev_shopify_order_id = db.StringProperty( default = '0' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -174,6 +180,9 @@ class Campaign(Model):
 
 def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
+
+def get_campaign_by_shopify_store( name ):
+    return Campaign.all().filter( 'product_name =', name ).get()
 
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
