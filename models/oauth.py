@@ -65,6 +65,7 @@ def linkedin_callback(client):
     link = get_link_by_willt_code(willt_code)
     if link:
         link.user = user
+        link.campaign.increment_shares()
         if share_link is not None:
             link.linkedin_share_url = linkedin_share_url
         link.save()
@@ -239,8 +240,12 @@ class OAuthClient(object):
         
         if fetch.status_code not in expected_status:
             raise ValueError(
-                "Error calling... Got return status: %i [%r]" %
-                (fetch.status_code, fetch.content)
+                "Error calling... Got return status: %i [%r]\napi_method=%s\self.token=%s" % (
+                    fetch.status_code, 
+                    fetch.content,
+                    api_method,
+                    self.token
+                )
             )
         if return_json:
             return decode_json(fetch.content)
@@ -330,11 +335,13 @@ class OAuthClient(object):
     def callback(self, return_to='/account'):
         
         oauth_token = self.handler.request.get("oauth_token")
+        oauth_verifier = self.handler.request.get('oauth_verifier')
+        
         message = ''
         willt_code = ''
         
         if not oauth_token:
-            return get_request_token()
+            return self.get_request_token()
         
         oauth_token = OAuthRequestToken.all().filter(
             'oauth_token =', oauth_token).filter(
@@ -342,9 +349,12 @@ class OAuthClient(object):
         message = oauth_token.message
         willt_code = oauth_token.willt_code
         
+        logging.info('set oauth_verifier=%s' % oauth_verifier)
+        
         token_info = self.get_data_from_signed_url(
             self.service_info['access_token_url'],
-            oauth_token
+            oauth_token,
+            oauth_verifier = oauth_verifier
         )
         logging.info('got token_info: %s' % token_info)
         key_name = create_uuid()
@@ -386,12 +396,24 @@ class OAuthClient(object):
     # request marshalling
     
     def get_data_from_signed_url(self, __url, __token=None, __meth='GET', **extra_params):
-        return urlfetch(self.get_signed_url(
-            __url, __token, __meth, **extra_params
+        return urlfetch(
+            self.get_signed_url(
+                __url,
+                __token,
+                __meth,
+                **extra_params
             )).content
     
     def get_signed_url(self, __url, __token=None, __meth='GET',**extra_params):
-        return '%s?%s'%(__url, self.get_signed_body(__url, __token, __meth, **extra_params))
+        return '%s?%s' % (
+            __url, 
+            self.get_signed_body(
+                __url, 
+                __token, 
+                __meth, 
+                **extra_params
+            )
+        )
     
     def get_signed_body(self, __url, __token=None, __meth='GET',**extra_params):
         

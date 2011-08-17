@@ -44,7 +44,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
         
         if rq_vars['store'] != '':
             campaign = get_campaign_by_shopify_store( rq_vars['store'] )
-
+            
             taskqueue.add( queue_name='shopifyAPI', 
                            url='/getShopifyOrder', 
                            name= 'shopifyOrder%s%s' % (rq_vars['store'], rq_vars['order']),
@@ -202,7 +202,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                     self.response.out.write(getattr(client, action)())
             else:
                 self.response.out.write(client.login())
-
+    
 
 class LinkedInOAuthHandler(webapp.RequestHandler):
     
@@ -249,7 +249,6 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             else:
                 self.response.out.write(client.login())
     
-
 
 class SendEmailInvites( webapp.RequestHandler ):
     
