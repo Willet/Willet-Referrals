@@ -71,6 +71,13 @@ class User( db.Expando ):
     #twitter_pic_url = db.LinkProperty( required = False, default = None )
     #twitter_followers_count = db.IntegerProperty(default = 0)
     twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
+    
+    # Linkedin Junk
+    #linkedin_id    = db.StringProperty
+    #linkedin_first_name
+    #linkedin_last_name
+    #linkedin_industry
+    #linkedin_...
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
     
     # Klout Junk
@@ -153,6 +160,112 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
     
+    def update_linkedin_info(self, extra={}):
+        """updates the user attributes based on linkedin dict"""
+        def linkedin_location(user, json):
+            return json['country']['code']
+        
+        def linkedin_interests(user, json):
+            l = []
+            for interest in json.split(','):
+                l.append(strip(interest))
+            return l
+        
+        def linkedin_im_accounts(user, json):
+            l = []
+            for value in json['values']:
+                l.append(
+                    '%s,%s' % (
+                        value['im-account-type'],
+                        value['im-account-name']
+                    )
+                )
+            return l
+        
+        def linkedin_urls(user, json):
+            l = []
+            for value in json['values']:
+                l.append(value['url'])
+            return l
+        
+        def linkedin_getlist(values, key):
+            l = []
+            for value in values['values']:
+                l.append(value[key])
+            return l
+        
+        def linkedin_connections(user, connections):
+            l = []
+            for connection in connections['values']:
+                l.append(connection['id'])
+                get_or_create_user_by_linkedin(
+                    connection['id'],
+                    request_handler = None,
+                    token = None,
+                    referrer = None,
+                    extra = connection
+                )
+            return l
+        
+        mappings = {
+            'headline': 'linkedin_headline',
+            'firstName': 'linkedin_first_name',
+            'lastName': 'linkedin_last_name',
+            'numConnections': 'linkedin_num_connections',
+            'numConnectionsCapped': 'linkedin_num_connections_capped',
+            'location': {
+                'attr': 'linkedin_location_country_code',
+                'call': linkedin_location
+            },
+            'pictureUrl': 'linkedin_picture_url',
+            'industry': 'linkedin_industry',
+            'imAccounts': {
+                'attr': 'linkedin_im_accounts',
+                'call': linkedin_im_accounts
+            },
+            'interests': {
+                'attr': 'linkedin_interests',
+                'call': linkedin_interests
+            },
+            'memberUrlResources': {
+                'attr': 'linkedin_urls',
+                'key': 'url',
+                'call': linkedin_getlist
+            }, 
+            'twitterAccounts': {
+                'attr': 'linkedin_twitter_accounts',
+                'key': 'provider-account-id',
+                'call': linkedin_getlist
+            },
+            'connections': {
+                'attr': 'linkedin_connections',
+                'call': linkedin_connections
+            }
+        }
+        try:
+            for key in extra:
+                if key not in mappings:
+                    continue
+                elif type(mappings[key]) == type(str()):
+                    setattr(self, mappings[key], extra[key])
+                else:
+                    attr = mappings[key]['attr']
+                    if 'key' in mappings[key]:
+                        # use the defined key to call getlist
+                        value = mappings[key]['call'](extra[key], key)
+                    else:
+                        value = mappings[key]['call'](user, extra[key])
+                    if type(value) == type(list()):
+                        if not hasattr(self, attr):
+                            setattr(self, attr, [])
+                        old = user.get_attr(attr)
+                        value.extend(old)
+                    setattr(self, attr, value)
+        except:
+            logging.error('error updating user with linkedin dict: %s' % extra)
+            return False
+        self.put()
+        return True
     #
     # Social Networking Share Functionality
     # 
@@ -204,8 +317,8 @@ class User( db.Expando ):
     
     def linkedin_share(self, message):
         """shares on linkedin on behalf of the user
-            returns html_response
-            invocation: resp = user.linkedin_share(message) ..."""
+            returns share_location, html_response
+            invocation: share_location, resp = user.linkedin_share(message) ..."""
         
         linkedin_share_url = 'http://api.linkedin.com/v1/people/~/shares?twitter-post=true'
         
@@ -256,7 +369,8 @@ class User( db.Expando ):
                     window.opener.alert('LinkedIn sharing not successful');
                 </script>
             """
-        return html_response
+        logging.info('li share headers: %s' % response.headers)
+        return response.headers['Location'], html_response
     
     def facebook_share(self, msg):
         """Share 'message' on behalf of this user. returns share_id, html_response
@@ -317,6 +431,14 @@ def get_user_by_twitter(t_handle):
                            params={'twitter_handle' : t_handle} )
     return user
 
+def get_user_by_linkedin(linkedin_id):
+    logging.info("Getting user by LID: " + linkedin_id)
+    user = User.all().filter('linkedin_id =', linkedin_id).get()
+    if user != None:
+        logging.info('Pulled user: %s' % linkedin_id)
+    
+    return user
+
 def get_user_by_facebook(fb_id):
     logging.info("Getting user by FB: " + fb_id)
     user = User.all().filter('fb_identity =', fb_id).get()
@@ -349,6 +471,37 @@ def create_user_by_twitter(t_handle, referrer, ip=''):
                    url='/socialGraphAPI', 
                    name= 'soc%s%s' % (t_handle, generate_uuid( 10 )),
                    params={'id' : 'http://www.twitter.com/%s' % t_handle, 'uuid' : user.uuid} )
+    
+    return user
+
+def create_user_by_linkedin(linkedin_id, referrer, ip=''):
+    """Create a new User object with the given attributes"""
+    # check to see if this t_handle has an oauth token
+    OAuthToken = models.oauth.get_oauth_by_linkedin(linkedin_id)
+    
+    user = User(
+        key_name = linkedin_id,
+        uuid = generate_uuid(16),
+        linkedin_id = linkedin_id,
+        referrer = referrer,
+        ip = ip
+    )
+    
+    if OAuthToken:
+        user.linkedin_access_token=OAuthToken
+    
+    user.put()
+    
+    # Query the SocialGraphAPI
+    taskqueue.add (
+        queue_name='socialAPI', 
+        url = '/socialGraphAPI', 
+        name = 'soc%s%s' % (linkedin_id, generate_uuid(10)),
+        params = {
+            'id' : 'http://www.linkedin.com/profile/view?id=%s' % linkedin_id, 
+            'uuid' : user.uuid
+        }
+    )
     
     return user
 
@@ -403,9 +556,43 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
         user = create_user_by_twitter(t_handle, referrer)
     
     # Set a cookie to identify the user in the future
-    set_user_cookie( request_handler, user.uuid )
+    set_user_cookie(request_handler, user.uuid)
     
     logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
+    return user
+
+def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None, referrer=None, extra={}):
+    """Retrieve a user object if it is in the datastore, othereise create
+      a new object"""
+    
+    # First try to find them by cookie
+    user = get_user_by_cookie(request_handler)
+    
+    # Update the info
+    if user:
+        user.update(
+            linkedin_id = linkedin_id,
+            referrer = referrer,
+            linkedin_access_token = token
+        )
+    
+    # Then, search by linkedin handle
+    if user is None:
+        user = get_user_by_linkedin(linkedin_id)
+        user.update_linkedin_info(extra)
+    
+    # Otherwise, make a new one
+    if user is None:
+        logging.info("Creating user with linkedin_id: %s" % linkedin_id)
+        user = create_user_by_linkedin(linkedin_id, referrer)
+    
+    # Set a cookie to identify the user in the future
+    set_user_cookie(request_handler, user.uuid)
+    
+    # set the linkedin extra fields
+    user.update_linkedin_info(extra)
+    
+    logging.info('get_or_create_user: %s' % linkedin_id)
     return user
 
 def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', email='', referrer=None, verified=None, gender='', token='', would_be=False, friends=[], request_handler=None):

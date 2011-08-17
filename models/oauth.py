@@ -24,6 +24,82 @@ from util.consts import *
 from util.helpers import generate_uuid
 
 # ------------------------------------------------------------------------------
+# CALLBACKS FOR OAUTH
+# ------------------------------------------------------------------------------
+def twitter_callback(client):
+    """callback for twitter"""
+    # check to see if we have a user with this twitter handle
+    user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
+                                                     token=self.token,
+                                                     request_handler=self.handler)
+    # tweet and save results to user's twitter profle
+    tweet_id, res = user.tweet(message)
+    # update link with tweet id
+    link = get_link_by_willt_code(willt_code)
+    if link:
+        link.user = user
+        if tweet_id is not None:
+            link.tweet_id = tweet_id
+        link.save()
+    pass
+
+def linkedin_callback(client):
+    """callback for linkedin"""
+    # check to see if we have a user with this linkedin handle?
+    
+    if hasattr(client, 'linkedin_extra'):
+        linkedin_extra = client.linkedin_extra
+    else:
+        linkedin_extra = {}
+    
+    user = models.user.get_or_create_user_by_linkedin(
+        linkedin_id=self.token.specifier,
+        token=self.token,
+        request_handler=self.handler,
+        extra=linkedin_extra
+    )
+    
+    # share and save results to user's profle
+    linkedin_share_url, html_response = user.linkedin_share(message)
+    # update link with linkedin_share_url
+    link = get_link_by_willt_code(willt_code)
+    if link:
+        link.user = user
+        if share_link is not None:
+            link.linkedin_share_url = linkedin_share_url
+        link.save()
+    pass
+
+def twitter_specifier_handler(client):
+    return client.get('/account/verify_credentials')['screen_name']
+
+def linkedin_specifier_handler(client):
+    fields = ','.join([
+        'id',
+        'first-name',
+        'last-name',
+        'industry',
+        'num-connections',
+        'num-connections-capped',
+        'connections',
+        'interests',
+        'im-accounts',
+        'member-url-resources',
+        'picture-url',
+        'twitter-accounts',
+        'location:(country:(code))',
+    ])
+    response = client.get('/v1/people/~:(%s)' % fields)
+    
+    if 'id' in response:
+        client.linkedin_extra = response
+        return response['id']
+    # else
+    logging.error('linkedin api call failed, returned: %s' % response)
+    return None
+
+
+# ------------------------------------------------------------------------------
 # configuration -- SET THESE TO SUIT YOUR APP!!
 # ------------------------------------------------------------------------------
 OAUTH_APP_SETTINGS = {
@@ -39,6 +115,8 @@ OAUTH_APP_SETTINGS = {
         'default_api_prefix': 'http://twitter.com',
         'default_api_suffix': '.json',
         
+        'callback': twitter_callback,
+        'specifier_handler': twitter_specifier_handler
     }, 
     'linkedin': {
         'consumer_key': LINKEDIN_KEY,
@@ -49,7 +127,10 @@ OAUTH_APP_SETTINGS = {
         'user_auth_url': 'https://www.linkedin.com/uas/oauth/authenticate',
         
         'default_api_prefix': 'https://api.linkedin.com',
-        'default_api_suffix': '.json',
+        'default_api_suffix': '',
+        
+        'callback': linkedin_callback,
+        'specifier_handler': linkedin_specifier_handler
     }
 }
 
@@ -79,10 +160,6 @@ def create_uuid():
 def encode(text):
     return urlquote(str(text), '')
 
-def twitter_specifier_handler(client):
-    return client.get('/account/verify_credentials')['screen_name']
-
-OAUTH_APP_SETTINGS['twitter']['specifier_handler'] = twitter_specifier_handler
 
 # ------------------------------------------------------------------------------
 # db entities
@@ -111,6 +188,13 @@ class OAuthAccessToken(db.Model):
 def get_oauth_by_twitter(t_handle):
     return OAuthAccessToken.all().filter('specifier =', t_handle).get()
 
+def get_oauth_by_linkedin(linkedin_id):
+    """docstring for get_oauth_by_linkedin"""
+    access_token = OAuthAccessToken.all().filter(
+        'service = ', 'linkedin').filter(
+        'specifier = ', linkedin_id).get()
+    return access_token
+
 
 # ------------------------------------------------------------------------------
 # oauth client
@@ -131,30 +215,38 @@ class OAuthClient(object):
     
     # public methods
     
-    def get(self, api_method, http_method='GET', expected_status=(200,), **extra_params):
+    def get(self, api_method, http_method='GET', headers={'x-li-format':'json'}, expected_status=(200,), return_json=True, **extra_params):
         
         if not (api_method.startswith('http://') or api_method.startswith('https://')):
             api_method = '%s%s%s' % (
-                self.service_info['default_api_prefix'], api_method,
+                self.service_info['default_api_prefix'],
+                api_method,
                 self.service_info['default_api_suffix']
             )
         
         if self.token is None:
             self.token = OAuthAccessToken.get_by_key_name(self.get_cookie())
         
-        fetch = urlfetch(self.get_signed_url(
-            api_method, self.token, http_method, **extra_params
-        ))
+        fetch = urlfetch(
+            self.get_signed_url(
+                api_method, 
+                self.token, 
+                http_method, 
+                **extra_params
+            ),
+            headers=headers
+        )
         
         if fetch.status_code not in expected_status:
             raise ValueError(
                 "Error calling... Got return status: %i [%r]" %
                 (fetch.status_code, fetch.content)
             )
-        
-        return decode_json(fetch.content)
+        if return_json:
+            return decode_json(fetch.content)
+        return fetch
     
-    def post(self, api_method, http_method='POST', expected_status=(200,), return_json=True, **extra_params):
+    def post(self, api_method, http_method='POST', headers={'x-li-format':'json'}, expected_status=(200,), return_json=True, **extra_params):
         
         if not (api_method.startswith('http://') or api_method.startswith('https://')):
             api_method = '%s%s%s' % (
@@ -173,7 +265,8 @@ class OAuthClient(object):
                 self.token, 
                 http_method, 
                 **extra_params
-            ), method=http_method
+            ), method=http_method,
+            headers = headers
         )
         
         if fetch.status_code not in expected_status:
@@ -250,13 +343,15 @@ class OAuthClient(object):
         willt_code = oauth_token.willt_code
         
         token_info = self.get_data_from_signed_url(
-            self.service_info['access_token_url'], oauth_token
+            self.service_info['access_token_url'],
+            oauth_token
         )
-        
+        logging.info('got token_info: %s' % token_info)
         key_name = create_uuid()
         
         self.token = OAuthAccessToken(
-            key_name=key_name, service=self.service,
+            key_name=key_name,
+            service=self.service,
             **dict(token.split('=') for token in token_info.split('&'))
         )
         
@@ -268,23 +363,16 @@ class OAuthClient(object):
             db.delete(old)
         
         self.token.put()
-        # check to see if we have a user with this twitter handle
-        user = models.user.get_or_create_user_by_twitter(t_handle=self.token.specifier,
-                                                         token=self.token,
-                                                         request_handler=self.handler)
-        # tweet and save results to user's twitter profle
-        tweet_id, res = user.tweet(message)
-        # update link with tweet id
-        link = get_link_by_willt_code(willt_code)
-        if link:
-            link.user = user
-            if tweet_id is not None:
-                link.tweet_id = tweet_id
-            link.save()
+        
+        if 'callback' in self.service_info:
+            html_response = self.service_info['callback'](self)
+        else:
+            html_response = 'poop'
+        
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
         self.handler.response.headers.add_header("Content-type", 'text/javascript')
-        self.handler.response.out.write(res)
+        self.handler.response.out.write(html_response)
     
     def cleanup(self):
         query = OAuthRequestToken.all().filter(

@@ -206,14 +206,15 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
         if user and getattr(user, 'linkedin_access_token', False)\
             and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
             logging.info("LI sharing: " + rq_vars['wcode'])
-            # tweet and update user model from twitter
-            linkedin_share_id, res = user.linkedin_share(rq_vars['m'])
+            
+            # share and update user model from linkedin
+            linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link.user = user
                 self.response.headers.add_header("Content-type", 'text/javascript')
-                if linkedin_share_id is not None:
-                    link.linkedin_share_id = linkedin_share_id
+                if linkedin_share_url is not None:
+                    link.linkedin_share_url = linkedin_share_url
                 link.save()
                 self.response.out.write(res)
             else:
