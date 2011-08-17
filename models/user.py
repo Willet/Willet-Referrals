@@ -413,8 +413,8 @@ def get_user_by_cookie(request_handler):
     if uuid:
         user = get_user_by_uuid(uuid)
         ip = request_handler.request.remote_addr
-        if hasattr(user, 'ips'):
-            user.ips.append(ip) if ip not in user.ips
+        if hasattr(user, 'ips') and ip not in user.ips:
+            user.ips.append(ip)
         else: 
             user.ips = [ip]
         user.save()
