@@ -197,7 +197,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
 class GetShopifyOrder( webapp.RequestHandler ):
 
     def post( self ):
-        
+        input_order_num = self.request.get( 'order' )
         campaign   = get_campaign_by_id( self.request.get('campaign_uuid') )
         prev_order = campaign.shopify_orders.order( 'created' ).get()
     
@@ -241,6 +241,9 @@ class GetShopifyOrder( webapp.RequestHandler ):
             elif k == 'subtotal_price':
                 subtotal = v
             elif k == 'order_number':
+                if v != input_order_num:
+                    logging.error("BARBARArAAA BADDDDDD")
+                
                 order_num = v
             elif k == 'referring_site':
                 referring_site = v

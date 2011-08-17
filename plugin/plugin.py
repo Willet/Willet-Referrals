@@ -48,7 +48,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             taskqueue.add( queue_name='shopifyAPI', 
                            url='/getShopifyOrder', 
                            name= 'shopifyOrder%s%s' % (rq_vars['store'], rq_vars['order']),
-                           params={'order_id' : rq_vars['order'],
+                           params={'order' : rq_vars['order'],
                                    'campaign_uuid' : campaign.uuid} )
         else:
             campaign = get_campaign_by_id(rq_vars['ca_id'])
