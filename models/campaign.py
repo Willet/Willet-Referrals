@@ -42,6 +42,8 @@ class Campaign(Model):
     share_text      = db.StringProperty( indexed = False )
     webhook_url     = db.LinkProperty( indexed = False, required = False )
 
+    analytics       = db.ReferenceProperty(db.Model,collection_name='canalytics')
+
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
     
@@ -178,3 +180,85 @@ class ShareCounter(db.Model):
 
     campaign_id = db.StringProperty(indexed=True, required=True)
     count = db.IntegerProperty(indexed=False, required=True, default=0)
+
+
+class CampaignAnalytics(Model):
+    """Model containing aggregated analytics about a specific campaign"""
+
+    uuid = db.StringProperty(indexed=True)
+    created         = db.DateTimeProperty(auto_now_add=True)
+    client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
+
+    fb_conversions = db.IntegerProperty()
+    fb_shares = db.IntegerProperty()
+    fb_sales = db.IntegerProperty()
+    fb_reach = db.IntegerProperty()
+    fb_clicks = db.IntegerProperty()
+   
+    twitter_conversions = db.IntegerProperty()
+    twitter_shares = db.IntegerProperty()
+    twitter_sales = db.IntegerProperty()
+    twitter_reach = db.IntegerProperty()
+    twitter_clicks = db.IntegerProperty()
+   
+    linkedIn_conversions = db.IntegerProperty()
+    linkedIn_shares = db.IntegerProperty()
+    linkedIn_sales = db.IntegerProperty()
+    linkedIn_reach = db.IntegerProperty()
+    linkedIn_clicks = db.IntegerProperty()
+ 
+
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        super(CampaignAnalytics, self).__init__(*args, **kwargs)
+    
+    @staticmethod
+    def _get_from_datastore(uuid):
+        """Datastore retrieval using memcache_key"""
+        return db.Query(CampaignAnalytics).filter('uuid =', uuid).get()
+
+def get_campaign_analytics_by_uuid(uuid):
+    return CampaignAnalytics.all().filter('uuid =', uuid).get()
+
+
+
+def GenerateCampaignAnalytics(uuid):
+    """Update the CampaignAnalytics model for this uuid 
+        with latest available data""" 
+
+    campaign = get_campaign_by_uuid(uuid):
+    analytics = None
+    ao = {'t': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
+          'f': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
+          'l': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0}}
+    if campaign:
+        if hasattr(campaign, 'analytics'):
+            analytics = campaign.analytics
+        else:
+            analytics = CampaignAnalytics(uuid=generate_uuid(16))
+            campaign.analytics = analytics
+            campaign.save()
+        clicks, conversions, shares, reach, clicks = 0,0,0,0,0
+        for l in campaign.links_:
+            clicks += l.count_clicks()
+            if hasattr(l, 'facebook_share_id'):
+                ao['f']['sh'] += 1
+                ao['f']['re'] += len(getattr(user, 'fb_friends', []))
+                ao['f']['cl'] += l.count_clicks()
+                if hasattr(l, 'link_conversions'):
+                    ao['f']['co'] += 1
+            elif hasattr(l, 'tweet_id'):
+                ao['t']['sh'] += 1
+                ao['t']['re'] += getattr(user, 'twitter_follower_count', 0)
+                ao['t']['cl'] += l.count_clicks()
+                if hasattr(l, 'link_conversions'):
+                    ao['t']['co'] += 1
+            reach += len(getattr(user, 'fb_friends', [])) if\
+                hasattr(l, 'facebook_share_id') else\
+                getattr(user, 'twitter_followers_count', 0)
+            if hasattr(l, 'link_conversions'):
+                if hasattr(
+
+        shares = campaign.get_shares_count()
+
+

@@ -172,6 +172,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 self.response.headers.add_header("Content-type", 'text/javascript')
                 if tweet_id is not None:
                     link.tweet_id = tweet_id
+                    link.campaign.increment_shares()
                 link.save()
                 self.response.out.write(res)
             else:
@@ -292,6 +293,7 @@ class FacebookShare(webapp.RequestHandler):
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
+                link.campaign.increment_shares()
                 # add the user to the link now as we may not get a respone
                 link.add_user(user)
             self.response.out.write(plugin_response)

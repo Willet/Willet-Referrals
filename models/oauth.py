@@ -254,6 +254,7 @@ class OAuthClient(object):
             link.user = user
             if tweet_id is not None:
                 link.tweet_id = tweet_id
+                link.campain.increment_shares()
             link.save()
         self.set_cookie(key_name)
         #self.handler.redirect(return_to)
