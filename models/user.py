@@ -114,7 +114,7 @@ class User( db.Expando ):
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
             elif kwargs[k] != '' and kwargs[k] != None:
-                setattr(self, k, kwargs[k])
+                setattr( self, k, kwargs[k] )
         self.put()
         """
         if 'twitter_handle' in kwargs and kwargs['twitter_handle'] != '':
@@ -660,9 +660,8 @@ def get_user_by_cookie(request_handler):
     if uuid:
         user = get_user_by_uuid(uuid)
         ip = request_handler.request.remote_addr
-        if hasattr(user, 'ips'):
-            if ip not in user.ips:
-                user.ips.append(ip)
+        if hasattr(user, 'ips') and ip not in user.ips:
+            user.ips.append(ip)
         else: 
             user.ips = [ip]
         user.save()

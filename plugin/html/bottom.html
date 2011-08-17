@@ -4,8 +4,8 @@
         <!-- Mixpanel -->
         <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
         <!-- End Mixpanel -->
-
-       <!-- Google Analytics -->
+        
+        <!-- Google Analytics -->
         <script type="text/javascript">
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', 'UA-23764505-9']);
@@ -29,17 +29,18 @@
         <link rel="start" href="http://www.wil.lt" title="Willet Social" />
 
       {% include "javascript_includes.html" %}
+
  <script type="text/javascript">
 
     var share, reset, countChars, willet_conversion, sendGmail, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, chooseShareType, fbToken;
+        shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken;
 
     window.onload = function() {
 
         iframeBody = document.getElementById('willt');
         shareFrame = document.getElementById('willt-frame');
         shareArea = document.getElementById('share-area'),
-        userFound = '{{ user_found }}';
+        userFound = {% if user_founder %}{{ user_found }}{% else %}false{% endif %};
         shareText = document.getElementById('share-text'),
         charsLeft = document.getElementById('chars-left');
 
@@ -92,7 +93,7 @@
             }
             return ret;
         }
-
+    
         mixpanelTrack = function( event ) {
             var user_id = {% if user %}
                             "{{user.uuid}}"
@@ -112,7 +113,7 @@
                                        'bucket'   : "{{campaign_uuid}}"}]);
 
         }
-
+        
         sendEmailVia = function( who ){
             var from_addr = document.getElementById( 'from-email' ),
                 to_addrs  = document.getElementById( 'to-emails' ).value,
@@ -195,16 +196,15 @@
             return true;
         };
 
-        chooseShareType = function( type ) {
-            document.getElementById( 'choose_share_type' ).style.display = "none";
-            if ( type == "email" ){
-                document.getElementById( 'email_div' ).style.display     = "block";
-                document.getElementById( 'by-fb-twitter' ).style.display = "none";
+        toggleEmailShare = function( type ) {
+            var $email_div = $('#email_div');
+            if ( $email_div.is(":visible") ) {
+                $email_div.slideUp();
             } else {
-                document.getElementById( 'email_div' ).style.display     = "none";
-                document.getElementById( 'by-fb-twitter' ).style.display = "block";
+                $email_div.slideDown();
             }
         };
+
 
         // use the selected medium to share about your purchase
         share = function(medium, uid) {
@@ -235,19 +235,7 @@
                     } else {
                         if (!FB) {
                             alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
-                            return;
-                        }
-                        FB.login(function(lr) {
-                            console.log(lr);
-                            if (!lr.authResponse) {
-                                // we weren't given permission
-                                window.close();
-                            } else { 
-                                fbData.fb_token = lr.authResponse.accessToken;
-                                fbData.fb_id = lr.authResponse.userID;
-                                fb_share_handler(fbData);
-                                mixpanelTrack( 'Facebook' );
-                                mixpanelTrack( 'Share' );
+                                return;
                             }
                         }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                         );
@@ -261,197 +249,255 @@
                     var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
                                     + '&m=' + message + '&wcode={{willt_code}}',
                                     AuthWindow = window.open(OAuthURL, '_blank');
+                            FB.login(function(lr) {
+                                console.log(lr);
+                                if (!lr.authResponse) {
+                                    // we weren't given permission
+                                    window.close();
+                                } else { 
+                                    fbData.fb_token = lr.authResponse.accessToken;
+                                    fbData.fb_id = lr.authResponse.userID;
+                                    fb_share_handler(fbData);
+                                    mixpanelTrack( 'Facebook' );
+                                    mixpanelTrack( 'Share' );
+                                }
+                            }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                            );
+                        } // if (userFound u
+                    } else if (medium === 'twitter'){
+                        var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                                        + '&m=' + message + '&wcode={{willt_code}}',
+                            AuthWindow = window.open(OAuthURL, '_blank');
+
+                    } else {
+                        // style shareArea according to different social loader
+                    }
+                    shareArea.style.visibility = 'visible';
                 } else {
-                    // style shareArea according to different social loader
+                    // social media provider not found
                 }
-                shareArea.style.visibility = 'visible';
-            } else {
-                // social media provider not found
-            }
+                    
+            };
+        
+            countChars = function() {
+                var count = 140 - shareText.value.length;
+                charsLeft.innerHTML = count + " characters left";
+            };
+    
+            reset = function() { 
+                iframeBody.style.visibility = 'visible';
+                shareArea.style.visibility = 'hidden';
+                shareFrame.src = '';
+            };
+            
+            function toggleDefaultValue ($this, onoff) {
+                if (onoff) {
+                    $this.css('color', '#777');
+                    $this.val($this.siblings('.defaultValue').attr('innerHTML'));
+                } else {
+                    $this.css('color', '#444');
+                    $this.val('');
+                }
+            } // end function
                 
-        };
-        
-        countChars = function() {
-            var count = 140 - shareText.value.length;
-            charsLeft.innerHTML = count + " characters left";
-        };
+            // Controls default values of input & textarea elements
+            $('.defaultValue').siblings('input, textarea').each(
+                function () { 
+                    var $this = $(this);
+                    if ($this.val() === '') {
+                        toggleDefaultValue($this, true); 
+                    }
+                }
+            ).focus(
+                function () {
+                    var $this = $(this),
+                        defaultValue = $this.siblings('.defaultValue').attr('innerHTML');
+                    if ($this.val() === defaultValue) {
+                        toggleDefaultValue($this, false);
+                    }
+                }
+            ).blur(
+                function () { 
+                    var $this = $(this);
+                    if ($this.val() === '' ) {
+                        toggleDefaultValue($this, true);
+                    }
+                }
+            );
 
-        reset = function() { 
-            iframeBody.style.visibility = 'visible';
-            shareArea.style.visibility = 'hidden';
-            shareFrame.src = '';
-        };
-
-        countChars();
-        willet_conversion();
-        };
-    </script>
-
-    <!-- Blueprint CSS -->
-    <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
-    <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
-    <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
-    <style>
-    .willt {
-        text-align: center;
-
-        padding: 10px 10px 10px 10px;
-        margin: 0px 0px 0px 0px;
-        /*background-color: #f4faff; */
-        
-        border: 1px solid #AECEEF;
-        -khtml-box-shadow: inset 0 0 2px #AECEEF;
-        -o-box-shadow: inset 0 0 2px #AECEEF;
-        -webkit-box-shadow: inset 0 0 2px #AECEEF;
-        -moz-box-shadow: inset 0 0 2px #AECEEF;
-        -khtml-border-radius: 5px;
-        -o-border-radius: 5px;
-        -webkit-border-radius: 5px;
-        -moz-border-radius: 5px;
-        border-radius: 5px;
-
-        float: none;
-    }
-    a, a * { 
-        cursor: pointer;
-        outline: none; 
-        text-decoration: none;
-    }
-    h1 {
-        font-size: 2.0em;
-    }
-    h2 {
-        font-size: 1.5em;
-    }
-    h1, h2, h3, h4, h5 { 
-        color: #1f75cc;
-        margin: 0 0 5px 0;
-        padding: 0px 0px 0px 0px;
-        line-height: 1.6em;
-        font-weight: bold;
-    }
-    body, input,textarea,select, .normal {
-        font-family: "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
-        font-size: 8pt; 
-        color: #444; 
-        font-weight: normal;
-    }
-    label { cursor: default; }
-    textarea { 
-        background: #fff url("http://dropbox.com/static/images/topfade.gif") repeat-x top; 
-        border-style: none solid solid;
-        vertical-align: middle; 
-        border: 1px solid #aaa; 
-        Padding: 4px; 
-        color: #555;
-        margin: 0px 0px 0px 0px;
-        max-height: 75px;
-        max-width: 340px;
-    }
-    a { 
-        display: -moz-inline-stack;
-        display: inline-block !important;
-        position: relative;
-        color: #1f75cc;
-        background-color: #fafcff;
-        margin: 1px -1px 0 0; 
-        border: 1px solid #aeceef;
-        border-width: 1px 1px;  
-        _padding: 3px; 
-        _border-width: 1px; 
-        _display: inline;  
-        height: 23px; 
-        line-height: 23px;
-        padding: 1px 20px 1px 20px; 
-        _border:none;
-    }
-    a:hover { 
-        color: #1f75cc;
-        text-decoration: none;
-        border-color: #4291df; 
-        position: relative; 
-        z-index:2;
-    }
-    a:active {
-        background-color: #4291df;
-        color: #fff;
-    }
-    .right {
-        text-align: right;
-        float: right;
-    }
-    .clear {
-        clear: both;
-    }
-    div#use_us {
-        padding: 0;
-        margin: 0;
-        line-height: 30px;
-    }
-    #chars-left {
-        font-size: 0.8em;
-        text-align: right;
-        float: right;
-    }
-    a img {
-        float: left;
-        height: 20px;
-        padding: 0px 5px 0px 5px;
-        margin-top: 1px;
-    }
-    a div {
-        padding: 0px 0px 0px 0px;
-        float: left;
-        margin-top: -1px;
-    }
-    .email_btn {
-        padding: 0px 0px 3px 0px;
-    }
-    .email_btn img {
-        padding: 2px 5px 2px 5px;
-    }
-    .choose_btn {
-        padding: 0px 20px 0px 20px;
-    }
-    .input-label {
-        float: left;
-        line-height: 33px;
-    }
-    .input-content {
-        float: right;
-    }
-    .input-content input {
-        float: right;
-        width: 260px;
-        padding: 4px;
-    }
-    #share-area {
-        visibility: hidden;
-    }
-    #share-text {
-        margin: 5px 0px 5px 0px;
-    }
-    .hidden {
-        display: none;
-    }
-    .social {
-        float: right;
-        margin: 0px 0px 0px 0px;
-        padding: 0px 0px 0px 0px;
-    }
-    .hor_line {
-        height: 1px;
-        width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-        background-color: #AECEEF;
-        margin-top: 15px;
-        margin-bottom: 5px;
-        padding: 0px 0px 0px 0px;
-    }
-    </style>
-</head>
-<body>
+            countChars();
+            willet_conversion();
+        });
+        </script>
+            
+        <!-- Blueprint CSS -->
+        <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+        <style>
+        .willt {
+            text-align: center;
+            padding: 10px 10px 10px 10px;
+            margin: 0px 0px 0px 0px;
+            /*background-color: #f4faff; */
+            
+            border: 1px solid #AECEEF;
+            -khtml-box-shadow: inset 0 0 2px #AECEEF;
+            -o-box-shadow: inset 0 0 2px #AECEEF;
+            -webkit-box-shadow: inset 0 0 2px #AECEEF;
+            -moz-box-shadow: inset 0 0 2px #AECEEF;
+            -khtml-border-radius: 5px;
+            -o-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            float: none;
+        }
+        a, a * { 
+            cursor: pointer;
+            outline: none; 
+            text-decoration: none;
+        }
+        h1 {
+            font-size: 2.0em;
+        }
+        h2 {
+            font-size: 1.5em;
+        }
+        h1, h2, h3, h4, h5 { 
+            color: #1f75cc;
+            margin: 0 0 5px 0;
+            padding: 0px 0px 0px 0px;
+            line-height: 1.6em;
+            font-weight: bold;
+        }
+        body, input,textarea,select, .normal {
+            font-family: "lucida grande", "Segoe UI", arial, verdana, "lucida sans unicode", tahoma, sans-serif;
+            font-size: 8pt; 
+            color: #444; 
+            font-weight: normal;
+        }
+        label {
+            cursor: default;
+        }
+        textarea {
+            background: #fff url("/static/inputshadow.gif") repeat-x top; 
+            border-style: none solid solid;
+            vertical-align: middle; 
+            border: 1px solid #aaa; 
+            Padding: 4px; 
+            color: #555;
+            margin: 0px 0px 0px 0px;
+            max-height: 75px;
+            max-width: 340px;
+        }
+        a {
+            display: -moz-inline-stack;
+            display: inline-block !important;
+            position: relative;
+            color: #1f75cc;
+            background-color: #fafcff;
+            margin: 1px -1px 0 0; 
+            border: 1px solid #aeceef;
+            border-width: 1px 1px;  
+            _padding: 3px; 
+            _border-width: 1px; 
+            _display: inline;  
+            height: 23px; 
+            line-height: 23px;
+            padding: 1px 10px 1px 10px; 
+            _border:none;
+        }
+        a:hover { 
+            color: #1f75cc;
+            text-decoration: none;
+            border-color: #4291df; 
+            position: relative; 
+            z-index:2;
+        }
+        a:active {
+            background-color: #4291df;
+            color: #fff;
+        }
+        input {
+            background: #fff url("/static/inputshadow.gif") repeat-x top; 
+            padding: 4px;
+        }
+        .right {
+            text-align: right;
+            float: right;
+        }
+        .clear {
+            clear: both;
+        }
+        div#use_us {
+            padding: 0;
+            margin: 0;
+            line-height: 30px;
+        }
+        #chars-left {
+            font-size: 0.8em;
+            text-align: right;
+            float: right;
+        }
+        a img {
+            float: left;
+            height: 20px;
+            padding: 0px 5px 0px 5px;
+            margin-top: 1px;
+        }
+        a div {
+            padding: 0px 0px 0px 0px;
+            float: left;
+            margin-top: -1px;
+        }
+        .email_btn {
+            padding: 0px 0px 3px 0px;
+        }
+        .email_btn img {
+            padding: 2px 5px 2px 5px;
+        }
+        .choose_btn {
+            padding: 0px 20px 0px 20px;
+        }
+        .input-label {
+            float: left;
+            line-height: 33px;
+        }
+        .input-content {
+            float: right;
+        }
+        .input-content input {
+            float: right;
+            width: 260px;
+        }
+        #share-area {
+            visibility: hidden;
+        }
+        #share-text {
+            margin: 5px 0px 5px 0px;
+        }
+        .hidden {
+            display: none;
+        }
+        .social {
+            float: right;
+            margin: 0px 0px 0px 0px;
+            padding: 0px 0px 0px 0px;
+        }
+        .hor_line {
+            height: 1px;
+            width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #AECEEF;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            padding: 0px 0px 0px 0px;
+        }
+     </style>
+    </head>
+    <body>
 
     <div id="fb-root"></div>
 
@@ -459,20 +505,22 @@
     
     <div class="prepend-top span-9 append-15 last willt">
         <div class="span-9 last">
-            <h2>Invite Your Friends To Use {{campaign.product_name}}</h2>
+            <h2>Invite Your Friends To {{campaign.product_name}}</h2>
             
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
 
             <div class="span-9 last" id="choose_share_type">
-                <a href="#" onClick="chooseShareType('email');" title="Share using your email account or let us email for you!"> 
-                    <img src="/static/imgs/email_logo.png" width="27px" `height="20px" />
+                <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
+                    <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                 </a>
-                <a href="#" onclick="share('fb');">
+                <a href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    Share on Facebook
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    Tweet on Twitter
                 </a>
                 <a href="#" title="Share on LinkedIn" onclick="share('linkedin');">
                     <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
@@ -480,18 +528,19 @@
             </div>
         </div>
 
-        <div class="span-9 last hidden" id="email_div">
+        <div class="prepend-top span-9 last hidden" id="email_div">
             <div class="span-9 last">
                 <div class="input-label">Your Email</div>
                 <div class="input-content">
-                    <input id="from-email" type="text" name="email" value="{{user_email}}" onFocus="clearText(this);" />
+                    <span class="defaultValue hidden">your email</span>
+                    <input id="from-email" type="text" name="email" value="{{ user_email }}" />
                 </div>
             </div>
             <div class="span-9 append-bottom last">
                 <div class="input-label">Invitee Emails</div>
                 <div class="input-content">
-                    <input id="to-emails" type="text" value="Email addresses, separated by commas."
-                        onFocus="clearText(this);" />
+                    <span class="defaultValue hidden">Email addresses, separated by commas.</span>
+                    <input id="to-emails" type="text" value="" />
                 </div>
             </div>
             
@@ -519,18 +568,6 @@
                 </div>
                 <div class="clear"></div>
             </div>
-    
-            <!--
-            <hr class="hor_line" />
-            
-            <div class="span-7"> {{campaign.product_name}} really appreciates your support!  </div>
-            <div class="span-2 last">
-                <a class="social" href="#" onClick="chooseShareType('social');" title="Share using your favourite social network!"> 
-                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                </a>
-            </div>
-            -->
         </div>
 
         <div class="span-9 last hidden" id="by-fb-twitter">
@@ -546,7 +583,8 @@
 
         <div class="span-9 last"> 
             <hr class="hor_line" />
-            Or, share your unique code: {{willt_url}}
+            Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
+            <input id="" type="text" value="{{ willt_url }}" readonly="readonly" />
         </div>
     </div>
     <div id="tweet-complete" onclick="shareComplete();"></div>
