@@ -24,14 +24,11 @@ from util.consts     import *
 ##-------------------------- Landing ------------------------------------------##
 ##-----------------------------------------------------------------------------##
 
-class ShowLandingPage( URIHandler ):
-    # Renders the main template
+class RedirectToLandingPage( URIHandler ):
+    # Send to Unbounce page
     def get(self, page):
-        stats = Stats.all().get()
-
-        template_values = { 'campaign_results' : stats.landing if stats else '' }
-        
-        self.response.out.write(self.render_page('landing.html', template_values))
+        self.set_status(302)
+        self.redirect('hi.rf.rs')
 
 class ShowAboutPage( URIHandler ):
     # Renders the main template
@@ -537,7 +534,7 @@ def main():
         (r'/logout', Logout),
         (r'/register', DoRegisterClient),
         
-        (r'/()', ShowLandingPage)
+        (r'/()', RedirectToLandingPage)
         
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
