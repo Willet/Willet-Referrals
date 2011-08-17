@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">"{{campaign.title|escape}}"</h1>
+    <div class="prepend-top center">
+        <p>Store Name: <br />{{campaign.product_name|escape}}</p>
+        <p>Store URL:<br/>{{campaign.target_url|escape}}</p>
+
+        <p>Share text:<br />{{campaign.share_text|escape}}</p>
+
+        <a class="call_to_action big" href="/account">Finish</a>
+        <div class="edit_button">
+            <a class="edit_button" href="/shopify/edit?id={{campaign.uuid}}" title="Edit Campaign">
+                <img src="/static/imgs/edit.png" width=20 height=20 />
+            </a>
+        </div>
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/account">Your Campaigns</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Final Step</h1>
+
+        <div class="prepend-top prepend-1 span-14 last">
+            <p>
+                Place this script tag on the <span class='code'>somewhere</span> of your purchase / sign-up confirmation page:
+            </p>
+            <p class="code">
+                TODO
+            </p>
+            <p class="tip">
+            </p>
+        </div>
+
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 4, 'edit_page']);
+{% endblock mixpanelTracking %}
