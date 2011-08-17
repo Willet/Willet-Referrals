@@ -328,7 +328,6 @@ class DoUpdateOrCreateCampaign( URIHandler ):
         campaign = get_campaign_by_id( campaign_id )
         
         title = title.capitalize() # caps it!
-        product_name = product_name.capitalize() # caps it!
         
         if title == '' or product_name == '' or target_url == '' or blurb_title == '' or blurb_text == '' or share_text == '' or webhook_url == '':
             self.redirect( '/edit?id=%s&error=2&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
