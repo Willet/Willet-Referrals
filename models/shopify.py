@@ -11,16 +11,13 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from models.link          import get_link_by_willt_code
-from models.model         import Model
-from util.helpers         import generate_uuid
-
+from models.model         import Model, ObjectListProperty
 
 class ShopifyItem:
 
     def __init__( self, name, price, product_id ):
-        self.name  = name
-        self.price = price
+        self.name       = name
+        self.price      = price
         self.product_id = product_id 
 
     def serialize( self ):
@@ -37,17 +34,18 @@ class ShopifyOrder(Model):
     order_id = db.StringProperty( indexed = True )
     created  = db.DateTimeProperty(auto_now_add=True)
     store_name     = db.StringProperty( indexed = False )
-    store_url      = db.LinkProperty( indexed = False )
+    store_url      = db.StringProperty( indexed = False, required=False, default=None )
     order_number   = db.StringProperty( indexed = False )
     subtotal_price = db.FloatProperty( indexed = False ) # no taxes
-    referring_site = db.LinkProperty( indexed = False ) # might be useful
-    items          = db.ListProperty( ShopifyItem, default = None )
+    referring_site = db.StringProperty( indexed = False, required=False, default=None ) # might be useful
+    items          = ObjectListProperty( ShopifyItem, indexed=False )
 
     user = db.ReferenceProperty( db.Model, default = None, collection_name="shopify_purchases" )
     campaign = db.ReferenceProperty( db.Model, collection_name="shopify_orders" )
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['order_id'] if 'order_id' in kwargs else None 
+        
         super(ShopifyOrder, self).__init__(*args, **kwargs)
 
     def add_item( self, item_name, item_price, item_id ):
@@ -63,14 +61,16 @@ class ShopifyOrder(Model):
 
 def create_shopify_order( campaign, order_id, order_num,
                           subtotal, referrer, user ):
-    
-    o = ShopifyOrder( key_name   = order_id,
-                    order_id     = order_id,
+    logging.info(referrer)
+    logging.info(campaign.target_url)
+
+    o = ShopifyOrder( key_name = 'asd',
+                    order_id     = str(order_id),
                     campaign     = campaign,
-                    store_name   = campaign.store_name,
-                    store_url    = campaign.store_url,
-                    order_number = order_num,
-                    subtotal_price = subtotal, 
+                    store_name   = campaign.product_name,
+                    store_url    = campaign.target_url,
+                    order_number = str(order_num),
+                    subtotal_price = float(subtotal), 
                     referring_site = referrer,
                     user         = user )
     o.put()

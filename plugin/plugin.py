@@ -13,7 +13,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from models.campaign import get_campaign_by_id
+from models.campaign import get_campaign_by_id, get_campaign_by_shopify_store
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
@@ -30,8 +30,9 @@ class ServeSharingPlugin(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self, input_path):
+        logging.info('STORE: %s' % self.request.get('store'))
         template_values = {}
-        rq_vars = get_request_variables(['ca_id', 'uid'], self)
+        rq_vars = get_request_variables(['ca_id', 'uid', 'store', 'order'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
             
@@ -41,7 +42,16 @@ class ServeSharingPlugin(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if user is not None else False
         
-        campaign = get_campaign_by_id(rq_vars['ca_id'])
+        if rq_vars['store'] != '':
+            campaign = get_campaign_by_shopify_store( rq_vars['store'] )
+
+            taskqueue.add( queue_name='shopifyAPI', 
+                           url='/getShopifyOrder', 
+                           name= 'shopifyOrder%s%s' % (rq_vars['store'], rq_vars['order']),
+                           params={'order_id' : rq_vars['order'],
+                                   'campaign_uuid' : campaign.uuid} )
+        else:
+            campaign = get_campaign_by_id(rq_vars['ca_id'])
         
         # If they give a bogus campaign id, show the landing page campaign!
         logging.info(campaign)

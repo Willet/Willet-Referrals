@@ -35,7 +35,7 @@ class Campaign(Model):
     
     title           = db.StringProperty( indexed = False )
     # If is_shopify, this is the store name
-    product_name    = db.StringProperty( indexed = False )
+    product_name    = db.StringProperty( indexed = True )
     # If is_shopify, this is the store URL
     target_url      = db.LinkProperty  ( indexed = False )
     
@@ -48,6 +48,8 @@ class Campaign(Model):
 
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
+
+    prev_shopify_order_id = db.StringProperty( default = '0' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -176,6 +178,9 @@ class Campaign(Model):
 
 def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
+
+def get_campaign_by_shopify_store( name ):
+    return Campaign.all().filter( 'product_name =', name ).get()
 
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""

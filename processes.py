@@ -4,7 +4,7 @@
 __all__ = [
     'Client'
 ]
-import logging, uuid
+import logging, urllib, urllib2, uuid
 
 from datetime import datetime
 from django.utils import simplejson as json
@@ -18,8 +18,9 @@ from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.client import Client
 from models.link import Link, LinkCounter
 from models.model import Model
+from models.shopify import ShopifyItem, ShopifyOrder, create_shopify_order
 from models.stats import Stats
-from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook
+from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook, get_or_create_user_by_email
 
 from util.consts import *
 from util.emails import Email
@@ -192,6 +193,105 @@ class FetchFacebookFriends(webapp.RequestHandler):
                 user.update(fb_friends=friends)
             logging.info(fb_response)
 
+
+class GetShopifyOrder( webapp.RequestHandler ):
+
+    def post( self ):
+        
+        campaign = get_campaign_by_id( self.request.get('campaign_uuid') )
+    
+        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, campaign.prev_shopify_order_id )
+        username = SHOPIFY_API_KEY
+        password = SHOPIFY_API_PASSWORD
+
+        # this creates a password manager
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        # because we have put None at the start it will always
+        # use this username/password combination for  urls
+        # for which `url` is a super-url
+        passman.add_password(None, url, username, password)
+
+        # create the AuthHandler
+        authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+        opener = urllib2.build_opener(authhandler)
+
+        # All calls to urllib2.urlopen will now use our handler
+        # Make sure not to include the protocol in with the URL, or
+        # HTTPPasswordMgrWithDefaultRealm will be very confused.
+        # You must (of course) use it when fetching the page though.
+        urllib2.install_opener(opener)
+
+        # authentication is now handled automatically for us
+        logging.info("Querying %s" % url )
+        result = urllib2.urlopen(url)
+
+        # Grab the data about the order from Shopify
+        order = json.loads( result.read() ) #['orders'] # Fetch the order
+        orders = order['orders']
+
+        logging.info('%s' % order['orders'][0])
+        items = []
+        order_id = user = bill_addr = order_num = referring_site = subtotal = None
+        for k, v in orders[0].iteritems():
+
+            # Grab order details
+            if k == 'id':
+                order_id = v
+            elif k == 'subtotal_price':
+                subtotal = v
+            elif k == 'order_number':
+                order_num = v
+            elif k == 'referring_site':
+                referring_site = v
+        
+            # Grab the purchased items and save some information about them.
+            elif k == 'line_items':
+                for j in v:
+                    logging.info( j )
+                    i = ShopifyItem( name=str(j['name']), price=str(j['price']), product_id=str(j['product_id']))
+                    items.append( i )
+
+            # Store User/ Customer data
+            elif k == 'billing_address':
+                if user:
+                    user.city      = v['city']
+                    user.province  = v['province']
+                    user.country_code = v['country_code']
+                    user.latitude  = v['latitude']
+                    user.longitude = v['longitude']
+                else:
+                    bill_addr = v
+
+            elif k == 'customer':
+                if user is None:
+                    user = get_or_create_user_by_email( v['email'], request_handler=self )
+
+                user.first_name = v['first_name']
+                user.last_name  = v['last_name']
+                user.shopify_customer_id = v['id']
+
+                if bill_addr:
+                    user.city         = bill_addr['city']
+                    user.province     = bill_addr['province']
+                    user.country_code = bill_addr['country_code']
+                    user.latitude     = bill_addr['latitude']
+                    user.longitude    = bill_addr['longitude']
+        
+        # Save the new User data        
+        user.put()
+
+        # Make the ShopifyOrder
+        o = create_shopify_order( campaign, order_id, order_num, subtotal, referring_site, user )
+
+        # Store the purchased items in the order
+        o.items.extend( items )
+        o.put()
+
+        # Update the campaign order id
+        campaign.prev_shopify_order_id = str(order_id)
+        campaign.put()
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
@@ -206,6 +306,7 @@ def main():
         (r'/fetchFB', FetchFacebookData),
         (r'/fetchFriends', FetchFacebookFriends),
         (r'/emailerQueue', EmailerQueue),
+        (r'/getShopifyOrder', GetShopifyOrder),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
 
