@@ -198,9 +198,10 @@ class GetShopifyOrder( webapp.RequestHandler ):
 
     def post( self ):
         
-        campaign = get_campaign_by_id( self.request.get('campaign_uuid') )
+        campaign   = get_campaign_by_id( self.request.get('campaign_uuid') )
+        prev_order = campaign.shopify_orders.order( 'created' ).get()
     
-        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, campaign.prev_shopify_order_id )
+        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, prev_order.order_id if prev_order else '0' )
         username = SHOPIFY_API_KEY
         password = SHOPIFY_API_PASSWORD
 
@@ -230,7 +231,6 @@ class GetShopifyOrder( webapp.RequestHandler ):
         order = json.loads( result.read() ) #['orders'] # Fetch the order
         orders = order['orders']
 
-        logging.info('%s' % order['orders'][0])
         items = []
         order_id = user = bill_addr = order_num = referring_site = subtotal = None
         for k, v in orders[0].iteritems():
@@ -248,7 +248,6 @@ class GetShopifyOrder( webapp.RequestHandler ):
             # Grab the purchased items and save some information about them.
             elif k == 'line_items':
                 for j in v:
-                    logging.info( j )
                     i = ShopifyItem( name=str(j['name']), price=str(j['price']), product_id=str(j['product_id']))
                     items.append( i )
 
@@ -287,10 +286,6 @@ class GetShopifyOrder( webapp.RequestHandler ):
         # Store the purchased items in the order
         o.items.extend( items )
         o.put()
-
-        # Update the campaign order id
-        campaign.prev_shopify_order_id = str(order_id)
-        campaign.put()
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##

@@ -107,7 +107,7 @@ class User( db.Expando ):
             elif k == 'referrer':
                 self.referrer = kwargs['referrer']
             elif kwargs[k] != '' and kwargs[k] != None:
-                setattr(self, k, kwargs[k])
+                setattr( self, k, kwargs[k] )
         self.put()
         """
         if 'twitter_handle' in kwargs and kwargs['twitter_handle'] != '':

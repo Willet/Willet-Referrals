@@ -5,6 +5,7 @@
 __author__      = "Sy Khader"
 __copyright__   = "Copyright 2011, The Willet Corporation"
 
+
 import os, logging, urllib, simplejson
 
 from google.appengine.api import taskqueue, urlfetch
@@ -34,8 +35,6 @@ class ServeSharingPlugin(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_id', 'uid', 'store', 'order'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
-        logging.info(KEYS)
         
         # Grab a User if we have a cookie!
         user = get_user_by_cookie(self)
@@ -204,6 +203,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             else:
                 self.response.out.write(client.login())
 
+
 class LinkedInOAuthHandler(webapp.RequestHandler):
     
     def get(self, action=''):
@@ -249,6 +249,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
                 self.response.out.write(client.login())
     
 
+
 class SendEmailInvites( webapp.RequestHandler ):
     
     def post( self ):
@@ -286,7 +287,6 @@ class SendEmailInvites( webapp.RequestHandler ):
         # Send off the email if they don't want to use Gmail
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
-    
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
@@ -317,7 +317,7 @@ class FacebookShare(webapp.RequestHandler):
             self.response.out.write(plugin_response)
         else: # no user found
             self.response.out.write('notfound')
-        
+
 
 def main():
     application = webapp.WSGIApplication([

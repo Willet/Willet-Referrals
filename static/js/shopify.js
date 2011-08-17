@@ -19,7 +19,6 @@ window.onload = function() {
         }
     }
 
-    alert( store_name );
     // Make the referral iframe
     var iframe = document.createElement( 'iframe' );
     iframe.setAttribute( 'allowtransparency', 'true' );
