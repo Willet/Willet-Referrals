@@ -57,9 +57,6 @@ class ShowLoginPage( URIHandler ):
         user_email = session.get('email', '');
         url        = self.request.get( 'u' )
         client     = self.get_client()
-        shopify_url = self.request.get( 'shop' )
-        shopify_sig = self.request.get( 'signature' )
-        shopify_token = self.request.get( 't' )
 
         logging.info("URL : %s EMAIL: %s" % (url, user_email) )
 
@@ -87,9 +84,6 @@ class ShowLoginPage( URIHandler ):
                                  'loggedIn': False,
                                  'registered': str(registered).lower(),
                                  'url' : url,
-                                 'shopify_url' : shopify_url,
-                                 'shopify_sig' : shopify_sig,
-                                 'shopify_token' : shopify_token,
                                  'stats' : stats,
                                  'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
 
@@ -126,7 +120,8 @@ class ShowAccountPage( URIHandler ):
                                 'target_url' : c.target_url,
                                 'date'     : c.created.strftime('%A %B %d, %Y'),
                                 'shares'   : c.get_shares_count(),
-                                'clicks'   : c.count_clicks()})
+                                'clicks'   : c.count_clicks(),
+                                'is_shopify' : c.shopify_token != ''})
         else:
             has_campaigns = False
         
@@ -278,11 +273,10 @@ class ShowEditPage( URIHandler ):
                 return
             
             template_values['campaign'] = campaign
-        
-        template_values['BASE_URL'] = URL
-        
-        self.response.out.write(self.render_page('edit.html', template_values))
 
+        template_values['BASE_URL'] = URL
+
+        self.response.out.write(self.render_page('edit.html', template_values))
 
 class ShowCodePage( URIHandler ):
     # Renders a campaign page
@@ -316,7 +310,7 @@ class DoUpdateOrCreateCampaign( URIHandler ):
     def post( self ):
         client = self.get_client() # might be None
 
-        campaign_id     = self.request.get( 'uuid' )
+        campaign_id   = self.request.get( 'uuid' )
         title        = self.request.get( 'title' )
         product_name = self.request.get( 'product_name' )
         target_url   = self.request.get( 'target_url' )
@@ -441,9 +435,6 @@ class DoRegisterClient( URIHandler ):
         clientEmail = cgi.escape(self.request.get("email"))
         passwords   = [cgi.escape(self.request.get("passphrase")),
                        cgi.escape(self.request.get("passphrase2"))]
-        shopify_url = self.request.get( 'shopify_url' )
-        shopify_sig = self.request.get( 'shopify_sig' )
-        shopify_token = self.request.get( 'shopify_token' )
         errors      = []
         
         # initialize session
@@ -454,8 +445,7 @@ class DoRegisterClient( URIHandler ):
         session['correctEmail'] = clientEmail
 
         # attempt to register the user
-        status, client, errMsg = register(clientEmail, passwords[0], passwords[1],
-                                          shopify_url, shopify_sig, shopify_token)
+        status, client, errMsg = register(clientEmail, passwords[0], passwords[1])
 
         if status == 'EMAIL_TAKEN': # username taken
             errors.append(errMsg)
@@ -529,13 +519,14 @@ def main():
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
         (r'/demo(.*)',ShowDemoSitePage),
+        
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),
         (r'/deleteCampaign', DoDeleteCampaign),
         (r'/doUpdateOrCreateCampaign', DoUpdateOrCreateCampaign),
         (r'/logout', Logout),
         (r'/register', DoRegisterClient),
-        
+
         (r'/()', ShowLandingPage)
         
         ], debug=USING_DEV_SERVER)
