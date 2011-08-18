@@ -17,7 +17,6 @@ DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAI
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
-
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
@@ -35,7 +34,6 @@ if os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
     # LINKEDIN API JAZZ
     LINKEDIN_KEY = 'j2isiwa49dkz'
     LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
-
 else:
     # Twitter Stuff
     TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
@@ -69,3 +67,10 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 # Shopify Stuff
 SHOPIFY_API_KEY = '35e9a42e1ba8601b0be820a58b181693'
 SHOPIFY_API_PASSWORD = '38bf7ff0e9d42f55a08dbd986453bb49'
+
+# Overide settings with local_consts
+try:
+    from util.local_consts import *
+except:
+    logging.error('no local_consts.py')
+    pass
