@@ -2,6 +2,7 @@
 # Data models for our Users
 # our Users are our client's clients
 import logging
+import sys
 
 from django.utils import simplejson
 
@@ -10,14 +11,17 @@ from decimal  import *
 from time import time
 from hmac import new as hmac
 from hashlib import sha1
+from traceback import print_tb
 
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from models.model         import Model
+from models.oauth         import OAuthClient
 from util.emails          import Email
 from util.helpers         import *
+from util import oauth2 as oauth
 
 import models.oauth
 
@@ -71,6 +75,14 @@ class User( db.Expando ):
     #twitter_pic_url = db.LinkProperty( required = False, default = None )
     #twitter_followers_count = db.IntegerProperty(default = 0)
     twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
+    
+    # Linkedin Junk 
+    # ! See `mappings` in `update_linkedin_info`
+    #linkedin_id    = db.StringProperty
+    #linkedin_first_name
+    #linkedin_last_name
+    #linkedin_industry
+    #linkedin_...
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
     
     # Klout Junk
@@ -153,6 +165,127 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
     
+    def update_linkedin_info(self, extra={}):
+        """updates the user attributes based on linkedin dict"""
+        def linkedin_location(user, json):
+            return json['country']['code']
+        
+        def linkedin_interests(user, json):
+            l = []
+            for interest in json.split(','):
+                l.append(interest.strip())
+            return l
+        
+        def linkedin_im_accounts(user, json):
+            l = []
+            if 'values' not in json:
+                return l
+            for value in json['values']:
+                l.append(
+                    '%s,%s' % (
+                        value['im-account-type'],
+                        value['im-account-name']
+                    )
+                )
+            return l
+        
+        def linkedin_urls(user, json):
+            l = []
+            if 'values' not in json:
+                return l
+            for value in json['values']:
+                l.append(value['url'])
+            return l
+        
+        def linkedin_getlist(a_dict, key):
+            l = []
+            if 'values' not in a_dict:
+                return l
+            for value in a_dict['values']:
+                if key in value:
+                    l.append(value[key])
+            return l
+        
+        def linkedin_connections(user, connections):
+            l = []
+            if 'values' not in connections:
+                return l
+            linkedin_connected_users = []
+            for connection in connections['values']:
+                l.append(connection['id'])
+                new_user = get_or_create_user_by_linkedin(
+                    connection['id'],
+                    request_handler = None,
+                    token = None,
+                    referrer = None,
+                    would_be = True,
+                    extra = connection
+                )
+                linkedin_connected_users.append(new_user.key())
+            user.update(
+                linkedin_connected_users=linkedin_connected_users
+            )
+            return l
+        
+        mappings = {
+            'headline': 'linkedin_headline',
+            'firstName': 'linkedin_first_name',
+            'lastName': 'linkedin_last_name',
+            'numConnections': 'linkedin_num_connections',
+            'numConnectionsCapped': 'linkedin_num_connections_capped',
+            'location': {
+                'attr': 'linkedin_location_country_code',
+                'call': linkedin_location
+            },
+            'pictureUrl': 'linkedin_picture_url',
+            'industry': 'linkedin_industry',
+            'imAccounts': {
+                'attr': 'linkedin_im_accounts',
+                'call': linkedin_im_accounts
+            },
+            'interests': {
+                'attr': 'linkedin_interests',
+                'call': linkedin_interests
+            },
+            'memberUrlResources': {
+                'attr': 'linkedin_urls',
+                'key': 'url',
+                'call': linkedin_getlist
+            }, 
+            'twitterAccounts': {
+                'attr': 'linkedin_twitter_accounts',
+                'key': 'providerAccountId',
+                'call': linkedin_getlist
+            },
+            'connections': {
+                'attr': 'linkedin_connections',
+                'call': linkedin_connections
+            }
+        }
+        for key in extra:
+            try:
+                if key not in mappings:
+                    continue
+                elif type(mappings[key]) == type(str()):
+                    setattr(self, mappings[key], extra[key])
+                else:
+                    attr = mappings[key]['attr']
+                    if 'key' in mappings[key]:
+                        # use the defined key to call getlist
+                        value = mappings[key]['call'](extra[key], mappings[key]['key'])
+                    else:
+                        value = mappings[key]['call'](self, extra[key])
+                    if type(value) == type(list()):
+                        if hasattr(self, attr):
+                            old = self.get_attr(attr)
+                            value.extend(old)
+                    if value != []:
+                        setattr(self, attr, value)
+            except Exception, e:
+                exception_type, exception, tb = sys.exc_info()
+                logging.error('error updating user with linkedin dict:\n%s\n%s\n%s\n\n%s' % (e, print_tb(tb), key, extra[key]))
+        self.put()
+        return True
     #
     # Social Networking Share Functionality
     # 
@@ -204,59 +337,81 @@ class User( db.Expando ):
     
     def linkedin_share(self, message):
         """shares on linkedin on behalf of the user
-            returns html_response
-            invocation: resp = user.linkedin_share(message) ..."""
+            returns share_location, html_response
+            invocation: share_location, resp = user.linkedin_share(message) ..."""
         
         linkedin_share_url = 'http://api.linkedin.com/v1/people/~/shares?twitter-post=true'
-        
-        xml = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <share>
-              <comment>%s</comment>
-              <visibility>
-                 <code>anyone</code>
-              </visibility>
-            </share>
-        """ % message
-        
+        body = '{"comment": "%s","visibility": {"code": "anyone"}}' % message
         params = {
             "oauth_consumer_key": LINKEDIN_KEY,
-            "oauth_nonce": generate_uuid(16),
-            "oauth_signature_method": "HMAC-SHA1",
-            "oauth_timestamp": str(int(time())),
+            "oauth_nonce": oauth.generate_nonce(),
+            "oauth_timestamp": int(time()),
             "oauth_token" : self.linkedin_access_token.oauth_token,
             "oauth_version": "1.0"
         }
-        params_encoded = '&'.join(['%s=%s' % (k, v) for k, v in params])
-        key = '&'.join([LINKEDIN_SECRET, self.linkedin_access_token.oauth_token])
-        msg = "&".join(["POST", linkedin_share_url, params_encoded])
-        signature = hmac(key, msg, sha1).digest().encode('base64').strip()
-        params['oauth_signature'] = signature
-        response = urlfetch.fetch(
-            linkedin_share_url,
-            payload=xml,
-            method=urlfetch.POST,
-            headers = params
+        token = oauth.Token(
+            key=self.linkedin_access_token.oauth_token,
+            secret=self.linkedin_access_token.oauth_token_secret
         )
-        if response.status_code == '201':
+        consumer = oauth.Consumer(LINKEDIN_KEY, LINKEDIN_SECRET)
+        #req = oauth.Request(method="POST", url=url, body=body, headers={'x-li-format':'json'}, parameters=params)
+        #signature_method = oauth.SignatureMethod_HMAC_SHA1()
+        #req.sign_request(signature_method, consumer, token)
+        
+        client = oauth.Client(consumer, token)
+        response, content = client.request(
+            linkedin_share_url, 
+            "POST", 
+            body=body, 
+            headers={
+                'x-li-format':'json',
+                'Content-Type': 'application/json'
+            }
+        )
+        
+        #params = {
+        #    "oauth_consumer_key": LINKEDIN_KEY,
+        #    "oauth_nonce": generate_uuid(16),
+        #    "oauth_signature_method": "HMAC-SHA1",
+        #    "oauth_timestamp": str(int(time())),
+        #    "oauth_token" : self.linkedin_access_token.oauth_token,
+        #    "oauth_version": "1.0"
+        #}
+        #params_encoded = '&'.join(['%s=%s' % (k, v) for k, v in params])
+        #key = '&'.join([LINKEDIN_SECRET, self.linkedin_access_token.oauth_token])
+        #msg = "&".join(["POST", linkedin_share_url, params_encoded])
+        #signature = hmac(key, msg, sha1).digest().encode('base64').strip()
+        #params['oauth_signature'] = signature
+        #response = urlfetch.fetch(
+        #    linkedin_share_url,
+        #    payload=xml,
+        #    method=urlfetch.POST,
+        #    headers = params
+        #)
+        if int(response.status) == 201:
             # good response, get the location
             html_response = """<script type='text/javascript'>
                         window.opener.shareComplete(); window.close();
                     </script>"""
+            content = response['location']
         else:
-            # basd response, pop up an error
-            logger.error('Error doing linkedin_share, response %s: %s %s %s' % (
-                response.status_code,
-                response.headers,
-                response.content,
-                response.final_url
+            # bad response, pop up an error
+            logging.error('Error doing linkedin_share, response %s: %s\n\n%s\n\n%s\n%s\n%s' % (
+                response.status,
+                response,
+                content,
+                body,
+                self.linkedin_access_token.oauth_token,
+                self.linkedin_access_token.oauth_token_secret
             ))
             html_response = """
                 <script type='text/javascript'>
                     window.opener.alert('LinkedIn sharing not successful');
                 </script>
             """
-        return html_response
+            content = None
+        logging.info('li share: %s' % response)
+        return content, html_response
     
     def facebook_share(self, msg):
         """Share 'message' on behalf of this user. returns share_id, html_response
@@ -317,6 +472,14 @@ def get_user_by_twitter(t_handle):
                            params={'twitter_handle' : t_handle} )
     return user
 
+def get_user_by_linkedin(linkedin_id):
+    logging.info("Getting user by LID: " + linkedin_id)
+    user = User.all().filter('linkedin_id =', linkedin_id).get()
+    if user != None:
+        logging.info('Pulled user: %s' % linkedin_id)
+    
+    return user
+
 def get_user_by_facebook(fb_id):
     logging.info("Getting user by FB: " + fb_id)
     user = User.all().filter('fb_identity =', fb_id).get()
@@ -349,6 +512,38 @@ def create_user_by_twitter(t_handle, referrer, ip=''):
                    url='/socialGraphAPI', 
                    name= 'soc%s%s' % (t_handle, generate_uuid( 10 )),
                    params={'id' : 'http://www.twitter.com/%s' % t_handle, 'uuid' : user.uuid} )
+    
+    return user
+
+def create_user_by_linkedin(linkedin_id, referrer, ip='', would_be=False):
+    """Create a new User object with the given attributes"""
+    # check to see if this t_handle has an oauth token
+    OAuthToken = models.oauth.get_oauth_by_linkedin(linkedin_id)
+    
+    user = User(
+        key_name = linkedin_id,
+        uuid = generate_uuid(16),
+        linkedin_id = linkedin_id,
+        referrer = referrer,
+        ip = ip,
+        would_be = would_be
+    )
+    
+    if OAuthToken:
+        user.linkedin_access_token=OAuthToken
+    
+    user.put()
+    
+    # Query the SocialGraphAPI
+    taskqueue.add (
+        queue_name='socialAPI', 
+        url = '/socialGraphAPI', 
+        name = 'soc%s%s' % (linkedin_id, generate_uuid(10)),
+        params = {
+            'id' : 'http://www.linkedin.com/profile/view?id=%s' % linkedin_id, 
+            'uuid' : user.uuid
+        }
+    )
     
     return user
 
@@ -403,9 +598,46 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
         user = create_user_by_twitter(t_handle, referrer)
     
     # Set a cookie to identify the user in the future
-    set_user_cookie( request_handler, user.uuid )
+    set_user_cookie(request_handler, user.uuid)
     
     logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
+    return user
+
+def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None, referrer=None, would_be=False, extra={}):
+    """Retrieve a user object if it is in the datastore, othereise create
+      a new object"""
+    
+    # First try to find them by cookie
+    if request_handler != None:
+        user = get_user_by_cookie(request_handler)
+    else:
+        user = None
+    
+    # Update the info
+    if user:
+        user.update(
+            linkedin_id = linkedin_id,
+            referrer = referrer,
+            linkedin_access_token = token
+        )
+    
+    # Then, search by linkedin handle
+    if user is None:
+        user = get_user_by_linkedin(linkedin_id)
+    
+    # Otherwise, make a new one
+    if user is None:
+        logging.info("Creating user with linkedin_id: %s" % linkedin_id)
+        user = create_user_by_linkedin(linkedin_id, referrer, would_be=would_be)
+    
+    # Set a cookie to identify the user in the future
+    if request_handler != None:
+        set_user_cookie(request_handler, user.uuid)
+    
+    # set the linkedin extra fields
+    user.update_linkedin_info(extra)
+    
+    logging.info('get_or_create_user: %s' % linkedin_id)
     return user
 
 def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', email='', referrer=None, verified=None, gender='', token='', would_be=False, friends=[], request_handler=None):
@@ -472,12 +704,13 @@ def get_user_by_cookie(request_handler):
     uuid = read_user_cookie( request_handler )
     if uuid:
         user = get_user_by_uuid(uuid)
-        ip = request_handler.request.remote_addr
-        if hasattr(user, 'ips') and ip not in user.ips:
-            user.ips.append(ip)
-        else: 
-            user.ips = [ip]
-        user.save()
-        return user
+        if user:
+            ip = request_handler.request.remote_addr
+            if hasattr(user, 'ips') and ip not in user.ips:
+                user.ips.append(ip)
+            else: 
+                user.ips = [ip]
+            user.save()
+            return user
     return None
 

@@ -17,34 +17,18 @@ DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAI
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
-
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
 
-if os.environ['HTTP_HOST'] == 'sy-willet.appspot.com':
-    # Twitter Stuff
-    TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
-    TWITTER_KEY = 'AGjI5z0RZFX7pq3i7nJgtg'
-    TWITTER_SECRET = 'aCUHHM1ZWcM4z35OORhbPuzIEsGlEB2QIl8Ysl3xn1o'
+# Twitter Stuff
+TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
+TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
+TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
     
-    # Facebook Stuff
-    FACEBOOK_APP_ID = '175144029215141'
-    FACEBOOK_APP_SECRET = '49fb2c41881e4f5aafe16b3dffdd9c0b'
-    
-    # LINKEDIN API JAZZ
-    LINKEDIN_KEY = 'j2isiwa49dkz'
-    LINKEDIN_SECRET = 'n0RRpGLCvVFvufdG'
-
-else:
-    # Twitter Stuff
-    TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
-    TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
-    TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
-    
-    # Facebook Stuff
-    FACEBOOK_APP_ID     = '141990385884645'
-    FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
+# Facebook Stuff
+FACEBOOK_APP_ID     = '141990385884645'
+FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'
     
 # LINKEDIN API JAZZ
 LINKEDIN_KEY    = 'j2isiwa49dkz'
@@ -67,6 +51,13 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
 
 # Shopify Stuff
-SHOPIFY_API_KEY = 'e3a59b4ef4d4f737d0e0f511f4044fbd'
+SHOPIFY_API_KEY = '35e9a42e1ba8601b0be820a58b181693'
 SHOPIFY_API_PASSWORD = '38bf7ff0e9d42f55a08dbd986453bb49'
-SHOPIFY_API_SHARED_SECRET = 'd905203af5a638ca13560d89df41dc35'
+
+# Overide settings with local_consts
+try:
+    from util.local_consts import *
+except:
+    #logging.error('no local_consts.py')
+    pass
+
