@@ -64,8 +64,9 @@
             $.ajax({
                 url: "/conversion",
                 type: 'post',
-                data: { referree_uid : "{{supplied_user_id}}",
-                        campaign_uuid : "{{campaign_uuid}}" }
+                data: { referree_uid: "{{supplied_user_id}}",
+                        campaign_uuid: "{{campaign_uuid}}",
+                        order_num: "{{order_num}}"  }
             });// end ajax
         }; 
         

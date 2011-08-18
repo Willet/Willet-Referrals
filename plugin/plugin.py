@@ -89,6 +89,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'text': share_text,
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
+                'order_num': rq_vars['order'],
                 
                 'user': user,
                 'FACEBOOK_APP_ID': FACEBOOK_APP_ID,

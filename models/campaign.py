@@ -194,28 +194,23 @@ class CampaignAnalytics(Model):
     """Model containing aggregated analytics about a specific campaign"""
 
     uuid = db.StringProperty(indexed=True)
-    created         = db.DateTimeProperty(auto_now_add=True)
-    client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
+    scope = db.StringProperty() #week/month
 
-    fb_conversions = db.IntegerProperty()
-    fb_shares = db.IntegerProperty()
-    fb_sales = db.IntegerProperty()
-    fb_reach = db.IntegerProperty()
-    fb_clicks = db.IntegerProperty()
-   
-    twitter_conversions = db.IntegerProperty()
-    twitter_shares = db.IntegerProperty()
-    twitter_sales = db.IntegerProperty()
-    twitter_reach = db.IntegerProperty()
-    twitter_clicks = db.IntegerProperty()
-   
-    linkedIn_conversions = db.IntegerProperty()
-    linkedIn_shares = db.IntegerProperty()
-    linkedIn_sales = db.IntegerProperty()
-    linkedIn_reach = db.IntegerProperty()
-    linkedIn_clicks = db.IntegerProperty()
- 
+    start_time = db.DateTimeProperty()
+    end_time = db.DateTimeProperty()
+    creation_time = db.DateTimeProperty(auto_now_add=True)
 
+    # all stat lists are of the form: [shares, reach, clicks, conversion, profit]
+    facebook_stats = db.ListProperty(str)
+    twitter_stats = db.ListProperty(str)
+    linkedin_stats = db.ListProperty(str)
+    email_stats = db.ListProperty(str)
+
+    # each user's stats are the 4 consecutive elements "medium_handle,conversions,clicks,shares"
+    facebook_user_stats = db.ListProperty(str)
+    twitter_user_stats = db.ListProperty(str)
+    linkedin_user_stats = db.ListProperty(str)
+    
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(CampaignAnalytics, self).__init__(*args, **kwargs)
@@ -225,48 +220,56 @@ class CampaignAnalytics(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(CampaignAnalytics).filter('uuid =', uuid).get()
 
-def get_campaign_analytics_by_uuid(uuid):
+
+def get_campaign_analytics_by_uuid(uuid, scope):
     return CampaignAnalytics.all().filter('uuid =', uuid).get()
 
 
 
-def GenerateCampaignAnalytics(uuid):
+def GenerateCampaignAnalytics(uuid, scope):
     """Update the CampaignAnalytics model for this uuid 
         with latest available data""" 
 
-    campaign = get_campaign_by_uuid(uuid):
+    campaign = get_campaign_by_uuid(uuid)
+    # interpret the scope to a date
+    scope = datetime.date.today() - datetime.timedelta(30) if scope == 'month'\
+        else datetime.date.today()-datetime.timedelta(7)
     analytics = None
+    # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
     ao = {'t': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
           'f': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
           'l': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0}}
+    users = {}
     if campaign:
-        if hasattr(campaign, 'analytics'):
-            analytics = campaign.analytics
-        else:
-            analytics = CampaignAnalytics(uuid=generate_uuid(16))
-            campaign.analytics = analytics
-            campaign.save()
-        clicks, conversions, shares, reach, clicks = 0,0,0,0,0
-        for l in campaign.links_:
-            clicks += l.count_clicks()
-            if hasattr(l, 'facebook_share_id'):
-                ao['f']['sh'] += 1
-                ao['f']['re'] += len(getattr(user, 'fb_friends', []))
-                ao['f']['cl'] += l.count_clicks()
-                if hasattr(l, 'link_conversions'):
-                    ao['f']['co'] += 1
-            elif hasattr(l, 'tweet_id'):
-                ao['t']['sh'] += 1
-                ao['t']['re'] += getattr(user, 'twitter_follower_count', 0)
-                ao['t']['cl'] += l.count_clicks()
-                if hasattr(l, 'link_conversions'):
-                    ao['t']['co'] += 1
-            reach += len(getattr(user, 'fb_friends', [])) if\
-                hasattr(l, 'facebook_share_id') else\
-                getattr(user, 'twitter_followers_count', 0)
-            if hasattr(l, 'link_conversions'):
-                if hasattr(
+    
+    #analytics = CampaignAnalytics(uuid=generate_uuid(16))
+    #campaign.analytics = analytics
+    #campaign.save()
+        logging.info(type(campaign.links_))
+        return
+    #for l in [l for l in campaign.links_ if hasattr(l, 'user')]:
+    #    #if l.creation
+    #    userID = user.uuid
+    #    if not users.has_key(userID):
+    #        for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
+    #            users[userID][m] = {'co': 0, 'cl': 0, 'sh': 0}
 
-        shares = campaign.get_shares_count()
-
-
+    #    if hasattr(l, 'facebook_share_id'):
+    #        ao['f']['sh'] += 1
+    #        users[userID]['f']['sh'] += 1
+    #        ao['f']['re'] += len(getattr(user, 'fb_friends', []))
+    #        ao['f']['cl'] += l.count_clicks()
+    #        if hasattr(l, 'link_conversions'):
+    #            ao['f']['co'] += 1
+    #            order = ShopifyOrder.filter('campaign =', campaign)\
+    #                .filter('order_id =', l.link_conversions.order)
+    #            ao['f']['pr'] += order.subtotal_price
+    #    elif hasattr(l, 'tweet_id'):
+    #        ao['t']['sh'] += 1
+    #        ao['t']['re'] += getattr(user, 'twitter_follower_count', 0)
+    #        ao['t']['cl'] += l.count_clicks()
+    #        if hasattr(l, 'link_conversions'):
+    #            ao['t']['co'] += 1
+    #            order = ShopifyOrder.filter('campaign =', campaign)\
+    #                .filter('order_id =', l.link_conversions.order).get()
+    #            ao['t']['pr'] += order.subtotal_price
