@@ -45,8 +45,13 @@
                         {{c.clicks}}
                     </td>
                     <td>
-                        <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% if c.is_shopify %}
+                            <a href="/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% else %}
+                            <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% endif %}
                     </td>
                     <td>
                          <form action="/deleteCampaign" method="post" class="center">

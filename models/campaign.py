@@ -28,7 +28,6 @@ class Campaign(Model):
     uuid            = db.StringProperty( indexed = True )
     created         = db.DateTimeProperty(auto_now_add=True)
     emailed_at_10   = db.BooleanProperty( default = False )
-    is_shopify      = db.BooleanProperty( default = False )
     client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
     
     cached_clicks_count = db.IntegerProperty( default = 0 )
@@ -51,7 +50,7 @@ class Campaign(Model):
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
 
-    prev_shopify_order_id = db.StringProperty( default = '0' )
+    shopify_token   = db.StringProperty( default = '' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
