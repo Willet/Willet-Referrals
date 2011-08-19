@@ -76,7 +76,7 @@ class Campaign(Model):
         self.old_client = self.client
         self.client     = None
         self.put()
-        
+    
     def get_results( self, total_clicks ) :
         """Get the results of this campaign, sorted by link count"""
         if total_clicks == 0:
