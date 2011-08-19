@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shopify_base.html" %}
 
 {% block head %}
     <!-- Guiders stuff -->
@@ -82,17 +82,12 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">{% if campaign %}Edit{% else %}New{% endif %} Campaign</h1>
+    <h1 class="lower-50 center">{% if campaign %}Edit{% else %}Welcome!{% endif %}</h1>
 
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
             <div id="step1_left">
-                <div>
-                    <label class="default_label" for="title">Name This Campaign</label>
-                    <input type="text" id="title" name="title" value="{{campaign.title|escape}}"/>  <br />
-                    <span class="defaultValue hidden">Invite List</span>
-                </div>
                 <div>
                     <label class="default_label" for="product_name"> Store Name</label>
                     <input type="text" id="product_name" name="product_name" value="{{campaign.product_name|escape}}"/>  <br />
@@ -104,36 +99,25 @@
                 </div>
             </div>
 
-            <div id="step2_left" class="hidden">
-                <div>
-                    <label class="default_label" for="share_text">Default Share Text</label>
-                    <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
-                    <br />
-                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                    <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
-                </div>
-
-                {% if client %}
-                    <input class="call_to_action big submit" id="submit" type="submit" value="Save & Continue" title="Submit" />
-                {% else %}
-                    <input class="call_to_action big submit" id="submit" type="submit" value="Login & Continue" title="Login" />
-                {% endif %}
+            <div>
+                <label class="default_label" for="share_text">Default Share Text</label>
+                <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
+                <br />
+                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
             </div>
+
+            <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
             
             <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
             <input type="hidden" value="{{shopify_token}}" name="token" />
         </form>
-        
-        <button id="goToStep2Button" onClick="goToStep2();" title="Next Step">Next</button>
-
-        <button class="hidden" id="goToStep1Button" onClick="goToStep1();" title="Previous Step">Back</button>
 
     </div>
 
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/account">Your Campaigns</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -145,10 +129,6 @@
             </p>
             <p>
                
-            </p>
-        </div>
-
-        <div id="step2_right" class="hidden prepend-1 span-14 last">
             <p>
                 Here's what your users will be able to edit:
             </p>
@@ -156,10 +136,6 @@
             <div class="center" id="share_iframe_container">
                 <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
-        </div>
-        
-        <div class="center lower-50">
-            How it works button? I've removed the guiders.
         </div>
         
         <script>

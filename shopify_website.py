@@ -32,7 +32,6 @@ class ShowShopifyEditPage( URIHandler ):
         campaign_id  = self.request.get( 'id' )
         error        = self.request.get( 'error' )
         error_msg    = self.request.get( 'error_msg')
-        title        = self.request.get( 'title' )
         product_name = self.request.get( 'product_name' )
         target_url   = self.request.get( 'target_url' )
         share_text   = self.request.get( 'share_text' )
@@ -45,7 +44,7 @@ class ShowShopifyEditPage( URIHandler ):
         template_values = { 'campaign' : None }
         
         # Check the Shopify stuff if they gave it to us
-        # If it failed, let's jsut say they aren;t coming from Shopify
+        # If it failed, let's just say they aren't coming from Shopify
         if shopify_url != '':
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, shopify_token, shopify_timestamp)
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
@@ -73,24 +72,21 @@ class ShowShopifyEditPage( URIHandler ):
 
         if error == '1':
             template_values['error'] = 'Invalid Shopify store url.'
-            template_values['campaign'] = { 'title' : title,
-                                            'product_name' : product_name,
+            template_values['campaign'] = { 'product_name' : product_name,
                                             'target_url' : target_url,
                                             'share_text' : share_text, 
                                             'shopify_token' : shopify_token
                                           }
         elif error == '2':
             template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['campaign'] = { 'title' : title,
-                                            'product_name' : product_name,
+            template_values['campaign'] = { 'product_name' : product_name,
                                             'target_url' : target_url,
                                             'share_text' : share_text, 
                                             'shopify_token' : shopify_token
                                           }
         elif error == '3':
             template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['campaign'] = { 'title' : title,
-                                            'product_name' : product_name,
+            template_values['campaign'] = { 'product_name' : product_name,
                                             'target_url' : target_url,
                                             'share_text' : share_text, 
                                             'shopify_token' : shopify_token
@@ -114,8 +110,7 @@ class ShowShopifyEditPage( URIHandler ):
         self.response.out.write(self.render_page('shopify_edit.html', template_values))
 
 class ShowShopifyCodePage( URIHandler ):
-    @login_required
-    def get(self, client):
+    def get(self):
         campaign_id = self.request.get( 'id' )
         template_values = { 'campaign' : None }
         
@@ -125,10 +120,6 @@ class ShowShopifyCodePage( URIHandler ):
             if campaign == None:
                 self.redirect( '/account' )
                 return
-
-            if campaign.client == None:
-                campaign.client = client
-                campaign.put()
 
             template_values['campaign'] = campaign
         
@@ -145,7 +136,6 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
         client = self.get_client() # might be None
 
         campaign_id  = self.request.get( 'uuid' )
-        title        = self.request.get( 'title' )
         product_name = self.request.get( 'product_name' )
         target_url   = self.request.get( 'target_url' )
         share_text   = self.request.get( 'share_text' )
@@ -153,14 +143,12 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
         
         campaign = get_campaign_by_id( campaign_id )
         
-        title = title.capitalize() # caps it!
-
-        if title == '' or product_name == '' or target_url == ''  or share_text == '':
-            self.redirect( '/shopify/edit?id=%s&t=%s&error=2&title=%s&share_text=%s&target_url=%s&product_name=%s' % (campaign_id, shopify_token, title, share_text, target_url, product_name) )
+        if product_name == '' or target_url == ''  or share_text == '':
+            self.redirect( '/shopify/edit?id=%s&t=%s&error=2&share_text=%s&target_url=%s&product_name=%s' % (campaign_id, shopify_token, share_text, target_url, product_name) )
             return
         
         if not isGoodURL( target_url ):
-            self.redirect( '/shopify/edit?id=%s&t=%s&error=1&title=%s&share_text=%s&target_url=%s&product_name=%s' % (campaign_id, shopify_token, title, share_text, target_url, product_name) )
+            self.redirect( '/shopify/edit?id=%s&t=%s&error=1&share_text=%s&target_url=%s&product_name=%s' % (campaign_id, shopify_token, share_text, target_url, product_name) )
             return
 
         # If campaign doesn't exist,
@@ -172,7 +160,7 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
                 campaign = Campaign( key_name=uuid,
                                      uuid=uuid,
                                      client=client, 
-                                     title=title[:100], 
+                                     title='',
                                      product_name=product_name,
                                      target_url=target_url,
                                      blurb_title='',
@@ -181,13 +169,13 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
                                      shopify_token=shopify_token)
                 campaign.put()
             except BadValueError, e:
-                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&title=%s&share_text=%s&target_url=%s&product_name=%s' % (str(e), campaign_id, shopify_token, title, share_text, target_url, product_name) )
+                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&target_url=%s&product_name=%s' % (str(e), campaign_id, shopify_token, share_text, target_url, product_name) )
                 return
         
         # Otherwise, update the existing campaign.
         else:
             try:
-                campaign.update( title=title[:100], 
+                campaign.update( title='',
                                  product_name=product_name,
                                  target_url=target_url,
                                  blurb_title='',
@@ -195,13 +183,10 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
                                  share_text=share_text,
                                  webhook_url=None)
             except BadValueError, e:
-                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&title=%s&share_text=%s&target_url=%s&product_name=%s' % (str(e), campaign_id, shopify_token, title, share_text, target_url, product_name) )
+                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&target_url=%s&product_name=%s' % (str(e), campaign_id, shopify_token, share_text, target_url, product_name) )
                 return
         
-        if client == None:
-            self.redirect( '/login?u=/shopify/code?id=%s' % campaign.uuid )
-        else:
-            self.redirect( '/shopify/code?id=%s' % campaign.uuid )
+        self.redirect( '/shopify/code?id=%s' % campaign.uuid )
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
