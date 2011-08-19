@@ -5,12 +5,12 @@ __all__ = [
     'Campaign'
 ]
 
-import logging, random
+import hashlib, logging, random, urllib2
 
 from datetime import datetime
 from decimal import *
 
-
+from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
@@ -19,6 +19,7 @@ from google.appengine.ext import db
 from models.link import Link, get_active_links_by_campaign
 from models.user import User
 from models.model import Model
+from util.consts import *
 from util.helpers import generate_uuid
 
 NUM_SHARE_SHARDS = 15
@@ -48,7 +49,11 @@ class Campaign(Model):
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
 
-    shopify_token   = db.StringProperty( default = '' )
+    shopify_token = db.StringProperty( default = '' )
+    # Urls for 3 random products - hacked for now
+    shopify_productA_img = db.StringProperty( default = '' )
+    shopify_productB_img = db.StringProperty( default = '' )
+    shopify_productC_img = db.StringProperty( default = '' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -58,6 +63,53 @@ class Campaign(Model):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return db.Query(Campaign).filter('uuid =', uuid).get()
+
+    def validateSelf( self ):
+        url = '%s/admin/products.json' % ( self.target_url )
+        username = SHOPIFY_API_KEY
+        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.shopify_token).hexdigest()
+
+        # this creates a password manager
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        # because we have put None at the start it will always
+        # use this username/password combination for  urls
+        # for which `url` is a super-url
+        passman.add_password(None, url, username, password)
+
+        # create the AuthHandler
+        authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+        opener = urllib2.build_opener(authhandler)
+
+        # All calls to urllib2.urlopen will now use our handler
+        # Make sure not to include the protocol in with the URL, or
+        # HTTPPasswordMgrWithDefaultRealm will be very confused.
+        # You must (of course) use it when fetching the page though.
+        urllib2.install_opener(opener)
+
+        # authentication is now handled automatically for us
+        logging.info("Querying %s" % url )
+        result = urllib2.urlopen(url)
+
+        # Grab the data about the order from Shopify
+        details  = json.loads( result.read() ) #['orders'] # Fetch the order
+        products = details['products']
+
+        for p in products:
+            for k, v in p.iteritems():
+                if 'images' in k:
+                    if len(v) != 0:
+                        img = v[0]['src'].split('?')[0]
+                        logging.info('%s %s' % (self.shopify_productA_img, img))
+                        if self.shopify_productA_img == '':
+                            self.shopify_productA_img = img
+                        elif self.shopify_productB_img == '' and img != self.shopify_productA_img:
+                            self.shopify_productB_img = img
+                        elif self.shopify_productC_img == '' and img  != self.shopify_productA_img and img != self.shopify_productB_img:
+                            self.shopify_productC_img = img
+                            return
+                        else:
+                            return
     
     def update( self, title, product_name, target_url, blurb_title, blurb_text, share_text, webhook_url ):
         """Update the campaign with new data"""

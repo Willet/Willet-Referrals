@@ -27,8 +27,6 @@ from util.consts     import *
 class ShowShopifyEditPage( URIHandler ):
     # Renders a campaign page
     def get(self):
-        client       = self.get_client() # may be None
-
         campaign_id  = self.request.get( 'id' )
         error        = self.request.get( 'error' )
         error_msg    = self.request.get( 'error_msg')
@@ -98,13 +96,11 @@ class ShowShopifyEditPage( URIHandler ):
             # Updating an existing campaign here:
             campaign = get_campaign_by_id( campaign_id )
             if campaign == None:
-                self.redirect( '/account' )
+                self.redirect( '/edit' )
                 return
             
             template_values['campaign'] = campaign
         
-
-
         template_values['BASE_URL'] = URL
 
         self.response.out.write(self.render_page('shopify_edit.html', template_values))

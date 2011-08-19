@@ -51,8 +51,8 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
 
 # Shopify Stuff
-SHOPIFY_API_KEY = '35e9a42e1ba8601b0be820a58b181693'
-SHOPIFY_API_PASSWORD = '38bf7ff0e9d42f55a08dbd986453bb49'
+SHOPIFY_API_KEY = '2b9850499a01972490e5ddd79aa03b1c'
+SHOPIFY_API_SHARED_SECRET = '0531f9818eb9eecaee6160583df9eea3'
 
 # Overide settings with local_consts
 try:

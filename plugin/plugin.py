@@ -104,6 +104,12 @@ class ServeSharingPlugin(webapp.RequestHandler):
             
         if 'widget' in input_path:
             path = os.path.join(os.path.dirname(__file__), 'html/top.html')
+        elif 'invite' in input_path:
+            template_values['productA_img'] = campaign.shopify_productA_img
+            template_values['productB_img'] = campaign.shopify_productB_img
+            template_values['productC_img'] = campaign.shopify_productC_img
+
+            path = os.path.join(os.path.dirname(__file__), 'shopify/invite_widget.html')
         else:
             path = os.path.join(os.path.dirname(__file__), 'html/bottom.html')
         self.response.out.write(template.render(path, template_values))
