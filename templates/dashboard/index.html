@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script type="text/javascript">
+        var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
+        document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
+    </script>
+    <script type="text/javascript">
+        window.boat_finished = true;
+        var move = function (next) {
+            if (window.boat_finished) {
+                window.boat_finished = false;
+                $('#sailboat').animate({
+                    "left": next
+                }, 300, function() {
+                    window.boat_finished = true;
+                });
+            }
+        }
+        var moveLeft = function() {
+            var current = $('#sailboat').offset().left;
+            var next = "-=100";
+            move(next);
+        };
+        var moveRight = function() {
+            var current = $('#sailboat').offset().left;
+            var next = "+=100";
+            move(next);
+        };
+        $(document).ready(function() {
+            $('#sailboat').animate({"left": "0"}, 0);
+            $('#results div.row').hover(function() {
+                // mouse in
+                $(this).addClass('row_highlight');
+            }, function() {
+                $(this).removeClass('row_highlight');
+            }).click(function() {
+                $(this).next('div.row_details').slideToggle();
+            });
+            $(document).keydown(function (e) {
+                var keyCode = e.keyCode || e.which;
+                arrow = {left: 37, up: 38, right: 39, down: 40 };
+
+                switch (keyCode) {
+                    case arrow.left:
+                        moveLeft();
+                    break;
+                    case arrow.up:
+                        // func
+                    break;
+                    case arrow.right:
+                        moveRight();
+                    break;
+                    case arrow.down:
+                        // func
+                    break;
+                }
+            });
+        });
+        var platform = new Mixpanel.Platform(
+            '{{api_key}}',
+            '{{platform_secret}}',
+            '{{campaign.uuid}}'
+        );
+        {% if has_results %}
+            {{mixpanel}}
+            
+            platform.create_pie_chart('pie_chart', 
+                                     ['Email{{campaign.uuid}}', 'Twitter{{campaign.uuid}}', 'Facebook{{campaign.uuid}}'],
+                                     {labels: true, 
+                                     mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
+        {% endif %}
+
+        /*
+        platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
+        {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
+        ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
+        {% for r in results %}
+            'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
+        {% endfor %}
+        }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
+        */
+        /*
+        platform.create_line_chart( 'graph_div', [
+            'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
+        ], { 'mapping' : { 'Clicks_{{campaign.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
+        */
+    </script>
+    <style type="text/css">
+        .arrow {
+            background: url(/static/imgs/db_arrow.png) no-repeat center center;
+        }
+        .dollars {
+            background: url(/static/imgs/db_burst.png) no-repeat center center; 
+            height: 128px;
+            text-align: center;
+        }
+        .dollars span {
+            padding-left: 75px;
+            font-weight: 500;
+        }
+        .cloud {
+            background: url(/static/imgs/db_cloud.png) no-repeat center center; 
+            height: 85px;
+        }
+        .conversions {
+            
+        }
+        #results div.row div span {
+            position: relative;
+            top: 30%;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.33);
+        }
+        #results div.row div {
+            height: 128px;
+            vertical-align: middle;
+        }
+        h3.sales {
+            text-align: right;
+            padding-right: 17px;
+        }
+        h4 {
+            text-align: center;
+        }
+        hr {
+            background-color: #8ebbc6;
+        }
+        #results div.row:hover {
+            cursor: pointer; 
+            background: url(/static/imgs/db_right.png) no-repeat left center !important;
+        }
+        #results div.row:hover div.prepend-2 {
+             background: url(/static/imgs/db_right.png) no-repeat left center !important;
+        }
+    </style>
+{% endblock head %}
+
+{% block content %}
+    <div class="span-22 last lower-15" id="right_header">
+        <p><a href='{{logout_url}}'>Logout</a></p>
+        <p><a href='/account'>Your Campaigns</a></p>
+    </div>
+    
+    <h1 class="span-24 last lower-100 center">Your Referral Results</h1>
+    <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
+    <p class="center"> We haven't received any shares or clicks yet. </p>
+    
+    <div id="results_header">
+        <div class="span-2 prepend-2"><h3>Referrals</h3></div>
+        <div class="span-4 prepend-1"><h4>Reach</h4></div>
+        <div class="span-3 prepend-1"><h4>Visits</h4></div>
+        <div class="span-4"><h4>Conversions</h4></div>
+        <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
+    </div>
+    <hr />
+    <div id='results' class="center large">
+        <div class="row">
+            <div class="prepend-2 span-2">
+                <span>10</span>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+        
+            <div class="span-4">
+                <div class="cloud quiet">
+                    <span>1000</span>
+                </div>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+        
+            <div class="span-3 conversions">
+                <span>50</span>
+            </div>
+            <div class="span-4">
+                <div class="sales">
+                    <span>5</span>
+                </div>
+            </div>
+        
+            <div class="span-1"><span>=</span></div>
+            <div class="span-4 append-2 last dollars">
+                <span>$100</span>
+            </div>
+        </div>
+        <div class="row_details" style="display: none">
+            <div class="prepend-2 span-2">
+                <span>10</span>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+        
+            <div class="span-4">
+                <div class="quiet">
+                    <span>1000</span>
+                </div>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+        
+            <div class="span-3">
+                <span>50</span>
+            </div>
+            <div class="span-4">
+                <div class="">
+                    <span>5</span>
+                </div>
+            </div>
+        
+            <div class="span-1"><span>=</span></div>
+            <div class="span-4 append-2 last">
+                <span>$100</span>
+            </div>
+
+        </div>
+        <!-- END -->
+        <div class="row">
+            <div class="prepend-2 span-2">
+                <span>10</span>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+    
+            <div class="span-4">
+                <div class="cloud quiet">
+                    <span>1000</span>
+                </div>
+            </div>
+            <div class="span-1 arrow">&nbsp;</div>
+    
+            <div class="span-3 conversions">
+                <span>50</span>
+            </div>
+            <div class="span-4">
+                <div class="sales">
+                    <span>5</span>
+                </div>
+            </div>
+    
+            <div class="span-1"><span>=</span></div>
+            <div class="span-4 append-2 last loud dollars">
+                <span>$100</span>
+            </div>
+        </div>
+        <!-- END -->
+    </div>
+    <hr />
+    <div id="totals">
+        <div class="prepend-20 span-2 append-2">
+            <h2>$200</h2>
+        </div>
+    </div>
+{% endblock content %}
