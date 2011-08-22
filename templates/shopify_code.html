@@ -1,12 +1,11 @@
-{% extends "base.html" %}
+{% extends "shopify_base.html" %}
 
 {% block head %}
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">"{{campaign.title|escape}}"</h1>
+    <h1 class="lower-50 center">{{campaign.product_name|escape}}</h1>
     <div class="prepend-top center">
-        <p>Store Name: <br />{{campaign.product_name|escape}}</p>
         <p>Store URL:<br/>{{campaign.target_url|escape}}</p>
 
         <p>Share text:<br />{{campaign.share_text|escape}}</p>
@@ -21,7 +20,6 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/account">Your Campaigns</a></p>
 {% endblock right_head %}
 
 {% block right_content %}

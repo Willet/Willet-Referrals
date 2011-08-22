@@ -4,7 +4,7 @@
 __all__ = [
     'Client'
 ]
-import logging, urllib, urllib2, uuid
+import hashlib, logging, urllib, urllib2, uuid
 
 from datetime import datetime
 from django.utils import simplejson as json
@@ -203,7 +203,7 @@ class GetShopifyOrder( webapp.RequestHandler ):
     
         url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, prev_order.order_id if prev_order else '0' )
         username = SHOPIFY_API_KEY
-        password = SHOPIFY_API_PASSWORD
+        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.shopify_token).hexdigest()
 
         # this creates a password manager
         passman = urllib2.HTTPPasswordMgrWithDefaultRealm()

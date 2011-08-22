@@ -3,7 +3,7 @@
  **/
 
 window.onload = function() {
-
+    alert('asdasdasd');
     var content_div = document.getElementById( 'content' );
     var group_div   = content_div.children[0];
     var order_id, store_name;
