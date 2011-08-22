@@ -24,7 +24,7 @@ window.onload = function() {
 
     var hide = document.createElement( 'a' );
     hide.setAttribute('style', 'margin-top: 10px; margin-right: 125px; float: right; text-decoration: none; color: black;');
-    hide.setAttribute('href', "javascript:(function() {$('#_willet_bar').animate({top: '-100px'}, 500);$('#_willet_pad').animate({height: '0px'}, 500);$('#_willet_open').animate({top: '0px'}, 500);})();");
+    hide.setAttribute('href', "javascript:(function() {$.cookie('_wl_open', 'false');$('#_willet_bar').animate({top: '-100px'}, 500);$('#_willet_pad').animate({height: '0px'}, 500);$('#_willet_open').animate({top: '0px'}, 500);})();");
     hide.innerText = 'Hide';
 
     var burst = document.createElement( 'img' );
@@ -46,18 +46,26 @@ window.onload = function() {
     var open = document.createElement( 'a' );
 
     open.setAttribute( 'style', "-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow:0 1px 3px rgba(0,0,0,0.7);text-decoration: none; display: block; position: absolute; top: -70px; right: 10px; z-index: 999998; line-height: 27px; height: 27px; background-color: #b9b900; background:#b9b900; background:-webkit-gradient(linear,left top,left bottom,from(yellow),to(#b9b900)); background:-moz-linear-gradient(top,yellow,#b9b900); background:transparent\9; filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow',endColorstr='#b9b900'); -ms-filter:'progid:DXImageTransform.Microsoft.gradient(startColorstr=\'yellow\',endColorstr=\'#b9b900\')'; -webkit-user-select:none;-ms-user-select:none;-moz-user-select:none;-o-user-select:none;user-select:none;cursor:default; margin: 0; padding: 3px 5px 7px 5px; width: auto; border: 0; text-align: center; font-family: 'Trebuchet MS',arial,helvetica,clean,sans-serif; font-size: 16px; color: #000; border-radius: 0 0 5px 5px; -moz-border-radius: 0 0 5px 5px; -webkit-border-radius: 0 0 5px 5px;" ); 
-    open.setAttribute( 'href', "javascript:(function() {$('#_willet_open').animate({top: '-70px'}, 500);$('#_willet_bar').animate({top: '0px'}, 500);$('#_willet_pad').animate({height: '37px'}, 500);})();");
+    open.setAttribute( 'href', "javascript:(function() {$.cookie('_wl_open', 'true');$('#_willet_open').animate({top: '-70px'}, 500);$('#_willet_bar').animate({top: '0px'}, 500);$('#_willet_pad').animate({height: '37px'}, 500);})();");
     open.setAttribute( 'id', '_willet_open' );
-    open.innerText = 'Gift Me!';
+    open.innerText = 'Remember your gift!';
 
-    {% if show_gift %}
+        // Now put the elems in the page.
         document.body.insertBefore( pad, heading );
         document.body.insertBefore( bar, heading );
         document.body.insertBefore( open, heading );
 
-        // Now put the elems in the page.
-        $('#_willet_pad').animate({height: '37px'}, 500);
-        $('#_willet_open').animate({top: '-70px'}, 500);
-        $('#_willet_bar').animate({top: '0px'}, 500);
-    {% endif %}
+        var cookieVal = $.cookie('_wl_open');
+        if ( cookieVal == null ) {
+            $('#_willet_pad').animate({height: '37px'}, 500);
+            $('#_willet_open').animate({top: '-70px'}, 500);
+            $('#_willet_bar').animate({top: '0px'}, 500);
+        } else if ( cookieVal == 'false' ) {
+            open.style.top = '0px';
+            bar.style.top  = '-100px';
+        
+        } else {
+            bar.style.top  = '0px';
+            pad.style.height     = '37px';
+        }
 };
