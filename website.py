@@ -147,8 +147,8 @@ class ShowResultsPage( URIHandler ):
                 self.redirect( '/account' )
                 return
 
-            #campaign.compute_analytics('month')
-            campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(30))
+            campaign.compute_analytics('month')
+            campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40))
             template_values['campaign'] = campaign
             
             total_clicks = campaign.count_clicks()

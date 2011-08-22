@@ -290,12 +290,35 @@ class GetShopifyOrder( webapp.RequestHandler ):
         o.items.extend( items )
         o.put()
 
+
+class TriggerCampaignAnalytics(webapp.RequestHandler):
+
+    def get(self):
+        scope = self.request.get('scope', 'week')
+        campaigns = Campaign.all()
+        for c in campaigns:
+            taskqueue.add(url = '/computeCampaignAnalytics',
+                          params = { 'ca_key': c.key(), 
+                                      'scope'  : scope, })
+
+
+class ComputeCampaignAnalytics(webapp.RequestHandler):
+    """Fetch facebook information about the given user"""
+
+    def post(self):
+        rq_vars = get_request_variables(['ca_key', 'scope'], self)
+        ca = db.get(rq_vars['ca_key'])
+        ca.compute_analytics(rq_vars['scope'])
+ 
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
         (r'/campaignClicksCounter', CampaignClicksCounter),
+        (r'/triggerCampaignAnalytics', TriggerCampaignAnalytics),
+        (r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
         (r'/updateLanding', UpdateLanding),
         (r'/updateCounts',  UpdateCounts),
         (r'/updateClicks',  UpdateClicks),

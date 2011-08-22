@@ -66,7 +66,7 @@ class Campaign(Model):
         return db.Query(Campaign).filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        url = '%s/admin/products.json' % ( self.target_url )
+        Url = '%s/admin/products.json' % ( self.target_url )
         username = SHOPIFY_API_KEY
         password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.shopify_token).hexdigest()
 
@@ -152,7 +152,6 @@ class Campaign(Model):
             # this filter should work but doesn't for some reason
             links = campaign.links_ # .filter('creation_time >=', scope)
             for l in links: #[l for l in campaign.links_ if hasattr(l, 'user')]:
-                logging.info(l.willt_url_code)
                 if l.creation_time < scope:
                     logging.info("Skipping: " + str(l.creation_time))
                     continue
@@ -163,14 +162,12 @@ class Campaign(Model):
                     for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
                         # [co]nversions, [cl]icks, [sh]are
                         if not users[m].has_key(userID):
-                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0, 'uid': userID}
+                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0, 'uid': user.key()}
 
                 for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
                     abbr = smp[0] # 'f', 't', or 'l'
                     if hasattr(l, smp) and getattr(l, smp) is not None and\
                         len(getattr(l, smp)) > 0:
-                        #logging.info(l.willt_url_code)
-                        logging.info(getattr(l, smp))
                         ao[abbr]['sh'] += 1
                         link_clicks = l.count_clicks()
                         ao[abbr]['cl'] += link_clicks
@@ -199,22 +196,19 @@ class Campaign(Model):
 
         top_user_lists = { 'f': [], 't': [], 'l': [] }
         for k, v in top_user_lists.iteritems():
-            logging.info(users[k].items())
             top_user_lists[k] = sorted(users[k].iteritems(),
                                        key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
                                        reverse=True)
-        logging.info(top_user_lists)
         create_campaign_analytics(self.uuid, scope_string, scope, datetime.datetime.today(),\
             ao['f'], ao['t'], ao['l'], ao['e'], top_user_lists)
 
     def get_reports_since(self, scope, t, count=None):
         """ Get the reports analytics for this campaign since 't'"""
         ca = get_analytics_report_since(self.uuid, scope, t, count)
-        logging.info(ca)
         social_media_stats = []
         for c in ca:
             for s in ['facebook', 'twitter', 'linkedin', 'email']:
-                stats = c.getattr(s+'_stats')
+                stats = getattr(c, s+'_stats')
                 sms = {}
                 sms['shares'] = stats[0]
                 sms['reach'] = stats[1]
@@ -223,21 +217,19 @@ class Campaign(Model):
                 sms['conversions'] = stats[3]
                 sms['profit'] = stats[4]
 
-                users = {}
-                user_stats = filter(lambda x: x, c.getattr(s+'_user_stats'))
-                # separate the users by splitting the list into 
-                x = 0
-                while x < len(user_stats):
-                    user = db.get(user_stats[x])
+                users = []
+                user_stats = map(lambda x: x.split(","), 
+                    getattr(c, s+'_user_stats', ""))
+                for u_stat_list in user_stats:
+                    user = db.get(u_stat_list[0])
                     if user:
-                        user.conversions = user_stats[x+1]
-                        user.clicks = user_stats[x+2]
-                        user.shares = user_stats[x+3]
-                        x += 4
+                        user.conversions = u_stat_list[1]
+                        user.clicks = u_stat_list[2]
+                        user.shares = u_stat_list[3]
                         users.append(user)
                 sms['users'] = users
                 social_media_stats.append(sms)
-            logging.info(social_media_stats)
+        logging.info(social_media_stats)
              
 
     def get_results( self, total_clicks ) :
@@ -358,6 +350,7 @@ class CampaignAnalytics(Model):
         accompanying comments for more details but you should be able to just use the
         accessors"""
 
+    campaign_uuid=db.StringProperty(indexed=True)
     uuid = db.StringProperty(indexed=True)
     scope = db.StringProperty(indexed=True) #week/month
 
@@ -375,6 +368,7 @@ class CampaignAnalytics(Model):
     facebook_user_stats = db.ListProperty(str)
     twitter_user_stats = db.ListProperty(str)
     linkedin_user_stats = db.ListProperty(str)
+    email_user_stats    = db.ListProperty(str)
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -414,6 +408,7 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
     li_user_stats = map(fcsv, map(user_stats_obj_to_list, users['l']))
     logging.info(tw_user_stats)
     ca = CampaignAnalytics(uuid=generate_uuid(16),
+        campaign_uuid=campaign_uuid,
         scope=scope,
         start_time=start_time,
         end_time=end_time,
@@ -434,11 +429,13 @@ def get_campaign_analytics_by_uuid(uuid, scope):
     return CampaignAnalytics.all().filter('uuid =', uuid).get()
 
 
-def get_analytics_report_since(uuid, scope, t, count=None):
-    ca = CampaignAnalytics.all().filter('uuid =', uuid).filter('scope =', scope)\
-        .filter('start_time >=', t)
+def get_analytics_report_since(campaign_uuid, scope, t, count=None):
+    logging.info("Looking up report for %s since %s" % (campaign_uuid, t))
+    ca = CampaignAnalytics.all().filter('campaign_uuid =', campaign_uuid).filter('scope =', scope)#\
+        #.filter('start_time >=', t)
     if count is not None and count > 0:
-        return ca.get(count)
+        ca = ca.fetch(count)
+        #return ca.fetch(count)
+    for c in ca:
+        logging.info(c.start_time)
     return ca
-         
-
