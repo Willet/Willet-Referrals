@@ -4,8 +4,11 @@
     <script type="text/javascript">
         var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
         document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
         //document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
+    <script type="text/javascript" src="/static/js/jquery.colorbox-min.js"></script>
+    <link media="screen" rel="stylesheet" href="/static/css/colorbox.css" />
     <script type="text/javascript">
         window.boat_finished = true;
         window.dbar = null;
@@ -33,14 +36,11 @@
         $(document).ready(function() {
             window.dbar = $('#results_header');
             window.dbar_top = dbar.offset().top;
-
+            //$('#results div.row_details a').click(function() {
+            //    $(this).preventDefault();    
+            //});
             $('#sailboat').animate({"left": "0"}, 0);
-            $('#results div.row').hover(function() {
-                // mouse in
-                $(this).addClass('row_highlight');
-            }, function() {
-                $(this).removeClass('row_highlight');
-            }).click(function() {
+            $('#results div.row').click(function() {
                 $(this).toggleClass('expanded').toggleClass('expandable').next('div.details_toggle').animate({
                     height: 'toggle'
                     }, 100, function() {
@@ -51,10 +51,22 @@
                     });
             });
             $('#results div.row_details').click(function() {
-                $(this).children('div.referrers_toggle').animate(
+                $(this).toggleClass('expanded').toggleClass('expandable').children('div.referrers_toggle').animate(
                     {height: 'toggle'}, 200);
             });
+            $('#results span a').click(function(e) {
+                /**
+                 * Lightbox for when a users name is clocked on
+                 */
+                e.preventDefault();
+                e.stopPropagation();
+                $.colorbox({inline:true, href:'#user_box'});
+                console.log($(this));     
+            });
             $(document).keydown(function (e) {
+                /**
+                 * KEY CONTROLS FOR THE BOAT!
+                 */
                 var keyCode = e.keyCode || e.which;
                 arrow = {left: 37, up: 38, right: 39, down: 40 };
 
@@ -73,6 +85,10 @@
                     break;
                 }
             }).scroll(function() {
+                /**
+                 * CONTROLS CARRYING THE HEADER WITH THE PAGE WHEN USER
+                 * SCROLLS
+                 */
                 // scrolling
                 var scroll_top = $(document).scrollTop();
                 var current_top = window.dbar.offset().top;
@@ -159,28 +175,16 @@
             cursor: pointer;
         }
         #results div.details_toggle div.twitter {
-            background-color: rgba(87, 213, 255, 0.15);
-        }
-        #results div.details_toggle div.twitter div.icon {
-            background: url(/static/imgs/db_twitter.png) no-repeat 5% 50% !important;
+            background: rgba(87, 213, 255, 0.15) url(/static/imgs/db_twitter.png) no-repeat 40px 12px !important;
         }
         #results div.details_toggle div.facebook {
-            background-color: rgba(59, 89, 153, 0.15);
-        }
-        #results div.details_toggle div.facebook div.icon {
-            background: url(/static/imgs/db_facebook.png) no-repeat 5% 50% !important;
+            background: rgba(59, 89, 153, 0.15) url(/static/imgs/db_facebook.png) no-repeat 45px 12px !important;
         }
         #results div.details_toggle div.linkedin {
-            background-color: rgba(39, 144, 189, 0.15);
-        }
-        #results div.details_toggle div.linkedin div.icon {
-            background: url(/static/imgs/linkedin-logo.png) no-repeat 5% 50% !important;
+            background: rgba(39, 144, 189, 0.15) url(/static/imgs/linkedin-logo.png) no-repeat 45px 12px !important;
         }
         #results div.details_toggle div.email {
-            background-color: rgba(174, 6, 0, 0.15);
-        }
-        #results div.details_toggle div.email div.icon {
-            background: url(/static/imgs/email_logo.png) no-repeat 5% 50% !important;
+            background: rgba(174, 6, 0, 0.15) url(/static/imgs/email_logo.png) no-repeat 42px 12px !important;
         }
         #results div.referrers_toggle div {
             line-height: 2.0em;
@@ -189,6 +193,10 @@
             font-size: 125%;
             font-weight: 500;
             color: #000000;
+        }
+        #resi;ts div.referrers_toggle div.big {
+            font-size: 100% !important;
+            font-weight: 400 !important;
         }
         #results div.prepend-2 {
             text-align: left;
@@ -212,10 +220,10 @@
         #results div.row:hover {
             cursor: pointer; 
         }
-        #results div.expandable:hover div.prepend-2 {
+        #results div.expandable:hover div.icon { 
              background: url(/static/imgs/plus.gif) no-repeat 5% 50% !important;
         }
-        #results div.expanded div.prepend-2 {
+        #results div.expanded div.icon {
             background: url(/static/imgs/minus.gif) no-repeat 5% 50% !important;
         }
         #results_header {
@@ -267,7 +275,7 @@
     <hr />
     <div id='results' class="center large">
         <div class="row expandable">
-            <div class="prepend-2 span-2 big">
+            <div class="prepend-2 span-2 big icon">
                 <span>10</span>
             </div>
             <div class="span-1 arrow">&nbsp;</div>
@@ -295,7 +303,7 @@
         </div>
         <!-- DETAILS -->
         <div class="details_toggle" style="display: none">
-            <div class="row_details twitter">
+            <div class="row_details twitter expandable">
                 <div class="prepend-2 span-2 icon big"><span>10</span></div>
                 <div class="span-1">&nbsp;</div>
                 <div class="span-4"><div class=""><span>1000</span></div></div>
@@ -318,7 +326,7 @@
                     <div class="span-1"><span>&nbsp;</span></div>
                     <div class="span-4 append-2 dollars last"><span>sales</span></div>
 
-                    <div class="prepend-2 span-2"><span><a href="#">1. Barbara</a></span></div>
+                    <div class="prepend-2 span-2"><span><a href='#' id='user_1'>1. Barbara</a></span></div>
                     <div class="span-1">&nbsp;</div>
                     <div class="span-4"><span>50</span></div>
                     <div class="span-1">&nbsp;</div>
@@ -327,7 +335,7 @@
                     <div class="span-1"><span>&nbsp;</span></div>
                     <div class="span-4 append-2 dollars big last"><span>$100</span></div>
                     
-                    <div class="prepend-2 span-2"><span><a href="#">2. Fraser</a></span></div>
+                    <div class="prepend-2 span-2"><span><a href='#' id='user_2'>2. Barbara</a></span></div>
                     <div class="span-1">&nbsp;</div>
                     <div class="span-4"><span>50</span></div>
                     <div class="span-1">&nbsp;</div>
@@ -336,7 +344,7 @@
                     <div class="span-1"><span>&nbsp;</span></div>
                     <div class="span-4 append-2 dollars big last"><span>$100</span></div>
                     
-                    <div class="prepend-2 span-2"><span><a href="#">3. Matt</a></span></div>
+                    <div class="prepend-2 span-2"><span><a href='#' id='user_3'>3. Barbara</a></span></div>
                     <div class="span-1">&nbsp;</div>
                     <div class="span-4"><span>50</span></div>
                     <div class="span-1">&nbsp;</div>
@@ -347,46 +355,46 @@
                 </div>
             </div>
             <!-- end twitter -->
-            <div class="row_details facebook">
+            <div class="row_details facebook expandable">
                 <div class="prepend-2 span-2 icon">
                     <span>10</span>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
         
                 <div class="span-4">
                     <div class="quiet">
                         <span>1000</span>
                     </div>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
             
                 <div class="span-3">
                     <span>50</span>
                 </div>
                 <div class="span-4">
-                    <div class="">
+                    <div>
                         <span>5</span>
                     </div>
                 </div>
             
-                <div class="span-1"><span>=</span></div>
+                <div class="span-1"><span>&nbsp;</span></div>
                 <div class="span-4 append-2 dollars last">
                     <span>$100</span>
                 </div>
             </div>
             <!-- end facebook -->
-            <div class="row_details linkedin" >
+            <div class="row_details linkedin expandable" >
                 <div class="prepend-2 span-2 icon">
                     <span>10</span>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
             
                 <div class="span-4">
                     <div class="quiet">
                         <span>1000</span>
                     </div>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
             
                 <div class="span-3">
                     <span>50</span>
@@ -397,23 +405,23 @@
                     </div>
                 </div>
             
-                <div class="span-1"><span>=</span></div>
+                <div class="span-1"><span>&nbsp;</span></div>
                 <div class="span-4 append-2 dollars last">
                     <span>$100</span>
                 </div>
             </div>
-            <div class="row_details email">
+            <div class="row_details email expandable">
                 <div class="prepend-2 span-2 icon">
                     <span>10</span>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
             
                 <div class="span-4">
                     <div class="quiet">
                         <span>1000</span>
                     </div>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
+                <div class="span-1 ">&nbsp;</div>
             
                 <div class="span-3">
                     <span>50</span>
@@ -424,12 +432,19 @@
                     </div>
                 </div>
             
-                <div class="span-1"><span>=</span></div>
+                <div class="span-1"><span>&nbsp;</span></div>
                 <div class="span-4 append-2 dollars last">
                     <span>$100</span>
                 </div>
             </div>
         </div>
         <!-- END -->
+    </div>
+    <div  style="display: none">
+        <div id='user_box'>
+            <h3>Barbara</h3>
+            <strong>@barbaraEMAC</strong>
+            <img src="/static/imgs/barbara.png" align="right" />
+        </div>
     </div>
 {% endblock content %}
