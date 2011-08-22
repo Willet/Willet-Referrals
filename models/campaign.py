@@ -230,6 +230,7 @@ class Campaign(Model):
                 sms['users'] = users
                 social_media_stats.append(sms)
         logging.info(social_media_stats)
+        return(social_media_stats)
              
 
     def get_results( self, total_clicks ) :
