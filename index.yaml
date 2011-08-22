@@ -15,3 +15,8 @@ indexes:
    - name: client
    - name: created
      direction: desc
+
+- kind: ShopifyOrder
+  properties:
+  - name: campaign
+  - name: created

@@ -18,7 +18,7 @@ from models.campaign import get_campaign_by_id, get_campaign_by_shopify_store
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
-from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_user_by_cookie
+from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
 # helpers
 from util.consts import *
@@ -37,7 +37,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
         # Grab a User if we have a cookie!
-        user = get_user_by_cookie(self)
+        user = get_or_create_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
             user.get_attr('email') != '' else "Your Email"
         user_found = True if hasattr(user, 'fb_access_token') else False
@@ -45,13 +45,12 @@ class ServeSharingPlugin(webapp.RequestHandler):
         if rq_vars['store'] != '':
             campaign = get_campaign_by_shopify_store( rq_vars['store'] )
             
-            """
             taskqueue.add( queue_name='shopifyAPI', 
                            url='/getShopifyOrder', 
-                           name= 'shopifyOrder%s%s' % (rq_vars['store'], rq_vars['order']),
+                           name= 'shopifyOrder%s%s' % (generate_uuid(16), rq_vars['order']),
                            params={'order' : rq_vars['order'],
-                                   'campaign_uuid' : campaign.uuid} )
-            """
+                                   'campaign_uuid' : campaign.uuid,
+                                   'user_uuid'     : user.uuid} )
         else:
             campaign = get_campaign_by_id(rq_vars['ca_id'])
         
@@ -73,7 +72,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             }
         else:
             # Make a new Link
-            link = create_link(campaign.target_url, campaign, origin_domain, rq_vars['uid'])
+            link = create_link(campaign.target_url, campaign, origin_domain, user, rq_vars['uid'])
             logging.info("link created is %s" % link.willt_url_code)
             
             # Create the share text
@@ -106,15 +105,18 @@ class ServeSharingPlugin(webapp.RequestHandler):
             
         if 'widget' in input_path:
             path = os.path.join(os.path.dirname(__file__), 'html/top.html')
+        
         elif 'invite' in input_path:
             template_values['productA_img'] = campaign.shopify_productA_img
             template_values['productB_img'] = campaign.shopify_productB_img
             template_values['productC_img'] = campaign.shopify_productC_img
 
             path = os.path.join(os.path.dirname(__file__), 'shopify/invite_widget.html')
+        
         elif 'bar' in input_path:
-
+            logging.info("BAR: campaign: %s" % (campaign.uuid))
             referrer_cookie = self.request.cookies.get(campaign.uuid, False)
+            logging.info('LINK %s' % referrer_cookie)
             referrer_link = get_link_by_willt_code( referrer_cookie )
             if referrer_link:
                 template_values['profile_pic']        = referrer_link.user.get_attr( 'pic' )
