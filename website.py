@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc."
 
-import hashlib, re
+import hashlib, re, datetime
 
 from django.utils import simplejson as json
 from gaesessions import get_current_session
@@ -147,7 +147,8 @@ class ShowResultsPage( URIHandler ):
                 self.redirect( '/account' )
                 return
 
-            campaign.compute_analytics('month')
+            #campaign.compute_analytics('month')
+            campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(30))
             template_values['campaign'] = campaign
             
             total_clicks = campaign.count_clicks()

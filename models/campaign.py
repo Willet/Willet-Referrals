@@ -5,11 +5,11 @@ __all__ = [
     'Campaign'
 ]
 
-import logging, random, datetime
+import hashlib, logging, random, urllib2, datetime
 
 from decimal import *
 
-
+from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
@@ -18,6 +18,7 @@ from google.appengine.ext import db
 from models.link import Link, get_active_links_by_campaign
 from models.user import User
 from models.model import Model
+from util.consts import *
 from util.helpers import generate_uuid
 
 NUM_SHARE_SHARDS = 15
@@ -49,7 +50,11 @@ class Campaign(Model):
     # Defaults to None, only set if this Campaign has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
 
-    shopify_token   = db.StringProperty( default = '' )
+    shopify_token = db.StringProperty( default = '' )
+    # Urls for 3 random products - hacked for now
+    shopify_productA_img = db.StringProperty( default = '' )
+    shopify_productB_img = db.StringProperty( default = '' )
+    shopify_productC_img = db.StringProperty( default = '' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -59,6 +64,53 @@ class Campaign(Model):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return db.Query(Campaign).filter('uuid =', uuid).get()
+
+    def validateSelf( self ):
+        url = '%s/admin/products.json' % ( self.target_url )
+        username = SHOPIFY_API_KEY
+        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.shopify_token).hexdigest()
+
+        # this creates a password manager
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        # because we have put None at the start it will always
+        # use this username/password combination for  urls
+        # for which `url` is a super-url
+        passman.add_password(None, url, username, password)
+
+        # create the AuthHandler
+        authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+        opener = urllib2.build_opener(authhandler)
+
+        # All calls to urllib2.urlopen will now use our handler
+        # Make sure not to include the protocol in with the URL, or
+        # HTTPPasswordMgrWithDefaultRealm will be very confused.
+        # You must (of course) use it when fetching the page though.
+        urllib2.install_opener(opener)
+
+        # authentication is now handled automatically for us
+        logging.info("Querying %s" % url )
+        result = urllib2.urlopen(url)
+
+        # Grab the data about the order from Shopify
+        details  = json.loads( result.read() ) #['orders'] # Fetch the order
+        products = details['products']
+
+        for p in products:
+            for k, v in p.iteritems():
+                if 'images' in k:
+                    if len(v) != 0:
+                        img = v[0]['src'].split('?')[0]
+                        logging.info('%s %s' % (self.shopify_productA_img, img))
+                        if self.shopify_productA_img == '':
+                            self.shopify_productA_img = img
+                        elif self.shopify_productB_img == '' and img != self.shopify_productA_img:
+                            self.shopify_productB_img = img
+                        elif self.shopify_productC_img == '' and img  != self.shopify_productA_img and img != self.shopify_productB_img:
+                            self.shopify_productC_img = img
+                            return
+                        else:
+                            return
     
     def update( self, title, product_name, target_url, blurb_title, blurb_text, share_text, webhook_url ):
         """Update the campaign with new data"""
@@ -84,17 +136,17 @@ class Campaign(Model):
 
         campaign = get_campaign_by_id(self.uuid)
         # interpret the scope to a date
+        scope_string = scope
         scope = datetime.datetime.today() - datetime.timedelta(30) if scope == 'month'\
             else datetime.datetime.today()-datetime.timedelta(7)
 
         # twitter, facebook, linkedin
-        ao = {}
-        users = {}
+        ao, users = {}, {}
         lost = 0
-        for smp in ['t', 'f', 'l']:
+        for smp in ['t', 'f', 'l', 'e']:
             # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
             ao[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
-            users[smp] = {'co': 0, 'cl': 0, 'sh': 0}
+            users[smp] = {}
 
         if campaign:
             # this filter should work but doesn't for some reason
@@ -106,11 +158,12 @@ class Campaign(Model):
                     continue
                 user = getattr(l, 'user', None)
                 userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
-                if userID and not users.has_key(userID):
-                    users[userID] = {}
+                if userID:
+                    #users[abbr][userID] = {}
                     for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
                         # [co]nversions, [cl]icks, [sh]are
-                        user[m][userID] = {'co': 0, 'cl': 0, 'sh': 0}
+                        if not users[m].has_key(userID):
+                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0, 'uid': userID}
 
                 for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
                     abbr = smp[0] # 'f', 't', or 'l'
@@ -144,14 +197,48 @@ class Campaign(Model):
                                 .filter('order_id =', l.link_conversions.order)
                             ao[abbr]['pr'] += order.subtotal_price
 
-        user_list = sorted(users.iteritems(), lambda u: (u['co'], ['cl'], ['sh']))
-        logging.info(user_list)
-        #crate_campaign_analytics(None, None, None, ao['f'], ao['t']. ao['l'], 
-        #logging.info(ao)
-        #logging.info(users)
-        #logging.info(lost)
+        top_user_lists = { 'f': [], 't': [], 'l': [] }
+        for k, v in top_user_lists.iteritems():
+            logging.info(users[k].items())
+            top_user_lists[k] = sorted(users[k].iteritems(),
+                                       key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
+                                       reverse=True)
+        logging.info(top_user_lists)
+        create_campaign_analytics(self.uuid, scope_string, scope, datetime.datetime.today(),\
+            ao['f'], ao['t'], ao['l'], ao['e'], top_user_lists)
 
+    def get_reports_since(self, scope, t, count=None):
+        """ Get the reports analytics for this campaign since 't'"""
+        ca = get_analytics_report_since(self.uuid, scope, t, count)
+        logging.info(ca)
+        social_media_stats = []
+        for c in ca:
+            for s in ['facebook', 'twitter', 'linkedin', 'email']:
+                stats = c.getattr(s+'_stats')
+                sms = {}
+                sms['shares'] = stats[0]
+                sms['reach'] = stats[1]
+                sms['clicks'] = stats[2]
+                sms['name'] = s
+                sms['conversions'] = stats[3]
+                sms['profit'] = stats[4]
 
+                users = {}
+                user_stats = filter(lambda x: x, c.getattr(s+'_user_stats'))
+                # separate the users by splitting the list into 
+                x = 0
+                while x < len(user_stats):
+                    user = db.get(user_stats[x])
+                    if user:
+                        user.conversions = user_stats[x+1]
+                        user.clicks = user_stats[x+2]
+                        user.shares = user_stats[x+3]
+                        x += 4
+                        users.append(user)
+                sms['users'] = users
+                social_media_stats.append(sms)
+            logging.info(social_media_stats)
+             
 
     def get_results( self, total_clicks ) :
         """Get the results of this campaign, sorted by link count"""
@@ -272,19 +359,19 @@ class CampaignAnalytics(Model):
         accessors"""
 
     uuid = db.StringProperty(indexed=True)
-    scope = db.StringProperty() #week/month
+    scope = db.StringProperty(indexed=True) #week/month
 
-    start_time = db.DateTimeProperty()
+    start_time = db.DateTimeProperty(indexed=True)
     end_time = db.DateTimeProperty()
     creation_time = db.DateTimeProperty(auto_now_add=True)
 
     # all stat lists are of the form: [shares, reach, clicks, conversion, profit]
-    facebook_stats = db.ListProperty(str)
-    twitter_stats = db.ListProperty(str)
-    linkedin_stats = db.ListProperty(str)
-    email_stats = db.ListProperty(str)
+    facebook_stats = db.ListProperty(int)
+    twitter_stats = db.ListProperty(int)
+    linkedin_stats = db.ListProperty(int)
+    email_stats = db.ListProperty(int)
 
-    # each user's stats are the 4 consecutive elements "medium_handle,conversions,clicks,shares"
+    # each user's stats are the 4 consecutive elements "uuid,conversions,clicks,shares"
     facebook_user_stats = db.ListProperty(str)
     twitter_user_stats = db.ListProperty(str)
     linkedin_user_stats = db.ListProperty(str)
@@ -299,11 +386,12 @@ class CampaignAnalytics(Model):
         return db.Query(CampaignAnalytics).filter('uuid =', uuid).get()
 
 
-def create_campaign_analytics(scope, start_time, end_time, fb_stats=None,\
-twitter_stats=None,linkedin_stats=None,users)
+def create_campaign_analytics(campaign_uuid, scope, start_time, end_time,\
+fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=None):
     """the _stats objects are of the form:
-        [cl]icks, [co]nversions, [re]ach, [pr]ofit, [sh]are
         { cl: int, co: int, re: int, pr: int, sh: int }
+        [cl]icks, [co]nversions, [re]ach, [pr]ofit, [sh]are
+
         users list (ordered by influence)::
             [ { f : { handle: str, co: int, cl: int, sh: int }, 
               { t : ... } ]
@@ -311,14 +399,46 @@ twitter_stats=None,linkedin_stats=None,users)
         Returns: CampaignAnalytics object. See CampaignAnlytics model definition
                  for internal data representations
     """
-    stats_lists = []
-    fb_slist, twitter_slist, linkedin_slit = [map(getattr(stats, x),\
-        ['sh', 're', 'cl', 'co', 'pr']) for stats in  [fb_stats, twitter_stats, linkedin_stats]]:
-    logging.info(fb_slist)
-    #fb_stats = map(getattr(fb_stats, x), ['sh', 're', 'cl', 'co', 'pr']) 
-    #twitter_stats = map(fetat
-            
+    # provider is an object
+    logging.info(fb_stats)
+    stats_obj_to_list = lambda prov:\
+        map(lambda attr: prov[attr], ['sh', 're', 'cl', 'co', 'pr'])
+    fb_stats, twitter_stats, linkedin_stats, email_stats = map(stats_obj_to_list,\
+        [fb_stats, twitter_stats, linkedin_stats, email_stats])
+    # user is a tuple
+    user_stats_obj_to_list = lambda user:\
+        map(lambda attr: str(user[1][attr]), ['uid', 'co', 'cl', 'sh'])
+    fcsv = lambda x: ",".join(x)
+    fb_user_stats = map(fcsv, map(user_stats_obj_to_list, users['f']))
+    tw_user_stats = map(fcsv, map(user_stats_obj_to_list, users['t']))
+    li_user_stats = map(fcsv, map(user_stats_obj_to_list, users['l']))
+    logging.info(tw_user_stats)
+    ca = CampaignAnalytics(uuid=generate_uuid(16),
+        scope=scope,
+        start_time=start_time,
+        end_time=end_time,
+        facebook_stats=fb_stats,
+        twitter_stats=twitter_stats,
+        linkedin_stats=linkedin_stats,
+        email_stats=email_stats,
+        facebook_user_stats=fb_user_stats,
+        twitter_user_stats=tw_user_stats,
+        linkedin_user_stats=li_user_stats
+    )
+    ca.save()
+    
+    return ca
+
 
 def get_campaign_analytics_by_uuid(uuid, scope):
     return CampaignAnalytics.all().filter('uuid =', uuid).get()
+
+
+def get_analytics_report_since(uuid, scope, t, count=None):
+    ca = CampaignAnalytics.all().filter('uuid =', uuid).filter('scope =', scope)\
+        .filter('start_time >=', t)
+    if count is not None and count > 0:
+        return ca.get(count)
+    return ca
+         
 

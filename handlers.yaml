@@ -3,7 +3,7 @@ handlers:
 - url: /(willet.html|trackErr)
   script: clicks/track.py
 
-- url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
+- url: /(bar|invite|fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
   script: plugin/plugin.py
 
 # queues that check our models for dead references
@@ -12,6 +12,9 @@ handlers:
 
 - url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends)
   script: processes.py
+
+- url: /shopify.*
+  script: shopify_website.py
 
 - url: /conversion
   script: conversion.py

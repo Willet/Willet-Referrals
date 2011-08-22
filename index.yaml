@@ -11,3 +11,9 @@ indexes:
    - name: client
    - name: created
      direction: desc
+
+- kind: CampaignAnalytics
+  properties:
+  - name: uuid
+  - name: scope
+  - name: start_time

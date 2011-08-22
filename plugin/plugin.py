@@ -47,11 +47,13 @@ class ServeSharingPlugin(webapp.RequestHandler):
         if rq_vars['store'] != '':
             campaign = get_campaign_by_shopify_store( rq_vars['store'] )
             
+            """
             taskqueue.add( queue_name='shopifyAPI', 
                            url='/getShopifyOrder', 
                            name= 'shopifyOrder%s%s' % (rq_vars['store'], rq_vars['order']),
                            params={'order' : rq_vars['order'],
                                    'campaign_uuid' : campaign.uuid} )
+            """
         else:
             campaign = get_campaign_by_id(rq_vars['ca_id'])
         
@@ -100,13 +102,29 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'user_found': str(user_found).lower()
             }
         
-        if self.request.url.startswith('http://localhost:8080'):
+        if self.request.url.startswith('http://localhost'):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:
             template_values['BASE_URL'] = URL
             
         if 'widget' in input_path:
             path = os.path.join(os.path.dirname(__file__), 'html/top.html')
+        elif 'invite' in input_path:
+            template_values['productA_img'] = campaign.shopify_productA_img
+            template_values['productB_img'] = campaign.shopify_productB_img
+            template_values['productC_img'] = campaign.shopify_productC_img
+
+            path = os.path.join(os.path.dirname(__file__), 'shopify/invite_widget.html')
+        elif 'bar' in input_path:
+
+            referrer_cookie = self.request.cookies.get(campaign.uuid, False)
+            referrer_link = get_link_by_willt_code( referrer_cookie )
+            if referrer_link:
+                template_values['profile_pic']        = referrer_link.user.get_attr( 'pic' )
+                template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
+                template_values['show_gift']          = True
+            self.response.headers['Content-Type'] = 'javascript'
+            path = os.path.join(os.path.dirname(__file__), 'js/shopify_bar.js')
         else:
             path = os.path.join(os.path.dirname(__file__), 'html/bottom.html')
         self.response.out.write(template.render(path, template_values))
