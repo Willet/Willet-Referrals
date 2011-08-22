@@ -105,10 +105,24 @@ class ShowDemoSitePage( URIHandler ):
 
 class ShowDashboardPage(URIHandler):
     """docstring for ShowDashboardPage"""
-    def get(self):
+    def get(self, campaign_id=''):
         """renders dashboard"""
         template_values = {}
-        
+
+        # try to get campaign
+        try:
+            campaign = get_campaign_by_id(campaign_id)
+            if campaign == None:
+               raise Exception("no campign returned by %s" % campaing_id)
+        except Exception, e:
+            #self.error(e)
+            pass
+        else:
+            social_media_stats, user_stats = campaign.get_computed_analytics()
+            template_values['CAMPAIGN'] = campaign
+            template_values['SM_STATS'] = social_media_stats 
+            template_values['USER_STATS'] = user_stats 
+
         page = 'index'
         
         self.response.out.write(self.render_page('dashboard/%s.html' % page, template_values))
@@ -535,11 +549,12 @@ def main():
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
         (r'/demo(.*)',ShowDemoSitePage),
+        (r'/dashboard/(.*)',ShowDashboardPage), 
         (r'/dashboard',ShowDashboardPage),
-        
+
         # json services
         (r'/campaign.json', ShowResultsJSONPage),
-        (r'/dashboard',ShowDashboardJSON),
+        (r'/dashboard.json',ShowDashboardJSON),
         
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),
