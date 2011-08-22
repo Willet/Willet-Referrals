@@ -154,6 +154,14 @@ class User( db.Expando ):
         if attr_name == 'email':
             return self.emails[0].address if self.emails.count() > 0 else ''
         
+        if attr_name == 'pic':
+            if hasattr(self, 'facebook_profile_pic'):
+                return getattr(self, 'facebook_profile_pic')
+            elif hasattr(self, 'twitter_profile_pic'):
+                return getattr(self, 'twitter_profile_pic')
+            else:
+                return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
+
         if hasattr( self, attr_name ):
             return getattr( self, attr_name )
     
