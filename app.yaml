@@ -1,5 +1,5 @@
-application: sy-willet
-version: 9
+application: social-referral 
+version: 1
 runtime: python
 api_version: 1
 

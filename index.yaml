@@ -17,3 +17,8 @@ indexes:
   - name: campaign_uuid
   - name: scope
   - name: start_time
+
+- kind: ShopifyOrder
+  properties:
+  - name: campaign
+  - name: created

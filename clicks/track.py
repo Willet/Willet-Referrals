@@ -26,6 +26,11 @@ class TrackWilltURL( webapp.RequestHandler ):
        incremental click-throughs are unique"""
 
     def get( self, code ):
+        logging.info("PATH %s" % self.request.url )
+        if 'social-referral.appspot.com' not in self.request.url:
+            self.redirect( 'http://social-referral.appspot.com/%s' % code )
+            return
+
         link = get_link_by_willt_code(code)
         if not link:
             self.redirect("/")

@@ -3,7 +3,7 @@
  **/
 
 window.onload = function() {
-    var heading = document.getElementById( 'header' );
+    var heading = document.body.firstChild; //getElementById( 'header' );
     
     var pad  = document.createElement( 'div' );
     pad.setAttribute( 'style', 'height: 0px; display: block;' );
@@ -28,11 +28,11 @@ window.onload = function() {
     hide.innerText = 'Hide';
 
     var burst = document.createElement( 'img' );
-    burst.setAttribute( 'src', "http://localhost:8096/static/imgs/burst.png" );
+    burst.setAttribute( 'src', "http://social-referral.appspot.com/static/imgs/burst.png" );
     burst.setAttribute( 'style', "position: absolute; top: -90px; right: -100px; height: 200px;" );
 
     var gift = document.createElement( 'img' );
-    gift.setAttribute( 'src', "http://localhost:8096/static/imgs/gift_box.gif" );
+    gift.setAttribute( 'src', "http://social-referral.appspot.com/static/imgs/gift_box.gif" );
     gift.setAttribute( 'style', "position: absolute; top: 0px; right: 0px; height: 50px;");
     
     bar.appendChild( profile_pic );
@@ -50,6 +50,8 @@ window.onload = function() {
     open.setAttribute( 'id', '_willet_open' );
     open.innerText = 'Remember your gift!';
 
+
+    {% if show_gift %}
         // Now put the elems in the page.
         document.body.insertBefore( pad, heading );
         document.body.insertBefore( bar, heading );
@@ -63,9 +65,9 @@ window.onload = function() {
         } else if ( cookieVal == 'false' ) {
             open.style.top = '0px';
             bar.style.top  = '-100px';
-        
         } else {
-            bar.style.top  = '0px';
-            pad.style.height     = '37px';
+            bar.style.top    = '0px';
+            pad.style.height = '37px';
         }
+    {% endif %}
 };

@@ -582,6 +582,14 @@ def create_user_by_email(email, referrer):
     
     return user
 
+def create_user(referrer):
+    """Create a new User object with the given attributes"""
+    uuid=generate_uuid(16)
+    user = User(key_name=uuid, uuid=uuid, referrer=referrer)
+    user.put()
+    
+    return user
+
 # Get or Create by X
 def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic='', referrer=None, request_handler=None, token=None):
     """Retrieve a user object if it is in the datastore, othereise create
@@ -722,3 +730,8 @@ def get_user_by_cookie(request_handler):
             return user
     return None
 
+def get_or_create_user_by_cookie( request_handler, referrer=None ): 
+    user= get_user_by_cookie( request_handler )
+    if user is None:
+        user = create_user( referrer )
+    return user

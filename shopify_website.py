@@ -27,6 +27,7 @@ from util.consts     import *
 class ShowShopifyEditPage( URIHandler ):
     # Renders a campaign page
     def get(self):
+        logging.info("EDIT")
         campaign_id  = self.request.get( 'id' )
         error        = self.request.get( 'error' )
         error_msg    = self.request.get( 'error_msg')
@@ -44,6 +45,7 @@ class ShowShopifyEditPage( URIHandler ):
         # Check the Shopify stuff if they gave it to us
         # If it failed, let's just say they aren't coming from Shopify
         if shopify_url != '':
+            logging.info("Checking sohp stuff" )
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, shopify_token, shopify_timestamp)
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
@@ -63,6 +65,7 @@ class ShowShopifyEditPage( URIHandler ):
                 template_values['shopify_token']  = shopify_token
 
             else:
+                logging.info("REDIRECTING")
                 self.redirect( '/edit' )
                 return
 
