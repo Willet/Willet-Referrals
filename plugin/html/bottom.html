@@ -208,7 +208,6 @@
                 // use the selected medium to share about your purchase
                 share = function(medium, uid) {
                     var fb_share_handler = function(payload) {
-                        console.log(payload)
                         $.ajax({url: "/fbShare",
                                 type: 'post',
                                 data: payload,
@@ -237,7 +236,6 @@
                                     return;
                                 }
                                 FB.login(function(lr) {
-                                        console.log(lr);
                                         if (!lr.authResponse) {
                                             // we weren't given permission
                                             window.close();
@@ -253,16 +251,16 @@
                     
                             } // if (userFound u
                         } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                            var OAuthURL = '{{URL}}/oauth/twitter/login?wuid='
                                             + '&m=' + message + '&wcode={{willt_code}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');
                         } else if (medium === 'linkedin') {
                             console.log('linkedin share', message);
-                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
+                            var OAuthURL = '{{URL}}/oauth/linkedin/login?wuid='
                                             + '&m=' + message + '&wcode={{willt_code}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');       
                         } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                            var OAuthURL = '{{URL}}/oauth/twitter/login?wuid='
                                             + '&m=' + message + '&wcode={{willt_code}}',
                                 AuthWindow = window.open(OAuthURL, '_blank');
                         } else {

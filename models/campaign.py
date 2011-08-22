@@ -5,9 +5,8 @@ __all__ = [
     'Campaign'
 ]
 
-import logging, random
+import logging, random, datetime
 
-from datetime import datetime
 from decimal import *
 
 
@@ -67,7 +66,7 @@ class Campaign(Model):
         self.product_name   = product_name
         self.target_url     = target_url
         
-        self.blurb_title    = blurb_title
+        Self.blurb_title    = blurb_title
         self.blurb_text     = blurb_text
         self.share_text     = share_text
 
@@ -79,6 +78,81 @@ class Campaign(Model):
         self.client     = None
         self.put()
     
+    def compute_analytics(self, scope):
+        """Update the CampaignAnalytics model for this uuid 
+            with latest available data""" 
+
+        campaign = get_campaign_by_id(self.uuid)
+        # interpret the scope to a date
+        scope = datetime.datetime.today() - datetime.timedelta(30) if scope == 'month'\
+            else datetime.datetime.today()-datetime.timedelta(7)
+
+        # twitter, facebook, linkedin
+        ao = {}
+        users = {}
+        lost = 0
+        for smp in ['t', 'f', 'l']:
+            # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
+            ao[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
+            users[smp] = {'co': 0, 'cl': 0, 'sh': 0}
+
+        if campaign:
+            # this filter should work but doesn't for some reason
+            links = campaign.links_ # .filter('creation_time >=', scope)
+            for l in links: #[l for l in campaign.links_ if hasattr(l, 'user')]:
+                logging.info(l.willt_url_code)
+                if l.creation_time < scope:
+                    logging.info("Skipping: " + str(l.creation_time))
+                    continue
+                user = getattr(l, 'user', None)
+                userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
+                if userID and not users.has_key(userID):
+                    users[userID] = {}
+                    for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
+                        # [co]nversions, [cl]icks, [sh]are
+                        user[m][userID] = {'co': 0, 'cl': 0, 'sh': 0}
+
+                for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
+                    abbr = smp[0] # 'f', 't', or 'l'
+                    if hasattr(l, smp) and getattr(l, smp) is not None and\
+                        len(getattr(l, smp)) > 0:
+                        #logging.info(l.willt_url_code)
+                        logging.info(getattr(l, smp))
+                        ao[abbr]['sh'] += 1
+                        link_clicks = l.count_clicks()
+                        ao[abbr]['cl'] += link_clicks
+                        if userID:
+                            users[abbr][userID]['sh'] += 1
+                            users[abbr][userID]['cl'] += link_clicks
+                        else:
+                            lost += 1
+                        if abbr == 'f':
+                            ao[abbr]['re'] += len(getattr(user, 'fb_friends', []))
+                        elif abbr == 't':
+                            twitter_follower_count = getattr(user, 'twitter_follower_count', 0) 
+                            # this returned as none sometimes when it's null
+                            twitter_follower_count = 0 if twitter_follower_count\
+                                is None else twitter_follower_count
+                            ao[abbr]['re'] += twitter_follower_count
+                        elif abbr == 'l':
+                            ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
+                    if hasattr(l, 'link_conversions'):
+                            ao[abbr]['co'] += 1
+                            if userID:
+                                users[abbr][userID]['co'] += 1
+                            order = ShopifyOrder.filter('campaign =', campaign)\
+                                .filter('order_id =', l.link_conversions.order)
+                            ao[abbr]['pr'] += order.subtotal_price
+
+        user_list = sorted(users.iteritems(), lambda u: (u['co'], ['cl'], ['sh']))
+        logging.info(user_list)
+        #crate_campaign_analytics(None, None, None, ao['f'], ao['t']. ao['l'], 
+        #logging.info(ao)
+        #logging.info(users)
+        #logging.info(lost)
+
+
+
     def get_results( self, total_clicks ) :
         """Get the results of this campaign, sorted by link count"""
         if total_clicks == 0:
@@ -191,7 +265,11 @@ class ShareCounter(db.Model):
 
 
 class CampaignAnalytics(Model):
-    """Model containing aggregated analytics about a specific campaign"""
+    """Model containing aggregated analytics about a specific campaign
+    
+        The stats list properties are comma seperated lists of statistics, see their
+        accompanying comments for more details but you should be able to just use the
+        accessors"""
 
     uuid = db.StringProperty(indexed=True)
     scope = db.StringProperty() #week/month
@@ -221,55 +299,26 @@ class CampaignAnalytics(Model):
         return db.Query(CampaignAnalytics).filter('uuid =', uuid).get()
 
 
+def create_campaign_analytics(scope, start_time, end_time, fb_stats=None,\
+twitter_stats=None,linkedin_stats=None,users)
+    """the _stats objects are of the form:
+        [cl]icks, [co]nversions, [re]ach, [pr]ofit, [sh]are
+        { cl: int, co: int, re: int, pr: int, sh: int }
+        users list (ordered by influence)::
+            [ { f : { handle: str, co: int, cl: int, sh: int }, 
+              { t : ... } ]
+        
+        Returns: CampaignAnalytics object. See CampaignAnlytics model definition
+                 for internal data representations
+    """
+    stats_lists = []
+    fb_slist, twitter_slist, linkedin_slit = [map(getattr(stats, x),\
+        ['sh', 're', 'cl', 'co', 'pr']) for stats in  [fb_stats, twitter_stats, linkedin_stats]]:
+    logging.info(fb_slist)
+    #fb_stats = map(getattr(fb_stats, x), ['sh', 're', 'cl', 'co', 'pr']) 
+    #twitter_stats = map(fetat
+            
+
 def get_campaign_analytics_by_uuid(uuid, scope):
     return CampaignAnalytics.all().filter('uuid =', uuid).get()
 
-
-
-def GenerateCampaignAnalytics(uuid, scope):
-    """Update the CampaignAnalytics model for this uuid 
-        with latest available data""" 
-
-    campaign = get_campaign_by_uuid(uuid)
-    # interpret the scope to a date
-    scope = datetime.date.today() - datetime.timedelta(30) if scope == 'month'\
-        else datetime.date.today()-datetime.timedelta(7)
-    analytics = None
-    # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
-    ao = {'t': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
-          'f': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0},
-          'l': {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0}}
-    users = {}
-    if campaign:
-    
-    #analytics = CampaignAnalytics(uuid=generate_uuid(16))
-    #campaign.analytics = analytics
-    #campaign.save()
-        logging.info(type(campaign.links_))
-        return
-    #for l in [l for l in campaign.links_ if hasattr(l, 'user')]:
-    #    #if l.creation
-    #    userID = user.uuid
-    #    if not users.has_key(userID):
-    #        for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
-    #            users[userID][m] = {'co': 0, 'cl': 0, 'sh': 0}
-
-    #    if hasattr(l, 'facebook_share_id'):
-    #        ao['f']['sh'] += 1
-    #        users[userID]['f']['sh'] += 1
-    #        ao['f']['re'] += len(getattr(user, 'fb_friends', []))
-    #        ao['f']['cl'] += l.count_clicks()
-    #        if hasattr(l, 'link_conversions'):
-    #            ao['f']['co'] += 1
-    #            order = ShopifyOrder.filter('campaign =', campaign)\
-    #                .filter('order_id =', l.link_conversions.order)
-    #            ao['f']['pr'] += order.subtotal_price
-    #    elif hasattr(l, 'tweet_id'):
-    #        ao['t']['sh'] += 1
-    #        ao['t']['re'] += getattr(user, 'twitter_follower_count', 0)
-    #        ao['t']['cl'] += l.count_clicks()
-    #        if hasattr(l, 'link_conversions'):
-    #            ao['t']['co'] += 1
-    #            order = ShopifyOrder.filter('campaign =', campaign)\
-    #                .filter('order_id =', l.link_conversions.order).get()
-    #            ao['t']['pr'] += order.subtotal_price

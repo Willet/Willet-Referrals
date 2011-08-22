@@ -29,7 +29,7 @@ class Link(Model):
     willt_url_code = db.StringProperty( indexed = True )
     # our client's campaign that this link is associated with
     campaign       = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
-    creation_time  = db.DateTimeProperty(auto_now_add = True)
+    creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
     tweet_id       = db.StringProperty(required=False, default='', indexed=True)
     user           = db.ReferenceProperty(db.Model, collection_name = 'user_')

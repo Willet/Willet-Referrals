@@ -419,7 +419,7 @@ class User( db.Expando ):
                         ... self.response.out.write(res) """
         
         facebook_share_url = "https://graph.facebook.com/%s/feed"%self.fb_identity
-        params = urllib.urlencode({'access_token': self.facebook_access_token,
+        params = urllib.urlencode({'access_token': self.fb_access_token,
                                    'message': msg })
         fb_response, plugin_response, fb_share_id = None, None, None
         try:

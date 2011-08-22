@@ -20,9 +20,9 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
+TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 
 # Twitter Stuff
-TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
 TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
     
@@ -55,9 +55,9 @@ SHOPIFY_API_KEY = '35e9a42e1ba8601b0be820a58b181693'
 SHOPIFY_API_PASSWORD = '38bf7ff0e9d42f55a08dbd986453bb49'
 
 # Overide settings with local_consts
-try:
-    from util.local_consts import *
-except:
+#try:
+from local_consts import *
+#except:
     #logging.error('no local_consts.py')
-    pass
+    #pass
 

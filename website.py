@@ -16,6 +16,7 @@ from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
 from models.user     import User, get_user_by_cookie
+
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
@@ -146,6 +147,7 @@ class ShowResultsPage( URIHandler ):
                 self.redirect( '/account' )
                 return
 
+            campaign.compute_analytics('month')
             template_values['campaign'] = campaign
             
             total_clicks = campaign.count_clicks()

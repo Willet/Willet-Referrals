@@ -30,6 +30,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self, input_path):
+        logging.info(os.environ['HTTP_HOST'])
+        logging.info(URL)
         logging.info('STORE: %s' % self.request.get('store'))
         template_values = {}
         rq_vars = get_request_variables(['ca_id', 'uid', 'store', 'order'], self)
@@ -309,7 +311,7 @@ class FacebookShare(webapp.RequestHandler):
             user = get_or_create_user_by_facebook(rq_vars['fb_id'],
                                                   token=rq_vars['fb_token'],
                                                   request_handler=self)
-        if hasattr(user, 'facebook_access_token') and hasattr(user, 'fb_identity'):
+        if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
             facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:

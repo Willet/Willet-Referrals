@@ -2,13 +2,9 @@ indexes:
 
 - kind: Link
   properties:
-  - name: tweet_id
   - name: creation_time
-
-- kind: Link
-  properties:
-  - name: campaign
   - name: tweet_id
+  - name: campaign
 
 - kind: Campaign
   properties:
