@@ -3,6 +3,7 @@
  **/
 
 window.onload = function() {
+    var tag = document.getElementById( 'tagline' );
     var content_div = document.getElementById( 'content' );
     var group_div   = content_div.children[0];
     var order_id, store_name;
@@ -23,9 +24,10 @@ window.onload = function() {
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
-    iframe.setAttribute( 'style', 'width:372px; min-height:520px;' );
+    iframe.setAttribute( 'style', 'width:372px; min-height:500px;background-color: #dddddd; margin-top: 20px; margin-left: auto; margin-right: auto; ' );
     iframe.setAttribute( 'src', 'http://social-referral.appspot.com/invite?store=' + store_name + '&order=' + order_id );
 
     // Add the div to the page
-    group_div.appendChild( iframe );
+    tag.appendChild( iframe );
+    
 };
