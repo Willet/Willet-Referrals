@@ -202,6 +202,8 @@
                         $email_div.slideUp();
                     } else {
                         $email_div.slideDown();
+                        var foo = document.getElementById( 'choose_share_type' );
+                        foo.style.display = "none";
                     }
                 };
 
@@ -427,7 +429,7 @@
                 font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
             }
             textarea {
-                font-size: 0.8em;
+                font-size: 1.0em;
             }
             label {
                 cursor: default;
@@ -620,8 +622,8 @@
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
 
-            How would you like to share?
             <div class="span-9 last" id="choose_share_type">
+                How would you like to share? <br />
                 <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                 </a>
