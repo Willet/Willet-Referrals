@@ -16,6 +16,7 @@ from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
 from models.user     import User, get_user_by_cookie
+from urlparse import urlparse
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
@@ -27,8 +28,9 @@ from util.consts     import *
 class RedirectToLandingPage( URIHandler ):
     # Send to Unbounce page
     def get(self, page):
-        self.set_status(302)
-        self.redirect('hi.rf.rs')
+        scheme, netloc, path, params, query, frag = urlparse(self.request.url)
+        self.redirect('%s://hi.rf.rs' % scheme)
+
 
 class ShowAboutPage( URIHandler ):
     # Renders the main template
@@ -39,12 +41,14 @@ class ShowAboutPage( URIHandler ):
         
         self.response.out.write(self.render_page('about.html', template_values))
 
+
 class ShowContactPage( URIHandler ):
     # Renders the main template
     def get(self):
         template_values = []
         
         self.response.out.write(self.render_page('contact.html', template_values))
+
 
 class ShowLoginPage( URIHandler ):
     # Renders the login page
@@ -91,6 +95,7 @@ class ShowLoginPage( URIHandler ):
                                  'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
 
             self.response.out.write(self.render_page('login.html', template_values))
+
 
 class ShowDemoSitePage( URIHandler ):
     # Renders the main template
