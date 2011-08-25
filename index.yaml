@@ -2,16 +2,23 @@ indexes:
 
 - kind: Link
   properties:
-  - name: tweet_id
   - name: creation_time
-
-- kind: Link
-  properties:
-  - name: campaign
   - name: tweet_id
+  - name: campaign
 
 - kind: Campaign
   properties:
    - name: client
    - name: created
      direction: desc
+
+- kind: CampaignAnalytics
+  properties:
+  - name: campaign_uuid
+  - name: scope
+  - name: start_time
+
+- kind: ShopifyOrder
+  properties:
+  - name: campaign
+  - name: created

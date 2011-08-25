@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc."
 
-import hashlib, re
+import hashlib, re, datetime
 
 from django.utils import simplejson as json
 from gaesessions import get_current_session
@@ -16,6 +16,7 @@ from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
 from models.user     import User, get_user_by_cookie
+
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
@@ -103,38 +104,6 @@ class ShowDemoSitePage( URIHandler ):
 ##------------------------- The Shows -----------------------------------------##
 ##-----------------------------------------------------------------------------##
 
-class ShowDashboardPage(URIHandler):
-    """docstring for ShowDashboardPage"""
-    def get(self, campaign_id=''):
-        """renders dashboard"""
-        template_values = {}
-
-        # try to get campaign
-        try:
-            campaign = get_campaign_by_id(campaign_id)
-            if campaign == None:
-               raise Exception("no campign returned by %s" % campaing_id)
-        except Exception, e:
-            #self.error(e)
-            pass
-        else:
-            social_media_stats, user_stats = campaign.get_computed_analytics()
-            template_values['CAMPAIGN'] = campaign
-            template_values['SM_STATS'] = social_media_stats 
-            template_values['USER_STATS'] = user_stats 
-
-        page = 'index'
-        
-        self.response.out.write(self.render_page('dashboard/%s.html' % page, template_values))
-    
-
-class ShowDashboardJSON(URIHandler):
-    """docstring for ShowDashboardJSON"""
-    def get(self):
-        """renders dashboard"""
-        pass
-    
-
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
     def get(self):
@@ -164,35 +133,35 @@ class ShowAccountPage( URIHandler ):
 
 class ShowResultsPage( URIHandler ):
     # Renders a campaign page
-    def get(self):
-        client          = self.get_client()
-        campaign_id     = self.request.get( 'id' )
+    def get(self, campaign_id = ''):
+        #client          = self.get_client()
+        #campaign_id     = self.request.get( 'id' )
         template_values = { 'campaign' : None }
         
-        if campaign_id:
-            
-            # Grab the campaign
-            campaign = get_campaign_by_id( campaign_id )
-            if campaign == None:
-                self.redirect( '/account' )
-                return
-                
-            template_values['campaign'] = campaign
-            
-            total_clicks = campaign.count_clicks()
-            template_values['total_clicks'] = total_clicks
-            results, mixpanel = campaign.get_results( total_clicks )
-            
-            template_values['results']     = results
-            template_values['mixpanel']    = mixpanel
-            template_values['has_results'] = len( results ) != 0
-            
-            template_values['api_key'] = MIXPANEL_API_KEY
-            template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + campaign.uuid).hexdigest()
-            
+        # Grab the campaign
+        campaign = get_campaign_by_id(campaign_id)
+        if campaign == None:
+            self.redirect('/account')
+            return
+        
+        campaign.compute_analytics('month')
+        campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40))
+        template_values['campaign'] = campaign
+        
+        total_clicks = campaign.count_clicks()
+        template_values['total_clicks'] = total_clicks
+        results, mixpanel = campaign.get_results( total_clicks )
+        
+        template_values['results']     = results
+        template_values['mixpanel']    = mixpanel
+        template_values['has_results'] = len( results ) != 0
+        
+        template_values['api_key'] = MIXPANEL_API_KEY
+        template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + campaign.uuid).hexdigest()
+        
         template_values['BASE_URL'] = URL
         
-        self.response.out.write(self.render_page('results.html', template_values))
+        self.response.out.write(self.render_page('dashboard/index.html', template_values))
 
 class ShowResultsJSONPage( URIHandler ):
     # Renders a campaign page
@@ -543,18 +512,15 @@ def main():
     application = webapp.WSGIApplication([
         (r'/about', ShowAboutPage),
         (r'/account', ShowAccountPage),
-        (r'/campaign', ShowResultsPage),
+        (r'/campaign/(.*)/', ShowResultsPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),
         (r'/edit', ShowEditPage),
         (r'/login', ShowLoginPage),
         (r'/demo(.*)',ShowDemoSitePage),
-        (r'/dashboard/(.*)',ShowDashboardPage), 
-        (r'/dashboard',ShowDashboardPage),
 
         # json services
         (r'/campaign.json', ShowResultsJSONPage),
-        (r'/dashboard.json',ShowDashboardJSON),
         
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),

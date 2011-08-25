@@ -3,7 +3,6 @@
  **/
 
 window.onload = function() {
-    alert('asdasdasd');
     var content_div = document.getElementById( 'content' );
     var group_div   = content_div.children[0];
     var order_id, store_name;
@@ -12,10 +11,10 @@ window.onload = function() {
     // Find the order id number
     for ( var i = 0; i < l; i ++ ) {
         var c = group_div.children[i];
-        if ( c.innerText.indexOf('Your Order') != -1 ){
-            order_id = c.children[0].innerText.substring(1);
-        } else if ( c.innerText.indexOf('shopping at') != -1 ){
-            store_name = c.children[0].innerText;
+        if ( c.innerHTML.indexOf('Your Order') != -1 ){
+            order_id = c.children[0].innerHTML.substring(1);
+        } else if ( c.innerHTML.indexOf('shopping at') != -1 ){
+            store_name = c.children[0].innerHTML;
         }
     }
 
@@ -25,7 +24,7 @@ window.onload = function() {
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
     iframe.setAttribute( 'style', 'width:372px; min-height:520px;' );
-    iframe.setAttribute( 'src', 'http://localhost:8096/widget?store=' + store_name + '&order=' + order_id );
+    iframe.setAttribute( 'src', 'http://social-referral.appspot.com/invite?store=' + store_name + '&order=' + order_id );
 
     // Add the div to the page
     group_div.appendChild( iframe );

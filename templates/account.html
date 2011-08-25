@@ -36,7 +36,7 @@
                 {% for c in campaigns %}
                 <tr class="bottom_border">
                     <td>
-                        <a href="/campaign?id={{c.uuid}}" title="See Campaign Results">{{c.title}}</a>
+                        <a href="/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
                     </td>
                     <td>
                         {{c.shares}}

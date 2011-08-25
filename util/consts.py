@@ -20,9 +20,9 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 FACEBOOK_QUERY_URL='https://graph.facebook.com/'
+TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 
 # Twitter Stuff
-TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
 TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
     
@@ -51,13 +51,13 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
 
 # Shopify Stuff
-SHOPIFY_API_KEY = '2b9850499a01972490e5ddd79aa03b1c'
-SHOPIFY_API_SHARED_SECRET = '0531f9818eb9eecaee6160583df9eea3'
+SHOPIFY_API_KEY = 'c38cec921dd34143f581c9c889527d55' #'2b9850499a01972490e5ddd79aa03b1c'
+SHOPIFY_API_SHARED_SECRET = '74a8223c64027a259add577dab98e403' #'0531f9818eb9eecaee6160583df9eea3'
 
 # Overide settings with local_consts
-try:
-    from util.local_consts import *
-except:
+#try:
+from local_consts import *
+#except:
     #logging.error('no local_consts.py')
-    pass
+    #pass
 

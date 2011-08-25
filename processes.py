@@ -20,7 +20,7 @@ from models.link import Link, LinkCounter
 from models.model import Model
 from models.shopify import ShopifyItem, ShopifyOrder, create_shopify_order
 from models.stats import Stats
-from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook, get_or_create_user_by_email
+from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook, get_or_create_user_by_email, get_user_by_uuid
 
 from util.consts import *
 from util.emails import Email
@@ -198,10 +198,14 @@ class GetShopifyOrder( webapp.RequestHandler ):
 
     def post( self ):
         input_order_num = self.request.get( 'order' )
+        
+        user_uuid  = self.request.get('user_uuid')
+        user       = get_user_by_uuid( user_uuid )
+        
         campaign   = get_campaign_by_id( self.request.get('campaign_uuid') )
         prev_order = campaign.shopify_orders.order( 'created' ).get()
     
-        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, prev_order.order_id if prev_order else '0' )
+        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, '0' )
         username = SHOPIFY_API_KEY
         password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.shopify_token).hexdigest()
 
@@ -232,8 +236,18 @@ class GetShopifyOrder( webapp.RequestHandler ):
         orders = order['orders']
 
         items = []
-        order_id = user = bill_addr = order_num = referring_site = subtotal = None
-        for k, v in orders[0].iteritems():
+        to_process = order_id = order_num = referring_site = subtotal = None
+        exit_flag = False
+
+        for o in orders:
+            if not exit_flag:
+                logging.info("CHECKING: %s For" % (o['order_number']==input_order_num, ))
+                if str(o['order_number']) == input_order_num:
+                    to_process = o
+                    exit_flag = True
+                    logging.info("FOUND IT")
+        
+        for k, v in to_process.iteritems():
 
             # Grab order details
             if k == 'id':
@@ -241,9 +255,6 @@ class GetShopifyOrder( webapp.RequestHandler ):
             elif k == 'subtotal_price':
                 subtotal = v
             elif k == 'order_number':
-                if v != input_order_num:
-                    logging.error("BARBARArAAA BADDDDDD")
-                
                 order_num = v
             elif k == 'referring_site':
                 referring_site = v
@@ -256,29 +267,17 @@ class GetShopifyOrder( webapp.RequestHandler ):
 
             # Store User/ Customer data
             elif k == 'billing_address':
-                if user:
-                    user.city      = v['city']
-                    user.province  = v['province']
-                    user.country_code = v['country_code']
-                    user.latitude  = v['latitude']
-                    user.longitude = v['longitude']
-                else:
-                    bill_addr = v
-
+                user.update( city = v['city'],
+                             province = v['province'],
+                             country_code = v['country_code'],
+                             latitude = v['latitude'],
+                             longitude = v['longitude'] )
             elif k == 'customer':
-                if user is None:
-                    user = get_or_create_user_by_email( v['email'], request_handler=self )
-
-                user.first_name = v['first_name']
-                user.last_name  = v['last_name']
-                user.shopify_customer_id = v['id']
-
-                if bill_addr:
-                    user.city         = bill_addr['city']
-                    user.province     = bill_addr['province']
-                    user.country_code = bill_addr['country_code']
-                    user.latitude     = bill_addr['latitude']
-                    user.longitude    = bill_addr['longitude']
+                user.update( email               = v['email'],
+                             first_name          = v['first_name'],
+                             last_name           = v['last_name'],
+                             full_name           = '%s %s' % (v['first_name'], v['last_name']),
+                             shopify_customer_id = v['id'] )
         
         # Save the new User data        
         user.put()
@@ -290,12 +289,35 @@ class GetShopifyOrder( webapp.RequestHandler ):
         o.items.extend( items )
         o.put()
 
+
+class TriggerCampaignAnalytics(webapp.RequestHandler):
+
+    def get(self):
+        scope = self.request.get('scope', 'week')
+        campaigns = Campaign.all()
+        for c in campaigns:
+            taskqueue.add(url = '/computeCampaignAnalytics',
+                          params = { 'ca_key': c.key(), 
+                                      'scope'  : scope, })
+
+
+class ComputeCampaignAnalytics(webapp.RequestHandler):
+    """Fetch facebook information about the given user"""
+
+    def post(self):
+        rq_vars = get_request_variables(['ca_key', 'scope'], self)
+        ca = db.get(rq_vars['ca_key'])
+        ca.compute_analytics(rq_vars['scope'])
+ 
+
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
         (r'/campaignClicksCounter', CampaignClicksCounter),
+        (r'/triggerCampaignAnalytics', TriggerCampaignAnalytics),
+        (r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
         (r'/updateLanding', UpdateLanding),
         (r'/updateCounts',  UpdateCounts),
         (r'/updateClicks',  UpdateClicks),

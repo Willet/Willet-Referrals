@@ -29,7 +29,7 @@ class Link(Model):
     willt_url_code = db.StringProperty( indexed = True )
     # our client's campaign that this link is associated with
     campaign       = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
-    creation_time  = db.DateTimeProperty(auto_now_add = True)
+    creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
     tweet_id       = db.StringProperty(required=False, default='', indexed=True)
     user           = db.ReferenceProperty(db.Model, collection_name = 'user_')
@@ -86,7 +86,7 @@ class Link(Model):
         self.add_clicks(1)
 
     def get_willt_url(self):
-        return 'http://www.rf.rs/' + self.willt_url_code
+        return 'http://rf.rs/' + self.willt_url_code
 
     def count_retweets(self):
         return len(self.retweets)
@@ -103,7 +103,7 @@ class Link(Model):
         return delete_counters(c)
 
 
-def create_link(targetURL, camp, domain, usr=""):
+def create_link(targetURL, camp, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
 
     code = encode_base62(get_a_willt_code())
@@ -112,6 +112,7 @@ def create_link(targetURL, camp, domain, usr=""):
                 willt_url_code = code,
                 supplied_user_id = usr,
                 campaign = camp,
+                user = user,
                 origin_domain = domain)
     link.put()
     logging.info("Successful put of Link %s" % code)

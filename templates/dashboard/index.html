@@ -5,7 +5,7 @@
         var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
         document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
         //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
-        //document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
+        document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
     <script type="text/javascript" src="/static/js/jquery.colorbox-min.js"></script>
     <link media="screen" rel="stylesheet" href="/static/css/colorbox.css" />
@@ -35,7 +35,8 @@
         };
         $(document).ready(function() {
             window.dbar = $('#results_header');
-            window.dbar_top = dbar.offset().top;
+            if (window.dbar.offset() != null)
+                window.dbar_top = window.dbar.offset().top;
             //$('#results div.row_details a').click(function() {
             //    $(this).preventDefault();    
             //});
@@ -91,7 +92,11 @@
                  */
                 // scrolling
                 var scroll_top = $(document).scrollTop();
-                var current_top = window.dbar.offset().top;
+                if (window.dbar.offset() != null) {
+                    var current_top = window.dbar.offset().top;
+                } else {
+                    return;
+                }
                 if (current_top < window.dbar_top) {
                     // move bar back to default position
                     window.dbar.css('position', 'initial').css('top', window.dbar_top).removeClass('scrolling');
@@ -103,7 +108,7 @@
                     });
                 }
             });
-        });/*
+        });
         var platform = new Mixpanel.Platform(
             '{{api_key}}',
             '{{platform_secret}}',
@@ -117,7 +122,7 @@
                                      {labels: true, 
                                      mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
         {% endif %}
-        */
+        
         /*
         platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
         {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
@@ -262,189 +267,192 @@
     
     <h1 class="span-24 last lower-100 center">Your Referral Results</h1>
     <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
-    <p class="center"> We haven't received any shares or clicks yet. </p>
-    
-    <div id="results_header">
-        <div class="span-2 prepend-2"><h3>Referrals</h3></div>
-        <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
-        <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
-        <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
-        <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
-    </div>
-    <div id="results_static">&nbsp;</div>
-    <hr />
-    <div id='results' class="center large">
-        <div class="row expandable">
-            <div class="prepend-2 span-2 big icon">
-                <span>10</span>
-            </div>
-            <div class="span-1 arrow">&nbsp;</div>
-        
-            <div class="span-4">
-                <div class="cloud ">
-                    <span>1000</span>
-                </div>
-            </div>
-            <div class="span-1 arrow">&nbsp;</div>
-       
-            <div class="span-3 conversions">
-                <span>50</span>
-            </div>
-            <div class="span-4">
-                <div class="sales big">
-                    <span>5</span>
-                </div>
-            </div>
-        
-            <div class="span-1"><span>=</span></div>
-            <div class="span-4 append-2 last big dollars">
-                <span>$100</span>
-            </div>
-        </div>
-        <!-- DETAILS -->
-        <div class="details_toggle" style="display: none">
-            <div class="row_details twitter expandable">
-                <div class="prepend-2 span-2 icon big"><span>10</span></div>
-                <div class="span-1">&nbsp;</div>
-                <div class="span-4"><div class=""><span>1000</span></div></div>
-                <div class="span-1">&nbsp;</div>
-                <div class="span-3"><span>50</span></div>
-                <div class="span-4 big"><div class=""><span>5</span></div></div>
-                <div class="span-1"><span>&nbsp;</span></div>
-                <div class="span-4 append-2 dollars big last">
-                    <span>$100</span>
-                </div>
-                <!-- twitter double expando details -->
-                <div class="referrers_toggle " style="display: none"> 
-                    <hr size="1" />
-                    
-                    <div class="prepend-2 span-3"><span>Top Referrers</span></div>
-                    <div class="span-4"><span>followers</span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-3"><span>visits</span></div>
-                    <div class="span-4"><span>conversions</span></div>
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars last"><span>sales</span></div>
 
-                    <div class="prepend-2 span-2"><span><a href='#' id='user_1'>1. Barbara</a></span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-4"><span>50</span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-3"><span>5</span></div>
-                    <div class="span-4"><span>2</span></div>
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                    
-                    <div class="prepend-2 span-2"><span><a href='#' id='user_2'>2. Barbara</a></span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-4"><span>50</span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-3"><span>5</span></div>
-                    <div class="span-4"><span>2</span></div>
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                    
-                    <div class="prepend-2 span-2"><span><a href='#' id='user_3'>3. Barbara</a></span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-4"><span>50</span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-3"><span>5</span></div>
-                    <div class="span-4"><span>2</span></div>
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                </div>
-            </div>
-            <!-- end twitter -->
-            <div class="row_details facebook expandable">
-                <div class="prepend-2 span-2 icon">
+    {% if  has_results %}
+        <p class="center"> We haven't received any shares or clicks yet. </p>
+    {% else %} 
+        <div id="results_header">
+            <div class="span-2 prepend-2"><h3>Referrals</h3></div>
+            <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
+            <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
+            <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
+            <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
+        </div>
+        <div id="results_static">&nbsp;</div>
+        <hr />
+        <div id='results' class="center large">
+            <div class="row expandable">
+                <div class="prepend-2 span-2 big icon">
                     <span>10</span>
                 </div>
-                <div class="span-1 ">&nbsp;</div>
+                <div class="span-1 arrow">&nbsp;</div>
+            
+                <div class="span-4">
+                    <div class="cloud ">
+                        <span>1000</span>
+                    </div>
+                </div>
+                <div class="span-1 arrow">&nbsp;</div>
         
-                <div class="span-4">
-                    <div class="quiet">
-                        <span>1000</span>
-                    </div>
-                </div>
-                <div class="span-1 ">&nbsp;</div>
-            
-                <div class="span-3">
+                <div class="span-3 conversions">
                     <span>50</span>
                 </div>
                 <div class="span-4">
-                    <div>
+                    <div class="sales big">
                         <span>5</span>
                     </div>
                 </div>
             
-                <div class="span-1"><span>&nbsp;</span></div>
-                <div class="span-4 append-2 dollars last">
+                <div class="span-1"><span>=</span></div>
+                <div class="span-4 append-2 last big dollars">
                     <span>$100</span>
                 </div>
             </div>
-            <!-- end facebook -->
-            <div class="row_details linkedin expandable" >
-                <div class="prepend-2 span-2 icon">
-                    <span>10</span>
-                </div>
-                <div class="span-1 ">&nbsp;</div>
-            
-                <div class="span-4">
-                    <div class="quiet">
-                        <span>1000</span>
+            <!-- DETAILS -->
+            <div class="details_toggle" style="display: none">
+                <div class="row_details twitter expandable">
+                    <div class="prepend-2 span-2 icon big"><span>10</span></div>
+                    <div class="span-1">&nbsp;</div>
+                    <div class="span-4"><div class=""><span>1000</span></div></div>
+                    <div class="span-1">&nbsp;</div>
+                    <div class="span-3"><span>50</span></div>
+                    <div class="span-4 big"><div class=""><span>5</span></div></div>
+                    <div class="span-1"><span>&nbsp;</span></div>
+                    <div class="span-4 append-2 dollars big last">
+                        <span>$100</span>
+                    </div>
+                    <!-- twitter double expando details -->
+                    <div class="referrers_toggle " style="display: none"> 
+                        <hr size="1" />
+                        
+                        <div class="prepend-2 span-3"><span>Top Referrers</span></div>
+                        <div class="span-4"><span>followers</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>visits</span></div>
+                        <div class="span-4"><span>conversions</span></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars last"><span>sales</span></div>
+
+                        <div class="prepend-2 span-2"><span><a href='#' id='user_1'>1. Barbara</a></span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><span>50</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>5</span></div>
+                        <div class="span-4"><span>2</span></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
+                        
+                        <div class="prepend-2 span-2"><span><a href='#' id='user_2'>2. Barbara</a></span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><span>50</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>5</span></div>
+                        <div class="span-4"><span>2</span></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
+                        
+                        <div class="prepend-2 span-2"><span><a href='#' id='user_3'>3. Barbara</a></span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><span>50</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>5</span></div>
+                        <div class="span-4"><span>2</span></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
                     </div>
                 </div>
-                <div class="span-1 ">&nbsp;</div>
+                <!-- end twitter -->
+                <div class="row_details facebook expandable">
+                    <div class="prepend-2 span-2 icon">
+                        <span>10</span>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
             
-                <div class="span-3">
-                    <span>50</span>
-                </div>
-                <div class="span-4">
-                    <div class="">
-                        <span>5</span>
+                    <div class="span-4">
+                        <div class="quiet">
+                            <span>1000</span>
+                        </div>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
+                
+                    <div class="span-3">
+                        <span>50</span>
+                    </div>
+                    <div class="span-4">
+                        <div>
+                            <span>5</span>
+                        </div>
+                    </div>
+                
+                    <div class="span-1"><span>&nbsp;</span></div>
+                    <div class="span-4 append-2 dollars last">
+                        <span>$100</span>
                     </div>
                 </div>
-            
-                <div class="span-1"><span>&nbsp;</span></div>
-                <div class="span-4 append-2 dollars last">
-                    <span>$100</span>
+                <!-- end facebook -->
+                <div class="row_details linkedin expandable" >
+                    <div class="prepend-2 span-2 icon">
+                        <span>10</span>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
+                
+                    <div class="span-4">
+                        <div class="quiet">
+                            <span>1000</span>
+                        </div>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
+                
+                    <div class="span-3">
+                        <span>50</span>
+                    </div>
+                    <div class="span-4">
+                        <div class="">
+                            <span>5</span>
+                        </div>
+                    </div>
+                
+                    <div class="span-1"><span>&nbsp;</span></div>
+                    <div class="span-4 append-2 dollars last">
+                        <span>$100</span>
+                    </div>
+                </div>
+                <div class="row_details email expandable">
+                    <div class="prepend-2 span-2 icon">
+                        <span>10</span>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
+                
+                    <div class="span-4">
+                        <div class="quiet">
+                            <span>1000</span>
+                        </div>
+                    </div>
+                    <div class="span-1 ">&nbsp;</div>
+                
+                    <div class="span-3">
+                        <span>50</span>
+                    </div>
+                    <div class="span-4">
+                        <div class="">
+                            <span>5</span>
+                        </div>
+                    </div>
+                
+                    <div class="span-1"><span>&nbsp;</span></div>
+                    <div class="span-4 append-2 dollars last">
+                        <span>$100</span>
+                    </div>
                 </div>
             </div>
-            <div class="row_details email expandable">
-                <div class="prepend-2 span-2 icon">
-                    <span>10</span>
-                </div>
-                <div class="span-1 ">&nbsp;</div>
-            
-                <div class="span-4">
-                    <div class="quiet">
-                        <span>1000</span>
-                    </div>
-                </div>
-                <div class="span-1 ">&nbsp;</div>
-            
-                <div class="span-3">
-                    <span>50</span>
-                </div>
-                <div class="span-4">
-                    <div class="">
-                        <span>5</span>
-                    </div>
-                </div>
-            
-                <div class="span-1"><span>&nbsp;</span></div>
-                <div class="span-4 append-2 dollars last">
-                    <span>$100</span>
-                </div>
+            <!-- END -->
+        </div>
+        <div  style="display: none">
+            <div id='user_box'>
+                <h3>Barbara</h3>
+                <strong>@barbaraEMAC</strong>
+                <img src="/static/imgs/barbara.png" align="right" />
             </div>
         </div>
-        <!-- END -->
-    </div>
-    <div  style="display: none">
-        <div id='user_box'>
-            <h3>Barbara</h3>
-            <strong>@barbaraEMAC</strong>
-            <img src="/static/imgs/barbara.png" align="right" />
-        </div>
-    </div>
+    {% endif %}
 {% endblock content %}

@@ -24,6 +24,7 @@ class PostConversion( URIHandler ):
     def post(self):
         referree_uid  = self.request.get( 'referree_uid' )
         campaign_uuid = self.request.get( 'campaign_uuid' )
+        order_num = self.request.get('order_num')
         campaign      = get_campaign_by_id( campaign_uuid )
         user          = get_user_by_cookie( self ) # probably None, but why not try it!
 
@@ -39,7 +40,7 @@ class PostConversion( URIHandler ):
             logging.info('Posting a conversion notification to a Client!')
 
             # Store a 'Conversion' in our DB for tracking purposes
-            create_conversion( link, campaign, referree_uid, user )
+            create_conversion( link, campaign, referree_uid, user, order_num )
 
             # Tell the Client by POSTing to their webhook URL
             data = { 'timestamp'   : str( time() ),
