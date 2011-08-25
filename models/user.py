@@ -493,6 +493,17 @@ def get_user_by_facebook(fb_id):
     user = User.all().filter('fb_identity =', fb_id).get()
     return user
 
+def get_user_by_facebook_for_taskqueue(fb_id):
+    """Returns a user that is safe for taskqueue writing"""
+    logging.info("Getting user by FB for taskqueue: " + fb_id)
+    user = User.all().filter('fb_identity =', fb_id).get()
+    klass = user.__class__
+    props = dict((k, v.__get(e, klass)) for k, v in klass.properties().iteritems())
+    props.update(clone=True)
+    newUser = klass(**props)
+    newUser.save()
+    return newUser
+
 def get_user_by_email( email ):
     logging.info("Getting user by email: " + email)
     email_model = EmailModel.all().filter( 'address = ', email ).get()

@@ -179,7 +179,8 @@ class FetchFacebookFriends(webapp.RequestHandler):
 
     def get(self):
         rq_vars = get_request_variables(['fb_id'], self)
-        user = get_user_by_facebook(rq_vars['fb_id'])
+        #user = get_user_by_facebook(rq_vars['fb_id'])
+        user = get_user_by_facebook_for_taskqueue(rq_vars['fb_id'])
         if user:
             friends = []
             url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "/friends"+\

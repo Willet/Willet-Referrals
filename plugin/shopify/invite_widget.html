@@ -202,6 +202,8 @@
                         $email_div.slideUp();
                     } else {
                         $email_div.slideDown();
+                        var foo = document.getElementById( 'choose_share_type' );
+                        foo.style.display = "none";
                     }
                 };
 
@@ -385,7 +387,8 @@
                 background: -o-linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* Opera11.10+ */
                 background: -ms-linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* IE10+ */
                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fbfbfb', endColorstr='#d8d8d8',GradientType=0 ); /* IE6-9 */
-                background: linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* W3C */                font-family: 'Trebuchet MS', arial, helvetica, clean, sans-serif; 
+                background: linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* W3C */ 
+                font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
 
                 text-align: center;
                 padding: 10px 10px 10px 10px;
@@ -417,9 +420,16 @@
                 margin: 0 0 5px 0;
                 padding: 0px 0px 0px 0px;
                 line-height: 1.6em;
-                font-weight: bold;
             }
-            body, input,textarea,select, .normal {
+            body {
+                background-color: #dddddd;
+                font-size: 0.7em;
+            }
+            body, input, textarea {
+                font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
+            }
+            textarea {
+                font-size: 1.0em;
             }
             label {
                 cursor: default;
@@ -555,14 +565,27 @@
             #step1 img {
                 height: 50px;
             }   
+
+            button, button:visited {
+                background: #222 url(http://static.shopify.com/s/files/1/0096/2072/t/2/assets/overlay.png?534) repeat-x; display: inline-block; padding: 5px 10px 6px; text-decoration:
+                none; -moz-border-radius: 20px; -webkit-border-radius: 20px; -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.25);
+                position: relative; cursor: pointer;
+                color: black;
+                background-color: #3F4E60;
+                text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.80);
+                font-size: 17px;
+                padding: 10px 18px 9px;
+            }
+            button:hover { font-size: 18px; text-decoration: none;}
+            button:active {top: 1px; }
         </style>
     </head>
     <body>
 
     <div id="fb-root"></div>
 
-    <div id="step1" class="span-9 append-15 last willt">
-        <h2> Would you like to give a gift from {{campaign.product_name}} to a friend? </h2>
+    <div id="step1" class="prepend-top span-9 append-15 last willt">
+        <h2> Would you like to give a <span style="color: #ae0909">gift</span> from {{campaign.product_name}} to a friend? </h2>
 
         <div class="prepend-1 span-3 append-bottom">
             <img src="/static/imgs/gift.png" /> 
@@ -578,7 +601,7 @@
         </div>
 
         <div class="span-9 last">
-            <button class="callToAction" onClick="next('step2');"> OK! </button>
+            <button class="callToAction" onClick="next('step2');"> Ok! </button>
         </div>
     </div>
     
@@ -594,13 +617,13 @@
 
     <div id="step3" class="span-9 append-15 last willt" style="display: none;">
         <div class="span-9 last">
-            <h2>Give a free gift to your friends from {{campaign.product_name}}!</h2>
+            <h2>Give a free <span style="color: #ae0909">gift</span> to your friends from {{campaign.product_name}}!</h2>
             
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
 
-            How would you like to share?
             <div class="span-9 last" id="choose_share_type">
+                How would you like to share? <br />
                 <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                 </a>
