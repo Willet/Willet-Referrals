@@ -93,7 +93,9 @@ class ShowLoginPage( URIHandler ):
 class ShowDemoSitePage( URIHandler ):
     # Renders the main template
     def get(self, page):
-        template_values = { }
+        template_values = {
+            'LANDING_CAMPAIGN_UUID' : LANDING_CAMPAIGN_UUID        
+        }
         
         if page == '' or page == '/':
             page = 'thanks'
@@ -145,22 +147,39 @@ class ShowResultsPage( URIHandler ):
             return
         
         campaign.compute_analytics('month')
-        campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40))
+        sms = campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40))
         template_values['campaign'] = campaign
-        
+        template_values['sms'] = sms
         total_clicks = campaign.count_clicks()
         template_values['total_clicks'] = total_clicks
         results, mixpanel = campaign.get_results( total_clicks )
         
+        smap = {'twitter': 0, 'linkedin': 1, 'facebook': 2, 'email': 3}
+
+        totals = {'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''}
+        service_totals = []
+        props = ['shares', 'reach', 'clicks', 'conversions', 'profit']
+        while len(service_totals) < len(smap):
+            service_totals.append({'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''})
+                
+        for s in sms:
+            row = smap[s['name']]
+            service_totals[row]['name'] = s['name']
+            service_totals[row]['users'].append(s['users'])
+            for prop in props:
+                totals[prop] += s[prop]
+                service_totals[row][prop] += s[prop]
+            
         template_values['results']     = results
         template_values['mixpanel']    = mixpanel
         template_values['has_results'] = len( results ) != 0
         
         template_values['api_key'] = MIXPANEL_API_KEY
         template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + campaign.uuid).hexdigest()
-        
+        template_values['totals'] = totals
+        template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
-        
+        logging.info(service_totals) 
         self.response.out.write(self.render_page('dashboard/index.html', template_values))
 
 class ShowResultsJSONPage( URIHandler ):

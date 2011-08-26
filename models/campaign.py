@@ -229,7 +229,12 @@ class Campaign(Model):
                         user.conversions = u_stat_list[1]
                         user.clicks = u_stat_list[2]
                         user.shares = u_stat_list[3]
-                        users.append(user)
+                        el = {}
+                        el['conversions'] = u_stat_list[1]
+                        el['clicks'] = u_stat_list[2]
+                        el['shares'] = u_stat_list[3]
+                        el['user'] = user
+                        users.append(el)
                 sms['users'] = users
                 social_media_stats.append(sms)
         logging.info(social_media_stats)

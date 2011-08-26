@@ -123,7 +123,7 @@
                                      mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
         {% endif %}
         
-        /*
+        
         platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
         {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
         ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
@@ -131,7 +131,7 @@
             'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
         {% endfor %}
         }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
-        */
+        
         /*
         platform.create_line_chart( 'graph_div', [
             'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
@@ -268,9 +268,9 @@
     <h1 class="span-24 last lower-100 center">Your Referral Results</h1>
     <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
 
-    {% if  has_results %}
+    {% if not has_results %}
         <p class="center"> We haven't received any shares or clicks yet. </p>
-    {% else %} 
+    {% else %}
         <div id="results_header">
             <div class="span-2 prepend-2"><h3>Referrals</h3></div>
             <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
@@ -283,33 +283,64 @@
         <div id='results' class="center large">
             <div class="row expandable">
                 <div class="prepend-2 span-2 big icon">
-                    <span>10</span>
+                    <span>{{ totals.shares }}</span>
                 </div>
                 <div class="span-1 arrow">&nbsp;</div>
             
                 <div class="span-4">
                     <div class="cloud ">
-                        <span>1000</span>
+                        <span>{{ totals.reach }}</span>
                     </div>
                 </div>
                 <div class="span-1 arrow">&nbsp;</div>
         
                 <div class="span-3 conversions">
-                    <span>50</span>
+                    <span>{{ totals.clicks }}</span>
                 </div>
                 <div class="span-4">
                     <div class="sales big">
-                        <span>5</span>
+                        <span>{{ totals.conversions }}</span>
                     </div>
                 </div>
             
                 <div class="span-1"><span>=</span></div>
                 <div class="span-4 append-2 last big dollars">
-                    <span>$100</span>
+                    <span>${{ totals.profit }}</span>
                 </div>
             </div>
             <!-- DETAILS -->
             <div class="details_toggle" style="display: none">
+                {% for st in service_totals %}
+                    <div class="row_details {{ st.name }} expandable">
+                        <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><div class=""><span>{{ st.reach }}</span></div></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>{{ st.clicks }}</span></div>
+                        <div class="span-4 big"><div><span>{{ st.conversions }}</span></div></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last">
+                            <span>${{ st.profit }}</span>
+                        </div>
+                        <!-- twitter double expando details -->
+                        <div class="referrers_toggle " style="display: none"> 
+                            <hr size="1" />
+                            <div class="prepend-2 span-3"><span>Top Referrers</span></div>
+                            <div class="span-4"><span>followers</span></div>
+                            <div class="span-1">&nbsp;</div>
+                            <div class="span-3"><span>visits</span></div>
+                            <div class="span-4"><span>conversions</span></div>
+                            <div class="span-1"><span>&nbsp;</span></div>
+                            <div class="span-4 append-2 dollars last"><span>sales</span></div>
+                            {% for users in st.users %}
+                            {% for u in users %}
+                                conversions = '{{ u.conversions }}'
+                            {% endfor %}{% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!--
                 <div class="row_details twitter expandable">
                     <div class="prepend-2 span-2 icon big"><span>10</span></div>
                     <div class="span-1">&nbsp;</div>
@@ -321,7 +352,6 @@
                     <div class="span-4 append-2 dollars big last">
                         <span>$100</span>
                     </div>
-                    <!-- twitter double expando details -->
                     <div class="referrers_toggle " style="display: none"> 
                         <hr size="1" />
                         
@@ -361,7 +391,6 @@
                         <div class="span-4 append-2 dollars big last"><span>$100</span></div>
                     </div>
                 </div>
-                <!-- end twitter -->
                 <div class="row_details facebook expandable">
                     <div class="prepend-2 span-2 icon">
                         <span>10</span>
@@ -389,7 +418,6 @@
                         <span>$100</span>
                     </div>
                 </div>
-                <!-- end facebook -->
                 <div class="row_details linkedin expandable" >
                     <div class="prepend-2 span-2 icon">
                         <span>10</span>
@@ -445,8 +473,10 @@
                     </div>
                 </div>
             </div>
-            <!-- END -->
+            -->
         </div>
+        <div id="pie_chart"></div>
+        <div id="graph_div"></div>
         <div  style="display: none">
             <div id='user_box'>
                 <h3>Barbara</h3>
