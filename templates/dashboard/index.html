@@ -7,12 +7,13 @@
         //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
-    <script type="text/javascript" src="/static/js/jquery.colorbox-min.js"></script>
-    <link media="screen" rel="stylesheet" href="/static/css/colorbox.css" />
     <script type="text/javascript">
         window.boat_finished = true;
         window.dbar = null;
         window.dbar_top = null;
+        window.hover_el = null;
+        window.users = [];
+
         var move = function (next) {
             if (window.boat_finished) {
                 window.boat_finished = false;
@@ -22,7 +23,7 @@
                     window.boat_finished = true;
                 });
             }
-        }
+        };
         var moveLeft = function() {
             var current = $('#sailboat').offset().left;
             var next = "-=100";
@@ -33,6 +34,44 @@
             var next = "+=100";
             move(next);
         };
+        var showUserToast = function(obj) {
+            /**
+             * Controls showing the user toast
+             *
+             * obj format
+             *  user_id     users id
+             *  from_json   if data is from json
+             *  had_error   if json request had error
+             */ 
+            var user_id = (obj.user_id == undefined ? -1 : obj.user_id);
+            var from_json = (obj.from_json == undefined ? false : obj.from_json);
+            var had_error = (obj.had_error == undefined ? false : obj.had_error);
+            var toast_div = $('#user_box');
+            var loading = '<img src="/static/imgs/loading.gif" />';
+            if (!from_json) {
+                // we are not coming from json
+                // show the loading box
+                var eleft = window.hover_el.offset().left;
+                var etop = window.hover_el.offset().top;
+                toast_div.hide()
+                    .css({position: absolute, top: etop-10, left: eleft})
+                    .html(loading) 
+                    .fadeIn('fast');
+            }
+            if (had_error) {
+                // we had an error, display that
+                toast_div.html('There was an error loading the user.');
+            } else if (user_id != -1) {
+                user = users[user_id];
+                html = '<img align="left" src="/static/imgs/barbara.png" />';
+                html += '<h3>'+user.full_name+'</h3>';
+                html += '<strong>'+user.handle+'</strong>';
+                toast_div.html(html);
+            } else {
+                // we are probably waiting on the data from json
+            }
+            return;
+        };
         $(document).ready(function() {
             window.dbar = $('#results_header');
             if (window.dbar.offset() != null)
@@ -42,27 +81,68 @@
             //});
             $('#sailboat').animate({"left": "0"}, 0);
             $('#results div.row').click(function() {
-                $(this).toggleClass('expanded').toggleClass('expandable').next('div.details_toggle').animate({
-                    height: 'toggle'
-                    }, 100, function() {
-                        var row = $(this);
-                        if (row.height() < 1) {
-                            row.css('display', 'inline-block');
-                        }
-                    });
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .next('div.details_toggle')
+                        .animate({
+                            height: 'toggle'
+                            }, 100, function() {
+                                var row = $(this);
+                                if (row.height() < 1) {
+                                    row.css('display', 'inline-block');
+                                }
+                        });
             });
             $('#results div.row_details').click(function() {
-                $(this).toggleClass('expanded').toggleClass('expandable').children('div.referrers_toggle').animate(
-                    {height: 'toggle'}, 200);
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .children('div.referrers_toggle')
+                    .animate({height: 'toggle'}, 200);
             });
             $('#results span a').click(function(e) {
                 /**
-                 * Lightbox for when a users name is clocked on
+                 * just prevent the div to close 
                  */
                 e.preventDefault();
                 e.stopPropagation();
-                $.colorbox({inline:true, href:'#user_box'});
-                console.log($(this));     
+                //$.colorbox({inline:true, href:'#user_box'});
+                //console.log($(this));     
+            });
+            $('#results a.user').hover(function() {
+                try {
+                    window.hover_el = $(this);
+                    var user_id = window.hover_el.attr('id');
+                    if (window.users[user_id] == undefined) {
+                        // the users data has not been cached yet
+                        showUserToast({'from_json': false});
+                        $.getJSON(
+                            '/campaign/get_user/' + user_id + '/',
+                            function(data) {
+                                // callback for when we get the user details
+                                if (data.success) {
+                                    // request was good
+                                    window.users[data.user.uuid] = data.user;
+                                    console.log('got data for user, showing box', data);
+                                    showUserToast({'user_id': data.user.uuid, 'from_json': true});
+                                } else {
+                                    // error!
+                                    console.log('error getting data for user, got response', data);
+                                    showUserToast({'from_json': true, 'had_error': true});
+                                }
+                            }
+                        );
+                    } else {
+                        // we already have the users data
+                        showUserToast({'user_id': user_id});
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            }, function () {
+                // hover off
+                $('#user_box').fadeOut('fast');
             });
             $(document).keydown(function (e) {
                 /**
@@ -123,7 +203,7 @@
                                      mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
         {% endif %}
         
-        
+        /*
         platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
         {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
         ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
@@ -131,7 +211,7 @@
             'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
         {% endfor %}
         }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
-        
+        */
         /*
         platform.create_line_chart( 'graph_div', [
             'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
@@ -334,151 +414,25 @@
                             <div class="span-4 append-2 dollars last"><span>sales</span></div>
                             {% for users in st.users %}
                             {% for u in users %}
-                                conversions = '{{ u.conversions }}'
+                            <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-4"><span>{{ u.reach }}</span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-3"><span>{{ u.clicks }}</span></div>
+                                <div class="span-4"><span>{{ u.conversions }}</span></div>
+                                <div class="span-1"><span>&nbsp;</span></div>
+                                <div class="span-4 append-2 dollars big last"><span>$?</span></div>
                             {% endfor %}{% endfor %}
                         </div>
                     </div>
                 {% endfor %}
             </div>
-            <!--
-                <div class="row_details twitter expandable">
-                    <div class="prepend-2 span-2 icon big"><span>10</span></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-4"><div class=""><span>1000</span></div></div>
-                    <div class="span-1">&nbsp;</div>
-                    <div class="span-3"><span>50</span></div>
-                    <div class="span-4 big"><div class=""><span>5</span></div></div>
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars big last">
-                        <span>$100</span>
-                    </div>
-                    <div class="referrers_toggle " style="display: none"> 
-                        <hr size="1" />
-                        
-                        <div class="prepend-2 span-3"><span>Top Referrers</span></div>
-                        <div class="span-4"><span>followers</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>visits</span></div>
-                        <div class="span-4"><span>conversions</span></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars last"><span>sales</span></div>
-
-                        <div class="prepend-2 span-2"><span><a href='#' id='user_1'>1. Barbara</a></span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-4"><span>50</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>5</span></div>
-                        <div class="span-4"><span>2</span></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                        
-                        <div class="prepend-2 span-2"><span><a href='#' id='user_2'>2. Barbara</a></span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-4"><span>50</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>5</span></div>
-                        <div class="span-4"><span>2</span></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                        
-                        <div class="prepend-2 span-2"><span><a href='#' id='user_3'>3. Barbara</a></span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-4"><span>50</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>5</span></div>
-                        <div class="span-4"><span>2</span></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars big last"><span>$100</span></div>
-                    </div>
-                </div>
-                <div class="row_details facebook expandable">
-                    <div class="prepend-2 span-2 icon">
-                        <span>10</span>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
             
-                    <div class="span-4">
-                        <div class="quiet">
-                            <span>1000</span>
-                        </div>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
-                
-                    <div class="span-3">
-                        <span>50</span>
-                    </div>
-                    <div class="span-4">
-                        <div>
-                            <span>5</span>
-                        </div>
-                    </div>
-                
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars last">
-                        <span>$100</span>
-                    </div>
-                </div>
-                <div class="row_details linkedin expandable" >
-                    <div class="prepend-2 span-2 icon">
-                        <span>10</span>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
-                
-                    <div class="span-4">
-                        <div class="quiet">
-                            <span>1000</span>
-                        </div>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
-                
-                    <div class="span-3">
-                        <span>50</span>
-                    </div>
-                    <div class="span-4">
-                        <div class="">
-                            <span>5</span>
-                        </div>
-                    </div>
-                
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars last">
-                        <span>$100</span>
-                    </div>
-                </div>
-                <div class="row_details email expandable">
-                    <div class="prepend-2 span-2 icon">
-                        <span>10</span>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
-                
-                    <div class="span-4">
-                        <div class="quiet">
-                            <span>1000</span>
-                        </div>
-                    </div>
-                    <div class="span-1 ">&nbsp;</div>
-                
-                    <div class="span-3">
-                        <span>50</span>
-                    </div>
-                    <div class="span-4">
-                        <div class="">
-                            <span>5</span>
-                        </div>
-                    </div>
-                
-                    <div class="span-1"><span>&nbsp;</span></div>
-                    <div class="span-4 append-2 dollars last">
-                        <span>$100</span>
-                    </div>
-                </div>
-            </div>
-            -->
         </div>
         <div id="pie_chart"></div>
         <div id="graph_div"></div>
-        <div  style="display: none">
-            <div id='user_box'>
+        <div >
+            <div id='user_box' style='display: none; position: absolute;'>
                 <h3>Barbara</h3>
                 <strong>@barbaraEMAC</strong>
                 <img src="/static/imgs/barbara.png" align="right" />

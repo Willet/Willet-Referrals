@@ -15,7 +15,7 @@ from models.client   import Client, get_client_by_email, authenticate, register
 from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
-from models.user     import User, get_user_by_cookie
+from models.user     import User, get_user_by_cookie, get_user_by_uuid
 
 from util.helpers    import *
 from util.urihandler import URIHandler
@@ -133,6 +133,23 @@ class ShowAccountPage( URIHandler ):
         
         self.response.out.write(self.render_page('account.html', template_values))
 
+class ShowUserJSON (URIHandler):
+    def get(self, user_id = None):
+        user = get_user_by_uuid(user_id)
+        response = {}
+        success = False
+        if user:
+            #response['user'] = user
+            d = {
+                'uuid': user.uuid,
+                'handle': user.get_handle(),
+                'name': user.get_full_name()
+            }
+            response['user'] = d
+            success = True
+        response['success'] = success
+        self.response.out.write(json.dumps(response))
+
 class ShowResultsPage( URIHandler ):
     # Renders a campaign page
     def get(self, campaign_id = ''):
@@ -147,7 +164,7 @@ class ShowResultsPage( URIHandler ):
             return
         
         campaign.compute_analytics('month')
-        sms = campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40))
+        sms = campaign.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40), count=1)
         template_values['campaign'] = campaign
         template_values['sms'] = sms
         total_clicks = campaign.count_clicks()
@@ -531,6 +548,7 @@ def main():
     application = webapp.WSGIApplication([
         (r'/about', ShowAboutPage),
         (r'/account', ShowAccountPage),
+        (r'/campaign/get_user/(.*)/', ShowUserJSON),
         (r'/campaign/(.*)/', ShowResultsPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),

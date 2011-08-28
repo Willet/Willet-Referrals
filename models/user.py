@@ -108,6 +108,73 @@ class User( db.Expando ):
        
         super(User, self).__init__(*args, **kwargs)
     
+    def get_full_name(self, service=None):
+        """attempts to get the users full name, with preference to the
+            service supplied"""
+        fname = None
+        if hasattr(self, 't_handle') and\
+                (service == 'twitter' or service == None):
+            fname = self.twitter_handle
+        elif hasattr(self, 'linkedin_first_name') and\
+            (service == 'linkedin' or service == None):
+            fname = '%s %s' % (
+                self.linkedin_first_name, 
+                str(self.get_attr('linkedin_last_name'))
+            )
+        elif hasattr(self, 'fb_first_name') and\
+            (service == 'facebook' or service == None):
+            fname = '%s %s' % (
+                self.fb_first_name,
+                str(self.get_attr('fb_last_name'))
+            )
+        elif hasattr(self, 'fb_name') and\
+            (service == 'facebook' or service == None):
+            fname = self.fb_name
+        else:
+            fname = self.get_attr('email')
+        
+        if fname == None or fname == '' and service != None:
+            # recursive call if we tried for a service and failed
+            fname = self.get_full_name()
+
+        return fname
+
+    def get_handle(self, service=None):
+        """returns the name of this user, depends on what service
+            they registered with"""
+        handle = None
+        if hasattr(self, 'twitter_handle') and service == 'twitter':
+            handle = self.twitter_handle
+        elif hasattr(self, 'linkedin_first_name') and service == 'linkedin':
+            handle = self.linkedin_first_name
+        elif hasattr(self, 'fb_name') and service == 'facebook':
+            handle = self.fb_name
+        else:
+            handle = self.get_attr('email')
+
+        if handle == None and service != None:
+            # if we didn't get a handle for that service, try again
+            handle = self.get_handle()
+        return handle
+
+    def get_reach(self, service=None):
+        """ returns this users social "reach" """
+        reach = 0
+        if hasattr(self, 'titter_followers_count') and service == 'twitter':
+            reach += int(self.twitter_followers_count)
+        elif hasattr(self, 'linkedin_num_connections') and service == 'linkedin':
+            reach += int(self.linkedin_num_connections)
+        elif hasattr(self, 'fb_friends') and service == 'facebook':
+            if type(self.fb_friends) == type(int()):
+                reach += self.fb_friends
+            else:
+                reach += int(len(self.fb_friends))
+        elif service == None:
+            reach = self.get_reach('twitter')\
+                    + self.get_reach('facebook')\
+                    + self.get_reach('linkedin')
+        return reach
+    
     def update( self, **kwargs ):
         for k in kwargs:
             if k == 'email':

@@ -233,6 +233,9 @@ class Campaign(Model):
                         el['conversions'] = u_stat_list[1]
                         el['clicks'] = u_stat_list[2]
                         el['shares'] = u_stat_list[3]
+                        el['reach'] = user.get_reach(service=s)
+                        el['handle'] = user.get_handle(service=s)
+                        el['uuid'] = user.uuid
                         el['user'] = user
                         users.append(el)
                 sms['users'] = users
