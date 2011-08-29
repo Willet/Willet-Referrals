@@ -38,7 +38,7 @@
                 //etop += window.hover_el.height() + 5;
                 etop -= 5;
                 eleft = 150;
-                console.log('moving toast to', eleft, etop);
+                //console.log('moving toast to', eleft, etop);
                 toast_div.hide()
                     .css({position: 'absolute', top: etop, left: eleft})
                     .html(loading) 
@@ -147,13 +147,13 @@
             }, function () {
                 // hover off
                 var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
-                window.ub.data('timeoutId', timeoutId); 
+                window.ub.data('timeoutID', timeoutId); 
             });
             window.ub.hover(
                 function() {console.log('hovering on ub'); clearTimeout(window.ub.data('timeoutID')); },
                 function() {
-                    var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
-                    window.ub.data('timeoutId', timeoutId);
+                    var timeoutID = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                    window.ub.data('timeoutID', timeoutID);
             });
             $(document).scroll(function() {
                 /**
@@ -364,6 +364,7 @@
             box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
             width: 276px;
             cursor: pointer;
+            z-index: 98
         }
         #user_box img.pic {
             clear: right;
