@@ -165,7 +165,8 @@ class Campaign(Model):
                     for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
                         # [co]nversions, [cl]icks, [sh]are
                         if not users[m].has_key(userID):
-                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0, 'uid': user.key()}
+                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0,
+                            'pr': 0, 'uid': user.key()}
 
                 for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
                     abbr = smp[0] # 'f', 't', or 'l'
@@ -191,11 +192,12 @@ class Campaign(Model):
                             ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
                     if hasattr(l, 'link_conversions'):
                             ao[abbr]['co'] += 1
-                            if userID:
-                                users[abbr][userID]['co'] += 1
                             order = ShopifyOrder.filter('campaign =', campaign)\
                                 .filter('order_id =', l.link_conversions.order)
                             ao[abbr]['pr'] += order.subtotal_price
+                            if userID:
+                                users[abbr][userID]['co'] += 1
+                                users[abbr][UserID]['pr'] += order.subtotal_price
 
         top_user_lists = { 'f': [], 't': [], 'l': [] }
         for k, v in top_user_lists.iteritems():
