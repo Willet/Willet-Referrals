@@ -7,33 +7,14 @@
         //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
+    <script type="text/javascript" src="/static/js/boat.js"></script>
     <script type="text/javascript">
-        window.boat_finished = true;
         window.dbar = null;
         window.dbar_top = null;
         window.hover_el = null;
+        window.ub = null;
         window.users = [];
 
-        var move = function (next) {
-            if (window.boat_finished) {
-                window.boat_finished = false;
-                $('#sailboat').animate({
-                    "left": next
-                }, 300, function() {
-                    window.boat_finished = true;
-                });
-            }
-        };
-        var moveLeft = function() {
-            var current = $('#sailboat').offset().left;
-            var next = "-=100";
-            move(next);
-        };
-        var moveRight = function() {
-            var current = $('#sailboat').offset().left;
-            var next = "+=100";
-            move(next);
-        };
         var showUserToast = function(obj) {
             /**
              * Controls showing the user toast
@@ -53,19 +34,40 @@
                 // show the loading box
                 var eleft = window.hover_el.offset().left;
                 var etop = window.hover_el.offset().top;
+                //eleft -= window.hover_el.width();
+                //etop += window.hover_el.height() + 5;
+                etop -= 5;
+                eleft = 150;
+                console.log('moving toast to', eleft, etop);
                 toast_div.hide()
-                    .css({position: absolute, top: etop-10, left: eleft})
+                    .css({position: 'absolute', top: etop, left: eleft})
                     .html(loading) 
-                    .fadeIn('fast');
+                    .fadeIn('fast')
+                    .css({position: 'absolute', top: etop, left: eleft});
             }
             if (had_error) {
                 // we had an error, display that
                 toast_div.html('There was an error loading the user.');
             } else if (user_id != -1) {
                 user = users[user_id];
-                html = '<img align="left" src="/static/imgs/barbara.png" />';
-                html += '<h3>'+user.full_name+'</h3>';
-                html += '<strong>'+user.handle+'</strong>';
+                html = '<div align="right" style="float:right;"><img class="pic" src="'+ user.pic +'" />';
+                html += '<br /><span class="services">Accounts:&nbsp;'; 
+                if (user.has_twitter)
+                    html += '<img src="/static/imgs/db_twitter_small.png" />&nbsp;';
+                if (user.has_facebook)
+                    html += '<img src="/static/imgs/fb-logo-small.png" />&nbsp;';
+                if (user.has_linkedin)
+                    html += '<img src="/static/imgs/linkedin-logo-small.png" />&nbsp;';
+                if (user.has_email)
+                    html += '<img src="/static/imgs/email_logo_small.png" />&nbsp;';
+                
+                html += '</span></div><div align="left">';
+                html += '<h3>'+user.name+'</h3>';
+                html += '<strong><em>'+user.handle+'</em></strong><br />';
+                html += '<strong>Created: </strong>' + user.created + '<br />';
+                html += '<strong>KScore: </strong>' + user.kscore + '<br />';
+                html += '<strong>Reach: </strong>' + user.reach + '</div>';
+                
                 toast_div.html(html);
             } else {
                 // we are probably waiting on the data from json
@@ -74,12 +76,13 @@
         };
         $(document).ready(function() {
             window.dbar = $('#results_header');
+            window.ub = $('#user_box');
             if (window.dbar.offset() != null)
                 window.dbar_top = window.dbar.offset().top;
             //$('#results div.row_details a').click(function() {
             //    $(this).preventDefault();    
             //});
-            $('#sailboat').animate({"left": "0"}, 0);
+            
             $('#results div.row').click(function() {
                 $(this)
                     .toggleClass('expanded')
@@ -112,6 +115,7 @@
             });
             $('#results a.user').hover(function() {
                 try {
+                    clearTimeout(window.ub.data('timeoutID'));
                     window.hover_el = $(this);
                     var user_id = window.hover_el.attr('id');
                     if (window.users[user_id] == undefined) {
@@ -142,30 +146,16 @@
                 }
             }, function () {
                 // hover off
-                $('#user_box').fadeOut('fast');
+                var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                window.ub.data('timeoutId', timeoutId); 
             });
-            $(document).keydown(function (e) {
-                /**
-                 * KEY CONTROLS FOR THE BOAT!
-                 */
-                var keyCode = e.keyCode || e.which;
-                arrow = {left: 37, up: 38, right: 39, down: 40 };
-
-                switch (keyCode) {
-                    case arrow.left:
-                        moveLeft();
-                    break;
-                    case arrow.up:
-                        // func
-                    break;
-                    case arrow.right:
-                        moveRight();
-                    break;
-                    case arrow.down:
-                        // func
-                    break;
-                }
-            }).scroll(function() {
+            window.ub.hover(
+                function() {console.log('hovering on ub'); clearTimeout(window.ub.data('timeoutID')); },
+                function() {
+                    var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                    window.ub.data('timeoutId', timeoutId);
+            });
+            $(document).scroll(function() {
                 /**
                  * CONTROLS CARRYING THE HEADER WITH THE PAGE WHEN USER
                  * SCROLLS
@@ -336,7 +326,58 @@
             -webkit-border-radius: 0px 0px 5px 5px;
             border-radius: 0px 0px 5px 5px;
         }
-    </style>
+        a.user {
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0);
+            z-index: 99;
+            width: 70px;
+        }
+        a.user:hover {
+            background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(252,252,252,1) 12%, rgba(241,241,241,0.89) 50%, rgba(225,225,225,0.89) 51%, rgba(246,246,246,0.75) 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(12%,rgba(252,252,252,1)), color-stop(50%,rgba(241,241,241,0.89)), color-stop(51%,rgba(225,225,225,0.89)), color-stop(100%,rgba(246,246,246,0.75))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Opera11.10+ */
+            background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* IE10+ */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#bff6f6f6',GradientType=0 ); /* IE6-9 */
+            background: linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* W3C */ 
+            border-radius: 5px 5px 5px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            cursor: pointer; 
+        }
+        #user_box {
+            /*background: rgba(255, 255, 250, 0.5);*/
+            background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(252,252,252,1) 12%, rgba(241,241,241,0.89) 50%, rgba(225,225,225,0.89) 51%, rgba(246,246,246,0.75) 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(12%,rgba(252,252,252,1)), color-stop(50%,rgba(241,241,241,0.89)), color-stop(51%,rgba(225,225,225,0.89)), color-stop(100%,rgba(246,246,246,0.75))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Opera11.10+ */
+            background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* IE10+ */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#bff6f6f6',GradientType=0 ); /* IE6-9 */
+            background: linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* W3C */ 
+            padding: 10px;
+            border-radius: 5px 5px 5px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            width: 276px;
+            cursor: pointer;
+        }
+        #user_box img.pic {
+            clear: right;
+            margin-right: 10px;
+            box-shadow: 2px 2px 3px 0px rgba(0,0,0,0.5);
+        }
+        #user_box h3 {
+            padding-bottom: 0px;
+            margin-bottom: 0px;
+        }
+        #user_box span.services img {
+            vertical-align: bottom;
+        }
+        </style>
 {% endblock head %}
 
 {% block content %}

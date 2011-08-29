@@ -133,7 +133,7 @@ class User( db.Expando ):
         else:
             fname = self.get_attr('email')
         
-        if fname == None or fname == '' and service != None:
+        if (fname == None or fname == '') and service != None:
             # recursive call if we tried for a service and failed
             fname = self.get_full_name()
 
@@ -143,16 +143,19 @@ class User( db.Expando ):
         """returns the name of this user, depends on what service
             they registered with"""
         handle = None
-        if hasattr(self, 'twitter_handle') and service == 'twitter':
+        if hasattr(self, 'twitter_handle') and\
+            (service == 'twitter' or service == None):
             handle = self.twitter_handle
-        elif hasattr(self, 'linkedin_first_name') and service == 'linkedin':
+        elif hasattr(self, 'linkedin_first_name') and\
+            (service == 'linkedin' or service == None):
             handle = self.linkedin_first_name
-        elif hasattr(self, 'fb_name') and service == 'facebook':
+        elif hasattr(self, 'fb_name') and\
+            (service == 'facebook' or service == None):
             handle = self.fb_name
         else:
             handle = self.get_attr('email')
 
-        if handle == None and service != None:
+        if (handle == None or handle == '') and service != None:
             # if we didn't get a handle for that service, try again
             handle = self.get_handle()
         return handle
@@ -226,6 +229,8 @@ class User( db.Expando ):
                 return getattr(self, 'facebook_profile_pic')
             elif hasattr(self, 'twitter_profile_pic'):
                 return getattr(self, 'twitter_profile_pic')
+            elif hasattr(self, 'linkedin_picture_url'):
+                return getattr(self, 'linkedin_picture_url')
             else:
                 return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
 

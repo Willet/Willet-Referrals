@@ -143,7 +143,15 @@ class ShowUserJSON (URIHandler):
             d = {
                 'uuid': user.uuid,
                 'handle': user.get_handle(),
-                'name': user.get_full_name()
+                'name': user.get_full_name(),
+                'pic': user.get_attr('pic'),
+                'kscore': user.get_attr('kscore'),
+                'has_twitter': (user.get_attr('twitter_handle') != None),
+                'has_facebook': (user.get_attr('fb_name') != None),
+                'has_linkedin': (user.get_attr('linkedin_first_name') != None),
+                'has_email': (user.get_attr('email') != ''),
+                'reach': user.get_reach(),
+                'created': str(user.get_attr('creation_time').date())
             }
             response['user'] = d
             success = True
