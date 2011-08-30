@@ -231,10 +231,12 @@ class Campaign(Model):
                         user.conversions = u_stat_list[1]
                         user.clicks = u_stat_list[2]
                         user.shares = u_stat_list[3]
+                        user.profit = u_stat_list[4]
                         el = {}
                         el['conversions'] = u_stat_list[1]
                         el['clicks'] = u_stat_list[2]
                         el['shares'] = u_stat_list[3]
+                        el['profit'] = u_stat_list[4]
                         el['reach'] = user.get_reach(service=s)
                         el['handle'] = user.get_handle(service=s)
                         el['uuid'] = user.uuid
@@ -415,7 +417,7 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
         [fb_stats, twitter_stats, linkedin_stats, email_stats])
     # user is a tuple
     user_stats_obj_to_list = lambda user:\
-        map(lambda attr: str(user[1][attr]), ['uid', 'co', 'cl', 'sh'])
+        map(lambda attr: str(user[1][attr]), ['uid', 'co', 'cl', 'sh', 'pr'])
     fcsv = lambda x: ",".join(x)
     fb_user_stats = map(fcsv, map(user_stats_obj_to_list, users['f']))
     tw_user_stats = map(fcsv, map(user_stats_obj_to_list, users['t']))
