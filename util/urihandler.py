@@ -3,7 +3,7 @@
 __author__      = "Willet Inc."
 __copyright__   = "Copyright 2011, Willet Inc."
 
-import os
+import logging, os
 
 from gaesessions                 import get_current_session
 from google.appengine.ext        import webapp
@@ -51,4 +51,5 @@ class URIHandler( webapp.RequestHandler ):
         merged_values.update(content_template_values)
 
         path = os.path.join('templates/' + template_file_name )
+        logging.info("REndering %s" % path )
         return template.render(path, merged_values)

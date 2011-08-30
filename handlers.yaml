@@ -14,7 +14,7 @@ handlers:
   script: processes.py
 
 - url: /shopify.*
-  script: shopify_website.py
+  script: shopify/website.py
 
 - url: /conversion
   script: conversion.py

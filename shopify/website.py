@@ -106,7 +106,7 @@ class ShowShopifyEditPage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('shopify_edit.html', template_values))
+        self.response.out.write(self.render_page('edit.html', template_values))
 
 class ShowShopifyCodePage( URIHandler ):
     def get(self):
@@ -124,7 +124,7 @@ class ShowShopifyCodePage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('shopify_code.html', template_values))
+        self.response.out.write(self.render_page('code.html', template_values))
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Dos -------------------------------------------##
