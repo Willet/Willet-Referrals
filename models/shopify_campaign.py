@@ -1,8 +1,8 @@
-# Campaign model
+# ShopifyCampaign model
 # models a client's sharing campaign
 
 __all__ = [
-    'Campaign'
+    'ShopifyCampaign'
 ]
 
 import hashlib, logging, random, urllib2, datetime
@@ -23,53 +23,83 @@ from util.helpers import generate_uuid
 
 NUM_SHARE_SHARDS = 15
 
-class Campaign(Model):
+class ShopifyCampaign(Model):
     """Model storing the data for a client's sharing campaign"""
-    uuid            = db.StringProperty( indexed = True )
-    created         = db.DateTimeProperty(auto_now_add=True)
-    emailed_at_10   = db.BooleanProperty( default = False )
-    client          = db.ReferenceProperty( db.Model, collection_name = 'campaigns' )
+    uuid          = db.StringProperty( indexed = True )
+    created       = db.DateTimeProperty(auto_now_add=True)
+    emailed_at_10 = db.BooleanProperty( default = False )
+    client        = db.ReferenceProperty( db.Model, collection_name = 'shopify_campaigns' )
     
     cached_clicks_count = db.IntegerProperty( default = 0 )
     
-    title           = db.StringProperty( indexed = False )
-    product_name    = db.StringProperty( indexed = True )
-    target_url      = db.LinkProperty  ( indexed = False )
+    store_name    = db.StringProperty( indexed = False )
+    store_url     = db.LinkProperty  ( indexed = True )
+    store_token   = db.StringProperty( default = '' )
     
-    blurb_title     = db.StringProperty( indexed = False )
-    blurb_text      = db.StringProperty( indexed = False )
+    # Default share text
+    share_text    = db.StringProperty( indexed = False )
+
+    analytics     = db.ReferenceProperty(db.Model, collection_name='scanalytics')
+
+    # Defaults to None, only set if this ShopifyCampaign has been deleted
+    old_client    = db.ReferenceProperty( db.Model, collection_name = 'deleted_shopify_campaigns' )
+
+    # Store product img URLs and do something useful with them
+    product_imgs  = db.StringListProperty( indexed = False )
     
-    share_text      = db.StringProperty( indexed = False )
-    webhook_url     = db.LinkProperty( indexed = False, default = None, required = False )
-
-    analytics       = db.ReferenceProperty(db.Model,collection_name='canalytics')
-
-    # Defaults to None, only set if this Campaign has been deleted
-    old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
-
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(Campaign, self).__init__(*args, **kwargs)
+        super(ShopifyCampaign, self).__init__(*args, **kwargs)
     
     @staticmethod
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
-        return db.Query(Campaign).filter('uuid =', uuid).get()
+        return db.Query(ShopifyCampaign).filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        return
+        url = '%s/admin/products.json' % ( self.store_url )
+        username = SHOPIFY_API_KEY
+        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.store_token).hexdigest()
 
-    def update( self, title, product_name, target_url, blurb_title, blurb_text, share_text, webhook_url ):
+        # this creates a password manager
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        # because we have put None at the start it will always
+        # use this username/password combination for  urls
+        # for which `url` is a super-url
+        passman.add_password(None, url, username, password)
+
+        # create the AuthHandler
+        authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+        opener = urllib2.build_opener(authhandler)
+
+        # All calls to urllib2.urlopen will now use our handler
+        # Make sure not to include the protocol in with the URL, or
+        # HTTPPasswordMgrWithDefaultRealm will be very confused.
+        # You must (of course) use it when fetching the page though.
+        urllib2.install_opener(opener)
+
+        # authentication is now handled automatically for us
+        logging.info("Querying %s" % url )
+        result = urllib2.urlopen(url)
+
+        # Grab the data about the order from Shopify
+        details  = json.loads( result.read() ) #['orders'] # Fetch the order
+        products = details['products']
+
+        for p in products:
+            for k, v in p.iteritems():
+                if 'images' in k:
+                    if len(v) != 0:
+                        img = v[0]['src'].split('?')[0]
+                        self.product_imgs.append( img )
+
+    def update( self, store_name, store_url, share_text ):
         """Update the campaign with new data"""
-        self.title          = title
-        self.product_name   = product_name
-        self.target_url     = target_url
+        self.store_name = store_name
+        self.store_url  = store_url
+        self.share_text = share_text
         
-        Self.blurb_title    = blurb_title
-        self.blurb_text     = blurb_text
-        self.share_text     = share_text
-
-        self.webhook_url    = webhook_url
         self.put()
     
     def delete( self ):
@@ -175,20 +205,8 @@ class Campaign(Model):
                         user.conversions = u_stat_list[1]
                         user.clicks = u_stat_list[2]
                         user.shares = u_stat_list[3]
-                        if len(u_stat_list) > 4:
-                            user.profit = u_stat_list[4]
-                        else:
-                            user.profit = 0
-                        el = {}
-                        el['conversions'] = u_stat_list[1]
-                        el['clicks'] = u_stat_list[2]
-                        el['shares'] = u_stat_list[3]
-                        el['profit'] = user.profit 
-                        el['reach'] = user.get_reach(service=s)
-                        el['handle'] = user.get_handle(service=s)
-                        el['uuid'] = user.uuid
-                        el['user'] = user
-                        users.append(el)
+                        user.profit = u_stat_list[4]
+                        users.append(user)
                 sms['users'] = users
                 social_media_stats.append(sms)
         logging.info(social_media_stats)
@@ -293,109 +311,9 @@ class Campaign(Model):
         """Increment this link's click counter"""
         self.add_shares(1)
 
-def get_campaign_by_id( id ):
-    return Campaign.all().filter( 'uuid =', id ).get()
+def get_shopify_campaign_by_id( id ):
+    return ShopifyCampaign.all().filter( 'uuid =', id ).get()
 
-class ShareCounter(db.Model):
-    """Sharded counter for link click-throughs"""
-
-    campaign_id = db.StringProperty(indexed=True, required=True)
-    count = db.IntegerProperty(indexed=False, required=True, default=0)
-
-
-class CampaignAnalytics(Model):
-    """Model containing aggregated analytics about a specific campaign
-    
-        The stats list properties are comma seperated lists of statistics, see their
-        accompanying comments for more details but you should be able to just use the
-        accessors"""
-
-    campaign_uuid=db.StringProperty(indexed=True)
-    uuid = db.StringProperty(indexed=True)
-    scope = db.StringProperty(indexed=True) #week/month
-
-    start_time = db.DateTimeProperty(indexed=True)
-    end_time = db.DateTimeProperty()
-    creation_time = db.DateTimeProperty(auto_now_add=True)
-
-    # all stat lists are of the form: [shares, reach, clicks, conversion, profit]
-    facebook_stats = db.ListProperty(int)
-    twitter_stats = db.ListProperty(int)
-    linkedin_stats = db.ListProperty(int)
-    email_stats = db.ListProperty(int)
-
-    # each user's stats are the 4 consecutive elements "uuid,conversions,clicks,shares"
-    facebook_user_stats = db.ListProperty(str)
-    twitter_user_stats = db.ListProperty(str)
-    linkedin_user_stats = db.ListProperty(str)
-    email_user_stats    = db.ListProperty(str)
-    
-    def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(CampaignAnalytics, self).__init__(*args, **kwargs)
-    
-    @staticmethod
-    def _get_from_datastore(uuid):
-        """Datastore retrieval using memcache_key"""
-        return db.Query(CampaignAnalytics).filter('uuid =', uuid).get()
-
-
-def create_campaign_analytics(campaign_uuid, scope, start_time, end_time,\
-fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=None):
-    """the _stats objects are of the form:
-        { cl: int, co: int, re: int, pr: int, sh: int }
-        [cl]icks, [co]nversions, [re]ach, [pr]ofit, [sh]are
-
-        users list (ordered by influence)::
-            [ { f : { handle: str, co: int, cl: int, sh: int, pr: int }, 
-              { t : ... } ]
-        
-        Returns: CampaignAnalytics object. See CampaignAnlytics model definition
-                 for internal data representations
-    """
-    # provider is an object
-    logging.info(fb_stats)
-    stats_obj_to_list = lambda prov:\
-        map(lambda attr: prov[attr], ['sh', 're', 'cl', 'co', 'pr'])
-    fb_stats, twitter_stats, linkedin_stats, email_stats = map(stats_obj_to_list,\
-        [fb_stats, twitter_stats, linkedin_stats, email_stats])
-    # user is a tuple
-    user_stats_obj_to_list = lambda user:\
-        map(lambda attr: str(user[1][attr]), ['uid', 'co', 'cl', 'sh', 'pr'])
-    fcsv = lambda x: ",".join(x)
-    fb_user_stats = map(fcsv, map(user_stats_obj_to_list, users['f']))
-    tw_user_stats = map(fcsv, map(user_stats_obj_to_list, users['t']))
-    li_user_stats = map(fcsv, map(user_stats_obj_to_list, users['l']))
-    logging.info(tw_user_stats)
-    ca = CampaignAnalytics(uuid=generate_uuid(16),
-        campaign_uuid=campaign_uuid,
-        scope=scope,
-        start_time=start_time,
-        end_time=end_time,
-        facebook_stats=fb_stats,
-        twitter_stats=twitter_stats,
-        linkedin_stats=linkedin_stats,
-        email_stats=email_stats,
-        facebook_user_stats=fb_user_stats,
-        twitter_user_stats=tw_user_stats,
-        linkedin_user_stats=li_user_stats
-    )
-    ca.save()
-    
-    return ca
-
-
-def get_campaign_analytics_by_uuid(uuid, scope):
-    return CampaignAnalytics.all().filter('uuid =', uuid).get()
-
-
-def get_analytics_report_since(campaign_uuid, scope, t, count=None):
-    logging.info("Looking up report for %s since %s" % (campaign_uuid, t))
-    ca = CampaignAnalytics.all().filter('campaign_uuid =', campaign_uuid).filter('scope =', scope)#\
-        #.filter('start_time >=', t)
-    if count is not None and count > 0:
-        ca = ca.fetch(count)
-        #return ca.fetch(count)
-    for c in ca:
-        logging.info(c.start_time)
-    return ca
+def get_shopify_campaign_by_url( url ):
+    logging.info("Looking for %s" % url )
+    return ShopifyCampaign.all().filter( 'store_url =', url ).get()

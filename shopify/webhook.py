@@ -11,15 +11,12 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
-from models.client   import Client, get_client_by_email, authenticate, register
-from models.campaign import get_campaign_by_shopify_id, Campaign
-from models.feedback import Feedback
-from models.shopify  import ShopifyItem, create_shopify_order
-from models.stats    import Stats
+from models.shopify_campaign import get_shopify_campaign_by_id, ShopifyCampaign
+from models.shopify_order  import ShopifyItem, create_shopify_order
 from models.user     import User, get_or_create_user_by_email
+from util.consts     import *
 from util.helpers    import *
 from util.urihandler import URIHandler
-from util.consts     import *
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Dos -------------------------------------------##
@@ -27,22 +24,23 @@ from util.consts     import *
 
 class DoProcessShopifyOrder( URIHandler ):
     def post( self ):
-        # Grab the Campaign
+        # Grab the ShopifyCampaign
         store_id = self.request.get('store_id')
-        logging.info("store: %s " %  store_name )
-        campaign = get_campaign_by_shopify_id( store_id )
+        logging.info("store: %s " %  store_id )
+        campaign = get_shopify_campaign_by_id( store_id )
 
         # Grab the data about the order from Shopify
         order = json.loads( self.request.body ) #['orders'] # Fetch the order
 
         items = []
-        order_id = order_num = referring_site = subtotal = None
+        order_id = token = order_num = referring_site = subtotal = None
         first_name = last_name = address1 = address2 = city = None
         province = country_code = postal_code = latitude = longitude = None
         phone = email = shopify_id = ip = accepts_marketing = None
 
         for k, v in order.iteritems():
-
+            #logging.info("K: %s V: %s" % (k, v))
+            
             # Grab order details
             if k == 'id':
                 order_id = v
@@ -52,6 +50,8 @@ class DoProcessShopifyOrder( URIHandler ):
                 order_num = v
             elif k == 'referring_site':
                 referring_site = v
+            elif k == 'token':
+                token = v
         
             # Grab the purchased items and save some information about them.
             elif k == 'line_items':
@@ -111,7 +111,8 @@ class DoProcessShopifyOrder( URIHandler ):
                     accepts_marketing  = accepts_marketing)
 
         # Make the ShopifyOrder
-        o = create_shopify_order( campaign, order_id, order_num, subtotal, referring_site, user )
+        o = create_shopify_order( campaign, token, order_id, order_num, 
+                                  subtotal, referring_site, user )
 
         # Store the purchased items in the order
         o.items.extend( items )

@@ -18,7 +18,6 @@ from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.client import Client
 from models.link import Link, LinkCounter
 from models.model import Model
-from models.shopify import ShopifyItem, ShopifyOrder, create_shopify_order
 from models.stats import Stats
 from models.user import User, get_user_by_facebook, get_or_create_user_by_facebook, get_or_create_user_by_email, get_user_by_uuid
 

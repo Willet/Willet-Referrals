@@ -585,7 +585,7 @@
     <div id="fb-root"></div>
 
     <div id="step1" class="prepend-top span-9 append-15 last willt">
-        <h2> Would you like to give a <span style="color: #ae0909">gift</span> from {{campaign.product_name}} to a friend? </h2>
+        <h2> Would you like to give a <span style="color: #ae0909">gift</span> from {{campaign.store_name}} to a friend? </h2>
 
         <div class="prepend-1 span-3 append-bottom">
             <img src="/static/imgs/gift.png" /> 
@@ -608,16 +608,16 @@
     <div id="step2" class="span-9 append-15 last willt" style="display: none;">
         <h2>What would your friends like? </h2>
 
-        <img id="top_image" class="prepend-1 span-5 append-1 last" src="{{productA_img}}" onClick="highlight(this);" />
-        <img id="left_image" class="prepend-1 span-3" src="{{productB_img}}" onClick="highlight(this);" />
-        <img id="right_image" class="prepend-1 span-3 append-1 last" src="{{productC_img}}" onClick="highlight(this);" />
+        <img id="top_image" class="prepend-1 span-5 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
+        <img id="left_image" class="prepend-1 span-3" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
+        <img id="right_image" class="prepend-1 span-3 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
 
         <button class="callToAction" onClick="next('step2');"> Totally picked the best gift </button>
     </div>
 
     <div id="step3" class="span-9 append-15 last willt" style="display: none;">
         <div class="span-9 last">
-            <h2>Give a free <span style="color: #ae0909">gift</span> to your friends from {{campaign.product_name}}!</h2>
+            <h2>Give a free <span style="color: #ae0909">gift</span> to your friends from {{campaign.store_name}}!</h2>
             
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>

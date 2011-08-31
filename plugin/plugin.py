@@ -14,7 +14,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from models.campaign import get_campaign_by_id, get_campaign_by_shopify_id
+from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
@@ -33,7 +33,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
         logging.info(os.environ['HTTP_HOST'])
         logging.info(URL)
         template_values = {}
-        rq_vars = get_request_variables(['ca_id', 'uid', 'store_id', 'order_token'], self)
+        rq_vars = get_request_variables(['ca_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
@@ -43,10 +43,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        if rq_vars['store_id'] != '':
-            campaign = get_campaign_by_shopify_id( rq_vars['store_id'] )
-        else:
-            campaign = get_campaign_by_id(rq_vars['ca_id'])
+        campaign = get_campaign_by_id(rq_vars['ca_id'])
         
         p = 5
         p
@@ -87,7 +84,6 @@ class ServeSharingPlugin(webapp.RequestHandler):
                 'text': share_text,
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'order_num': rq_vars['order'],
                 
                 'user': user,
                 'FACEBOOK_APP_ID': FACEBOOK_APP_ID,
@@ -103,27 +99,9 @@ class ServeSharingPlugin(webapp.RequestHandler):
             
         if 'widget' in input_path:
             path = os.path.join(os.path.dirname(__file__), 'html/top.html')
-        
-        elif 'invite' in input_path:
-            template_values['productA_img'] = campaign.shopify_productA_img
-            template_values['productB_img'] = campaign.shopify_productB_img
-            template_values['productC_img'] = campaign.shopify_productC_img
-
-            path = os.path.join(os.path.dirname(__file__), 'shopify/invite_widget.html')
-        
-        elif 'bar' in input_path:
-            logging.info("BAR: campaign: %s" % (campaign.uuid))
-            referrer_cookie = self.request.cookies.get(campaign.uuid, False)
-            logging.info('LINK %s' % referrer_cookie)
-            referrer_link = get_link_by_willt_code( referrer_cookie )
-            if referrer_link:
-                template_values['profile_pic']        = referrer_link.user.get_attr( 'pic' )
-                template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
-                template_values['show_gift']          = True
-            self.response.headers['Content-Type'] = 'javascript'
-            path = os.path.join(os.path.dirname(__file__), 'js/shopify_bar.js')
         else:
             path = os.path.join(os.path.dirname(__file__), 'html/bottom.html')
+        
         self.response.out.write(template.render(path, template_values))
         return
     

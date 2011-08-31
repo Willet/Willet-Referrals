@@ -31,8 +31,9 @@ class ShopifyItem:
 
 class ShopifyOrder(Model):
     """Model storing shopify_order data"""
-    order_id = db.StringProperty( indexed = True )
-    created  = db.DateTimeProperty(auto_now_add=True)
+    order_token    = db.StringProperty( indexed = True )
+    order_id       = db.StringProperty( indexed = True )
+    created        = db.DateTimeProperty(auto_now_add=True)
     store_name     = db.StringProperty( indexed = False )
     store_url      = db.StringProperty( indexed = False, required=False, default=None )
     order_number   = db.StringProperty( indexed = False )
@@ -44,7 +45,7 @@ class ShopifyOrder(Model):
     campaign = db.ReferenceProperty( db.Model, collection_name="shopify_orders" )
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['order_id'] if 'order_id' in kwargs else None 
+        self._memcache_key = kwargs['order_token'] if 'order_token' in kwargs else None 
         
         super(ShopifyOrder, self).__init__(*args, **kwargs)
 
@@ -57,22 +58,23 @@ class ShopifyOrder(Model):
     @staticmethod
     def _get_from_datastore( uuid ):
         """Datastore retrieval using memcache_key"""
-        return db.Query(ShopifyOrder).filter('order_id =', uuid).get()
+        return db.Query(ShopifyOrder).filter('order_token =', uuid).get()
 
-def create_shopify_order( campaign, order_id, order_num,
+def create_shopify_order( campaign, order_token, order_id, order_num,
                           subtotal, referrer, user ):
     logging.info(referrer)
-    logging.info(campaign.target_url)
+    logging.info(campaign.store_url)
 
-    o = ShopifyOrder( key_name = 'asd',
-                    order_id     = str(order_id),
-                    campaign     = campaign,
-                    store_name   = campaign.product_name,
-                    store_url    = campaign.target_url,
-                    order_number = str(order_num),
-                    subtotal_price = float(subtotal), 
-                    referring_site = referrer,
-                    user         = user )
+    o = ShopifyOrder( key_name     = order_token,
+                      order_token  = order_token,
+                      order_id     = str(order_id),
+                      campaign     = campaign,
+                      store_name   = campaign.store_name,
+                      store_url    = campaign.store_url,
+                      order_number = str(order_num),
+                      subtotal_price = float(subtotal), 
+                      referring_site = referrer,
+                      user         = user )
     o.put()
 
     return o # return incase the caller wants it
