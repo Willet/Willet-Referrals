@@ -7,38 +7,142 @@
         //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
-    <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
-    <script type="text/javascript" src="/static/js/dashboard.js"></script>
+    <script type="text/javascript" src="/static/js/colorjizz-0.2.js"></script>
     <script type="text/javascript">
-        var platform = new Mixpanel.Platform(
-            '{{api_key}}',
-            '{{platform_secret}}',
-            '{{campaign.uuid}}'
-        );
-        {% if has_results %}
-            {{mixpanel}}
-            
-            platform.create_pie_chart('pie_chart', 
-                                     ['Email{{campaign.uuid}}', 'Twitter{{campaign.uuid}}', 'Facebook{{campaign.uuid}}'],
-                                     {labels: true, 
-                                     mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
-        {% endif %}
+        $(document).ready(function() {
+            // create our color range
+            var colors = new Hex(0xFF0000).range(new Hex(0x00FF00), 100, true);
+            // Progress bar animation
+            $('.progress-bar').each(function() {
+                var progress = $(this).find('span').text();
+                var max = $(this).width();
+                $(this).children().css({ 'width':0 })
+                    .animate({width:progress},{
+                        duration:3000,
+                        step: function(now, fx) {
+                            var el = $(fx.elem);
+                            var current = parseInt(el.width());
+                            var next = parseInt((current/max)*100);
+                            console.log('setting color to', next, colors[next].toString())
+                            el.css('background-color','#'+colors[next].toString()); 
+                        }
+                    });
+            }).click(function() {
+                var progress = $(this).find('span').text();
+                var max = $(this).width();
+                $(this).children().css({ 'width':0 })
+                    .animate({width:progress},{
+                        duration:3000,
+                        step: function(now, fx) {
+                            var el = $(fx.elem);
+                            var current = parseInt(el.width());
+                            var next = parseInt((current/max)*100);
+                            console.log('setting color to', next, colors[next].toString())
+                            el.css('background-color','#'+colors[next].toString()); 
+                        }
+                    });
+            });;
         
-        /*
-        platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
-        {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
-        ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
-        {% for r in results %}
-            'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
-        {% endfor %}
-        }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
-        */
-        /*
-        platform.create_line_chart( 'graph_div', [
-            'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
-        ], { 'mapping' : { 'Clicks_{{campaign.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
-        */
+        });
+        
     </script>
+    <style type="text/css">
+        .progress-bar {
+            border: 1px solid;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            display: block;
+            height: 25px;
+            margin: 0.67em 0;
+            width: 100%;
+            background-color: #F2F2F2;
+            border-color: #E6E6E6;
+            font-size: 13px;
+        }
+        .progress-bar div {
+            border-radius: 5px;
+            display: block;
+            height: 27px;
+            text-align: center;
+            position: relative;
+            top: -1px;
+            background-color: #AE432E;
+            -webkit-box-shadow: 0 0 5px #999;
+            -moz-box-shadow: 0 0 5px #999;
+            box-shadow: 0 0 5px #999;
+        }
+        .progress-bar div span {
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+            top: 4px;
+        }
+        .progress-bar div span sup {
+            top: -0.2em;
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+        }
+        img.pic {
+           box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5); 
+        }
+        div.shaded {
+            display: inline-block;
+            background: rgba(245, 252, 253, 0.60);
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+            vertical-align: middle;
+            padding-bottom: 20px;
+            border-radius: 5px;
+        }
+        .stats-summary {
+            margin: 10px 0;
+            padding: 0;
+            font-size: 75%;
+        }
+        .stats-summary li {
+            list-style: none;
+            display: block;
+            padding: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            border-radius: 3px;
+            min-height: 32px;
+            background-image: none;
+            line-height: 100%;
+            color: gray;
+            background-color: #F2F2F2;
+            border-color: #E6E6E6;
+        }
+        .stats-summary .stats-count {
+            text-shadow: 0 1px 1px #A6A6A6;
+        }
+        .stats-summary .stats-count {
+            display: block;
+            min-width: 60px;
+            text-align: right;
+            font-size: 197%;
+            padding: 10px 15px 0 0;
+        }
+        .stats-summary p, .stats-summary .stats-count {
+            float: left;
+        }
+        .stats-summary p {
+            margin: 5px 0 0;
+            font-size: 100%;
+            line-height: 160%;
+        }
+        .stats-summary .stats-view {
+            float: right;
+            margin: 2px 2px 0 0;
+            padding: 5px 15px;
+            height: 15px;
+        }
+    </style>
     <link rel="stylesheet" href="/static/css/dashboard.css" type="text/css" media="screen" />
 {% endblock head %}
 {% block content %}
@@ -49,101 +153,94 @@
     </div>
     
     {% if not valid_user %}
-        <h2 class="span-24 last center lower-100">
+        <h1 class="span-24 last center lower-100">
            Invalid User 
-        </h2>
+        </h1>
 
         <p class="center">Invalid user specified. </p>
     {% else %}
-        <h2 class="span-24 last center lower-100">
-             {{user_name|escape}}
-        </h2>
-
-        <div id="results_header">
-            <div class="span-2 prepend-2"><h3>Referrals</h3></div>
-            <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
-            <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
-            <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
-            <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
-        </div>
-        <div id="results_static">&nbsp;</div>
-        <hr />
-        <div id='results' class="center large">
-            <div class="row expandable">
-                <div class="prepend-2 span-2 big icon">
-                    <span>{{ totals.shares }}</span>
-                </div>
-                <div class="span-1 arrow">&nbsp;</div>
-            
-                <div class="span-4">
-                    <div class="cloud ">
-                        <span>{{ totals.reach }}</span>
+        <div id="user_top" class="shaded span-24 last center lower-100 top-10">
+            <div class="prepend-1 span-5">
+                <img class='pic' src="http://placekitten.com/200/200" />
+            </div>
+            <div class="span-8 left prepend-1 append-1" align="left">
+                <h1>
+                    {% if user_name %}
+                        {{user_name|escape}}
+                    {% else %}
+                        Whisker Jones
+                    {% endif %}
+                </h1>
+                <h2>
+                    {% if user.segment %}
+                        {{ user.segment }}
+                    {% else %}
+                        Elite Influencer
+                    {% endif %}
+                </h2>
+            </div>
+            <div class="span-6 prepend-1 append-1 last">
+                <div>
+                    <em>Influence</em>
+                    <div class="progress-bar red">
+						<div>
+							<span>92<sup>%</sup></span>
+						</div>
                     </div>
                 </div>
-                <div class="span-1 arrow">&nbsp;</div>
-        
-                <div class="span-3 conversions">
-                    <span>{{ totals.clicks }}</span>
-                </div>
-                <div class="span-4">
-                    <div class="sales big">
-                        <span>{{ totals.conversions }}</span>
+                <div>
+                    <em>Engagement</em>
+                    <div class="progress-bar red">
+						<div>
+							<span>32<sup>%</sup></span>
+						</div>
                     </div>
-                </div>
-            
-                <div class="span-1"><span>=</span></div>
-                <div class="span-4 append-2 last big dollars">
-                    <span>${{ totals.profit }}</span>
                 </div>
             </div>
-            <!-- DETAILS -->
-            <div class="details_toggle" style="display: none">
-                {% for st in service_totals %}
-                    <div class="row_details {{ st.name }} expandable">
-                        <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-4"><div class=""><span>{{ st.reach }}</span></div></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>{{ st.clicks }}</span></div>
-                        <div class="span-4 big"><div><span>{{ st.conversions }}</span></div></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars big last">
-                            <span>${{ st.profit }}</span>
-                        </div>
-                        <!-- twitter double expando details -->
-                        <div class="referrers_toggle " style="display: none"> 
-                            <hr size="1" />
-                            <div class="prepend-2 span-3"><span>Top Referrers</span></div>
-                            <div class="span-4"><span>followers</span></div>
-                            <div class="span-1">&nbsp;</div>
-                            <div class="span-3"><span>visits</span></div>
-                            <div class="span-4"><span>conversions</span></div>
-                            <div class="span-1"><span>&nbsp;</span></div>
-                            <div class="span-4 append-2 dollars last"><span>sales</span></div>
-                            {% for users in st.users %}
-                            {% for u in users %}
-                            <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
-                                <div class="span-1">&nbsp;</div>
-                                <div class="span-4"><span>{{ u.reach }}</span></div>
-                                <div class="span-1">&nbsp;</div>
-                                <div class="span-3"><span>{{ u.clicks }}</span></div>
-                                <div class="span-4"><span>{{ u.conversions }}</span></div>
-                                <div class="span-1"><span>&nbsp;</span></div>
-                                <div class="span-4 append-2 dollars big last"><span>${{ u.profit }}</span></div>
-                            {% endfor %}{% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            
         </div>
-        <div id="pie_chart"></div>
-        <div id="graph_div"></div>
-        <div >
-            <div id='user_box' style='display: none; position: absolute;'>
-                <h3>Barbara</h3>
-                <strong>@barbaraEMAC</strong>
-                <img src="/static/imgs/barbara.png" align="right" />
+        <div class="row span-24 lower-10 last">
+            <div class="span-12 shaded lower-10">
+                <div class="span-10 prepend-1 append-1">
+                    <h3>Recent Stats</h3>
+                    <ul class="stats-summary">
+						<li>
+							<strong class="stats-count">2</strong>
+							<p>Days since last visit</p>
+							<a href="#" class="button stats-view" rel="tooltip" original-title="View new registrations">View</a>
+						</li>
+						<li>
+                            <strong class="stats-count">{{ total_referrals }}</strong>
+							<p>Total Referrals</p>
+							<a href="#" class="button stats-view" title="View new visitros" rel="tooltip">View</a>
+						</li>
+						<li>
+                            <strong class="stats-count">{{ reach }}</strong>
+							<p>Social Reach</p>
+							<a href="#" class="button stats-view" rel="tooltip" original-title="View new sales">View</a>
+						</li>
+						<li>
+                            <strong class="stats-count">{{ total_clicks}}</strong>
+							<p>Click throughs</p>
+							<a href="#" class="button stats-view" rel="tooltip" original-title="View new orders">View</a>
+						</li>
+						<li>
+                            <strong class="stats-count">{{ total_conversions }}</strong>
+							<p>Conversions</p>
+							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
+                        </li>
+                        <li>
+							<strong class="stats-count">$235</strong>
+							<p>Referral Value</p>
+							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
+						</li>
+					</ul> 
+                </div>
+            </div>
+            <div class="span-12 last shaded lower-10">
+                <div class="span-10 prepend-1 append-1">
+                    <h3>Referral Graph</h3>
+                    <img src="http://placekitten.com/300/300" />
+                </div>
             </div>
         </div>
     {% endif %}

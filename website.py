@@ -16,7 +16,8 @@ from models.campaign import get_campaign_by_id, Campaign
 from models.feedback import Feedback
 from models.stats    import Stats
 from models.user     import User, get_user_by_cookie, get_user_by_uuid
-
+from models.link     import Link
+from models.conversion import Conversion
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
@@ -124,7 +125,7 @@ class ShowAccountPage( URIHandler ):
                                 'date'     : c.created.strftime('%A %B %d, %Y'),
                                 'shares'   : c.get_shares_count(),
                                 'clicks'   : c.count_clicks(),
-                                'is_shopify' : c.shopify_token != ''})
+                                'is_shopify' : hasattr(c, 'shopify_token')})
         else:
             has_campaigns = False
         
@@ -144,6 +145,14 @@ class ShowProfilePage(URIHandler):
     def get(self, user_id = None):
         user = get_user_by_uuid(user_id)
         if user:
+            links = Link.all().filter('user =', user)
+            total_clicks = 0
+            total_conversions = 0
+            for l in links:
+                total_clicks += l.count_clicks()
+                cons = Conversion.all().filter('link =', l)
+                total_conversions += cons.count()
+
             template_values = {
                 'valid_user': True,
                 'user': user,
@@ -157,7 +166,10 @@ class ShowProfilePage(URIHandler):
                 'has_linkedin': (user.get_attr('linkedin_first_name') != None),
                 'has_email': (user.get_attr('email') != ''),
                 'reach': user.get_reach(),
-                'created': str(user.get_attr('creation_time').date())
+                'created': str(user.get_attr('creation_time').date()),
+                'total_clicks': total_clicks,
+                'total_conversions': total_conversions,
+                'total_referrals': links.count()
             }
         else:
             template_values = {
