@@ -18,7 +18,6 @@ from google.appengine.ext import db
 from models.link import Link, get_active_links_by_campaign
 from models.user import User
 from models.model import Model
-from models.shopify import ShopifyOrder
 from util.consts import *
 from util.helpers import generate_uuid
 
