@@ -82,20 +82,28 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">{% if campaign %}Edit{% else %}Welcome!{% endif %}</h1>
+    <h1 class="lower-50 center">Welcome {{shop_owner}}!</h1>
 
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
             <div id="step1_left">
-                <div>
-                    <label class="default_label" for="product_name"> Store Name</label>
-                    <input type="text" id="product_name" name="product_name" value="{{campaign.product_name|escape}}"/>  <br />
-                    <span class="defaultValue hidden">FooBoxes</span>
+                {% ifnotequal shop_owner "" %}
+                    <div class="hidden">
+                {% else %}
+                    <div>
+                {% endifnotequal %}
+                    <label class="default_label" for="store_name"> Store Name</label>
+                    <input type="text" id="store_name" name="store_name" value="{{campaign.store_name|escape}}"/>  <br />
                 </div> 
-                <div>
-                    <label class="default_label" for="target_url"> Store URL </label> <br />
-                    <input type="text" name="target_url" id="target_url" value="{{campaign.target_url}}" onBlur="url_text();" />
+
+                {% ifnotequal shop_owner "" %}
+                    <div class="hidden">
+                {% else %}
+                    <div>
+                {% endifnotequal %}
+                    <label class="default_label" for="store_url"> Store URL </label> <br />
+                    <input type="text" name="store_url" id="store_url" value="{{campaign.store_url}}" onBlur="url_text();" />
                 </div>
             </div>
 
@@ -104,13 +112,13 @@
                 <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
                 <br />
                 <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
+                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out!</span>
             </div>
 
             <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
             
             <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
-            <input type="hidden" value="{{shopify_token}}" name="token" />
+            <input type="hidden" value="{{store_token}}" name="token" />
         </form>
 
     </div>
@@ -142,7 +150,7 @@
             // Fill examples
             var i_share_text, i_twitter_url,
                 share_text    = document.getElementById('share_text'),
-                target_url    = document.getElementById('target_url'),
+                store_url    = document.getElementById('store_url'),
                 share_i_frame = document.getElementById('share_iframe');
             
             function update_share_text() {
@@ -153,7 +161,7 @@
             }
             
             function url_text() {
-                document.getElementById('share_text_span').innerText = 'I love ' + target_url.value + ' because ...! You should check them out!';
+                document.getElementById('share_text_span').innerText = 'I love ' + store_url.value + ' because ...! You should check them out!';
                 $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
 
                 update_share_text();

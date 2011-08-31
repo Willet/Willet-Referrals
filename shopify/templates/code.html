@@ -4,9 +4,9 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">{{campaign.product_name|escape}}</h1>
+    <h1 class="lower-50 center">{{campaign.store_name|escape}}</h1>
     <div class="prepend-top center">
-        <p>Store URL:<br/>{{campaign.target_url|escape}}</p>
+        <p>Store URL:<br/>{{campaign.store_url|escape}}</p>
 
         <p>Share text:<br />{{campaign.share_text|escape}}</p>
 
@@ -30,7 +30,7 @@
                 It only takes 1 step to empower your store with social referrals!
             </p>
             <p>
-                Simply, visit your <a href="{{campaign.target_url}}/admin/payments">'Checkout and Payment'</a> admin panel and add this
+                Simply, visit your <a href="{{campaign.store_url}}/admin/payments">'Checkout and Payment'</a> admin panel and add this
                 script under the 'Additional Content & Scripts' section. </p>
             <p class="code">
                 &lt;script src="{{URL}}/static/js/shopify.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
