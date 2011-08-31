@@ -140,7 +140,34 @@ class ShowAccountPage( URIHandler ):
         
         self.response.out.write(self.render_page('account.html', template_values))
 
-class ShowUserJSON (URIHandler):
+class ShowProfilePage(URIHandler):
+    def get(self, user_id = None):
+        user = get_user_by_uuid(user_id)
+        if user:
+            template_values = {
+                'valid_user': True,
+                'user': user,
+                'uuid': user.uuid,
+                'user_handle': user.get_handle(),
+                'user_name': user.get_full_name(),
+                'user_pic': user.get_attr('pic'),
+                'user_kscore': user.get_attr('kscore'),
+                'has_twitter': (user.get_attr('twitter_handle') != None),
+                'has_facebook': (user.get_attr('fb_name') != None),
+                'has_linkedin': (user.get_attr('linkedin_first_name') != None),
+                'has_email': (user.get_attr('email') != ''),
+                'reach': user.get_reach(),
+                'created': str(user.get_attr('creation_time').date())
+            }
+        else:
+            template_values = {
+                'uuid': user_id,
+                'user': None,
+                'valid_user': False
+            }
+        self.response.out.write(self.render_page('profile.html', template_values))
+
+class ShowProfileJSON (URIHandler):
     def get(self, user_id = None):
         user = get_user_by_uuid(user_id)
         response = {}
@@ -569,8 +596,9 @@ def main():
     application = webapp.WSGIApplication([
         (r'/about', ShowAboutPage),
         (r'/account', ShowAccountPage),
-        (r'/campaign/get_user/(.*)/', ShowUserJSON),
+        (r'/campaign/get_user/(.*)/', ShowProfileJSON),
         (r'/campaign/(.*)/', ShowCampaignPage),
+        (r'/profile/(.*)/', ShowProfilePage),
         (r'/dashboard/test', ShowDashboardTestPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),

@@ -51,6 +51,8 @@ class Campaign(Model):
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
 
     shopify_token = db.StringProperty( default = '' )
+    shopify_id    = db.StringProperty( default = '' )
+
     # Urls for 3 random products - hacked for now
     shopify_productA_img = db.StringProperty( default = '' )
     shopify_productB_img = db.StringProperty( default = '' )
@@ -68,7 +70,7 @@ class Campaign(Model):
     def validateSelf( self ):
         if self.shopify_token == '':
             return
-
+        
         url = '%s/admin/products.json' % ( self.target_url )
         username = SHOPIFY_API_KEY
         password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.shopify_token).hexdigest()
@@ -231,12 +233,15 @@ class Campaign(Model):
                         user.conversions = u_stat_list[1]
                         user.clicks = u_stat_list[2]
                         user.shares = u_stat_list[3]
-                        user.profit = u_stat_list[4]
+                        if len(u_stat_list) > 4:
+                            user.profit = u_stat_list[4]
+                        else:
+                            user.profit = 0
                         el = {}
                         el['conversions'] = u_stat_list[1]
                         el['clicks'] = u_stat_list[2]
                         el['shares'] = u_stat_list[3]
-                        el['profit'] = u_stat_list[4]
+                        el['profit'] = user.profit 
                         el['reach'] = user.get_reach(service=s)
                         el['handle'] = user.get_handle(service=s)
                         el['uuid'] = user.uuid
@@ -349,8 +354,8 @@ class Campaign(Model):
 def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
 
-def get_campaign_by_shopify_store( name ):
-    return Campaign.all().filter( 'product_name =', name ).get()
+def get_campaign_by_shopify_id( id ):
+    return Campaign.all().filter( 'shopify_id =', name ).get()
 
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
@@ -403,7 +408,7 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
         [cl]icks, [co]nversions, [re]ach, [pr]ofit, [sh]are
 
         users list (ordered by influence)::
-            [ { f : { handle: str, co: int, cl: int, sh: int }, 
+            [ { f : { handle: str, co: int, cl: int, sh: int, pr: int }, 
               { t : ... } ]
         
         Returns: CampaignAnalytics object. See CampaignAnlytics model definition

@@ -47,13 +47,18 @@
         <p><a href='{{logout_url}}'>Logout</a></p>
         <p><a href='/account'>Your Campaigns</a></p>
     </div>
-    <h2 class="span-24 last center lower-100">
-        Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}
-    </h2>
+    
+    {% if not valid_user %}
+        <h2 class="span-24 last center lower-100">
+           Invalid User 
+        </h2>
 
-    {% if not has_results %}
-        <p class="center"> We haven't received any shares or clicks yet. </p>
+        <p class="center">Invalid user specified. </p>
     {% else %}
+        <h2 class="span-24 last center lower-100">
+             {{user_name|escape}}
+        </h2>
+
         <div id="results_header">
             <div class="span-2 prepend-2"><h3>Referrals</h3></div>
             <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>

@@ -14,7 +14,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from models.campaign import get_campaign_by_id, get_campaign_by_shopify_store
+from models.campaign import get_campaign_by_id, get_campaign_by_shopify_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
@@ -32,9 +32,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
     def get(self, input_path):
         logging.info(os.environ['HTTP_HOST'])
         logging.info(URL)
-        logging.info('STORE: %s' % self.request.get('store'))
         template_values = {}
-        rq_vars = get_request_variables(['ca_id', 'uid', 'store', 'order'], self)
+        rq_vars = get_request_variables(['ca_id', 'uid', 'store_id', 'order_token'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
@@ -44,15 +43,8 @@ class ServeSharingPlugin(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        if rq_vars['store'] != '':
-            campaign = get_campaign_by_shopify_store( rq_vars['store'] )
-            
-            taskqueue.add( queue_name='shopifyAPI', 
-                           url='/getShopifyOrder', 
-                           name= 'shopifyOrder%s%s' % (generate_uuid(16), rq_vars['order']),
-                           params={'order' : rq_vars['order'],
-                                   'campaign_uuid' : campaign.uuid,
-                                   'user_uuid'     : user.uuid} )
+        if rq_vars['store_id'] != '':
+            campaign = get_campaign_by_shopify_id( rq_vars['store_id'] )
         else:
             campaign = get_campaign_by_id(rq_vars['ca_id'])
         

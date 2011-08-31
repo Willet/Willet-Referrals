@@ -106,7 +106,7 @@ class ShowShopifyEditPage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('shopify_edit.html', template_values))
+        self.response.out.write(self.render_page('edit.html', template_values))
 
 class ShowShopifyCodePage( URIHandler ):
     def get(self):
@@ -124,7 +124,7 @@ class ShowShopifyCodePage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('shopify_code.html', template_values))
+        self.response.out.write(self.render_page('code.html', template_values))
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Dos -------------------------------------------##
@@ -156,6 +156,44 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
             # Create a new one!
             try:
                 uuid = generate_uuid(16)
+
+                url = '%s/admin/shop.json' % ( target_url )
+                username = SHOPIFY_API_KEY
+                password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + shopify_token).hexdigest()
+
+                # this creates a password manager
+                passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                # because we have put None at the start it will always
+                # use this username/password combination for  urls
+                # for which `url` is a super-url
+                passman.add_password(None, url, username, password)
+
+                # create the AuthHandler
+                authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+                opener = urllib2.build_opener(authhandler)
+
+                # All calls to urllib2.urlopen will now use our handler
+                # Make sure not to include the protocol in with the URL, or
+                # HTTPPasswordMgrWithDefaultRealm will be very confused.
+                # You must (of course) use it when fetching the page though.
+                urllib2.install_opener(opener)
+                
+                # authentication is now handled automatically for us
+                logging.info("Querying %s" % url )
+                result = urllib2.urlopen(url)
+                
+                details = json.loads( result.read() ) 
+                shop    = details['shop']
+                logging.info('shop: %s' % (shop))
+                shopify_id = str(shop['id'])
+
+                # This person probably didn't log in,
+                # so make a new Client for them without a passphrase.
+                if client is None:
+                    client = Client( key_name=shop['email'], uuid=generate_uuid(16), email=shop['email'] )
+                    client.put()
+
                 campaign = Campaign( key_name=uuid,
                                      uuid=uuid,
                                      client=client, 
@@ -165,7 +203,8 @@ class DoShopifyUpdateOrCreateCampaign( URIHandler ):
                                      blurb_title='',
                                      blurb_text='',
                                      share_text=share_text,
-                                     shopify_token=shopify_token)
+                                     shopify_token=shopify_token, 
+                                     shopify_id=shopify_id)
                 campaign.put()
             except BadValueError, e:
                 self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&target_url=%s&product_name=%s' % (str(e), campaign_id, shopify_token, share_text, target_url, product_name) )

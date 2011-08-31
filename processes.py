@@ -156,7 +156,7 @@ class FetchFacebookData(webapp.RequestHandler):
     def post(self):
         rq_vars = get_request_variables(['fb_id'], self)
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
-        def txn:
+        def txn():
             user = get_user_by_facebook(rq_vars['fb_id'])
             if user:
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
@@ -181,7 +181,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
 
     def get(self):
         rq_vars = get_request_variables(['fb_id'], self)
-        def txn:
+        def txn():
             user = get_user_by_facebook(rq_vars['fb_id'])
             if user:
                 friends = []
@@ -198,104 +198,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
         logging.info(fb_response)
 
 
-class GetShopifyOrder( webapp.RequestHandler ):
-
-    def post( self ):
-        input_order_num = self.request.get( 'order' )
-        
-        user_uuid  = self.request.get('user_uuid')
-        user       = get_user_by_uuid( user_uuid )
-        
-        campaign   = get_campaign_by_id( self.request.get('campaign_uuid') )
-        prev_order = campaign.shopify_orders.order( 'created' ).get()
-    
-        url = '%s/admin/orders.json?since_id=%s' % ( campaign.target_url, '0' )
-        username = SHOPIFY_API_KEY
-        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.shopify_token).hexdigest()
-
-        # this creates a password manager
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        # because we have put None at the start it will always
-        # use this username/password combination for  urls
-        # for which `url` is a super-url
-        passman.add_password(None, url, username, password)
-
-        # create the AuthHandler
-        authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-        opener = urllib2.build_opener(authhandler)
-
-        # All calls to urllib2.urlopen will now use our handler
-        # Make sure not to include the protocol in with the URL, or
-        # HTTPPasswordMgrWithDefaultRealm will be very confused.
-        # You must (of course) use it when fetching the page though.
-        urllib2.install_opener(opener)
-
-        # authentication is now handled automatically for us
-        logging.info("Querying %s" % url )
-        result = urllib2.urlopen(url)
-
-        # Grab the data about the order from Shopify
-        order = json.loads( result.read() ) #['orders'] # Fetch the order
-        orders = order['orders']
-
-        items = []
-        to_process = order_id = order_num = referring_site = subtotal = None
-        exit_flag = False
-
-        for o in orders:
-            if not exit_flag:
-                logging.info("CHECKING: %s For" % (o['order_number']==input_order_num, ))
-                if str(o['order_number']) == input_order_num:
-                    to_process = o
-                    exit_flag = True
-                    logging.info("FOUND IT")
-        
-        for k, v in to_process.iteritems():
-
-            # Grab order details
-            if k == 'id':
-                order_id = v
-            elif k == 'subtotal_price':
-                subtotal = v
-            elif k == 'order_number':
-                order_num = v
-            elif k == 'referring_site':
-                referring_site = v
-        
-            # Grab the purchased items and save some information about them.
-            elif k == 'line_items':
-                for j in v:
-                    i = ShopifyItem( name=str(j['name']), price=str(j['price']), product_id=str(j['product_id']))
-                    items.append( i )
-
-            # Store User/ Customer data
-            elif k == 'billing_address':
-                user.update( city = v['city'],
-                             province = v['province'],
-                             country_code = v['country_code'],
-                             latitude = v['latitude'],
-                             longitude = v['longitude'] )
-            elif k == 'customer':
-                user.update( email               = v['email'],
-                             first_name          = v['first_name'],
-                             last_name           = v['last_name'],
-                             full_name           = '%s %s' % (v['first_name'], v['last_name']),
-                             shopify_customer_id = v['id'] )
-        
-        # Save the new User data        
-        user.put()
-
-        # Make the ShopifyOrder
-        o = create_shopify_order( campaign, order_id, order_num, subtotal, referring_site, user )
-
-        # Store the purchased items in the order
-        o.items.extend( items )
-        o.put()
-
-
 class TriggerCampaignAnalytics(webapp.RequestHandler):
-
     def get(self):
         scope = self.request.get('scope', 'week')
         campaigns = Campaign.all()
@@ -330,7 +233,6 @@ def main():
         (r'/fetchFB', FetchFacebookData),
         (r'/fetchFriends', FetchFacebookFriends),
         (r'/emailerQueue', EmailerQueue),
-        (r'/getShopifyOrder', GetShopifyOrder),
         ], debug=USING_DEV_SERVER)
     run_wsgi_app(application)
 

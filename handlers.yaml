@@ -13,8 +13,11 @@ handlers:
 - url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends|triggerCampaignAnalytics|computeCampaignAnalytics)
   script: processes.py
 
+- url: /shopify/webhook.*
+  script: shopify/webhook.py
+
 - url: /shopify.*
-  script: shopify_website.py
+  script: shopify/website.py
 
 - url: /conversion
   script: conversion.py
@@ -46,7 +49,7 @@ handlers:
   script: website.py
 
 # further client interactions
-- url: /(about|account|deleteCampaign|login|logout|auth|register|campaign(.*)|campaign.json|contact|edit|doUpdateOrCreateCampaign|doFeedback|code|demo(.*)|dashboard(.*))
+- url: /(about|account|deleteCampaign|login|logout|auth|register|profile(.*)|campaign(.*)|campaign.json|contact|edit|doUpdateOrCreateCampaign|doFeedback|code|demo(.*)|dashboard(.*))
   script: website.py
 
 # website initialization
