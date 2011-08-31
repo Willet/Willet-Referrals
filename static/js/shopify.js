@@ -25,9 +25,8 @@ window.onload = function() {
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
     iframe.setAttribute( 'style', 'width:372px; min-height:500px;background-color: #dddddd; margin-top: 20px; margin-left: auto; margin-right: auto; ' );
-    iframe.setAttribute( 'src', 'http://social-referral.appspot.com/invite?store=' + store_name + '&order=' + order_id );
+    iframe.setAttribute( 'src', 'http://social-referral.appspot.com/invite?store_id=' + store_name + '&order=' + order_id );
 
     // Add the div to the page
     tag.appendChild( iframe );
-    
 };

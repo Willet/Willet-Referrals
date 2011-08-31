@@ -51,6 +51,8 @@ class Campaign(Model):
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_campaigns' )
 
     shopify_token = db.StringProperty( default = '' )
+    shopify_id    = db.StringProperty( default = '' )
+
     # Urls for 3 random products - hacked for now
     shopify_productA_img = db.StringProperty( default = '' )
     shopify_productB_img = db.StringProperty( default = '' )
@@ -66,7 +68,7 @@ class Campaign(Model):
         return db.Query(Campaign).filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        Url = '%s/admin/products.json' % ( self.target_url )
+        url = '%s/admin/products.json' % ( self.target_url )
         username = SHOPIFY_API_KEY
         password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.shopify_token).hexdigest()
 
@@ -337,8 +339,8 @@ class Campaign(Model):
 def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
 
-def get_campaign_by_shopify_store( name ):
-    return Campaign.all().filter( 'product_name =', name ).get()
+def get_campaign_by_shopify_id( id ):
+    return Campaign.all().filter( 'shopify_id =', name ).get()
 
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""

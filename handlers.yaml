@@ -13,6 +13,9 @@ handlers:
 - url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends|triggerCampaignAnalytics|computeCampaignAnalytics)
   script: processes.py
 
+- url: /shopify/webhook.*
+  script: shopify/webhook.py
+
 - url: /shopify.*
   script: shopify/website.py
 
