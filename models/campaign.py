@@ -137,7 +137,7 @@ class Campaign(Model):
                             ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
                     if hasattr(l, 'link_conversions'):
                             ao[abbr]['co'] += 1
-                            order = ShopifyOrder.filter('campaign =', campaign)\
+                            order = ShopifyOrder.all().filter('campaign =', campaign)\
                                 .filter('order_id =', l.link_conversions.order)
                             ao[abbr]['pr'] += order.subtotal_price
                             if userID:

@@ -29,14 +29,15 @@
         <link rel="start" href="http://www.wil.lt" title="Willet Social" />
         
         {% include "../html/javascript_includes.html" %}
-        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+        <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script> 
         <script type="text/javascript">
             
             var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
                 shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
             
-            window.onload = function() {
-            
+            //window.onload = function() {
+            $(document).ready(function() {
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
                 shareArea = document.getElementById('share-area'),
@@ -367,7 +368,7 @@
                     tp.style.borderRadius = '4px';
                     tp.style.boxShadow    = '10px 10px 5px #888';
                 };
-            };
+            });
         </script>
             
         <!-- Blueprint CSS -->
