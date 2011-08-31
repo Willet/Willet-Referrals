@@ -147,22 +147,30 @@
         
         <script>
             // Fill examples
-            var i_share_text, i_twitter_url,
+            var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
                 share_text    = document.getElementById('share_text'),
-                store_url    = document.getElementById('store_url'),
+                store_url     = document.getElementById('store_url'),
                 share_i_frame = document.getElementById('share_iframe');
             
             function update_share_text() {
               if (!i_share_text) {
-                    i_share_text = share_i_frame.contentWindow.document.getElementById('tf-share-text');
+                    i_share_text   = share_i_frame.contentWindow.document.getElementById('share-text');
+                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('unique_link');
+                    i_chars_left   = share_i_frame.contentWindow.document.getElementById('chars-left');
+                    i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
                 }
-                i_share_text.innerHTML = share_text.value;
+                i_share_text.innerHTML   = share_text.value;
+                i_unique_link.value      = "{{campaign.store_url}}";
+                i_plugin_title.innerText = "Invite Your Friends to {{campaign.store_name}}";
+
+                var count = 140 - share_text.value.length;
+                i_chars_left.innerHTML = count + " characters left";
             }
             
             function url_text() {
                 document.getElementById('share_text_span').innerText = 'I love ' + store_url.value + ' because ...! You should check them out!';
                 $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
-
+                
                 update_share_text();
             }
 
