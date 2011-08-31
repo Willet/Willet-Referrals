@@ -27,17 +27,47 @@
 
         <div class="prepend-top prepend-1 span-14 last">
             <p>
-                It only takes 1 step to empower your store with social referrals!
+                It only takes 3 steps to empower your store with social referrals!
             </p>
+            <h2> #1 </h2>
             <p>
-                Simply, visit your <a href="{{campaign.store_url}}/admin/payments">'Checkout and Payment'</a> admin panel and add this
+                Visit your <a href="{{campaign.store_url}}/admin/payments">'Checkout and Payment'</a> admin panel and add this
                 script under the 'Additional Content & Scripts' section. </p>
             <p class="code">
-                &lt;script src="{{URL}}/static/js/shopify.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                &lt;script src="{{URL}}/shopify/static/js/referral.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
             </p>
             <p class="tip">
                 Note: 'Additional Content & Scripts' is near the bottom of the page, right before 'Policies'!
             </p>
+
+            <h2> #2 </h2>
+            <p> 
+                Visit your <a href="{{campaign.store_url}}/admin/notifications">'Email & Notifications'</a> admin panel and add this
+                'Web Hook' under the 'Web Hooks' section. </p>
+            </p>
+            <p class="code">
+                Event: Order Creation <br />
+                Format: JSON <br />
+                URL: {{URL}}/shopify/webhook/order?store_id={{campaign.uuid}}
+            </p>
+            <p class="tip">
+                Note: 'Web Hooks' is at the bottom of the page!
+            </p>
+
+            <h2> #3 </h2>
+            <p> 
+                Visit your <a href="{{campaign.store_url}}/admin/themes/1784702#layout/theme.liquid">'Template Editor for Your Store Theme'</a> and add these
+                 scripts immediately after the &lt;head&gt; tag.</p>
+            </p>
+            <p class="code">
+                &lt;script src="{{URL}}/static/js/jquery.cookie.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                &lt;script src="{{URL}}/shopify/load/bar?store_id={{campaign.uuid}}" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+            </p>
+            <p class="tip">
+                Note: Don't forget to click 'save' on your Template Editor!
+            </p>
+
+            <h2> Done! Congratulations! </h2>
         </div>
 
 {% endblock right_content %}

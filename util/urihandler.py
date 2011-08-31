@@ -51,5 +51,5 @@ class URIHandler( webapp.RequestHandler ):
         merged_values.update(content_template_values)
 
         path = os.path.join('templates/' + template_file_name )
-        logging.info("REndering %s" % path )
+        logging.info("Rendering %s" % path )
         return template.render(path, merged_values)

@@ -16,8 +16,8 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from models.client   import Client, get_client_by_email, authenticate, register
-from models.campaign import get_campaign_by_shopify_id, get_campaign_by_id, Campaign
-from models.link     import create_link, Link
+from models.shopify_campaign import get_shopify_campaign_by_id, ShopifyCampaign
+from models.link     import create_link, Link, get_link_by_willt_code
 from models.shopify_order  import ShopifyItem, create_shopify_order
 from models.stats    import Stats
 from models.user     import User, get_or_create_user_by_cookie
@@ -43,7 +43,7 @@ class DynamicLoader(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        campaign = get_campaign_by_shopify_id( rq_vars['store_id'] )
+        campaign = get_shopify_campaign_by_id( rq_vars['store_id'] )
         
         # If they give a bogus campaign id, show the landing page campaign!
         logging.info(campaign)
@@ -55,19 +55,19 @@ class DynamicLoader(webapp.RequestHandler):
                 'willt_url' : URL,
                 'willt_code': "",
                 'campaign_uuid' : "",
-                'target_url' : URL,
+                'store_url' : URL,
                 
                 'user' : user,
                 'user_email' : user_email
             }
         else:
             # Make a new Link
-            link = create_link(campaign.target_url, campaign, origin_domain, user)
+            link = create_link(campaign.store_url, campaign, origin_domain, user)
             logging.info("link created is %s" % link.willt_url_code)
             
             # Create the share text
-            if campaign.target_url in campaign.share_text:
-                share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+            if campaign.store_url in campaign.share_text:
+                share_text = campaign.share_text.replace( campaign.store_url, link.get_willt_url() )
             else:
                 share_text = campaign.share_text + " " + link.get_willt_url()
             
@@ -94,14 +94,10 @@ class DynamicLoader(webapp.RequestHandler):
             template_values['BASE_URL'] = URL
             
         if 'referral' in input_path:
-            if campaign:
-                template_values['productA_img'] = campaign.shopify_productA_img
-                template_values['productB_img'] = campaign.shopify_productB_img
-                template_values['productC_img'] = campaign.shopify_productC_img
-
             path = os.path.join(os.path.dirname(__file__), 'templates/referral_plugin.html')
         
         elif 'bar' in input_path:
+
             logging.info("BAR: campaign: %s" % (campaign.uuid))
             referrer_cookie = self.request.cookies.get(campaign.uuid, False)
             logging.info('LINK %s' % referrer_cookie)
@@ -111,8 +107,9 @@ class DynamicLoader(webapp.RequestHandler):
                 template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
                 template_values['show_gift']          = True
             self.response.headers['Content-Type'] = 'javascript'
-            path = os.path.join(os.path.dirname(__file__), 'static/js/referral_top_bar.js')
+            path = os.path.join(os.path.dirname(__file__), 'templates/referral_top_bar.js')
         
+        logging.info("rendeirng %s" % path)
         self.response.out.write(template.render(path, template_values))
 
         return

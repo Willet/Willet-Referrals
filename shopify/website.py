@@ -12,7 +12,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
 from models.client   import Client
-from models.shopify_campaign import get_shopify_campaign_by_id, ShopifyCampaign
+from models.shopify_campaign import get_shopify_campaign_by_id, get_shopify_campaign_by_url, ShopifyCampaign
 from models.user     import User, get_user_by_cookie
 from util.consts     import *
 from util.helpers    import *
@@ -45,7 +45,7 @@ class ShowShopifyEditPage( URIHandler ):
         # Check the Shopify stuff if they gave it to us.
         # If it fails, let's just say they aren't coming from Shopify.
         # If we don't have this info, we could be redirecting on an error
-        if shopify_url != '' and campaign_id == '':
+        if shopify_url != '':
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
@@ -87,12 +87,23 @@ class ShowShopifyEditPage( URIHandler ):
                 details = json.loads( result.read() ) 
                 shop    = details['shop']
                 logging.info('shop: %s' % (shop))
-                
+                    
                 # Update the template
                 template_values['shop_owner'] = shop['shop_owner']
-                template_values['campaign'] = { 'store_name' : store_name,
-                                                'store_url'  : shopify_url }
-                template_values['store_token']  = store_token
+                template_values['store_token'] = store_token
+                
+                campaign = get_shopify_campaign_by_url( shopify_url )
+                logging.info("%r" % campaign)
+                camps = ShopifyCampaign.all()
+                for c in camps:
+                    logging.info('C %s %s' %( c.store_url, c.store_url == shopify_url) )
+                if campaign is None:
+                    logging.info("GOUNF")
+                    template_values['campaign']     = { 'store_name' : store_name,
+                                                      'store_url'  : shopify_url }
+                    template_values['has_campaign'] = False
+                else:
+                    template_values['campaign'] = campaign
 
             # The Shopify check failed. Redirecting to normal site. 
             # TODO(Barbara): This might need to change in the future.
@@ -128,7 +139,7 @@ class ShowShopifyEditPage( URIHandler ):
         elif campaign_id != '':
             
             # Updating an existing campaign here:
-            campaign = get_campaign_by_id( campaign_id )
+            campaign = get_shopify_campaign_by_id( campaign_id )
             if campaign == None:
                 self.redirect( '/edit' )
                 return
@@ -223,7 +234,6 @@ class DoUpdateOrCreateShopifyCampaign( URIHandler ):
                 if client is None:
                     client = Client( key_name=shop['email'], uuid=generate_uuid(16), email=shop['email'] )
                     client.put()
-
 
                 domain = shop['domain']
                 if not 'http' in domain:

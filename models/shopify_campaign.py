@@ -32,8 +32,8 @@ class ShopifyCampaign(Model):
     
     cached_clicks_count = db.IntegerProperty( default = 0 )
     
-    store_name    = db.StringProperty( indexed = True )
-    store_url     = db.LinkProperty  ( indexed = False )
+    store_name    = db.StringProperty( indexed = False )
+    store_url     = db.LinkProperty  ( indexed = True )
     store_token   = db.StringProperty( default = '' )
     
     # Default share text
@@ -313,3 +313,7 @@ class ShopifyCampaign(Model):
 
 def get_shopify_campaign_by_id( id ):
     return ShopifyCampaign.all().filter( 'uuid =', id ).get()
+
+def get_shopify_campaign_by_url( url ):
+    logging.info("Looking for %s" % url )
+    return ShopifyCampaign.all().filter( 'store_url =', url ).get()

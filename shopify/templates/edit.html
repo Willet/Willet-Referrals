@@ -88,7 +88,7 @@
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
             <div id="step1_left">
-                {% ifnotequal shop_owner "" %}
+                {% ifnotequal has_campaign False %}
                     <div class="hidden">
                 {% else %}
                     <div>
@@ -96,8 +96,7 @@
                     <label class="default_label" for="store_name"> Store Name</label>
                     <input type="text" id="store_name" name="store_name" value="{{campaign.store_name|escape}}"/>  <br />
                 </div> 
-
-                {% ifnotequal shop_owner "" %}
+                {% ifnotequal has_campaign False %}
                     <div class="hidden">
                 {% else %}
                     <div>
@@ -112,7 +111,7 @@
                 <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
                 <br />
                 <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out!</span>
+                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out at {{campaign.store_url}}!</span>
             </div>
 
             <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
