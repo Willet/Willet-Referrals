@@ -89,18 +89,14 @@ class ShowShopifyEditPage( URIHandler ):
                 logging.info('shop: %s' % (shop))
                     
                 # Update the template
-                template_values['shop_owner'] = shop['shop_owner']
+                template_values['shop_owner']  = shop['shop_owner']
                 template_values['store_token'] = store_token
                 
                 campaign = get_shopify_campaign_by_url( shopify_url )
-                logging.info("%r" % campaign)
-                camps = ShopifyCampaign.all()
-                for c in camps:
-                    logging.info('C %s %s' %( c.store_url, c.store_url == shopify_url) )
                 if campaign is None:
                     logging.info("GOUNF")
                     template_values['campaign']     = { 'store_name' : store_name,
-                                                      'store_url'  : shopify_url }
+                                                        'store_url'  : shopify_url }
                     template_values['has_campaign'] = False
                 else:
                     template_values['campaign'] = campaign
@@ -260,15 +256,15 @@ class DoUpdateOrCreateShopifyCampaign( URIHandler ):
                 self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&store_url=%s&store_name=%s' % (str(e), campaign_id, store_token, share_text, store_url, store_name) )
                 return
         
-        self.redirect( '/shopify/code?id=%s' % campaign.uuid )
+        self.redirect( '/shopify/r/code?id=%s' % campaign.uuid )
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
 ##-----------------------------------------------------------------------------##
 def main():
     application = webapp.WSGIApplication([
-        (r'/shopify/code', ShowShopifyCodePage),
-        (r'/shopify/edit', ShowShopifyEditPage),
+        (r'/shopify/r/code', ShowShopifyCodePage),
+        (r'/shopify/r/edit', ShowShopifyEditPage),
         
         (r'/shopify/doUpdateOrCreateCampaign', DoUpdateOrCreateShopifyCampaign),
         

@@ -615,12 +615,12 @@ tr.bottom_border td {
 /* ------------------------ CODE ---------------------------------------------*/
 
 div.edit_button {
-    float: right;
-    width: 0;
-    height: 0;
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 div.edit_button a {
-    margin-left: -30px;
 }
 
 /* ------------------------ OTHER ------------------------------------------- */
@@ -634,10 +634,11 @@ input[type="text"], textarea {
     max-height: 100px;
     padding: 5px;
     border: 1px solid #999;
-    font-size: 20px;
+    font-size: 1.5em;
     margin-right: 5px;
     border-radius: 5px;
     margin-bottom: 20px;
+    margin-top: 0px;
 }
 
 .submit {
@@ -854,7 +855,7 @@ button:active {
 
 #share_iframe_container {
     width:372px;
-    height:225px;
+    height:246px;
     overflow:hidden;
     margin:auto;
 }
