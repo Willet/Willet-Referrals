@@ -12,7 +12,7 @@
 
         <a class="call_to_action big" href="/account">Finish</a>
         <div class="edit_button">
-            <a class="edit_button" href="/shopify/edit?id={{campaign.uuid}}" title="Edit Campaign">
+            <a class="edit_button" href="/shopify/r/edit?id={{campaign.uuid}}" title="Edit Campaign">
                 <img src="/static/imgs/edit.png" width=20 height=20 />
             </a>
         </div>
@@ -31,7 +31,7 @@
             </p>
             <h2> #1 </h2>
             <p>
-                Visit your <a href="{{campaign.store_url}}/admin/payments">'Checkout and Payment'</a> admin panel and add this
+                Visit your <a href="{{campaign.store_url}}/admin/payments" target="_blank">'Checkout and Payment'</a> admin panel and add this
                 script under the 'Additional Content & Scripts' section. </p>
             <p class="code">
                 &lt;script src="{{URL}}/shopify/static/js/referral.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
@@ -42,7 +42,7 @@
 
             <h2> #2 </h2>
             <p> 
-                Visit your <a href="{{campaign.store_url}}/admin/notifications">'Email & Notifications'</a> admin panel and add this
+                Visit your <a href="{{campaign.store_url}}/admin/notifications" target="_blank">'Email & Notifications'</a> admin panel and add this
                 'Web Hook' under the 'Web Hooks' section. </p>
             </p>
             <p class="code">
@@ -56,7 +56,7 @@
 
             <h2> #3 </h2>
             <p> 
-                Visit your <a href="{{campaign.store_url}}/admin/themes/1784702#layout/theme.liquid">'Template Editor for Your Store Theme'</a> and add these
+                Visit your <a href="{{campaign.store_url}}/admin/themes/1784702#layout/theme.liquid" target="_blank">'Template Editor for Your Store Theme'</a> and add these
                  scripts immediately after the &lt;head&gt; tag.</p>
             </p>
             <p class="code">
