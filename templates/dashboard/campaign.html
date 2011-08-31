@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script type="text/javascript">
+        var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
+        document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
+    </script>
+    <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
+    <script type="text/javascript">
+        window.dbar = null;
+        window.dbar_top = null;
+        window.hover_el = null;
+        window.ub = null;
+        window.users = [];
+
+        var showUserToast = function(obj) {
+            /**
+             * Controls showing the user toast
+             *
+             * obj format
+             *  user_id     users id
+             *  from_json   if data is from json
+             *  had_error   if json request had error
+             */ 
+            var user_id = (obj.user_id == undefined ? -1 : obj.user_id);
+            var from_json = (obj.from_json == undefined ? false : obj.from_json);
+            var had_error = (obj.had_error == undefined ? false : obj.had_error);
+            var toast_div = $('#user_box');
+            var loading = '<img src="/static/imgs/loading.gif" />';
+            if (!from_json) {
+                // we are not coming from json
+                // show the loading box
+                var eleft = window.hover_el.offset().left;
+                var etop = window.hover_el.offset().top;
+                //eleft -= window.hover_el.width();
+                //etop += window.hover_el.height() + 5;
+                etop -= 5;
+                eleft = 150;
+                //console.log('moving toast to', eleft, etop);
+                toast_div.hide()
+                    .css({position: 'absolute', top: etop, left: eleft})
+                    .html(loading) 
+                    .fadeIn('fast')
+                    .css({position: 'absolute', top: etop, left: eleft});
+            }
+            if (had_error) {
+                // we had an error, display that
+                toast_div.html('There was an error loading the user.');
+            } else if (user_id != -1) {
+                user = users[user_id];
+                html = '<div align="right" style="float:right;"><img class="pic" src="'+ user.pic +'" />';
+                html += '<br /><span class="services">Accounts:&nbsp;'; 
+                if (user.has_twitter)
+                    html += '<img src="/static/imgs/db_twitter_small.png" />&nbsp;';
+                if (user.has_facebook)
+                    html += '<img src="/static/imgs/fb-logo-small.png" />&nbsp;';
+                if (user.has_linkedin)
+                    html += '<img src="/static/imgs/linkedin-logo-small.png" />&nbsp;';
+                if (user.has_email)
+                    html += '<img src="/static/imgs/email_logo_small.png" />&nbsp;';
+                
+                html += '</span></div><div align="left">';
+                html += '<h3>'+user.name+'</h3>';
+                html += '<strong><em>'+user.handle+'</em></strong><br />';
+                html += '<strong>Created: </strong>' + user.created + '<br />';
+                html += '<strong>KScore: </strong>' + user.kscore + '<br />';
+                html += '<strong>Reach: </strong>' + user.reach + '</div>';
+                
+                toast_div.html(html);
+            } else {
+                // we are probably waiting on the data from json
+            }
+            return;
+        };
+        $(document).ready(function() {
+            window.dbar = $('#results_header');
+            window.ub = $('#user_box');
+            if (window.dbar.offset() != null)
+                window.dbar_top = window.dbar.offset().top;
+            //$('#results div.row_details a').click(function() {
+            //    $(this).preventDefault();    
+            //});
+            
+            $('#results div.row').click(function() {
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .next('div.details_toggle')
+                        .animate({
+                            height: 'toggle'
+                            }, 100, function() {
+                                var row = $(this);
+                                if (row.height() < 1) {
+                                    row.css('display', 'inline-block');
+                                }
+                        });
+            });
+            $('#results div.row_details').click(function() {
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .children('div.referrers_toggle')
+                    .animate({height: 'toggle'}, 200);
+            });
+            $('#results span a').click(function(e) {
+                /**
+                 * just prevent the div to close 
+                 */
+                e.preventDefault();
+                e.stopPropagation();
+                //$.colorbox({inline:true, href:'#user_box'});
+                //console.log($(this));     
+            });
+            $('#results a.user').hover(function() {
+                try {
+                    clearTimeout(window.ub.data('timeoutID'));
+                    window.hover_el = $(this);
+                    var user_id = window.hover_el.attr('id');
+                    if (window.users[user_id] == undefined) {
+                        // the users data has not been cached yet
+                        showUserToast({'from_json': false});
+                        $.getJSON(
+                            '/campaign/get_user/' + user_id + '/',
+                            function(data) {
+                                // callback for when we get the user details
+                                if (data.success) {
+                                    // request was good
+                                    window.users[data.user.uuid] = data.user;
+                                    console.log('got data for user, showing box', data);
+                                    showUserToast({'user_id': data.user.uuid, 'from_json': true});
+                                } else {
+                                    // error!
+                                    console.log('error getting data for user, got response', data);
+                                    showUserToast({'from_json': true, 'had_error': true});
+                                }
+                            }
+                        );
+                    } else {
+                        // we already have the users data
+                        showUserToast({'user_id': user_id});
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            }, function () {
+                // hover off
+                var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                window.ub.data('timeoutID', timeoutId); 
+            });
+            window.ub.hover(
+                function() {console.log('hovering on ub'); clearTimeout(window.ub.data('timeoutID')); },
+                function() {
+                    var timeoutID = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                    window.ub.data('timeoutID', timeoutID);
+            });
+            $(document).scroll(function() {
+                /**
+                 * CONTROLS CARRYING THE HEADER WITH THE PAGE WHEN USER
+                 * SCROLLS
+                 */
+                // scrolling
+                var scroll_top = $(document).scrollTop();
+                if (window.dbar.offset() != null) {
+                    var current_top = window.dbar.offset().top;
+                } else {
+                    return;
+                }
+                if (current_top < window.dbar_top) {
+                    // move bar back to default position
+                    window.dbar.css('position', 'initial').css('top', window.dbar_top).removeClass('scrolling');
+                } else if (current_top < scroll_top || (current_top > window.dbar_top && current_top > scroll_top)) {
+                    // let's get retarded!
+                    //window.dbar.css('position', 'absolute').css('top', scroll_top).css('left', '30%');
+                    window.dbar.animate({top: 0}, 10, function() {
+                        window.dbar.addClass('scrolling');
+                    });
+                }
+            });
+        });
+        var platform = new Mixpanel.Platform(
+            '{{api_key}}',
+            '{{platform_secret}}',
+            '{{campaign.uuid}}'
+        );
+        {% if has_results %}
+            {{mixpanel}}
+            
+            platform.create_pie_chart('pie_chart', 
+                                     ['Email{{campaign.uuid}}', 'Twitter{{campaign.uuid}}', 'Facebook{{campaign.uuid}}'],
+                                     {labels: true, 
+                                     mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
+        {% endif %}
+        
+        /*
+        platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
+        {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
+        ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
+        {% for r in results %}
+            'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
+        {% endfor %}
+        }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
+        */
+        /*
+        platform.create_line_chart( 'graph_div', [
+            'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
+        ], { 'mapping' : { 'Clicks_{{campaign.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
+        */
+    </script>
+    <link href="/static/css/dashboard.css" type="text/css" />
+{% endblock head %}
+{% block content %}
+    <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
+
+    {% if not has_results %}
+        <p class="center"> We haven't received any shares or clicks yet. </p>
+    {% else %}
+        <div id="results_header">
+            <div class="span-2 prepend-2"><h3>Referrals</h3></div>
+            <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
+            <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
+            <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
+            <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
+        </div>
+        <div id="results_static">&nbsp;</div>
+        <hr />
+        <div id='results' class="center large">
+            <div class="row expandable">
+                <div class="prepend-2 span-2 big icon">
+                    <span>{{ totals.shares }}</span>
+                </div>
+                <div class="span-1 arrow">&nbsp;</div>
+            
+                <div class="span-4">
+                    <div class="cloud ">
+                        <span>{{ totals.reach }}</span>
+                    </div>
+                </div>
+                <div class="span-1 arrow">&nbsp;</div>
+        
+                <div class="span-3 conversions">
+                    <span>{{ totals.clicks }}</span>
+                </div>
+                <div class="span-4">
+                    <div class="sales big">
+                        <span>{{ totals.conversions }}</span>
+                    </div>
+                </div>
+            
+                <div class="span-1"><span>=</span></div>
+                <div class="span-4 append-2 last big dollars">
+                    <span>${{ totals.profit }}</span>
+                </div>
+            </div>
+            <!-- DETAILS -->
+            <div class="details_toggle" style="display: none">
+                {% for st in service_totals %}
+                    <div class="row_details {{ st.name }} expandable">
+                        <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><div class=""><span>{{ st.reach }}</span></div></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>{{ st.clicks }}</span></div>
+                        <div class="span-4 big"><div><span>{{ st.conversions }}</span></div></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last">
+                            <span>${{ st.profit }}</span>
+                        </div>
+                        <!-- twitter double expando details -->
+                        <div class="referrers_toggle " style="display: none"> 
+                            <hr size="1" />
+                            <div class="prepend-2 span-3"><span>Top Referrers</span></div>
+                            <div class="span-4"><span>followers</span></div>
+                            <div class="span-1">&nbsp;</div>
+                            <div class="span-3"><span>visits</span></div>
+                            <div class="span-4"><span>conversions</span></div>
+                            <div class="span-1"><span>&nbsp;</span></div>
+                            <div class="span-4 append-2 dollars last"><span>sales</span></div>
+                            {% for users in st.users %}
+                            {% for u in users %}
+                            <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-4"><span>{{ u.reach }}</span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-3"><span>{{ u.clicks }}</span></div>
+                                <div class="span-4"><span>{{ u.conversions }}</span></div>
+                                <div class="span-1"><span>&nbsp;</span></div>
+                                <div class="span-4 append-2 dollars big last"><span>$?</span></div>
+                            {% endfor %}{% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+        </div>
+        <div id="pie_chart"></div>
+        <div id="graph_div"></div>
+        <div >
+            <div id='user_box' style='display: none; position: absolute;'>
+                <h3>Barbara</h3>
+                <strong>@barbaraEMAC</strong>
+                <img src="/static/imgs/barbara.png" align="right" />
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

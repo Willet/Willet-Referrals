@@ -819,6 +819,3 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
         user = create_user( referrer )
     return user
 
-
-def join_users(user1, user2)
-    """Join the two user objects"""

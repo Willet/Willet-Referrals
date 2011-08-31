@@ -1,5 +1,5 @@
 @charset "utf-8";
-
+/*
 html, body, div, span, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp,
@@ -15,7 +15,7 @@ time, mark, audio, video {
 	font-size:100%;
 	font:inherit;
 	vertical-align:baseline;
-}
+}*/
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display:block; }
 blockquote, q { quotes: none; }
 blockquote:before, blockquote:after,
@@ -48,7 +48,7 @@ body, select, input, textarea { color:#666; }
 body {
 	background:url('../img/bgs/bg_aside_main.png') repeat-y 263px 0;
 	font-family:'PT Sans', Arial, sans-serif;
-	font-size:13px;
+	/* FIXME REMOVE FOR NORMAL USAGE font-size:13px; */
 	*font-size:small;
 	zoom:1;
 }

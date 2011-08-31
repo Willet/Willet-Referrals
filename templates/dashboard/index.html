@@ -1,13 +1,13 @@
-{% extends "base.html" %}
+{% extends "../base.html" %}
 
 {% block head %}
     <script type="text/javascript">
         var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
-        document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
         //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
-    <script type="text/javascript" src="/static/js/boat.js"></script>
+    <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
     <script type="text/javascript">
         window.dbar = null;
         window.dbar_top = null;
@@ -380,105 +380,121 @@
         }
         </style>
 {% endblock head %}
-
+{% block sidebar %}
+    <!-- Sidebar -->
+    <section class="sidebar nested"> <!-- Use class .nested for diferent style -->
+        <h2>Thank you!</h2>
+        <p>We at the Willet Inc team would like to thank you for using our awesome product.</p>
+        <p>Your continued support while we grow our startup is greatly appriciated.</p>
+    </section>
+    <!-- /Sidebar -->
+{% endblock %}
+{% block breadcrumbs %}
+    <li>Dashboard</li>
+{% endblock %}
 {% block content %}
-    <div class="span-22 last lower-15" id="right_header">
-        <p><a href='{{logout_url}}'>Logout</a></p>
-        <p><a href='/account'>Your Campaigns</a></p>
-    </div>
-    
-    <h1 class="span-24 last lower-100 center">Your Referral Results</h1>
-    <h2 class="span-24 last center">Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}</h2>
+    <article class="full-block clearfix">
+        <div class="article-container">
+            {% if has_campaigns %}
+                <header>
+                    <h2>Your Campaigns</h2>
+                    <nav>
+                        <ul class="tab-switch">
+                            <li><a class="default-tab" href="#tab0" rel="tooltip" title="Switch to next tab">All</a></li>
+                            <li><a href="#tab1" rel="tooltip" title="Switch to next tab">Basic Typo</a></li>
+                            <li><a href="#tab2" rel="tooltip" title="Switch to next tab">Table and form</a></li>
+                        </ul>
+                    </nav>
+                </header>
+                <section>
+                    <!-- Tab Content #tab0 -->
+                    <div class="tab default-tab" id="tab0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="title">Title</th>
+                                    <th class="title">Shares</th>
+                                    <th class="title">Clickthroughs </th>
+                                    <th>&nbsp;</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in campaigns %}
+                                <tr class="bottom_border">
+                                    <td>
+                                        <a href="/dashboard/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
+                                    </td>
+                                    <td>
+                                        {{c.shares}}
+                                    </td>
+                                    <td>
+                                        {{c.clicks}}
+                                    </td>
+                                    <td>
+                                        {% if c.is_shopify %}
+                                            <a href="/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <a href="/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                                        {% else %}
+                                            <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="/deleteCampaign" method="post" class="center">
+                                            <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
+                                            <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            {% else %}
+                <header>
+                    Start learning about your customers by <a href="/edit">creating a campaign</a>.
+                </header>
+            {% endif %}
+        </div>
+    </article>
 
-    {% if not has_results %}
-        <p class="center"> We haven't received any shares or clicks yet. </p>
-    {% else %}
-        <div id="results_header">
-            <div class="span-2 prepend-2"><h3>Referrals</h3></div>
-            <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
-            <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
-            <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
-            <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
-        </div>
-        <div id="results_static">&nbsp;</div>
-        <hr />
-        <div id='results' class="center large">
-            <div class="row expandable">
-                <div class="prepend-2 span-2 big icon">
-                    <span>{{ totals.shares }}</span>
-                </div>
-                <div class="span-1 arrow">&nbsp;</div>
-            
-                <div class="span-4">
-                    <div class="cloud ">
-                        <span>{{ totals.reach }}</span>
+    <article class="full-block clearfix">
+        <div class="article-container">
+            <header>
+                <h2>Your Top Referrers</h2>
+            </header>
+            <section>
+               <div class="sidetabs">
+                    <nav class="sidetab-switch">
+                        <ul>
+                            <li><a class="default-sidetab" href="#sidetab1">By number of referrals</a></li>
+                            <li><a href="#sidetab2">By Conversions</a></li>
+                            <li><a href="#sidetab3">By Profit</a></li>
+                        </ul>
+                        <p>Aenean facilisis ligula eget orci adipiscing varius. Curabitur sem ligula, egestas vel bibendum sed, sodales eu nulla. Vestibulum luctus aliquam feugiat. Donec porta interdum placerat.</p>
+                    </nav>
+                    <div class="sidetab default-sidetab" id="sidetab1">
+                        <h3>Top referrers by number of referrals</h3>
+                        <em>Insert table here</em>
                     </div>
-                </div>
-                <div class="span-1 arrow">&nbsp;</div>
-        
-                <div class="span-3 conversions">
-                    <span>{{ totals.clicks }}</span>
-                </div>
-                <div class="span-4">
-                    <div class="sales big">
-                        <span>{{ totals.conversions }}</span>
+                    <div class="sidetab" id="sidetab2">
+                        <h3>Top referrers by conversions</h3>
+                        <em>Insert table here</em>
                     </div>
-                </div>
-            
-                <div class="span-1"><span>=</span></div>
-                <div class="span-4 append-2 last big dollars">
-                    <span>${{ totals.profit }}</span>
-                </div>
-            </div>
-            <!-- DETAILS -->
-            <div class="details_toggle" style="display: none">
-                {% for st in service_totals %}
-                    <div class="row_details {{ st.name }} expandable">
-                        <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-4"><div class=""><span>{{ st.reach }}</span></div></div>
-                        <div class="span-1">&nbsp;</div>
-                        <div class="span-3"><span>{{ st.clicks }}</span></div>
-                        <div class="span-4 big"><div><span>{{ st.conversions }}</span></div></div>
-                        <div class="span-1"><span>&nbsp;</span></div>
-                        <div class="span-4 append-2 dollars big last">
-                            <span>${{ st.profit }}</span>
-                        </div>
-                        <!-- twitter double expando details -->
-                        <div class="referrers_toggle " style="display: none"> 
-                            <hr size="1" />
-                            <div class="prepend-2 span-3"><span>Top Referrers</span></div>
-                            <div class="span-4"><span>followers</span></div>
-                            <div class="span-1">&nbsp;</div>
-                            <div class="span-3"><span>visits</span></div>
-                            <div class="span-4"><span>conversions</span></div>
-                            <div class="span-1"><span>&nbsp;</span></div>
-                            <div class="span-4 append-2 dollars last"><span>sales</span></div>
-                            {% for users in st.users %}
-                            {% for u in users %}
-                            <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
-                                <div class="span-1">&nbsp;</div>
-                                <div class="span-4"><span>{{ u.reach }}</span></div>
-                                <div class="span-1">&nbsp;</div>
-                                <div class="span-3"><span>{{ u.clicks }}</span></div>
-                                <div class="span-4"><span>{{ u.conversions }}</span></div>
-                                <div class="span-1"><span>&nbsp;</span></div>
-                                <div class="span-4 append-2 dollars big last"><span>$?</span></div>
-                            {% endfor %}{% endfor %}
-                        </div>
+                    <div class="sidetab" id="sidetab3">
+                        <h3>Top referrers by profit</h3>
+                        <em>Insert table here</em>
                     </div>
-                {% endfor %}
-            </div>
-            
+                </div> 
+            </section>
+            <footer>
+                <p>
+                    All user data is confidential and is not shared.
+                </p>
+            </footer>
         </div>
-        <div id="pie_chart"></div>
-        <div id="graph_div"></div>
-        <div >
-            <div id='user_box' style='display: none; position: absolute;'>
-                <h3>Barbara</h3>
-                <strong>@barbaraEMAC</strong>
-                <img src="/static/imgs/barbara.png" align="right" />
-            </div>
-        </div>
-    {% endif %}
+    </article>
+
 {% endblock content %}

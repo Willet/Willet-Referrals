@@ -128,8 +128,15 @@ class ShowAccountPage( URIHandler ):
         else:
             has_campaigns = False
         
-        template_values = { 'campaigns' : to_show,
-                            'has_campaigns' : has_campaigns }
+        template_values = {
+            'campaigns' : to_show,
+            'has_campaigns' : has_campaigns,
+            'current': 'dashboard',
+            'BASE_URL': URL,
+            'api_key': MIXPANEL_API_KEY,
+            'platform_secret': hashlib.md5(MIXPANEL_SECRET + '1234').hexdigest(),
+            'num_campaigns': client.campaigns.count()
+        }
         
         self.response.out.write(self.render_page('account.html', template_values))
 
@@ -158,7 +165,12 @@ class ShowUserJSON (URIHandler):
         response['success'] = success
         self.response.out.write(json.dumps(response))
 
-class ShowResultsPage( URIHandler ):
+class ShowDashboardTestPage(URIHandler):
+    def get(self):
+        template_values = {}
+        self.response.out.write(self.render_page('dashboard/backup_base.html', template_values))
+
+class ShowCampaignPage( URIHandler ):
     # Renders a campaign page
     def get(self, campaign_id = ''):
         #client          = self.get_client()
@@ -198,16 +210,17 @@ class ShowResultsPage( URIHandler ):
         template_values['results']     = results
         template_values['mixpanel']    = mixpanel
         template_values['has_results'] = len( results ) != 0
-        
+        template_values['current'] = 'campaign'
+
         template_values['api_key'] = MIXPANEL_API_KEY
         template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + campaign.uuid).hexdigest()
         template_values['totals'] = totals
         template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
         logging.info(service_totals) 
-        self.response.out.write(self.render_page('dashboard/index.html', template_values))
+        self.response.out.write(self.render_page('campaign.html', template_values))
 
-class ShowResultsJSONPage( URIHandler ):
+class ShowCampaignJSONPage( URIHandler ):
     # Renders a campaign page
     def get(self):
         client = self.get_client() # May be None
@@ -557,7 +570,8 @@ def main():
         (r'/about', ShowAboutPage),
         (r'/account', ShowAccountPage),
         (r'/campaign/get_user/(.*)/', ShowUserJSON),
-        (r'/campaign/(.*)/', ShowResultsPage),
+        (r'/campaign/(.*)/', ShowCampaignPage),
+        (r'/dashboard/test', ShowDashboardTestPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),
         (r'/edit', ShowEditPage),
@@ -565,7 +579,7 @@ def main():
         (r'/demo(.*)',ShowDemoSitePage),
 
         # json services
-        (r'/campaign.json', ShowResultsJSONPage),
+        (r'/campaign.json', ShowCampaignJSONPage),
         
         (r'/auth', DoAuthenticate),
         (r'/doFeedback', DoAddFeedback),

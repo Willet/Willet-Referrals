@@ -22,7 +22,7 @@ div#main {
     
 }
 div#header {
-    position: absolute;
+    /*position: absolute;*/
 }
 div#header > div {
 }
