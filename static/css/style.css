@@ -42,7 +42,7 @@ div#footer > div {
 html {
     color:#484848;
 	background-color: #E8F7FB;
-    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    font-family: 'PT Sans', Arial, sans-serif;
 }
 
 body {
@@ -83,7 +83,7 @@ p+p {
     text-indent: 0;
 }
 a, a:link, a:visited {
-    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    font-family: 'PT Sans', Arial, sans-serif;
     color: #056380;
     text-decoration: none;
 }
@@ -300,6 +300,7 @@ div#starburst>div>div {
     behavior: ("../js/PIE.htc");
 }
 .call_to_action.big {
+    color: white;
     font-family: 'trebuchet ms', helvetica, sans-serif;
     font-size: 3.0em;
     font-style: italic;
@@ -627,7 +628,7 @@ div.edit_button a {
 
 input[type="text"], textarea {
     color: black;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: 'PT Sans', Arial, sans-serif;
     max-width: 300px;
     width: 300px;
     height: 24px;
@@ -678,7 +679,7 @@ td{
     min-width: 125px;
 }
 td.title {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: 'PT Sans', Arial, sans-serif;
     font-size: 1.6em;
     letter-spacing: -1px;
 }
@@ -765,7 +766,7 @@ td.title {
 
 .about .link, .about .link:visited {
     font-size: 1.8em;
-    font-family: 'trebuchet ms', helvetica, sans-serif; 
+    font-family: 'PT Sans', Arial, sans-serif;
     text-decoration: none;
 }
 .about .link:hover {
