@@ -18,7 +18,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from models.client   import Client, get_client_by_email, authenticate, register
 from models.campaign import get_campaign_by_shopify_id, get_campaign_by_id, Campaign
 from models.link     import create_link, Link
-from models.shopify  import ShopifyItem, create_shopify_order
+from models.shopify_order  import ShopifyItem, create_shopify_order
 from models.stats    import Stats
 from models.user     import User, get_or_create_user_by_cookie
 from util.helpers    import *

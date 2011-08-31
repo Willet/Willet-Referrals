@@ -14,7 +14,7 @@ from google.appengine.api.datastore_errors import BadValueError
 from models.client   import Client, get_client_by_email, authenticate, register
 from models.campaign import get_campaign_by_shopify_id, Campaign
 from models.feedback import Feedback
-from models.shopify  import ShopifyItem, create_shopify_order
+from models.shopify_order  import ShopifyItem, create_shopify_order
 from models.stats    import Stats
 from models.user     import User, get_or_create_user_by_email
 from util.helpers    import *
