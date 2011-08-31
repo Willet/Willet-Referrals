@@ -340,7 +340,7 @@ def get_campaign_by_id( id ):
     return Campaign.all().filter( 'uuid =', id ).get()
 
 def get_campaign_by_shopify_id( id ):
-    return Campaign.all().filter( 'shopify_id =', name ).get()
+    return Campaign.all().filter( 'shopify_id =', id ).get()
 
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
