@@ -12,55 +12,53 @@
         <p><a href='/about'>About Us</a></p>
     </div>
     <div class="lower-75 span-24 last">
-        <h1 class="center">tag line</h1>
+        <h1 class="main_title center">Social Means Business</h1>
+        <p id="long_line" class="center">Driving ecommerce sales using customers' social profiles and networks</p>
     </div>
     <div class="prepend-top span-24 last">
-        <div class="span-8 center">
-            <h2><span class="big">1.</span> Step 1 </h2>
+        <div class="span-12">
+            <h2><span class="big"></span> Engage Your Social Customers </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify" >Identify, grow, and activate key influencers amongst your customer base
+        (your advocate network) and enable them to spread your message across their social networks.</p>
+
+        <br />
+            <h2><span class="big"></span> Maximize Your Sales </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify"> If your store isn't set up for social referrals, you're losing sales. Give your customers deals that they can share with their friends, so you can make more money.</p>
+            <br />
+            <h2><span class="big"></span> Measure Your Social Success </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify">Details analytics
+            empower you to view your top social customers, measure your social sales, and monitor your store's reputation.</p>
         </div>
-        <div class="span-8 center">
-            <h2><span class="big">2.</span> Step 2 </h2>
-        </div>
-        <div class="span-8 center last">
-            <h2><span class="big">3.</span> Step 3 </h2>
-        </div>
-    </div>
-    <div class="prepend-top span-24 last">
-        <div class="span-8">
-            <div id="share" class="prepend-top span-8 lower-50 last">
-                <div class="lower-75 center">
-                    {% if client %}
-                        <h1><a href="/account" class="call_to_action" id="get_started">Get Started</a></h1>
-                    {% else %}
-                        <h1><a href="/edit#guider=first" class="call_to_action" id="get_started">Get Started</a></h1>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="span-5 lower-50">
-            <img id="bird_arrow" src="/static/imgs/bird_arrow.png" width=100 height=100 />
-        </div>
-        <div class="span-11 last">
-            <div class="span-11 center" style="margin-top: 10px;"> Some demo </div>
+        <div class="span-12 last">
+            <img  style="background-color: white; border-radius: 20px;" class="span-12 last" src="http://unbouncepages-com.s3.amazonaws.com/hi.rf.rs/what_you_know.original.png" />
+            {% if client %}
+                <h1><a href="/account" style="color: #fce8e3; margin-top: 25px;" class="center new_call_to_action">Get Started</a></h1>
+            {% else %}
+                <h1><a href="/edit#guider=first" class="center new_call_to_action"style="color: #fce8e3; margin-top: 25px;">Get Started</a></h1>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}
 
 {% block bottom_content %}
+    <h2 class="center">Willet's full suite of social website tools handle your entire social media needs!</h2>
+    
     <div class="prepend-1 span-10 append-1">
-        <h3>Use Cases</h3>
+        <h3>Willet's Social Juice Suite</h3>
         <ul class="disc">
-            <li> use 1 </li>
+            <li> Social Referral Juice </li>
+            <li> Social Testimonials Juice </li>
+            <li> Shop for a Friend Juice </li>
+            <li> Group Buying (Mini-Groupon) Juice </li>
         </ul>
     </div>
-    <div class="prepend-1 span-10 append-1 last">
-        <h3>Features</h3>
-        <ul class="disc">
-            <li> feature 1 </li>
-        </ol>
-    </div>
-    <div class="prepend-1 span-22 append-1 lower-50">
+    <div class="span-12 last">
         <h3>Largely True Testimonials</h3>
+<p>"I was blinded. Now I see. You guys are like Jesus." <br />- Michael R. Litt, CEO of <a href="http://www.vidyard.com/">Vidyard</a></p>
+        <p>"Wow, this is awesome! It's working perfectly." <br />- Mike McCauley, Co-founder of <a href="http://www.bufferbox.ca/">BufferBox</a></p>
+        <p>"[My site's] love nearly doubled unique visits from 55 to 105 in less than 10 hours." <br /> - <a
+        href="https://twitter.com/#!/tomboa">Francisco Baptista </a></p>
+
     </div>
 {% endblock bottom_content %}
 
