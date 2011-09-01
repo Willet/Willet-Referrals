@@ -40,7 +40,7 @@ class DynamicLoader(webapp.RequestHandler):
         # Grab a User if we have a cookie!
         user = get_or_create_user_by_cookie(self)
         user_email = user.get_attr('email') if user and\
-            user.get_attr('email') != '' else "Your Email"
+            user.get_attr('email') != '' else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
         campaign = get_shopify_campaign_by_id( rq_vars['store_id'] )
