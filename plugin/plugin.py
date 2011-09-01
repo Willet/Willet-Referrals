@@ -18,7 +18,7 @@ from models.campaign import get_campaign_by_id
 from models.link import create_link, get_link_by_willt_code
 from models.oauth import OAuthClient
 from models.testimonial import create_testimonial
-from models.user import get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
+from models.user import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
 # helpers
 from util.consts import *

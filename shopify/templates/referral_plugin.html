@@ -27,10 +27,11 @@
         <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
         tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
         <link rel="start" href="http://www.wil.lt" title="Willet Social" />
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         
-        {% include "../html/javascript_includes.html" %}
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
         <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script> 
+        
         <script type="text/javascript">
             
             var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
@@ -329,7 +330,6 @@
 
 
                 next = function (current_step) {
-
                     if ( current_step == "step1" ) {
                         var step1 = document.getElementById( 'step1');
                         var step2 = document.getElementById( 'step2');
@@ -375,36 +375,34 @@
         <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
         <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
         <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+        
         <style>
             .willt {
                 -webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7);
                 -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); 
                 box-shadow:0 1px 3px rgba(0,0,0,0.7); 
                 
-                background: #fbfbfb; /* Old browsers */
-                background: -moz-linear-gradient(top, #fbfbfb 0%, #d8d8d8 100%); /* FF3.6+ */
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fbfbfb), color-stop(100%,#d8d8d8)); /* Chrome,Safari4+ */
-                background: -webkit-linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* Chrome10+,Safari5.1+ */
-                background: -o-linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* Opera11.10+ */
-                background: -ms-linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* IE10+ */
-                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fbfbfb', endColorstr='#d8d8d8',GradientType=0 ); /* IE6-9 */
-                background: linear-gradient(top, #fbfbfb 0%,#d8d8d8 100%); /* W3C */ 
-                font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
+                background: #F2F2F2; /* Old browsers */
+                background: -moz-linear-gradient(top, #F2F2F2 0%, #d8d8d8 100%); /* FF3.6+ */
+                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#F2F2F2), color-stop(100%,#d8d8d8)); /* Chrome,Safari4+ */
+                background: -webkit-linear-gradient(top, #F2F2F2 0%,#d8d8d8 100%); /* Chrome10+,Safari5.1+ */
+                background: -o-linear-gradient(top, #F2F2F2 0%,#d8d8d8 100%); /* Opera11.10+ */
+                background: -ms-linear-gradient(top, #F2F2F2 0%,#d8d8d8 100%); /* IE10+ */
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F2F2F2', endColorstr='#d8d8d8',GradientType=0 ); /* IE6-9 */
+                background: linear-gradient(top, #F2F2F2 0%,#d8d8d8 100%); /* W3C */ 
 
                 text-align: center;
                 padding: 10px 10px 10px 10px;
                 margin: 0px 0px 0px 0px;
-                /*background-color: #f4faff; */
-            
-                border: 1px solid grey;
                 
-                -khtml-border-radius: 5px;
-                -o-border-radius: 5px;
-                -webkit-border-radius: 5px;
-                -moz-border-radius: 5px;
-                border-radius: 5px;
+                -khtml-border-radius: 3px;
+                -o-border-radius: 3px;
+                -webkit-border-radius: 3px;
+                -moz-border-radius: 3px;
+                border-radius: 3px;
+                
                 float: none;
-                color: black;
+                color: #666;
             }
             a, a * { 
                 cursor: pointer;
@@ -415,9 +413,13 @@
                 font-size: 2.0em;
             }
             h2 {
-                font-size: 1.5em;
+                font-size: 1.9em;
             }
             h1, h2, h3, h4, h5 { 
+                font-family: 'PT Sans', Arial, sans-serif;
+
+                font-weight: bold;
+                text-shadow: 0 1px 1px #B3B3B3;
                 margin: 0 0 5px 0;
                 padding: 0px 0px 0px 0px;
                 line-height: 1.6em;
@@ -427,10 +429,10 @@
                 font-size: 0.7em;
             }
             body, input, textarea {
-                font-family: 'Lucida Grande', Helvetica, Arial, sans-serif;
+                font-family: 'PT Sans', Arial, sans-serif;
             }
-            textarea {
-                font-size: 1.0em;
+            textarea, input[type="text"] {
+                font-size: 1.2em;
             }
             label {
                 cursor: default;
@@ -441,28 +443,27 @@
                 vertical-align: middle; 
                 border: 1px solid #aaa; 
                 Padding: 4px; 
-                color: #555;
+                color: black;
                 margin: 0px 0px 0px 0px;
                 max-height: 75px;
                 max-width: 340px;
             }
             a {
-                display: -moz-inline-stack;
-                display: inline-block !important;
-                position: relative;
-                color: #1f75cc;
-                background-color: #fafcff;
-                margin: 1px -1px 0 0; 
-                border: 1px solid #5e8bf0;
-                border-width: 1px 1px;  
-                _padding: 3px; 
-                _border-width: 1px; 
-                _display: inline;  
-                height: 23px; 
-                line-height: 23px;
-                padding: 1px 10px 1px 10px; 
-                _border:none;
-            }
+                	display:inline-block;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	text-decoration:none;
+	text-shadow:0 1px 2px #666;
+	white-space:nowrap;
+	cursor:pointer;
+	vertical-align:baseline;
+	-webkit-transition:all 400ms ease;
+	-moz-transition:all 400ms ease;
+	-o-transition:all 400ms ease;
+	transition:all 400ms ease;
+	overflow:visible;
+	width:auto;            }
             a:hover { 
                 color: #1f75cc;
                 text-decoration: none;
@@ -545,40 +546,60 @@
                 width: 300px;
                 margin-left: auto;
                 margin-right: auto;
-                background-color: #5e8bf0;
-                margin-top: 15px;
+                background-color: #666;
+                margin-top: 5px;
                 margin-bottom: 5px;
                 padding: 0px 0px 0px 0px;
             }
-            .callToAction {
-                background-color:#5e8bf0;
-                color: white;
-                letter-spacing: 1px;
-                
-                border-style:outset;
-                -webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7);
-                -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); 
-                box-shadow:0 1px 3px rgba(0,0,0,0.7); 
-                
-                padding: 5px 15px 5px 15px;
-            }
-
             #step1 img {
                 height: 50px;
             }   
 
             button, button:visited {
-                background: #222 url(http://static.shopify.com/s/files/1/0096/2072/t/2/assets/overlay.png?534) repeat-x; display: inline-block; padding: 5px 10px 6px; text-decoration:
-                none; -moz-border-radius: 20px; -webkit-border-radius: 20px; -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6); border-bottom: 1px solid rgba(0,0,0,0.25);
-                position: relative; cursor: pointer;
-                color: black;
-                background-color: #3F4E60;
-                text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.80);
-                font-size: 17px;
-                padding: 10px 18px 9px;
+            	display:inline-block;
+                -webkit-border-radius:3px;
+                -moz-border-radius:3px;
+                border-radius:3px;
+                text-decoration:none;
+                text-shadow:0 1px 2px #666;
+                white-space:nowrap;
+                cursor:pointer;
+                vertical-align:baseline;
+                -webkit-transition:all 400ms ease;
+                -moz-transition:all 400ms ease;
+                -o-transition:all 400ms ease;
+                transition:all 400ms ease;
+                overflow:visible;
+                width:auto;
+                background-color:#ae432e;
+                color: #fff;
+
+                border:1px solid;
+                padding:4px 15px;
+                margin-bottom:2px;
+                font-weight:bold;
+                height:28px;
+                cursor:pointer;
+                
+                -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
+
+	border-color:#cb6652 #b74d39 #803121;
+	background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
+	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+	-webkit-box-shadow:0 1px 2px #999;
+	-moz-box-shadow:0 1px 2px #999;
+	box-shadow:0 1px 2px #999;
+	color:#fce8e3;
+
             }
-            button:hover { font-size: 18px; text-decoration: none;}
-            button:active {top: 1px; }
+            button:hover { 
+	         	background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+	color:#fff;
+            }
+            button:active { }
         </style>
     </head>
     <body>
@@ -586,7 +607,7 @@
     <div id="fb-root"></div>
 
     <div id="step1" class="prepend-top span-9 append-15 last willt">
-        <h2> Would you like to give a <span style="color: #ae0909">gift</span> from {{campaign.store_name}} to a friend? </h2>
+        <h2 >What would you<span style="color: #ae432e"> tell a friend </span>about {{campaign.store_name}}?</h2>
 
         <div class="prepend-1 span-3 append-bottom">
             <img src="/static/imgs/gift.png" /> 
@@ -602,23 +623,25 @@
         </div>
 
         <div class="span-9 last">
-            <button class="callToAction" onClick="next('step2');"> Ok! </button>
+            <button  onClick="next('step2');"> I'd tell them ... </button>
         </div>
     </div>
     
     <div id="step2" class="span-9 append-15 last willt" style="display: none;">
         <h2>What would your friends like? </h2>
-
+    <!--
         <img id="top_image" class="prepend-1 span-5 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
         <img id="left_image" class="prepend-1 span-3" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
         <img id="right_image" class="prepend-1 span-3 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
-
-        <button class="callToAction" onClick="next('step2');"> Totally picked the best gift </button>
+-->
+        <button onClick="next('step2');"> Totally picked the best gift </button>
     </div>
 
     <div id="step3" class="span-9 append-15 last willt" style="display: none;">
         <div class="span-9 last">
-            <h2>Give a free <span style="color: #ae0909">gift</span> to your friends from {{campaign.store_name}}!</h2>
+            <!--<h2>Give a free <span style="color: #ae432e">gift</span> to your friends from {{campaign.store_name}}!</h2> -->
+
+            <h2> Get <span style="color: #ae432e">rewarded</span> when your friends shop at {{campaign.store_name}}! </h2>
             
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
