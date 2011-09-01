@@ -12,44 +12,38 @@ window.onload = function() {
     // -------
 
     var bar  = document.createElement( 'div' );
-    bar.setAttribute( 'style', "-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow:0 1px 3px rgba(0,0,0,0.7); text-align:center; background-color: #b9b900; background:#b9b900; background:-webkit-gradient(linear,left top,left bottom,from(yellow),to(#b9b900)); background:-moz-linear-gradient(top,yellow,#b9b900); background:transparent\9; filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow',endColorstr='#b9b900'); -ms-filter:'progid:DXImageTransform.Microsoft.gradient(startColorstr=\'yellow\',endColorstr=\'#b9b900\')'; -webkit-user-select:none;-ms-user-select:none;-moz-user-select:none;-o-user-select:none;user-select:none;cursor:default; position: absolute; left: 0px; top: -70px; height: 37px; width: 100%; z-index: 999998; margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 3px; padding-right: 0px; padding-bottom: 7px; padding-left: 0px; border-top-width: 0px; border-right-width: 0px; border-bottom-width: 0px; border-left-width: 0px; border-style: initial; border-color: initial; text-align: center; font-family: 'Trebuchet MS', arial, helvetica, clean, sans-serif; font-size: 16px; color: rgb(0, 0, 0);" ); bar.setAttribute( 'id', '_willet_bar' ); 
+    
+                
+    bar.setAttribute( 'style', " text-align:center; position: absolute; left: 0px; top: -70px; height: 37px; width: 100%; z-index: 999998; margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 3px; padding-right: 0px; padding-bottom: 7px; padding-left: 0px; font-family: 'Trebuchet MS', arial, helvetica, clean, sans-serif; font-size: 16px; -webkit-appearance: none; background-attachment: scroll; background-clip: border-box; background-color: transparent; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(215, 250, 150)), color-stop(0.05, rgb(171, 217, 87)), to(rgb(120, 172, 21))); background-origin: padding-box; border-bottom-color: #6A9912; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; border-bottom-style: solid; border-bottom-width: 1px; border-left-color: #7CB315; border-left-style: solid; border-left-width: 1px; border-right-color: #7CB315; border-right-style: solid; border-right-width: 1px; border-top-color: #8DCC18; border-top-left-radius: 3px; border-top-right-radius: 3px; border-top-style: solid; border-top-width: 1px; -webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px; box-sizing: border-box; color: #FAFFF1; text-shadow: 1px 1px 1px #B3B3B3;" );
+
+    bar.setAttribute( 'id', '_willet_bar' ); 
     
     var profile_pic = document.createElement( 'img' );
     profile_pic.setAttribute( 'src', '{{profile_pic}}' );
-    profile_pic.setAttribute( 'style', '-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow:0 1px 3px rgba(0,0,0,0.7); border-radius: 3px; border: 1px solid black; float: left; height: 37px; margin: 0px 20px 2px 150px' );
+    profile_pic.setAttribute( 'style', '-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow:0 1px 3px rgba(0,0,0,0.7); border-radius: 3px; border: 1px solid black; float: left; height: 27px; margin: 0px 20px 2px 150px' );
 
     var text = document.createElement( 'p' );
-    text.setAttribute( 'style', 'margin-top: 10px; float: left;' );
+    text.setAttribute( 'style', 'margin-top: 5px; float: left;' );
     text.innerHTML = 'Lucky you! {{referrer_name}} left you a gift.  Purchase any item on this site to get it!';
 
     var hide = document.createElement( 'a' );
-    hide.setAttribute('style', 'margin-top: 10px; margin-right: 125px; float: right; text-decoration: none; color: black;');
+    hide.setAttribute('style', 'margin-top: 5px; margin-right: 150px; float: right; text-decoration: none; color: white;');
     hide.setAttribute('href', "javascript:(function() {$.cookie('_wl_open', 'false');$('#_willet_bar').animate({top: '-100px'}, 500);$('#_willet_pad').animate({height: '0px'}, 500);$('#_willet_open').animate({top: '0px'}, 500);})();");
     hide.innerText = 'Hide';
 
-    var burst = document.createElement( 'img' );
-    burst.setAttribute( 'src', "http://social-referral.appspot.com/static/imgs/burst.png" );
-    burst.setAttribute( 'style', "position: absolute; top: -90px; right: -100px; height: 200px;" );
-
-    var gift = document.createElement( 'img' );
-    gift.setAttribute( 'src', "http://social-referral.appspot.com/static/imgs/gift_box.gif" );
-    gift.setAttribute( 'style', "position: absolute; top: 0px; right: 0px; height: 50px;");
-    
     bar.appendChild( profile_pic );
     bar.appendChild( text );
     bar.appendChild( hide );
-    bar.appendChild( burst );
-    bar.appendChild( gift );
 
     // -------
 
     var open = document.createElement( 'a' );
 
-    open.setAttribute( 'style', "-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow:0 1px 3px rgba(0,0,0,0.7);text-decoration: none; display: block; position: absolute; top: -70px; right: 10px; z-index: 999998; line-height: 27px; height: 27px; background-color: #b9b900; background:#b9b900; background:-webkit-gradient(linear,left top,left bottom,from(yellow),to(#b9b900)); background:-moz-linear-gradient(top,yellow,#b9b900); background:transparent\9; filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='yellow',endColorstr='#b9b900'); -ms-filter:'progid:DXImageTransform.Microsoft.gradient(startColorstr=\'yellow\',endColorstr=\'#b9b900\')'; -webkit-user-select:none;-ms-user-select:none;-moz-user-select:none;-o-user-select:none;user-select:none;cursor:default; margin: 0; padding: 3px 5px 7px 5px; width: auto; border: 0; text-align: center; font-family: 'Trebuchet MS',arial,helvetica,clean,sans-serif; font-size: 16px; color: #000; border-radius: 0 0 5px 5px; -moz-border-radius: 0 0 5px 5px; -webkit-border-radius: 0 0 5px 5px;" ); 
+    open.setAttribute( 'style', "height: 37px; text-decoration: none; display: block; position: absolute; top: -70px; right: 100px; z-index: 999998; line-height: 27px; height: 27px; margin: 0; padding: 0px 5px 15px 5px; width: auto; border: 0; text-align: center; font-family: 'Trebuchet MS',arial,helvetica,clean,sans-serif; font-size: 16px; color: #000; border-radius: 0 0 5px 5px; -moz-border-radius: 0 0 5px 5px; -webkit-border-radius: 0 0 5px 5px; -webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7); -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px; box-sizing: border-box; color: #FAFFF1; -webkit-appearance: none; background-attachment: scroll; background-clip: border-box; background-color: transparent; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(215, 250, 150)), color-stop(0.05, rgb(171, 217, 87)), to(rgb(120, 172, 21))); background-origin: padding-box; border-bottom-color: #6A9912; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; border-bottom-style: solid; border-bottom-width: 1px; border-left-color: #7CB315; border-left-style: solid; border-left-width: 1px; border-right-color: #7CB315; border-right-style: solid; border-right-width: 1px;" ); 
+
     open.setAttribute( 'href', "javascript:(function() {$.cookie('_wl_open', 'true');$('#_willet_open').animate({top: '-70px'}, 500);$('#_willet_bar').animate({top: '0px'}, 500);$('#_willet_pad').animate({height: '37px'}, 500);})();");
     open.setAttribute( 'id', '_willet_open' );
     open.innerText = 'Remember your gift!';
-
 
     {% if show_gift %}
         // Now put the elems in the page.
