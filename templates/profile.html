@@ -41,12 +41,21 @@
                             el.css('background-color','#'+colors[next].toString()); 
                         }
                     });
-            });;
-        
+            });
+            $('#user_top img.small_pic').click(function() {
+                var el = $(this);
+                var src = el.attr('src');
+                $('#user_pic').fadeOut().attr('src', src).fadeIn();
+            });
         });
         
     </script>
     <style type="text/css">
+        #user_top h1,
+        #user_top h2,
+        #user_top h3 {
+            margin-bottom: 3px;
+        }
         .progress-bar {
             border: 1px solid;
             -webkit-border-radius: 5px;
@@ -71,6 +80,7 @@
             -webkit-box-shadow: 0 0 5px #999;
             -moz-box-shadow: 0 0 5px #999;
             box-shadow: 0 0 5px #999;
+            cursor: e-resize;
         }
         .progress-bar div span {
             color: white;
@@ -87,6 +97,11 @@
         }
         img.pic {
            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5); 
+        }
+        img.small_pic {
+            cursor: pointer;
+            padding-right: 3px;
+            border: 1px solid rgba(230, 230, 230, 0.5);;
         }
         div.shaded {
             display: inline-block;
@@ -142,6 +157,11 @@
             padding: 5px 15px;
             height: 15px;
         }
+        .stats-summary li.golden {
+            background-color: rgba(255, 215, 0, 0.75);
+            color: rgba(0, 0, 0, 0.6);
+        }
+
     </style>
     <link rel="stylesheet" href="/static/css/dashboard.css" type="text/css" media="screen" />
 {% endblock head %}
@@ -161,7 +181,16 @@
     {% else %}
         <div id="user_top" class="shaded span-24 last center lower-100 top-10">
             <div class="prepend-1 span-5">
-                <img class='pic' src="http://placekitten.com/200/200" />
+                {% for pic in user_pics %}
+                    {% if forloop.first %}
+                        <div style="padding-bottom: 10px;">
+                            <img id="user_pic" class="pic" src="{{ pic }}" />
+                        </div>
+                        <img class="small_pic" src="{{ pic }}" width="20" height="20" />
+                    {% else %}
+                        <img class="small_pic" src="{{ pic }}" width="20" height="20" />
+                    {% endif %}
+                {% endfor %}
             </div>
             <div class="span-8 left prepend-1 append-1" align="left">
                 <h1>
@@ -178,6 +207,7 @@
                         Elite Influencer
                     {% endif %}
                 </h2>
+                <h3>Last seen <strong>2</strong> days ago</h3>
             </div>
             <div class="span-6 prepend-1 append-1 last">
                 <div>
@@ -203,12 +233,12 @@
                 <div class="span-10 prepend-1 append-1">
                     <h3>Recent Stats</h3>
                     <ul class="stats-summary">
-						<li>
-							<strong class="stats-count">2</strong>
-							<p>Days since last visit</p>
-							<a href="#" class="button stats-view" rel="tooltip" original-title="View new registrations">View</a>
-						</li>
-						<li>
+						<li class="golden">
+                            <strong class="stats-count">${{ total_profit }}</strong>
+							<p>Referral Value</p>
+							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
+                        </li>
+                        <li>
                             <strong class="stats-count">{{ total_referrals }}</strong>
 							<p>Total Referrals</p>
 							<a href="#" class="button stats-view" title="View new visitros" rel="tooltip">View</a>
@@ -228,11 +258,7 @@
 							<p>Conversions</p>
 							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
                         </li>
-                        <li>
-							<strong class="stats-count">$235</strong>
-							<p>Referral Value</p>
-							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
-						</li>
+                        
 					</ul> 
                 </div>
             </div>

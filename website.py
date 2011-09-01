@@ -148,10 +148,17 @@ class ShowProfilePage(URIHandler):
             links = Link.all().filter('user =', user)
             total_clicks = 0
             total_conversions = 0
+            total_profit = 0
             for l in links:
                 total_clicks += l.count_clicks()
-                cons = Conversion.all().filter('link =', l)
-                total_conversions += cons.count()
+                if hasattr(l, 'link_conversions'):
+                    cons = l.link_conversions
+                    for c in cons:
+                        if type(cons.order) == type(str()):
+                            order = ShopifyOrder.all().filter('order_id =', cons.order)
+                            total_profit += order.subtotal_price
+                    #cons = Conversion.all().filter('link =', l)
+                    total_conversions += cons.count()
 
             template_values = {
                 'valid_user': True,
@@ -159,7 +166,7 @@ class ShowProfilePage(URIHandler):
                 'uuid': user.uuid,
                 'user_handle': user.get_handle(),
                 'user_name': user.get_full_name(),
-                'user_pic': user.get_attr('pic'),
+                'user_pics': user.get_pics(),
                 'user_kscore': user.get_attr('kscore'),
                 'has_twitter': (user.get_attr('twitter_handle') != None),
                 'has_facebook': (user.get_attr('fb_name') != None),
@@ -169,7 +176,8 @@ class ShowProfilePage(URIHandler):
                 'created': str(user.get_attr('creation_time').date()),
                 'total_clicks': total_clicks,
                 'total_conversions': total_conversions,
-                'total_referrals': links.count()
+                'total_referrals': links.count(),
+                'total_profit': total_profit
             }
         else:
             template_values = {

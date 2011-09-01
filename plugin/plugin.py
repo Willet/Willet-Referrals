@@ -218,6 +218,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
+                create_testimonial(user, rq_vars['m'], link) 
                 link.user = user
                 self.response.headers.add_header("Content-type", 'text/javascript')
                 if linkedin_share_url is not None:
@@ -273,6 +274,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         link = get_link_by_willt_code(willt_url_code)
         if link:
             link.user = user
+            link.email_sent = True
             link.put()
             
             for i in range(0, to_addrs.count(',')):

@@ -226,6 +226,18 @@ class User( db.Expando ):
         if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
             self.referrer = kwargs['referrer']
         """
+
+    def get_pics(self):
+        """ puts the users pics in a list"""
+        pics = [] 
+        if hasattr(self, 'facebook_profile_pic'):
+            pics.append(getattr(self, 'facebook_profile_pic'))
+        if hasattr(self, 'twitter_profile_pic'):
+            pics.append(getattr(self, 'twitter_profile_pic'))
+        if hasattr(self, 'linkedin_picture_url'):
+            pics.append(getattr(self, 'linkedin_picture_url'))
+        
+        return pics 
     
     def get_attr( self, attr_name ):
         if attr_name == 'email':
@@ -251,6 +263,10 @@ class User( db.Expando ):
             if k in fields:
                 insertion[k] = kwargs[k]
         self.update(**insertion)
+   
+    def compute_user_analytics(self, when):
+        
+        return
     
     def update_linkedin_info(self, extra={}):
         """updates the user attributes based on linkedin dict"""

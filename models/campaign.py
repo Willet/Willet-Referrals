@@ -137,12 +137,25 @@ class Campaign(Model):
                             ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
                     if hasattr(l, 'link_conversions'):
                             ao[abbr]['co'] += 1
-                            order = ShopifyOrder.all().filter('campaign =', campaign)\
-                                .filter('order_id =', l.link_conversions.order)
-                            ao[abbr]['pr'] += order.subtotal_price
+                            order_id = l.link_conversions.order
+
+                            # ugly hack to make sure there is an order_id
+                            if type(order_id) == type(str()):
+                                order = ShopifyOrder.all().filter('campaign =', campaign)\
+                                            .filter('order_id =', order_id)
+                                for o in order:
+                                    if hasattr(o, 'subtotal_price'):
+                                        subtotal_price += o.subtotal_price
+                            else:
+                                subtotal_price = 0
+
+                            # hack to make sure there is a subtotal price
+                            # and cuz we can't get the sbtl_price from a queryset
+                            
+                            ao[abbr]['pr'] += subtotal_price
                             if userID:
                                 users[abbr][userID]['co'] += 1
-                                users[abbr][UserID]['pr'] += order.subtotal_price
+                                users[abbr][userID]['pr'] += subtotal_price
 
         top_user_lists = { 'f': [], 't': [], 'l': [] }
         for k, v in top_user_lists.iteritems():
