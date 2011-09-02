@@ -264,8 +264,37 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
    
-    def compute_user_analytics(self, when):
+    def compute_analytics(self, scope = None):
+        if scope == None:
+            scope = 'day'
+        # okay we are going to calculate this users analytics
+        # for this scope
+
+        # 1. get all the links for this user in this scope
+        if hasattr(self, 'user_'):
+            links = self.user_
+            links = links.sort('campaign')
+        else:
+            return # GTFO, user has no links
         
+        # 2. okay, we are going to go through each link
+        # and put them in a list for a particular campaign
+        # then once we have a list of links for a campaign
+        # we create an user_analytics from the links
+        campaign_id = None
+        campaign_links = []
+        ua = None
+        stats = ['facebook', 'linkedin', 'twitter', 'total']
+        for link in links:
+            if link.campaign.uuid != campaign_id:
+                # new campaign, new useranalytics!
+                ua = UserAnalytics(
+                    user = self,
+                    campaign = link.campaign,
+                    scope = scope
+                )
+            
+
         return
     
     def update_linkedin_info(self, extra={}):

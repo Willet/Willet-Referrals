@@ -214,7 +214,28 @@ class ComputeCampaignAnalytics(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_key', 'scope'], self)
         ca = db.get(rq_vars['ca_key'])
         ca.compute_analytics(rq_vars['scope'])
- 
+
+class TriggerUserAnalytics(webapp.RequestHandler):
+    """
+    Adds a task for each user active in a campaign
+    """
+    def get(self):
+        scope = self.request.get('scope', 'day')
+        users = User.all()
+        for u in users:
+            taskqueue.add(url = '/computeUserAnalytics',
+                params = {
+                    'user_key': u.key(),
+                    'scope': scope
+            })
+        return
+
+class ComputeUserAnalytics(webapp.RequestHandler):
+    """Computes the analytics for this user for this scope"""
+    def get(self):
+        rq_vars = get_request_variables(['user_key', 'scope'], self)
+        user = db.get(rq_vars['user_key'])
+        user.compute_analytics(rq_vars['scope'])
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##

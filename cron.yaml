@@ -1,6 +1,6 @@
 cron:
 
-- description: compute daily analytics for all campaigns
+- description: compute weekly analytics for all campaigns
   url: /triggerCampaignAnalytics
   schedule: every monday 01:00
 
