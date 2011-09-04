@@ -142,9 +142,15 @@ class ShowAccountPage( URIHandler ):
         self.response.out.write(self.render_page('account.html', template_values))
 
 class ShowProfilePage(URIHandler):
-    def get(self, user_id = None):
+    def get(self, campaign_id = None, user_id = None):
+        campaign = get_campaign_by_uuid(campaign_id)
         user = get_user_by_uuid(user_id)
-        if user:
+
+        if not campaign:
+            logging.error("""Tried to get user profile without defining
+                a campgin""")
+            error
+        elif user:
             links = Link.all().filter('user =', user)
             total_clicks = 0
             total_conversions = 0
@@ -618,7 +624,7 @@ def main():
         (r'/account', ShowAccountPage),
         (r'/campaign/get_user/(.*)/', ShowProfileJSON),
         (r'/campaign/(.*)/', ShowCampaignPage),
-        (r'/profile/(.*)/', ShowProfilePage),
+        (r'/profile/(.*)/(.*)/', ShowProfilePage),
         (r'/dashboard/test', ShowDashboardTestPage),
         (r'/code', ShowCodePage),
         (r'/contact', ShowAboutPage),

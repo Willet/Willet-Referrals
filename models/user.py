@@ -172,7 +172,7 @@ class User( db.Expando ):
                 reach += self.fb_friends
             else:
                 reach += int(len(self.fb_friends))
-        elif service == None:
+        elif service == None or service == 'total':
             reach = self.get_reach('twitter')\
                     + self.get_reach('facebook')\
                     + self.get_reach('linkedin')
@@ -264,16 +264,47 @@ class User( db.Expando ):
                 insertion[k] = kwargs[k]
         self.update(**insertion)
    
-    def compute_analytics(self, scope = None):
-        if scope == None:
-            scope = 'day'
+    def compute_analytics(self, scope='day', period_start=datetime.today()):
+        """computes analytics for this user on this scope"""
+        if scope == 'day':
+            period_end = datetime.today()
+        elif scope == 'week':
+            # this gets the day of the week, monday=0, sunday=6
+            # we want the stats for a full week, so we make sure
+            # we are on the first day of the week (monday, 0)
+            start_dow = period_start.weekday()
+            delta = timedelta(days = start_dow)
+            
+            period_start -= delta
+
+            # now we need the end of the period, 6 days later
+            delta = timedelta(days = 6)
+            period_end = period_start + delta
+        else:
+            # we are on the month scope
+            # make sure we start on day 1 of the month
+            # this is not zero indexed, so we are going to
+            # subtract 1 from this value, so that if we are on
+            # day 1, we don't timedelta subtract 1...
+            # ... it makes sense if you think about it
+            day = period_start.day()
+            delta = timedelta(days = day-1)
+            period_start -= delta
+
+            one_month = timedelta(month=1)
+            one_day = timedelta(day=1)
+            
+            # we want the last day of this month
+            period_end = period_start + one_month - one_day
+
         # okay we are going to calculate this users analytics
         # for this scope
 
         # 1. get all the links for this user in this scope
         if hasattr(self, 'user_'):
-            links = self.user_
-            links = links.sort('campaign')
+            links = self.user_.filter('creation_time >=', period_start)\
+                        .filter('creation_time <=', period_end)\
+                        .sort('campaign')
         else:
             return # GTFO, user has no links
         
@@ -284,7 +315,7 @@ class User( db.Expando ):
         campaign_id = None
         campaign_links = []
         ua = None
-        stats = ['facebook', 'linkedin', 'twitter', 'total']
+        services = ['facebook', 'linkedin', 'twitter', 'email' 'total']
         for link in links:
             if link.campaign.uuid != campaign_id:
                 # new campaign, new useranalytics!
@@ -293,9 +324,78 @@ class User( db.Expando ):
                     campaign = link.campaign,
                     scope = scope
                 )
-            
+                stats = []
+                for service in services:
+                    stats[service] = ServiceStats(
+                        user_analytics = ua,
+                        service = service
+                    )
 
+                    # we get the reach for the service now too
+                    # because we're awesome like that
+                    stats[service].reach = self.get_reach(service)
+
+            # figure out which service we are using
+            if link.tweet_id != '':
+                service = 'twitter'
+            elif link.facebook_share_id != '':
+                service = 'facebook'
+            elif link.linkedin_share_url != '':
+                service = 'linkedin'
+            elif link.email_sent == True:
+                service = 'email'
+            else:
+                # couldn't find the service
+                logging.error('error tracking user share that has no service')
+                logging.error(link)
+                continue # on to next link!
+            
+            # let's increment some counters! 
+            # starting witht the shares!
+            stats[service].shares += 1
+            stats['total'].shares += 1
+            
+            # alright let's get some clicks
+            clicks = link.count_clicks()
+            stats[service].clicks += clicks 
+            stats['total'].clicks += clicks
+
+            # get the number of conversions...
+            conversions = 0
+            profit = 0
+            if hasattr(link, 'link_conversions'):
+                for conversion in link.link_conversions:
+                    try:
+                        order_id = conversion.order
+                        order = ShopifyOrder.all().filter('order_id =', order_id)
+                        for o in order:
+                            if hasattr(o, 'subtotal_price'):
+                                profit += o.subtotal_price
+                    except:
+                        # whatever
+                        pass
+                    conversion += 1
+            
+            stats[service].conversions += conversions
+            stats['total'].conversions += conversions
+            
+            # let's save everything ...
+            ua.put()
+            stats[service].put()
+            stats['total'].put()
+           
         return
+    
+    def get_analytics_for_campaign(self, campaign=None):
+        """ returns all the UA for this user for a 
+            specified campaign"""
+        ret = None
+        if not campaign == None:
+            ret = UserAnalytics.all()\
+                    .filter(user=self)\
+                    .filter(campaign=campaign)
+        
+        return ret
     
     def update_linkedin_info(self, extra={}):
         """updates the user attributes based on linkedin dict"""

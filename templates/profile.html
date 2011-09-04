@@ -8,6 +8,7 @@
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
     <script type="text/javascript" src="/static/js/colorjizz-0.2.js"></script>
+    <script type="text/javascript" src="/static/js/.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             // create our color range
@@ -46,6 +47,46 @@
                 var el = $(this);
                 var src = el.attr('src');
                 $('#user_pic').fadeOut().attr('src', src).fadeIn();
+            });
+            user_chart = new HighCharts.Chart({
+                chart: {
+                    renderTo: 'user_chart_container',
+                    type: 'spline'
+                },
+                title: {
+                    text: 'User got no referrals'
+                }, 
+                subtitle: {
+                    text: 'Subtitle text'    
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: {
+                        // don't display the dummy year
+                        month: '%e. %b',
+                        year: '%b'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Count'
+                    },
+                    min: 0
+                },
+                tooltip: function() {
+                    // formatter for tooltips
+                    return '<b>' + this.series.name + '</b><br />'+\
+                        HighCharts.dateFormat('%e. %b', this.x) +\
+                        ': ' + this.y;
+                },
+                series: [{
+                    name: 'Referrals',
+                    data: [
+                        ['this is a date', 'value'],
+                        ['another date', 'value']
+                    ]
+                }]
+                
             });
         });
         

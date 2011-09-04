@@ -54,19 +54,19 @@ class ServiceStats(Model):
     service = db.StringProperty()
 
     # basically number of links for this user for this scope 
-    shares = db.IntegerProperty()
+    shares = db.IntegerProperty(default=0)
 
     # number of clicks
-    clicks = db.IntegerProperty()
+    clicks = db.IntegerProperty(default = 0)
 
     # number of conversions
-    conversions = db.IntegerProperty()
+    conversions = db.IntegerProperty(default = 0)
 
     # total dollay value of sales for this scope 
-    profit = db.FloatProperty()
+    profit = db.FloatProperty(default = 0)
 
     # snapshot of the users reach on this scope for this service
-    reach = db.IntegerProperty()
+    reach = db.IntegerProperty(default = 0)
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
