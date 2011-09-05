@@ -214,7 +214,40 @@ class ComputeCampaignAnalytics(webapp.RequestHandler):
         rq_vars = get_request_variables(['ca_key', 'scope'], self)
         ca = db.get(rq_vars['ca_key'])
         ca.compute_analytics(rq_vars['scope'])
- 
+
+class TriggerUserAnalytics(webapp.RequestHandler):
+    """
+    Adds a task for each user active in a campaign
+    """
+    def get(self):
+        scope = self.request.get('scope', 'day')
+        users = User.all()
+        for u in users:
+            taskqueue.add(url = '/computeUserAnalytics',
+                params = {
+                    'user_key': u.key(),
+                    'scope': scope
+                }
+            )
+        logging.info('triggered analytics for %d users' % users.count())
+        return
+
+class ComputeUserAnalytics(webapp.RequestHandler):
+    """Computes the analytics for this user for this scope"""
+    def post(self):
+        key = self.request.get('user_key', '')
+        scope = self.request.get('scope', 'day')
+
+        if key == '':
+            logging.error('called computeUserAnalytic with no key')
+        else:
+            user = User.get(key)
+            if user:
+                logging.info("computing analytics for user %s" % key)
+                user.compute_analytics(scope)
+            else:
+                logging.error('called computeUserAnalytics with bad key %s' % key)
+        return
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The URI Router ------------------------------------##
@@ -224,6 +257,8 @@ def main():
         (r'/campaignClicksCounter', CampaignClicksCounter),
         (r'/triggerCampaignAnalytics', TriggerCampaignAnalytics),
         (r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
+        (r'/triggerUserAnalytics', TriggerUserAnalytics),
+        (r'/computeUserAnalytics', ComputeUserAnalytics),
         (r'/updateLanding', UpdateLanding),
         (r'/updateCounts',  UpdateCounts),
         (r'/updateClicks',  UpdateClicks),

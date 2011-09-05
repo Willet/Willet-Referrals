@@ -43,6 +43,9 @@ class Link(Model):
     facebook_share_id = db.StringProperty()
     # linkedin's id for the share
     linkedin_share_url = db.StringProperty(required=False, default='', indexed=True)
+
+    # we sent an email!
+    email_sent = db.BooleanProperty(required=False, default=False, indexed=True)
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 

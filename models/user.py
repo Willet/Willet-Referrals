@@ -6,7 +6,8 @@ import sys
 
 from django.utils import simplejson
 
-from datetime import datetime
+from calendar import monthrange
+from datetime import datetime, timedelta, time as datetime_time
 from decimal  import *
 from time import time
 from hmac import new as hmac
@@ -19,6 +20,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from models.model         import Model
 from models.oauth         import OAuthClient
+from models.user_analytics import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
 from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
@@ -172,7 +174,7 @@ class User( db.Expando ):
                 reach += self.fb_friends
             else:
                 reach += int(len(self.fb_friends))
-        elif service == None:
+        elif service == None or service == 'total':
             reach = self.get_reach('twitter')\
                     + self.get_reach('facebook')\
                     + self.get_reach('linkedin')
@@ -226,6 +228,18 @@ class User( db.Expando ):
         if 'referrer' in kwargs and kwargs['referrer'] != None and self.referrer == None:
             self.referrer = kwargs['referrer']
         """
+
+    def get_pics(self):
+        """ puts the users pics in a list"""
+        pics = [] 
+        if hasattr(self, 'facebook_profile_pic'):
+            pics.append(getattr(self, 'facebook_profile_pic'))
+        if hasattr(self, 'twitter_profile_pic'):
+            pics.append(getattr(self, 'twitter_profile_pic'))
+        if hasattr(self, 'linkedin_picture_url'):
+            pics.append(getattr(self, 'linkedin_picture_url'))
+        
+        return pics 
     
     def get_attr( self, attr_name ):
         if attr_name == 'email':
@@ -251,6 +265,181 @@ class User( db.Expando ):
             if k in fields:
                 insertion[k] = kwargs[k]
         self.update(**insertion)
+   
+    def compute_analytics(self, scope='day', period_start=datetime.today()):
+        """computes analytics for this user on this scope"""
+        midnight = datetime_time(0)
+        period_start = period_start.combine(period_start.date(), midnight)
+        if scope == 'day':
+            # yesterday
+            period_start -= delta(days=1)
+            period_end = period_start + timedelta(days=1)
+        elif scope == 'week':
+            # this gets the day of the week, monday=0, sunday=6
+            # we want the stats for a full week, so we make sure
+            # we are on the first day of the week (monday, 0)
+            start_dow = period_start.weekday()
+            delta = timedelta(days=start_dow)
+            
+            period_start -= (delta + timedelta(days=7))
+
+            # now we need the end of the period, 7 days later
+            delta = timedelta(days = 7)
+            period_end = period_start + delta
+        else:
+            # we are on the month scope
+            # make sure we start on day 1 of the month
+            # this is not zero indexed, so we are going to
+            # subtract 1 from this value, so that if we are on
+            # day 1, we don't timedelta subtract 1...
+            # ... it makes sense if you think about it
+            month = period_start.month
+            year = period_start.year
+            if month - 1 == 0:
+                month = 12
+                year -= 1
+            
+            period_start.replace(year=year, month=month, day=1)
+
+            # monthrange returns a tuple of first weekday of the month
+            # and the number of days in this month, so (int, int)
+            # we take the second value to be the number of days to add
+            # to the start of our period to get the entire month
+            one_month = timedelta(
+                days=monthrange(period_start.year, period_start.month)[1]
+            )
+                        
+            # we want the first day of the next month
+            period_end = period_start + one_month
+
+        # okay we are going to calculate this users analytics
+        # for this scope
+
+        # 1. get all the links for this user in this scope
+        if hasattr(self, 'user_'):
+            links = self.user_.filter('creation_time >=', period_start)\
+                        .filter('creation_time <', period_end)
+        else:
+            logging.info('user has no links, exciting')
+            return # GTFO, user has no links
+        
+        # 2. okay, we are going to go through each link
+        # and put them in a list for a particular campaign
+        # then once we have a list of links for a")ampaign
+        # we create an user_analytics from the links
+        campaign_id = None
+        campaign_links = []
+        ua = None
+        services = ['facebook', 'linkedin', 'twitter', 'email', 'total']
+        for link in links:
+            if link.campaign.uuid != campaign_id:
+                # new campaign, new useranalytics!
+                ua = get_or_create_ua(
+                    user = self,
+                    campaign = link.campaign,
+                    scope = scope,
+                    period_start = period_start
+                )
+                
+                stats = {}
+                for service in services:
+                    stats[service] = get_or_create_ss(ua, service)
+
+                    # we get the reach for the service now too
+                    # because we're awesome like that
+                    stats[service].reach = self.get_reach(service)
+
+            # figure out which service we are using
+            if link.tweet_id != '':
+                service = 'twitter'
+            elif link.facebook_share_id != '':
+                service = 'facebook'
+            elif link.linkedin_share_url != '':
+                service = 'linkedin'
+            elif link.email_sent == True:
+                service = 'email'
+            else:
+                # couldn't find the service
+                logging.error('error tracking user share that has no service')
+                logging.error(link)
+                continue # on to next link!
+            
+            # let's increment some counters! 
+            # starting witht the shares!
+            stats[service].shares += 1
+            stats['total'].shares += 1
+            
+            # alright let's get some clicks
+            clicks = link.count_clicks()
+            stats[service].clicks += clicks 
+            stats['total'].clicks += clicks
+
+            # get the number of conversions...
+            # step 4: ???
+            # step 5: profit!
+            conversions = 0
+            profit = 0.0
+            if hasattr(link, 'link_conversions'):
+                for conversion in link.link_conversions:
+                    try:
+                        order_id = conversion.order
+                        order = ShopifyOrder.all().filter('order_id =', order_id)
+                        for o in order:
+                            if hasattr(o, 'subtotal_price'):
+                                profit += float(o.subtotal_price)
+                    except:
+                        # whatever
+                        logging.error('exception getting conversions')
+                    conversion += 1
+            
+            stats[service].profit += float(profit)
+            stats['total'].profit += float(profit)
+
+            stats[service].conversions += conversions
+            stats['total'].conversions += conversions
+            
+            # let's save everything ...
+            ua.put()
+            stats[service].put()
+            stats['total'].put()
+        link_count = links.count()
+        if link_count > 0:
+            logging.warn('processed %d links' % link_count)
+        else:
+            logging.info('no links to process')   
+        return
+    
+    def get_analytics_for_campaign(self, 
+            campaign=None, scope=None, order='period_start'):
+        """ returns all the UA for this user for a 
+            specified campaign"""
+        ret = None
+        if not campaign == None:
+            #ret = self.users_analytics.filter('campaign=', campaign)
+            ret = self.users_analytics
+            logging.info ('user has %d UA' % ret.count())
+            
+            ret = ret.filter('campaign =', campaign)
+            logging.info ('%d ua total' % ret.count())
+
+            if not scope == None:
+                ret = ret.filter('scope =', scope)
+                logging.info ('%d ua total' % ret.count())
+
+            if not order == None:
+                ret = ret.order(order)
+                logging.info ('%d ua total' % ret.count())
+            #logging.info ('user has %d UA for campaign %s' % (ret.count(), campaign))
+            
+            #ret = UserAnalytics.all()#.filter('user =', self).filter('campaign =',campaign)
+            #logging.info ('%d ua total' % ret.count())
+            
+            #ret = ret.filter('user =', self)
+            #logging.info ('%d ua for user %s' % (ret.count(), self))
+
+            #ret = ret.filter('campaign =', campaign)
+            #logging.info ('%d ua for campaign %s' % (ret.count(), campaign))
+        return ret
     
     def update_linkedin_info(self, extra={}):
         """updates the user attributes based on linkedin dict"""
