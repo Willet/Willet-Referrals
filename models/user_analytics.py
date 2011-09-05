@@ -73,10 +73,11 @@ class ServiceStats(Model):
         super(ServiceStats, self).__init__(*args, **kwargs)
 
 def get_or_create_ua(user, campaign, scope, period_start):
-    ua = UserAnalytics.all().filter('user=', user)\
-            .filter('campaign=', campaign)\
-            .filter('scope=', scope)\
-            .filter('period_start=', period_start).get()
+    ua = UserAnalytics.all()\
+            .filter('user =', user)\
+            .filter('campaign =', campaign)\
+            .filter('scope =', scope)\
+            .filter('period_start =', period_start).get()
     
     if ua == None:
         ua = UserAnalytics(
@@ -87,4 +88,18 @@ def get_or_create_ua(user, campaign, scope, period_start):
         )
         ua.put()
     return ua
+
+def get_or_create_ss(ua, service):
+    """ attempts to get or create a ss"""
+    ss = ServiceStats.all()\
+            .filter('user_analytics =', ua)\
+            .filter('service =', service).get()
+    if ss == None:
+        ss = ServiceStats(
+            user_analytics = ua,
+            service = service
+        )
+        ss.put()
+
+    return ss
 

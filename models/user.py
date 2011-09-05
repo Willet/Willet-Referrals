@@ -20,7 +20,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from models.model         import Model
 from models.oauth         import OAuthClient
-from models.user_analytics import UserAnalytics, ServiceStats, get_or_create_ua
+from models.user_analytics import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
 from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
@@ -271,7 +271,8 @@ class User( db.Expando ):
         midnight = datetime_time(0)
         period_start = period_start.combine(period_start.date(), midnight)
         if scope == 'day':
-            # tomorrow
+            # yesterday
+            period_start -= delta(days=1)
             period_end = period_start + timedelta(days=1)
         elif scope == 'week':
             # this gets the day of the week, monday=0, sunday=6
@@ -280,7 +281,7 @@ class User( db.Expando ):
             start_dow = period_start.weekday()
             delta = timedelta(days=start_dow)
             
-            period_start -= delta
+            period_start -= (delta + timedelta(days=7))
 
             # now we need the end of the period, 7 days later
             delta = timedelta(days = 7)
@@ -292,9 +293,13 @@ class User( db.Expando ):
             # subtract 1 from this value, so that if we are on
             # day 1, we don't timedelta subtract 1...
             # ... it makes sense if you think about it
-            day = period_start.day
-            delta = timedelta(days=day-1)
-            period_start -= delta
+            month = period_start.month
+            year = period_start.year
+            if month - 1 == 0:
+                month = 12
+                year -= 1
+            
+            period_start.replace(year=year, month=month, day=1)
 
             # monthrange returns a tuple of first weekday of the month
             # and the number of days in this month, so (int, int)
@@ -338,10 +343,7 @@ class User( db.Expando ):
                 
                 stats = {}
                 for service in services:
-                    stats[service] = ServiceStats(
-                        user_analytics = ua,
-                        service = service
-                    )
+                    stats[service] = get_or_create_ss(ua, service)
 
                     # we get the reach for the service now too
                     # because we're awesome like that
@@ -415,15 +417,18 @@ class User( db.Expando ):
         if not campaign == None:
             #ret = self.users_analytics.filter('campaign=', campaign)
             ret = self.users_analytics
-            #logging.info ('user has %d UA' % ret.count())
+            logging.info ('user has %d UA' % ret.count())
             
             ret = ret.filter('campaign =', campaign)
+            logging.info ('%d ua total' % ret.count())
 
             if not scope == None:
                 ret = ret.filter('scope =', scope)
+                logging.info ('%d ua total' % ret.count())
 
             if not order == None:
                 ret = ret.order(order)
+                logging.info ('%d ua total' % ret.count())
             #logging.info ('user has %d UA for campaign %s' % (ret.count(), campaign))
             
             #ret = UserAnalytics.all()#.filter('user =', self).filter('campaign =',campaign)

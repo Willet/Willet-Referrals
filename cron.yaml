@@ -35,3 +35,16 @@ cron:
 - description: Updating login page stats (clicks)
   url: /updateClicks
   schedule: every 6 hours
+
+- description: compute daily analytics for users 
+  url: /triggerUserAnalytics
+  schedule: every 24 hours 
+
+- description: compute weekly analytics for users 
+  url: /triggerUserAnalytics?scope=week
+  schedule: every monday 01:00
+
+- description: compute monthly analytics for users 
+  url: /triggerUserAnalytics?scope=month
+  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
+

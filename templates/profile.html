@@ -10,6 +10,14 @@
     <script type="text/javascript" src="/static/js/colorjizz-0.2.js"></script>
     <script type="text/javascript" src="/static/js/highcharts.js"></script>
     <script type="text/javascript">
+        /*
+        String.prototype.toCamel = function(){
+            return this.replace(/(?:^|\s)\w/g, function(match) {
+                return match.toUpperCase();
+            });
+        };
+        services = ['facebook', 'twitter', 'linkedin', 'email', 'total'];
+        properties = ['shares', 'clicks', 'conversions', 'profit', 'reach'];
         var user_chart_data = {
             'facebook': {
                 'shares': [],
@@ -50,28 +58,28 @@
         {% for r in results %}
             {% for s in r.stats %}
                 user_chart_data['{{s.service}}']['shares'].push([
-                    '{{ r.period_start }}',
+                    Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.shares }}
                 ]);
                 user_chart_data['{{s.service}}']['clicks'].push([
-                    '{{ r.period_start }}',
+                    Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.clicks }}
                 ]);
                 user_chart_data['{{s.service}}']['conversions'].push([
-                    '{{ r.period_start }}',
+                    Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.conversions }}
                 ]); 
                 user_chart_data['{{s.service}}']['profit'].push([
-                    '{{ r.period_start }}',
+                    Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.profit }}
                 ]); 
                 user_chart_data['{{s.service}}']['reach'].push([
-                    '{{ r.period_start }}',
+                    Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.reach }}
                 ]); 
             {% endfor %}
         {% endfor %}
-
+        */
         $(document).ready(function() {
             // create our color range
             var colors = new Hex(0xFF0000).range(new Hex(0x00FF00), 100, true);
@@ -108,60 +116,117 @@
                 var src = el.attr('src');
                 $('#user_pic').fadeOut().attr('src', src).fadeIn();
             });
+            /* 
+            $('a.button.stats-view').click(function() {
+                var el = $(this);    
+                var hash = location.hash.split('#');
+                if (hash.length > 1) {
+                    hash = hash[1];
+                } else {
+                    hash = '';
+                }
+                $.each(services, function() {
+                    service = this;
+                    s = user_chart.get(service+'_'+hash);
+                    if (el.hasClass('graphed')) {
+                        s.hide();
+                        el.removeClass('graphed');
+                        el.html('Show');
+                    } else {
+                        s.show();
+                        el.addClass('graphed');
+                        el.html('Hide');
+                    }
+                });
+            });
             
-
             user_chart = new Highcharts.Chart({
                 chart: {
                     renderTo: 'user_chart_container',
                     type: 'spline'
                 },
                 title: {
-                    text: 'User got no referrals'
-                }, 
-                subtitle: {
-                    text: 'Subtitle text'    
+                    text: 'Social Graph'
                 },
                 xAxis: {
                     type: 'datetime',
-                    dateTimeLabelFormats: {
-                        // don't display the dummy year
-                        month: '%e. %b',
-                        year: '%b'
+                    dateTimeLabelFormats: { // don't display the dummy year
+                        second: '%b %e',
+                        day: '%e',
+                        month: '%b %e',
                     }
                 },
-                yAxis: {
+                yAxis: [{
                     title: {
                         text: 'Count'
                     },
                     min: 0
+                },{
+                    title: {
+                        text: 'Profit ($)',
+                        style: {
+                            color: 'rgba(255, 215, 0, 0.75)'
+                        }
+                    },
+                    labels: {
+                        formatter: function() {
+                            return '$' + this.value;           
+                        },style: {
+                            color: 'rgba(255, 215, 0, 0.75)'
+                        }
+                    },
+                    opposite: true,
+                    min: 0
+                },{
+                    title: {
+                        text: 'Social Reach'       
+                    },
+                    opposite: true,
+                    min: 0
+                }],
+                legend: {
+                    borderWidth: 0,
+                    enabled: false
                 },
-                tooltip: function() {
-                    // formatter for tooltips
-                    return '<b>'+ this.series.name +'</b><br/>'+
-                        Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' m';
+                tooltip: {
+                    formatter: function() {
+                        // formatter for tooltips
+                        if (this.series.yAxis == 1) {
+                            prepend = '$ ';
+                        } else {
+                            prepend = '';
+                        }
+                        return '<b>'+ this.series.name +'</b><br/>'+
+                            Highcharts.dateFormat('%b %e', this.x) +
+                            ': '+ prepend +' '+this.y;
+                    }
                 },
-                series: [
-                    {
-                        name: 'Referrals',
-                        data: user_chart_data.total.shares 
-                    },
-                    { 
-                        name: 'Clicks',
-                        data: user_chart_data.total.clicks
-                    },
-                    {
-                        name: 'Conversions',
-                        data: user_chart_data.total.clicks
-                    },
-                    {
-                        name: 'Profit',
-                        data: user_chart_data.total.clicks
-                    },
-                    {
-                        name: 'Profit',
-                        data: user_chart_data.total.clicks
-                }]
+                series: []
             });
+            $.each(services, function(){
+                service = this;
+                $.each(properties, function() {
+                    prop = this;
+                    if (prop == 'profit') {
+                        axis = 1;
+                    } else if (prop == 'reach') {
+                        axis = 2;
+                    } else {
+                        axis = 0;
+                    }
+                    user_chart.addSeries({
+                        id: service + '_' + prop,
+                        name: String(service + ' ' + prop).toCamel(),
+                        data: user_chart_data[service][prop],
+                        yAxis: axis
+                    });
+                    if (service != 'total') {
+                        s = user_chart.get(service+'_'+prop);
+                        s.hide();
+                    }
+                });
+            });
+            */
         });
         
     </script>
@@ -351,27 +416,36 @@
 						<li class="golden">
                             <strong class="stats-count">${{ total_profit }}</strong>
 							<p>Referral Value</p>
-							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
+                            <!-- <a href="#profit" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
+                            -->
                         </li>
                         <li>
                             <strong class="stats-count">{{ total_referrals }}</strong>
-							<p>Total Referrals</p>
-							<a href="#" class="button stats-view" title="View new visitros" rel="tooltip">View</a>
-						</li>
+							<p>Shares</p>
+                            <!-- 
+                            <a href="#shares" class="button stats-view" title="View new visitros" rel="tooltip">Show</a>
+                            -->    
+                        </li>
 						<li>
                             <strong class="stats-count">{{ reach }}</strong>
 							<p>Social Reach</p>
-							<a href="#" class="button stats-view" rel="tooltip" original-title="View new sales">View</a>
-						</li>
+                            <!-- 
+                            <a href="#reach" class="button stats-view" rel="tooltip" original-title="View new sales">Show</a>
+                            -->    
+                        </li>
 						<li>
                             <strong class="stats-count">{{ total_clicks}}</strong>
 							<p>Click throughs</p>
-							<a href="#" class="button stats-view" rel="tooltip" original-title="View new orders">View</a>
-						</li>
+                            <!-- 
+                            <a href="#clicks" class="button stats-view" rel="tooltip" original-title="View new orders">Show</a>
+                            -->
+                        </li>
 						<li>
                             <strong class="stats-count">{{ total_conversions }}</strong>
 							<p>Conversions</p>
-							<a href="#" class="button stats-view" title="View new requests" rel="tooltip">View</a>
+                            <!-- 
+                            <a href="#conversions" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
+                            -->    
                         </li>
                         
 					</ul> 
@@ -381,7 +455,6 @@
                 <div class="span-10 prepend-1 append-1">
                     <h3>Referral Graph</h3>
                     <div id="user_chart_container"></div>
-                    <img src="http://placekitten.com/300/300" />
                 </div>
             </div>
         </div>
