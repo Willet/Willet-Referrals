@@ -197,8 +197,19 @@
                     mixpanelTrack( 'Share' );
                     return true;
                 };
+ 
+ 
+                toggleSocialShare = function () {
+                    $("#step1").toggle();
+                    $("#step3").fadeIn(300);
+                };
 
                 toggleEmailShare = function( type ) {
+
+                    $("#step1").toggle();
+                    $("#email_div").fadeIn(300);
+                    
+                    /*
                     var $email_div = $('#email_div');
                     if ( $email_div.is(":visible") ) {
                         $email_div.slideUp();
@@ -209,8 +220,13 @@
                         var title = $( '#title_header' );
                         title.slideUp();
                     }
+                    */
                 };
 
+                toggleStep1Btns = function () {
+                    $("#step1_a").toggle();
+                    $("#step1_b").fadeIn(300);
+                };
 
                 // use the selected medium to share about your purchase
                 share = function(medium, uid) {
@@ -395,7 +411,7 @@
 
                 text-align: center;
                 padding: 10px 10px 10px 10px;
-                margin: 0px 0px 0px 0px;
+                margin: 00px 0px 0px 0px;
                 
                 -khtml-border-radius: 3px;
                 -o-border-radius: 3px;
@@ -406,6 +422,7 @@
                 float: none;
                 color: #666;
                 min-height: 315px;
+                max-height: 315px;
             }
             a, a * { 
                 cursor: pointer;
@@ -413,10 +430,10 @@
                 text-decoration: none;
             }
             h1 {
-                font-size: 2.0em;
+                font-size: 3.0em;
             }
             h2 {
-                font-size: 1.9em;
+                font-size: 2.0em;
             }
             h1, h2, h3, h4, h5 { 
                 font-family: 'PT Sans', Arial, sans-serif;
@@ -445,28 +462,29 @@
                 border-style: none solid solid;
                 vertical-align: middle; 
                 border: 1px solid #aaa; 
-                Padding: 4px; 
+                padding: 4px; 
                 color: black;
                 margin: 0px 0px 0px 0px;
                 max-height: 75px;
                 max-width: 340px;
             }
             a {
-                	display:inline-block;
-	-webkit-border-radius:3px;
-	-moz-border-radius:3px;
-	border-radius:3px;
-	text-decoration:none;
-	text-shadow:0 1px 2px #666;
-	white-space:nowrap;
-	cursor:pointer;
-	vertical-align:baseline;
-	-webkit-transition:all 400ms ease;
-	-moz-transition:all 400ms ease;
-	-o-transition:all 400ms ease;
-	transition:all 400ms ease;
-	overflow:visible;
-	width:auto;            }
+                 display: -moz-inline-stack;
+                display: inline-block !important;
+                position: relative;
+                color: #1f75cc;
+                background-color: #fafcff;
+                margin: 1px -1px 0 0; 
+                border: 1px solid #5e8bf0;
+                border-width: 1px 1px;  
+                _padding: 3px; 
+                _border-width: 1px; 
+                _display: inline;  
+                height: 23px; 
+                line-height: 23px;
+                padding: 1px 10px 1px 10px; 
+                _border:none;         
+            }
             a:hover { 
                 color: #1f75cc;
                 text-decoration: none;
@@ -524,11 +542,11 @@
                 line-height: 33px;
             }
             .input-content {
-                float: right;
+                padding-left: 20px;
+                float: left;
             }
             .input-content input {
-                float: right;
-                width: 260px;
+                width: 295px;
             }
             #share-area {
                 visibility: hidden;
@@ -554,9 +572,6 @@
                 margin-bottom: 5px;
                 padding: 0px 0px 0px 0px;
             }
-            #step1 img {
-                height: 50px;
-            }   
 
             button, button:visited {
             	display:inline-block;
@@ -586,21 +601,20 @@
                 
                 -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
 
-	border-color:#cb6652 #b74d39 #803121;
-	background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
-	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
-	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
-	-webkit-box-shadow:0 1px 2px #999;
-	-moz-box-shadow:0 1px 2px #999;
-	box-shadow:0 1px 2px #999;
-	color:#fce8e3;
-
+                border-color:#cb6652 #b74d39 #803121;
+                background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+                background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
+                background:-o-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+                -webkit-box-shadow:0 1px 2px #999;
+                -moz-box-shadow:0 1px 2px #999;
+                box-shadow:0 1px 2px #999;
+                color:#fce8e3;
             }
             button:hover { 
 	         	background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
-	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-	color:#fff;
+                background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+                background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+                color:#fff;
             }
             button:active { }
         </style>
@@ -609,77 +623,81 @@
 
     <div id="fb-root"></div>
 
-    <div id="step1" class="prepend-top span-9 append-15 last willt">
-        <h2 >What would you<span style="color: #ae432e"> tell a friend </span>about {{campaign.store_name}}?</h2>
+    <div  class="prepend-top span-9 append-15 last willt">
+        <h1>Invite A Friend</h1>
 
-        <div class="prepend-top prepend-1 span-3 append-bottom">
-            <img src="/static/imgs/gift.png" /> 
-            <br />
-            For you!
-        </div>
-        <div class="prepend-top span-3 append-1 append-bottom last">
-            <img style="height: 25px" src="/static/imgs/gift.png" />
-            <img style="padding-bottom: 10px;height: 40px" src="/static/imgs/gift.png" />
-            <img style="height: 25px" src="/static/imgs/gift.png" />
-            <br />
-            For your friends!
-        </div>
-
-        <div class="prepend-top span-9 last">
-            <button style="padding: 5px 30px 30px 30px; font-size: 1.3em" onClick="next('step2');"> I'd tell them ... </button>
-            <hr class="hor_line" style="margin-top: 20px">
-        </div>
-    </div>
-    
-    <div id="step2" class="span-9 append-15 last willt" style="display: none;">
-        <h2>What would your friends like? </h2>
-    <!--
-        <img id="top_image" class="prepend-1 span-5 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
-        <img id="left_image" class="prepend-1 span-3" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
-        <img id="right_image" class="prepend-1 span-3 append-1 last" src="{{campaign.product_imgs}}" onClick="highlight(this);" />
--->
-        <button onClick="next('step2');"> Totally picked the best gift </button>
-    </div>
-
-    <div id="step3" class="span-9 append-15 last willt" style="display: none;">
-        <div class="span-9 last">
-            <!--<h2>Give a free <span style="color: #ae432e">gift</span> to your friends from {{campaign.store_name}}!</h2> -->
-
-            <h2 id="title_header"> Get <span style="color: #ae432e">rewarded</span> when your friends shop at {{campaign.store_name}}! </h2>
+        <div id="step1">
+            <div class="prepend-top span-8 append-bottom center">
+                <img style="margin-left: 30px" width="120px" src="/static/imgs/gift.png" /> 
+            </div>
             
-            <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
-            <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
+            <div id="step1_a">
+                <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{campaign.store_name}}!</h2>
 
-            <div class="span-9 last" id="choose_share_type">
-                How would you like to share? <br />
+                <div class="prepend-top span-9 last">
+                    <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Ok</button>
+                </div>
+            </div>
+
+            <div id="step1_b" class="hidden">
                 <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
+                    Email
                 </a>
-                <a href="#" title="Share on Facebook" onclick="share('fb');">
+
+                <a href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    Share
+                </a>
+                <div class="prepend-top span-9 last"> 
+                    <hr class="hor_line" />
+                    Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input id="" type="text" value="{{ willt_url }}"  />
+                </div>
+            </div>
+        </div>
+            
+        <div id="step3" class="span-9 last hidden">
+            <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
+            
+            <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
+
+            <div class="prepend-top span-9 last" id="choose_share_type">
+                <br /> How would you like to share? <br />
+
+                <a class="prepend-top" href="#" title="Share on Facebook" onclick="share('fb');">
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    Share on Facebook
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    Tweet on Twitter
                 </a>
+                <!--
                 <a href="#" title="Share on LinkedIn" onclick="share('linkedin');">
                     <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
                 </a>
+                -->
             </div>
         </div>
-
         <div class="span-9 last hidden" id="email_div">
+            
             <div class="span-9 last">
-                <div class="input-label">Your Email</div>
+                <div class="input-label">Hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                <div class="input-content">
+                    <span class="defaultValue hidden">Friends' emails, separated by commas.</span>
+                    <input id="to-emails" type="text" name="email" value="" />
+                </div>
+            </div>
+
+            <textarea wrap="soft" id="share-text" onkeydown="countChars();">I left you a gift at {{willt_url}}. {{campaign.store_url}} is amazing! Here's why: {{ text }}</textarea>
+            
+            <div class="span-9 append-bottom last">
+                <div class="input-label">From</div>
                 <div class="input-content">
                     <span class="defaultValue hidden">your email</span>
                     <input id="from-email" type="text" name="email" value="{{ user_email }}" />
-                </div>
-            </div>
-            <div class="span-9 append-bottom last">
-                <div class="input-label">Invitee Emails</div>
-                <div class="input-content">
-                    <span class="defaultValue hidden">Email addresses, separated by commas.</span>
-                    <input id="to-emails" type="text" value="" />
                 </div>
             </div>
             
@@ -709,22 +727,6 @@
             </div>
         </div>
 
-        <div class="span-9 last hidden" id="by-fb-twitter">
-            <div class="span-9 last">
-                <a href="#" onclick="share('fb');">
-                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                </a>
-                <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
-                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                </a>
-            </div>
-        </div>
-
-        <div class="span-9 last"> 
-            <hr class="hor_line" />
-            Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="" type="text" value="{{ willt_url }}" readonly="readonly" />
-        </div>
     </div>
 
     <div id="tweet-complete" onclick="shareComplete();"></div>
