@@ -57,8 +57,8 @@
         
                 // clear the share text
                 shareComplete = function() {
+                    toggleThanks();
                     console.log("Sharing complete!");
-                    shareText.value = 'Thanks for sharing!';
                     return true;
                 };
             
@@ -75,22 +75,28 @@
                     elem.value = "";
                 };
             
-                errorCheckEmails = function (from, to, msg) {
-                    var ret = true;
-                    var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;  
+                errorCheckEmails = function () {
+                    var from         = document.getElementById( 'from-email' ),
+                        to           = document.getElementById( 'to-emails' ),
+                        msg          = $('#share-text-email'),
+                        ret          = true,
+                        emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;  
             
                     if( !emailPattern.test(from.value) ) {
                         from.value = "Please enter your email address.";
+                        alert('from' + from.value);
                         ret = false; 
                     }  
                 
                     if ( to.value == "" ) {
                         to.value = "Please enter your friends' email addresses!";
+                        alert('asd');
                         ret = false;
                     }
                 
-                    if ( msg.value == "" ) {
-                        msg.value = "Enter a message for your friends!";
+                    if ( msg.val() == "" ) {
+                        msg.val("Enter a message for your friends!");
+                        alert('msg');
                         ret = false;
                     }
                     return ret;
@@ -119,7 +125,7 @@
                 sendEmailVia = function( who ){
                     var from_addr = document.getElementById( 'from-email' ),
                         to_addrs  = document.getElementById( 'to-emails' ).value,
-                        msg       = document.getElementById( 'share-text' ).value,
+                        msg       = $('#share-text-email').val(),
                         str;
 
                     // Tell the Server
@@ -167,10 +173,11 @@
                 sendEmail = function( via_willet ) {
                     var from_addr = document.getElementById( 'from-email' ),
                         to_addrs  = document.getElementById( 'to-emails' ),
-                        msg       = document.getElementById( 'share-text' );
+                        msg       = $('#share-text-email');
             
                     // Check the fields.
-                    if ( !errorCheckEmails(from_addr, to_addrs, msg) ) {
+                    if ( !errorCheckEmails() ) {
+                        alert("FAILEING");
                         return false;
                     }
             
@@ -178,16 +185,15 @@
                         type: 'post',
                         data: { from_addr : from_addr.value, 
                                 to_addrs  : to_addrs.value,
-                                msg       : msg.value,
+                                msg       : msg.val(),
                                 url       : "{{willt_url}}",
                                 willt_url_code : "{{willt_code}}",
                                 via_willet : via_willet },
-                        success: function(msg) {
-                            var to_addrs  = document.getElementById( 'to-emails' ),
-                                msg       = document.getElementById( 'share-text' );
-                        
-                            to_addrs.value = "";
-                            msg.value = "Thank You! Invites sent!";
+                        success: function(foo) {
+                            toggleThanks();
+                        },
+                        error: function(foo) {
+                            alert("ASD");
                         }
                     });// end ajax
             
@@ -195,10 +201,15 @@
                     mixpanelTrack( 'Email' );
                     // Also track more general 'share' event
                     mixpanelTrack( 'Share' );
+
                     return true;
                 };
  
- 
+                toggleThanks = function () {
+                    $("#invite").toggle();
+                    $("#thanks").fadeIn(300);
+                };
+    
                 toggleSocialShare = function () {
                     $("#step1").toggle();
                     $("#step3").fadeIn(300);
@@ -547,7 +558,7 @@
                 float: left;
             }
             .input-content input {
-                width: 295px;
+                width: 290px;
             }
             #share-area {
                 visibility: hidden;
@@ -624,7 +635,7 @@
 
     <div id="fb-root"></div>
 
-    <div  class="prepend-top span-9 append-15 last willt">
+    <div id="invite" class="prepend-top span-9 append-15 last willt">
         <h1>Invite A Friend</h1>
 
         <div id="step1">
@@ -692,7 +703,7 @@
                 </div>
             </div>
 
-            <textarea wrap="soft" id="share-text" onkeydown="countChars();">I left you a gift at {{campaign.store_name}} - snag it here {{willt_url}}.
+            <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>I left you a gift at {{campaign.store_name}} - snag it here {{willt_url}}.
 Here's why: 
 {{ text }}</textarea>
             
@@ -730,6 +741,15 @@ Here's why:
             </div>
         </div>
 
+    </div>
+    <div id="thanks" class="prepend-top span-9 append-15 last willt hidden">
+        <h1>Thanks!</h1>
+
+        <div class="prepend-top span-8 append-bottom last center">
+            <img style="margin-left: 35px" width="120px" src="/static/imgs/gift.png" /> 
+        </div>
+        
+        <h2 class="span-8 last">A <span style="color: #ae432e">free gift</span> has been added to your order!</h2>
     </div>
 
     <div id="tweet-complete" onclick="shareComplete();"></div>

@@ -95,7 +95,8 @@ class ShowDemoSitePage( URIHandler ):
     # Renders the main template
     def get(self, page):
         template_values = {
-            'LANDING_CAMPAIGN_UUID' : LANDING_CAMPAIGN_UUID        
+            'LANDING_CAMPAIGN_UUID' : LANDING_CAMPAIGN_UUID,
+            'LANDING_CAMPAIGN_STORE' : LANDING_CAMPAIGN_STORE
         }
         
         if page == '' or page == '/':
