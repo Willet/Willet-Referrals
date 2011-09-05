@@ -283,7 +283,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         # Save this Testimonial
         create_testimonial(user=user, message=msg, link=link)
         
-        # Send off the email if they don't want to use Gmail
+        # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
@@ -307,6 +307,7 @@ class FacebookShare(webapp.RequestHandler):
                                                   token=rq_vars['fb_token'],
                                                   request_handler=self)
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
+
             facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
@@ -319,10 +320,10 @@ class FacebookShare(webapp.RequestHandler):
                 create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
                 # If we are on a shopify store, add a gift to the order
-                
-                add_note_to_shopify_order( rq_vars['order_id'], 
+                #add_note_to_shopify_order( rq_vars['order_id'], 
 
             self.response.out.write(plugin_response)
+
         else: # no user found
             self.response.out.write('notfound')
 
