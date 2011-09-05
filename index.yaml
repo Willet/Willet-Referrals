@@ -22,3 +22,16 @@ indexes:
   properties:
   - name: campaign
   - name: created
+
+- kind: Link
+  properties:
+  - name: user
+  - name: creation_time
+
+- kind: UserAnalytics
+  properties:
+  - name: campaign
+  - name: scope
+  - name: user
+  - name: period_start
+

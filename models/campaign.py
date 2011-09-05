@@ -66,7 +66,7 @@ class Campaign(Model):
         self.product_name   = product_name
         self.target_url     = target_url
         
-        Self.blurb_title    = blurb_title
+        self.blurb_title    = blurb_title
         self.blurb_text     = blurb_text
         self.share_text     = share_text
 

@@ -143,7 +143,7 @@ class ShowAccountPage( URIHandler ):
 
 class ShowProfilePage(URIHandler):
     def get(self, campaign_id = None, user_id = None):
-        campaign = get_campaign_by_uuid(campaign_id)
+        campaign = get_campaign_by_id(campaign_id)
         user = get_user_by_uuid(user_id)
 
         if not campaign:
@@ -165,6 +165,10 @@ class ShowProfilePage(URIHandler):
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()
+            user_analytics = user.get_analytics_for_campaign(campaign, 'day')
+            results = user_analytics.fetch(user_analytics.count())
+            #logging.info("got %d results" % user_analytics.count())
+            #logging.info(results)
 
             template_values = {
                 'valid_user': True,
@@ -183,7 +187,8 @@ class ShowProfilePage(URIHandler):
                 'total_clicks': total_clicks,
                 'total_conversions': total_conversions,
                 'total_referrals': links.count(),
-                'total_profit': total_profit
+                'total_profit': total_profit,
+                'results': results 
             }
         else:
             template_values = {

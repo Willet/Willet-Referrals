@@ -6,7 +6,8 @@ import sys
 
 from django.utils import simplejson
 
-from datetime import datetime
+from calendar import monthrange
+from datetime import datetime, timedelta, time as datetime_time
 from decimal  import *
 from time import time
 from hmac import new as hmac
@@ -19,6 +20,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from models.model         import Model
 from models.oauth         import OAuthClient
+from models.user_analytics import UserAnalytics, ServiceStats, get_or_create_ua
 from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
@@ -266,19 +268,22 @@ class User( db.Expando ):
    
     def compute_analytics(self, scope='day', period_start=datetime.today()):
         """computes analytics for this user on this scope"""
+        midnight = datetime_time(0)
+        period_start = period_start.combine(period_start.date(), midnight)
         if scope == 'day':
-            period_end = datetime.today()
+            # tomorrow
+            period_end = period_start + timedelta(days=1)
         elif scope == 'week':
             # this gets the day of the week, monday=0, sunday=6
             # we want the stats for a full week, so we make sure
             # we are on the first day of the week (monday, 0)
             start_dow = period_start.weekday()
-            delta = timedelta(days = start_dow)
+            delta = timedelta(days=start_dow)
             
             period_start -= delta
 
-            # now we need the end of the period, 6 days later
-            delta = timedelta(days = 6)
+            # now we need the end of the period, 7 days later
+            delta = timedelta(days = 7)
             period_end = period_start + delta
         else:
             # we are on the month scope
@@ -287,15 +292,20 @@ class User( db.Expando ):
             # subtract 1 from this value, so that if we are on
             # day 1, we don't timedelta subtract 1...
             # ... it makes sense if you think about it
-            day = period_start.day()
-            delta = timedelta(days = day-1)
+            day = period_start.day
+            delta = timedelta(days=day-1)
             period_start -= delta
 
-            one_month = timedelta(month=1)
-            one_day = timedelta(day=1)
-            
-            # we want the last day of this month
-            period_end = period_start + one_month - one_day
+            # monthrange returns a tuple of first weekday of the month
+            # and the number of days in this month, so (int, int)
+            # we take the second value to be the number of days to add
+            # to the start of our period to get the entire month
+            one_month = timedelta(
+                days=monthrange(period_start.year, period_start.month)[1]
+            )
+                        
+            # we want the first day of the next month
+            period_end = period_start + one_month
 
         # okay we are going to calculate this users analytics
         # for this scope
@@ -303,28 +313,30 @@ class User( db.Expando ):
         # 1. get all the links for this user in this scope
         if hasattr(self, 'user_'):
             links = self.user_.filter('creation_time >=', period_start)\
-                        .filter('creation_time <=', period_end)\
-                        .sort('campaign')
+                        .filter('creation_time <', period_end)
         else:
+            logging.info('user has no links, exciting')
             return # GTFO, user has no links
         
         # 2. okay, we are going to go through each link
         # and put them in a list for a particular campaign
-        # then once we have a list of links for a campaign
+        # then once we have a list of links for a")ampaign
         # we create an user_analytics from the links
         campaign_id = None
         campaign_links = []
         ua = None
-        services = ['facebook', 'linkedin', 'twitter', 'email' 'total']
+        services = ['facebook', 'linkedin', 'twitter', 'email', 'total']
         for link in links:
             if link.campaign.uuid != campaign_id:
                 # new campaign, new useranalytics!
-                ua = UserAnalytics(
+                ua = get_or_create_ua(
                     user = self,
                     campaign = link.campaign,
-                    scope = scope
+                    scope = scope,
+                    period_start = period_start
                 )
-                stats = []
+                
+                stats = {}
                 for service in services:
                     stats[service] = ServiceStats(
                         user_analytics = ua,
@@ -361,8 +373,10 @@ class User( db.Expando ):
             stats['total'].clicks += clicks
 
             # get the number of conversions...
+            # step 4: ???
+            # step 5: profit!
             conversions = 0
-            profit = 0
+            profit = 0.0
             if hasattr(link, 'link_conversions'):
                 for conversion in link.link_conversions:
                     try:
@@ -370,12 +384,15 @@ class User( db.Expando ):
                         order = ShopifyOrder.all().filter('order_id =', order_id)
                         for o in order:
                             if hasattr(o, 'subtotal_price'):
-                                profit += o.subtotal_price
+                                profit += float(o.subtotal_price)
                     except:
                         # whatever
-                        pass
+                        logging.error('exception getting conversions')
                     conversion += 1
             
+            stats[service].profit += float(profit)
+            stats['total'].profit += float(profit)
+
             stats[service].conversions += conversions
             stats['total'].conversions += conversions
             
@@ -383,18 +400,40 @@ class User( db.Expando ):
             ua.put()
             stats[service].put()
             stats['total'].put()
-           
+        link_count = links.count()
+        if link_count > 0:
+            logging.warn('processed %d links' % link_count)
+        else:
+            logging.info('no links to process')   
         return
     
-    def get_analytics_for_campaign(self, campaign=None):
+    def get_analytics_for_campaign(self, 
+            campaign=None, scope=None, order='period_start'):
         """ returns all the UA for this user for a 
             specified campaign"""
         ret = None
         if not campaign == None:
-            ret = UserAnalytics.all()\
-                    .filter(user=self)\
-                    .filter(campaign=campaign)
-        
+            #ret = self.users_analytics.filter('campaign=', campaign)
+            ret = self.users_analytics
+            #logging.info ('user has %d UA' % ret.count())
+            
+            ret = ret.filter('campaign =', campaign)
+
+            if not scope == None:
+                ret = ret.filter('scope =', scope)
+
+            if not order == None:
+                ret = ret.order(order)
+            #logging.info ('user has %d UA for campaign %s' % (ret.count(), campaign))
+            
+            #ret = UserAnalytics.all()#.filter('user =', self).filter('campaign =',campaign)
+            #logging.info ('%d ua total' % ret.count())
+            
+            #ret = ret.filter('user =', self)
+            #logging.info ('%d ua for user %s' % (ret.count(), self))
+
+            #ret = ret.filter('campaign =', campaign)
+            #logging.info ('%d ua for campaign %s' % (ret.count(), campaign))
         return ret
     
     def update_linkedin_info(self, extra={}):

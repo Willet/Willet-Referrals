@@ -28,14 +28,14 @@ class UserAnalytics(Model):
     For a given scope, the users analytics are calculated as a
     snapshot of that scope's activities
     """
-    uuid            = db.StringProperty(indexed = True)
-    creation_time   = db.DateTimeProperty(auto_now_add = True)
-
+    uuid = db.StringProperty(indexed = True)
+    creation_time = db.DateTimeProperty(auto_now_add = True)
+    period_start = db.DateTimeProperty()
     # user this is for
-    user            = db.ReferenceProperty(db.Model, collection_name='users_analytics')
+    user = db.ReferenceProperty(db.Model, collection_name='users_analytics')
     
     # the campaign for which these stats are being calcualted
-    campaign        = db.ReferenceProperty(db.Model, collection_name='user_analytics')
+    campaign = db.ReferenceProperty(db.Model, collection_name='campaign_users_analytics')
     
     # the 'scope' of this analytics
     # either 'day, week, month, year'
@@ -63,7 +63,7 @@ class ServiceStats(Model):
     conversions = db.IntegerProperty(default = 0)
 
     # total dollay value of sales for this scope 
-    profit = db.FloatProperty(default = 0)
+    profit = db.FloatProperty(default = float(0))
 
     # snapshot of the users reach on this scope for this service
     reach = db.IntegerProperty(default = 0)
@@ -71,4 +71,20 @@ class ServiceStats(Model):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(ServiceStats, self).__init__(*args, **kwargs)
+
+def get_or_create_ua(user, campaign, scope, period_start):
+    ua = UserAnalytics.all().filter('user=', user)\
+            .filter('campaign=', campaign)\
+            .filter('scope=', scope)\
+            .filter('period_start=', period_start).get()
+    
+    if ua == None:
+        ua = UserAnalytics(
+            user = user,
+            campaign = campaign,
+            scope = scope,
+            period_start = period_start
+        )
+        ua.put()
+    return ua
 

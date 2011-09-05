@@ -67,7 +67,7 @@ var showUserToast = function(obj) {
         html += '<strong>Created: </strong>' + user.created + '<br />';
         html += '<strong>KScore: </strong>' + user.kscore + '<br />';
         html += '<strong>Reach: </strong>' + user.reach + '</div>';
-        html += '<button class="" onclick="goProfile(\''+user_id+'\');">Profile</button>';
+        html += '<a href="/profile/'+campaign_id+'/'+user_id+'/" class="button">Profile</button>';
         
         toast_div.html(html);
     } else {

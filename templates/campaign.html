@@ -10,6 +10,7 @@
     <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
     <script type="text/javascript" src="/static/js/dashboard.js"></script>
     <script type="text/javascript">
+        var campaign_id = '{{ campaign.uuid }}';
         var platform = new Mixpanel.Platform(
             '{{api_key}}',
             '{{platform_secret}}',

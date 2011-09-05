@@ -8,8 +8,70 @@
         document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
     </script>
     <script type="text/javascript" src="/static/js/colorjizz-0.2.js"></script>
-    <script type="text/javascript" src="/static/js/.js"></script>
+    <script type="text/javascript" src="/static/js/highcharts.js"></script>
     <script type="text/javascript">
+        var user_chart_data = {
+            'facebook': {
+                'shares': [],
+                'clicks': [],
+                'conversions': [],
+                'profit': [],
+                'reach': [],
+            },
+            'twitter': {
+                'shares': [],
+                'clicks': [],
+                'conversions': [],
+                'profit': [],
+                'reach': [],
+            },
+            'linkedin': {
+                'shares': [],
+                'clicks': [],
+                'conversions': [],
+                'profit': [],
+                'reach': [],
+            },
+            'email': {
+                'shares': [],
+                'clicks': [],
+                'conversions': [],
+                'profit': [],
+                'reach': [],
+            },
+            'total': {
+                'shares': [],
+                'clicks': [],
+                'conversions': [],
+                'profit': [],
+                'reach': [],
+            },
+        };
+        {% for r in results %}
+            {% for s in r.stats %}
+                user_chart_data['{{s.service}}']['shares'].push([
+                    '{{ r.period_start }}',
+                    {{ s.shares }}
+                ]);
+                user_chart_data['{{s.service}}']['clicks'].push([
+                    '{{ r.period_start }}',
+                    {{ s.clicks }}
+                ]);
+                user_chart_data['{{s.service}}']['conversions'].push([
+                    '{{ r.period_start }}',
+                    {{ s.conversions }}
+                ]); 
+                user_chart_data['{{s.service}}']['profit'].push([
+                    '{{ r.period_start }}',
+                    {{ s.profit }}
+                ]); 
+                user_chart_data['{{s.service}}']['reach'].push([
+                    '{{ r.period_start }}',
+                    {{ s.reach }}
+                ]); 
+            {% endfor %}
+        {% endfor %}
+
         $(document).ready(function() {
             // create our color range
             var colors = new Hex(0xFF0000).range(new Hex(0x00FF00), 100, true);
@@ -24,7 +86,6 @@
                             var el = $(fx.elem);
                             var current = parseInt(el.width());
                             var next = parseInt((current/max)*100);
-                            console.log('setting color to', next, colors[next].toString())
                             el.css('background-color','#'+colors[next].toString()); 
                         }
                     });
@@ -38,7 +99,6 @@
                             var el = $(fx.elem);
                             var current = parseInt(el.width());
                             var next = parseInt((current/max)*100);
-                            console.log('setting color to', next, colors[next].toString())
                             el.css('background-color','#'+colors[next].toString()); 
                         }
                     });
@@ -48,7 +108,9 @@
                 var src = el.attr('src');
                 $('#user_pic').fadeOut().attr('src', src).fadeIn();
             });
-            user_chart = new HighCharts.Chart({
+            
+
+            user_chart = new Highcharts.Chart({
                 chart: {
                     renderTo: 'user_chart_container',
                     type: 'spline'
@@ -75,18 +137,30 @@
                 },
                 tooltip: function() {
                     // formatter for tooltips
-                    return '<b>' + this.series.name + '</b><br />'+\
-                        HighCharts.dateFormat('%e. %b', this.x) +\
-                        ': ' + this.y;
+                    return '<b>'+ this.series.name +'</b><br/>'+
+                        Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' m';
                 },
-                series: [{
-                    name: 'Referrals',
-                    data: [
-                        ['this is a date', 'value'],
-                        ['another date', 'value']
-                    ]
+                series: [
+                    {
+                        name: 'Referrals',
+                        data: user_chart_data.total.shares 
+                    },
+                    { 
+                        name: 'Clicks',
+                        data: user_chart_data.total.clicks
+                    },
+                    {
+                        name: 'Conversions',
+                        data: user_chart_data.total.clicks
+                    },
+                    {
+                        name: 'Profit',
+                        data: user_chart_data.total.clicks
+                    },
+                    {
+                        name: 'Profit',
+                        data: user_chart_data.total.clicks
                 }]
-                
             });
         });
         
@@ -306,6 +380,7 @@
             <div class="span-12 last shaded lower-10">
                 <div class="span-10 prepend-1 append-1">
                     <h3>Referral Graph</h3>
+                    <div id="user_chart_container"></div>
                     <img src="http://placekitten.com/300/300" />
                 </div>
             </div>
