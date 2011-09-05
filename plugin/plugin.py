@@ -296,7 +296,7 @@ class FacebookShare(webapp.RequestHandler):
     
     def post(self):
         logging.info("We are posting to facebook")
-        rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id']
+        rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id', 'order_id']
                                         , self)
         user = get_user_by_cookie(self)
         if user is None:
@@ -312,6 +312,14 @@ class FacebookShare(webapp.RequestHandler):
                 link.campaign.increment_shares()
                 # add the user to the link now as we may not get a respone
                 link.add_user(user)
+
+                # Save the Testimonial
+                create_testimonial(user=user, message=rq_vars['msg'], link=link)
+
+                # If we are on a shopify store, add a gift to the order
+                
+                add_note_to_shopify_order( rq_vars['order_id'], 
+
             self.response.out.write(plugin_response)
         else: # no user found
             self.response.out.write('notfound')
