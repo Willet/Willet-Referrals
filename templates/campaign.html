@@ -49,7 +49,7 @@
         <p><a href='/account'>Your Campaigns</a></p>
     </div>
     <h2 class="span-24 last center lower-100">
-        Campaign: "{{campaign.title|escape}}" for {{campaign.product_name}}
+        {{campaign.product_name}}
     </h2>
 
     {% if not has_results %}
@@ -57,15 +57,15 @@
     {% else %}
         <div id="results_header">
             <div class="span-2 prepend-2"><h3>Referrals</h3></div>
-            <div class="span-4 prepend-1"><h3 style="text-align: center;">Reach</h3></div>
-            <div class="span-3 prepend-1"><h3 style="text-align: center;">Visits</h3></div>
+            <div class="span-4 prepend-1"><h3 class="quiet" style="text-align: center;">Reach</h3></div>
+            <div class="span-3 prepend-1"><h3 class="quiet" style="text-align: center;">Visits</h3></div>
             <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
             <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
         </div>
         <div id="results_static">&nbsp;</div>
         <hr />
         <div id='results' class="center large">
-            <div class="row expandable">
+            <div class="row">
                 <div class="prepend-2 span-2 big icon">
                     <span>{{ totals.shares }}</span>
                 </div>
@@ -93,7 +93,7 @@
                 </div>
             </div>
             <!-- DETAILS -->
-            <div class="details_toggle" style="display: none">
+            <div class="details_toggle">
                 {% for st in service_totals %}
                     <div class="row_details {{ st.name }} expandable">
                         <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>

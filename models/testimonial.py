@@ -19,6 +19,7 @@ class Testimonial(Model):
     message  = db.StringProperty(multiline=True)
     user     = db.ReferenceProperty( db.Model, collection_name = 'user_testimonials' )
     campaign = db.ReferenceProperty( db.Model, collection_name = 'campaign_testimonials' )
+    link     = db.ReferenceProperty(db.Model, collection_name = 'link_testimonials')
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -46,6 +47,7 @@ def create_testimonial( user,  message, link ):
                          uuid = uuid,
                          user=user,
                          message=message,
-                         campaign=campaign )
+                         campaign=campaign,
+                         link=link )
         # Save it!
         t.put()

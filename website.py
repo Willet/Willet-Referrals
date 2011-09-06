@@ -149,7 +149,6 @@ class ShowProfilePage(URIHandler):
         if not campaign:
             logging.error("""Tried to get user profile without defining
                 a campgin""")
-            error
         elif user:
             links = Link.all().filter('user =', user)
             total_clicks = 0
@@ -165,10 +164,14 @@ class ShowProfilePage(URIHandler):
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()
-            user_analytics = user.get_analytics_for_campaign(campaign, 'day')
-            results = user_analytics.fetch(user_analytics.count())
+            #user_analytics = user.get_analytics_for_campaign(campaign, 'day')
+            #results = user_analytics.fetch(user_analytics.count())
             #logging.info("got %d results" % user_analytics.count())
             #logging.info(results)
+            if hasattr(user, 'user_testimonials'):
+                testies = user.user_testimonials.filter('campaign =', campaign)
+            else:
+                testies = {}
 
             template_values = {
                 'valid_user': True,
@@ -188,7 +191,8 @@ class ShowProfilePage(URIHandler):
                 'total_conversions': total_conversions,
                 'total_referrals': links.count(),
                 'total_profit': total_profit,
-                'results': results 
+                'testies': testies,
+                #'results': results 
             }
         else:
             template_values = {

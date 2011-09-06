@@ -87,7 +87,7 @@ $(document).ready(function() {
     }
 
     // Show/hide results
-    $('#results div.row').click(function() {
+    /*$('#results div.row').click(function() {
         $(this)
             .toggleClass('expanded')
             .toggleClass('expandable')
@@ -100,7 +100,7 @@ $(document).ready(function() {
                             row.css('display', 'inline-block');
                         }
                 });
-    });
+    });*/
 
     // Show/Hide Defaults
     $('#results div.row_details').click(function() {

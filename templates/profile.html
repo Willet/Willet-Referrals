@@ -341,8 +341,47 @@
             background-color: rgba(255, 215, 0, 0.75);
             color: rgba(0, 0, 0, 0.6);
         }
-
-    </style>
+        .dollars {
+            background: url(/static/imgs/db_burst.png) no-repeat center center; 
+            height: 128px;
+            text-align: center;
+        }
+        .dollars span {
+            position: relative;
+            top: 44%;
+        }
+        #customer_value div span {
+            font-weight: bolder;
+            font-size: 14pt;
+            line-height: 0;
+        }
+        #customer_value div.center {
+            text-align: center;
+        }
+        div.testies div.time {
+            color: grey;
+            font-size: 12pt;
+            text-align: right;
+            display: inline-block;
+        }
+        div.testies div.message {
+            font-size: 12pt;
+            padding-bottom: 15px;
+        }
+        div.testies div.message span {
+            padding-bottom: 5px;
+        }
+        span.info {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            cursor: pointer;
+            background: url(/static/imgs/info.png) no-repeat center center;
+        }
+        div.testies blockquote {
+            margin:10px;
+        }
+        </style>
     <link rel="stylesheet" href="/static/css/dashboard.css" type="text/css" media="screen" />
 {% endblock head %}
 {% block content %}
@@ -386,12 +425,13 @@
                     {% else %}
                         Elite Influencer
                     {% endif %}
+                    <span class="info tooltip" title="Find out more about your user segments">&nbsp;</span>
                 </h2>
                 <h3>Last seen <strong>2</strong> days ago</h3>
             </div>
-            <div class="span-6 prepend-1 append-1 last">
+            <div class="span-6 prepend-1 append-1 last bars">
                 <div>
-                    <em>Influence</em>
+                    <h4>Influence</h4>
                     <div class="progress-bar red">
 						<div>
 							<span>92<sup>%</sup></span>
@@ -399,7 +439,7 @@
                     </div>
                 </div>
                 <div>
-                    <em>Engagement</em>
+                    <h4>Engagement</h4>
                     <div class="progress-bar red">
 						<div>
 							<span>32<sup>%</sup></span>
@@ -411,14 +451,8 @@
         <div class="row span-24 lower-10 last">
             <div class="span-12 shaded lower-10">
                 <div class="span-10 prepend-1 append-1">
-                    <h3>Recent Stats</h3>
+                    <h3>Referral Stats</h3>
                     <ul class="stats-summary">
-						<li class="golden">
-                            <strong class="stats-count">${{ total_profit }}</strong>
-							<p>Referral Value</p>
-                            <!-- <a href="#profit" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
-                            -->
-                        </li>
                         <li>
                             <strong class="stats-count">{{ total_referrals }}</strong>
 							<p>Shares</p>
@@ -426,20 +460,20 @@
                             <a href="#shares" class="button stats-view" title="View new visitros" rel="tooltip">Show</a>
                             -->    
                         </li>
-						<li>
-                            <strong class="stats-count">{{ reach }}</strong>
-							<p>Social Reach</p>
-                            <!-- 
-                            <a href="#reach" class="button stats-view" rel="tooltip" original-title="View new sales">Show</a>
-                            -->    
-                        </li>
-						<li>
+                        <li>
                             <strong class="stats-count">{{ total_clicks}}</strong>
 							<p>Click throughs</p>
                             <!-- 
                             <a href="#clicks" class="button stats-view" rel="tooltip" original-title="View new orders">Show</a>
                             -->
                         </li>
+						<!--<li>
+                            <strong class="stats-count">{{ reach }}</strong>
+							<p>Social Reach</p>
+                             
+                            <a href="#reach" class="button stats-view" rel="tooltip" original-title="View new sales">Show</a>
+                              
+                        </li>-->  
 						<li>
                             <strong class="stats-count">{{ total_conversions }}</strong>
 							<p>Conversions</p>
@@ -447,14 +481,77 @@
                             <a href="#conversions" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
                             -->    
                         </li>
-                        
+                        <li class="golden">
+                            <strong class="stats-count">${{ total_profit }}</strong>
+							<p>Referral Purchases</p>
+                            <!-- <a href="#profit" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
+                            -->
+                        </li>
+
 					</ul> 
                 </div>
             </div>
             <div class="span-12 last shaded lower-10">
-                <div class="span-10 prepend-1 append-1">
-                    <h3>Referral Graph</h3>
-                    <div id="user_chart_container"></div>
+                <div class="span-10 prepend-1 append-1" id="customer_value">
+                    <div class="span-4 clear">
+                        <h3>Customer Value</h3>
+                    </div>
+                    <div class="span-6 last dollars">
+                        <span>$100</span>
+                    </div>
+                    <hr size="1" />
+                    <div class="span-4 ">
+                        <h4>Order Value</h4>
+                    </div>
+                    <div class="span-6 last center">
+                        <span>$30</span>
+                    </div>
+                    <div class="span-4 clear ">
+                        <h4>Referral Value</h4>
+                    </div>
+                    <div class="span-6 last center">
+                        <span>$70</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row span-24 lower-10 last">
+            <div class="prepend-1 shaded lower-10 append-1 span-22">
+                <div class="span-24 testies">
+                    <h3>Customer History</h3>
+                    <div class="span-3 time">
+                        <span>today</span>
+                    </div>
+                    <div class="span-18 append-3 message last">
+                        <span>Matthew asked his friends before buying <a href="#">a pair of yellow wool socks</a></span>
+                    </div>
+                    <div class="span-3 time">
+                        <span>yesterday</span>
+                    </div>
+                    <div class="span-18 append-3 message last">
+                        <span>Matthew looked at <a href="#">yellow wool socks</a> and <a href="#">red wool socks</a></span>
+                        <br /><span>Matthew became an <strong>Elite influencer</strong></span>
+                        <br /><span><strong>Three</strong> of Matthew's friends used his referral code </span>
+                    </div>
+                    <div class="span-3 time">
+                        <span>3 days ago</span>
+                    </div>
+                    <div class="span-18 append-3 message last">
+                        <span>Matthew ordered <a href="#">pink bunny slippers</a> and referred <strong>10</strong> friends to your store</span>
+                    </div>
+                    <div class="span-3 time">
+                        <span>2 months ago</span>
+                    </div>
+                    <div class="span-18 append-3 message last">
+                        <span>Matthew shared a photo of <a href="#">red pajama bottoms</a> with his <em>Facebook</em> friends with the message <blockquote>&#34;How awesome would these be with my Santa hat?&#34;</blockquote></span>
+                    </div>
+                    {% for t in testies %}
+                        <p>
+                            <em>@ {{ t.created }}</em><br />
+                            {{ t.message }}
+                            <hr size="1" /><br />
+                        </p>
+                    {% endfor %}
                 </div>
             </div>
         </div>

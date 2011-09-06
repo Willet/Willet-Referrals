@@ -32,6 +32,13 @@ $(document).ready(function() {
     // setup the boat
     window.boat = $('#sailboat');
     window.boat.animate({"right": "101px"}, 0);
+    
+    window.boat.jrumble({
+        rumbleEvent: 'click',
+        rangeX: 10,
+        rangeY: 10,
+        rangeRot: 4
+    });
 
     $(document).keydown(function (e) {
         /**
