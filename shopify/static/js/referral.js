@@ -16,7 +16,7 @@ window.onload = function() {
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
-    iframe.setAttribute( 'style', 'width:372px; min-height:500px;background-color: #dddddd; margin-top: 20px; margin-left: auto; margin-right: auto;' );
+    iframe.setAttribute( 'style', 'padding: 10px 10px 10px 10px; width:375px; min-height:340px; border: 1px solid #dddddd; background-color: #dddddd; margin-top: 20px; margin-left: 10px;' );
     iframe.setAttribute( 'src', 'http://social-referral.appspot.com/shopify/load/referral?store_id=' + store_id + '&order_token=' + order_token );
 
     // Add the div to the page

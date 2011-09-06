@@ -31,7 +31,10 @@ class Testimonial(Model):
         return db.Query(Testimonial).filter('uuid =', uuid).get()
 
 def create_testimonial( user,  message, link ):
-    campaign = link.campaign
+    try:
+        campaign = link.campaign
+    except:
+        return
 
     # Create the default share text
     if campaign.target_url in campaign.share_text:
