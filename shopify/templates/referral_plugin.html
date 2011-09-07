@@ -226,16 +226,22 @@
                         $email_div.slideUp();
                     } else {
                         $email_div.slideDown();
-                        var foo = document.getElementById( 'choose_share_type' );
+                        )ar foo = document.getElementById( 'choose_share_type' );
                         foo.style.display = "none";
                         var title = $( '#title_header' );
                         title.slideUp();
                     }
                     */
                 };
-
+                goBack = function() {
+                    $('#step1').show();
+                    toggleStep1Btns();
+                };
                 toggleStep1Btns = function () {
-                    $("#step1_a").toggle();
+                    $('#email_div').hide();
+                    $('#step3').hide();
+                    
+                    $("#step1_a").hide();
                     $("#step1_b").fadeIn(300);
                 };
 
@@ -437,7 +443,7 @@
                 font-size: 180%;
             }
             h2 {
-                font-size: 150%;
+                font-size: 120%;
             }
             h1, h2, h3, h4, h5 { 
                 margin: 0 0 5px 0;
@@ -450,7 +456,7 @@
             }
             body, input, textarea {
             }
-            textarea, input[type="text"] {
+            input[type="text"] {
                 font-size: 1.2em;
             }
             label {
@@ -468,7 +474,7 @@
                 max-width: 300px;
             }
             a {
-                 display: -moz-inline-stack;
+                display: -moz-inline-stack;
                 display: inline-block;
                 position: relative;
                 color: #1f75cc;
@@ -537,8 +543,8 @@
                 float: left;
                 margin-top: -1px;
             }
-            .small {
-                font-size: 50% !important;
+            .small_text {
+                font-size: 80% !important;
             }
             .email_btn {
                 padding: 0px 0px 3px 0px;
@@ -638,8 +644,8 @@
 
         <div id="step1" class='step'>
             <h1>Invite A Friend</h1>
-            <div class="span-8 append-bottom center">
-                <img style="margin-left: 30px" width="120px" src="/static/imgs/gift.png" /> 
+            <div class="span-9 last append-bottom center">
+                <img width="120px" src="/static/imgs/gift.png" /> 
             </div>
             
             <div id="step1_a">
@@ -664,7 +670,7 @@
                 <div class="prepend-top span-9 last"> 
                     <hr class="hor_line" />
                     Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
-                    <input id="share_code" class='small' type="text" value="{{ willt_url }}"  />
+                    <input id="share_code" class='small_text' type="text" value="{{ willt_url }}"  />
                 </div>
             </div>
         </div>
@@ -675,7 +681,7 @@
             
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
-            <div class="prepend-top span-9 last" id="choose_share_type">
+            <div class="span-9 last" id="choose_share_type">
                 <a class="prepend-top" href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
@@ -689,6 +695,10 @@
                     <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
                 </a>
                 -->
+            </div>
+
+            <div class="span-9 center">
+                <a href="#" class="small_text" id="back" onclick='goBack();'><< back</a>
             </div>
         </div>
         <div class="span-9 last hidden" id="email_div" class='step'>
@@ -717,8 +727,8 @@ Here's why:
                 </div>
             </div>
             
-            <div class="span-5 small"> &nbsp;Choose your email provider: </div>
-            <div class="span-4 last right small"> Or, let us email it for you:</div>
+            <div class="span-5 small_text"> &nbsp;Choose your email provider: </div>
+            <div class="span-4 last right small_text"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
                 <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                     <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
