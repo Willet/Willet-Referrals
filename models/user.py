@@ -114,30 +114,35 @@ class User( db.Expando ):
         """attempts to get the users full name, with preference to the
             service supplied"""
         fname = None
-        if hasattr(self, 't_handle') and\
-                (service == 'twitter' or service == None):
+        if hasattr(self, 't_handle') and service == 'twitter':
             fname = self.twitter_handle
-        elif hasattr(self, 'linkedin_first_name') and\
-            (service == 'linkedin' or service == None):
+
+        elif hasattr(self, 'linkedin_first_name') and service == 'linkedin':
             fname = '%s %s' % (
                 self.linkedin_first_name, 
                 str(self.get_attr('linkedin_last_name'))
             )
-        elif hasattr(self, 'fb_first_name') and\
-            (service == 'facebook' or service == None):
+
+        elif hasattr(self, 'fb_first_name') and service == 'facebook':
             fname = '%s %s' % (
                 self.fb_first_name,
                 str(self.get_attr('fb_last_name'))
             )
-        elif hasattr(self, 'fb_name') and\
-            (service == 'facebook' or service == None):
+
+        elif hasattr(self, 'fb_name') and service == 'facebook':
             fname = self.fb_name
+
+        elif hasattr(self, 'full_name'):
+            fname = self.full_name
+        
+        elif hasattr(self, 'first_name'):
+            fname = self.first_name
+        
         else:
             fname = self.get_attr('email')
         
-        if (fname == None or fname == '') and service != None:
-            # recursive call if we tried for a service and failed
-            fname = self.get_full_name()
+        if fname == None or fname == '':
+            fname = "an awesome %s user" % (NAME)
 
         return fname
 

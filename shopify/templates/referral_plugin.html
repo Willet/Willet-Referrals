@@ -187,7 +187,8 @@
                                 msg       : msg.val(),
                                 url       : "{{willt_url}}",
                                 willt_url_code : "{{willt_code}}",
-                                via_willet : via_willet },
+                                via_willet : via_willet,
+                                order_id  : '{{order_id}}'},
                         success: function(foo) {
                             toggleThanks();
                         },
@@ -259,7 +260,7 @@
                     if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
                         // initiate facebook login event if requested
                         if (medium === 'fb') {
-                            var fbData = {msg: message, wcode: '{{willt_code}}'};
+                            var fbData = {msg: message, wcode: '{{willt_code}}', order_id: '{{order_id}}'};
                             // first attempt server-provided token
                             if (userFound) {
                                 fb_share_handler(fbData)
@@ -287,17 +288,13 @@
                             } // if (userFound u
                         } else if (medium === 'twitter'){
                             var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}',
+                                            + '&m=' + message + '&wcode={{willt_code}}&order_id={{order_id}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');
                         } else if (medium === 'linkedin') {
                             console.log('linkedin share', message);
                             var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}',
+                                            + '&m=' + message + '&wcode={{willt_code}}&order_id={{order_id}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');       
-                        } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}',
-                                AuthWindow = window.open(OAuthURL, '_blank');
                         } else {
                             // style shareArea according to different social loader
                         }

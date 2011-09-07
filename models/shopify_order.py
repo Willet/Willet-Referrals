@@ -79,4 +79,5 @@ def create_shopify_order( campaign, order_token, order_id, order_num,
 
     return o # return incase the caller wants it
 
-
+def get_shopify_order_by_token( order_token ):
+    return ShopifyOrder.all().filter( 'order_token =', order_token ).get()

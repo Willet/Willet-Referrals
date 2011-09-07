@@ -21,6 +21,7 @@ from models.testimonial import create_testimonial
 from models.user import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
 # helpers
+from shopify.api_wrapper import add_referrer_gift_to_shopify_order
 from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
@@ -166,7 +167,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
     def get(self, action=''):
         
         service = 'twitter' # hardcoded because we aded the linkedin handler
-        rq_vars = get_request_variables(['m', 'wcode'], self)
+        rq_vars = get_request_variables(['m', 'wcode', 'order_id'], self)
         user = get_user_by_cookie(self)
         
         if user and getattr(user, 'twitter_access_token', False)\
@@ -174,6 +175,11 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             logging.info("tweeting: " + rq_vars['wcode'])
             # tweet and update user model from twitter
             tweet_id, res = user.tweet(rq_vars['m'])
+
+            # If we are on a shopify store, add a gift to the order
+            if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+                add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
+
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link.user = user
@@ -207,7 +213,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
         """handles oath requests for linkedin"""
         
         service = 'linkedin' # hardcoded because we aded the linkedin handler
-        rq_vars = get_request_variables(['m', 'wcode'], self)
+        rq_vars = get_request_variables(['m', 'wcode', 'order_id'], self)
         user = get_user_by_cookie(self)
         
         if user and getattr(user, 'linkedin_access_token', False)\
@@ -216,6 +222,11 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             
             # share and update user model from linkedin
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
+
+            # If we are on a shopify store, add a gift to the order
+            if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+                add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
+
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 create_testimonial(user, rq_vars['m'], link) 
@@ -255,9 +266,12 @@ class SendEmailInvites( webapp.RequestHandler ):
         to_addrs  = self.request.get( 'to_addrs' )
         msg       = self.request.get( 'msg' )
         url       = self.request.get( 'url' )
+        order_id  = self.request.get( 'order_id' ) 
         willt_url_code = self.request.get( 'willt_url_code' )
         via_willet = True if self.request.get( 'via_willet' ) == 'true' else False
         
+        logging.info("ASDSD %s %s %s" % (self.request.arguments(),willt_url_code, order_id))
+
         # check to see if this user has a referral cookie set
         referrer_code = self.request.cookies.get('referral', None)
         referrer = None
@@ -282,7 +296,11 @@ class SendEmailInvites( webapp.RequestHandler ):
                 
         # Save this Testimonial
         create_testimonial(user=user, message=msg, link=link)
-        
+
+        # If we are on a shopify store, add a gift to the order
+        if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+            add_referrer_gift_to_shopify_order( order_id )
+
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
@@ -306,6 +324,7 @@ class FacebookShare(webapp.RequestHandler):
             user = get_or_create_user_by_facebook(rq_vars['fb_id'],
                                                   token=rq_vars['fb_token'],
                                                   request_handler=self)
+        
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
 
             facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
@@ -320,7 +339,8 @@ class FacebookShare(webapp.RequestHandler):
                 create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
                 # If we are on a shopify store, add a gift to the order
-                #add_note_to_shopify_order( rq_vars['order_id'], 
+                if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+                    add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             self.response.out.write(plugin_response)
 

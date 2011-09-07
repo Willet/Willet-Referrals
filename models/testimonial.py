@@ -37,10 +37,18 @@ def create_testimonial( user,  message, link ):
         return
 
     # Create the default share text
-    if campaign.target_url in campaign.share_text:
-        share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
-    else:
-        share_text = campaign.share_text + " " + link.get_willt_url()
+    # TODO(Barbara): THis is a hack for shopify. Chhange this when we make the campaign change.
+    try:
+        if campaign.target_url in campaign.share_text:
+            share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+        else:
+            share_text = campaign.share_text + " " + link.get_willt_url()
+    except Exception, e:
+        if campaign.store_url in campaign.share_text:
+            share_text = campaign.share_text.replace( campaign.store_url, link.get_willt_url() )
+        else:
+            share_text = campaign.share_text + " " + link.get_willt_url()
+
 
     # If the testimonial is not the same as the share text:
     if message != share_text:
