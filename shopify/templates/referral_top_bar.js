@@ -25,11 +25,13 @@ window.onload = function() {
     var text = document.createElement( 'p' );
     text.setAttribute( 'style', 'margin-top: 5px; float: left;' );
     text.innerHTML = 'Lucky you! {{referrer_name}} left you a gift.  Purchase any item on this site to get it!';
+    text.innerText = 'Lucky you! {{referrer_name}} left you a gift.  Purchase any item on this site to get it!';
 
     var hide = document.createElement( 'a' );
     hide.setAttribute('style', 'margin-top: 5px; margin-right: 150px; float: right; text-decoration: none; color: white;');
     hide.setAttribute('href', "javascript:(function() {$.cookie('_wl_open', 'false');$('#_willet_bar').animate({top: '-100px'}, 500);$('#_willet_pad').animate({height: '0px'}, 500);$('#_willet_open').animate({top: '0px'}, 500);})();");
     hide.innerText = 'Hide';
+    hide.innerHTML = 'Hide';
 
     bar.appendChild( profile_pic );
     bar.appendChild( text );
@@ -44,6 +46,7 @@ window.onload = function() {
     open.setAttribute( 'href', "javascript:(function() {$.cookie('_wl_open', 'true');$('#_willet_open').animate({top: '-70px'}, 500);$('#_willet_bar').animate({top: '0px'}, 500);$('#_willet_pad').animate({height: '37px'}, 500);})();");
     open.setAttribute( 'id', '_willet_open' );
     open.innerText = 'Remember your gift!';
+    open.innerHTML = 'Remember your gift!';
 
     {% if show_gift %}
         // Now put the elems in the page.
