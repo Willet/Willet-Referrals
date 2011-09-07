@@ -37,7 +37,6 @@
             var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
                 shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
             
-            //window.onload = function() {
             $(document).ready(function() {
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
@@ -311,6 +310,15 @@
                 countChars = function() {
                     var count = 140 - shareText.value.length;
                     charsLeft.innerHTML = count + " characters left";
+                    if (count < 0){
+                        $('#twitter_button')
+                        .addClass('disabled')
+                        .attr('onclick', '');
+                    } else {
+                        $('#twitter_button')
+                        .removeClass('disabled')
+                        .attr('onclick', 'share("twitter");');
+                    }
                 };
         
                 reset = function() { 
@@ -406,34 +414,21 @@
         <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
         
         <style>
-            .willt {
-                -webkit-box-shadow:0 1px 3px rgba(0,0,0,0.7);
-                -moz-box-shadow:0 1px 3px rgba(0,0,0,0.7); 
-                box-shadow:0 1px 3px rgba(0,0,0,0.7); 
-                
-                background: white; /* Old browsers */
-                background: -moz-linear-gradient(top, white 0%, #F1F1F1 100%); /* FF3.6+ */
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,white), color-stop(100%,#F1F1F1)); /* Chrome,Safari4+ */
-                background: -webkit-linear-gradient(top, white 0%,#F1F1F1 100%); /* Chrome10+,Safari5.1+ */
-                background: -o-linear-gradient(top, white 0%,#F1F1F1 100%); /* Opera11.10+ */
-                background: -ms-linear-gradient(top, white 0%,#F1F1F1 100%); /* IE10+ */
-                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='white', endColorstr='#F1F1F1',GradientType=0 ); /* IE6-9 */
-                background: linear-gradient(top, white 0%,#F1F1F1 100%); /* W3C */ 
-
+            #wrapper {
                 text-align: center;
                 padding: 10px 10px 10px 10px;
-                margin: 2px 5px 5px 2px;
-                
-                -khtml-border-radius: 3px;
-                -o-border-radius: 3px;
-                -webkit-border-radius: 3px;
-                -moz-border-radius: 3px;
-                border-radius: 3px;
-                
+                font-size: 80%; 
                 float: none;
-                color: #666;
                 min-height: 315px;
                 max-height: 315px;
+                height: 315px;
+            }
+            .willt {
+                background: #F7F7F7;
+                border: 1px solid #DDD;
+                padding: 10px;
+                margin: 20px 0;
+                border-radius: 3px;
             }
             a, a * { 
                 cursor: pointer;
@@ -442,26 +437,21 @@
             }
             h1 {
                 margin-top: -10px;
-                font-size: 2.8em;
+                font-size: 180%;
             }
             h2 {
-                font-size: 2.0em;
+                font-size: 150%;
             }
             h1, h2, h3, h4, h5 { 
-                font-family: 'PT Sans', Arial, sans-serif;
-
-                font-weight: bold;
-                text-shadow: 0 1px 1px #B3B3B3;
                 margin: 0 0 5px 0;
                 padding: 0px 0px 0px 0px;
                 line-height: 1.6em;
             }
             body {
                 background-color: white;
-                font-size: 0.7em;
+                font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
             }
             body, input, textarea {
-                font-family: 'PT Sans', Arial, sans-serif;
             }
             textarea, input[type="text"] {
                 font-size: 1.2em;
@@ -478,11 +468,11 @@
                 color: black;
                 margin: 0px 0px 0px 0px;
                 max-height: 75px;
-                max-width: 340px;
+                max-width: 300px;
             }
             a {
                  display: -moz-inline-stack;
-                display: inline-block !important;
+                display: inline-block;
                 position: relative;
                 color: #1f75cc;
                 background-color: #fafcff;
@@ -512,6 +502,16 @@
                 background: #fff url("/static/inputshadow.gif") repeat-x top; 
                 padding: 4px;
             }
+            .disabled,
+            .disabled:active,
+            .disabled:hover,
+            .disabled:visited,
+            a:hover .disabled  {
+                cursor: not-allowed;
+                border: 1px solid #DDDDDD;
+                color: #DDDDDD;
+                background: grey;
+            }
             .right {
                 text-align: right;
                 float: right;
@@ -540,6 +540,9 @@
                 float: left;
                 margin-top: -1px;
             }
+            .small {
+                font-size: 50% !important;
+            }
             .email_btn {
                 padding: 0px 0px 3px 0px;
             }
@@ -548,17 +551,16 @@
             }
             .choose_btn {
                 padding: 0px 20px 0px 20px;
-            }
+            } 
             .input-label {
-                float: left;
-                line-height: 33px;
+                text-align: right;
+                line-height: 3.5em;
             }
             .input-content {
-                padding-left: 20px;
-                float: left;
+                text-align: left;
             }
             .input-content input {
-                width: 290px;
+                width: 300px;
             }
             #share-area {
                 visibility: hidden;
@@ -634,11 +636,11 @@
     <body>
 
     <div id="fb-root"></div>
-
+    <div id="wrapper" height="315px">
     <div id="invite" class="prepend-top span-9 append-15 last willt">
-        <h1>Invite A Friend</h1>
 
-        <div id="step1">
+        <div id="step1" class='step'>
+            <h1>Invite A Friend</h1>
             <div class="span-8 append-bottom center">
                 <img style="margin-left: 30px" width="120px" src="/static/imgs/gift.png" /> 
             </div>
@@ -665,24 +667,23 @@
                 <div class="prepend-top span-9 last"> 
                     <hr class="hor_line" />
                     Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
-                    <input id="" type="text" value="{{ willt_url }}"  />
+                    <input id="share_code" class='small' type="text" value="{{ willt_url }}"  />
                 </div>
             </div>
         </div>
             
-        <div id="step3" class="span-9 last hidden">
+        <div id="step3" class="span-9 last hidden" class='step'>
+            <h2>Your gift will arrive with your order</h2>
             <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
             
-            <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
+            <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
             <div class="prepend-top span-9 last" id="choose_share_type">
-                <br /> How would you like to share? <br />
-
                 <a class="prepend-top" href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
                 </a>
-                <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                <a id="twitter_button" href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Tweet on Twitter
                 </a>
@@ -693,30 +694,34 @@
                 -->
             </div>
         </div>
-        <div class="span-9 last hidden" id="email_div">
+        <div class="span-9 last hidden" id="email_div" class='step'>
             
-            <div class="span-9 last">
-                <div class="input-label">Hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-                <div class="input-content">
+            <div class="span-1">
+                <div class="input-label">Hi</div>
+            </div>
+            <div class="input-content span-8 last">
                     <span class="defaultValue hidden">Friends' emails, separated by commas.</span>
                     <input id="to-emails" type="text" name="email" value="" />
-                </div>
             </div>
-
+            
+            <div class="prepend-1 span-8 last">
             <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>I left you a gift at {{campaign.store_name}} - snag it here {{willt_url}}.
 Here's why: 
 {{ text }}</textarea>
+            </div>
             
-            <div class="span-9 append-bottom last">
+            <div class="span-1">
                 <div class="input-label">From</div>
+            </div>
+            <div class="span-8 append-bottom last">
                 <div class="input-content">
                     <span class="defaultValue hidden">your email</span>
                     <input id="from-email" type="text" name="email" value="{{ user_email }}" />
                 </div>
             </div>
             
-            <div class="span-5"> &nbsp;Choose your email provider: </div>
-            <div class="span-4 last right"> Or, let us email it for you:</div>
+            <div class="span-5 small"> &nbsp;Choose your email provider: </div>
+            <div class="span-4 last right small"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
                 <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                     <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
@@ -756,5 +761,6 @@ Here's why:
     <div id="share-area">
         <iframe id="willt-frame"></iframe>
     </div>
+</div>
   </body>
 </html>

@@ -5,7 +5,10 @@
 window.onload = function() {
     // Example URL: https://checkout.shopify.com/orders/962072/403f3cf2ca6ec05a118864ee80ba30a5
 
-    var tag = document.getElementById( 'tagline' );
+    //var tag = document.getElementById( 'tagline' );
+    var container = document.getElementById( 'container' );
+    var main = document.getElementById( 'main' );
+
     var url = location.href.split('/');
     var l   = url.length;
     var order_token = url[ l - 1 ]; // Last portion of URL
@@ -16,9 +19,11 @@ window.onload = function() {
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
-    iframe.setAttribute( 'style', 'padding: 10px 10px 10px 10px; width:375px; min-height:340px; border: 1px solid #dddddd; background-color: #dddddd; margin-top: 20px; margin-left: 10px;' );
+    iframe.setAttribute( 'style', 'padding: 0 15px; width:413px; min-height:340px; display: block; background: url("../images/checkout/checkout-bg-slim.gif") bottom left repeat-y' );
     iframe.setAttribute( 'src', 'http://social-referral.appspot.com/shopify/load/referral?store_id=' + store_id + '&order_token=' + order_token );
 
     // Add the div to the page
-    tag.appendChild( iframe );
+    // > inserts it between the header and main content divs
+    container.insertBefore(iframe, main);
+    //tag.appendChild( iframe );
 };
