@@ -277,7 +277,7 @@ class User( db.Expando ):
         period_start = period_start.combine(period_start.date(), midnight)
         if scope == 'day':
             # yesterday
-            period_start -= delta(days=1)
+            period_start -= timedelta(days=1)
             period_end = period_start + timedelta(days=1)
         elif scope == 'week':
             # this gets the day of the week, monday=0, sunday=6
