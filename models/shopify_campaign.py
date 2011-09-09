@@ -328,19 +328,23 @@ def install_webhooks( campaign ):
     h        = httplib2.Http()
     
     h.add_credentials( username, password )
-
+    header = {'content-type':'application/json'}
+    
     # Install the "Order Creation" webhook
     data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
     json_data = json.dumps(data)
+    
     logging.info("POasdfasdfSTING to %s %r " % (url, json_data) )
-    resp, content = h.request(url, "POST", body=json_data,  headers={'content-type':'application/json'} )
+    
+    resp, content = h.request(url, "POST", body=json_data,  headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install the "App Uninstall" webhook
     data = { "webhook": { "address": "%s/shopify/webhook/uninstall" % URL, "format": "json", "topic": "app/uninstall" } }
-    
+    json_data = json.dumps(data) 
+
     logging.info("POSTTING to %s %r " % (url, data) )
-    resp, content = h.request( url, "POST", urllib.urlencode( data ) )
+    resp, content = h.request(url, "POST", body=json_data, headers=header)
     logging.info('%r %r' % (resp, content))
     
 
