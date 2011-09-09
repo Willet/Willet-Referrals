@@ -24,6 +24,7 @@ from util.urihandler import URIHandler
 
 class DoProcessShopifyOrder( URIHandler ):
     def post( self ):
+        logging.info("HEADERS : %s %r" % (self.request.headers, self.request.headers ))
         # Grab the ShopifyCampaign
         store_id = self.request.get('store_id')
         logging.info("store: %s " %  store_id )
