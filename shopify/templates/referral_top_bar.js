@@ -2,7 +2,6 @@
   * Copyright 2011, Willet, Inc.
  **/
 
-window.onload = function() {
     var heading = document.body.firstChild; //getElementById( 'header' );
     
     var pad  = document.createElement( 'div' );
@@ -67,4 +66,3 @@ window.onload = function() {
             pad.style.height = '37px';
         }
     {% endif %}
-};
