@@ -47,7 +47,7 @@ class QueryKloutAPI( URIHandler ):
 
         logging.info("Klout: Fetching user data for %s" % twitter_handle)
         result = urlfetch.fetch( url     = KLOUT_API_URL,
-                                 payload = payload,
+                                 payload = data,
                                  method  = urlfetch.POST,
                                  headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
         
@@ -88,7 +88,7 @@ class QueryKloutAPI( URIHandler ):
         # Now grab topics
         logging.info("Klout: Fetching topics data for %s" % twitter_handle)
         result = urlfetch.fetch( url     = 'http://api.klout.com/1/users/topics.json',
-                                 payload = payload,
+                                 payload = data,
                                  method  = urlfetch.POST,
                                  headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
         
