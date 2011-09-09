@@ -40,6 +40,7 @@ def add_note_to_shopify_order( order, note ):
     url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
     username = SHOPIFY_API_KEY
     password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.campaign.store_token).hexdigest()
+    header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
     h.add_credentials( username, password )
@@ -48,7 +49,7 @@ def add_note_to_shopify_order( order, note ):
     payload = json.dumps( data )
 
     logging.info("PUTTING to %s %r " % ( url, payload) )
-    resp, content = h.request( url, "PUT", body=payload, headers={'content-type':'text/plain'} )
+    resp, content = h.request( url, "PUT", body=payload, headers=header )
     
     logging.info('%r %r' % (resp, content))
 

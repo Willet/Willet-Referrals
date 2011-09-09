@@ -50,7 +50,9 @@ class ShopifyCampaign(Model):
     product_imgs  = db.StringListProperty( indexed = False )
     
     def __init__(self, *args, **kwargs):
-   
+        # Install yourself in the Shopify store
+        install_webhooks( self )
+        install_script_tags( self )
 
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(ShopifyCampaign, self).__init__(*args, **kwargs)
@@ -61,9 +63,6 @@ class ShopifyCampaign(Model):
         return db.Query(ShopifyCampaign).filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        # Install yourself in the Shopify store
-        install_webhooks( self )
-        install_script_tags( self )
         # Fetch product imgs
         get_product_imgs( self )
 
@@ -291,72 +290,34 @@ def get_shopify_campaign_by_url( url ):
     logging.info("Looking for %s" % url )
     return ShopifyCampaign.all().filter( 'store_url =', url ).get()
 
-
-
 ##### SHopify API Calls
 def install_webhooks( campaign ):
-    url      = '%s/admin/webhooks.json?format=json' % ( campaign.store_url )
+    url      = '%s/admin/webhooks.json' % ( campaign.store_url )
     username = SHOPIFY_API_KEY
     password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.store_token).hexdigest()
-    
-    # this creates a password manager
-    ##passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # because we have put None at the start it will always
-    # use this username/password combination for  urls
-    # for which `url` is a super-url
-    ##passman.add_password(None, url, username, password)
-
-    # create the AuthHandler
-    ##authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-    ##opener = urllib2.build_opener(authhandler)
-
-    # All calls to urllib2.urlopen will now use our handler
-    # Make sure not to include the protocol in with the URL, or
-    # HTTPPasswordMgrWithDefaultRealm will be very confused.
-    # You must (of course) use it when fetching the page though.
-    ##urllib2.install_opener(opener)
-
-    ##data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
-    ##logging.info("POSTING to %s %r " % (url, data) )
-
-    # authentication is now handled automatically for us
-    ##result = urllib2.urlopen(url, json.dumps( data ) )
-    ##logging.info("%r" % result)
-
-    
+    header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
+    # Auth the http lib
     h.add_credentials( username, password )
-    header = {'content-type':'application/json'}
     
     # Install the "Order Creation" webhook
-    data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
-    json_data = json.dumps(data)
-    
-    logging.info("POasdfasdfSTING to %s %r " % (url, json_data) )
-    
-    resp, content = h.request(url, "POST", body=json_data,  headers=header)
+    data = { "webhook": { "address": "%s/shopify/webhook/order?store_id=%s" % (URL, campaign.uuid), "format": "json", "topic": "orders/create" } }
+    logging.info("POSTING to %s %r " % (url, data) )
+    resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install the "App Uninstall" webhook
-    data = { "webhook": { "address": "%s/shopify/webhook/uninstall" % URL, "format": "json", "topic": "app/uninstall" } }
-    json_data = json.dumps(data) 
-
-    logging.info("POSTTING to %s %r " % (url, data) )
-    resp, content = h.request(url, "POST", body=json_data, headers=header)
+    data = { "webhook": { "address": "%s/shopify/webhook/uninstalled" % URL, "format": "json", "topic": "app/uninstalled" } }
+    logging.info("POSTING to %s %r " % (url, data) )
+    resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
     
-
-
-
-
-
-
 def install_script_tags( campaign ):
     url      = '%s/admin/script_tags.json' % ( campaign.store_url )
     username = SHOPIFY_API_KEY
     password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.store_token).hexdigest()
+    header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
     h.add_credentials( username, password )
@@ -365,21 +326,21 @@ def install_script_tags( campaign ):
     data = { "script_tag": { "src": "https://social-referral.appspot.com/shopify/static/js/referral.js", "event": "onload" } }      
 
     logging.info("POSTING to %s %r " % (url, data) )
-    resp, content = h.request( url, "POST", urllib.urlencode( data ) )
+    resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install jquery cookies
     data = { "script_tag": { "src": "http://social-referral.appspot.com/shopify/static/js/jquery.cookie.js", "event": "onload" } }      
     
     logging.info("POSTING to %s %r " % (url, data) )
-    resp, content = h.request( url, "POST", urllib.urlencode( data ) )
+    resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install the top_bar JS 
     data = { "script_tag": { "src": "http://social-referral.appspot.com/shopify/shopify/load/bar?store_id=%s" % (campaign.uuid), "event": "onload" } }      
     
     logging.info("POSTING to %s %r " % (url, data) )
-    resp, content = h.request( url, "POST", urllib.urlencode( data ) )
+    resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
 
