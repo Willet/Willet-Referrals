@@ -300,31 +300,31 @@ def install_webhooks( campaign ):
     password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + campaign.store_token).hexdigest()
     
     # this creates a password manager
-    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    ##passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
     # because we have put None at the start it will always
     # use this username/password combination for  urls
     # for which `url` is a super-url
-    passman.add_password(None, url, username, password)
+    ##passman.add_password(None, url, username, password)
 
     # create the AuthHandler
-    authhandler = urllib2.HTTPBasicAuthHandler(passman)
+    ##authhandler = urllib2.HTTPBasicAuthHandler(passman)
 
-    opener = urllib2.build_opener(authhandler)
+    ##opener = urllib2.build_opener(authhandler)
 
     # All calls to urllib2.urlopen will now use our handler
     # Make sure not to include the protocol in with the URL, or
     # HTTPPasswordMgrWithDefaultRealm will be very confused.
     # You must (of course) use it when fetching the page though.
-    urllib2.install_opener(opener)
+    ##urllib2.install_opener(opener)
 
-    data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
-    logging.info("POSTING to %s %r " % (url, data) )
+    ##data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
+    ##logging.info("POSTING to %s %r " % (url, data) )
 
     # authentication is now handled automatically for us
-    result = urllib2.urlopen(url, json.dumps( data ) )
-    logging.info("%r" % result)
+    ##result = urllib2.urlopen(url, json.dumps( data ) )
+    ##logging.info("%r" % result)
 
-    """
+    
     h        = httplib2.Http()
     
     h.add_credentials( username, password )
@@ -332,7 +332,7 @@ def install_webhooks( campaign ):
     # Install the "Order Creation" webhook
     data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
     logging.info("POasdfasdfSTING to %s %r " % (url, data) )
-    resp, content = h.request( url, "POST", body=json.dumps(data ) )
+    resp, content = h.request(url, "POST", body=json.dumps(data ))
     logging.info('%r %r' % (resp, content))
 
     # Install the "App Uninstall" webhook
@@ -341,7 +341,7 @@ def install_webhooks( campaign ):
     logging.info("POSTTING to %s %r " % (url, data) )
     resp, content = h.request( url, "POST", urllib.urlencode( data ) )
     logging.info('%r %r' % (resp, content))
-    """
+    
 
 
 
