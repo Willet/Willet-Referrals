@@ -331,8 +331,9 @@ def install_webhooks( campaign ):
 
     # Install the "Order Creation" webhook
     data = { "webhook": { "address": "%s/shopify/webhook/order" % URL, "format": "json", "topic": "orders/create" } }
-    logging.info("POasdfasdfSTING to %s %r " % (url, data) )
-    resp, content = h.request(url, "POST", body=json.dumps(data ))
+    json_data = json.dumps(data)
+    logging.info("POasdfasdfSTING to %s %r " % (url, json_data) )
+    resp, content = h.request(url, "POST", body=json_data,  headers={'content-type':'application/json'} )
     logging.info('%r %r' % (resp, content))
 
     # Install the "App Uninstall" webhook
