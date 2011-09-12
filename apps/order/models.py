@@ -16,7 +16,7 @@ from util.model           import Model, ObjectListProperty
 # ------------------------------------------------------------------------------
 # Product Class Definition -----------------------------------------------------
 # ------------------------------------------------------------------------------
-class Product:
+class Product():
     """ A simple Product class to store some data about products
         that can be purchased """
 
