@@ -10,7 +10,7 @@ import hashlib, re
 from django.utils       import simplejson as json
 
 from apps.client.models import Client
-from apps.order.models  import ShopifyOrder
+from apps.order.models  import OrderShopify
 from apps.user.models   import User, get_user_by_cookie
 
 from util            import httplib2
