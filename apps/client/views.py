@@ -2,7 +2,7 @@
 
 
 from apps.client.models import *
-from apps.stat.models import Stat
+from apps.stats.models import Stat
 
 from util.urihandler import URIHandler
 from util.consts import *
