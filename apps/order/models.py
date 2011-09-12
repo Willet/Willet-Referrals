@@ -10,6 +10,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext.db import polymodel
 
 from util.model           import Model, ObjectListProperty
 
@@ -37,7 +38,7 @@ class Product():
 # ------------------------------------------------------------------------------
 # Order Class Definition -------------------------------------------------------
 # ------------------------------------------------------------------------------
-class Order( Model, db.PolyModel ):
+class Order( Model, polymodel.PolyModel ):
     """Model storing purchase order data"""
     # A unique identifier
     uuid           = db.StringProperty( indexed = True )

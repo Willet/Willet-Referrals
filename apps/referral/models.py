@@ -17,7 +17,7 @@ from util.consts          import *
 # ------------------------------------------------------------------------------
 # Referral Class Definition ---------------------------------------------
 # ------------------------------------------------------------------------------
-class Referral( App, db.PolyModel ):
+class Referral( App ):
     """Model storing the data for a client's sharing app"""
     emailed_at_10 = db.BooleanProperty( default = False )
    
