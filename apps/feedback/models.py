@@ -9,7 +9,7 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from models.model import Model
+from util.model import Model
 
 class Feedback(Model):
     """Model storing the data for a client's sharing campaign"""

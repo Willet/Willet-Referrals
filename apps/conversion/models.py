@@ -11,8 +11,8 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from models.link          import get_link_by_willt_code
-from models.model         import Model
+from apps.link.models import get_link_by_willt_code
+from util.model         import Model
 from util.helpers         import generate_uuid
 
 class Conversion(Model):

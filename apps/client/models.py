@@ -14,7 +14,7 @@ from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from models.model         import Model
+from util.model         import Model
 from util.helpers         import generate_uuid
 
 class Client(Model):

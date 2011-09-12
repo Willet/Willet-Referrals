@@ -15,11 +15,11 @@ from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from models.link import Link, get_active_links_by_campaign
-from models.user import User
-from models.model import Model
-from models.shopify_order import ShopifyOrder
+from apps.link.models import Link, get_active_links_by_campaign
+from apps.user.models import User
+from apps.order.models import ShopifyOrder
 from util.consts import *
+from util.model import Model
 from util.helpers import generate_uuid
 
 NUM_SHARE_SHARDS = 15

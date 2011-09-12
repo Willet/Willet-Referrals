@@ -1,5 +1,7 @@
 handlers:
-# serving tracking tweet generation iframe
+- url: /*
+  script: urls.py
+
 - url: /(willet.html|trackErr)
   script: clicks/track.py
 
