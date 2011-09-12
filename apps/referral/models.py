@@ -119,3 +119,4 @@ def install_script_tags( store_url, store_token ):
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
+
