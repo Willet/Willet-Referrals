@@ -64,7 +64,13 @@ class ShowProfilePage(URIHandler):
                 'user': None,
                 'valid_user': False
             }
-        self.response.out.write(self.render_page('profile.html', template_values))
+        self.response.out.write(
+            self.render_page(
+                'profile.html', 
+                template_values,
+                appname='user'
+            )
+        )
 
 class ShowProfileJSON (URIHandler):
     def get(self, user_id = None):

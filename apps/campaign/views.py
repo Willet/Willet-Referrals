@@ -71,7 +71,13 @@ class ShowCampaignPage( URIHandler ):
         template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
         logging.info(service_totals) 
-        self.response.out.write(self.render_page('campaign.html', template_values))
+        self.response.out.write(
+            self.render_page(
+                'campaign.html', 
+                template_values,
+                appname='campaign'
+            )
+        )
 
 class ShowCampaignJSONPage( URIHandler ):
     # Renders a campaign page

@@ -35,7 +35,7 @@ class URIHandler( webapp.RequestHandler ):
 
         return self.db_client
     
-    def render_page(self, template_file_name, content_template_values):
+    def render_page(self, template_file_name, content_template_values, appname=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
@@ -49,7 +49,13 @@ class URIHandler( webapp.RequestHandler ):
         }
         merged_values = dict(template_values)
         merged_values.update(content_template_values)
+        
+        path = os.path.join('templates/', template_file_name)
 
-        path = os.path.join('templates/' + template_file_name )
+        if appname != None:
+            path = os.path.join('apps/', appname, path)
+
         logging.info("Rendering %s" % path )
         return template.render(path, merged_values)
+
+

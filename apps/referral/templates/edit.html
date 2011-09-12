@@ -49,32 +49,68 @@
             var step1r = document.getElementById( 'step1_right' );
             var step2l = document.getElementById( 'step2_left' );
             var step2r = document.getElementById( 'step2_right' );
+            var step3l = document.getElementById( 'step3_left' );
+            var step3r = document.getElementById( 'step3_right' );
             var btn1   = document.getElementById( 'goToStep1Button' );
             var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
 
             step1l.style.display="block";
             step1r.style.display="block";
             step2l.style.display="none";
             step2r.style.display="none";
+            step3l.style.display="none";
+            step3r.style.display="none";
             
             btn1.style.display  ="none";
             btn2.style.display  ="block";
+            btn2.innerText      ="Next";
+            btn3.style.display  ="none";
         };
         goToStep2 = function () {
             var step1l = document.getElementById( 'step1_left' );
             var step1r = document.getElementById( 'step1_right' );
             var step2l = document.getElementById( 'step2_left' );
             var step2r = document.getElementById( 'step2_right' );
+            var step3l = document.getElementById( 'step3_left' );
+            var step3r = document.getElementById( 'step3_right' );
             var btn1   = document.getElementById( 'goToStep1Button' );
             var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
 
             step1l.style.display="none";
             step1r.style.display="none";
             step2l.style.display="block";
             step2r.style.display="block";
-            
+            step3l.style.display="none";
+            step3r.style.display="none";
+
             btn1.style.display  ="block";
             btn2.style.display  ="none";
+            btn3.style.display  ="block";
+        };
+        goToStep3 = function () {
+            var step1l = document.getElementById( 'step1_left' );
+            var step1r = document.getElementById( 'step1_right' );
+            var step2l = document.getElementById( 'step2_left' );
+            var step2r = document.getElementById( 'step2_right' );
+            var step3l = document.getElementById( 'step3_left' );
+            var step3r = document.getElementById( 'step3_right' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+            var btn3   = document.getElementById( 'goToStep3Button' );
+
+            step1l.style.display="none";
+            step1r.style.display="none";
+            step2l.style.display="none";
+            step2r.style.display="none";
+            step3l.style.display="block";
+            step3r.style.display="block";
+            
+            btn1.style.display  ="none";
+            btn2.innerText      ="Back";
+            btn2.style.display  ="block";
+            btn3.style.display  ="none";
         };
 
     </script>
@@ -82,100 +118,162 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">Welcome {{shop_owner}}!</h1>
+    <h1 class="lower-50 center">{% if campaign %}Edit{% else %}New{% endif %} Campaign</h1>
 
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
-        <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
+        <form action="/doUpdateOrCreateCampaign" class="offer_form" method="post">
             <div id="step1_left">
-                {% ifnotequal has_campaign False %}
-                    <div class="hidden">
-                {% else %}
-                    <div>
-                {% endifnotequal %}
-                    <label class="default_label" for="store_name"> Store Name</label>
-                    <input type="text" id="store_name" name="store_name" value="{{campaign.store_name|escape}}"/>  <br />
+                <div>
+                    <label class="default_label" for="title">Name This Campaign</label>
+                    <input type="text" id="title" name="title" value="{{campaign.title|escape}}"/>  <br />
+                    <span class="defaultValue hidden">Invite List</span>
+                </div>
+                <div>
+                    <label class="default_label" for="product_name">Your Product / Service Name</label>
+                    <input type="text" id="product_name" name="product_name" value="{{campaign.product_name|escape}}"/>  <br />
+                    <span class="defaultValue hidden">FooBoxes</span>
                 </div> 
-                {% ifnotequal has_campaign False %}
-                    <div class="hidden">
-                {% else %}
-                    <div>
-                {% endifnotequal %}
-                    <label class="default_label" for="store_url"> Store URL </label> <br />
-                    <input type="text" name="store_url" id="store_url" value="{{campaign.store_url}}" onBlur="url_text();" />
+                <div>
+                    <label class="default_label" for="target_url">Your Website URL</label> <br />
+                    <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onBlur="url_text();" />
                 </div>
             </div>
 
-            <div>
-                <label class="default_label" for="share_text">Default Share Text</label>
-                <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter a default message that your customers can share with their friends.</p>
-                <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
-                <br />
-                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out at {{campaign.store_url}}!</span>
-            </div>
+            <div id="step2_left" class="hidden">
+                <div>
+                    <label class="default_label" for="blurb_title">
+                        Blurb Title
+                    </label> 
+                    
+                    <br />
+                    
+                    <input type="text" name="blurb_title" id="blurb_title" value="{% if campaign %}{{campaign.blurb_title|escape}}{% endif %}" onKeyUp="update_blurb_title();" />
+                    
+                    <span class="defaultValue hidden">Get 3 months free</span>
+                </div>
+                <div>
+                    <label class="default_label" for="blurb_text">
+                        Blurb Text
+                    </label>
+                    <br />
+                    <textarea name="blurb_text" id="blurb_text" onKeyUp="update_blurb_text();">{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}</textarea>
+                    
+                    <span class="defaultValue hidden">by sharing your love</span>
+                </div>
+           </div>
+            
+            <div id="step3_left" class="hidden">
+                <div>
+                    <label class="default_label" for="share_text">Default Share Text</label>
+                    <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
+                    <br />
+                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                    <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
+                </div>
 
-            <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
+                <div>
+                    <label class="default_label" for="webhook_url">Webhook URL</label> <br />
+                    <input type="text" name="webhook_url" id="webhook_url" value="{% if campaign %}{{campaign.webhook_url|escape}}{% else %}http://{% endif %}" />
+                </div>
+                
+                {% if client %}
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Save & Continue" title="Submit" />
+                {% else %}
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Login & Continue" title="Login" />
+                {% endif %}
+            </div>
             
             <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
-            <input type="hidden" value="{{store_token}}" name="token" />
         </form>
+        
+        <button id="goToStep2Button" onClick="goToStep2();" title="Next Step">Next</button>
+
+        <button class="hidden" id="goToStep3Button" onClick="goToStep3();" title="Next Step" >Next</button>
+        <button class="hidden" id="goToStep1Button" onClick="goToStep1();" title="Previous Step">Back</button>
 
     </div>
 
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/campaign/{{campaign.uuid}}">Analytics Dashboard</a></p>
+    <p><a href="/account">Your Campaigns</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
-        <h1 class="span-15 last lower-75 center">{{NAME}}</h1>
-        <h3 class="center" style="margin-top: -20px;" >Social Means Business</h3>
+        <h1 class="span-15 last lower-75 center">Sneak Peek</h1>
 
         <div id="step1_right" class="prepend-1 span-14 last">
             <p>
-                Welcome to {{NAME}}! We're driving social traffic to your online store.
+                Welcome! It only takes 3 steps to create a Campaign! We'll walk you through it!
             </p>
             <p>
-                In just 4 simple steps, you can start earning new customers who will use your site more,
-                purchase more, and be your top brand advocates and ambassadors within their social networks.
-               
-            <p>
-                Start out by telling us what you'd like your buyers to share on their social networks. Here's
-                what your customers will see:
+                After entering details about a deal you'd like to track, we'll give you a button.  </p> <p> Add the button to your website and direct your customers to it! It's that simple!  </p> <p> When your customers tweet about your product, we'll track their impact and clickthrough rate.  </p> <p> Visit this site once we have data to view your top influencers!</p> <p> <br /><em>Target your customers with the highest clickthroughs to help with your Internet marketing!</em></p> <br />
             </p>
+        </div>
+
+        <div id="step2_right" class="hidden prepend-1 span-14 last">
+            <p>
+                Here's what your users will be greeted with:
+            </p>
+            <br />
+            <div class="center" id="blurb_iframe_container">
+                <iframe src='/widget?ca_id={{campaign.uuid}}' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
+            </div>
+        </div>
+        <div id="step3_right" class="hidden prepend-1 span-14 last">
+            <p>
+                Here's what your users will be able to edit:
+            </p>
+            <br />
             <div class="center" id="share_iframe_container">
                 <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
         </div>
         
+        <div class="center lower-50">
+            How it works button? I've removed the guiders.
+        </div>
+        
         <script>
             // Fill examples
-            var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
+            var i_share_text, i_blurb_title, i_blurb_text, i_twitter_url,
+                blurb_title   = document.getElementById('blurb_title'),
+                blurb_text    = document.getElementById('blurb_text'),
                 share_text    = document.getElementById('share_text'),
-                store_url     = document.getElementById('store_url'),
+                target_url    = document.getElementById('target_url'),
+                blurb_i_frame = document.getElementById('blurb_iframe'),
                 share_i_frame = document.getElementById('share_iframe');
+            
+            function update_blurb_title() {
+                if (!i_blurb_title) {
+                    i_blurb_title= blurb_i_frame.contentWindow.document.getElementById('blurb_title');
+                }
+                i_blurb_title.innerHTML = blurb_title.value;
+            }
+            
+            function update_blurb_text() {
+                if (!i_blurb_text) {
+                    i_blurb_text = blurb_i_frame.contentWindow.document.getElementById('blurb_text');
+                }
+                i_blurb_text.innerHTML = blurb_text.value;
+            }
             
             function update_share_text() {
               if (!i_share_text) {
-                    i_share_text   = share_i_frame.contentWindow.document.getElementById('share-text');
-                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('unique_link');
-                    i_chars_left   = share_i_frame.contentWindow.document.getElementById('chars-left');
-                    i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
+                    i_share_text = share_i_frame.contentWindow.document.getElementById('tf-share-text');
                 }
-                i_share_text.innerHTML   = share_text.value;
-                i_unique_link.value      = "{{campaign.store_url}}";
-                i_plugin_title.innerText = "Invite Your Friends to {{campaign.store_name}}";
-
-                var count = 140 - share_text.value.length;
-                i_chars_left.innerHTML = count + " characters left";
+                i_share_text.innerHTML = share_text.value;
             }
             
+            function update_blurb_iframe() {
+                update_blurb_title();
+                update_blurb_text();
+            }
             function url_text() {
-                document.getElementById('share_text_span').innerText = 'I love ' + store_url.value + ' because ...! You should check them out!';
+                document.getElementById('share_text_span').innerText = 'I love ' + target_url.value + ' because ...! You should check them out!';
                 $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
-                
+
                 update_share_text();
             }
 

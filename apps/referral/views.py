@@ -145,7 +145,13 @@ class ShowShopifyEditPage( URIHandler ):
 
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('edit.html', template_values))
+        self.response.out.write(
+            self.render_page(
+                'edit.html', 
+                template_values, 
+                appname='referral'
+            )
+        )
 
 class ShowShopifyCodePage( URIHandler ):
     def get(self):
@@ -163,7 +169,13 @@ class ShowShopifyCodePage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(self.render_page('code.html', template_values))
+        self.response.out.write(
+            self.render_page(
+                'code.html', 
+                template_values,
+                appname='referral'
+            )
+        )
 
 class DoUpdateOrCreateShopifyCampaign( URIHandler ):
     def post( self ):
@@ -325,7 +337,7 @@ class DynamicLoader(webapp.RequestHandler):
             template_values['BASE_URL'] = URL
             
         if 'referral' in input_path:
-            path = os.path.join(os.path.dirname(__file__), 'templates/referral_plugin.html')
+            path = 'referral_plugin.html'
         
         elif 'bar' in input_path:
 
@@ -338,10 +350,10 @@ class DynamicLoader(webapp.RequestHandler):
                 template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
                 template_values['show_gift']          = True
             self.response.headers['Content-Type'] = 'javascript'
-            path = os.path.join(os.path.dirname(__file__), 'templates/referral_top_bar.js')
+            path = 'referral_top_bar.js'
         
         logging.info("rendeirng %s" % path)
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(template.render(path, template_values, appname='referral'))
 
         return
 
