@@ -4,6 +4,7 @@ __author__      = "Willet Inc."
 __copyright__   = "Copyright 2011, Willet Inc."
 
 import logging, os
+import inspect
 
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
@@ -51,11 +52,24 @@ class URIHandler( webapp.RequestHandler ):
         merged_values.update(content_template_values)
         
         path = os.path.join('templates/', template_file_name)
+        
+        app_path = self.get_app_path()
 
-        if appname != None:
-            path = os.path.join('apps/', appname, path)
+        if app_path != None:
+            path = os.path.join(app_path, path)
 
         logging.info("Rendering %s" % path )
         return template.render(path, merged_values)
 
+    def get_app_path(self):
+        module = inspect.getmodule(self).__name__
+        parts = module.split('.')
+        app_path = None 
+
+        if len(parts) > 2:
+            if parts[0] == 'apps':
+                # we have an app
+                app_path = '/'.join(parts[:-1])
+
+        return app_path
 

@@ -4,6 +4,7 @@ from apps.admin.views import *
 
 urlpatterns = [
     (r'/admin', Admin),
+    (r'/admin/routes', ShowRoutes),
     (r'/renamefb', RenameFacebookData),
     (r'/renameinit', InitRenameFacebookData),
     (r'/cleanBadLinks', CleanBadLinks),

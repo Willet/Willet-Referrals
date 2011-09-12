@@ -3,7 +3,8 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
+import re, urllib, sys
+from inspect import getmodule
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -128,4 +129,44 @@ class RenameFacebookData(webapp.RequestHandler):
             user.save()
             logging.info(user)
             logging.info(user.uuid)
+
+class ShowRoutes(URIHandler):
+    def format_route(self, route):
+        url = route[0]
+        obj = route[1]
+        obj_name = obj.__name__
+        module = getmodule(obj).__name__
+        return {
+            'route': url,
+            'obj': obj_name,
+            'module': module,
+        }
+
+    def get(self):
+        combined_uris = []
+        for app in INSTALLED_APPS:
+            try:
+                import_str = 'apps.%s.urls' % app
+                #__import__(import_str)
+                old_len = len(combined_uris)
+                __import__(import_str, globals(), locals(), [], -1)
+                app_urls = sys.modules[import_str]
+                combined_uris.extend(app_urls.urlpatterns)
+                new_len = len(combined_uris)
+
+                if old_len + len(app_urls.urlpatterns) > new_len:
+                    # we clobbered some urls
+                    raise Exception('url route conflict with %s' % app)
+            except Exception,e:
+                logging.error('error importing %s: %s' % (app, e))
+
+        combined_uris = map(self.format_route, combined_uris)
+        template_values = {
+            'routes': combined_uris
+        }
+        self.response.out.write(self.render_page(
+                'routes.html',
+                template_values,
+            )
+        )
          

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="span-24 prepend-top">
+        <h1 class="prepend-top center">Routes</h1>
+        {% for route in routes %}
+            <div class="prepend-3 span-6">
+                {{ route.route }}
+            </div>
+            <div class="span-6">
+                {{ route.obj }}
+            </div>
+            <div class="span-6 append-3 last">
+                {{ route.module }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+
