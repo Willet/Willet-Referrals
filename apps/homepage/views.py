@@ -6,7 +6,6 @@ __copyright__   = "Copyright 2011, Willet, Inc."
 import hashlib, re, datetime
 
 from django.utils import simplejson as json
-from gaesessions import get_current_session
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
@@ -16,6 +15,7 @@ from apps.stats.models import Stats
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
+from util.gaesessions import get_current_session
 
 class ShowLandingPage(URIHandler):
     # Renders the main template

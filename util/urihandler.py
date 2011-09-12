@@ -5,12 +5,12 @@ __copyright__   = "Copyright 2011, Willet Inc."
 
 import logging, os
 
-from gaesessions                 import get_current_session
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
 from apps.client.models import get_client_by_email
 from util.consts     import *
+from util.gaesessions import get_current_session
 
 class URIHandler( webapp.RequestHandler ):
 

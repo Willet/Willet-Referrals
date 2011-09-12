@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-from gaesessions import *
 
 from apps.client.models import *
 from apps.stat.models import Stat
 
 from util.urihandler import URIHandler
 from util.consts import *
+from util.gaesessions import *
 
 class ShowAccountPage( URIHandler ):
     # Renders the account page.

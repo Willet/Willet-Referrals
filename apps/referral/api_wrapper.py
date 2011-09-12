@@ -6,7 +6,6 @@ __copyright__   = "Copyright 2011, Willet, Inc."
 import hashlib, re
 
 from django.utils import simplejson as json
-from gaesessions import get_current_session
 
 from apps.client.models   import Client
 from apps.campaign.models import get_shopify_campaign_by_id, get_shopify_campaign_by_url, ShopifyCampaign
@@ -17,6 +16,7 @@ from util            import httplib2
 from util.consts     import *
 from util.helpers    import *
 from util.urihandler import URIHandler
+from util.gaesessions import get_current_session
 
 ##-----------------------------------------------------------------------------##
 ##------------------------- The Shows -----------------------------------------##
