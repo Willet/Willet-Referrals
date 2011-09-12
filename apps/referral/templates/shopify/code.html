@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+        var goToStep = function( to_go ) {
+            var step1 = document.getElementById( 'step1' );
+            var step2 = document.getElementById( 'step2' );
+            var step3 = document.getElementById( 'step3' );
+            var step4 = document.getElementById( 'step4' );
+            
+            if ( to_go == 'step2' ) {
+                step1.style.display = "none";
+                step2.style.display = "block";
+                step3.style.display = "none";
+                step4.style.display = "none";
+            } else if ( to_go == "step3" ) {
+                step1.style.display = "none";
+                step2.style.display = "none";
+                step3.style.display = "block";
+                step4.style.display = "none";
+            } else if ( to_go == "step4" ) {
+                step1.style.display = "none";
+                step2.style.display = "none";
+                step3.style.display = "none";
+                step4.style.display = "block";
+            } else {
+                step1.style.display = "block";
+                step2.style.display = "none";
+                step3.style.display = "none";
+                step4.style.display = "none";
+            }
+        };
+    </script>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">{{campaign.store_name|escape}}</h1>
+    <div class="prepend-top center">
+        <p>Store URL:<br/>{{campaign.store_url|escape}}</p>
+
+        <p>Share text:<br />{{campaign.share_text|escape}}</p>
+
+        <div class="edit_button">
+            <a class="edit_button" href="/shopify/r/edit?id={{campaign.uuid}}" title="Edit Campaign">
+                <img src="/static/imgs/edit.png" width=20 height=20 />
+            </a>
+        </div>
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/campaign/{{campaign.uuid}}">Analytics Dashboard</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Final Step</h1>
+
+        <div class="prepend-top prepend-1 span-14 last">
+            <p>
+                You only have to do 3 'Copy & Pastes' to add social referrals to your store!     
+            </p>
+            <div id="step1" class="span-14 last">
+                <h2 class="span-1"> #1 </h2>
+                <p class="span-13 last">
+                    Visit your <a href="{{campaign.store_url}}/admin/payments" target="_blank">'Checkout and Payment'</a> admin panel and add this
+                    script under the 'Additional Content & Scripts' section. </p>
+                <p class="span-14 last code">
+                    &lt;script src="{{URL}}/shopify/static/js/referral.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                </p>
+                <p class="span-14 last tip">
+                    Note: 'Additional Content & Scripts' is near the bottom of the page, right before 'Policies'!
+                </p>
+
+                <button style="float: right" onClick="goToStep('step2');"> Next Step </button>
+            </div>
+
+            <div id="step2" style="display: none">
+                <h2> #2 </h2>
+                <p> 
+                    Visit your <a href="{{campaign.store_url}}/admin/notifications" target="_blank">'Email & Notifications'</a> admin panel and add this
+                    'Web Hook' under the 'Web Hooks' section. </p>
+                </p>
+                <p class="code">
+                    Event: Order Creation <br />
+                    Format: JSON <br />
+                    URL: {{URL}}/shopify/webhook/order?store_id={{campaign.uuid}}
+                </p>
+                <p class="tip">
+                    Note: 'Web Hooks' is at the bottom of the page!
+                </p>
+                
+                <button style="float: leftt" onClick="goToStep('step1');"> Previous Step </button>
+                
+                <button style="float: right" onClick="goToStep('step3');"> Next Step </button>
+            </div>
+
+            <div id="step3" style="display: none">
+                <h2> #3 </h2>
+                <p> 
+                    Visit your <a href="{{campaign.store_url}}/admin/themes/1784702#layout/theme.liquid" target="_blank">'Template Editor for Your Store Theme'</a> and add these
+                     scripts immediately after the &lt;head&gt; tag.</p>
+                </p>
+                <p class="code">
+                    &lt;script src="{{URL}}/static/js/jquery.cookie.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                    &lt;script src="{{URL}}/shopify/load/bar?store_id={{campaign.uuid}}" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                </p>
+                <p class="tip">
+                    Note: Don't forget to click 'save' on your Template Editor!
+                </p>
+
+                <button style="float: leftt" onClick="goToStep('step2');"> Previous Step </button>
+                <button style="float: right" onClick="goToStep('step4');"> I'm Done! </button>
+            </div>
+
+            <div class="center" id="step4" style="display: none">
+                <h2> All Done! <br /> We'll email you when a successful referral occurs! </h2>
+        
+                <a style="color:white" class="call_to_action big" href="{{campaign.store_url}}/admin">Back to Store</a>
+            </div>
+        </div>
+
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 4, 'edit_page']);
+{% endblock mixpanelTracking %}
+

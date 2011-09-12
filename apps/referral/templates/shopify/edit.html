@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <!-- Guiders stuff -->
+    <script src="/static/guiders/jquery-1.5.1.min.js" type="text/javascript"></script>
+    <script src="/static/guiders/guiders-1.1.0.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function(){
+            var toggleDefaultValue;
+
+            toggleDefaultValue = function ($this, onoff) {
+                if (onoff) {
+                    $this.css('color', 'grey');
+                    $this.val($this.siblings('.defaultValue').attr('innerHTML'));
+                } else {
+                    $this.css('color', 'black');
+                    $this.val('');
+                }
+            } // end function
+            
+            // Controls default values of input & textarea elements
+            $('.defaultValue').siblings('input, textarea').each(
+                function () { 
+                    var $this = $(this);
+                    if ($this.val() === '') {
+                        toggleDefaultValue($this, true); 
+                    }
+                }
+            ).focus(
+                function () {
+                    var $this = $(this),
+                        defaultValue = $this.siblings('.defaultValue').attr('innerHTML')
+                    if ($this.val() === defaultValue) {
+                        toggleDefaultValue($this, false);
+                    }
+                }
+            ).blur(
+                function () { 
+                    var $this = $(this);
+                    if ($this.val() === '' ) {
+                        toggleDefaultValue($this, true);
+                    }
+                }
+            );
+        });
+
+        goToStep1 = function () {
+            var step1l = document.getElementById( 'step1_left' );
+            var step1r = document.getElementById( 'step1_right' );
+            var step2l = document.getElementById( 'step2_left' );
+            var step2r = document.getElementById( 'step2_right' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+
+            step1l.style.display="block";
+            step1r.style.display="block";
+            step2l.style.display="none";
+            step2r.style.display="none";
+            
+            btn1.style.display  ="none";
+            btn2.style.display  ="block";
+        };
+        goToStep2 = function () {
+            var step1l = document.getElementById( 'step1_left' );
+            var step1r = document.getElementById( 'step1_right' );
+            var step2l = document.getElementById( 'step2_left' );
+            var step2r = document.getElementById( 'step2_right' );
+            var btn1   = document.getElementById( 'goToStep1Button' );
+            var btn2   = document.getElementById( 'goToStep2Button' );
+
+            step1l.style.display="none";
+            step1r.style.display="none";
+            step2l.style.display="block";
+            step2r.style.display="block";
+            
+            btn1.style.display  ="block";
+            btn2.style.display  ="none";
+        };
+
+    </script>
+    <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">Welcome {{shop_owner}}!</h1>
+
+    <div class="span-8 last center">
+        {% if error %} <p class="error"> {{error}} </p> {% endif %}
+        <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
+            <div id="step1_left">
+                {% ifnotequal has_campaign False %}
+                    <div class="hidden">
+                {% else %}
+                    <div>
+                {% endifnotequal %}
+                    <label class="default_label" for="store_name"> Store Name</label>
+                    <input type="text" id="store_name" name="store_name" value="{{campaign.store_name|escape}}"/>  <br />
+                </div> 
+                {% ifnotequal has_campaign False %}
+                    <div class="hidden">
+                {% else %}
+                    <div>
+                {% endifnotequal %}
+                    <label class="default_label" for="store_url"> Store URL </label> <br />
+                    <input type="text" name="store_url" id="store_url" value="{{campaign.store_url}}" onBlur="url_text();" />
+                </div>
+            </div>
+
+            <div>
+                <label class="default_label" for="share_text">Default Share Text</label>
+                <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter a default message that your customers can share with their friends.</p>
+                <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
+                <br />
+                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out at {{campaign.store_url}}!</span>
+            </div>
+
+            <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
+            
+            <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
+            <input type="hidden" value="{{store_token}}" name="token" />
+        </form>
+
+    </div>
+
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/campaign/{{campaign.uuid}}">Analytics Dashboard</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+        <h1 class="span-15 last lower-75 center">{{NAME}}</h1>
+        <h3 class="center" style="margin-top: -20px;" >Social Means Business</h3>
+
+        <div id="step1_right" class="prepend-1 span-14 last">
+            <p>
+                Welcome to {{NAME}}! We're driving social traffic to your online store.
+            </p>
+            <p>
+                In just 4 simple steps, you can start earning new customers who will use your site more,
+                purchase more, and be your top brand advocates and ambassadors within their social networks.
+               
+            <p>
+                Start out by telling us what you'd like your buyers to share on their social networks. Here's
+                what your customers will see:
+            </p>
+            <div class="center" id="share_iframe_container">
+                <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
+            </div>
+        </div>
+        
+        <script>
+            // Fill examples
+            var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
+                share_text    = document.getElementById('share_text'),
+                store_url     = document.getElementById('store_url'),
+                share_i_frame = document.getElementById('share_iframe');
+            
+            function update_share_text() {
+              if (!i_share_text) {
+                    i_share_text   = share_i_frame.contentWindow.document.getElementById('share-text');
+                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('unique_link');
+                    i_chars_left   = share_i_frame.contentWindow.document.getElementById('chars-left');
+                    i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
+                }
+                i_share_text.innerHTML   = share_text.value;
+                i_unique_link.value      = "{{campaign.store_url}}";
+                i_plugin_title.innerText = "Invite Your Friends to {{campaign.store_name}}";
+
+                var count = 140 - share_text.value.length;
+                i_chars_left.innerHTML = count + " characters left";
+            }
+            
+            function url_text() {
+                document.getElementById('share_text_span').innerText = 'I love ' + store_url.value + ' because ...! You should check them out!';
+                $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
+                
+                update_share_text();
+            }
+
+        </script>
+
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 2, 'edit_page']);
+{% endblock mixpanelTracking %}

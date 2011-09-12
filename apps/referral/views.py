@@ -147,7 +147,7 @@ class ShowShopifyEditPage( URIHandler ):
 
         self.response.out.write(
             self.render_page(
-                'edit.html', 
+                'shopify/edit.html', 
                 template_values, 
                 appname='referral'
             )
@@ -171,7 +171,7 @@ class ShowShopifyCodePage( URIHandler ):
 
         self.response.out.write(
             self.render_page(
-                'code.html', 
+                'shopify/code.html', 
                 template_values,
                 appname='referral'
             )
