@@ -14,7 +14,7 @@ from google.appengine.ext import db
 from models.app           import App
 from util.consts          import *
 
-class SIBT( App, db.PolyModel ):
+class SIBT( App ):
    
     def __init__(self, *args, **kwargs):
         super(SIBT, self).__init__(*args, **kwargs)

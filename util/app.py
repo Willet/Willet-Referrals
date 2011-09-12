@@ -15,6 +15,7 @@ from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext.db import polymodel
 
 from apps.link.models     import Link, get_active_links_by_app
 from apps.order.models    import Order
@@ -25,7 +26,7 @@ from util.model           import Model
 
 NUM_SHARE_SHARDS = 15
 
-class App( Model, db.PolyModel ):
+class App( Model, polymodel.PolyModel ):
     # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
     
