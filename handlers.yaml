@@ -1,8 +1,4 @@
 handlers:
-- url: /(.*)
-  script: urls.py
-- url: /
-  script: urls.py
 
 #- url: /(willet.html|trackErr)
 #  script: clicks/track.py
@@ -66,6 +62,11 @@ handlers:
   
 #- url: /(admin|cleanBadLinks|renameinit|renamefb)
 #  script: admin.py
+
+- url: /(.*)
+  script: urls.py
+- url: /
+  script: urls.py
 
 # links to track
 #- url: /.*
