@@ -24,7 +24,7 @@ class ShowProfilePage(URIHandler):
                     cons = l.link_conversions
                     for c in cons:
                         if type(cons.order) == type(str()):
-                            order = ShopifyOrder.all().filter('order_id =', cons.order)
+                            order = OrderShopify.all().filter('order_id =', cons.order)
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()

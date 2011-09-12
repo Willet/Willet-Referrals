@@ -388,7 +388,7 @@ class User( db.Expando ):
                 for conversion in link.link_conversions:
                     try:
                         order_id = conversion.order
-                        order = ShopifyOrder.all().filter('order_id =', order_id)
+                        order = OrderShopify.all().filter('order_id =', order_id)
                         for o in order:
                             if hasattr(o, 'subtotal_price'):
                                 profit += float(o.subtotal_price)

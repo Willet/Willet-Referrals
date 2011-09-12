@@ -18,7 +18,7 @@ from google.appengine.ext import db
 
 from apps.link.models import Link, get_active_links_by_campaign
 from apps.user.models import User
-from apps.order.models import ShopifyOrder
+from apps.order.models import OrderShopify
 
 from util import httplib2
 from util.consts import *
@@ -144,7 +144,7 @@ class Campaign(Model):
 
                             # ugly hack to make sure there is an order_id
                             if type(order_id) == type(str()):
-                                order = ShopifyOrder.all().filter('campaign =', campaign)\
+                                order = OrderShopify.all().filter('campaign =', campaign)\
                                             .filter('order_id =', order_id)
                                 for o in order:
                                     if hasattr(o, 'subtotal_price'):
@@ -530,7 +530,7 @@ class ShopifyCampaign(Model):
                             ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
                     if hasattr(l, 'link_conversions'):
                             ao[abbr]['co'] += 1
-                            order = ShopifyOrder.filter('campaign =', campaign)\
+                            order = OrderShopify.filter('campaign =', campaign)\
                                 .filter('order_id =', l.link_conversions.order)
                             ao[abbr]['pr'] += order.subtotal_price
                             if userID:
