@@ -1,16 +1,17 @@
 #!/usr/bin/python
 
+# A wrapper for the Shopify API
+
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc."
 
 import hashlib, re
 
-from django.utils import simplejson as json
+from django.utils       import simplejson as json
 
-from apps.client.models   import Client
-from apps.campaign.models import get_shopify_campaign_by_id, get_shopify_campaign_by_url, ShopifyCampaign
-from apps.order.models import ShopifyOrder
-from apps.user.models     import User, get_user_by_cookie
+from apps.client.models import Client
+from apps.order.models  import ShopifyOrder
+from apps.user.models   import User, get_user_by_cookie
 
 from util            import httplib2
 from util.consts     import *
@@ -18,16 +19,15 @@ from util.helpers    import *
 from util.urihandler import URIHandler
 from util.gaesessions import get_current_session
 
-##-----------------------------------------------------------------------------##
-##------------------------- The Shows -----------------------------------------##
-##-----------------------------------------------------------------------------##
+##----------------------------------------------------------------------------##
+## Specifics -----------------------------------------------------------------##
+##----------------------------------------------------------------------------##
 def add_referree_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
     order = ShopifyOrder.all().filter( 'order_id = ', order_id ).get()
     note  = '[Willet] %s was referred to your store by a friend. Please add a gift into their purchase as a reward for being referred. Thanks!' % order.user.get_full_name()
 
     add_note_to_shopify_order( order, note )
-
 
 def add_referrer_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
@@ -36,10 +36,13 @@ def add_referrer_gift_to_shopify_order( order_id ):
 
     add_note_to_shopify_order( order, note )
 
+##----------------------------------------------------------------------------##
+## Generics ------------------------------------------------------------------##
+##----------------------------------------------------------------------------##
 def add_note_to_shopify_order( order, note ):
     url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
     username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.campaign.store_token).hexdigest()
+    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.client.store_token).hexdigest()
     header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
