@@ -6,14 +6,15 @@ import sys
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from util.consts import *
+from util.helpers import *
+from util.urihandler import URIHandler
+
 try:
     from apps.campaign.models import *
 except Exception,e:
     logging.error('error importing %s' % e)
 
-from util.consts import *
-from util.helpers import *
-from util.urihandler import URIHandler
 
 # our intelligent uri router
 def main():
