@@ -11,7 +11,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from apps.link.models import * 
+from apps.link.models import Link, get_link_by_willt_code 
 from apps.campaign.models import get_campaign_by_id, Campaign
 from apps.user.models import get_or_create_user_by_twitter
 
