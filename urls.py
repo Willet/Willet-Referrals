@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 # generic URL router for willet
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp.util import run_wsgi_app
 
 from util.consts import *
 from util.helpers import *
@@ -23,7 +25,7 @@ def main():
                 # we clobbered some urls
                 raise Exception('url route conflict with %s' % app)
         except Exception,e:
-            logging.error('error importing %s: %s' % app, e)
+            logging.error('error importing %s: %s' % (app, e))
     
     application = webapp.WSGIApplication(
         combined_uris,

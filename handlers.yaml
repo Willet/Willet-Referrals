@@ -12,8 +12,8 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
-- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends|triggerCampaignAnalytics|computeCampaignAnalytics|triggerUserAnalytics|computeUserAnalytics)
-  script: processes.py
+#- url: /(campaignClicksCounter|emailerCron|emailerQueue|updateLanding|updateCounts|updateTweets|updateClicks|fetchFB|fetchFriends|triggerCampaignAnalytics|computeCampaignAnalytics|triggerUserAnalytics|computeUserAnalytics)
+#  script: processes.py
 
 # Shopify Handlers
 - url: /shopify/static
@@ -28,45 +28,42 @@ handlers:
 - url: /shopify.*
   script: shopify/website.py
 
-- url: /conversion
-  script: conversion.py
+#- url: /conversion
+#  script: conversion.py
 
 - url: /t/
   static_dir: clicks/static
 
-- url: /mockup/
-  static_dir: mockup
+#- url: /mockup/
+#  static_dir: mockup
 
 - url: /static
   static_dir: static
 
-- url: /mixpanel
-  script: mixpanel.py
+#- url: /mixpanel
+#  script: mixpanel.py
 
-- url: /(socialGraphAPI|klout)
-  script: social_api.py
-
-- url: /klout
-  script: klout.py
+#- url: /(socialGraphAPI|klout)
+#  script: social_api.py
 
 # cron for checking if users tweeted
 - url: /getTweets
   script: tweets/twitter.py
 
 # client interaction with our website
-- url: /
-  script: website.py
+#- url: /
+#  script: website.py
 
 # further client interactions
-- url: /(about|account|deleteCampaign|login|logout|auth|register|profile(.*)|campaign(.*)|campaign.json|contact|edit|doUpdateOrCreateCampaign|doFeedback|code|demo(.*)|dashboard(.*))
-  script: website.py
+#- url: /(about|account|deleteCampaign|login|logout|auth|register|profile(.*)|campaign(.*)|campaign.json|contact|edit|doUpdateOrCreateCampaign|doFeedback|code|demo(.*)|dashboard(.*))
+#  script: website.py
 
 # website initialization
 - url: /init.*
   script: init/setup.py
   
-- url: /(admin|cleanBadLinks|renameinit|renamefb)
-  script: admin.py
+#- url: /(admin|cleanBadLinks|renameinit|renamefb)
+#  script: admin.py
 
 # links to track
 - url: /.*

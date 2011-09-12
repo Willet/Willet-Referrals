@@ -7,5 +7,6 @@ urlpatterns = [
     (r'/renamefb', RenameFacebookData),
     (r'/renameinit', InitRenameFacebookData),
     (r'/cleanBadLinks', CleanBadLinks),
+    (r"/trackErr", TrackCallbackError),
 ]
 

@@ -10,5 +10,8 @@ urlpatterns = [
     # processes
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),
+    (r'/klout', QueryKloutAPI),
+    (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
+    (r'/tweet', UpdateTwitterGraph),  
 ]
 

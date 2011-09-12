@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 __author__      = "Barbara Macdonald"
 __copyright__   = "Copyright 2011, Barbara"
@@ -12,10 +12,6 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from util.consts import *
-
-##-----------------------------------------------------------------------------##
-##------------------------- The Dos -------------------------------------------##
-##-----------------------------------------------------------------------------##
 
 class SendToMixpanel( webapp.RequestHandler ):
     
@@ -72,14 +68,4 @@ class SendToMixpanel( webapp.RequestHandler ):
                                  headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
 
 
-        
 
-##-----------------------------------------------------------------------------##
-##------------------------- The URI Router ------------------------------------##
-##-----------------------------------------------------------------------------##
-def main():
-    application = webapp.WSGIApplication([ (r'/mixpanel', SendToMixpanel), ], debug=USING_DEV_SERVER)
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()

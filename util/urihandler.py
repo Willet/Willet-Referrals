@@ -9,7 +9,7 @@ from gaesessions                 import get_current_session
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
-from models.client   import get_client_by_email
+from apps.client.models import get_client_by_email
 from util.consts     import *
 
 class URIHandler( webapp.RequestHandler ):

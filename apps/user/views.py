@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+from apps.campaign.models import *
+from apps.user.models import *
 
 class ShowProfilePage(URIHandler):
     def get(self, campaign_id = None, user_id = None):
