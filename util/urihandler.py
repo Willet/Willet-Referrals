@@ -5,12 +5,12 @@ __copyright__   = "Copyright 2011, Willet Inc."
 
 import logging, os
 
-from gaesessions                 import get_current_session
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
 from apps.client.models import get_client_by_email
 from util.consts     import *
+from util.gaesessions import get_current_session
 
 class URIHandler( webapp.RequestHandler ):
 
@@ -35,7 +35,7 @@ class URIHandler( webapp.RequestHandler ):
 
         return self.db_client
     
-    def render_page(self, template_file_name, content_template_values):
+    def render_page(self, template_file_name, content_template_values, appname=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
@@ -49,7 +49,13 @@ class URIHandler( webapp.RequestHandler ):
         }
         merged_values = dict(template_values)
         merged_values.update(content_template_values)
+        
+        path = os.path.join('templates/', template_file_name)
 
-        path = os.path.join('templates/' + template_file_name )
+        if appname != None:
+            path = os.path.join('apps/', appname, path)
+
         logging.info("Rendering %s" % path )
         return template.render(path, merged_values)
+
+

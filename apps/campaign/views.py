@@ -5,7 +5,6 @@ __copyright__   = "Copyright 2011, Willet, Inc."
 import hashlib, re, datetime
 
 from django.utils import simplejson as json
-from gaesessions import get_current_session
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
@@ -21,7 +20,7 @@ from apps.conversion.models import Conversion
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *
-
+from util.gaesessions import get_current_session
 
 class ShowCampaignPage( URIHandler ):
     # Renders a campaign page
@@ -71,7 +70,13 @@ class ShowCampaignPage( URIHandler ):
         template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
         logging.info(service_totals) 
-        self.response.out.write(self.render_page('campaign.html', template_values))
+        self.response.out.write(
+            self.render_page(
+                'campaign.html', 
+                template_values,
+                appname='campaign'
+            )
+        )
 
 class ShowCampaignJSONPage( URIHandler ):
     # Renders a campaign page

@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 
+
 from apps.client.models import *
+from apps.stat.models import Stat
 
 from util.urihandler import URIHandler
+from util.consts import *
+from util.gaesessions import *
 
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
     def get(self):
         client  = self.get_client() # may be None
         to_show = []
-        
+        has_campaigns = False
         # Show the Client's campaigns
-        if hasattr( client, 'campaigns' ) and client.campaigns.count() > 0:
+        if client == None:
+            num_campaigns = 0
+        elif hasattr(client, 'campaigns') and client.campaigns.count() > 0:
             has_campaigns = True 
             campaigns     = client.campaigns.order( '-created' )
-            
+            num_campaigns = client.campaigns.count()
+
             for c in campaigns:
                 to_show.append({'title'    : c.title,
                                 'uuid'     : c.uuid,
@@ -23,8 +30,6 @@ class ShowAccountPage( URIHandler ):
                                 'shares'   : c.get_shares_count(),
                                 'clicks'   : c.count_clicks(),
                                 'is_shopify' : hasattr(c, 'shopify_token')})
-        else:
-            has_campaigns = False
         
         template_values = {
             'campaigns' : to_show,
@@ -33,10 +38,10 @@ class ShowAccountPage( URIHandler ):
             'BASE_URL': URL,
             'api_key': MIXPANEL_API_KEY,
             'platform_secret': hashlib.md5(MIXPANEL_SECRET + '1234').hexdigest(),
-            'num_campaigns': client.campaigns.count()
+            'num_campaigns': num_campaigns
         }
         
-        self.response.out.write(self.render_page('account.html', template_values))
+        self.response.out.write(self.render_page('account.html', template_values, appname='client'))
 
 class DoAuthenticate( URIHandler ):
     def post( self ):
@@ -235,6 +240,6 @@ class ShowLoginPage( URIHandler ):
                                  'stats' : stats,
                                  'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
                                  
-            self.response.out.write(self.render_page('login.html', template_values))
+            self.response.out.write(self.render_page('login.html', template_values, appname='client'))
 
 

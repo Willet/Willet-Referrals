@@ -1,4 +1,4 @@
-from gaesessions import SessionMiddleware
+from util.gaesessions import SessionMiddleware
 def webapp_add_wsgi_middleware(app):
     # cookie key was generated using os.random(64)
     # as per documentation recommendation

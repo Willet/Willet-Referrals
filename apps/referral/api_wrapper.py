@@ -8,14 +8,16 @@ __copyright__   = "Copyright 2011, Willet, Inc."
 import hashlib, re
 
 from django.utils       import simplejson as json
-from gaesessions        import get_current_session
 
 from apps.client.models import Client
 from apps.order.models  import ShopifyOrder
 from apps.user.models   import User, get_user_by_cookie
 
-from util               import httplib2
-from util.consts        import *
+from util            import httplib2
+from util.consts     import *
+from util.helpers    import *
+from util.urihandler import URIHandler
+from util.gaesessions import get_current_session
 
 ##----------------------------------------------------------------------------##
 ## Specifics -----------------------------------------------------------------##
