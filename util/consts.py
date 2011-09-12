@@ -26,7 +26,8 @@ TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 # Twitter Stuff
 TWITTER_KEY        = '2O3uHYkLKlHdy2PECgP3Q'
 TWITTER_SECRET     = 'W3fe6c1ZP3D4RyymqszxXfNcJzvu0fN82Nf3S68078'
-    
+TWITTER_TIMELINE_URL = 'https://api.twitter.com/1/statuses/user_timeline.json?'    
+
 # Facebook Stuff
 FACEBOOK_APP_ID     = '141990385884645'
 FACEBOOK_APP_SECRET = '4077e465d5d50e87aa0fbd2d472f60ea'

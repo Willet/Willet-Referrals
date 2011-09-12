@@ -2,8 +2,8 @@ handlers:
 - url: /*
   script: urls.py
 
-- url: /(willet.html|trackErr)
-  script: clicks/track.py
+#- url: /(willet.html|trackErr)
+#  script: clicks/track.py
 
 - url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
   script: plugin/plugin.py
@@ -16,8 +16,8 @@ handlers:
 #  script: processes.py
 
 # Shopify Handlers
-- url: /shopify/static
-  static_dir: shopify/static
+#- url: /shopify/static
+#  static_dir: shopify/static
 
 - url: /shopify/load.*
   script: shopify/loader.py
@@ -31,8 +31,8 @@ handlers:
 #- url: /conversion
 #  script: conversion.py
 
-- url: /t/
-  static_dir: clicks/static
+#- url: /t/
+#  static_dir: clicks/static
 
 #- url: /mockup/
 #  static_dir: mockup
@@ -47,8 +47,8 @@ handlers:
 #  script: social_api.py
 
 # cron for checking if users tweeted
-- url: /getTweets
-  script: tweets/twitter.py
+#- url: /getTweets
+#  script: tweets/twitter.py
 
 # client interaction with our website
 #- url: /
@@ -66,5 +66,5 @@ handlers:
 #  script: admin.py
 
 # links to track
-- url: /.*
-  script: clicks/track.py
+#- url: /.*
+#  script: clicks/track.py

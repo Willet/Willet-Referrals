@@ -3,6 +3,7 @@ from apps.link.processes import *
 from apps.link.views import *
 
 urlpatterns = [
-    (r'/willet', DynamicLoader),
-    (r'/(.*)', TrackWilltURL)
+    (r'/willet', DynamicLinkLoader),
+    (r'/getTweets', getUncheckedTweets),
+    (r'/(.*)', TrackWilltURL),
 ]
