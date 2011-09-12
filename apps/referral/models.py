@@ -100,14 +100,14 @@ def install_script_tags( store_url, store_token ):
     h.add_credentials( username, password )
 
     # Install the referral plugin on confirmation screen
-    data = { "script_tag": { "src": "https://social-referral.appspot.com/shopify/static/js/referral.js", "event": "onload" } }      
+    data = { "script_tag": { "src": "https://social-referral.appspot.com/static/referral/js/shopify.js", "event": "onload" } }      
 
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install jquery cookies
-    data = { "script_tag": { "src": "http://social-referral.appspot.com/shopify/static/js/jquery.cookie.js", "event": "onload" } }      
+    data = { "script_tag": { "src": "http://social-referral.appspot.com/static/js/jquery.cookie.js", "event": "onload" } }      
     
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
