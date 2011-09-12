@@ -5,6 +5,7 @@ campaign processes!
 """
 
 from google.appengine.api import memcache, taskqueue, urlfetch
+from google.appengine.ext import webapp
 
 from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
 from apps.user.models import * 

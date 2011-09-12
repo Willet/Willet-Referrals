@@ -8,10 +8,10 @@ import hashlib, re
 from django.utils import simplejson as json
 from gaesessions import get_current_session
 
-from models.client   import Client
-from models.shopify_campaign import get_shopify_campaign_by_id, get_shopify_campaign_by_url, ShopifyCampaign
-from models.shopify_order import ShopifyOrder
-from models.user     import User, get_user_by_cookie
+from apps.client.models   import Client
+from apps.campaign.models import get_shopify_campaign_by_id, get_shopify_campaign_by_url, ShopifyCampaign
+from apps.order.models import ShopifyOrder
+from apps.user.models     import User, get_user_by_cookie
 
 from util            import httplib2
 from util.consts     import *

@@ -1,5 +1,7 @@
 handlers:
-- url: /*
+- url: /(.*)
+  script: urls.py
+- url: /
   script: urls.py
 
 #- url: /(willet.html|trackErr)
@@ -19,14 +21,14 @@ handlers:
 #- url: /shopify/static
 #  static_dir: shopify/static
 
-- url: /shopify/load.*
-  script: shopify/loader.py
+#- url: /shopify/load.*
+#  script: shopify/loader.py
 
-- url: /shopify/webhook.*
-  script: shopify/webhook.py
+#- url: /shopify/webhook.*
+#  script: shopify/webhook.py
 
-- url: /shopify.*
-  script: shopify/website.py
+#- url: /shopify.*
+#  script: shopify/website.py
 
 #- url: /conversion
 #  script: conversion.py

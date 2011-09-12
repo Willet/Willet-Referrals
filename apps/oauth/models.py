@@ -19,8 +19,9 @@ from google.appengine.api.urlfetch import fetch as urlfetch, GET, POST
 from google.appengine.ext import db
 from google.appengine.ext.webapp import RequestHandler, WSGIApplication
 
-import models.user
-from models.link import get_link_by_willt_code
+from apps.user.models import *
+from apps.link.models import get_link_by_willt_code
+
 from util.consts import *
 from util.helpers import generate_uuid
 from util import oauth2 as oauth
@@ -31,7 +32,7 @@ from util import oauth2 as oauth
 def twitter_callback(client, message, willt_code):
     """callback for twitter"""
     # check to see if we have a user with this twitter handle
-    user = models.user.get_or_create_user_by_twitter(t_handle=client.token.specifier,
+    user = get_or_create_user_by_twitter(t_handle=client.token.specifier,
                                                      token=client.token,
                                                      request_handler=client.handler)
     # tweet and save results to user's twitter profle
@@ -55,7 +56,7 @@ def linkedin_callback(client, message, willt_code):
     else:
         linkedin_extra = {}
     
-    user = models.user.get_or_create_user_by_linkedin(
+    user = get_or_create_user_by_linkedin(
         linkedin_id=client.token.specifier,
         token=client.token,
         request_handler=client.handler,

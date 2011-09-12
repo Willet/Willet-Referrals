@@ -3,6 +3,8 @@
 from apps.campaign.models import *
 from apps.user.models import *
 
+from util.urihandler import URIHandler
+
 class ShowProfilePage(URIHandler):
     def get(self, campaign_id = None, user_id = None):
         campaign = get_campaign_by_id(campaign_id)

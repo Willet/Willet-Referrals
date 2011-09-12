@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from apps.feedback.models import *
+from util.urihandler import URIHandler
 
 class DoAddFeedback( URIHandler ):
     def post( self ):

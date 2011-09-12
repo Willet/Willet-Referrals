@@ -16,9 +16,9 @@ from apps.campaign.models import get_campaign_by_id, Campaign
 from apps.user.models import get_or_create_user_by_twitter
 
 # helpers
-from util.helpers import set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
+from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.consts import *
-
+from util.urihandler import URIHandler
 
 class TrackWilltURL( webapp.RequestHandler ):
     """This handler tracks click-throughs on a given code. It tests

@@ -12,7 +12,9 @@ from datetime import datetime
 from django.utils import simplejson as json
 
 from google.appengine.api import memcache, taskqueue, urlfetch
+from google.appengine.ext import webapp
 
+from apps.client.models import Client
 from apps.stats.models import *
 from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
 from apps.link.models import Link, LinkCounter

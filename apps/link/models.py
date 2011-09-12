@@ -6,7 +6,7 @@ from decimal import *
 from google.appengine.api import urlfetch, memcache
 from google.appengine.ext import db
 from google.appengine.api import memcache
-from models.model import Model
+from util.model import Model
 
 from util.helpers import encode_base62
 

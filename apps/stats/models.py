@@ -1,7 +1,10 @@
-import logging, uuid
+#!/usr/bin/env python
+
+import uuid
 
 from google.appengine.ext import db
-from models.model import Model
+
+from util.model import Model
 
 class Stats(Model):
     uuid            = db.StringProperty()
@@ -29,3 +32,4 @@ class Stats(Model):
             stats = Stats(uuid=uuid.uuid4().hex)
             stats.put()
         return stats
+

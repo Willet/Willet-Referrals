@@ -2,6 +2,8 @@
 
 from apps.client.models import *
 
+from util.urihandler import URIHandler
+
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
     def get(self):

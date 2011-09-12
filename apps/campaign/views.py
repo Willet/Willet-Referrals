@@ -11,7 +11,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
 from apps.client.models   import Client, get_client_by_email, authenticate, register
-from apps.campaign.modelsn import get_campaign_by_id, Campaign
+from apps.campaign.models import get_campaign_by_id, Campaign
 from apps.feedback.models import Feedback
 from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_cookie, get_user_by_uuid

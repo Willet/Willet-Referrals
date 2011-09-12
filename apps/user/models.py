@@ -18,14 +18,14 @@ from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
-from models.model         import Model
-from models.oauth         import OAuthClient
-from models.user_analytics import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
+
+from apps.oauth.models         import * 
+from apps.user_analytics.models import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
+
+from util.model         import Model
 from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
-
-import models.oauth
 
 class EmailModel(Model):
     created = db.DateTimeProperty(auto_now_add=True)
@@ -786,7 +786,7 @@ def get_user_by_email( email ):
 def create_user_by_twitter(t_handle, referrer, ip=''):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
-    OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
+    OAuthToken = get_oauth_by_twitter(t_handle)
     
     user = User(key_name=t_handle,
                 uuid=generate_uuid(16),
@@ -810,7 +810,7 @@ def create_user_by_twitter(t_handle, referrer, ip=''):
 def create_user_by_linkedin(linkedin_id, referrer, ip='', would_be=False):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
-    OAuthToken = models.oauth.get_oauth_by_linkedin(linkedin_id)
+    OAuthToken = get_oauth_by_linkedin(linkedin_id)
     
     user = User(
         key_name = linkedin_id,

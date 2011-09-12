@@ -11,7 +11,7 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from models.model         import Model, ObjectListProperty
+from util.model         import Model, ObjectListProperty
 
 class ShopifyItem:
 
