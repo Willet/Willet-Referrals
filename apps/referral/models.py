@@ -114,7 +114,7 @@ def install_script_tags( store_url, store_token ):
     logging.info('%r %r' % (resp, content))
 
     # Install the top_bar JS 
-    data = { "script_tag": { "src": "http://social-referral.appspot.com/shopify/shopify/load/bar?store_id=%s" % (referralApp.uuid), "event": "onload" } }      
+    data = { "script_tag": { "src": "http://social-referral.appspot.com/shopify/load/bar?store_id=%s" % (referralApp.uuid), "event": "onload" } }      
     
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
