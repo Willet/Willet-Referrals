@@ -1,8 +1,5 @@
 handlers:
 
-#- url: /(willet.html|trackErr)
-#  script: clicks/track.py
-
 - url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
   script: plugin/plugin.py
 

@@ -14,9 +14,11 @@ class ShowAccountPage( URIHandler ):
         client  = self.get_client() # may be None
         to_show = []
         has_campaigns = False
+        num_campaigns = 0
+
         # Show the Client's campaigns
         if client == None:
-            num_campaigns = 0
+            pass
         elif hasattr(client, 'campaigns') and client.campaigns.count() > 0:
             has_campaigns = True 
             campaigns     = client.campaigns.order( '-created' )
