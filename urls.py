@@ -35,7 +35,7 @@ def main():
         except Exception,e:
             logging.error('error importing %s: %s' % (app, e))
 
-    #logging.info('running application with patterns: %s' % combined_uris)
+    logging.info('running application with patterns: %s' % combined_uris)
 
     application = webapp.WSGIApplication(
         combined_uris,
