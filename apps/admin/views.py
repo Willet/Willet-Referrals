@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
@@ -12,19 +12,16 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from models.campaign import Campaign, ShareCounter, get_campaign_by_id
-from models.client import Client
-from models.link import *
-from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter,\
+from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
+from apps.client.models import Client
+from apps.link.models import *
+from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter,\
     get_user_by_uuid
 
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
-##-----------------------------------------------------------------------------##
-##------------------------- The Dos -------------------------------------------##
-##-----------------------------------------------------------------------------##
 
 class Admin( URIHandler ):
     
@@ -132,18 +129,3 @@ class RenameFacebookData(webapp.RequestHandler):
             logging.info(user)
             logging.info(user.uuid)
          
-
-##----------------------------------------------------------------------------##
-##------------------------ The URI Router ------------------------------------##
-##-----------------------------------------------------------------------------##
-def main():
-    application = webapp.WSGIApplication([
-        (r'/admin', Admin),
-        (r'/renamefb', RenameFacebookData),
-        (r'/renameinit', InitRenameFacebookData),
-        (r'/cleanBadLinks', CleanBadLinks),
-        ], debug=USING_DEV_SERVER)
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()
