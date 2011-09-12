@@ -12,19 +12,19 @@ from datetime import datetime
 from django.utils import simplejson as json
 
 from google.appengine.api import memcache, taskqueue, urlfetch
-from google.appengine.ext import webapp
 
 from apps.client.models import Client
 from apps.stats.models import *
 from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
 from apps.link.models import Link, LinkCounter
+from apps.user.models import User
 
 from util.consts import *
 from util.emails import Email
 from util.helpers import *
 from util.urihandler import URIHandler
 
-class UpdateCounts( webapp.RequestHandler ):
+class UpdateCounts(URIHandler):
     def get( self ): 
         stats = Stats.get_stats()
         stats.total_clients    = Client.all().count()
@@ -33,7 +33,7 @@ class UpdateCounts( webapp.RequestHandler ):
         stats.total_users      = User.all().count()
         stats.put()
 
-class UpdateTweets( webapp.RequestHandler ):
+class UpdateTweets(URIHandler):
     def get( self ):
         shares = ShareCounter.all()
         total  = 0
@@ -44,7 +44,7 @@ class UpdateTweets( webapp.RequestHandler ):
         stats.total_tweets = total
         stats.put()
 
-class UpdateClicks( webapp.RequestHandler ):
+class UpdateClicks(URIHandler):
     def get( self ):
         links = LinkCounter.all()
         total  = 0
@@ -55,7 +55,7 @@ class UpdateClicks( webapp.RequestHandler ):
         stats.total_clicks = total
         stats.put()
 
-class UpdateLanding( webapp.RequestHandler ):
+class UpdateLanding(URIHandler):
     def get( self ):
         campaign     = get_campaign_by_id( LANDING_CAMPAIGN_UUID )
         
@@ -93,7 +93,7 @@ class UpdateLanding( webapp.RequestHandler ):
                 count += 1
 
             if count == 6:
-                break;
+                break
 
         stats = Stats.get_stats()
         stats.landing = s
