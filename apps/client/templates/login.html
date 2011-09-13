@@ -4,7 +4,6 @@
     <style>
       
         div.input_box {
-            
             padding: 30px;
             margin: 20px 0 30px 0;
             -khtml-border-radius: 15px;
@@ -251,7 +250,7 @@ div.input_box button:hover {
                     }
                     $.ajax({
                         type: "POST",
-                        url: '/auth',
+                        url: '/client/auth',
                         data: { email: form.email.value,
                                 passphrase: Sha256.hash(form.passphrase.value),
                                 url: form.url.value },
@@ -299,7 +298,7 @@ div.input_box button:hover {
                     
                     $.ajax({
                         type: "POST",
-                        url: '/register',
+                        url: '/client/register',
                         data: dataObj,
                         success: function(msg, code){
                             window.location.href = msg;
@@ -350,7 +349,7 @@ div.input_box button:hover {
                     <div class='clear'></div>
                 </div>
                 <div class="input_box has_tabs">
-                    <form name="reg" id="reg" method="POST" action="/register">
+                    <form name="reg" id="reg" method="POST" action="/client/register">
                         <input type="hidden" name="url" value="{{url}}" />
                         {% if regErrors %}
                         <p id="errors">
@@ -391,7 +390,7 @@ div.input_box button:hover {
                     <div class='clear'></div>
                 </div>
                 <div class="input_box has_tabs">
-                    <form name="sub" id="sub" method="POST" action="/auth">
+                    <form name="sub" id="sub" method="POST" action="/client/auth">
                         <input type="hidden" name="url" value="{{url}}" />
                         {% if authErrors %}
                         <p id="errors" class='first'>

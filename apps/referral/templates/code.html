@@ -4,21 +4,21 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">"{{campaign.title|escape}}"</h1>
+    <h1 class="lower-50 center">"{{app.title|escape}}"</h1>
     <div class="prepend-top center">
-        <p>Product Name: <br />{{campaign.product_name|escape}}</p>
-        <p>Website URL:<br/>{{campaign.target_url|escape}}</p>
+        <p>Product Name: <br />{{app.product_name|escape}}</p>
+        <p>Website URL:<br/>{{app.target_url|escape}}</p>
 
-        <p>Welcome Title:<br />{{campaign.blurb_title|escape}}</p>
-        <p>Welcome Text:<br />{{campaign.blurb_text|escape}}</p>
+        <p>Welcome Title:<br />{{app.blurb_title|escape}}</p>
+        <p>Welcome Text:<br />{{app.blurb_text|escape}}</p>
 
 
-        <p>Share text:<br />{{campaign.share_text|escape}}</p>
-        <p>Webhook URL:<br />{{campaign.webhook_url|escape}}</p>
+        <p>Share text:<br />{{app.share_text|escape}}</p>
+        <p>Webhook URL:<br />{{app.webhook_url|escape}}</p>
 
-        <a class="call_to_action big" href="/account">Finish</a>
+        <a class="call_to_action big" href="/client/account">Finish</a>
         <div class="edit_button">
-            <a class="edit_button" href="/edit?id={{campaign.uuid}}" title="Edit Campaign">
+            <a class="edit_button" href="/r/edit?id={{app.uuid}}" title="Edit Campaign">
                 <img src="/static/imgs/edit.png" width=20 height=20 />
             </a>
         </div>
@@ -26,7 +26,7 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/account">Your Campaigns</a></p>
+    <p><a href="/client/account">Your Campaigns</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -37,7 +37,7 @@
                 Place this iframe code in the <span class='code'>body</span> of your purchase / sign-up confirmation page:
             </p>
             <p class="code">
-                &lt;iframe allowtransparency="true" frameborder="0" scrolling="no" src="{{BASE_URL}}/widget?ca_id={{ campaign.uuid }}&amp;uid=" style="width:372px;
+                &lt;iframe allowtransparency="true" frameborder="0" scrolling="no" src="{{BASE_URL}}/widget?ca_id={{ app.uuid }}&amp;uid=" style="width:372px;
                 height:445px;"&gt; &lt;/iframe&gt;
             </p>
             <p class="tip">

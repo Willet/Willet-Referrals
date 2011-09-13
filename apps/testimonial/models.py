@@ -13,12 +13,12 @@ from util.model import Model
 from util.helpers import generate_uuid
 
 class Testimonial(Model):
-    """Model storing the data for a client's sharing campaign"""
+    """Model storing the data for a client's sharing client"""
     uuid     = db.StringProperty( indexed = True )
     created  = db.DateTimeProperty(auto_now_add=True)
     message  = db.StringProperty(multiline=True)
-    user     = db.ReferenceProperty( db.Model, collection_name = 'user_testimonials' )
-    campaign = db.ReferenceProperty( db.Model, collection_name = 'campaign_testimonials' )
+    user     = db.ReferenceProperty(db.Model, collection_name = 'user_testimonials')
+    client   = db.ReferenceProperty(db.Model, collection_name = 'client_testimonials')
     link     = db.ReferenceProperty(db.Model, collection_name = 'link_testimonials')
     
     def __init__(self, *args, **kwargs):
@@ -30,25 +30,18 @@ class Testimonial(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(Testimonial).filter('uuid =', uuid).get()
 
-def create_testimonial( user,  message, link ):
+def create_testimonial( user, message, link ):
     try:
-        campaign = link.campaign
+        # TODO: I don;t think Link has a client ...
+        client = link.client
     except:
         return
 
     # Create the default share text
-    # TODO(Barbara): THis is a hack for shopify. Chhange this when we make the campaign change.
-    try:
-        if campaign.target_url in campaign.share_text:
-            share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
-        else:
-            share_text = campaign.share_text + " " + link.get_willt_url()
-    except Exception, e:
-        if campaign.store_url in campaign.share_text:
-            share_text = campaign.share_text.replace( campaign.store_url, link.get_willt_url() )
-        else:
-            share_text = campaign.share_text + " " + link.get_willt_url()
-
+    if client.target_url in client.share_text:
+        share_text = client.share_text.replace( client.target_url, link.get_willt_url() )
+    else:
+        share_text = client.share_text + " " + link.get_willt_url()
 
     # If the testimonial is not the same as the share text:
     if message != share_text:
@@ -58,7 +51,7 @@ def create_testimonial( user,  message, link ):
                          uuid = uuid,
                          user=user,
                          message=message,
-                         campaign=campaign,
+                         client=client,
                          link=link )
         # Save it!
         t.put()

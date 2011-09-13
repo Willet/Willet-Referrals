@@ -118,7 +118,7 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">{% if campaign %}Edit{% else %}New{% endif %} Campaign</h1>
+    <h1 class="lower-50 center">{% if app %}Edit{% else %}New{% endif %} Campaign</h1>
 
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
@@ -126,17 +126,17 @@
             <div id="step1_left">
                 <div>
                     <label class="default_label" for="title">Name This Campaign</label>
-                    <input type="text" id="title" name="title" value="{{campaign.title|escape}}"/>  <br />
+                    <input type="text" id="title" name="title" value="{{app.title|escape}}"/>  <br />
                     <span class="defaultValue hidden">Invite List</span>
                 </div>
                 <div>
                     <label class="default_label" for="product_name">Your Product / Service Name</label>
-                    <input type="text" id="product_name" name="product_name" value="{{campaign.product_name|escape}}"/>  <br />
+                    <input type="text" id="product_name" name="product_name" value="{{app.product_name|escape}}"/>  <br />
                     <span class="defaultValue hidden">FooBoxes</span>
                 </div> 
                 <div>
                     <label class="default_label" for="target_url">Your Website URL</label> <br />
-                    <input type="text" name="target_url" id="target_url" value="{% if campaign %}{{campaign.target_url|escape}}{% else %}http://{% endif %}" onBlur="url_text();" />
+                    <input type="text" name="target_url" id="target_url" value="{% if app %}{{app.target_url|escape}}{% else %}http://{% endif %}" onBlur="url_text();" />
                 </div>
             </div>
 
@@ -148,7 +148,7 @@
                     
                     <br />
                     
-                    <input type="text" name="blurb_title" id="blurb_title" value="{% if campaign %}{{campaign.blurb_title|escape}}{% endif %}" onKeyUp="update_blurb_title();" />
+                    <input type="text" name="blurb_title" id="blurb_title" value="{% if app %}{{app.blurb_title|escape}}{% endif %}" onKeyUp="update_blurb_title();" />
                     
                     <span class="defaultValue hidden">Get 3 months free</span>
                 </div>
@@ -157,7 +157,7 @@
                         Blurb Text
                     </label>
                     <br />
-                    <textarea name="blurb_text" id="blurb_text" onKeyUp="update_blurb_text();">{% if campaign %}{{campaign.blurb_text|escape}}{% endif %}</textarea>
+                    <textarea name="blurb_text" id="blurb_text" onKeyUp="update_blurb_text();">{% if app %}{{app.blurb_text|escape}}{% endif %}</textarea>
                     
                     <span class="defaultValue hidden">by sharing your love</span>
                 </div>
@@ -168,13 +168,13 @@
                     <label class="default_label" for="share_text">Default Share Text</label>
                     <div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>
                     <br />
-                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
+                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
                     <span class="defaultValue hidden" id="share_text_span">I love ReferredU because ...! You should check them out!</span>
                 </div>
 
                 <div>
                     <label class="default_label" for="webhook_url">Webhook URL</label> <br />
-                    <input type="text" name="webhook_url" id="webhook_url" value="{% if campaign %}{{campaign.webhook_url|escape}}{% else %}http://{% endif %}" />
+                    <input type="text" name="webhook_url" id="webhook_url" value="{% if app %}{{app.webhook_url|escape}}{% else %}http://{% endif %}" />
                 </div>
                 
                 {% if client %}
@@ -184,7 +184,7 @@
                 {% endif %}
             </div>
             
-            <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
+            <input type="hidden" value="{{app.uuid}}" name="uuid" />
         </form>
         
         <button id="goToStep2Button" onClick="goToStep2();" title="Next Step">Next</button>
@@ -218,7 +218,7 @@
             </p>
             <br />
             <div class="center" id="blurb_iframe_container">
-                <iframe src='/widget?ca_id={{campaign.uuid}}' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
+                <iframe src='/widget?ca_id={{app.uuid}}' id="blurb_iframe" scrolling="no" onload="update_blurb_iframe()"></iframe>
             </div>
         </div>
         <div id="step3_right" class="hidden prepend-1 span-14 last">
@@ -227,7 +227,7 @@
             </p>
             <br />
             <div class="center" id="share_iframe_container">
-                <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
+                <iframe src='/willt?ca_id={{app.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
         </div>
         

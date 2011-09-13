@@ -1,50 +1,50 @@
 cron:
 
-- description: compute weekly analytics for all campaigns
-  url: /triggerCampaignAnalytics
+# App Crons
+- description: compute weekly analytics for all apps
+  url: /a/triggerAppAnalytics
   schedule: every monday 01:00
 
-- description: compute monthly analytics for all campaigns
-  url: /triggerCampaignAnalytics?scope=month
+- description: compute monthly analytics for all apps
+  url: /a/triggerAppAnalytics?scope=month
   schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
 
-- description: check recently tweeted urls to see if they were actually tweeted
-  url: /getTweets
-  schedule: every 5 minutes
-
-- description: Updating landing page results
-  url: /updateLanding
-  schedule: every 15 minutes
-
-- description: Clean bad links
-  url: /cleanBadLinks
-  schedule: every 30 minutes
-
+# Referral App Crons
 - description: Email results out
-  url: /emailerCron
+  url: /r/emailerCron
   schedule: every 2 hours
 
+# Admin Statistics
 - description: Updating login page stats (counts)
-  url: /updateCounts
+  url: /stats/updateCounts
   schedule: every 6 hours
 
 - description: Updating login page stats (tweets)
-  url: /updateTweets
+  url: /stats/updateTweets
   schedule: every 6 hours
 
 - description: Updating login page stats (clicks)
-  url: /updateClicks
+  url: /stats/updateClicks
   schedule: every 6 hours
 
+# Link Crons
+- description: check recently tweeted urls to see if they were actually tweeted
+  url: /link/getTweets
+  schedule: every 5 minutes
+
+- description: Clean bad links
+  url: /link/cleanBadLinks
+  schedule: every 30 minutes
+
+# User Crons
 - description: compute daily analytics for users 
-  url: /triggerUserAnalytics
+  url: /user/triggerUserAnalytics
   schedule: every 24 hours 
 
 - description: compute weekly analytics for users 
-  url: /triggerUserAnalytics?scope=week
+  url: /user/triggerUserAnalytics?scope=week
   schedule: every monday 01:00
 
 - description: compute monthly analytics for users 
-  url: /triggerUserAnalytics?scope=month
+  url: /user/triggerUserAnalytics?scope=month
   schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
-

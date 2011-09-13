@@ -12,7 +12,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
-from apps.campaign.models import Campaign, get_shopify_campaign_by_id, get_shopify_campaign_by_url 
+from apps.app.models import * 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
@@ -23,340 +23,264 @@ from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
 
-class ShowShopifyEditPage( URIHandler ):
-    # Renders a campaign page
-    def get(self):
-        # Request varZ from us
-        campaign_id  = self.request.get( 'id' )
-        error        = self.request.get( 'error' )
-        error_msg    = self.request.get( 'error_msg')
-        store_name   = self.request.get( 'store_name' )
-        store_url    = self.request.get( 'store_url' )
-        share_text   = self.request.get( 'share_text' )
+class ShowDashboard( URIHandler ):
+    # Renders a app page
+    def get(self, app_id = ''):
+        #client          = self.get_client()
+        #app_id     = self.request.get( 'id' )
+        template_values = { 'app' : None }
         
-        # Request varZ from Shopify
-        shopify_url  = self.request.get( 'shop' )
-        shopify_sig  = self.request.get( 'signature' )
-        store_token  = self.request.get( 't' )
-        shopify_timestamp = self.request.get( 'timestamp' )
+        # Grab the app
+        app = get_app_by_id(app_id)
+        if app == None:
+            self.redirect('/account')
+            return
         
-        # Init the template values with a blank campaign
-        template_values = { 'campaign' : None }
+        app.compute_analytics('month')
+        sms = app.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40), count=1)
+        template_values['app'] = app
+        template_values['sms'] = sms
+        total_clicks = app.count_clicks()
+        template_values['total_clicks'] = total_clicks
+        results, mixpanel = app.get_results( total_clicks )
         
-        # Check the Shopify stuff if they gave it to us.
-        # If it fails, let's just say they aren't coming from Shopify.
-        # If we don't have this info, we could be redirecting on an error
-        if shopify_url != '':
-            s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
-            d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
-            logging.info('S: %s D: %s' % (shopify_sig, d))
-            if shopify_sig == d: # ie. if this is valid from shopify
-                              
-                # Update the values if this is the first time.
-                store_name = shopify_url.split( '.' )[0].capitalize()
-  
-                # Ensure the 'http' is in the URL
-                if 'http' not in shopify_url:
-                    shopify_url = 'http://%s' % shopify_url
+        smap = {'twitter': 0, 'linkedin': 1, 'facebook': 2, 'email': 3}
 
-                url = '%s/admin/shop.json' % ( shopify_url )
-                username = SHOPIFY_API_KEY
-                password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-
-                # this creates a password manager
-                passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-                # because we have put None at the start it will always
-                # use this username/password combination for  urls
-                # for which `url` is a super-url
-                passman.add_password(None, url, username, password)
-
-                # create the AuthHandler
-                authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-                opener = urllib2.build_opener(authhandler)
-
-                # All calls to urllib2.urlopen will now use our handler
-                # Make sure not to include the protocol in with the URL, or
-                # HTTPPasswordMgrWithDefaultRealm will be very confused.
-                # You must (of course) use it when fetching the page though.
-                urllib2.install_opener(opener)
+        totals = {'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''}
+        service_totals = []
+        props = ['shares', 'reach', 'clicks', 'conversions', 'profit']
+        while len(service_totals) < len(smap):
+            service_totals.append({'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''})
                 
-                # authentication is now handled automatically for us
-                logging.info("Querying %s" % url )
-                result = urllib2.urlopen(url)
-                
-                details = json.loads( result.read() ) 
-                shop    = details['shop']
-                logging.info('shop: %s' % (shop))
-                    
-                # Update the template
-                template_values['shop_owner']  = shop['shop_owner']
-                template_values['store_token'] = store_token
-                
-                campaign = get_shopify_campaign_by_url( shopify_url )
-                if campaign is None:
-                    logging.info("GOUNF")
-                    template_values['campaign']     = { 'store_name' : store_name,
-                                                        'store_url'  : shopify_url }
-                    template_values['has_campaign'] = False
-                else:
-                    template_values['campaign'] = campaign
-
-            # The Shopify check failed. Redirecting to normal site. 
-            # TODO(Barbara): This might need to change in the future.
-            else:
-                logging.info("REDIRECTING")
-                self.redirect( '/edit' )
-                return
-
-        # Fake a campaign to put data in if there is an error
-        if error == '1':
-            template_values['error'] = 'Invalid Shopify store url.'
-            template_values['campaign'] = { 'store_name' : store_name,
-                                            'store_url' : store_url,
-                                            'share_text' : share_text, 
-                                            'store_token' : store_token
-                                          }
-        elif error == '2':
-            template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['campaign'] = { 'store_name' : store_name,
-                                            'store_url' : store_url,
-                                            'share_text' : share_text, 
-                                            'store_token' : store_token
-                                          }
-        elif error == '3':
-            template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['campaign'] = { 'store_name' : store_name,
-                                            'store_url' : store_url,
-                                            'share_text' : share_text, 
-                                            'store_token' : store_token
-                                          }
-
-        # If there is no campaign_id, then we are creating a new one:
-        elif campaign_id != '':
+        for s in sms:
+            row = smap[s['name']]
+            service_totals[row]['name'] = s['name']
+            service_totals[row]['users'].append(s['users'])
+            for prop in props:
+                totals[prop] += s[prop]
+                service_totals[row][prop] += s[prop]
             
-            # Updating an existing campaign here:
-            campaign = get_shopify_campaign_by_id( campaign_id )
-            if campaign == None:
-                self.redirect( '/edit' )
-                return
-            
-            template_values['campaign'] = campaign
+        template_values['results']     = results
+        template_values['mixpanel']    = mixpanel
+        template_values['has_results'] = len( results ) != 0
+        template_values['current'] = 'app'
 
+        template_values['api_key'] = MIXPANEL_API_KEY
+        template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + app.uuid).hexdigest()
+        template_values['totals'] = totals
+        template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
-
+        logging.info(service_totals) 
         self.response.out.write(
             self.render_page(
-                'shopify/edit.html', 
-                template_values, 
-                appname='referral'
+                'app.html', 
+                template_values,
+                appname='app'
             )
         )
 
-class ShowShopifyCodePage(URIHandler):
+class ShowJSONPage( URIHandler ):
+    # Renders a app page
     def get(self):
-        campaign_id = self.request.get( 'id' )
-        template_values = { 'campaign' : None }
+        client = self.get_client() # May be None
+        app_id = self.request.get( 'id' )
+        template_values = { 'app' : None }
         
-        if campaign_id:
-            # Updating an existing campaign here:
-            campaign = get_shopify_campaign_by_id( campaign_id )
-            if campaign == None:
+        if app_id:
+            
+            # Grab the app
+            app = get_app_by_id( app_id )
+            if app == None:
                 self.redirect( '/account' )
                 return
-
-            template_values['campaign'] = campaign
+            
+            # Gather info to display
+            total_clicks = app.count_clicks()
+            results, foo = app.get_results( total_clicks )
+            has_results  = len(results) != 0
+            
+            logging.info('results :%s' % results)
+            
+            # App details
+            template_values['app'] = { 'title' : app.title, 
+                                            'product_name' : app.product_name,
+                                            'target_url' : app.target_url,
+                                            'blurb_title' : app.blurb_title,
+                                            'blurb_text' : app.blurb_text,
+                                            'share_text': app.share_text, 
+                                            'webhook_url' : app.webhook_url }
+            template_values['total_clicks'] = total_clicks
+            template_values['has_results']  = has_results
+            
+            to_show = []
+            for r in results:
+                e = {'place' : r['num'],
+                     'click_count' : r['clicks'],
+                     'clicks_ratio' : r['clicks_ratio']}
+                     
+                if r['user']:
+                    e['twitter_handle'] = r['user'].twitter_handle
+                    e['user_uid'] = r['link'].supplied_user_id
+                    e['twitter_followers_count'] = r['user'].twitter_followers_count
+                    e['klout_score'] = r['user'].kscore
+                    
+                to_show.append( e )
+                
+            if has_results:
+                template_values['results']  = to_show
         
+        self.response.out.write(json.dumps(template_values))
+
+class ShowEditPage( URIHandler ):
+    # Renders a app page
+    def get(self):
+        client       = self.get_client() # may be None
+        
+        app_id  = self.request.get( 'id' )
+        error        = self.request.get( 'error' )
+        error_msg    = self.request.get( 'error_msg')
+        title        = self.request.get( 'title' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
+        blurb_title  = self.request.get( 'blurb_title' )
+        blurb_text   = self.request.get( 'blurb_text' )
+        share_text   = self.request.get( 'share_text' )
+        webhook_url  = self.request.get( 'webhook_url' ) 
+        
+        template_values = { 'app' : None }
+        
+        # Fake a app to put data in if there is an error
+        
+        if error == '1':
+            template_values['error'] = 'Invalid url.'
+            template_values['app'] = { 'title' : title,
+                                            'product_name' : product_name,
+                                            'target_url' : target_url,
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
+        elif error == '2':
+            template_values['error'] = 'Please don\'t leave anything blank.'
+            template_values['app'] = { 'title' : title,
+                                            'product_name' : product_name,
+                                            'target_url' : target_url,
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
+        elif error == '3':
+            template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
+            template_values['app'] = { 'title' : title,
+                                            'product_name' : product_name,
+                                            'target_url' : target_url,
+                                            'blurb_title' : blurb_title,
+                                            'blurb_text' : blurb_text,
+                                            'share_text' : share_text, 
+                                            'webhook_url' : webhook_url }
+                                        
+        # If there is no app_id, then we are creating a new one:
+        elif app_id:
+            
+            # Updating an existing app here:
+            app = get_app_by_id( app_id )
+            if app == None:
+                self.redirect( '/account' )
+                return
+            
+            template_values['app'] = app
+            
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(
-            self.render_page(
-                'shopify/code.html', 
-                template_values,
-                appname='referral'
-            )
-        )
+        self.response.out.write(self.render_page('edit.html', template_values))
 
-class DoUpdateOrCreateShopifyCampaign(URIHandler):
+class ShowCodePage( URIHandler ):
+    # Renders a app page
+    @login_required
+    def get(self, client):
+        app_id = self.request.get( 'id' )
+        template_values = { 'app' : None }
+        
+        if app_id:
+            # Updating an existing app here:
+            app = get_app_by_id( app_id )
+            if app == None:
+                self.redirect( '/account' )
+                return
+            
+            if app.client == None:
+                app.client = client
+                app.put()
+                
+            template_values['app'] = app
+        
+        template_values['BASE_URL'] = URL
+        
+        self.response.out.write(self.render_page('code.html', template_values))
+
+class DoUpdateOrCreate( URIHandler ):
     def post( self ):
-        client      = self.get_client() # might be None
-        # Request varZ
-        campaign_id = self.request.get( 'uuid' )
-        store_name  = self.request.get( 'store_name' )
-        store_url   = self.request.get( 'store_url' )
-        share_text  = self.request.get( 'share_text' )
-        store_token = self.request.get( 'token' )
+        client = self.get_client() # might be None
         
-        # Error check the input!
-        if store_name == '' or store_url == ''  or share_text == '':
-            self.redirect( '/shopify/edit?id=%s&t=%s&error=2&share_text=%s&store_url=%s&store_name=%s' % (campaign_id, store_token, share_text, store_url, store_name) )
+        app_id   = self.request.get( 'uuid' )
+        title        = self.request.get( 'title' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
+        blurb_title  = self.request.get( 'blurb_title' )
+        blurb_text   = self.request.get( 'blurb_text' )
+        share_text   = self.request.get( 'share_text' )
+        webhook_url  = self.request.get( 'webhook_url' ) 
+        
+        app = get_app_by_id( app_id )
+        
+        title = title.capitalize() # caps it!
+        
+        if title == '' or product_name == '' or target_url == '' or blurb_title == '' or blurb_text == '' or share_text == '' or webhook_url == '':
+            self.redirect( '/r/edit?id=%s&error=2&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            % (app_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
-        if not isGoodURL( store_url ):
-            self.redirect( '/shopify/edit?id=%s&t=%s&error=1&share_text=%s&store_url=%s&store_name=%s' % (campaign_id, store_token, share_text, store_url, store_name) )
+            
+        if not isGoodURL( target_url ) or not isGoodURL( webhook_url ):
+            self.redirect( '/r/edit?id=%s&error=1&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            % (app_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
         
-        # Try to grab the ShopifyCampaign
-        campaign = get_shopify_campaign_by_id( campaign_id )
-        
-        # If campaign doesn't exist,
-        if campaign == None:
+        # If app doesn't exist,
+        if app == None:
         
             # Create a new one!
             try:
-                url = '%s/admin/shop.json' % ( store_url )
-                username = SHOPIFY_API_KEY
-                password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-
-                # this creates a password manager
-                passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-                # because we have put None at the start it will always
-                # use this username/password combination for  urls
-                # for which `url` is a super-url
-                passman.add_password(None, url, username, password)
-
-                # create the AuthHandler
-                authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-                opener = urllib2.build_opener(authhandler)
-
-                # All calls to urllib2.urlopen will now use our handler
-                # Make sure not to include the protocol in with the URL, or
-                # HTTPPasswordMgrWithDefaultRealm will be very confused.
-                # You must (of course) use it when fetching the page though.
-                urllib2.install_opener(opener)
-                
-                # authentication is now handled automatically for us
-                logging.info("Querying %s" % url )
-                result = urllib2.urlopen(url)
-                
-                details = json.loads( result.read() ) 
-                shop    = details['shop']
-                logging.info('shop: %s' % (shop))
-                uuid = str(shop['id'])
-
-                # This person probably didn't log in,
-                # so make a new Client for them without a passphrase.
-                if client is None:
-                    client = Client( key_name=shop['email'], uuid=generate_uuid(16), email=shop['email'] )
-                    client.put()
-
-                domain = shop['domain']
-                if not 'http' in domain:
-                    domain = "http://%s" % domain
-                campaign = ShopifyCampaign( key_name=uuid,
-                                            uuid=uuid,
-                                            client=client, 
-                                            store_name=shop['name'],
-                                            store_url=domain,
-                                            share_text=share_text,
-                                            store_token=store_token )
-                campaign.put()
+                uuid = generate_uuid(16)
+                app = App( key_name=uuid,
+                                     uuid=uuid,
+                                     client=client, 
+                                     title=title[:100], 
+                                     product_name=product_name,
+                                     target_url=target_url,
+                                     blurb_title=blurb_title,
+                                     blurb_text=blurb_text,
+                                     share_text=share_text,
+                                     webhook_url=webhook_url)
+                app.put()
             except BadValueError, e:
-                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&store_url=%s&store_name=%s' % (str(e), campaign_id, store_token, share_text, store_url, store_name) )
+                self.redirect( '/r/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
-        # Otherwise, update the existing campaign.
+        # Otherwise, update the existing app.
         else:
             try:
-                campaign.update( store_name = store_name,
-                                 store_url  = store_url,
-                                 share_text = share_text )
+                app.update( title=title[:100], 
+                                 product_name=product_name,
+                                 target_url=target_url,
+                                 blurb_title=blurb_title, 
+                                 blurb_text=blurb_text,
+                                 share_text=share_text, 
+                                 webhook_url=webhook_url)
             except BadValueError, e:
-                self.redirect( '/shopify/edit?error=3&error_msg=%s&id=%s&t=%s&share_text=%s&store_url=%s&store_name=%s' % (str(e), campaign_id, store_token, share_text, store_url, store_name) )
+                self.redirect( '/r/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
-        self.redirect( '/shopify/r/code?id=%s' % campaign.uuid )
-
-class DynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
-    
-    def get(self, input_path):
-        logging.info('Token %s' % self.request.get('order_token'))
-        template_values = {}
-        rq_vars = get_request_variables(['store_id', 'order_token'], self)
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
-        # Grab a User if we have a cookie!
-        user = get_or_create_user_by_cookie(self)
-        user_email = user.get_attr('email') if user else ""
-        user_found = True if hasattr(user, 'fb_access_token') else False
-        
-        campaign = get_shopify_campaign_by_id( rq_vars['store_id'] )
-        
-        # If they give a bogus campaign id, show the landing page campaign!
-        logging.info(campaign)
-        if campaign == None:
-            template_values = {
-                'NAME' : NAME,
-                
-                'text': "",
-                'willt_url' : URL,
-                'willt_code': "",
-                'campaign_uuid' : "",
-                'store_url' : URL,
-                
-                'user' : user,
-                'user_email' : user_email
-            }
+        if client == None:
+            self.redirect( '/client/login?u=/r/code?id=%s' % app.uuid )
         else:
-            # Make a new Link
-            link = create_link(campaign.store_url, campaign, origin_domain, user)
-            logging.info("link created is %s" % link.willt_url_code)
-
-            # Fetch the Shopify Order
-            order = get_shopify_order_by_token( rq_vars['order_token'] )
-
-            # Create the share text
-            if campaign.store_url in campaign.share_text:
-                share_text = campaign.share_text.replace( campaign.store_url, link.get_willt_url() )
-            else:
-                share_text = campaign.share_text + " " + link.get_willt_url()
-            
-            template_values = {
-                'URL' : URL,
-                'NAME' : NAME,
-                
-                'campaign' : campaign,
-                'campaign_uuid' : campaign.uuid,
-                'text': share_text,
-                'willt_url' : link.get_willt_url(),
-                'willt_code': link.willt_url_code,
-                'order_id': order.order_id if order else "",
-                
-                'user': user,
-                'FACEBOOK_APP_ID': FACEBOOK_APP_ID,
-                'user_email': user_email,
-                'user_found': str(user_found).lower()
-            }
-        
-        if self.request.url.startswith('http://localhost'):
-            template_values['BASE_URL'] = self.request.url[0:21]
-        else:
-            template_values['BASE_URL'] = URL
-            
-        if 'referral' in input_path:
-            path = 'referral_plugin.html'
-        
-        elif 'bar' in input_path:
-
-            logging.info("BAR: campaign: %s" % (campaign.uuid))
-            referrer_cookie = self.request.cookies.get(campaign.uuid, False)
-            logging.info('LINK %s' % referrer_cookie)
-            referrer_link = get_link_by_willt_code( referrer_cookie )
-            if referrer_link:
-                template_values['profile_pic']        = referrer_link.user.get_attr( 'pic' )
-                template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
-                template_values['show_gift']          = True
-            self.response.headers['Content-Type'] = 'javascript'
-            path = 'referral_top_bar.js'
-        
-        path = os.path.join('apps/referral/templates/', path)
-
-        logging.info("rendeirng %s" % path)
-        self.response.out.write(template.render(path, template_values))
-
-        return
-
-
+            self.redirect( '/r/code?id=%s' % app.uuid )

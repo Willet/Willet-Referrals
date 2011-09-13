@@ -5,9 +5,8 @@ from apps.admin.views import *
 urlpatterns = [
     (r'/admin', Admin),
     (r'/admin/routes', ShowRoutes),
-    (r'/renamefb', RenameFacebookData),
-    (r'/renameinit', InitRenameFacebookData),
-    (r'/cleanBadLinks', CleanBadLinks),
-    (r"/trackErr", TrackCallbackError),
+    (r'/admin/renamefb', RenameFacebookData),
+    (r'/admin/renameinit', InitRenameFacebookData),
+    (r"/admin/trackErr", TrackCallbackError),
 ]
 

@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 import cgi
 
-from apps.client.models import *
-from apps.stats.models import Stats
-from apps.user.models import get_user_by_cookie
+from apps.client.models import Client
+from apps.stats.models  import Stats
+from apps.user.models   import get_user_by_cookie
 
-from util.urihandler import URIHandler
-from util.consts import *
-from util.gaesessions import *
-from util.helpers import *
+from util.urihandler    import URIHandler
+from util.consts        import *
+from util.gaesessions   import *
+from util.helpers       import *
 
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
     def get(self):
         client  = self.get_client() # may be None
         to_show = []
-        has_campaigns = False
-        num_campaigns = 0
+        has_apps = False
+        num_apps = 0
 
-        # Show the Client's campaigns
+        # Show the Client's apps
         if client == None:
             pass
-        elif hasattr(client, 'campaigns') and client.campaigns.count() > 0:
-            has_campaigns = True 
-            campaigns     = client.campaigns.order( '-created' )
-            num_campaigns = client.campaigns.count()
+        elif hasattr(client, 'apps') and client.apps.count() > 0:
+            has_apps = True 
+            apps     = client.apps.order( '-created' )
+            num_apps = client.apps.count()
 
-            for c in campaigns:
+            for c in apps:
                 to_show.append({'title'    : c.title,
                                 'uuid'     : c.uuid,
                                 'target_url' : c.target_url,
@@ -36,13 +36,13 @@ class ShowAccountPage( URIHandler ):
                                 'is_shopify' : hasattr(c, 'shopify_token')})
         
         template_values = {
-            'campaigns' : to_show,
-            'has_campaigns' : has_campaigns,
+            'apps' : to_show,
+            'has_apps' : has_apps,
             'current': 'dashboard',
             'BASE_URL': URL,
             'api_key': MIXPANEL_API_KEY,
             'platform_secret': hashlib.md5(MIXPANEL_SECRET + '1234').hexdigest(),
-            'num_campaigns': num_campaigns
+            'num_apps': num_apps
         }
         
         self.response.out.write(self.render_page('account.html', template_values, appname='client'))
@@ -194,18 +194,6 @@ class DoRegisterClient( URIHandler ):
             self.response.out.write( url if url else '/account' )
             return
 
-class Logout( URIHandler ):
-    def get( self ):
-        session = get_current_session()
-        session.regenerate_id()
-        
-        if session.is_active():
-            session.terminate()
-        
-        self.db_client = None # Remove this client
-        
-        self.redirect( '/' )
-
 class ShowLoginPage( URIHandler ):
     # Renders the login page
     def get(self):
@@ -226,7 +214,8 @@ class ShowLoginPage( URIHandler ):
                 session['auth-errors'] = []
                 session['reg-errors']  = [] 
                 
-            self.redirect( url if url else '/account' )
+            self.redirect( url if url else '/client/account' )
+            return
         
         else:
             stats      = Stats.all().get()
@@ -246,4 +235,14 @@ class ShowLoginPage( URIHandler ):
                                  
             self.response.out.write(self.render_page('login.html', template_values, appname='client'))
 
-
+class Logout( URIHandler ):
+    def get( self ):
+        session = get_current_session()
+        session.regenerate_id()
+        
+        if session.is_active():
+            session.terminate()
+        
+        self.db_client = None # Remove this client
+        
+        self.redirect( '/' )

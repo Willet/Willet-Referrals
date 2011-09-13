@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-from apps.campaign.models import *
+from apps.app.models import *
 from apps.user.models import *
 
 from util.urihandler import URIHandler
 
 class ShowProfilePage(URIHandler):
-    def get(self, campaign_id = None, user_id = None):
-        campaign = get_campaign_by_id(campaign_id)
+    def get(self, app_id = None, user_id = None):
+        app = get_app_by_id(app_id)
         user = get_user_by_uuid(user_id)
 
-        if not campaign:
+        if not app:
             logging.error("""Tried to get user profile without defining
                 a campgin""")
         elif user:
@@ -28,12 +28,12 @@ class ShowProfilePage(URIHandler):
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()
-            #user_analytics = user.get_analytics_for_campaign(campaign, 'day')
+            #user_analytics = user.get_analytics_for_app(app, 'day')
             #results = user_analytics.fetch(user_analytics.count())
             #logging.info("got %d results" % user_analytics.count())
             #logging.info(results)
             if hasattr(user, 'user_testimonials'):
-                testies = user.user_testimonials.filter('campaign =', campaign)
+                testies = user.user_testimonials.filter('app =', app)
             else:
                 testies = {}
 

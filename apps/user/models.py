@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+
 # Data models for our Users
 # our Users are our client's clients
+
+__author__      = "Willet, Inc."
+__copyright__   = "Copyright 2011, Willet, Inc"
+
 import logging
 import sys
 
@@ -27,6 +32,9 @@ from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
 
+# ------------------------------------------------------------------------------
+# EmailModel Class Definition --------------------------------------------------
+# ------------------------------------------------------------------------------
 class EmailModel(Model):
     created = db.DateTimeProperty(auto_now_add=True)
     address = db.EmailProperty(indexed=True)
@@ -41,7 +49,7 @@ class EmailModel(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(EmailModel).filter('created =', created).get()
     
-
+# Constructor ------------------------------------------------------------------
 def create_email_model( user, email ):
     if email != '':
         # Check to see if we have one already
@@ -60,6 +68,9 @@ def create_email_model( user, email ):
         em.put()
     
 
+# ------------------------------------------------------------------------------
+# User Class Definition --------------------------------------------------------
+# ------------------------------------------------------------------------------
 class User( db.Expando ):
     # General Junk
     uuid            = db.StringProperty(indexed = True)
@@ -1020,4 +1031,40 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
         user = create_user( referrer )
     return user
 
+# ------------------------------------------------------------------------------
+# Relationship Class Definition ------------------------------------------------
+# ------------------------------------------------------------------------------
 
+# NOTE:
+#
+# This is a TENTATIVE model. It is not in use.
+#
+class Relationship(Model):
+    """Model storing inter-user relationships data"""
+    uuid      = db.StringProperty( indexed = True )
+    created   = db.DateTimeProperty(auto_now_add=True)
+    from_user = db.ReferenceProperty( db.Model, collection_name="from_relationships" )
+    to_user   = db.ReferenceProperty( db.Model, default = None, collection_name="to_relationships" )
+    type      = db.StringProperty( default = 'friend' )
+    provider  = db.StringProperty( )
+
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        super(Conversion, self).__init__(*args, **kwargs)
+    
+    @staticmethod
+    def _get_from_datastore( uuid ):
+        """Datastore retrieval using memcache_key"""
+        return db.Query(Relationship).filter('uuid =', uuid).get()
+
+def create_relationship( from_u, to_u, provider = '' ):
+    uuid = generate_uuid(16)
+    
+    r = Relationship( key_name  = uuid,
+                      uuid      = uuid,
+                      from_user = from_u,
+                      to_user   = to_u,
+                      provider  = provider )
+    r.put()
+
+    return r # return incase the caller wants it

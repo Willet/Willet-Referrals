@@ -17,7 +17,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.link.models     import Link, get_active_links_by_app
+from apps.link.models     import Link, get_link_by_willt_code, get_active_links_by_campaign
 from apps.order.models    import Order
 from apps.user.models     import User
 from util.consts          import *
@@ -40,7 +40,7 @@ class App( Model, polymodel.PolyModel ):
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
     
     # Analytics for this App
-    analytics       = db.ReferenceProperty( AppAnalytics )
+    analytics       = db.ReferenceProperty( db.Model, collection_name = "APPS" )
     
     # For Apps that use a click counter, this is the cached amount
     cached_clicks_count = db.IntegerProperty( default = 0 )
@@ -388,7 +388,6 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
     
     return ca
 
-
 def get_app_analytics_by_uuid(uuid, scope):
     return AppAnalytics.all().filter('uuid =', uuid).get()
 
@@ -402,3 +401,42 @@ def get_analytics_report_since(app_uuid, scope, t, count=None):
     for c in ca:
         logging.info(c.start_time)
     return ca
+
+
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+class Conversion(Model):
+    """Model storing conversion data"""
+    uuid     = db.StringProperty( indexed = True )
+    created  = db.DateTimeProperty(auto_now_add=True)
+    link     = db.ReferenceProperty( db.Model, collection_name="link_conversions" )
+    referrer = db.ReferenceProperty( db.Model, collection_name="users_referrals" )
+    referree = db.ReferenceProperty( db.Model, default = None, collection_name="users_been_referred" )
+    referree_uid = db.StringProperty()
+    app      = db.ReferenceProperty( db.Model, collection_name="app_conversions" )
+    order    = db.StringProperty()
+
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        super(Conversion, self).__init__(*args, **kwargs)
+    
+    @staticmethod
+    def _get_from_dataapp( uuid ):
+        """Dataapp retrieval using memcache_key"""
+        return db.Query(Conversion).filter('uuid =', uuid).get()
+
+def create_conversion( link, app, referree_uid, referree, order_num ):
+    uuid = generate_uuid(16)
+    
+    c = Conversion( key_name     = uuid,
+                    uuid         = uuid,
+                    link         = link,
+                    referrer     = link.user,
+                    referree     = referree,
+                    referree_uid = referree_uid,
+                    app          = app,
+                    order        = order_num )
+    c.put()
+
+    return c # return incase the caller wants it

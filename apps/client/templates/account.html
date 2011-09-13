@@ -16,7 +16,7 @@
     </div>
     
     <div class="prepend-top span-8 last center">
-        <a class="call_to_action big" href="/edit">New Campaign</a>
+        <a class="call_to_action big" href="/r/edit">New Referral App</a>
     </div>
 
 {% endblock left_content %}
@@ -36,7 +36,7 @@
                 {% for c in campaigns %}
                 <tr class="bottom_border">
                     <td>
-                        <a href="/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
+                        <a href="/r/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
                     </td>
                     <td>
                         {{c.shares}}
@@ -46,15 +46,15 @@
                     </td>
                     <td>
                         {% if c.is_shopify %}
-                            <a href="/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                            <a href="/r/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
                         {% else %}
-                            <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                            <a href="/r/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
                         {% endif %}
                     </td>
                     <td>
-                         <form action="/deleteCampaign" method="post" class="center">
+                         <form action="/a/deleteApp" method="post" class="center">
                             <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
                             <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
                         </form>
@@ -65,7 +65,7 @@
         {% else %}
         
             <h3 class="center">
-                Start learning about your customers by <a href="/edit">creating a campaign</a>.
+                Start learning about your customers by <a href="/r/edit">creating a campaign</a>.
             </h3>
 
         {% endif %}

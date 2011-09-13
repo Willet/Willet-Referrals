@@ -5,7 +5,7 @@
         <h1 class="prepend-top center">Routes</h1>
         {% for route in routes %}
             <div class="prepend-3 span-6">
-                {{ route.route }}
+                <a href="{{ route.route }}"> {{route.route}}</a>
             </div>
             <div class="span-6">
                 {{ route.obj }}

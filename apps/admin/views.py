@@ -13,16 +13,13 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
 from apps.client.models import Client
 from apps.link.models import *
-from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter,\
-    get_user_by_uuid
+from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
-
 
 class Admin( URIHandler ):
     
@@ -102,7 +99,7 @@ class InitRenameFacebookData(webapp.RequestHandler):
         for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\
             or hasattr(u, 'first_name') or hasattr(u, 'gender') or\
             hasattr(u, 'last_name') or hasattr(u, 'verifed')]:
-            taskqueue.add(url = '/renamefb',
+            taskqueue.add(url = '/admin/renamefb',
                           params = {'uuid': u})
         self.response.out.write("update dispatched")
             
@@ -169,4 +166,3 @@ class ShowRoutes(URIHandler):
                 template_values,
             )
         )
-         

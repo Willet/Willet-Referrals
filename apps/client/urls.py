@@ -3,9 +3,9 @@
 from apps.client.views import *
 
 urlpatterns = [
-    (r'/account', ShowAccountPage),
-    (r'/auth', DoAuthenticate),
-    (r'/login', ShowLoginPage),
-    (r'/logout', Logout),
-    (r'/register', DoRegisterClient),
+    (r'/client/account',  ShowAccountPage),
+    (r'/client/login',    ShowLoginPage),
+    (r'/client/logout',   Logout),
+    (r'/client/auth',     DoAuthenticate),
+    (r'/client/register', DoRegisterClient),
 ]
