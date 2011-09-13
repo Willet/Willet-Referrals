@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+
 #from apps.homepage.processes import *
-from apps.homepage.views import *
+from apps.homepage.views      import *
 
 urlpatterns = [
-    #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
-    (r'/doFeedback', DoAddFeedback),
+    # The 'Dos' (aka POST)
+    (r'/doFeedback',     DoAddFeedback),
     
-    (r'/about', ShowAboutPage),
-    (r'/contact', ShowAboutPage),
+    # The 'Shows' (aka GET)
+    (r'/about',          ShowAboutPage),
+    (r'/contact',        ShowAboutPage),
     (r'/dashboard/test', ShowDashboardTestPage),
-    (r'/demo(.*)',ShowDemoSitePage),
-    (r'/()', ShowLandingPage)
+    (r'/demo(.*)',       ShowDemoSitePage),
+    (r'/()',             ShowLandingPage) # Must be last
 ]
