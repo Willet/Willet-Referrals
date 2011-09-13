@@ -34,14 +34,14 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">{{campaign.store_name|escape}}</h1>
+    <h1 class="lower-50 center">{{app.product_name|escape}}</h1>
     <div class="prepend-top center">
-        <p>Store URL:<br/>{{campaign.store_url|escape}}</p>
+        <p>Store URL:<br/>{{app.target_url|escape}}</p>
 
-        <p>Share text:<br />{{campaign.share_text|escape}}</p>
+        <p>Share text:<br />{{app.share_text|escape}}</p>
 
         <div class="edit_button">
-            <a class="edit_button" href="/shopify/r/edit?id={{campaign.uuid}}" title="Edit Campaign">
+            <a class="edit_button" href="/r/shopify/edit?id={{app.uuid}}" title="Edit Campaign">
                 <img src="/static/imgs/edit.png" width=20 height=20 />
             </a>
         </div>
@@ -49,7 +49,7 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/campaign/{{campaign.uuid}}">Analytics Dashboard</a></p>
+    <p><a href="/r/app/{{app.uuid}}">Analytics Dashboard</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -62,7 +62,7 @@
             <div id="step1" class="span-14 last">
                 <h2 class="span-1"> #1 </h2>
                 <p class="span-13 last">
-                    Visit your <a href="{{campaign.store_url}}/admin/payments" target="_blank">'Checkout and Payment'</a> admin panel and add this
+                    Visit your <a href="{{app.target_url}}/admin/payments" target="_blank">'Checkout and Payment'</a> admin panel and add this
                     script under the 'Additional Content & Scripts' section. </p>
                 <p class="span-14 last code">
                     &lt;script src="{{URL}}/shopify/static/js/referral.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
@@ -77,13 +77,13 @@
             <div id="step2" style="display: none">
                 <h2> #2 </h2>
                 <p> 
-                    Visit your <a href="{{campaign.store_url}}/admin/notifications" target="_blank">'Email & Notifications'</a> admin panel and add this
+                    Visit your <a href="{{app.target_url}}/admin/notifications" target="_blank">'Email & Notifications'</a> admin panel and add this
                     'Web Hook' under the 'Web Hooks' section. </p>
                 </p>
                 <p class="code">
                     Event: Order Creation <br />
                     Format: JSON <br />
-                    URL: {{URL}}/shopify/webhook/order?store_id={{campaign.uuid}}
+                    URL: {{URL}}/shopify/webhook/order?store_id={{app.uuid}}
                 </p>
                 <p class="tip">
                     Note: 'Web Hooks' is at the bottom of the page!
@@ -97,12 +97,12 @@
             <div id="step3" style="display: none">
                 <h2> #3 </h2>
                 <p> 
-                    Visit your <a href="{{campaign.store_url}}/admin/themes/1784702#layout/theme.liquid" target="_blank">'Template Editor for Your Store Theme'</a> and add these
+                    Visit your <a href="{{app.target_url}}/admin/themes/1784702#layout/theme.liquid" target="_blank">'Template Editor for Your Store Theme'</a> and add these
                      scripts immediately after the &lt;head&gt; tag.</p>
                 </p>
                 <p class="code">
                     &lt;script src="{{URL}}/static/js/jquery.cookie.js" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
-                    &lt;script src="{{URL}}/shopify/load/bar?store_id={{campaign.uuid}}" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
+                    &lt;script src="{{URL}}/shopify/load/bar?store_id={{app.uuid}}" type="text/javascript" charset="utf-8"&gt;&lt/script&gt;
                 </p>
                 <p class="tip">
                     Note: Don't forget to click 'save' on your Template Editor!
@@ -115,7 +115,7 @@
             <div class="center" id="step4" style="display: none">
                 <h2> All Done! <br /> We'll email you when a successful referral occurs! </h2>
         
-                <a style="color:white" class="call_to_action big" href="{{campaign.store_url}}/admin">Back to Store</a>
+                <a style="color:white" class="call_to_action big" href="{{app.target_url}}/admin">Back to Store</a>
             </div>
         </div>
 

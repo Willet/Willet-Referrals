@@ -86,23 +86,23 @@
 
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
-        <form action="/shopify/doUpdateOrCreateCampaign" class="offer_form" method="post">
+        <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
             <div id="step1_left">
-                {% ifnotequal has_campaign False %}
+                {% ifnotequal has_app False %}
                     <div class="hidden">
                 {% else %}
                     <div>
                 {% endifnotequal %}
-                    <label class="default_label" for="store_name"> Store Name</label>
-                    <input type="text" id="store_name" name="store_name" value="{{campaign.store_name|escape}}"/>  <br />
+                    <label class="default_label" for="product_name"> Store Name</label>
+                    <input type="text" id="product_name" name="product_name" value="{{app.product_name|escape}}"/>  <br />
                 </div> 
-                {% ifnotequal has_campaign False %}
+                {% ifnotequal has_app False %}
                     <div class="hidden">
                 {% else %}
                     <div>
                 {% endifnotequal %}
-                    <label class="default_label" for="store_url"> Store URL </label> <br />
-                    <input type="text" name="store_url" id="store_url" value="{{campaign.store_url}}" onBlur="url_text();" />
+                    <label class="default_label" for="target_url"> Store URL </label> <br />
+                    <input type="text" name="target_url" id="target_url" value="{{app.target_url}}" onBlur="url_text();" />
                 </div>
             </div>
 
@@ -111,13 +111,13 @@
                 <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter a default message that your customers can share with their friends.</p>
                 <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
                 <br />
-                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if campaign %}{{campaign.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I love {{campaign.store_name}} because ...! You should check them out at {{campaign.store_url}}!</span>
+                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                <span class="defaultValue hidden" id="share_text_span">I love {{app.product_name}} because ...! You should check them out at {{app.target_url}}!</span>
             </div>
 
             <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
             
-            <input type="hidden" value="{{campaign.uuid}}" name="uuid" />
+            <input type="hidden" value="{{app.uuid}}" name="uuid" />
             <input type="hidden" value="{{store_token}}" name="token" />
         </form>
 
@@ -126,7 +126,7 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/campaign/{{campaign.uuid}}">Analytics Dashboard</a></p>
+    <p><a href="/app/{{app.uuid}}">Analytics Dashboard</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -146,7 +146,7 @@
                 what your customers will see:
             </p>
             <div class="center" id="share_iframe_container">
-                <iframe src='/willt?ca_id={{campaign.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
+                <iframe src='/willt?ca_id={{app.uuid}}' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
             </div>
         </div>
         
@@ -154,7 +154,7 @@
             // Fill examples
             var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
                 share_text    = document.getElementById('share_text'),
-                store_url     = document.getElementById('store_url'),
+                target_url     = document.getElementById('target_url'),
                 share_i_frame = document.getElementById('share_iframe');
             
             function update_share_text() {
@@ -165,15 +165,15 @@
                     i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
                 }
                 i_share_text.innerHTML   = share_text.value;
-                i_unique_link.value      = "{{campaign.store_url}}";
-                i_plugin_title.innerText = "Invite Your Friends to {{campaign.store_name}}";
+                i_unique_link.value      = "{{app.target_url}}";
+                i_plugin_title.innerText = "Invite Your Friends to {{app.product_name}}";
 
                 var count = 140 - share_text.value.length;
                 i_chars_left.innerHTML = count + " characters left";
             }
             
             function url_text() {
-                document.getElementById('share_text_span').innerText = 'I love ' + store_url.value + ' because ...! You should check them out!';
+                document.getElementById('share_text_span').innerText = 'I love ' + target_url.value + ' because ...! You should check them out!';
                 $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
                 
                 update_share_text();
