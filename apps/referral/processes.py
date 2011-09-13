@@ -25,11 +25,11 @@ from util.gaesessions import get_current_session
 
 class PostConversion( URIHandler ):
     def post(self):
-        referree_uid  = self.request.get( 'referree_uid' )
-        app_uuid = self.request.get( 'app_uuid' )
-        order_num = self.request.get('order_num')
-        app      = get_app_by_id( app_uuid )
-        user          = get_user_by_cookie( self ) # probably None, but why not try it!
+        referree_uid = self.request.get( 'referree_uid' )
+        app_uuid     = self.request.get( 'app_uuid' )
+        app          = get_app_by_id( app_uuid )
+        order_num    = self.request.get( 'order_num' )
+        user         = get_user_by_cookie( self ) # probably None, but why not try it!
 
         if app == None:
             # What do we do here?
