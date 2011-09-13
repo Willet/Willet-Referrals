@@ -8,7 +8,6 @@ from util.model import Model
 
 class Stats(Model):
     uuid            = db.StringProperty()
-    landing         = db.TextProperty()
     total_tweets    = db.IntegerProperty( default = 0 )
     total_clicks    = db.IntegerProperty( default = 0 )
     total_links     = db.IntegerProperty( default = 0 )

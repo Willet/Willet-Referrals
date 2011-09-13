@@ -15,10 +15,6 @@ cron:
   schedule: every 2 hours
 
 # Admin Statistics
-- description: Updating landing page results
-  url: /stats/updateLanding
-  schedule: every 15 minutes
-
 - description: Updating login page stats (counts)
   url: /stats/updateCounts
   schedule: every 6 hours
