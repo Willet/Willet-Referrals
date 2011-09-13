@@ -17,7 +17,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.link.models     import Link, get_active_links_by_app
+from apps.link.models     import Link, get_active_links_by_campaign
 from apps.order.models    import Order
 from apps.user.models     import User
 from util.consts          import *
@@ -40,7 +40,7 @@ class App( Model, polymodel.PolyModel ):
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
     
     # Analytics for this App
-    analytics       = db.ReferenceProperty( AppAnalytics )
+    analytics       = db.ReferenceProperty( db.Model, collection_name = "APPS" )
     
     # For Apps that use a click counter, this is the cached amount
     cached_clicks_count = db.IntegerProperty( default = 0 )
