@@ -58,7 +58,6 @@ SHOPIFY_API_SHARED_SECRET = 'caf09e36b7bbaccda5210983c7e234ed' #'74a8223c64027a2
 
 INSTALLED_APPS = [
     'admin',
-    'campaign',
     'client',
     'conversion',
     'feedback',
@@ -68,7 +67,9 @@ INSTALLED_APPS = [
     'oauth',
     'order',
     'referral',
+    'referral.shopify',
     'relationship',
+    'sibt',
     'stats',
     'testimonial',
     'user',

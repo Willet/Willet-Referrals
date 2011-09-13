@@ -18,24 +18,6 @@ from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
-class CleanBadLinks( webapp.RequestHandler ):
-    def get(self):
-        links = Link.all()
-
-        count = 0
-        str   = 'Cleaning the bad links'
-        for l in links:
-            clicks = l.count_clicks()
-
-            if l.user == None and clicks != 0:
-                count += 1
-                str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
-
-                l.delete()
-
-
-        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
-
 class TrackCallbackError(webapp.RequestHandler):
     """Notifies us via email of errors when trying to update our twitter
        graph with data from the @anywhere callback"""

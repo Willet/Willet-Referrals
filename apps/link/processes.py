@@ -12,7 +12,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
 from apps.link.models import Link, get_link_by_willt_code 
-from apps.campaign.models import get_campaign_by_id, Campaign
+from apps.app.models import get_app_by_id, App
 from apps.user.models import get_or_create_user_by_twitter
 
 # helpers
@@ -42,14 +42,14 @@ class TrackWilltURL( webapp.RequestHandler ):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
             link.increment_clicks()
             logging.info('After Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
-            set_referrer_cookie(self.response.headers, link.campaign.uuid, link.willt_url_code)
+            set_referrer_cookie(self.response.headers, link.app.uuid, link.willt_url_code)
             set_clicked_cookie(self.response.headers, code)
 
             # Tell Mixplanel that we got a click
             taskqueue.add( queue_name = 'mixpanel', 
                            url        = '/mixpanel', 
                            params     = {'event'          : 'Clicks', 
-                                         'campaign_uuid'  : link.campaign.uuid,
+                                         'app_uuid'  : link.app.uuid,
                                          'twitter_handle' : link.user.get_attr('twitter_handle') if link.user else ''} )
 
         set_referral_cookie(self.response.headers, code)
@@ -65,39 +65,39 @@ class DynamicLinkLoader(webapp.RequestHandler):
 
     def get(self):
         template_values = {}
-        campaign_id = self.request.get('ca_id')
+        app_id = self.request.get('ca_id')
         user_id = self.request.get('uid')
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
         logging.info(origin_domain)
-        campaign = get_campaign_by_id(campaign_id)
+        app = get_app_by_id(app_id)
         
-        # If they give a bogus campaign id, show the landing page campaign!
-        if campaign == None:
+        # If they give a bogus app id, show the landing page app!
+        if app == None:
             template_values = {
                 'text': "",
                 'willt_url' : URL,
                 'willt_code': "",
-                'campaign_uuid' : "",
+                'app_uuid' : "",
                 'target_url' : URL
             }
         else:
-            link = create_link(campaign.target_url, campaign, origin_domain, user_id)
+            link = create_link(app.target_url, app, origin_domain, user_id)
             logging.info("link created is %s" % link.willt_url_code)
 
-            if campaign.target_url in campaign.share_text:
-                share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+            if app.target_url in app.share_text:
+                share_text = app.share_text.replace( app.target_url, link.get_willt_url() )
             else:
-                share_text = campaign.share_text + " " + link.get_willt_url()
+                share_text = app.share_text + " " + link.get_willt_url()
 
             template_values = {
                 'text': share_text.replace("\"", "'"),
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'campaign_uuid' : campaign.uuid,
-                'target_url' : campaign.target_url,
-                'redirect_url' : campaign.redirect_url if campaign.redirect_url else "",
+                'app_uuid' : app.uuid,
+                'target_url' : app.target_url,
+                'redirect_url' : app.redirect_url if app.redirect_url else "",
                 'MIXPANEL_TOKEN' : MIXPANEL_TOKEN
             }
         
@@ -186,3 +186,20 @@ class getUncheckedTweets( URIHandler ):
         self.response.out.write(counters)
 
 
+class CleanBadLinks( webapp.RequestHandler ):
+    def get(self):
+        links = Link.all()
+
+        count = 0
+        str   = 'Cleaning the bad links'
+        for l in links:
+            clicks = l.count_clicks()
+
+            if l.user == None and clicks != 0:
+                count += 1
+                str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
+
+                l.delete()
+
+
+        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )

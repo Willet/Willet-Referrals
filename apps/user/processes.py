@@ -15,7 +15,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.user.models import *
-from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
+from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import *
 
 from util.consts import *
@@ -269,10 +269,10 @@ class UpdateTwitterGraph(webapp.RequestHandler):
 
             #logging.info("Does link have a user? %s %r (should have a user here)" % (link.user != None, link.user))
 
-            #logging.info("Link has a campaign? %s %r" % (link.campaign != None, link.campaign))
-            #logging.info("Campaign has %d shares before" % link.campaign.get_shares_count())
-            link.campaign.increment_shares()
-            #logging.info("Campaign has %d shares after (Should be before + 1)" % link.campaign.get_shares_count())
+            #logging.info("Link has a app? %s %r" % (link.app != None, link.app))
+            #logging.info("App has %d shares before" % link.app.get_shares_count())
+            link.app.increment_shares()
+            #logging.info("App has %d shares after (Should be before + 1)" % link.app.get_shares_count())
         else:
             #logging.info("NO TWITTER HANDLE PROVIDED. EXCEPTION")
             raise Exception("No twitter handle provided")

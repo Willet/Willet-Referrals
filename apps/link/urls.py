@@ -4,6 +4,8 @@ from apps.link.views import *
 
 urlpatterns = [
     (r'/willet', DynamicLinkLoader),
-    (r'/getTweets', getUncheckedTweets),
+    (r'/link/cleanBadLinks', CleanBadLinks),
+    (r'/link/getTweets', getUncheckedTweets),
+    
     (r'/(.*)', TrackWilltURL),
 ]

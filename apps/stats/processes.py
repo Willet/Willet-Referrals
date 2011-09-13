@@ -15,7 +15,7 @@ from google.appengine.api import memcache, taskqueue, urlfetch
 
 from apps.client.models import Client
 from apps.stats.models import *
-from apps.campaign.models import Campaign, ShareCounter, get_campaign_by_id
+from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import Link, LinkCounter
 from apps.user.models import User
 
@@ -28,7 +28,7 @@ class UpdateCounts(URIHandler):
     def get( self ): 
         stats = Stats.get_stats()
         stats.total_clients    = Client.all().count()
-        stats.total_campaigns  = Campaign.all().count()
+        stats.total_apps       = App.all().count()
         stats.total_links      = Link.all().count()
         stats.total_users      = User.all().count()
         stats.put()
@@ -57,13 +57,13 @@ class UpdateClicks(URIHandler):
 
 class UpdateLanding(URIHandler):
     def get( self ):
-        campaign     = get_campaign_by_id( LANDING_CAMPAIGN_UUID )
+        app     = get_app_by_id( LANDING_CAMPAIGN_UUID )
         
-        if campaign == None:
+        if app == None:
             return
 
-        total_clicks = campaign.count_clicks()
-        results, foo = campaign.get_results( total_clicks )
+        total_clicks = app.count_clicks()
+        results, foo = app.get_results( total_clicks )
 
         # Build the string.
         s = '<div class="span-11 last center" id="landing_influencer_title"> <div class="span-1">&nbsp;</div> <div class="span-1">&nbsp;</div> <div class="span-3">&nbsp;</div> <div class="span-2">&nbsp;</div> <div class="span-2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Clickthroughs</div> <div class="span-2 last">&nbsp;&nbsp;&nbsp;Klout Score</div> </div>'
@@ -73,7 +73,7 @@ class UpdateLanding(URIHandler):
                 twitter_handle = r['user'].twitter_handle
                 s += '<div class="span-11 last influencer landing">'
                 
-                s += '<div class="span-1 number" title="%s\'s place for this campaign."> %s </div>' % (twitter_handle, r['num'])
+                s += '<div class="span-1 number" title="%s\'s place for this app."> %s </div>' % (twitter_handle, r['num'])
                 s += '<div class="span-1" title="Click to visit %s on Twitter.com!">' % twitter_handle
                 s += '<a href="https://twitter.com/#!/%s">' % twitter_handle
                 s += '<img class="profile_pic" src="%s"> </img></a></div>' % r['user'].twitter_pic_url 
@@ -81,7 +81,7 @@ class UpdateLanding(URIHandler):
                 s += '<div class="span-3 lower-10" title="%s\'s Real Name"> %s </div>' % (twitter_handle, r['user'].twitter_name)
                 s += '<div class="span-3 lower-10" title="Click to visit %s on Twitter!">' % twitter_handle
                 s += '<a class="twitter_link" href="https://twitter.com/#!/%s">@%s</a></div>' % (twitter_handle, twitter_handle)
-                s += '<div class="span-1 lower-10" title="A count of all clicks this user received for this campaign."> %d </div>' % r['clicks']
+                s += '<div class="span-1 lower-10" title="A count of all clicks this user received for this app."> %d </div>' % r['clicks']
             
                 s += '<div class="span-2 lower-5 last" title="Click to visit %s on Klout.com!">' % twitter_handle
                 s += '<a class="klout_link" href="http://klout.com/#/%s">' % twitter_handle

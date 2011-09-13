@@ -12,7 +12,7 @@ class Stats(Model):
     total_tweets    = db.IntegerProperty( default = 0 )
     total_clicks    = db.IntegerProperty( default = 0 )
     total_links     = db.IntegerProperty( default = 0 )
-    total_campaigns = db.IntegerProperty( default = 0 )
+    total_apps      = db.IntegerProperty( default = 0 )
     total_clients   = db.IntegerProperty( default = 0 )
     total_users     = db.IntegerProperty( default = 0 )
     
