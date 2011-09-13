@@ -191,7 +191,7 @@ class ShowEditPage( URIHandler ):
             template_values['app'] = app
             
         template_values['BASE_URL'] = URL
-        
+
         self.response.out.write(self.render_page('edit.html', template_values))
 
 class ShowCodePage( URIHandler ):
@@ -218,7 +218,6 @@ class ShowCodePage( URIHandler ):
         
         self.response.out.write(self.render_page('code.html', template_values))
 
-
 class DoUpdateOrCreate( URIHandler ):
     def post( self ):
         client = self.get_client() # might be None
@@ -237,12 +236,12 @@ class DoUpdateOrCreate( URIHandler ):
         title = title.capitalize() # caps it!
         
         if title == '' or product_name == '' or target_url == '' or blurb_title == '' or blurb_text == '' or share_text == '' or webhook_url == '':
-            self.redirect( '/edit?id=%s&error=2&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            self.redirect( '/r/edit?id=%s&error=2&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
             % (app_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
             
         if not isGoodURL( target_url ) or not isGoodURL( webhook_url ):
-            self.redirect( '/edit?id=%s&error=1&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
+            self.redirect( '/r/edit?id=%s&error=1&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&product_name=%s&webhook_url=%s'
             % (app_id, title, blurb_title, blurb_text, share_text, target_url, product_name, webhook_url) )
             return
         
@@ -264,7 +263,7 @@ class DoUpdateOrCreate( URIHandler ):
                                      webhook_url=webhook_url)
                 app.put()
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
+                self.redirect( '/r/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
         # Otherwise, update the existing app.
@@ -278,10 +277,10 @@ class DoUpdateOrCreate( URIHandler ):
                                  share_text=share_text, 
                                  webhook_url=webhook_url)
             except BadValueError, e:
-                self.redirect( '/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
+                self.redirect( '/r/edit?error=3&error_msg=%s&id=%s&title=%s&blurb_title=%s&blurb_text=%s&share_text=%s&target_url=%s&webhook_url=%s&product_name=%s' % (str(e), app_id, title, blurb_title, blurb_text, share_text, target_url, webhook_url, product_name) )
                 return
         
         if client == None:
-            self.redirect( '/login?u=/code?id=%s' % app.uuid )
+            self.redirect( '/client/login?u=/r/code?id=%s' % app.uuid )
         else:
-            self.redirect( '/code?id=%s' % app.uuid )
+            self.redirect( '/r/code?id=%s' % app.uuid )

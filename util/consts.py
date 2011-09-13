@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'conversion',
     'feedback',
     'homepage',
-    'link',
     'mixpanel',
     'oauth',
     'order',
@@ -74,6 +73,8 @@ INSTALLED_APPS = [
     'testimonial',
     'user',
     'user_analytics',
+    # LINK MUST ALWAYS BE LAST
+    'link',
 ]
 
 # Overide settings with local_consts
