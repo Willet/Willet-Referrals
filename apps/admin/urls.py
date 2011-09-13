@@ -7,6 +7,7 @@ urlpatterns = [
     (r'/admin/routes', ShowRoutes),
     (r'/admin/renamefb', RenameFacebookData),
     (r'/admin/renameinit', InitRenameFacebookData),
-    (r"/admin/trackErr", TrackCallbackError),
+    (r'/admin/trackErr', TrackCallbackError),
+    (r'/admin/manageApps', ManageApps),
 ]
 

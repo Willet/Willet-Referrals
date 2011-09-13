@@ -13,7 +13,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.client.models import Client
+from apps.client.models import Client, ClientShopify
 from apps.link.models import *
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 
@@ -164,5 +164,19 @@ class ShowRoutes(URIHandler):
         self.response.out.write(self.render_page(
                 'routes.html',
                 template_values,
+            )
+        )
+
+class ManageApps(URIHandler):
+    @admin_required
+    def get(self):
+        stores = ClientShopify.all()
+        template_values = {
+            'stores': stores        
+        }
+        
+        self.response.out.write(self.render_page(
+                'manage_apps.html',
+                template_values
             )
         )

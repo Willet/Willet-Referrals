@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="span-24 prepend-top">
+        <h1 class="prepend-top center">Shopify Stores</h1>
+        {% for store in stores %}
+            <div class="prepend-3 span-6">
+                {{ store.product_name }} 
+            </div>
+            <div class="span-6">
+                {{ store.token }}
+            </div>
+            <div class="span-6 append-3 last">
+                {{ store.url }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+
