@@ -1044,7 +1044,7 @@ class Relationship(Model):
     uuid      = db.StringProperty( indexed = True )
     created   = db.DateTimeProperty(auto_now_add=True)
     from_user = db.ReferenceProperty( db.Model, collection_name="from_relationships" )
-    to_user   = db.ReferenceProperty( db.Model, default = None, collection_name=""to_relationships )
+    to_user   = db.ReferenceProperty( db.Model, default = None, collection_name="to_relationships" )
     type      = db.StringProperty( default = 'friend' )
     provider  = db.StringProperty( )
 
@@ -1064,7 +1064,7 @@ def create_relationship( from_u, to_u, provider = '' ):
                       uuid      = uuid,
                       from_user = from_u,
                       to_user   = to_u,
-                      provider  = provider
+                      provider  = provider )
     r.put()
 
     return r # return incase the caller wants it

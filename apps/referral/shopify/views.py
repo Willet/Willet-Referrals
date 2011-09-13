@@ -112,13 +112,7 @@ class ShowEditPage( URIHandler ):
 
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(
-            self.render_page(
-                'shopify/edit.html', 
-                template_values, 
-                appname='referral'
-            )
-        )
+        self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
 class ShowCodePage( URIHandler ):
     def get(self):
@@ -136,13 +130,7 @@ class ShowCodePage( URIHandler ):
         
         template_values['BASE_URL'] = URL
 
-        self.response.out.write(
-            self.render_page(
-                'shopify/code.html', 
-                template_values,
-                appname='referral'
-            )
-        )
+        self.response.out.write( self.render_page( 'code.html', template_values ))
 
 class DoUpdateOrCreate( URIHandler ):
     
@@ -269,6 +257,6 @@ class DynamicLoader(webapp.RequestHandler):
             path = 'referral_top_bar.js'
         
         logging.info("rendeirng %s" % path)
-        self.response.out.write(template.render(path, template_values, appname='referral'))
+        self.response.out.write(template.render(path, template_values))
 
         return
