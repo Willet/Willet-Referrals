@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+#
+# NOTE:
+#
+# This is a TENTATIVE model. It is not in use.
+#
+#
+
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
@@ -11,9 +18,8 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.ext import db
 
-from apps.user.models import User
-
-from util.model         import Model
+from apps.user.models     import User
+from util.model           import Model
 from util.helpers         import generate_uuid
 
 class Relationship(Model):
