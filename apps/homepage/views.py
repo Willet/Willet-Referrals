@@ -23,8 +23,12 @@ class ShowLandingPage(URIHandler):
     # Renders the main template
     def get(self, page):
         stats = Stats.all().get()
-        
-        template_values = { 'campaign_results' : stats.landing if stats else '' }
+        landing = ''
+        if stats:
+            if hasattr(stats, 'landing'):
+                landing = stats.landing
+
+        template_values = { 'campaign_results' : landing }
         
         self.response.out.write(self.render_page('landing.html', template_values, appname='homepage'))
 
