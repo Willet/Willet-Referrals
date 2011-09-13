@@ -4,6 +4,8 @@ from apps.homepage.views import *
 
 urlpatterns = [
     #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
+    (r'/doFeedback', DoAddFeedback),
+    
     (r'/about', ShowAboutPage),
     (r'/contact', ShowAboutPage),
     (r'/dashboard/test', ShowDashboardTestPage),
