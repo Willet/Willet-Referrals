@@ -1,12 +1,14 @@
 #!/usr/bin/env python
-
+import cgi
 
 from apps.client.models import *
 from apps.stats.models import Stats
+from apps.user.models import get_user_by_cookie
 
 from util.urihandler import URIHandler
 from util.consts import *
 from util.gaesessions import *
+from util.helpers import *
 
 class ShowAccountPage( URIHandler ):
     # Renders the account page.
@@ -68,12 +70,12 @@ class DoAuthenticate( URIHandler ):
         if code != 'OK': # authentication failed
             errors.append(errStr) 
             session['correctEmail'] = clientEmail
-            session['auth-errors'] = errors
+            session['auth-errors']  = errors
             self.response.out.write("/login?u=%s" % url)
             return
         
         # authentication successful
-        session['email'] = clientEmail
+        session['email']       = clientEmail
         session['auth-errors'] = [ ]
         
         # Cache the client!
