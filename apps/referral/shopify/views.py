@@ -123,9 +123,7 @@ class ShowCodePage( URIHandler ):
         
         if app_id:
             # Updating an existing app here:
-            #app = get_shopify_app_by_id( app_id )
-            # @TODO FIX ME
-            app = None
+            app = get_shopify_app_by_id(app_id)
             if app == None:
                 self.redirect( '/account' )
                 return

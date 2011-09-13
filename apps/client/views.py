@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import cgi
 
-from apps.client.models import Client
+from apps.client.models import Client, authenticate 
 from apps.stats.models  import Stats
 from apps.user.models   import get_user_by_cookie
 
@@ -89,7 +89,7 @@ class DoAuthenticate( URIHandler ):
                 user.client = client
                 user.put()
         
-        self.response.out.write( url if url else '/account' )
+        self.response.out.write( url if url else '/client/account' )
         return
 
 class DoRegisterClient( URIHandler ):
