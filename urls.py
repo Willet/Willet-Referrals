@@ -35,9 +35,7 @@ def main():
                 # we clobbered some urls
                 raise Exception('url route conflict with %s' % app)
         except Exception,e:
-            #exc_type, exc_value, exc_traceback = sys.exc_info()
-            #tb = traceback.extract_tb(exc_traceback)
-            logging.error('error importing %s: %s' % (app, e), exc_info=1)
+            logging.error('error importing %s: %s' % (app, e), exc_info=True)
 
     #logging.info('running application with patterns: %s' % combined_uris)
 
