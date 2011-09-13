@@ -41,8 +41,8 @@ class URIHandler( webapp.RequestHandler ):
         client = self.get_client()
 
         template_values = {
-            'login_url'  : '/login',
-            'logout_url' : '/logout',
+            'login_url'  : '/client/login',
+            'logout_url' : '/client/logout',
             'URL'        : URL,
             'NAME'       : NAME,
             'MIXPANEL_TOKEN' : MIXPANEL_TOKEN,

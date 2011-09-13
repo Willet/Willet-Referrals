@@ -15,13 +15,11 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.client.models import Client
 from apps.link.models import *
-from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter,\
-    get_user_by_uuid
+from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
-
 
 class Admin( URIHandler ):
     
@@ -168,4 +166,3 @@ class ShowRoutes(URIHandler):
                 template_values,
             )
         )
-         
