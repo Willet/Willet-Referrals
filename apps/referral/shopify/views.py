@@ -12,7 +12,9 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
-from apps.app.models import * 
+from apps.app.models import *
+from apps.referral.models import get_referral_app_by_url
+from apps.referral.shopify.models import get_shopify_app_by_id
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
@@ -121,7 +123,9 @@ class ShowCodePage( URIHandler ):
         
         if app_id:
             # Updating an existing app here:
-            app = get_shopify_app_by_id( app_id )
+            #app = get_shopify_app_by_id( app_id )
+            # @TODO FIX ME
+            app = None
             if app == None:
                 self.redirect( '/account' )
                 return
@@ -255,7 +259,7 @@ class DynamicLoader(webapp.RequestHandler):
                 template_values['show_gift']          = True
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
-        
+        path = os.path.join('apps/referral/templates/', path)
         logging.info("rendeirng %s" % path)
         self.response.out.write(template.render(path, template_values))
 

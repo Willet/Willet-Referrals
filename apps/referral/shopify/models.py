@@ -42,7 +42,13 @@ def create_referral_shopify_app( client, share_text ):
     app.put()
     
     return app
-    
+
+# Accessors --------------------------------------------------------------------
+def get_shopify_app_by_id(id):
+    """ Fetch a Shopify obj from the DB via the id"""
+    logging.info("Shopify: Looking for %s" % id)
+    return ReferralShopify.all().filter( 'uuid =', id ).get()
+
 # Shopify API Calls ------------------------------------------------------------
 def install_webhooks( store_url, store_token ):
     """ Install the webhooks into the Shopify store """

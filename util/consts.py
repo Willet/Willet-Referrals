@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     'admin',
     'app',
     'client',
-    'conversion',
     'homepage',
     'mixpanel',
     'oauth',
