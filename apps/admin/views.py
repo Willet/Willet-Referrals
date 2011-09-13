@@ -167,9 +167,9 @@ class ShowRoutes(URIHandler):
             )
         )
 
-@admin_required
 class ManageApps(URIHandler):
-    def get(self):
+    @admin_required
+    def get(self, client=None):
         stores = ClientShopify.all()
         template_values = {
             'stores': stores        
