@@ -73,9 +73,9 @@
                         <div id="right_header" class="span-15 last">
                             
                             {% if client %}
-                                <p><a class="login" href='{{logout_url}}'>Logout</a></p>
+                                <p><a class="login" href='/client/logout'>Logout</a></p>
                             {% else %}
-                                <p><a class="login" href='{{login_url}}'>Login</a></p>
+                                <p><a class="login" href='/client/login'>Login</a></p>
                             {% endif %}
                             
                             {% block right_head %}{% endblock right_head %}

@@ -194,18 +194,6 @@ class DoRegisterClient( URIHandler ):
             self.response.out.write( url if url else '/account' )
             return
 
-class Logout( URIHandler ):
-    def get( self ):
-        session = get_current_session()
-        session.regenerate_id()
-        
-        if session.is_active():
-            session.terminate()
-        
-        self.db_client = None # Remove this client
-        
-        self.redirect( '/' )
-
 class ShowLoginPage( URIHandler ):
     # Renders the login page
     def get(self):
@@ -227,6 +215,7 @@ class ShowLoginPage( URIHandler ):
                 session['reg-errors']  = [] 
                 
             self.redirect( url if url else '/client/account' )
+            return
         
         else:
             stats      = Stats.all().get()
@@ -246,4 +235,14 @@ class ShowLoginPage( URIHandler ):
                                  
             self.response.out.write(self.render_page('login.html', template_values, appname='client'))
 
-
+class Logout( URIHandler ):
+    def get( self ):
+        session = get_current_session()
+        session.regenerate_id()
+        
+        if session.is_active():
+            session.terminate()
+        
+        self.db_client = None # Remove this client
+        
+        self.redirect( '/' )
