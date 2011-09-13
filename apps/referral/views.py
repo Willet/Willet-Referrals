@@ -12,7 +12,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
-from apps.campaign.models import * 
+from apps.campaign.models import Campaign, get_shopify_campaign_by_id, get_shopify_campaign_by_url 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
@@ -153,7 +153,7 @@ class ShowShopifyEditPage( URIHandler ):
             )
         )
 
-class ShowShopifyCodePage( URIHandler ):
+class ShowShopifyCodePage(URIHandler):
     def get(self):
         campaign_id = self.request.get( 'id' )
         template_values = { 'campaign' : None }
@@ -177,7 +177,7 @@ class ShowShopifyCodePage( URIHandler ):
             )
         )
 
-class DoUpdateOrCreateShopifyCampaign( URIHandler ):
+class DoUpdateOrCreateShopifyCampaign(URIHandler):
     def post( self ):
         client      = self.get_client() # might be None
         # Request varZ
@@ -352,8 +352,10 @@ class DynamicLoader(webapp.RequestHandler):
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
         
+        path = os.path.join('apps/referral/templates/', path)
+
         logging.info("rendeirng %s" % path)
-        self.response.out.write(template.render(path, template_values, appname='referral'))
+        self.response.out.write(template.render(path, template_values))
 
         return
 
