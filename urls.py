@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys, traceback
 
 # generic URL router for willet
 from google.appengine.ext import webapp
@@ -35,7 +35,9 @@ def main():
                 # we clobbered some urls
                 raise Exception('url route conflict with %s' % app)
         except Exception,e:
-            logging.error('error importing %s: %s' % (app, e))
+            #exc_type, exc_value, exc_traceback = sys.exc_info()
+            #tb = traceback.extract_tb(exc_traceback)
+            logging.error('error importing %s: %s' % (app, e), exc_info=1)
 
     #logging.info('running application with patterns: %s' % combined_uris)
 
