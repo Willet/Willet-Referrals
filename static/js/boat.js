@@ -35,9 +35,9 @@ $(document).ready(function() {
     
     window.boat.jrumble({
         rumbleEvent: 'click',
-        rangeX: 10,
-        rangeY: 10,
-        rangeRot: 4
+        rangeX: 5,
+        rangeY: 5,
+        rangeRot: 15
     });
 
     $(document).keydown(function (e) {

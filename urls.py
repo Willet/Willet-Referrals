@@ -19,14 +19,16 @@ except Exception,e:
 # our intelligent uri router
 def main():
     combined_uris = []
+    old_len = 0
+    new_len = 0
     for app in INSTALLED_APPS:
         try:
             import_str = 'apps.%s.urls' % app
-            #__import__(import_str)
-            old_len = len(combined_uris)
             __import__(import_str, globals(), locals(), [], -1)
             app_urls = sys.modules[import_str]
             combined_uris.extend(app_urls.urlpatterns)
+            
+            old_len = new_len
             new_len = len(combined_uris)
 
             if old_len + len(app_urls.urlpatterns) > new_len:
