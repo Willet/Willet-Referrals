@@ -15,7 +15,7 @@ from apps.app.models      import App
 from util.consts          import *
 
 # ------------------------------------------------------------------------------
-# Referral Class Definition ---------------------------------------------
+# Referral Class Definition ----------------------------------------------------
 # ------------------------------------------------------------------------------
 class Referral( App ):
     """Model storing the data for a client's sharing app"""
