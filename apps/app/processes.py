@@ -28,8 +28,8 @@ class TriggerAppAnalytics(webapp.RequestHandler):
         scope = self.request.get('scope', 'week')
         apps  = App.all()
         for c in apps:
-            taskqueue.add( url    = '/computeAppAnalytics',
-                           params = { 'ca_key': c.key(), 
+            taskqueue.add( url    = '/a/computeAppAnalytics',
+                           params = { 'ca_key' : c.key(), 
                                       'scope'  : scope, } )
 
 class ComputeAppAnalytics(webapp.RequestHandler):

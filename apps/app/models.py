@@ -388,7 +388,6 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
     
     return ca
 
-
 def get_app_analytics_by_uuid(uuid, scope):
     return AppAnalytics.all().filter('uuid =', uuid).get()
 
