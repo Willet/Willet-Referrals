@@ -10,4 +10,5 @@ urlpatterns = [
 
     # processes
     (r'/r/shopify/webhook/order',    DoProcessOrder),
+    (r'/r/shopify/webhook/uninstalled', DoUninstalledApp),
 ]

@@ -197,7 +197,7 @@ class DynamicLoader(webapp.RequestHandler):
         is_demo = (rq_vars['demo'] != '')
             
         # Grab a User if we have a cookie!
-        user = get_or_create_user_by_cookie(self)
+        user       = get_or_create_user_by_cookie(self)
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
@@ -257,25 +257,23 @@ class DynamicLoader(webapp.RequestHandler):
         else:
             template_values['BASE_URL'] = URL
         
-        path = ''
+        # Determine if they were referred
+        referrer_cookie = self.request.cookies.get(app.uuid, False)
+        referrer_link   = get_link_by_willt_code( referrer_cookie )
+        
+        if referrer_link:
+            template_values['profile_pic']   = referrer_link.user.get_attr( 'pic' )
+            template_values['referrer_name'] = referrer_link.user.get_attr( 'full_name' )
+            template_values['show_gift']     = True
 
+        # What plugin are we loading?
+        path = ''
         if 'referral' in input_path:
             path = 'referral_plugin.html'
         elif 'bar' in input_path:
-            logging.info("BAR: app: %s" % (app.uuid))
-            referrer_cookie = self.request.cookies.get(app.uuid, False)
-            logging.info('LINK %s' % referrer_cookie)
-            referrer_link = get_link_by_willt_code( referrer_cookie )
-            if referrer_link:
-                template_values['profile_pic']        = referrer_link.user.get_attr( 'pic' )
-                template_values['referrer_name']      = referrer_link.user.get_attr( 'full_name' )
-                template_values['show_gift']          = True
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
 
         path = os.path.join('apps/referral/templates/', path)
-        logging.info("rendeirng %s" % path)
         self.response.out.write(template.render(path, template_values))
-
         return
-
