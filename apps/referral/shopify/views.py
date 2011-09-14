@@ -204,6 +204,8 @@ class DynamicLoader(webapp.RequestHandler):
         
         client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
+        app = {'uuid': ''}
+
         # If they give a bogus app id, show the landing page app!
         logging.info(client)
         if client == None:
@@ -283,3 +285,4 @@ class DynamicLoader(webapp.RequestHandler):
         path = os.path.join('apps/referral/templates/', path)
         self.response.out.write(template.render(path, template_values))
         return
+
