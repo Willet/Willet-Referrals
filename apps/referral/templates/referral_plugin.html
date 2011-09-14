@@ -649,8 +649,20 @@
     <div id="fb-root"></div>
     <div id="wrapper" height="315px">
     <div id="invite" class="prepend-top span-9 append-15 last willt">
-
         <div id="step1" class='step'>
+        
+        <!-- If this person was referred, let them know! -->
+        {% if show_gift %}
+        
+            <h1>Congrats! {{referrer_name}} gave you a gift!</h1>
+            <div class="span-9 last append-bottom center">
+                <img width="120px" src="/static/imgs/gift.png" /> 
+            </div>
+            <div id="step1_a">
+                <h2> Pay it forward! Give your friends <span style="color: #ae432e">free gifts</span> from {{app.store_name}}!</h2>
+            
+        {% else %}
+
             <h1>Invite A Friend</h1>
             <div class="span-9 last append-bottom center">
                 <img width="120px" src="/static/imgs/gift.png" /> 
@@ -659,11 +671,13 @@
             <div id="step1_a">
                 <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{app.store_name}}!</h2>
 
+        {% endif %}
                 <div class="prepend-top span-9 last">
                     <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Ok</button>
                 </div>
             </div>
 
+            
             <div id="step1_b" class="hidden">
                 <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
