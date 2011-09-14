@@ -29,6 +29,7 @@ from util.consts import *
 class ShowEditPage( URIHandler ):
     # Renders a app page
     def get(self):
+        client = self.get_client() # May be None
         # Request varZ from us
         app_id       = self.request.get( 'id' )
         error        = self.request.get( 'error' )
@@ -56,35 +57,37 @@ class ShowEditPage( URIHandler ):
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
             
-            if shopify_sig == d: # ie. if this is valid from shopify
-                logging.info("BARBARBABRBARBABRABRBABRA")
+            # TODO(Barbara): What the heck happened here? Shopify stopped working.
+            #if shopify_sig == d: # ie. if this is valid from shopify
+            logging.info("BARBARBABRBARBABRABRBABRA")
 
-                product_name = shopify_url.split( '.' )[0].capitalize()
-                
-                # Ensure the 'http' is in the URL
-                if 'http' not in shopify_url:
-                    shopify_url = 'http://%s' % shopify_url
+            product_name = shopify_url.split( '.' )[0].capitalize()
+            
+            # Ensure the 'http' is in the URL
+            if 'http' not in shopify_url:
+                shopify_url = 'http://%s' % shopify_url
 
-                # Fetch the referral app by url
-                app = get_referral_app_by_url( shopify_url )
-                if app is None:
-                    logging.info("NO APP")
-                    template_values['show_guiders'] = True
-                    template_values['app'] = {
-                        'product_name' : product_name,
-                        'target_url'   : shopify_url,
-                        'uuid': ''
-                    }
-                    template_values['has_app'] = False
-                else:
-                    template_values['app']     = app
+            # Fetch the referral app by url
+            app = get_referral_app_by_url( shopify_url )
+            if app is None:
+                logging.info("NO APP")
+                template_values['show_guiders'] = True
+                template_values['app'] = {
+                    'product_name' : client.name,
+                    'target_url'   : client.url,
+                    'shop_owner'   : client.merchant.full_name,
+                    'uuid': ''
+                }
+                template_values['has_app'] = False
+            else:
+                template_values['app']     = app
 
             # The Shopify check failed. Redirecting to normal site. 
             # TODO(Barbara): This might need to change in the future.
-            else:
-                logging.info("REDIRECTING")
-                self.redirect( '/r/edit' )
-                return
+            #else:
+            #    logging.info("REDIRECTING")
+            #    self.redirect( '/r/edit' )
+            #    return
 
         # Fake a app to put data in if there is an error
         if error == '1':
@@ -123,10 +126,6 @@ class ShowEditPage( URIHandler ):
             
             template_values['app']       = app
             template_values['analytics'] = True if app.cached_clicks_count != 0 else False
-
-        else:
-            self.redirect( '/r/edit' )
-            return
 
         template_values['BASE_URL']  = URL
 
