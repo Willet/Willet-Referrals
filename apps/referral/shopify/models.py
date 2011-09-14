@@ -66,13 +66,13 @@ def install_webhooks( store_url, store_token, store_id ):
     h.add_credentials( username, password )
     
     # Install the "Order Creation" webhook
-    data = { "webhook": { "address": "%s/shopify/webhook/order?store_id=%s" % (URL, store_id), "format": "json", "topic": "orders/create" } }
+    data = { "webhook": { "address": "%s/r/shopify/webhook/order?store_id=%s" % (URL, store_id), "format": "json", "topic": "orders/create" } }
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install the "App Uninstall" webhook
-    data = { "webhook": { "address": "%s/shopify/webhook/uninstalled" % URL, "format": "json", "topic": "app/uninstalled" } }
+    data = { "webhook": { "address": "%s/r/shopify/webhook/uninstalled" % URL, "format": "json", "topic": "app/uninstalled" } }
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
