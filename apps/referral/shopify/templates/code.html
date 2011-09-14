@@ -35,7 +35,10 @@
 
 {% block right_head %}
     <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
-    <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
+
+    {% if analytics %}
+        <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
+    {% endif %}
 {% endblock right_head %}
 
 {% block right_content %}
