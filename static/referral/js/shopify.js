@@ -24,7 +24,7 @@ if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_lo
     iframe.setAttribute( 'style', 'width:100%; min-height:340px; display: block;' );
     iframe.setAttribute( 'src', 'http://social-referral.appspot.com/r/shopify/load/referral?store_id=' + store_id + '&order_token=' + order_token );
 
-    // Add the div to the page
+    // Add the div to the pag
     // > inserts it between the header and main content divs
     container.insertBefore(surround, main);
     surround.insert(iframe);
