@@ -10,12 +10,6 @@ from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
-try:
-    from apps.campaign.models import *
-except Exception,e:
-    logging.error('error importing %s' % e)
-
-
 # our intelligent uri router
 def main():
     combined_uris = []
