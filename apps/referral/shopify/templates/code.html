@@ -2,27 +2,40 @@
 
 {% block head %}
     <script>
+    saveMsg = function () {
+        alert('asd');
+        var msg = document.getElementById( "share_text" );
+
+        $.ajax({
+            url: "/r/shopify/doUpdateOrCreate",
+            type: 'post',
+            data: { share_text   : msg.value,
+                    target_url   : "{{app.target_url}}",
+                    product_name : "{{app.product_name}}",
+                    uuid         : "{{app.uuid}}",
+                    token        : "{{store_token}}" }
+        });// end ajax
+    }; 
+
     </script>
 {% endblock head %}
 
 {% block left_content %}
     <h1 class="lower-50 center">{{app.product_name|escape}}</h1>
-    <div class="prepend-top center">
-        <label class="default_label" for="share_text">Default Share Text</label>
+    <div class="span-8 last center">
+        <label class="default_label" for="share_text">Default Message</label>
+        <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter short message that your customers can customize and share with their friends.</p>
+        
+        <br />
 
-        <textarea id="share_text" name="share_text" readonly="readonly">{{app.share_text}}</textarea>
-
-        <div class="edit_button">
-            <a class="edit_button" href="/r/shopify/edit?id={{app.uuid}}" title="Edit Campaign">
-                <img src="/static/imgs/edit.png" width=20 height=20 />
-            </a>
-        </div>
+        <textarea id="share_text" name="share_text" onBlur="saveMsg();">{{app.share_text}}</textarea>
+        <button onClick="saveMsg();" value="Save">Save </button>
     </div>
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="{{logout_url}}">Logout</a></p>
-    <p><a href="/r/app/{{app.uuid}}">Analytics Dashboard</a></p>
+    <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
+    <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -30,12 +43,27 @@
 
         <div class="prepend-top prepend-1 span-14 last">
             <p>
-                You've successfully installed our social referral app into your store! Your buyers will
-                start referring their friends when they complete purchases!
+                That's it! Now we'll start juicing your social referrals!
             </p>
-            <h2> We'll email you when a successful referral occurs! </h2>
-            <a style="color:white" class="call_to_action big" href="{{app.target_url}}/admin">Back to Store</a>
-            </div>
+            <p> 
+                Start thinking of the perfect gift to give to your buyers - will it be a limited edition item or 
+                some overstock from last season? Pick something that you know your buyers will love!
+            </p>
+            <p> 
+                If you don't already, start paying attention to the "Note" field for your orders. We'll attach notes so you know
+                when to include gifts!
+            </p>
+            
+            <h3> We'll email you for successful referrals! </h3>
+            
+            <a href="#chat" onClick="return SnapABug.startChat(false);">Have questions? We'd love to answer them!</a>
+
+            <a href="{{app.target_url}}/admin">
+                <button>
+                    <img style="width: 40px" src="/static/imgs/shopify-bag2.png" />
+                    <p style="margin-bottom: 10px"> Back to Your Store </p>
+                </button>
+            </a>
         </div>
 
 {% endblock right_content %}
