@@ -75,7 +75,7 @@ class ShowEditPage( URIHandler ):
             # TODO(Barbara): This might need to change in the future.
             else:
                 logging.info("REDIRECTING")
-                self.redirect( '/edit' )
+                self.redirect( '/r/edit' )
                 return
 
         # Fake a app to put data in if there is an error
@@ -107,7 +107,7 @@ class ShowEditPage( URIHandler ):
             # Updating an existing app here:
             app = get_app_by_id( app_id )
             if app == None:
-                self.redirect( '/edit' )
+                self.redirect( '/r/edit' )
                 return
             
             template_values['app'] = app
@@ -180,10 +180,12 @@ class DynamicLoader(webapp.RequestHandler):
     def get(self, input_path):
         logging.info('Token %s' % self.request.get('order_token'))
         template_values = {}
-        rq_vars = get_request_variables(['store_id', 'order_token'], self)
+        rq_vars = get_request_variables(['store_id', 'order_token', 'demo'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
+
+        is_demo = (rq_vars['demo'] != '')
+            
         # Grab a User if we have a cookie!
         user = get_or_create_user_by_cookie(self)
         user_email = user.get_attr('email') if user else ""
@@ -244,9 +246,7 @@ class DynamicLoader(webapp.RequestHandler):
             
         if 'referral' in input_path:
             path = 'referral_plugin.html'
-        
         elif 'bar' in input_path:
-
             logging.info("BAR: app: %s" % (app.uuid))
             referrer_cookie = self.request.cookies.get(app.uuid, False)
             logging.info('LINK %s' % referrer_cookie)
@@ -257,6 +257,7 @@ class DynamicLoader(webapp.RequestHandler):
                 template_values['show_gift']          = True
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
+
         path = os.path.join('apps/referral/templates/', path)
         logging.info("rendeirng %s" % path)
         self.response.out.write(template.render(path, template_values))

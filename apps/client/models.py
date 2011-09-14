@@ -16,7 +16,7 @@ from google.appengine.api   import urlfetch
 from google.appengine.api   import taskqueue
 from google.appengine.ext   import db
 
-from apps.link.models       import Link, get_active_links_by_campaign
+from apps.link.models       import Link 
 from apps.user.models       import User, get_or_create_user_by_email
 from apps.order.models      import OrderShopify
 from util                   import httplib2

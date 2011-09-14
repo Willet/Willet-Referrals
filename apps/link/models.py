@@ -27,8 +27,9 @@ class Link(Model):
     target_url     = db.LinkProperty(indexed = True)
     # our unique identifier code for this Link
     willt_url_code = db.StringProperty( indexed = True )
-    # our client's campaign that this link is associated with
-    campaign       = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+    # our client's app that this link is associated with
+    app = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+
     creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
     tweet_id       = db.StringProperty(required=False, default='', indexed=True)
@@ -106,7 +107,7 @@ class Link(Model):
         return delete_counters(c)
 
 
-def create_link(targetURL, camp, domain, user=None, usr=""):
+def create_link(targetURL, app, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
 
     code = encode_base62(get_a_willt_code())
@@ -114,7 +115,7 @@ def create_link(targetURL, camp, domain, user=None, usr=""):
                 target_url = targetURL,
                 willt_url_code = code,
                 supplied_user_id = usr,
-                campaign = camp,
+                app = app,
                 user = user,
                 origin_domain = domain)
     link.put()
@@ -145,10 +146,9 @@ def get_unchecked_links():
     check_interval = datetime.datetime.combine(datetime_interval,datetime_interval.time())
     return Link.all().filter('tweet_id =','').filter('creation_time <',check_interval)
 
-def get_active_links_by_campaign( campaign ):
+def get_active_links_by_app( app ):
     """Return tweets we've confirmed on the Twitter graph"""
-    return Link.all().filter( 'campaign =', campaign).filter('tweet_id !=','')
-
+    return Link.all().filter( 'app =', app).filter('tweet_id !=','')
 
 class LinkCounter(db.Model):
     """Sharded counter for link click-throughs"""

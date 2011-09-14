@@ -14,14 +14,14 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from models.campaign import get_campaign_by_id
-from models.link import create_link, get_link_by_willt_code
-from models.oauth import OAuthClient
-from models.testimonial import create_testimonial
-from models.user import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
+from apps.app.models import get_app_by_id
+from apps.link.models import create_link, get_link_by_willt_code
+from apps.oauth.models import OAuthClient
+from apps.testimonial.models import create_testimonial
+from apps.user.models import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
 # helpers
-from shopify.api_wrapper import add_referrer_gift_to_shopify_order
+from apps.referral.shopify.api_wrapper import add_referrer_gift_to_shopify_order
 from util.consts import *
 from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
@@ -34,7 +34,7 @@ class ServeSharingPlugin(webapp.RequestHandler):
         logging.info(os.environ['HTTP_HOST'])
         logging.info(URL)
         template_values = {}
-        rq_vars = get_request_variables(['ca_id', 'uid'], self)
+        rq_vars = get_request_variables(['app_id', 'uid'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
@@ -44,21 +44,20 @@ class ServeSharingPlugin(webapp.RequestHandler):
             user.get_attr('email') != '' else "Your Email"
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        campaign = get_campaign_by_id(rq_vars['ca_id'])
-        
+        app = get_app_by_id(rq_vars['app_id']) 
         p = 5
-        p
+        
 
-        # If they give a bogus campaign id, show the landing page campaign!
-        logging.info(campaign)
-        if campaign == None:
+        # If they give a bogus app_id, show the landing page app!
+        logging.info(app)
+        if app == None:
             template_values = {
                 'NAME' : NAME,
                 
                 'text': "",
                 'willt_url' : URL,
                 'willt_code': "",
-                'campaign_uuid' : "",
+                'app_uuid' : "",
                 'target_url' : URL,
                 
                 'user' : user,
@@ -67,21 +66,21 @@ class ServeSharingPlugin(webapp.RequestHandler):
             }
         else:
             # Make a new Link
-            link = create_link(campaign.target_url, campaign, origin_domain, user, rq_vars['uid'])
+            link = create_link(app.target_url, app, origin_domain, user, rq_vars['uid'])
             logging.info("link created is %s" % link.willt_url_code)
             
             # Create the share text
-            if campaign.target_url in campaign.share_text:
-                share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+            if app.target_url in app.share_text:
+                share_text = app.share_text.replace( app.target_url, link.get_willt_url() )
             else:
-                share_text = campaign.share_text + " " + link.get_willt_url()
+                share_text = app.share_text + " " + link.get_willt_url()
             
             template_values = {
                 'URL' : URL,
                 'NAME' : NAME,
                 
-                'campaign' : campaign,
-                'campaign_uuid' : campaign.uuid,
+                'app' : app,
+                'app_uuid' : app.uuid,
                 'text': share_text,
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
@@ -108,12 +107,12 @@ class ServeSharingPlugin(webapp.RequestHandler):
     
 
 class DynamicSocialLoader(webapp.RequestHandler):
-    """Dynamically loads the source of an iframe containing a campaign's
+    """Dynamically loads the source of an iframe containing a app's
        share text. Currently supports: tweet, facebook share, email"""
     
     def get(self):
         template_values = {}
-        campaign_id = self.request.get('ca_id')
+        app_id = self.request.get('app_id')
         user_id = self.request.get('uid')
         social_type = self.request.get('type')
         origin_domain = os.environ['HTTP_REFERER'] if\
@@ -122,33 +121,33 @@ class DynamicSocialLoader(webapp.RequestHandler):
         if self.request.url.startswith('http://localhost:8080'):
             template_values['BASE_URL'] = self.request.url[0:21]
             
-        campaign = get_campaign_by_id(campaign_id)
+        app = get_app_by_id(app_id)
         
-        # If they give a bogus campaign id, show the landing page campaign!
-        if campaign == None:
+        # If they give a bogus app id, show the landing page app!
+        if app == None:
             template_values = {
                 'text': "",
                 'willt_url' : URL,
                 'willt_code': "",
-                'campaign_uuid' : "",
+                'app_uuid' : "",
                 'target_url' : URL
             }
         else:
-            link = create_link(campaign.target_url, campaign, origin_domain, user_id)
+            link = create_link(app.target_url, app, origin_domain, user_id)
             logging.info("link created is %s" % link.willt_url_code)
             
-            if campaign.target_url in campaign.share_text:
-                share_text = campaign.share_text.replace( campaign.target_url, link.get_willt_url() )
+            if app.target_url in app.share_text:
+                share_text = app.share_text.replace( app.target_url, link.get_willt_url() )
             else:
-                share_text = campaign.share_text + " " + link.get_willt_url()
+                share_text = app.share_text + " " + link.get_willt_url()
                 
             template_values = {
                 'text': share_text.replace("\"", "'"),
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'campaign_uuid' : campaign.uuid,
-                'target_url' : campaign.target_url,
-                'redirect_url' : campaign.redirect_url if campaign.redirect_url else "",
+                'app_uuid' : app.uuid,
+                'target_url' : app.target_url,
+                'redirect_url' : app.redirect_url if app.redirect_url else "",
                 'MIXPANEL_TOKEN' : MIXPANEL_TOKEN
             }
         template_file = 'twitter.html'
@@ -177,7 +176,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             tweet_id, res = user.tweet(rq_vars['m'])
 
             # If we are on a shopify store, add a gift to the order
-            if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+            if link.app.__class__.__name__.lower() == 'referralshopify':
                 add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             link = get_link_by_willt_code(rq_vars['wcode'])
@@ -186,7 +185,7 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 self.response.headers.add_header("Content-type", 'text/javascript')
                 if tweet_id is not None:
                     link.tweet_id = tweet_id
-                    link.campaign.increment_shares()
+                    link.app.increment_shares()
                 link.save()
                 self.response.out.write(res)
             else:
@@ -224,7 +223,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
 
             # If we are on a shopify store, add a gift to the order
-            if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+            if link.app.__class__.__name__.lower() == 'referralapp':
                 add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             link = get_link_by_willt_code(rq_vars['wcode'])
@@ -292,18 +291,18 @@ class SendEmailInvites( webapp.RequestHandler ):
             link.put()
             
             for i in range(0, to_addrs.count(',')):
-                link.campaign.increment_shares()
+                link.app.increment_shares()
                 
         # Save this Testimonial
         create_testimonial(user=user, message=msg, link=link)
 
         # If we are on a shopify store, add a gift to the order
-        if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+        if link.app.__class__.__name__.lower() == 'referralshopify':
             add_referrer_gift_to_shopify_order( order_id )
 
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
-            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
+            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app)
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
@@ -331,7 +330,7 @@ class FacebookShare(webapp.RequestHandler):
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
-                link.campaign.increment_shares()
+                link.app.increment_shares()
                 # add the user to the link now as we may not get a respone
                 link.add_user(user)
 
@@ -339,7 +338,7 @@ class FacebookShare(webapp.RequestHandler):
                 create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
                 # If we are on a shopify store, add a gift to the order
-                if link.campaign.__class__.__name__.lower() == 'shopifycampaign':
+                if link.app.__class__.__name__.lower() == 'referralshopify':
                     add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             self.response.out.write(plugin_response)

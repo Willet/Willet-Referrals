@@ -61,10 +61,10 @@
             
                 willet_conversion = function () {
                     $.ajax({
-                        url: "/conversion",
+                        url: "/r/conversion",
                         type: 'post',
                         data: { referree_uid : "{{supplied_user_id}}",
-                                campaign_uuid : "{{campaign_uuid}}" }
+                                campaign_uuid : "{{app_uuid}}" }
                     });// end ajax
                 }; 
             

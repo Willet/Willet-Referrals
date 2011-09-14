@@ -63,10 +63,10 @@
             
                 willet_conversion = function () {
                     $.ajax({
-                        url: "/conversion",
+                        url: "/r/conversion",
                         type: 'post',
                         data: { referree_uid : "{{supplied_user_id}}",
-                                campaign_uuid : "{{campaign_uuid}}" }
+                                app_uuid: "{{app_uuid}}" }
                     });// end ajax
                 }; 
             
@@ -109,15 +109,15 @@
                                   {% endif %}
             
                     // Track for the Client
-                    mpq.push(['track', event + "{{campaign_uuid}}", 
+                    mpq.push(['track', event + "{{app_uuid}}", 
                                       {'user'     : user_id, 
-                                       'campaign' : "{{campaign_uuid}}",
-                                       'bucket'   : "{{campaign_uuid}}"}]);
+                                       'app' : "{{app_uuid}}",
+                                       'bucket'   : "{{app_uuid}}"}]);
                 
                     // Track for us
                     mpq.push(['track', event, {'user'     : user_id, 
-                                               'campaign' : "{{campaign_uuid}}",
-                                               'bucket'   : "{{campaign_uuid}}"}]);
+                                               'app' : "{{app_uuid}}",
+                                               'bucket'   : "{{app_uuid}}"}]);
                 
                 }
         
@@ -652,7 +652,7 @@
             </div>
             
             <div id="step1_a">
-                <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{campaign.store_name}}!</h2>
+                <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{app.store_name}}!</h2>
 
                 <div class="prepend-top span-9 last">
                     <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Ok</button>
@@ -712,7 +712,7 @@
             </div>
             
             <div class="prepend-1 span-8 last">
-            <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>I left you a gift at {{campaign.store_name}} - snag it here {{willt_url}}.
+            <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>I left you a gift at {{app.store_name}} - snag it here {{willt_url}}.
 Here's why: 
 {{ text }}</textarea>
             </div>
