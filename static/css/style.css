@@ -864,6 +864,34 @@ button:active {
     background-color: #d03f31;
 }
 
+.regular_button {
+  background: -moz-linear-gradient(top, #bde8f5 0%, #006280 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #bde8f5), color-stop(100%, #006280));
+  border: solid 1px #006280;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 75%;
+  font-weight: bold;
+  margin-left: 6px;
+  min-width: 40px;
+  padding: 3px 5px;
+  text-align: center;
+  text-decoration: none;
+  /* Rounded corners */
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  /* End rounded corners */
+}
+
+.regular_button:hover {
+  background: -moz-linear-gradient(top, #006280 0%, #bde8f5 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #006280), color-stop(100%, #bde8f5 ));
+  border: solid 1px #006280;
+  color: #006280;
+}
+
 .landing {
     font-size: 1.2em;
 }

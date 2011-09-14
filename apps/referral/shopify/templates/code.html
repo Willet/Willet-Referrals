@@ -29,7 +29,7 @@
         <br />
 
         <textarea id="share_text" name="share_text" onBlur="saveMsg();">{{app.share_text}}</textarea>
-        <button onClick="saveMsg();" value="Save">Save </button>
+        <button class="regular_button" onClick="saveMsg();" value="Save">Save </button>
     </div>
 {% endblock left_content %}
 
@@ -54,16 +54,26 @@
                 when to include gifts!
             </p>
             
-            <h3> We'll email you for successful referrals! </h3>
-            
-            <a href="#chat" onClick="return SnapABug.startChat(false);">Have questions? We'd love to answer them!</a>
+            <div class="prepend-top span-9">
+                <h3> We'll email you for successful referrals! </h3>
+            </div>
+            <div class="span-4 last append-bottom">
+                <a href="#chat" onClick="return SnapABug.startChat(false);">
+                    <button class="regular_button">
+                        <img style="height: 20px" src="/static/imgs/friendship.png" />
+                        <p style="margin-bottom: 10px"> Have Questions? </p>
+                    </button>
+                </a>
+            </div>
 
-            <a href="{{app.target_url}}/admin">
-                <button>
-                    <img style="width: 40px" src="/static/imgs/shopify-bag2.png" />
-                    <p style="margin-bottom: 10px"> Back to Your Store </p>
-                </button>
-            </a>
+            <div class="prepend-top span-13 center last">
+                <a href="{{app.target_url}}/admin">
+                    <button>
+                        <img style="height: 40px" src="/static/imgs/shopify-bag2.png" />
+                        <p style="margin-bottom: 10px"> Back to Your Store </p>
+                    </button>
+                </a>
+            </div>
         </div>
 
 {% endblock right_content %}
