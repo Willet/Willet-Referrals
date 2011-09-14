@@ -37,7 +37,7 @@ class ShopifyRedirect( URIHandler ):
         shopify_timestamp = self.request.get( 'timestamp' )
 
         # Try to get the Client if they are logged in
-        client = get_client() 
+        client = self.get_client() 
         if client is None:
 
             # Ensure the 'http' is in the URL
