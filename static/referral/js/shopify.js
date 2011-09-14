@@ -12,7 +12,7 @@ var order_token = url[ l - 1 ]; // Last portion of URL
 var store_id    = url[ l - 2 ]; // Second last portion of URL
 
 
-if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_loaded == "undefined") {
+if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_loaded == undefined) {
     window.iframe_loaded = "teh iframe haz been loaded";
     // Make the referral iframe
     var surround    = document.createElement('div');
