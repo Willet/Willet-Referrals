@@ -177,7 +177,7 @@ class ManageApps(URIHandler):
             d = {
                 'uuid': app.uuid,
                 'client_name': app.client.name,
-                'app_class': app.class_name()
+                'class_name': app.class_name()
             }
             apps.append(d)
         return apps
