@@ -202,7 +202,12 @@ class DynamicLoader(webapp.RequestHandler):
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
         is_demo = (rq_vars['demo'] != '')
-            
+        
+        # set the stylesheet we are going to use
+        style = self.request.get('style')
+        if style == '':
+            style = 'shopify'
+
         # Grab a User if we have a cookie!
         user       = get_or_create_user_by_cookie(self)
         user_email = user.get_attr('email') if user else ""
@@ -218,6 +223,7 @@ class DynamicLoader(webapp.RequestHandler):
         if client == None:
             template_values = {
                 'NAME' : NAME,
+                'style': style,
                 
                 'text': "",
                 'willt_url' : URL,
@@ -248,6 +254,7 @@ class DynamicLoader(webapp.RequestHandler):
             template_values = {
                 'URL' : URL,
                 'NAME' : NAME,
+                'style': style,
                 
                 'app' : app,
                 'app_uuid' : app.uuid,
