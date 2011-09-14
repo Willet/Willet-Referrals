@@ -252,21 +252,21 @@ class DynamicLoader(webapp.RequestHandler):
                 'user_email': user_email,
                 'user_found': str(user_found).lower()
             }
+
+            # Determine if they were referred
+            referrer_cookie = self.request.cookies.get(app.uuid, False)
+            referrer_link   = get_link_by_willt_code( referrer_cookie )
+            
+            if referrer_link:
+                template_values['profile_pic']   = referrer_link.user.get_attr( 'pic' )
+                template_values['referrer_name'] = referrer_link.user.get_attr( 'full_name' )
+                template_values['show_gift']     = True
         
         if self.request.url.startswith('http://localhost'):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:
             template_values['BASE_URL'] = URL
         
-        # Determine if they were referred
-        referrer_cookie = self.request.cookies.get(app.uuid, False)
-        referrer_link   = get_link_by_willt_code( referrer_cookie )
-        
-        if referrer_link:
-            template_values['profile_pic']   = referrer_link.user.get_attr( 'pic' )
-            template_values['referrer_name'] = referrer_link.user.get_attr( 'full_name' )
-            template_values['show_gift']     = True
-
         # What plugin are we loading?
         path = ''
         if 'referral' in input_path:
