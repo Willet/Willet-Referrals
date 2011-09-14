@@ -48,7 +48,7 @@ class ShowEditPage( URIHandler ):
         # Check the Shopify stuff if they gave it to us.
         # If it fails, let's just say they aren't coming from Shopify.
         # If we don't have this info, we could be redirecting on an error
-        if app_id == '' and shopify_url != '':
+        if shopify_sig == '' and shopify_url != '':
             # Verify Shopify varZ
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
@@ -66,8 +66,11 @@ class ShowEditPage( URIHandler ):
                 app = get_referral_app_by_url( shopify_url )
                 if app is None:
                     template_values['show_guiders'] = True
-                    template_values['app']     = { 'product_name' : product_name,
-                                                   'target_url'   : shopify_url }
+                    template_values['app'] = {
+                        'product_name' : product_name,
+                        'target_url'   : shopify_url,
+                        'uuid': ''
+                    }
                     template_values['has_app'] = False
                 else:
                     template_values['app']     = app
@@ -85,21 +88,24 @@ class ShowEditPage( URIHandler ):
             template_values['app'] = { 'product_name'   : product_name,
                                         'target_url'   : target_url,
                                         'share_text'  : share_text, 
-                                        'store_token' : store_token
+                                        'store_token' : store_token,
+                                        'uuid': ''
                                       }
         elif error == '2':
             template_values['error'] = 'Please don\'t leave anything blank.'
             template_values['app'] = { 'product_name'   : product_name,
                                         'target_url'   : target_url,
                                         'share_text'  : share_text, 
-                                        'store_token' : store_token
+                                        'store_token' : store_token,
+                                        'uuid': ''
                                       }
         elif error == '3':
             template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
             template_values['app'] = { 'product_name'   : product_name,
                                         'target_url'   : target_url,
                                         'share_text'  : share_text, 
-                                        'store_token' : store_token
+                                        'store_token' : store_token,
+                                        'uuid': ''
                                       }
 
         # Otherwise, 
@@ -183,7 +189,7 @@ class DynamicLoader(webapp.RequestHandler):
     def get(self, input_path):
         logging.info('Token %s' % self.request.get('order_token'))
         template_values = {}
-        rq_vars = get_request_variables(['store_id', 'order_token', 'demo'], self)
+        rq_vars = get_request_variables(['app_id', 'order_token', 'demo'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
@@ -194,7 +200,7 @@ class DynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        app = get_shopify_app_by_id( rq_vars['store_id'] )
+        app = get_shopify_app_by_id( rq_vars['app_id'] )
         
         # If they give a bogus app id, show the landing page app!
         logging.info(app)
@@ -246,8 +252,11 @@ class DynamicLoader(webapp.RequestHandler):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:
             template_values['BASE_URL'] = URL
-            
+        
+        path = ''
+
         if 'referral' in input_path:
+            template_values['skip_to'] = 'step2';
             path = 'referral_plugin.html'
         elif 'bar' in input_path:
             logging.info("BAR: app: %s" % (app.uuid))

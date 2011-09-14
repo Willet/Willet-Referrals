@@ -408,6 +408,11 @@
                     tp.style.borderRadius = '4px';
                     tp.style.boxShadow    = '10px 10px 5px #888';
                 };
+
+                var skip_to = '{{ skip_to }}';
+                if (skip_to != ''){
+                    next(skip_to);
+                }
             });
         </script>
             
