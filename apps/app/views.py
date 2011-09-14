@@ -58,6 +58,8 @@ class ShopifyRedirect( URIHandler ):
             session['email']        = client.email
             session['reg-errors']   = [ ]
             
+            logging.info("CLIENT: %s" % client.email)
+
             # Cache the client!
             self.db_client = client
 

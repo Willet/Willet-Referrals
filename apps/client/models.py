@@ -15,6 +15,7 @@ from google.appengine.api   import memcache
 from google.appengine.api   import urlfetch
 from google.appengine.api   import taskqueue
 from google.appengine.ext   import db
+from google.appengine.ext.db import polymodel
 
 from apps.link.models       import Link, get_active_links_by_campaign
 from apps.user.models       import User, get_or_create_user_by_email
@@ -27,7 +28,7 @@ from util.helpers           import generate_uuid
 # ------------------------------------------------------------------------------
 # Client Class Definition ------------------------------------------------------
 # ------------------------------------------------------------------------------
-class Client(Model):
+class Client(Model, polymodel.PolyModel):
     """A Client or the website"""
     uuid          = db.StringProperty(indexed = True)
     email         = db.StringProperty(indexed=True)
@@ -124,7 +125,7 @@ class ClientShopify( Client ):
 
 # Accessors --------------------------------------------------------------------
 def get_shopify_client_by_url( store_url ):
-    store = ClientShopify.all().filter( 'store_url =', store_url ).get()
+    store = ClientShopify.all().filter( 'url =', store_url ).get()
     return store
 
 def get_or_create_shopify_store( store_url, store_token='', request_handler=None ):
