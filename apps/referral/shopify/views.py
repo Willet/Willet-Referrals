@@ -204,7 +204,7 @@ class DynamicLoader(webapp.RequestHandler):
         client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
         # If they give a bogus app id, show the landing page app!
-        logging.info(app)
+        logging.info(client)
         if client == None:
             template_values = {
                 'NAME' : NAME,
