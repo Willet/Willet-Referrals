@@ -6,6 +6,7 @@ urlpatterns = [
     (r'/willet', DynamicLinkLoader),
     (r'/link/cleanBadLinks', CleanBadLinks),
     (r'/link/getTweets', getUncheckedTweets),
-    
+    (r'/link/init', InitCodes),
+
     (r'/(.*)', TrackWilltURL),
 ]

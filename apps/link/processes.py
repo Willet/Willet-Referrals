@@ -11,7 +11,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from apps.link.models import Link, get_link_by_willt_code 
+from apps.link.models import Link, get_link_by_willt_code, CodeCounter
 from apps.app.models import get_app_by_id, App
 from apps.user.models import get_or_create_user_by_twitter
 
@@ -56,7 +56,6 @@ class TrackWilltURL( webapp.RequestHandler ):
         self.redirect(link.target_url)
         return
             
-
 class DynamicLinkLoader(webapp.RequestHandler):
     """Generates a customized javascript source file pre-loaded
        with a unique URL to share. A 'link' model is created in the
@@ -185,6 +184,20 @@ class getUncheckedTweets( URIHandler ):
                 ut.delete()
         self.response.out.write(counters)
 
+class InitCodes(webapp.RequestHandler):
+    """Run this script to initialize the counters for the willt
+       url code generators"""
+    def get(self):
+        n = 0
+        for i in range(20):
+            ac = CodeCounter(
+                count=i,
+                total_counter_nums=20,
+                key_name = str(i)
+            )
+            ac.put()
+            n += 1
+        self.response.out.write(str(n) + " counters initialized")
 
 class CleanBadLinks( webapp.RequestHandler ):
     def get(self):
