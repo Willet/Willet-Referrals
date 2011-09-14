@@ -202,9 +202,9 @@ class DynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
+        app = None
 
-        app = {'uuid': ''}
+        client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
         # If they give a bogus app id, show the landing page app!
         logging.info(client)
