@@ -75,8 +75,8 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="{{logout_url}}">Logout</a></p>
-    <p><a href="/campaign/{{app.uuid}}">Analytics Dashboard</a></p>
+    <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
+    <p><a href="/campaign/{{app.uuid}}">View Your Referral Analytics</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -135,8 +135,7 @@
               overlay: true,
               width: 600,
               title: "Juice your sales with {{NAME}}!"
-            })
-                .show();
+            }) {% if show_guiders %} .show() {% endif %} ;
         
             guiders.createGuider({
               attachTo: "#share_text",
