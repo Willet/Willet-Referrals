@@ -75,12 +75,13 @@ class ShowEditPage( URIHandler ):
                 template_values['app'] = {
                     'product_name' : client.name,
                     'target_url'   : client.url,
-                    'shop_owner'   : client.merchant.full_name,
                     'uuid': ''
                 }
                 template_values['has_app'] = False
             else:
                 template_values['app']     = app
+                    
+            template_values['shop_owner'] = client.merchant.get_attr('full_name')
 
             # The Shopify check failed. Redirecting to normal site. 
             # TODO(Barbara): This might need to change in the future.
