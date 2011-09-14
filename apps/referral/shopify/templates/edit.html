@@ -124,6 +124,57 @@
 
         </script>
 
+
+        <script>
+            // Guiders.js code
+            guiders.createGuider({
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "<p> Our App has already been installed onto your store's checkout pages. </p> <p> When your customers complete a purchase, they'll be prompted to refer their friends for a <em>gift</em>. </p> <p>We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders! </p><p><br /><em>Think carefully about the gift you include.  The better the gift, the better the impression of your store and the more your customers will talk about your store on their social networks!</em></p> <br />",
+              id: "first",
+              next: "second",
+              overlay: true,
+              width: 600,
+              title: "Juice your sales with {{NAME}}!"
+            })
+                .show();
+        
+            guiders.createGuider({
+              attachTo: "#share_text",
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "Enter a default message that your customers can share onto their social networks.",
+              id: "second",
+              next: "third",
+              width: 300,
+              position: 3,
+              title: "What do you want people to know about {{app.product_name}}?"
+            });
+         
+            guiders.createGuider({
+              attachTo: "#share_iframe_container",
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "When your customers checkout, here is what they'll see!",
+              id: "third",
+              next: "fourth",
+              position: 1,
+              width: 300,
+              title: "Look!"
+            });
+         
+            guiders.createGuider({
+              attachTo: "#submit",
+              buttons: [{name: "Close"}],
+              description: "When you've crafted the perfect message, click here and you're all done!",
+              id: "fourth",
+              next: "finally",
+              position: 3,
+              width: 300,
+              title: "It's That Simple!"
+            });
+        </script>
+
 {% endblock right_content %}
 
 {% block mixpanelTracking %}

@@ -65,6 +65,7 @@ class ShowEditPage( URIHandler ):
                 # Fetch the referral app by url
                 app = get_referral_app_by_url( shopify_url )
                 if app is None:
+                    template_values['show_guiders'] = True
                     template_values['app']     = { 'product_name' : product_name,
                                                    'target_url'   : shopify_url }
                     template_values['has_app'] = False
