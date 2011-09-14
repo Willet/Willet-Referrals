@@ -16,12 +16,12 @@ if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_lo
     window.iframe_loaded = "teh iframe haz been loaded";
     // Make the referral iframe
     var surround    = document.createElement('div');
-    surround.setAttribute('stype', 'width: 413px;padding: 0 15px; background: url("../images/checkout/checkout-bg-slim.gif") bottom left repeat-y;')
+    surround.setAttribute('stype', 'width: 413px;padding: 0 15px; background: url(\'..\/images\/checkout\/checkout-bg-slim.gif\') bottom left repeat-y;')
     var iframe      = document.createElement( 'iframe' );
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
     iframe.setAttribute( 'scrolling', 'no' );
-    iframe.setAttribute( 'style', 'padding: 0 15px; width:413px; min-height:340px; display: block; background: url("../images/checkout/checkout-bg-slim.gif") bottom left repeat-y' );
+    iframe.setAttribute( 'style', 'width:100%; min-height:340px; display: block;' );
     iframe.setAttribute( 'src', 'http://social-referral.appspot.com/r/shopify/load/referral?store_id=' + store_id + '&order_token=' + order_token );
 
     // Add the div to the page
