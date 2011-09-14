@@ -109,7 +109,7 @@ class ClientShopify( Client ):
     name    = db.StringProperty( indexed = False )
     url     = db.LinkProperty  ( indexed = True )
     token   = db.StringProperty( default = '' )
-    id      = db.StringProperty( indexed = False )
+    id      = db.StringProperty( indexed = True )
 
     # Store product img URLs and do something useful with them
     product_imgs  = db.StringListProperty( indexed = False )
