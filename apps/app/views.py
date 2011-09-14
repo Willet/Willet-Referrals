@@ -15,13 +15,14 @@ from time import time
 from apps.app.models import * 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.models import *
+from apps.client.models import Client, get_or_create_shopify_store
 from apps.order.models import *
 from apps.stats.models import Stats
 
-from util.helpers import *
-from util.urihandler import URIHandler
-from util.consts import *
+from util.gaesessions import get_current_session
+from util.helpers     import *
+from util.urihandler  import URIHandler
+from util.consts      import *
 
 # The "Shows" ------------------------------------------------------------------
 class ShopifyRedirect( URIHandler ):
@@ -44,8 +45,9 @@ class ShopifyRedirect( URIHandler ):
             if 'http' not in shopify_url:
                 shopify_url = 'http://%s' % shopify_url
             
+            logging.info('asd')
             # Get the store or create a new one
-            client = get_or_create_shopify_store( shopify_url, store_token )
+            client = get_or_create_shopify_store( shopify_url, store_token, self )
             
             # initialize session
             session = get_current_session()
@@ -56,6 +58,8 @@ class ShopifyRedirect( URIHandler ):
             session['email']        = client.email
             session['reg-errors']   = [ ]
             
+            logging.info("CLIENT: %s" % client.email)
+
             # Cache the client!
             self.db_client = client
 

@@ -10,8 +10,8 @@ from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
 from apps.client.models import get_client_by_email
-from util.consts     import *
-from util.gaesessions import get_current_session
+from util.consts        import *
+from util.gaesessions   import get_current_session
 
 class URIHandler( webapp.RequestHandler ):
 
@@ -27,7 +27,8 @@ class URIHandler( webapp.RequestHandler ):
 
         session = get_current_session()
         session.regenerate_id()
-        email   = session.get('email', '');
+        email   = session.get('email', '')
+        logging.info("GETTING EMAIL: %s" % email)
         
         self.db_client = get_client_by_email( email )
             

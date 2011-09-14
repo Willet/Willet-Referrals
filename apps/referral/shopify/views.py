@@ -14,7 +14,7 @@ from time import time
 
 from apps.app.models import *
 from apps.referral.models import get_referral_app_by_url
-from apps.referral.shopify.models import get_shopify_app_by_id
+from apps.referral.shopify.models import get_shopify_app_by_id, create_referral_shopify_app
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
@@ -32,8 +32,8 @@ class ShowEditPage( URIHandler ):
         app_id       = self.request.get( 'id' )
         error        = self.request.get( 'error' )
         error_msg    = self.request.get( 'error_msg')
-        store_name   = self.request.get( 'store_name' )
-        store_url    = self.request.get( 'store_url' )
+        product_name   = self.request.get( 'product_name' )
+        target_url    = self.request.get( 'target_url' )
         share_text   = self.request.get( 'share_text' )
         
         # Request varZ from Shopify
@@ -56,6 +56,8 @@ class ShowEditPage( URIHandler ):
             
             if shopify_sig == d: # ie. if this is valid from shopify
                               
+                product_name = shopify_url.split( '.' )[0].capitalize()
+                
                 # Ensure the 'http' is in the URL
                 if 'http' not in shopify_url:
                     shopify_url = 'http://%s' % shopify_url
@@ -63,9 +65,8 @@ class ShowEditPage( URIHandler ):
                 # Fetch the referral app by url
                 app = get_referral_app_by_url( shopify_url )
                 if app is None:
-                    store_name = shopify_url.split( '.' )[0].capitalize()
-                    
-                    template_values['app']     = { 'product_name' : store_name,
+                    template_values['show_guiders'] = True
+                    template_values['app']     = { 'product_name' : product_name,
                                                    'target_url'   : shopify_url }
                     template_values['has_app'] = False
                 else:
@@ -81,22 +82,22 @@ class ShowEditPage( URIHandler ):
         # Fake a app to put data in if there is an error
         if error == '1':
             template_values['error'] = 'Invalid Shopify store url.'
-            template_values['app'] = { 'store_name'   : store_name,
-                                        'store_url'   : store_url,
+            template_values['app'] = { 'product_name'   : product_name,
+                                        'target_url'   : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token
                                       }
         elif error == '2':
             template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['app'] = { 'store_name'   : store_name,
-                                        'store_url'   : store_url,
+            template_values['app'] = { 'product_name'   : product_name,
+                                        'target_url'   : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token
                                       }
         elif error == '3':
             template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['app'] = { 'store_name'   : store_name,
-                                        'store_url'   : store_url,
+            template_values['app'] = { 'product_name'   : product_name,
+                                        'target_url'   : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token
                                       }
@@ -138,24 +139,25 @@ class DoUpdateOrCreate( URIHandler ):
     
     def post( self ):
         client      = self.get_client() # might be None
+        logging.info("CLIENT: %r:" % client)
         # Request varZ
-        app_id      = self.request.get( 'uuid' )
-        store_name  = self.request.get( 'store_name' )
-        store_url   = self.request.get( 'store_url' )
-        share_text  = self.request.get( 'share_text' )
-        store_token = self.request.get( 'token' )
+        app_id       = self.request.get( 'uuid' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
+        share_text   = self.request.get( 'share_text' )
+        store_token  = self.request.get( 'token' )
         
         # Error check the input!
-        if store_name == '' or store_url == ''  or share_text == '':
-            self.redirect( '/shopify/r/edit?id=%s&t=%s&error=2&share_text=%s&store_url=%s&store_name=%s' % (app_id, store_token, share_text, store_url, store_name) )
+        if product_name == '' or target_url == ''  or share_text == '':
+            self.redirect( '/r/shopify/edit?id=%s&t=%s&error=2&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
             return
-        if not isGoodURL( store_url ):
-            self.redirect( '/shopify/r/edit?id=%s&t=%s&error=1&share_text=%s&store_url=%s&store_name=%s' % (app_id, store_token, share_text, store_url, store_name) )
+        if not isGoodURL( target_url ):
+            self.redirect( '/r/shopify/edit?id=%s&t=%s&error=1&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
             return
 
         # If no one is logged in, make them login!
         if client is None:
-            self.redirect( '/login?url=/shopify/r/edit?id=%s&t=%s&share_text=%s&store_url=%s&store_name=%s' % (app_id, store_token, share_text, store_url, store_name) )
+            self.redirect( '/login?url=/shopify/r/edit?id=%s&t=%s&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
             return
         
         # Try to grab the referral app
@@ -169,9 +171,10 @@ class DoUpdateOrCreate( URIHandler ):
 
         # Otherwise, update the existing app.
         else:
-            app.update( share_text = share_text )
+            referral_app.share_text = share_text
+            referral_app.put()
         
-        self.redirect( '/shopify/r/code?id=%s' % app.uuid )
+        self.redirect( '/r/shopify/code?id=%s' % referral_app.uuid )
 
 class DynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -203,22 +206,22 @@ class DynamicLoader(webapp.RequestHandler):
                 'willt_url' : URL,
                 'willt_code': "",
                 'app_uuid' : "",
-                'store_url' : URL,
+                'target_url' : URL,
                 
                 'user' : user,
                 'user_email' : user_email
             }
         else:
             # Make a new Link
-            link = create_link(app.store_url, app, origin_domain, user)
+            link = create_link(app.target_url, app, origin_domain, user)
             logging.info("link created is %s" % link.willt_url_code)
 
             # Fetch the Shopify Order
             order = get_shopify_order_by_token( rq_vars['order_token'] )
 
             # Create the share text
-            if app.store_url in app.share_text:
-                share_text = app.share_text.replace( app.store_url, link.get_willt_url() )
+            if app.target_url in app.share_text:
+                share_text = app.share_text.replace( app.target_url, link.get_willt_url() )
             else:
                 share_text = app.share_text + " " + link.get_willt_url()
             

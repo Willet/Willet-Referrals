@@ -1050,7 +1050,7 @@ class Relationship(Model):
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(Conversion, self).__init__(*args, **kwargs)
+        super(Relationship, self).__init__(*args, **kwargs)
     
     @staticmethod
     def _get_from_datastore( uuid ):

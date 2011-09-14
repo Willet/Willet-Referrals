@@ -43,40 +43,6 @@
                 }
             );
         });
-
-        goToStep1 = function () {
-            var step1l = document.getElementById( 'step1_left' );
-            var step1r = document.getElementById( 'step1_right' );
-            var step2l = document.getElementById( 'step2_left' );
-            var step2r = document.getElementById( 'step2_right' );
-            var btn1   = document.getElementById( 'goToStep1Button' );
-            var btn2   = document.getElementById( 'goToStep2Button' );
-
-            step1l.style.display="block";
-            step1r.style.display="block";
-            step2l.style.display="none";
-            step2r.style.display="none";
-            
-            btn1.style.display  ="none";
-            btn2.style.display  ="block";
-        };
-        goToStep2 = function () {
-            var step1l = document.getElementById( 'step1_left' );
-            var step1r = document.getElementById( 'step1_right' );
-            var step2l = document.getElementById( 'step2_left' );
-            var step2r = document.getElementById( 'step2_right' );
-            var btn1   = document.getElementById( 'goToStep1Button' );
-            var btn2   = document.getElementById( 'goToStep2Button' );
-
-            step1l.style.display="none";
-            step1r.style.display="none";
-            step2l.style.display="block";
-            step2r.style.display="block";
-            
-            btn1.style.display  ="block";
-            btn2.style.display  ="none";
-        };
-
     </script>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
 {% endblock head %}
@@ -87,25 +53,6 @@
     <div class="span-8 last center">
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
-            <div id="step1_left">
-                {% ifnotequal has_app False %}
-                    <div class="hidden">
-                {% else %}
-                    <div>
-                {% endifnotequal %}
-                    <label class="default_label" for="product_name"> Store Name</label>
-                    <input type="text" id="product_name" name="product_name" value="{{app.product_name|escape}}"/>  <br />
-                </div> 
-                {% ifnotequal has_app False %}
-                    <div class="hidden">
-                {% else %}
-                    <div>
-                {% endifnotequal %}
-                    <label class="default_label" for="target_url"> Store URL </label> <br />
-                    <input type="text" name="target_url" id="target_url" value="{{app.target_url}}" onBlur="url_text();" />
-                </div>
-            </div>
-
             <div>
                 <label class="default_label" for="share_text">Default Share Text</label>
                 <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter a default message that your customers can share with their friends.</p>
@@ -115,10 +62,12 @@
                 <span class="defaultValue hidden" id="share_text_span">I love {{app.product_name}} because ...! You should check them out at {{app.target_url}}!</span>
             </div>
 
-            <input class="call_to_action big submit" id="submit" type="submit" value="Continue" title="Continue" />
+            <input class="call_to_action big submit" id="submit" type="submit" value="Finalize" title="Finalize" />
             
-            <input type="hidden" value="{{app.uuid}}" name="uuid" />
-            <input type="hidden" value="{{store_token}}" name="token" />
+            <input type="hidden" name="target_url"   value="{{app.target_url}}" />
+            <input type="hidden" name="product_name" value="{{app.product_name}}" />
+            <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
+            <input type="hidden" name="token"        value="{{store_token}}"  />
         </form>
 
     </div>
@@ -126,7 +75,8 @@
 {% endblock left_content %}
 
 {% block right_head %}
-    <p><a href="/app/{{app.uuid}}">Analytics Dashboard</a></p>
+    <p><a href="{{logout_url}}">Logout</a></p>
+    <p><a href="/campaign/{{app.uuid}}">Analytics Dashboard</a></p>
 {% endblock right_head %}
 
 {% block right_content %}
@@ -134,13 +84,6 @@
         <h3 class="center" style="margin-top: -20px;" >Social Means Business</h3>
 
         <div id="step1_right" class="prepend-1 span-14 last">
-            <p>
-                Welcome to {{NAME}}! We're driving social traffic to your online store.
-            </p>
-            <p>
-                In just 4 simple steps, you can start earning new customers who will use your site more,
-                purchase more, and be your top brand advocates and ambassadors within their social networks.
-               
             <p>
                 Start out by telling us what you'd like your buyers to share on their social networks. Here's
                 what your customers will see:
@@ -154,7 +97,7 @@
             // Fill examples
             var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
                 share_text    = document.getElementById('share_text'),
-                target_url     = document.getElementById('target_url'),
+                target_url    = document.getElementById('target_url'),
                 share_i_frame = document.getElementById('share_iframe');
             
             function update_share_text() {
@@ -179,6 +122,57 @@
                 update_share_text();
             }
 
+        </script>
+
+
+        <script>
+            // Guiders.js code
+            guiders.createGuider({
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "<p> Our App has already been installed onto your store's checkout pages. </p> <p> When your customers complete a purchase, they'll be prompted to refer their friends for a <em>gift</em>. </p> <p>We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders! </p><p><br /><em>Think carefully about the gift you include.  The better the gift, the better the impression of your store and the more your customers will talk about your store on their social networks!</em></p> <br />",
+              id: "first",
+              next: "second",
+              overlay: true,
+              width: 600,
+              title: "Juice your sales with {{NAME}}!"
+            })
+                .show();
+        
+            guiders.createGuider({
+              attachTo: "#share_text",
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "Enter a default message that your customers can share onto their social networks.",
+              id: "second",
+              next: "third",
+              width: 300,
+              position: 3,
+              title: "What do you want people to know about {{app.product_name}}?"
+            });
+         
+            guiders.createGuider({
+              attachTo: "#share_iframe_container",
+              buttons: [{name: "Close"},
+                        {name: "Next"}],
+              description: "When your customers checkout, here is what they'll see!",
+              id: "third",
+              next: "fourth",
+              position: 1,
+              width: 300,
+              title: "Look!"
+            });
+         
+            guiders.createGuider({
+              attachTo: "#submit",
+              buttons: [{name: "Close"}],
+              description: "When you've crafted the perfect message, click here and you're all done!",
+              id: "fourth",
+              next: "finally",
+              position: 3,
+              width: 300,
+              title: "It's That Simple!"
+            });
         </script>
 
 {% endblock right_content %}
