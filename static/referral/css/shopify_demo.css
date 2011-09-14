@@ -9,6 +9,9 @@
 }
 #invite {
     width: 371px;
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
 }
 .willt {
     background: #F7F7F7;
