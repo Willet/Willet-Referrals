@@ -170,7 +170,7 @@ class ShowRoutes(URIHandler):
         )
 
 class ManageApps(URIHandler):
-    def get_app_list():
+    def get_app_list(self):
         all_apps = App.all()
         apps = []
         for app in all_apps:
