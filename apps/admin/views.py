@@ -170,11 +170,22 @@ class ShowRoutes(URIHandler):
         )
 
 class ManageApps(URIHandler):
+    def get_app_list():
+        all_apps = App.all()
+        apps = []
+        for app in all_apps:
+            d = {
+                'uuid': app.uuid,
+                'client_name': app.client.name,
+                'app_class': app.class_name()
+            }
+            apps.append(d)
+        return apps
+    
     @admin_required
     def get(self, client=None):
-        apps = App.all()
         template_values = {
-            'apps': apps 
+            'apps': self.get_app_list() 
         }
         
         self.response.out.write(self.render_page(
@@ -216,9 +227,8 @@ class ManageApps(URIHandler):
                 'text': 'Could not get app for id: %s' % rqv['app_id'] 
             })
 
-        apps = App.all()
         template_values = {
-            'apps': apps,
+            'apps': self.get_app_list(), 
             'messages': messages
         }
         
