@@ -45,7 +45,7 @@ class ShowAccountPage( URIHandler ):
             'num_apps': num_apps
         }
         
-        self.response.out.write(self.render_page('account.html', template_values, appname='client'))
+        self.response.out.write(self.render_page('account.html', template_values))
 
 class DoAuthenticate( URIHandler ):
     def post( self ):
@@ -233,7 +233,7 @@ class ShowLoginPage( URIHandler ):
                                  'stats' : stats,
                                  'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
                                  
-            self.response.out.write(self.render_page('login.html', template_values, appname='client'))
+            self.response.out.write(self.render_page('login.html', template_values))
 
 class Logout( URIHandler ):
     def get( self ):

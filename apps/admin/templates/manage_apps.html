@@ -2,16 +2,19 @@
 
 {% block content %}
     <div class="span-24 prepend-top">
-        <h1 class="prepend-top center">Shopify Stores</h1>
-        {% for store in stores %}
+        <h1 class="prepend-top center">Manage Installed Apps</h1>
+        {% for app in apps %}
             <div class="prepend-3 span-6">
-                {{ store.product_name }} 
+                {{ app.client.name }} 
             </div>
             <div class="span-6">
-                {{ store.token }}
+                {{ app.class_name() }}
             </div>
             <div class="span-6 append-3 last">
-                {{ store.url }}
+                <form method="post" action="?">
+                    <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                    <input type="submit" value="Install Scripts" />
+                </form>
             </div>
         {% endfor %}
     </div>

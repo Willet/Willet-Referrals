@@ -244,3 +244,4 @@ def get_product_imgs( store_url, store_token ):
                     img = v[0]['src'].split('?')[0]
                     ret.append( img )   
     return ret
+

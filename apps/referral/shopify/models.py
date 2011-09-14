@@ -23,8 +23,8 @@ class ReferralShopify( Referral ):
         """ Initialize this model """
 
         # Install yourself in the Shopify store
-        install_webhooks( kwargs['store_url'], kwargs['store_token'] )
-        install_script_tags( kwargs['store_url'], kwargs['store_token'] )
+        install_webhooks( kwargs['target_url'], kwargs['store_token'] )
+        install_script_tags( kwargs['target_url'], kwargs['store_token'] )
         
         super(ReferralShopify, self).__init__(*args, **kwargs)
 
@@ -37,6 +37,7 @@ def create_referral_shopify_app( client, share_text ):
                            client       = client,
                            product_name = client.name, # Store name
                            target_url   = client.url, # Store url
+                           store_token  = client.token,
                            webhook_url  = '', # Don't need one
                            share_text   = share_text )
     app.put()

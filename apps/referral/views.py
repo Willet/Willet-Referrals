@@ -74,8 +74,7 @@ class ShowDashboard( URIHandler ):
         self.response.out.write(
             self.render_page(
                 'app.html', 
-                template_values,
-                appname='app'
+                template_values
             )
         )
 

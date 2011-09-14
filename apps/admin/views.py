@@ -13,6 +13,9 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.app.models import App
+from apps.referral.models import Referral
+from apps.referral.shopify.models import ReferralShopify
 from apps.client.models import Client, ClientShopify
 from apps.link.models import *
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
@@ -102,7 +105,6 @@ class InitRenameFacebookData(webapp.RequestHandler):
             taskqueue.add(url = '/admin/renamefb',
                           params = {'uuid': u})
         self.response.out.write("update dispatched")
-            
 
 class RenameFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
@@ -170,9 +172,9 @@ class ShowRoutes(URIHandler):
 class ManageApps(URIHandler):
     @admin_required
     def get(self, client=None):
-        stores = ClientShopify.all()
+        apps = App.all()
         template_values = {
-            'stores': stores        
+            'apps': apps 
         }
         
         self.response.out.write(self.render_page(
@@ -180,3 +182,49 @@ class ManageApps(URIHandler):
                 template_values
             )
         )
+
+    @admin_required
+    def post(self, admin=None):
+        rqv = get_request_variables(['app_id', 'action'], self)
+        app = App.all().filter('uuid =', rqv['app_id']).get()
+        action = rqv['action']
+        
+        messages = []
+
+        if app != None:
+            # we got an app
+            logging.info('running action %s on app of type %s' % (
+                action,
+                app.class_name()
+            ))
+            if app.class_name() == 'ReferralShopify':
+                # we shall just ignore action for now
+                client = app.client
+                install_script_tags(app.target_url, client.token)
+                messages.append({
+                    'type': 'message',
+                    'text': 'Ran install_script_tags for %s' % client.name
+                })
+            else:
+                messages.append({
+                    'type': 'error',
+                    'text': 'Invalid class name: %s' % app.class_name()
+                })
+        else:
+            messages.append({
+                'type': 'error',
+                'text': 'Could not get app for id: %s' % rqv['app_id'] 
+            })
+
+        apps = App.all()
+        template_values = {
+            'apps': apps,
+            'messages': messages
+        }
+        
+        self.response.out.write(self.render_page(
+                'manage_apps.html',
+                template_values
+            )
+        ) 
+

@@ -36,7 +36,7 @@ class URIHandler( webapp.RequestHandler ):
 
         return self.db_client
     
-    def render_page(self, template_file_name, content_template_values, appname=None):
+    def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
@@ -54,8 +54,11 @@ class URIHandler( webapp.RequestHandler ):
         path = os.path.join('templates/', template_file_name)
         
         app_path = self.get_app_path()
-
-        if app_path != None:
+        
+        if template_path != None:
+            logging.info('got template_path: %s' % template_path)
+            path = os.path.join(template_path, path)
+        elif app_path != None:
             path = os.path.join(app_path, path)
 
         logging.info("Rendering %s" % path )
