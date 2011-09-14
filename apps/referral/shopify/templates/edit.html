@@ -54,15 +54,15 @@
         {% if error %} <p class="error"> {{error}} </p> {% endif %}
         <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
             <div>
-                <label class="default_label" for="share_text">Default Share Text</label>
-                <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter a default message that your customers can share with their friends.</p>
+                <label class="default_label" for="share_text">Default Message</label>
+                <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter short message that your customers can customize and share with their friends.</p>
                 <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
                 <br />
                 <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
                 <span class="defaultValue hidden" id="share_text_span">I love {{app.product_name}} because ...! You should check them out at {{app.target_url}}!</span>
             </div>
 
-            <input class="call_to_action big submit" id="submit" type="submit" value="Finalize" title="Finalize" />
+            <input class="call_to_action big submit" id="submit" type="submit" value="Finish" title="Finish" />
             
             <input type="hidden" name="target_url"   value="{{app.target_url}}" />
             <input type="hidden" name="product_name" value="{{app.product_name}}" />
@@ -128,9 +128,8 @@
         <script>
             // Guiders.js code
             guiders.createGuider({
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
-              description: "<p> Our App has already been installed onto your store's checkout pages. </p> <p> When your customers complete a purchase, they'll be prompted to refer their friends for a <em>gift</em>. </p> <p>We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders! </p><p><br /><em>Think carefully about the gift you include.  The better the gift, the better the impression of your store and the more your customers will talk about your store on their social networks!</em></p> <br />",
+              buttons: [{name: "Next"}],
+              description: "<p> Our App has already been installed onto your store's checkout pages. </p> <p> When your customers complete a purchase, they'll be prompted to refer their friends for a <em>gift</em>. </p> <p>We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders!  </p><p>As for the gift itself, start thinking of the perfect gift for your buyers! Should it be a limited edition item or overstock from last season? <em>Pick something you know your buyers will love! </em> </p> <br />",
               id: "first",
               next: "second",
               overlay: true,
@@ -141,9 +140,8 @@
         
             guiders.createGuider({
               attachTo: "#share_text",
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
-              description: "Enter a default message that your customers can share onto their social networks.",
+              buttons: [{name: "Next"}],
+              description: "Start by entering a quick message that your customers can customize and share onto their social networks. <br />",
               id: "second",
               next: "third",
               width: 300,
@@ -153,8 +151,7 @@
          
             guiders.createGuider({
               attachTo: "#share_iframe_container",
-              buttons: [{name: "Close"},
-                        {name: "Next"}],
+              buttons: [{name: "Next"}],
               description: "When your customers checkout, here is what they'll see!",
               id: "third",
               next: "fourth",
