@@ -190,7 +190,7 @@ class DynamicLoader(webapp.RequestHandler):
     def get(self, input_path):
         logging.info('Token %s' % self.request.get('order_token'))
         template_values = {}
-        rq_vars = get_request_variables(['app_id', 'order_token', 'demo'], self)
+        rq_vars = get_request_variables(['store_id', 'order_token', 'demo'], self)
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
@@ -201,11 +201,11 @@ class DynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        app = get_shopify_app_by_id( rq_vars['app_id'] )
-        
+        client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
+
         # If they give a bogus app id, show the landing page app!
         logging.info(app)
-        if app == None:
+        if client == None:
             template_values = {
                 'NAME' : NAME,
                 
@@ -220,7 +220,9 @@ class DynamicLoader(webapp.RequestHandler):
                 'user_email' : user_email
             }
         else:
-            # Make a new Link
+            app = ReferralShopify.all().filter('client =', client).get()
+
+            # Make a Onew Link
             link = create_link(app.target_url, app, origin_domain, user)
             logging.info("link created is %s" % link.willt_url_code)
 
