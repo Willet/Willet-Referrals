@@ -16,7 +16,7 @@ if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_lo
     window.iframe_loaded = "teh iframe haz been loaded";
     // Make the referral iframe
     var surround    = document.createElement('div');
-    surround.setAttribute('stype', 'width: 413px;padding: 0 15px; background: url(\'..\/images\/checkout\/checkout-bg-slim.gif\') bottom left repeat-y;')
+    surround.setAttribute('style', 'width: 413px;padding: 0 15px; background: url(\'https:\/\/cdn.shopify.com\/s\/images\/checkout\/checkout-bg-slim.gif\') bottom left repeat-y;')
     var iframe      = document.createElement( 'iframe' );
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
