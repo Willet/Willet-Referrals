@@ -33,8 +33,8 @@ class ShowEditPage( URIHandler ):
         app_id       = self.request.get( 'id' )
         error        = self.request.get( 'error' )
         error_msg    = self.request.get( 'error_msg')
-        product_name   = self.request.get( 'product_name' )
-        target_url    = self.request.get( 'target_url' )
+        product_name = self.request.get( 'product_name' )
+        target_url   = self.request.get( 'target_url' )
         share_text   = self.request.get( 'share_text' )
         
         # Request varZ from Shopify
@@ -49,14 +49,16 @@ class ShowEditPage( URIHandler ):
         # Check the Shopify stuff if they gave it to us.
         # If it fails, let's just say they aren't coming from Shopify.
         # If we don't have this info, we could be redirecting on an error
-        if shopify_sig == '' and shopify_url != '':
+        logging.info("CHECKING SHOPIFY")
+        if shopify_sig != '' and shopify_url != '':
             # Verify Shopify varZ
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
             d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
             
             if shopify_sig == d: # ie. if this is valid from shopify
-                              
+                logging.info("BARBARBABRBARBABRABRBABRA")
+
                 product_name = shopify_url.split( '.' )[0].capitalize()
                 
                 # Ensure the 'http' is in the URL
@@ -66,6 +68,7 @@ class ShowEditPage( URIHandler ):
                 # Fetch the referral app by url
                 app = get_referral_app_by_url( shopify_url )
                 if app is None:
+                    logging.info("NO APP")
                     template_values['show_guiders'] = True
                     template_values['app'] = {
                         'product_name' : product_name,
@@ -86,24 +89,24 @@ class ShowEditPage( URIHandler ):
         # Fake a app to put data in if there is an error
         if error == '1':
             template_values['error'] = 'Invalid Shopify store url.'
-            template_values['app'] = { 'product_name'   : product_name,
-                                        'target_url'   : target_url,
+            template_values['app'] = { 'product_name' : product_name,
+                                        'target_url'  : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token,
                                         'uuid': ''
                                       }
         elif error == '2':
             template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['app'] = { 'product_name'   : product_name,
-                                        'target_url'   : target_url,
+            template_values['app'] = { 'product_name' : product_name,
+                                        'target_url'  : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token,
                                         'uuid': ''
                                       }
         elif error == '3':
             template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['app'] = { 'product_name'   : product_name,
-                                        'target_url'   : target_url,
+            template_values['app'] = { 'product_name' : product_name,
+                                        'target_url'  : target_url,
                                         'share_text'  : share_text, 
                                         'store_token' : store_token,
                                         'uuid': ''
@@ -118,10 +121,14 @@ class ShowEditPage( URIHandler ):
                 self.redirect( '/r/edit' )
                 return
             
-            template_values['app'] = app
+            template_values['app']       = app
+            template_values['analytics'] = True if app.cached_clicks_count != 0 else False
+
+        else:
+            self.redirect( '/r/edit' )
+            return
 
         template_values['BASE_URL']  = URL
-        template_values['analytics'] = True if app and app.cached_clicks_count != 0 else False
 
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
@@ -275,14 +282,15 @@ class DynamicLoader(webapp.RequestHandler):
         if 'referral' in input_path:
             path = 'referral_plugin.html'
 
-            # TODO: Pull this out of here!!
-            if referrer_link != None:
+            # TODO (Barbara): Pull this out of here!!
+            if referrer_link:
                 add_referree_gift_to_shopify_order( order.order_id )
 
         elif 'bar' in input_path:
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
 
+        # Finally, render the plugin!
         path = os.path.join('apps/referral/templates/', path)
         self.response.out.write(template.render(path, template_values))
         return

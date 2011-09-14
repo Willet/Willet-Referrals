@@ -145,16 +145,6 @@ def create_shopify_store( url, token, request_handler ):
 
     # Make the Merchant
     merchant = get_or_create_user_by_email( email=data['email'], referrer=None, request_handler=request_handler )
-    logging.info("ASDASDSdASDSADASDASDAS")
-    merchant.update( full_name  = data['shop_owner'], 
-                     address1   = data['address1'],
-                     address2   = data['address2'] if hasattr( data, 'address2') else '',
-                     city       = data['city'],
-                     province   = data['province'],
-                     country    = data['country'],
-                     postal_code= data['zip'],
-                     phone      = data['phone'],
-                     email      = data['email'] )
 
     # Now, make the store
     uuid  = generate_uuid( 16 )
@@ -168,6 +158,18 @@ def create_shopify_store( url, token, request_handler ):
                            id       = str(data['id']),
                            merchant = merchant  )
     store.put()
+
+    # Update the merchant with data from Shopify
+    merchant.update( full_name  = data['shop_owner'], 
+                     address1   = data['address1'],
+                     address2   = data['address2'] if hasattr( data, 'address2') else '',
+                     city       = data['city'],
+                     province   = data['province'],
+                     country    = data['country'],
+                     postal_code= data['zip'],
+                     phone      = data['phone'],
+                     email      = data['email'], 
+                     client     = store )
     return store
 
 # Shopify API Calls  -----------------------------------------------------------

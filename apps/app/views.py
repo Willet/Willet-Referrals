@@ -64,9 +64,11 @@ class ShopifyRedirect( URIHandler ):
             self.db_client = client
 
         if app == 'referral':
+            logging.info("GOING TO EDIT")
             self.redirect( '/r/shopify/edit?%s' % self.request.query_string )
 
         else:
+            logging.info("GOING HOME %s" % app)
             self.redirect( '/' )
 
 # The "Dos" --------------------------------------------------------------------
