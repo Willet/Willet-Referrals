@@ -203,6 +203,7 @@ class DynamicLoader(webapp.RequestHandler):
         user_found = True if hasattr(user, 'fb_access_token') else False
         
         app = None
+        referrer_link = None
 
         client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
@@ -275,7 +276,7 @@ class DynamicLoader(webapp.RequestHandler):
             path = 'referral_plugin.html'
 
             # TODO: Pull this out of here!!
-            if referrer_link:
+            if referrer_link != None:
                 add_referree_gift_to_shopify_order( order.order_id )
 
         elif 'bar' in input_path:
