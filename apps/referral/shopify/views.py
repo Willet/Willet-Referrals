@@ -215,6 +215,7 @@ class DynamicLoader(webapp.RequestHandler):
                 'app_uuid' : "",
                 'target_url' : URL,
                 
+                'skip_to' : 'step2',
                 'user' : user,
                 'user_email' : user_email
             }
@@ -257,7 +258,6 @@ class DynamicLoader(webapp.RequestHandler):
         path = ''
 
         if 'referral' in input_path:
-            template_values['skip_to'] = 'step2';
             path = 'referral_plugin.html'
         elif 'bar' in input_path:
             logging.info("BAR: app: %s" % (app.uuid))
