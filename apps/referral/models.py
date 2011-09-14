@@ -22,7 +22,7 @@ class Referral( App ):
     emailed_at_10 = db.BooleanProperty( default = False )
    
     product_name  = db.StringProperty( indexed = True )
-    target_url    = db.LinkProperty  ( indexed = False )
+    target_url    = db.LinkProperty  ( indexed = True )
     
     share_text    = db.StringProperty( indexed = False )
     webhook_url   = db.LinkProperty( indexed = False, default = None, required = False )
