@@ -15,7 +15,7 @@ from time import time
 from apps.app.models import *
 from apps.referral.models import get_referral_app_by_url
 from apps.referral.shopify.models import get_shopify_app_by_id, create_referral_shopify_app
-from apps.link.models import Link, get_link_by_willt_code
+from apps.link.models import Link, get_link_by_willt_code, create_link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
 from apps.order.models import *
@@ -119,7 +119,8 @@ class ShowEditPage( URIHandler ):
             
             template_values['app'] = app
 
-        template_values['BASE_URL'] = URL
+        template_values['BASE_URL']  = URL
+        template_values['analytics'] = True if app and app.cached_clicks_count != 0 else False
 
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
