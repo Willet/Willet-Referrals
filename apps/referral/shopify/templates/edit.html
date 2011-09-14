@@ -138,34 +138,45 @@
               width: 600,
               title: "Juice your sales with {{NAME}}!"
             }) {% if show_guiders %} .show() {% endif %} ;
-        
+         
+            guiders.createGuider({
+              attachTo: "#share_iframe",
+              buttons: [{name: "Next"}],
+              description: "When your customers checkout, here is what they'll see!",
+              id: "second",
+              next: "third",
+              position: 1,
+              width: 300,
+              title: "Look!"
+            });
+
+            guiders.createGuider({
+              attachTo: "#share_iframe",
+              buttons: [{name: "Next"}],
+              description: "Your customers will use this plugin to refer their friends to your store! Click on 'Ok'. Then, choose how you want to share: email or social network! Try it out! We'll wait until you're done!",
+              id: "third",
+              next: "fourth",
+              position: 6,
+              width: 300,
+              title: "Try it out!"
+            });
+
             guiders.createGuider({
               attachTo: "#share_text",
               buttons: [{name: "Next"}],
               description: "Start by entering a quick message that your customers can customize and share onto their social networks. <br />",
-              id: "second",
-              next: "third",
+              id: "fourth",
+              next: "fifth",
               width: 300,
               position: 3,
-              title: "What do you want people to know about {{app.product_name}}?"
-            });
-         
-            guiders.createGuider({
-              attachTo: "#share_iframe_container",
-              buttons: [{name: "Next"}],
-              description: "When your customers checkout, here is what they'll see!",
-              id: "third",
-              next: "fourth",
-              position: 1,
-              width: 300,
-              title: "Look!"
+              title: "Now, what do you want people to know about {{app.product_name}}?"
             });
          
             guiders.createGuider({
               attachTo: "#submit",
               buttons: [{name: "Close"}],
               description: "When you've crafted the perfect message, click here and you're all done!",
-              id: "fourth",
+              id: "fifth",
               next: "finally",
               position: 3,
               width: 300,
