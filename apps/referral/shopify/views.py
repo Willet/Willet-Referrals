@@ -14,6 +14,7 @@ from time import time
 
 from apps.app.models import *
 from apps.referral.models import get_referral_app_by_url
+from apps.referral.shopify.api_wrapper import add_referree_gift_to_shopify_order
 from apps.referral.shopify.models import get_shopify_app_by_id, create_referral_shopify_app
 from apps.link.models import Link, get_link_by_willt_code, create_link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
@@ -272,6 +273,11 @@ class DynamicLoader(webapp.RequestHandler):
         path = ''
         if 'referral' in input_path:
             path = 'referral_plugin.html'
+
+            # TODO: Pull this out of here!!
+            if referrer_link:
+                add_referree_gift_to_shopify_order( order.order_id )
+
         elif 'bar' in input_path:
             self.response.headers['Content-Type'] = 'javascript'
             path = 'referral_top_bar.js'
