@@ -127,26 +127,27 @@ def get_shopify_client_by_url( store_url ):
     store = ClientShopify.all().filter( 'store_url =', store_url ).get()
     return store
 
-def get_or_create_shopify_store( store_url, store_token='' ):
+def get_or_create_shopify_store( store_url, store_token='', request_handler=None ):
     store = get_shopify_client_by_url( store_url )
 
     if store == None:
-        store = create_shopify_store( store_url, store_token )
+        store = create_shopify_store( store_url, store_token, request_handler )
 
     return store
 
 # Constructor ------------------------------------------------------------------
-def create_shopify_store( url, token ):
+def create_shopify_store( url, token, request_handler ):
     """ Create a Shopify Store as a Client"""
 
     # Query the Shopify API to learn more about this store
     data = get_store_info( url, token )
 
     # Make the Merchant
-    merchant = get_or_create_user_by_email( data['email'] )
+    merchant = get_or_create_user_by_email( email=data['email'], referrer=None, request_handler=request_handler )
+    logging.info("ASDASDSdASDSADASDASDAS")
     merchant.update( full_name  = data['shop_owner'], 
                      address1   = data['address1'],
-                     address2   = data['address2'],
+                     address2   = data['address2'] if hasattr( data, 'address2') else '',
                      city       = data['city'],
                      province   = data['province'],
                      country    = data['country'],
@@ -163,7 +164,7 @@ def create_shopify_store( url, token ):
                            name     = data['name'],
                            url      = url,
                            token    = token,
-                           id       = data['id'],
+                           id       = str(data['id']),
                            merchant = merchant  )
     store.put()
     return store
@@ -206,9 +207,9 @@ def get_store_info( store_url, store_token ):
 def get_product_imgs( store_url, store_token ):
     """ Fetch images for all the products in this store """
 
-    url      = '%s/admin/products.json' % ( self.url )
+    url      = '%s/admin/products.json' % ( store_url )
     username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + self.token).hexdigest()
+    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
