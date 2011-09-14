@@ -11,8 +11,12 @@ var l           = url.length;
 var order_token = url[ l - 1 ]; // Last portion of URL
 var store_id    = url[ l - 2 ]; // Second last portion of URL
 
-if( container && url.indexOf( "checkout.shopify.com" ) != -1 ) {
+
+if (container && url.indexOf( "checkout.shopify.com" ) != -1 && window.iframe_loaded == "undefined") {
+    window.iframe_loaded = "teh iframe haz been loaded";
     // Make the referral iframe
+    var surround    = document.createElement('div');
+    surround.setAttribute('stype', 'width: 413px;padding: 0 15px; background: url("../images/checkout/checkout-bg-slim.gif") bottom left repeat-y;')
     var iframe      = document.createElement( 'iframe' );
     iframe.setAttribute( 'allowtransparency', 'true' );
     iframe.setAttribute( 'frameborder', '0' );
@@ -22,5 +26,6 @@ if( container && url.indexOf( "checkout.shopify.com" ) != -1 ) {
 
     // Add the div to the page
     // > inserts it between the header and main content divs
-    container.insertBefore(iframe, main);
+    container.insertBefore(surround, main);
+    surround.insert(iframe);
 }
