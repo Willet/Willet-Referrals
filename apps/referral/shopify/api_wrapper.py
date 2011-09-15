@@ -25,7 +25,7 @@ from util.gaesessions import get_current_session
 def add_referree_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
     order = OrderShopify.all().filter( 'order_id = ', order_id ).get()
-    if order.user != None:
+    if hasattr(order, 'user'):
         name = order.user.get_full_name()
     else:
         name = 'an unknown user'
@@ -38,7 +38,7 @@ def add_referree_gift_to_shopify_order( order_id ):
 def add_referrer_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
     order = OrderShopify.all().filter( 'order_id = ', order_id ).get()
-    if order.user != None:
+    if hasattr(order, 'user'):
         name = order.user.get_full_name()
     else:
         name = 'an unknown user'
