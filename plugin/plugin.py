@@ -175,19 +175,20 @@ class TwitterOAuthHandler(webapp.RequestHandler):
             # tweet and update user model from twitter
             tweet_id, res = user.tweet(rq_vars['m'])
 
-            # If we are on a shopify store, add a gift to the order
-            if link.app.__class__.__name__.lower() == 'referralshopify':
-                add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
-
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link.user = user
                 self.response.headers.add_header("Content-type", 'text/javascript')
                 if tweet_id is not None:
                     link.tweet_id = tweet_id
-                    link.app.increment_shares()
+                    link.app_.increment_shares()
                 link.save()
                 self.response.out.write(res)
+            
+            # If we are on a shopify store, add a gift to the order
+            if link.app_.__class__.__name__.lower() == 'referralshopify':
+                add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
+            
             else:
                 # TODO: come up with something to do when a link isn't found fo
                 #       a message that was /just/ tweeted
@@ -222,7 +223,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
 
             # If we are on a shopify store, add a gift to the order
-            if link.app.__class__.__name__.lower() == 'referralapp':
+            if link.app_.__class__.__name__.lower() == 'referralapp':
                 add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             link = get_link_by_willt_code(rq_vars['wcode'])
