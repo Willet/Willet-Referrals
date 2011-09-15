@@ -14,6 +14,8 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from base.datastore.util import transaction
+
 from apps.user.models import *
 from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import *
@@ -26,10 +28,8 @@ from util.urihandler import URIHandler
 class FetchFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
     def post(self):
-        rq_vars = get_request_variables(['fb_id'], self)
-        logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
-        def txn():
-            user = User.all().ancestor(None).filter('fb_identity =', rq_vars['fb_id']).get()
+        @transaction
+        def txn(user):
             if user:
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
                     ",gender,username,timezone,updated_time,verified,birthday"+\
@@ -37,14 +37,21 @@ class FetchFacebookData(webapp.RequestHandler):
                     ",website,work&access_token=" + getattr(user, 'facebook_access_token')
                 fb_response = json.loads(urllib.urlopen(url).read())
                 logging.info(fb_response)
-                target_data = ['first_name', 'last_name', 'gender', 'verified',
+                target_data = [
+                    'first_name', 'last_name', 'gender', 'verified',
                     'timezone', 'email'] 
                 collected_data = {}
                 for td in target_data:
                     if fb_response.has_key(td):
                         collected_data['fb_'+td] = fb_response[td]
                 user.update(**collected_data)
-        db.run_in_transaction(txn)
+            else:
+                pass
+            return user
+        rq_vars = get_request_variables(['fb_id'], self)
+        logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
+        user = User.all().ancestor(None).filter('fb_identity =', rq_vars['fb_id']).get()
+        result_user = txn(user)
         logging.info("done updating")
 
             
