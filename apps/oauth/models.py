@@ -19,7 +19,7 @@ from google.appengine.api.urlfetch import fetch as urlfetch, GET, POST
 from google.appengine.ext import db
 from google.appengine.ext.webapp import RequestHandler, WSGIApplication
 
-from apps.user.models import *
+from apps.user.models import get_or_create_user_by_twitter, get_or_create_user_by_linkedin
 from apps.link.models import get_link_by_willt_code
 
 from util.consts import *
