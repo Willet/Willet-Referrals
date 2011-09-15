@@ -14,8 +14,6 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from base.datastore.util import transaction
-
 from apps.user.models import *
 from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import *
@@ -28,7 +26,6 @@ from util.urihandler import URIHandler
 class FetchFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
     def post(self):
-        @transaction
         def txn(user):
             if user:
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
@@ -51,7 +48,7 @@ class FetchFacebookData(webapp.RequestHandler):
         rq_vars = get_request_variables(['fb_id'], self)
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
         user = User.all().ancestor(None).filter('fb_identity =', rq_vars['fb_id']).get()
-        result_user = txn(user)
+        result_user = db.run_in_transaction(txn, user)
         logging.info("done updating")
 
             
