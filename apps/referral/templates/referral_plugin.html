@@ -41,7 +41,7 @@
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
                 shareArea = document.getElementById('share-area'),
-                userFound = {% if user_founder %}{{ user_found }}{% else %}false{% endif %};
+                userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
                 shareText = document.getElementById('share-text'),
                 charsLeft = document.getElementById('chars-left');
 
@@ -378,6 +378,7 @@
                         step2.style.display = "block";
 
                     } else if ( current_step == "step2" ) {
+                        /*
                         var step2 = document.getElementById( 'step1');
                         var step3 = document.getElementById( 'step3');
                         var tp    = document.getElementById( 'top_image' );
@@ -386,6 +387,7 @@
                         step2.style.display = "none";
                         step3.style.display = "block";
                         image.src = tp.src;
+                        */
                     }
                 };
 
@@ -478,7 +480,7 @@
         </div>
             
         <div id="step3" class="span-9 last hidden" class='step'>
-            <h2>Your gift will arrive with your order</h2>
+            <h2>Your gift will arrive with your order!</h2>
             <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
             
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
