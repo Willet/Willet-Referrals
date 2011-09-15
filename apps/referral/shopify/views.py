@@ -214,6 +214,8 @@ class DynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
+        app = None
+        client = None
         referrer_link = None
 
         # try getting the app if we can
@@ -221,10 +223,13 @@ class DynamicLoader(webapp.RequestHandler):
         if app_id != None:
             app = App.all().filter('uuid =', app_id).get()
             #get the client too!
-            client = app.client 
+            if app != None:
+                client = app.client 
         else:
             app = None
             # cant get the app, so get the client first
+        
+        if client == None:
             client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
         
