@@ -330,7 +330,27 @@ class FacebookShare(webapp.RequestHandler):
                 token=rq_vars['fb_token'],
                 request_handler=self
             )
-        
+        elif hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
+            # if the user already exists and has both
+            # a fb access token and id, let's check to make sure
+            # it is the same info as we just got
+            if user.fb_access_token != rq_vars['fb_token'] or\
+                    user.fb_identity != rq_vars['fb_id']:
+                logging.error('existing users facebook information did not\
+                    match new data. overwriting old data!')
+                logging.error('user: %s' % user)
+                user.update(
+                    fb_identity=rq_vars['fb_id'],
+                    fb_access_token=rq_vars['fb_token']
+                )
+        else:
+            # got an existing user both doesn't have 
+            # facebook info
+            user.update(
+                fb_identity = rq_vars['fb_id'],
+                fb_access_token = rq_vars['fb_token']
+            )
+
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
             logging.info('got user and have facebook jazz')
 

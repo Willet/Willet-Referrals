@@ -972,10 +972,18 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', 
             taskqueue.add(url = '/fetchFB', params = {'fb_id': user.fb_identity})
     
     # Update the user
-    user.update( fb_identity=fb_id, fb_first_name=first_name, 
-                 fb_last_name=last_name, fb_name=name, fb_email=email,
-                 referrer=referrer, fb_gender=gender, fb_verified=verified,
-                 fb_access=token, fb_friends=friends )
+    user.update(
+        fb_identity=fb_id,
+        fb_first_name=first_name, 
+        fb_last_name=last_name,
+        fb_name=name,
+        fb_email=email,
+        referrer=referrer,
+        fb_gender=gender,
+        fb_verified=verified,
+        fb_access_token=token,
+        fb_friends=friends
+    )
 
     # Set a cookie to identify the user in the future
     if request_handler is not None:
