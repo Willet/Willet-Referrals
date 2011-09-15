@@ -42,7 +42,7 @@ def twitter_callback(client, message, willt_code):
     link = get_link_by_willt_code(willt_code)
     if link:
         link.user = user
-        link.app.increment_shares()
+        link.app_.increment_shares()
         if tweet_id is not None:
             link.tweet_id = tweet_id
         link.save()
@@ -70,7 +70,7 @@ def linkedin_callback(client, message, willt_code):
     link = get_link_by_willt_code(willt_code)
     if link:
         link.user = user
-        link.app.increment_shares()
+        link.app_.increment_shares()
         if linkedin_share_url is not None:
             link.linkedin_share_url = linkedin_share_url
         link.save()
