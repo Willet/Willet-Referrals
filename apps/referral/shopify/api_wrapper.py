@@ -25,14 +25,26 @@ from util.gaesessions import get_current_session
 def add_referree_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
     order = OrderShopify.all().filter( 'order_id = ', order_id ).get()
-    note  = '[Willet] %s was referred to your store by a friend. Please add a gift into their purchase as a reward for being referred. Thanks!' % order.user.get_full_name()
+    if order.user != None:
+        name = order.user.get_full_name()
+    else:
+        name = 'an unknown user'
+    note  = '[Willet] %s was referred to your store by a friend.\
+            Please add a gift into their purchase as a reward for\
+            being referred. Thanks!' % name 
 
     add_note_to_shopify_order( order, note )
 
 def add_referrer_gift_to_shopify_order( order_id ):
     logging.info("Looking for order %s" % order_id )
     order = OrderShopify.all().filter( 'order_id = ', order_id ).get()
-    note  = '[Willet] %s referred their friends to your store. Please add a gift into their purchase as a reward for spreading their love for your store. Thanks!' % order.user.get_full_name()
+    if order.user != None:
+        name = order.user.get_full_name()
+    else:
+        name = 'an unknown user'
+    note  = '[Willet] %s referred their friends to your store.\
+            Please add a gift into their purchase as a reward for\
+            spreading their love for your store. Thanks!' % name 
 
     add_note_to_shopify_order( order, note )
 
