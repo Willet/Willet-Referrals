@@ -214,14 +214,23 @@ class DynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         
-        app = None
         referrer_link = None
 
-        client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
+        # try getting the app if we can
+        app_id = self.request.get('app_id')
+        if app_id != None:
+            app = App.all().filter('uuid =', app_id).get()
+            #get the client too!
+            client = app.client 
+        else:
+            app = None
+            # cant get the app, so get the client first
+            client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
 
+        
         # If they give a bogus app id, show the landing page app!
         logging.info(client)
-        if client == None:
+        if client == None and app == None:
             template_values = {
                 'NAME' : NAME,
                 'style': style,
@@ -237,7 +246,8 @@ class DynamicLoader(webapp.RequestHandler):
                 'user_email' : user_email
             }
         else:
-            app = ReferralShopify.all().filter('client =', client).get()
+            if app == None:
+                app = ReferralShopify.all().filter('client =', client).get()
 
             # Make a Onew Link
             link = create_link(app.target_url, app, origin_domain, user)
