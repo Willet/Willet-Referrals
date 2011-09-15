@@ -17,7 +17,7 @@ from apps.app.models import *
 from apps.order.models import *
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
-from apps.referral.shopify.models import ShopifyItem, get_shopify_app_by_id
+from apps.referral.shopify.models import Product, get_shopify_app_by_id
 
 from util.emails       import Email
 from util.helpers import *
@@ -60,7 +60,7 @@ class DoProcessOrder( URIHandler ):
             # Grab the purchased items and save some information about them.
             elif k == 'line_items':
                 for j in v:
-                    i = ShopifyItem( name=str(j['name']), price=str(j['price']), product_id=str(j['product_id']))
+                    i = Product( name=str(j['name']), price=str(j['price']), product_id=str(j['product_id']))
                     items.append( i )
 
             # Store User/ Customer data
