@@ -341,10 +341,10 @@ class FacebookShare(webapp.RequestHandler):
                 logging.error('existing users facebook information did not\
                     match new data. overwriting old data!')
                 logging.error('user: %s' % user)
-                user.update(
-                    fb_identity=rq_vars['fb_id'],
-                    fb_access_token=rq_vars['fb_token']
-                )
+                #user.update(
+                #    fb_identity=rq_vars['fb_id'],
+                #    fb_access_token=rq_vars['fb_token']
+                #)
         else:
             # got an existing user both doesn't have 
             # facebook info

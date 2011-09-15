@@ -721,8 +721,8 @@ class User( db.Expando ):
                                          method=urlfetch.POST,
                                          deadline=7)
         except urlfetch.DownloadError, e: 
-            logging.info(e)
-            return
+            logging.error('error sending fb request: %s' % e)
+            return None, 'fail'
             # No response from facebook
             
         if fb_response is not None:
