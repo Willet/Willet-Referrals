@@ -181,12 +181,12 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 self.response.headers.add_header("Content-type", 'text/javascript')
                 if tweet_id is not None:
                     link.tweet_id = tweet_id
-                    link.app.increment_shares()
+                    link.app_.increment_shares()
                 link.save()
                 self.response.out.write(res)
             
             # If we are on a shopify store, add a gift to the order
-            if link.app.__class__.__name__.lower() == 'referralshopify':
+            if link.app_.__class__.__name__.lower() == 'referralshopify':
                 add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
             
             else:
@@ -223,7 +223,7 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
 
             # If we are on a shopify store, add a gift to the order
-            if link.app.__class__.__name__.lower() == 'referralapp':
+            if link.app_.__class__.__name__.lower() == 'referralapp':
                 add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
 
             link = get_link_by_willt_code(rq_vars['wcode'])
@@ -359,7 +359,7 @@ class FacebookShare(webapp.RequestHandler):
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
-                link.app.increment_shares()
+                link.app_.increment_shares()
                 # add the user to the link now as we may not get a respone
                 link.add_user(user)
 
@@ -367,7 +367,7 @@ class FacebookShare(webapp.RequestHandler):
                 create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
                 # If we are on a shopify store, add a gift to the order
-                if link.app.__class__.__name__.lower() == 'referralshopify':
+                if link.app_.__class__.__name__.lower() == 'referralshopify':
                     add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
             else:
                 logging.error('could not get link')
