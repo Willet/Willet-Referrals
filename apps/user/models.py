@@ -589,31 +589,28 @@ class User( db.Expando ):
         
         # prepare the signed message to be sent to twitter
         twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
-        params = { "oauth_consumer_key": TWITTER_KEY,
-            "oauth_nonce": generate_uuid(16),
-            "oauth_signature_method": "HMAC-SHA1",
-            "oauth_timestamp": str(int(time())),
-            "oauth_token": self.twitter_access_token.oauth_token,
-            "oauth_version": "1.0"
-        }
-        status = {"status": message.encode("UTF-8")}
-        params.update(status)
-        key = "&".join([TWITTER_SECRET, self.twitter_access_token.oauth_token_secret])
-        msg = "&".join(["POST", urllib.quote(twitter_post_url, ""),
-                        urllib.quote("&".join([k+"="+urllib.quote(params[k],"-._~")\
-                            for k in sorted(params)]),
-                                     "-._~")])
-        signature = hmac(key, msg, sha1).digest().encode("base64").strip()
-        params["oauth_signature"] = signature
-        req = urllib2.Request(twitter_post_url,
-                              headers={"Authorization":"OAuth",
-                                       "Content-type":"application/x-www-form-urlencoded"})
-        req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
-        logging.info("Tweeting at %s" % twitter_post_url )
-        # make POST to twitter and parse response
-        res = simplejson.loads(urllib2.urlopen(req).read())
-        # TODO: handle failure response from twitter more gracefully
+
+        token = oauth.Token(
+            key=self.twitter_access_token.oauth_token,
+            secret=self.twitter_access_token.oauth_token_secret
+        )
+
+        consumer = oauth.Consumer(TWITTER_KEY, TWITTER_SECRET)
+
+        client = oauth.Client(consumer, token)
         
+        #logging.info("Tweeting at %s" % twitter_post_url )
+        
+        response, content = client.request(
+            twitter_post_url, 
+            "POST", 
+            body= urllib.urlencode( {"status": message.encode("UTF-8")} ),
+            headers={ "Content-type":"application/x-www-form-urlencoded" }
+        )
+        #logging.info("%r %r" % ( response, content ))
+
+        res = simplejson.loads( content )
+
         # update user with info from twitter
         if res.has_key('id_str'):
             self.update_twitter_info(twitter_handle=res['user']['screen_name'],
