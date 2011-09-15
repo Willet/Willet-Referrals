@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Check This Out!{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:110%">
+                    <p> Hi, </p>
+                    <p> You've been invited by {{from_addr}} to join them on
+                    <a href="{{url}}">{{campaign.product_name}}</a>!</p>
+
+                    <p> Here's why: </p>
+
+                    <p>{{msg}}</p>
+                    
+                    <p>I hear {{campaign.product_name}} is pretty cool! Go join them! </p>
+				</div>
+			</td>
+        </tr>
+    </table>
+{% endblock %}

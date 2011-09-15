@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'testimonial',
     'user',
     'user_analytics',
+    'email',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]

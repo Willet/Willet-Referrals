@@ -291,18 +291,18 @@ class SendEmailInvites( webapp.RequestHandler ):
             link.put()
             
             for i in range(0, to_addrs.count(',')):
-                link.app.increment_shares()
+                link.app_.increment_shares()
                 
         # Save this Testimonial
         create_testimonial(user=user, message=msg, link=link)
 
         # If we are on a shopify store, add a gift to the order
-        if link.app.__class__.__name__.lower() == 'referralshopify':
+        if link.app_.__class__.__name__.lower() == 'referralshopify':
             add_referrer_gift_to_shopify_order( order_id )
 
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
-            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app)
+            Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app_)
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
