@@ -59,6 +59,7 @@ textarea {
     margin: 0px 0px 0px 0px;
     max-height: 75px;
     max-width: 300px;
+    font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 a {
     display: -moz-inline-stack;
