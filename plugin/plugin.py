@@ -207,7 +207,6 @@ class TwitterOAuthHandler(webapp.RequestHandler):
     
 
 class LinkedInOAuthHandler(webapp.RequestHandler):
-    
     def get(self, action=''):
         """handles oath requests for linkedin"""
         
@@ -315,16 +314,25 @@ class FacebookShare(webapp.RequestHandler):
     
     def post(self):
         logging.info("We are posting to facebook")
-        rq_vars = get_request_variables(['msg', 'wcode', 'fb_token', 'fb_id', 'order_id']
-                                        , self)
+        rq_vars = get_request_variables([
+            'msg',
+            'wcode',
+            'fb_token',
+            'fb_id',
+            'order_id'], 
+            self
+        )
         user = get_user_by_cookie(self)
         if user is None:
             logging.info("creating a new user")
-            user = get_or_create_user_by_facebook(rq_vars['fb_id'],
-                                                  token=rq_vars['fb_token'],
-                                                  request_handler=self)
+            user = get_or_create_user_by_facebook(
+                rq_vars['fb_id'],
+                token=rq_vars['fb_token'],
+                request_handler=self
+            )
         
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
+            logging.info('got user and have facebook jazz')
 
             facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
             link = get_link_by_willt_code(rq_vars['wcode'])
@@ -340,10 +348,12 @@ class FacebookShare(webapp.RequestHandler):
                 # If we are on a shopify store, add a gift to the order
                 if link.app.__class__.__name__.lower() == 'referralshopify':
                     add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
-
+            else:
+                logging.error('could not get link')
+            logging.info('sending response %s' % plugin_response)
             self.response.out.write(plugin_response)
-
         else: # no user found
+            logging.error('user facebook info not found')
             self.response.out.write('notfound')
 
 
