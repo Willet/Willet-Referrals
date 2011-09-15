@@ -304,7 +304,7 @@ class DynamicLoader(webapp.RequestHandler):
             path = 'referral_plugin.html'
 
             # TODO (Barbara): Pull this out of here!!
-            if referrer_link:
+            if referrer_link and order:
                 add_referree_gift_to_shopify_order( order.order_id )
 
         elif 'bar' in input_path:
