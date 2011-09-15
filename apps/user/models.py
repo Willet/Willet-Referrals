@@ -609,6 +609,7 @@ class User( db.Expando ):
                               headers={"Authorization":"OAuth",
                                        "Content-type":"application/x-www-form-urlencoded"})
         req.add_data("&".join([k+"="+urllib.quote(params[k], "-._~") for k in params]))
+        logging.info("Tweeting at %s" % twitter_post_url )
         # make POST to twitter and parse response
         res = simplejson.loads(urllib2.urlopen(req).read())
         # TODO: handle failure response from twitter more gracefully
@@ -821,7 +822,7 @@ def create_user_by_twitter(t_handle, referrer, ip=''):
 def create_user_by_linkedin(linkedin_id, referrer, ip='', would_be=False):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
-    OAuthToken = get_oauth_by_linkedin(linkedin_id)
+    OAuthToken = apps.oauth.models.get_oauth_by_linkedin(linkedin_id)
     
     user = User(
         key_name = linkedin_id,
@@ -892,12 +893,6 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
-    # Update the info
-    if user:
-        user.update(twitter_handle=t_handle, twitter_name=name, 
-                    twitter_follower_count=followers, 
-                    twitter_profile_pic=profile_pic, referrer=referrer,
-                    twitter_access_token=token)
     
     # Then, search by Twitter handle
     if user is None:
@@ -908,6 +903,12 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
         logging.info("Creating user: " + t_handle)
         user = create_user_by_twitter(t_handle, referrer)
     
+    # Update the info
+    user.update(twitter_handle=t_handle, twitter_name=name, 
+                twitter_follower_count=followers, 
+                twitter_profile_pic=profile_pic, referrer=referrer,
+                twitter_access_token=token)
+
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)
     
@@ -923,15 +924,7 @@ def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None
         user = get_user_by_cookie(request_handler)
     else:
         user = None
-    
-    # Update the info
-    if user:
-        user.update(
-            linkedin_id = linkedin_id,
-            referrer = referrer,
-            linkedin_access_token = token
-        )
-    
+       
     # Then, search by linkedin handle
     if user is None:
         user = get_user_by_linkedin(linkedin_id)
@@ -941,13 +934,16 @@ def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None
         logging.info("Creating user with linkedin_id: %s" % linkedin_id)
         user = create_user_by_linkedin(linkedin_id, referrer, would_be=would_be)
     
-    # Set a cookie to identify the user in the future
-    if request_handler != None:
-        set_user_cookie(request_handler, user.uuid)
-    
+    # Update the info
+    user.update(linkedin_id=linkedin_id, referrer=referrer, linkedin_access_token=token)
+
     # set the linkedin extra fields
     user.update_linkedin_info(extra)
     
+    # Set a cookie to identify the user in the future
+    if request_handler != None:
+        set_user_cookie(request_handler, user.uuid)
+     
     logging.info('get_or_create_user: %s' % linkedin_id)
     return user
 
@@ -958,17 +954,10 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', 
     # First try to find them by cookie if request handle present
     user = get_user_by_cookie(request_handler) if request_handler is not None\
         else None
-    if user:
-        user.update( fb_identity=fb_id, fb_first_name=first_name, 
-                     fb_last_name=last_name, fb_name=name, fb_email=email,
-                     referrer=referrer, fb_gender=gender, fb_verified=verified,
-                     fb_access=token, fb_friends=friends )
     
     # Try looking by FB identity
     if user is None:
         user = get_user_by_facebook(fb_id)
-        if email != '':    
-            create_email_model( self, email )
     
     # Otherwise, make a new one
     if user is None:
@@ -978,9 +967,14 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', 
         # check to see if this user was added by reading another user's social graph
         # if so, pull profile data
         if user.would_be:
-            taskqueue.add(url = '/fetchFB',
-                              params = {'fb_id': user.fb_identity})
+            taskqueue.add(url = '/fetchFB', params = {'fb_id': user.fb_identity})
     
+    # Update the user
+    user.update( fb_identity=fb_id, fb_first_name=first_name, 
+                 fb_last_name=last_name, fb_name=name, fb_email=email,
+                 referrer=referrer, fb_gender=gender, fb_verified=verified,
+                 fb_access=token, fb_friends=friends )
+
     # Set a cookie to identify the user in the future
     if request_handler is not None:
         set_user_cookie( request_handler, user.uuid )
@@ -993,8 +987,6 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
-    if user:
-        user.update( email=email, referrer=referrer )
     
     # Then find via email
     if user is None:
@@ -1004,6 +996,9 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     if user is None:
         logging.info("Creating user: " + email)
         user = create_user_by_email(email, referrer)
+    
+    # Update the user
+    user.update( email=email, referrer=referrer )
     
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
