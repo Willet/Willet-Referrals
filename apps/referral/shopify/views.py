@@ -254,7 +254,7 @@ class DynamicLoader(webapp.RequestHandler):
             if app == None:
                 app = ReferralShopify.all().filter('client =', client).get()
 
-            # Make a Onew Link
+            # Make a new Link
             link = create_link(app.target_url, app, origin_domain, user)
             logging.info("link created is %s" % link.willt_url_code)
 

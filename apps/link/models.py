@@ -28,7 +28,7 @@ class Link(Model):
     # our unique identifier code for this Link
     willt_url_code = db.StringProperty( indexed = True )
     # our client's app that this link is associated with
-    app = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+    app_           = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
 
     creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
@@ -37,11 +37,11 @@ class Link(Model):
     # the string our client supplied us to identify this user with
     supplied_user_id = db.StringProperty(required=False)
     # keep track of our retweets
-    retweets = db.ListProperty(str, required=True)
+    retweets         = db.ListProperty(str, required=True)
     # the location of the button that spawned this link
-    origin_domain = db.StringProperty(str, required=False)
+    origin_domain    = db.StringProperty(str, required=False)
     # facebook's id for the share
-    facebook_share_id = db.StringProperty()
+    facebook_share_id  = db.StringProperty()
     # linkedin's id for the share
     linkedin_share_url = db.StringProperty(required=False, default='', indexed=True)
 
@@ -111,13 +111,13 @@ def create_link(targetURL, app, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
 
     code = encode_base62(get_a_willt_code())
-    link = Link(key_name = code,
-                target_url = targetURL,
-                willt_url_code = code,
+    link = Link(key_name         = code,
+                target_url       = targetURL,
+                willt_url_code   = code,
                 supplied_user_id = usr,
-                app = app,
-                user = user,
-                origin_domain = domain)
+                app_             = app,
+                user             = user,
+                origin_domain    = domain)
     link.put()
     logging.info("Successful put of Link %s" % code)
     return link
@@ -148,7 +148,7 @@ def get_unchecked_links():
 
 def get_active_links_by_app( app ):
     """Return tweets we've confirmed on the Twitter graph"""
-    return Link.all().filter( 'app =', app).filter('tweet_id !=','')
+    return Link.all().filter( 'app_ =', app).filter('tweet_id !=','')
 
 class LinkCounter(db.Model):
     """Sharded counter for link click-throughs"""

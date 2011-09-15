@@ -269,10 +269,10 @@ class UpdateTwitterGraph(webapp.RequestHandler):
 
             #logging.info("Does link have a user? %s %r (should have a user here)" % (link.user != None, link.user))
 
-            #logging.info("Link has a app? %s %r" % (link.app != None, link.app))
-            #logging.info("App has %d shares before" % link.app.get_shares_count())
-            link.app.increment_shares()
-            #logging.info("App has %d shares after (Should be before + 1)" % link.app.get_shares_count())
+            #logging.info("Link has a app? %s %r" % (link.app_ != None, link.app_))
+            #logging.info("App has %d shares before" % link.app_.get_shares_count())
+            link.app_.increment_shares()
+            #logging.info("App has %d shares after (Should be before + 1)" % link.app_.get_shares_count())
         else:
             #logging.info("NO TWITTER HANDLE PROVIDED. EXCEPTION")
             raise Exception("No twitter handle provided")
