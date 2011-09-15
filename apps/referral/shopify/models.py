@@ -25,7 +25,6 @@ class ReferralShopify( Referral ):
         """ Initialize this model """
         super(ReferralShopify, self).__init__(*args, **kwargs)
 
-
 # Constructor ------------------------------------------------------------------
 def create_referral_shopify_app( client, share_text ):
 
