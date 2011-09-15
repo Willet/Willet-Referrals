@@ -47,7 +47,7 @@ class FetchFacebookData(webapp.RequestHandler):
             return user
         rq_vars = get_request_variables(['fb_id'], self)
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
-        user = User.all().ancestor(None).filter('fb_identity =', rq_vars['fb_id']).get()
+        user = User.all().filter('fb_identity =', rq_vars['fb_id']).get()
         result_user = db.run_in_transaction(txn, user)
         logging.info("done updating")
 
