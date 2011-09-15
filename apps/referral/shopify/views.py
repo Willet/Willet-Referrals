@@ -81,7 +81,7 @@ class ShowEditPage( URIHandler ):
             else:
                 template_values['app']     = app
                     
-            template_values['shop_owner'] = client.merchant.get_attr('full_name')
+            template_values['shop_owner'] = client.merchant.get_attr('full_name') if client else 'Awesome Bob'
 
             # The Shopify check failed. Redirecting to normal site. 
             # TODO(Barbara): This might need to change in the future.
