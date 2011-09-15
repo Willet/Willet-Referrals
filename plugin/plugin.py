@@ -358,7 +358,7 @@ class FacebookShare(webapp.RequestHandler):
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
-                link.app.increment_shares()
+                link.app_.increment_shares()
                 # add the user to the link now as we may not get a respone
                 link.add_user(user)
 
@@ -366,7 +366,7 @@ class FacebookShare(webapp.RequestHandler):
                 create_testimonial(user=user, message=rq_vars['msg'], link=link)
 
                 # If we are on a shopify store, add a gift to the order
-                if link.app.__class__.__name__.lower() == 'referralshopify':
+                if link.app_.__class__.__name__.lower() == 'referralshopify':
                     add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
             else:
                 logging.error('could not get link')

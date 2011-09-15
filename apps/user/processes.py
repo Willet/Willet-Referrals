@@ -29,7 +29,7 @@ class FetchFacebookData(webapp.RequestHandler):
         rq_vars = get_request_variables(['fb_id'], self)
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
         def txn():
-            user = get_user_by_facebook(rq_vars['fb_id'])
+            user = User.all().ancestor(None).filter('fb_identity =', rq_vars['fb_id']).get()
             if user:
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "?fields=id,name"+\
                     ",gender,username,timezone,updated_time,verified,birthday"+\
