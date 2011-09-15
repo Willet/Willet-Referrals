@@ -24,7 +24,7 @@ from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from apps.oauth.models         import * 
+import apps.oauth.models
 from apps.user_analytics.models import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
 
 from util.model         import Model
@@ -797,7 +797,7 @@ def get_user_by_email( email ):
 def create_user_by_twitter(t_handle, referrer, ip=''):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
-    OAuthToken = get_oauth_by_twitter(t_handle)
+    OAuthToken = apps.oauth.models.get_oauth_by_twitter(t_handle)
     
     user = User(key_name=t_handle,
                 uuid=generate_uuid(16),
