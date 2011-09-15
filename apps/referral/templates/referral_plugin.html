@@ -83,19 +83,16 @@
             
                     if( !emailPattern.test(from.value) ) {
                         from.value = "Please enter your email address.";
-                        alert('from' + from.value);
                         ret = false; 
                     }  
                 
                     if ( to.value == "" ) {
                         to.value = "Please enter your friends' email addresses!";
-                        alert('asd');
                         ret = false;
                     }
                 
                     if ( msg.val() == "" ) {
                         msg.val("Enter a message for your friends!");
-                        alert('msg');
                         ret = false;
                     }
                     return ret;
@@ -176,7 +173,6 @@
             
                     // Check the fields.
                     if ( !errorCheckEmails() ) {
-                        alert("FAILEING");
                         return false;
                     }
             
@@ -193,7 +189,6 @@
                             toggleThanks();
                         },
                         error: function(foo) {
-                            alert("ASD");
                         }
                     });// end ajax
             
