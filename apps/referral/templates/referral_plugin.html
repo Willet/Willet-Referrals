@@ -325,37 +325,36 @@
                     shareFrame.src = '';
                 };
         
-                function toggleDefaultValue ($this, onoff) {
+                toggleDefaultValue = function(el, onoff) {
                     if (onoff) {
-                        $this.css('color', '#777');
-                        $this.val($this.siblings('.defaultValue').attr('innerHTML'));
+                        var defaultvalue = el.siblings('.defaultValue').html();
+                        el.css('color', '#777').val(defaultvalue);
                     } else {
-                        $this.css('color', '#444');
-                        $this.val('');
+                        el.css('color', '#444').val('');
                     }
                 } // end function
             
                 // Controls default values of input & textarea elements
-                $('.defaultValue').siblings('input, textarea').each(
-                    function () { 
-                        var $this = $(this);
-                        if ($this.val() === '') {
-                            toggleDefaultValue($this, true); 
-                        }
-                    }
-                ).focus(
+                $('.defaultValue').siblings('input, textarea').focus(
                     function () {
-                        var $this = $(this),
-                            defaultValue = $this.siblings('.defaultValue').attr('innerHTML');
-                        if ($this.val() === defaultValue) {
-                            toggleDefaultValue($this, false);
+                        var el = $(this),
+                            defaultValue = el.siblings('.defaultValue').html();
+                        if (el.val() === defaultValue) {
+                            toggleDefaultValue(el, false);
                         }
                     }
                 ).blur(
                     function () { 
-                        var $this = $(this);
-                        if ($this.val() === '' ) {
-                            toggleDefaultValue($this, true);
+                        var el = $(this);
+                        if (el.val() === '' ) {
+                            toggleDefaultValue(el, true);
+                        }
+                    }
+                ).each(
+                    function () { 
+                        var el = $(this);
+                        if (el.val() === '') {
+                            toggleDefaultValue(el, true); 
                         }
                     }
                 );
