@@ -52,21 +52,24 @@ def add_referrer_gift_to_shopify_order( order_id ):
 ## Generics ------------------------------------------------------------------##
 ##----------------------------------------------------------------------------##
 def add_note_to_shopify_order( order, note ):
-    url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.client.store_token).hexdigest()
-    header   = {'content-type':'application/json'}
-    h        = httplib2.Http()
-    
-    h.add_credentials( username, password )
+    if order != None:
+        url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
+        username = SHOPIFY_API_KEY
+        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.client.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        h.add_credentials( username, password )
 
-    data = { 'order' : { 'id' : int(order.order_id), 'note' : note } }
-    payload = json.dumps( data )
+        data = { 'order' : { 'id' : int(order.order_id), 'note' : note } }
+        payload = json.dumps( data )
 
-    logging.info("PUTTING to %s %r " % ( url, payload) )
-    resp, content = h.request( url, "PUT", body=payload, headers=header )
-    
-    logging.info('%r %r' % (resp, content))
+        logging.info("PUTTING to %s %r " % ( url, payload) )
+        resp, content = h.request( url, "PUT", body=payload, headers=header )
+        
+        logging.info('%r %r' % (resp, content))
+    else:
+        logging.info('tried to add note but order is None')
 
 
 
