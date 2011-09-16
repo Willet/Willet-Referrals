@@ -6,15 +6,15 @@ indexes:
   - name: tweet_id
   - name: campaign
 
-- kind: Campaign
+- kind: App
   properties:
-   - name: client
-   - name: created
-     direction: desc
+  - name: client
+  - name: created
+    direction: desc
 
-- kind: CampaignAnalytics
+- kind: AppAnalytics
   properties:
-  - name: campaign_uuid
+  - name: app_uuid
   - name: scope
   - name: start_time
 
