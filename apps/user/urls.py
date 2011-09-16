@@ -4,8 +4,8 @@ from apps.user.views import *
 
 urlpatterns = [
     #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
-    (r'/campaign/get_user/(.*)/(.*)/', ShowProfilePage),
-    (r'/profile/(.*)/(.*)/', ShowProfilePage),
+    (r'/user/get/(.*)/', ShowProfileJSON),
+    (r'/user/(.*)/(.*)/', ShowProfilePage),
     
     # processes
     (r'/fetchFB', FetchFacebookData),

@@ -67,7 +67,7 @@ var showUserToast = function(obj) {
         html += '<strong>Created: </strong>' + user.created + '<br />';
         html += '<strong>KScore: </strong>' + user.kscore + '<br />';
         html += '<strong>Reach: </strong>' + user.reach + '</div>';
-        html += '<a href="/profile/'+campaign_id+'/'+user_id+'/" class="button">Profile</button>';
+        html += '<a href="/user/'+campaign_id+'/'+user_id+'/" class="button">Profile</button>';
         
         toast_div.html(html);
     } else {
@@ -132,7 +132,7 @@ $(document).ready(function() {
                 // the users data has not been cached yet
                 showUserToast({'from_json': false});
                 $.getJSON(
-                    '/campaign/get_user/' + user_id + '/',
+                    '/user/get/' + user_id + '/',
                     function(data) {
                         // callback for when we get the user details
                         if (data.success) {
