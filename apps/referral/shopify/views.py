@@ -287,10 +287,11 @@ class DynamicLoader(webapp.RequestHandler):
             # Determine if they were referred
             referrer_cookie = self.request.cookies.get(app.uuid, False)
             referrer_link   = get_link_by_willt_code( referrer_cookie )
-            
+            name = referrer_link.user.get_attr( 'full_name' )
+
             if referrer_link:
                 template_values['profile_pic']   = referrer_link.user.get_attr( 'pic' )
-                template_values['referrer_name'] = referrer_link.user.get_attr( 'full_name' )
+                template_values['referrer_name'] = name if name != '' else "your friend"
                 template_values['show_gift']     = True
         
         if self.request.url.startswith('http://localhost'):
