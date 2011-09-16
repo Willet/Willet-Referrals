@@ -35,8 +35,8 @@ class UserAnalytics(Model):
     # user this is for
     user = db.ReferenceProperty(db.Model, collection_name='users_analytics')
     
-    # the campaign for which these stats are being calcualted
-    campaign = db.ReferenceProperty(db.Model, collection_name='campaign_users_analytics')
+    # the app for which these stats are being calcualted
+    app = db.ReferenceProperty(db.Model, collection_name='app_users_analytics')
     
     # the 'scope' of this analytics
     # either 'day, week, month, year'
@@ -47,7 +47,7 @@ class UserAnalytics(Model):
         super(UserAnalytics, self).__init__(*args, **kwargs)
     
 
-class ServiceStats(Model):
+class UserAnalyticsServiceStats(Model):
     user_analytics = db.ReferenceProperty(UserAnalytics, collection_name='stats')
     
     # name of the service:
@@ -71,19 +71,19 @@ class ServiceStats(Model):
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(ServiceStats, self).__init__(*args, **kwargs)
+        super(UserAnalyticsServiceStats, self).__init__(*args, **kwargs)
 
-def get_or_create_ua(user, campaign, scope, period_start):
+def get_or_create_ua(user, app, scope, period_start):
     ua = UserAnalytics.all()\
             .filter('user =', user)\
-            .filter('campaign =', campaign)\
+            .filter('app =', app)\
             .filter('scope =', scope)\
             .filter('period_start =', period_start).get()
     
     if ua == None:
         ua = UserAnalytics(
             user = user,
-            campaign = campaign,
+            app = app,
             scope = scope,
             period_start = period_start
         )
@@ -92,11 +92,11 @@ def get_or_create_ua(user, campaign, scope, period_start):
 
 def get_or_create_ss(ua, service):
     """ attempts to get or create a ss"""
-    ss = ServiceStats.all()\
+    ss = UserAnalyticsServiceStats.all()\
             .filter('user_analytics =', ua)\
             .filter('service =', service).get()
     if ss == None:
-        ss = ServiceStats(
+        ss = UserAnalyticsServiceStats(
             user_analytics = ua,
             service = service
         )

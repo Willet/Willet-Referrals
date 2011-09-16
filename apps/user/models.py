@@ -25,7 +25,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 import apps.oauth.models
-from apps.user_analytics.models import UserAnalytics, ServiceStats, get_or_create_ua, get_or_create_ss
+from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 
 from util.model         import Model
 from util.emails          import Email
@@ -343,16 +343,16 @@ class User( db.Expando ):
         # and put them in a list for a particular campaign
         # then once we have a list of links for a")ampaign
         # we create an user_analytics from the links
-        campaign_id = None
-        campaign_links = []
+        app_id = None
+        app_links = []
         ua = None
         services = ['facebook', 'linkedin', 'twitter', 'email', 'total']
         for link in links:
-            if link.campaign.uuid != campaign_id:
+            if link.app_.uuid != app_id:
                 # new campaign, new useranalytics!
                 ua = get_or_create_ua(
                     user = self,
-                    campaign = link.campaign,
+                    app = link.app_,
                     scope = scope,
                     period_start = period_start
                 )
@@ -425,17 +425,17 @@ class User( db.Expando ):
             logging.info('no links to process')   
         return
     
-    def get_analytics_for_campaign(self, 
-            campaign=None, scope=None, order='period_start'):
+    def get_analytics_for_app(self, 
+            app=None, scope=None, order='period_start'):
         """ returns all the UA for this user for a 
-            specified campaign"""
+            specified app """
         ret = None
-        if not campaign == None:
+        if not app == None:
             #ret = self.users_analytics.filter('campaign=', campaign)
             ret = self.users_analytics
             logging.info ('user has %d UA' % ret.count())
             
-            ret = ret.filter('campaign =', campaign)
+            ret = ret.filter('app =', app)
             logging.info ('%d ua total' % ret.count())
 
             if not scope == None:
