@@ -431,7 +431,7 @@
         {% if show_gift %}
         
             <h1>Congrats! {{referrer_name}} gave you a gift!</h1>
-            <div class="span-9 last append-bottom center">
+            <div class="last append-bottom center">
                 <img width="120px" src="/static/imgs/gift.png" /> 
             </div>
             <div id="step1_a">
@@ -440,7 +440,7 @@
         {% else %}
 
             <h1>Invite A Friend</h1>
-            <div class="span-9 last append-bottom center">
+            <div class="last append-bottom center">
                 <img width="120px" src="/static/imgs/gift.png" /> 
             </div>
             
@@ -448,7 +448,7 @@
                 <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{app.product_name}}!</h2>
 
         {% endif %}
-                <div class="prepend-top span-9 last">
+                <div class="prepend-top last">
                     <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Ok</button>
                 </div>
             </div>
@@ -465,7 +465,7 @@
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
                 </a>
-                <div class="prepend-top span-9 last"> 
+                <div class="prepend-top last"> 
                     <hr class="hor_line" />
                     or share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
                     <input id="share_code" class='small_text' type="text" value="{{ willt_url }}"  />
@@ -473,13 +473,13 @@
             </div>
         </div>
             
-        <div id="step3" class="span-9 last hidden" class='step'>
+        <div id="step3" class="last hidden" class='step'>
             <h2>Your gift will arrive with your order!</h2>
             <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
             
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
-            <div class="span-9 last" id="choose_share_type">
+            <div class="last" id="choose_share_type">
                 <a class="prepend-top" href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
