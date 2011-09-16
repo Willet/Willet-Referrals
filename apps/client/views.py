@@ -23,17 +23,19 @@ class ShowAccountPage( URIHandler ):
             pass
         elif hasattr(client, 'apps') and client.apps.count() > 0:
             has_apps = True 
-            apps     = client.apps.order( '-created' )
+            apps     = client.apps.order('-created')
             num_apps = client.apps.count()
 
             for c in apps:
-                to_show.append({'title'    : c.product_name,
-                                'uuid'     : c.uuid,
-                                'target_url' : c.target_url,
-                                'date'     : c.created.strftime('%A %B %d, %Y'),
-                                'shares'   : c.get_shares_count(),
-                                'clicks'   : c.count_clicks(),
-                                'is_shopify' : hasattr(c, 'shopify_token')})
+                to_show.append({
+                    'title': c.product_name,
+                    'uuid': c.uuid,
+                    'target_url': c.target_url,
+                    'date': c.created.strftime('%A %B %d, %Y'),
+                    'shares': c.get_shares_count(),
+                    'clicks': c.count_clicks(),
+                    'is_shopify': hasattr(c, 'shopify_token')
+                })
         
         template_values = {
             'apps' : to_show,
@@ -52,13 +54,14 @@ class DoAuthenticate( URIHandler ):
         url        = self.request.get( 'url' )
         clientEmail  = cgi.escape(self.request.get("email"))
         passphrase = cgi.escape(self.request.get("passphrase"))
-        errors = [ ] # potential login errors
+        errors = [] # potential login errors
         
         # initialize session
         session = get_current_session()
         session.regenerate_id()
         
-        if session.is_active(): # close any active sessions since the user is logging in
+        # close any active sessions since the user is logging in
+        if session.is_active(): 
             session.terminate()
         
         # set visited cookie so 'register' tab does not appear again
