@@ -27,7 +27,7 @@ class ShowAccountPage( URIHandler ):
             num_apps = client.apps.count()
 
             for c in apps:
-                to_show.append({'title'    : c.title,
+                to_show.append({'title'    : c.product_name,
                                 'uuid'     : c.uuid,
                                 'target_url' : c.target_url,
                                 'date'     : c.created.strftime('%A %B %d, %Y'),
