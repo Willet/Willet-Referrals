@@ -38,13 +38,14 @@ cron:
 
 # User Crons
 - description: compute daily analytics for users 
-  url: /user/triggerUserAnalytics
+  url: /user_analytics/trigger
   schedule: every 24 hours 
 
 - description: compute weekly analytics for users 
-  url: /user/triggerUserAnalytics?scope=week
+  url: /user_analytics/trigger?scope=week
   schedule: every monday 01:00
 
 - description: compute monthly analytics for users 
-  url: /user/triggerUserAnalytics?scope=month
+  url: /user_analytics/trigger?scope=month
   schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
+

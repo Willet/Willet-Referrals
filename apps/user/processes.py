@@ -51,17 +51,14 @@ class FetchFacebookData(webapp.RequestHandler):
         result_user = db.run_in_transaction(txn, user)
         logging.info("done updating")
 
-            
 class FetchFacebookFriends(webapp.RequestHandler):
     """Fetch and save the facebook friends of a given user"""
     def get(self):
-        rq_vars = get_request_variables(['fb_id'], self)
-        def txn():
-            user = get_user_by_facebook(rq_vars['fb_id'])
+        def txn(user):
             if user:
                 friends = []
                 url = FACEBOOK_QUERY_URL + rq_vars['fb_id'] + "/friends"+\
-                    "?access_token=" + getattr(user, 'fb_access_token')
+                    "?access_token=" + user.get_attr('fb_access_token')
                 fb_response = json.loads(urllib.urlopen(url).read())
                 if fb_response.has_key('data'):
                     for friend in fb_response['data']:
@@ -69,11 +66,14 @@ class FetchFacebookFriends(webapp.RequestHandler):
                             name=friend['name'], would_be=True)
                         friends.append(willet_friend.key())
                     user.update(fb_friends=friends)
-        db.run_in_transaction(txn)
+            return fb_response 
+
+        rq_vars = get_request_variables(['fb_id'], self)
+        user = User.all().filter('fb_identity =', rq_vars['fb_id'])
+        fb_response = db.run_in_transaction(txn, user)
         logging.info(fb_response)
 
 class QueryKloutAPI( URIHandler ):
-    
     @admin_required
     def get(self, admin):
         logging.info("KLOUT: MEMCAHCE")

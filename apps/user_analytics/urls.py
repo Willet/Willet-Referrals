@@ -3,6 +3,6 @@ from apps.user_analytics.processes import *
 from apps.user_analytics.views import *
 
 urlpatterns = [
-    (r'/user/triggerUserAnalytics', TriggerUserAnalytics),
-    (r'/user/computeUserAnalytics', ComputeUserAnalytics),
+    (r'/user_analytics/trigger', TriggerUserAnalytics),
+    (r'/user_analytics/compute', ComputeUserAnalytics),
 ]

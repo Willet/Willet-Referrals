@@ -26,7 +26,7 @@ class TriggerUserAnalytics(webapp.RequestHandler):
         scope = self.request.get('scope', 'day')
         users = User.all()
         for u in users:
-            taskqueue.add(url = '/computeUserAnalytics',
+            taskqueue.add(url = '/user_analytics/compute',
                 params = {
                     'user_key': u.key(),
                     'scope': scope
