@@ -12,7 +12,7 @@ class ShowProfilePage(URIHandler):
 
         if not app:
             logging.error("""Tried to get user profile without defining
-                a campgin""")
+                an app""")
         elif user:
             links = Link.all().filter('user =', user)
             total_clicks = 0

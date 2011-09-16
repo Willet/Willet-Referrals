@@ -1,7 +1,7 @@
 /**
  * dashboard.js
  *
- * controls the campaign dashboard
+ * controls the app dashboard
  * @author Matt Harris <matt@getwillet.com>
  */
 
@@ -67,7 +67,7 @@ var showUserToast = function(obj) {
         html += '<strong>Created: </strong>' + user.created + '<br />';
         html += '<strong>KScore: </strong>' + user.kscore + '<br />';
         html += '<strong>Reach: </strong>' + user.reach + '</div>';
-        html += '<a href="/user/'+campaign_id+'/'+user_id+'/" class="button">Profile</button>';
+        html += '<a href="/user/'+app_id+'/'+user_id+'/" class="button">Profile</button>';
         
         toast_div.html(html);
     } else {
