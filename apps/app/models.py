@@ -253,10 +253,16 @@ class App( Model, polymodel.PolyModel ):
     
     def count_clicks( self ):
         # Get an updated value by putting this on a queue
-        taskqueue.add( queue_name='app-ClicksCounter', 
-                       url='/appClicksCounter', 
-                       name= 'app_ClicksCounter_%s_%s' % (self.uuid, generate_uuid( 10 )),
-                       params={'app_uuid' : self.uuid} )
+        taskqueue.add(
+            queue_name = 'app-ClicksCounter', 
+            url = '/a/appClicksCounter', 
+            name = 'app_ClicksCounter_%s_%s' % (
+                self.uuid,
+                generate_uuid( 10 )),
+            params = {
+                'app_uuid' : self.uuid
+            }
+        )
         # Return an old cached value
         return self.cached_clicks_count
     
