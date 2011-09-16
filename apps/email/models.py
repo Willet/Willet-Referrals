@@ -50,7 +50,7 @@ class Email():
         Email.send_email( from_addr, to_addr, subject, body )
 
     @staticmethod
-    def invite( infrom_addr, to_addrs, msg, url, campaign ):
+    def invite( infrom_addr, to_addrs, msg, url, app):
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.
         to_addr = to_addrs.split(',')
@@ -59,7 +59,7 @@ class Email():
             {
                 'from_addr' : infrom_addr,
                 'msg' : msg,
-                'campaign' : campaign
+                'app' : app 
             }
         )
         
