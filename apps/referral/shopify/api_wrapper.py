@@ -71,8 +71,6 @@ def add_note_to_shopify_order( order, note ):
     else:
         logging.info('tried to add note but order is None')
 
-
-
     """
     url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
     username = SHOPIFY_API_KEY

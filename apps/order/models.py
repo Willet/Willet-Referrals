@@ -105,7 +105,7 @@ def create_shopify_order( client, order_token, order_id, order_num,
     """ Create an Order for a Shopify store """
     
     logging.info(referrer)
-    logging.info(client.store_url)
+    logging.info(client.target_url)
 
     uuid = generate_uuid( 16 )
 
@@ -114,8 +114,8 @@ def create_shopify_order( client, order_token, order_id, order_num,
                       order_token  = order_token,
                       order_id     = str(order_id),
                       client       = client,
-                      store_name   = client.store_name,
-                      store_url    = client.store_url,
+                      store_name   = client.product_name,
+                      store_url    = client.product_url,
                       order_number = str(order_num),
                       subtotal_price = float(subtotal), 
                       referring_site = referrer,
