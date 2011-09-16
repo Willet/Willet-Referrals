@@ -348,11 +348,17 @@ class User( db.Expando ):
         ua = None
         services = ['facebook', 'linkedin', 'twitter', 'email', 'total']
         for link in links:
-            if link.app_.uuid != app_id:
+            try:
+                app = link.app_
+            except Exception,e:
+                logging.error('Error getting app for link: %s' % e, exc_info=True)
+                continue
+
+            if app.uuid != app_id:
                 # new campaign, new useranalytics!
                 ua = get_or_create_ua(
                     user = self,
-                    app = link.app_,
+                    app = app,
                     scope = scope,
                     period_start = period_start
                 )
@@ -364,6 +370,8 @@ class User( db.Expando ):
                     # we get the reach for the service now too
                     # because we're awesome like that
                     stats[service].reach = self.get_reach(service)
+
+                app_id = app.uuid
 
             # figure out which service we are using
             if link.tweet_id != '':
