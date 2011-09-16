@@ -61,6 +61,9 @@ textarea {
     max-width: 360px;
     font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+#share-text-email {
+    width: 300px !important;
+}
 a {
     display: -moz-inline-stack;
     display: inline-block;
