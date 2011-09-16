@@ -21,10 +21,10 @@
 
 {% endblock left_content %}
 {% block right_content %}
-    <h1 class="span-15 last lower-75 center">Your Campaigns</h1>
+    <h1 class="span-15 last lower-75 center">Your Apps</h1>
 
     <div class="prepend-top span-15 last">
-        {% if has_campaigns %}
+        {% if has_apps %}
             <table>
                 <tr>
                     <td class="title">Title</td>
@@ -33,29 +33,29 @@
                     <td> </td>
                     <td> </td>
                 </tr>
-                {% for c in campaigns %}
+                {% for app in apps %}
                 <tr class="bottom_border">
                     <td>
-                        <a href="/r/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
+                        <a href="/r/app/{{app.uuid}}/" title="See Campaign Results">{{app.title}}</a>
                     </td>
                     <td>
-                        {{c.shares}}
+                        {{app.shares}}
                     </td>
                     <td>
-                        {{c.clicks}}
+                        {{app.clicks}}
                     </td>
                     <td>
-                        {% if c.is_shopify %}
-                            <a href="/r/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="/r/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% if app.is_shopify %}
+                            <a href="/r/shopify/code?id={{app.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/shopify/edit?id={{app.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
                         {% else %}
-                            <a href="/r/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="/r/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                            <a href="/r/code?id={{app.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/edit?id={{app.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
                         {% endif %}
                     </td>
                     <td>
                          <form action="/a/deleteApp" method="post" class="center">
-                            <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
+                            <input type="hidden" name="campaign_uuid" value="{{app.uuid}}" />
                             <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
                         </form>
                     </td>

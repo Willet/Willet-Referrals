@@ -7,7 +7,7 @@ urlpatterns = [
     # Views
     (r'/r/code',             ShowCodePage),
     (r'/r/edit',             ShowEditPage),
-    (r'/r/campaign/(.*)/',   ShowDashboard),
+    (r'/r/app/(.*)/',   ShowDashboard),
     (r'/r/doUpdateOrCreate', DoUpdateOrCreate),
 
     # Processes
