@@ -32,30 +32,30 @@ class Email():
 
 #### Dev Team Emails ####
     @staticmethod
-    def emailBarbara( msg ):
+    def emailBarbara(msg):
         to_addr = barbara
         subject = '[Willet] Message to Self'
         body    = '<p> %s </p>' % msg
  
-        Email.send_email( from_addr, to_addr, subject, body )
+        Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def first10Shares( email_addr ):
+    def first10Shares(email_addr):
         subject = '[Willet Referral] We Have Some Results!'
         to_addr =  email_addr
-        body    = template.render(self.template_path('first10.html'), {
+        body    = template.render(Email.template_path('first10.html'), {
             'campaign_id': campaign_id
         })
         
-        Email.send_email( from_addr, to_addr, subject, body )
+        Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def invite( infrom_addr, to_addrs, msg, url, app):
+    def invite(infrom_addr, to_addrs, msg, url, app):
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.
         to_addr = to_addrs.split(',')
         subject = 'Check This Out!'
-        body = template.render(self.template_path('invite.html'),
+        body = template.render(Email.template_path('invite.html'),
             {
                 'from_addr' : infrom_addr,
                 'msg' : msg,
@@ -64,16 +64,14 @@ class Email():
         )
         
         logging.info("Emailing X%sX" % to_addr)
-        Email.send_email( from_addr, to_addr, subject, body )
-    
-    def template_path(self, path):
+        Email.send_email(from_addr, to_addr, subject, body)
+
+    @staticmethod 
+    def template_path(path):
         return os.path.join('apps/email/templates/', path)
 
-#####################################
-#####################################
-#####################################
     @staticmethod
-    def send_email( from_address, to_address, subject, body ):
+    def send_email(from_address, to_address, subject, body):
         e = EmailMessage(
             sender=from_address, 
             to=to_address, 
