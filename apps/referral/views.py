@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib, datetime
+import re, urllib
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -37,7 +37,7 @@ class ShowDashboard( URIHandler ):
             return
         
         app.compute_analytics('month')
-        sms = app.get_reports_since('month', datetime.datetime.today() - datetime.timedelta(40), count=1)
+        sms = app.get_reports_since('month', datetime.today() - datetime.timedelta(40), count=1)
         template_values['app'] = app
         template_values['sms'] = sms
         total_clicks = app.count_clicks()
