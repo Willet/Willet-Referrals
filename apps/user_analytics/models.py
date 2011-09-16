@@ -36,7 +36,7 @@ class UserAnalytics(Model):
     user = db.ReferenceProperty(db.Model, collection_name='users_analytics')
     
     # the app for which these stats are being calcualted
-    app = db.ReferenceProperty(db.Model, collection_name='app_users_analytics')
+    app_ = db.ReferenceProperty(db.Model, collection_name='app_users_analytics')
     
     # the 'scope' of this analytics
     # either 'day, week, month, year'
@@ -76,14 +76,14 @@ class UserAnalyticsServiceStats(Model):
 def get_or_create_ua(user, app, scope, period_start):
     ua = UserAnalytics.all()\
             .filter('user =', user)\
-            .filter('app =', app)\
+            .filter('app_ =', app)\
             .filter('scope =', scope)\
             .filter('period_start =', period_start).get()
     
     if ua == None:
         ua = UserAnalytics(
             user = user,
-            app = app,
+            app_ = app,
             scope = scope,
             period_start = period_start
         )

@@ -438,12 +438,12 @@ class User( db.Expando ):
         """ returns all the UA for this user for a 
             specified app """
         ret = None
-        if not app == None:
+        if app != None:
             #ret = self.users_analytics.filter('campaign=', campaign)
             ret = self.users_analytics
             logging.info ('user has %d UA' % ret.count())
             
-            ret = ret.filter('app =', app)
+            ret = ret.filter('app_ =', app)
             logging.info ('%d ua total' % ret.count())
 
             if not scope == None:
