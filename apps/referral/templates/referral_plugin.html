@@ -449,7 +449,7 @@
                 <h2>You'll get a free gift too!</h2>
 
         {% endif %}
-                <div class="prepend-top last">
+                <div class="last">
                     <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Give a Gift</button>
                 </div>
             </div>
@@ -465,7 +465,7 @@
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
                 </a>
-                <div class="prepend-top last"> 
+                <div class="last"> 
                     <hr class="hor_line" />
                     or share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
                     <input id="share_code" readonly="readonly" class='small_text' type="text" value="{{ willt_url }}"  />
@@ -480,14 +480,14 @@
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
             <div class="last" id="choose_share_type">
-                <a class="prepend-top button-link" href="#" title="Share on Facebook" onclick="share('fb');">
+                <div class="prepend-top button-link" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
-                </a>
-                <a id="twitter_button" class='button-link' href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                </div>
+                <div id="twitter_button" class='button-link' title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Tweet on Twitter
-                </a>
+                </div>
                 <!--
                 <a href="#" title="Share on LinkedIn" onclick="share('linkedin');">
                     <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
@@ -497,7 +497,7 @@
             
         </div>
         <div class="span-9 last hidden" id="email_div" class='step'>
-            
+            <h2>Once you are happy with the message, chose your E-Mail provider below.</h2> 
             <div class="span-1">
                 <div class="input-label">Hi</div>
             </div>
