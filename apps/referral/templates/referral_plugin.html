@@ -75,17 +75,11 @@
                 };
             
                 errorCheckEmails = function () {
-                    var from         = document.getElementById( 'from-email' ),
-                        to           = document.getElementById( 'to-emails' ),
+                    var to           = document.getElementById( 'to-emails' ),
                         msg          = $('#share-text-email'),
                         ret          = true,
                         emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;  
             
-                    if( !emailPattern.test(from.value) ) {
-                        from.value = "Please enter your email address.";
-                        ret = false; 
-                    }  
-                
                     if ( to.value == "" ) {
                         to.value = "Please enter your friends' email addresses!";
                         ret = false;
