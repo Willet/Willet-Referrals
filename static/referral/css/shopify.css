@@ -127,7 +127,7 @@ div#use_us {
     float: right;
 }
 a.box img,
-a.button-link img {
+.button-link img {
     float: left;
     height: 20px;
     padding: 0px 5px 0px 5px;
