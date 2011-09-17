@@ -456,12 +456,11 @@
 
             
             <div id="step1_b" class="hidden">
-                <a class='button' href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
-                    <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
-                    Email
+                <a style="width: 110px" class='button-link' href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
+                    <img src="/static/imgs/email_logo.png" width="27px" height="20px" />Email
                 </a>
 
-                <a class='button' href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
+                <a style="width: 110px" class='button-link' href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
@@ -481,11 +480,11 @@
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
             <div class="last" id="choose_share_type">
-                <a class="prepend-top button" href="#" title="Share on Facebook" onclick="share('fb');">
+                <a class="prepend-top button-link" href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
                 </a>
-                <a id="twitter_button button" href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                <a id="twitter_button" class='button-link' href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Tweet on Twitter
                 </a>
@@ -527,22 +526,22 @@
             <div class="span-5 small_text"> &nbsp;Choose your email provider: </div>
             <div class="span-4 last right small_text"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
-                <a class="email_btn" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
+                <a class="email_btn box" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                     <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
                 </a>
-                <a class="email_btn" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
+                <a class="email_btn box" href="#" onClick="sendEmailVia( 'hotmail' );" title="Hotmail"> 
                     <img src="/static/imgs/hotmail_logo.png" width="29px" height="20px" />
                 </a>
-                <a class="email_btn" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
+                <a class="email_btn box" href="#" onClick="sendEmailVia( 'yahoo' );" title="Yahoo Mail"> 
                     <img src="/static/imgs/yahoo_mail_logo.png" width="27px" height="20px" />
                 </a>
-                <a class="email_btn" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
+                <a class="email_btn box" href="#" onClick="sendEmailVia( 'aol' );" title="AOL Mail"> 
                     <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                 </a>
             </div>
             <div class="span-4 last" style="margin-top: 5px;">
                 <div class="right">
-                    <a class="email_btn" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
+                    <a class="email_btn box" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
                         <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                     </a>
                 </div>
