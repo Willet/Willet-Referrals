@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+    saveMsg = function () {
+        var msg = document.getElementById( "share_text" );
+
+        $.ajax({
+            url: "/r/shopify/doUpdateOrCreate",
+            type: 'post',
+            data: { share_text   : msg.value,
+                    target_url   : "{{app.target_url}}",
+                    product_name : "{{app.product_name}}",
+                    uuid         : "{{app.uuid}}",
+                    token        : "{{store_token}}" }
+        });// end ajax
+    }; 
+
+    </script>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">Great Job, {{shop_owner}}</h1>
+    <div class="span-8 last center">
+
+        <p> 
+            Start thinking of the perfect gift to give to your buyers - will it be a limited edition item or 
+            some overstock from last season? Pick something that you know your buyers will love!
+        </p>
+        <p> 
+            If you don't already, start paying attention to the "Note" field for your orders. We'll attach notes so you know
+            when to include gifts!
+        </p>
+        
+        <label class="default_label" for="share_text">Invitation Message</label>
+        <textarea id="share_text" name="share_text" onBlur="saveMsg();">{{app.share_text}}</textarea>
+        <button class="regular_button" onClick="saveMsg();" value="Update">Update</button>
+
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
+
+    {% if analytics %}
+        <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
+    {% endif %}
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">All Done!</h1>
+
+        <div class="prepend-top span-15 last center">
+            <p>
+                That's it! The App has been installed into your store and now we'll start juicing your social referrals!
+            </p>
+            <h2> Test it out! </h2>
+            <p> Here's the referral app that your customers will use to invite their friends.<br /> Try it out!</p>
+
+            <iframe width="393" height="301" src='/r/shopify/load/referral?app_id={{app.uuid}}&style=shopify_demo' id="share_iframe" scrolling="no"></iframe>
+
+                <a href="{{app.target_url}}/admin">
+                    <button>
+                        <img style="height: 40px" src="/static/imgs/shopify-bag2.png" />
+                        <p style="margin-bottom: 10px"> Back to Your Store </p>
+                    </button>
+                </a>
+        </div>
+
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 4, 'edit_page']);
+{% endblock mixpanelTracking %}
+

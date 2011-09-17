@@ -79,9 +79,14 @@ class LilCookies:
     """
     if len(cookie_secret) < 45: 
       raise ValueError("LilCookies cookie_secret should at least be 45 characters long, but got `%s`" % cookie_secret)
+
     self.handler = handler
-    self.request = handler.request
-    self.response = handler.response
+    
+    if hasattr(self.handler, 'request'):
+        self.request = handler.request
+    if hasattr(self.handler, 'response'):
+        self.response = handler.response
+
     self.cookie_secret = cookie_secret
   
   def cookies(self):

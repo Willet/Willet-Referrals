@@ -61,10 +61,10 @@
             
                 willet_conversion = function () {
                     $.ajax({
-                        url: "/conversion",
+                        url: "/r/conversion",
                         type: 'post',
                         data: { referree_uid : "{{supplied_user_id}}",
-                                campaign_uuid : "{{campaign_uuid}}" }
+                                campaign_uuid : "{{app_uuid}}" }
                     });// end ajax
                 }; 
             
@@ -203,7 +203,6 @@
                         $email_div.slideDown();
                     }
                 };
-
 
                 // use the selected medium to share about your purchase
                 share = function(medium, uid) {
@@ -498,7 +497,7 @@
     
     <div class="prepend-top span-9 append-15 last willt">
         <div class="span-9 last">
-            <h2>Invite Your Friends To {{campaign.product_name}}</h2>
+            <h2 id="plugin-title">Invite Your Friends To {{campaign.product_name}}</h2>
             
             <div class="prepend-5 span-4 last" id="chars-left">140 characters left</div>
             <textarea wrap="soft" id="share-text" onkeydown="countChars();">{{ text }}</textarea>
@@ -509,11 +508,11 @@
                 </a>
                 <a href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                    Share on Facebook
+                    
                 </a>
                 <a href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                    Tweet on Twitter
+                    
                 </a>
                 <a href="#" title="Share on LinkedIn" onclick="share('linkedin');">
                     <img src="/static/imgs/linkedin-logo.png" width="20px" height="20px" />
@@ -577,7 +576,7 @@
         <div class="span-9 last"> 
             <hr class="hor_line" />
             Or, share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
-            <input id="" type="text" value="{{ willt_url }}" readonly="readonly" />
+            <input id="unique_link" type="text" value="{{ willt_url }}" readonly="readonly" />
         </div>
     </div>
     <div id="tweet-complete" onclick="shareComplete();"></div>

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="prepend-top span-8 last center"><a href="/">{{NAME}}</a></h1>
+    
+    <h2 class="span-8 last center"> Tagline </h2>
+    
+    <div class="prepend-1 span-6 append-1 last append-bottom center">
+        <p>
+        </p>
+        <p>
+        </p>
+    </div>
+    
+    <div class="prepend-top span-8 last center">
+        <a class="call_to_action big" href="/r/edit">New Referral App</a>
+    </div>
+
+{% endblock left_content %}
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Your Apps</h1>
+
+    <div class="prepend-top span-15 last">
+        {% if has_apps %}
+            <table>
+                <tr>
+                    <td class="title">Title</td>
+                    <td class="title">Shares</td>
+                    <td class="title">Clickthroughs </td>
+                    <td> </td>
+                    <td> </td>
+                </tr>
+                {% for app in apps %}
+                <tr class="bottom_border">
+                    <td>
+                        <a href="/r/app/{{app.uuid}}/" title="See Campaign Results">{{app.title}}</a>
+                    </td>
+                    <td>
+                        {{app.shares}}
+                    </td>
+                    <td>
+                        {{app.clicks}}
+                    </td>
+                    <td>
+                        {% if app.is_shopify %}
+                            <a href="/r/shopify/code?id={{app.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/shopify/edit?id={{app.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% else %}
+                            <a href="/r/code?id={{app.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="/r/edit?id={{app.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                        {% endif %}
+                    </td>
+                    <td>
+                         <form action="/a/deleteApp" method="post" class="center">
+                            <input type="hidden" name="campaign_uuid" value="{{app.uuid}}" />
+                            <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+        
+            <h3 class="center">
+                Start learning about your customers by <a href="/r/edit">creating a campaign</a>.
+            </h3>
+
+        {% endif %}
+    </div>
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 5, 'account_page']);
+{% endblock mixpanelTracking %}

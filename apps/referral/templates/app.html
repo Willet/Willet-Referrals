@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script type="text/javascript">
+        var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
+        document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
+    </script>
+    <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
+    <script type="text/javascript" src="/static/js/dashboard.js"></script>
+    <script type="text/javascript">
+        var app_id = '{{ app.uuid }}';
+        var platform = new Mixpanel.Platform(
+            '{{api_key}}',
+            '{{platform_secret}}',
+            '{{app.uuid}}'
+        );
+        {% if has_results %}
+            {{mixpanel}}
+            
+            platform.create_pie_chart('pie_chart', 
+                                     ['Email{{app.uuid}}', 'Twitter{{app.uuid}}', 'Facebook{{app.uuid}}'],
+                                     {labels: true, 
+                                     mapping : { 'Email{{app.uuid}}' : 'Email', 'Twitter{{app.uuid}}' : 'Twitter', 'Facebook{{app.uuid}}' : 'Facebook' }});
+        {% endif %}
+        
+        /*
+        platform.create_line_chart( 'graph_div', [ 'Tweets_{{app.uuid}}', 
+        {% for r in results %} 'Clicks_{{app.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
+        ], { 'mapping' : { 'Tweets_{{app.uuid}}' : 'Tweets',
+        {% for r in results %}
+            'Clicks_{{app.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
+        {% endfor %}
+        }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
+        */
+        /*
+        platform.create_line_chart( 'graph_div', [
+            'Tweets_{{app.uuid}}_BarbaraEMac', 'Clicks_{{app.uuid}}_BarbaraEMac'
+        ], { 'mapping' : { 'Clicks_{{app.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
+        */
+    </script>
+    <link rel="stylesheet" href="/static/css/dashboard.css" type="text/css" media="screen" />
+{% endblock head %}
+{% block content %}
+
+    <div class="span-22 last lower-15" id="right_header">
+        <p><a href='{{logout_url}}'>Logout</a></p>
+        <p><a href='/client/account'>Your Apps</a></p>
+    </div>
+    <h2 class="span-24 last center lower-100">
+        {{app.product_name}}
+    </h2>
+
+    {% if not has_results %}
+        <p class="center"> We haven't received any shares or clicks yet. </p>
+    {% else %}
+        <div id="results_header">
+            <div class="span-2 prepend-2"><h3>Referrals</h3></div>
+            <div class="span-4 prepend-1"><h3 class="quiet" style="text-align: center;">Reach</h3></div>
+            <div class="span-3 prepend-1"><h3 class="quiet" style="text-align: center;">Visits</h3></div>
+            <div class="span-4"><h3 style="text-align: center;">Conversions</h3></div>
+            <div class="span-4 prepend-1 append-2 last"><h3 class='sales'>Sales</h3></div>
+        </div>
+        <div id="results_static">&nbsp;</div>
+        <hr />
+        <div id='results' class="center large">
+            <div class="row">
+                <div class="prepend-2 span-2 big icon">
+                    <span>{{ totals.shares }}</span>
+                </div>
+                <div class="span-1 arrow">&nbsp;</div>
+            
+                <div class="span-4">
+                    <div class="cloud ">
+                        <span>{{ totals.reach }}</span>
+                    </div>
+                </div>
+                <div class="span-1 arrow">&nbsp;</div>
+        
+                <div class="span-3 conversions">
+                    <span>{{ totals.clicks }}</span>
+                </div>
+                <div class="span-4">
+                    <div class="sales big">
+                        <span>{{ totals.conversions }}</span>
+                    </div>
+                </div>
+            
+                <div class="span-1"><span>=</span></div>
+                <div class="span-4 append-2 last big dollars">
+                    <span>${{ totals.profit }}</span>
+                </div>
+            </div>
+            <!-- DETAILS -->
+            <div class="details_toggle">
+                {% for st in service_totals %}
+                    <div class="row_details {{ st.name }} expandable">
+                        <div class="prepend-2 span-2 icon big"><span>{{ st.shares }}</span></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-4"><div class=""><span>{{ st.reach }}</span></div></div>
+                        <div class="span-1">&nbsp;</div>
+                        <div class="span-3"><span>{{ st.clicks }}</span></div>
+                        <div class="span-4 big"><div><span>{{ st.conversions }}</span></div></div>
+                        <div class="span-1"><span>&nbsp;</span></div>
+                        <div class="span-4 append-2 dollars big last">
+                            <span>${{ st.profit }}</span>
+                        </div>
+                        <!-- twitter double expando details -->
+                        <div class="referrers_toggle " style="display: none"> 
+                            <hr size="1" />
+                            <div class="prepend-2 span-3"><span>Top Referrers</span></div>
+                            <div class="span-4"><span>followers</span></div>
+                            <div class="span-1">&nbsp;</div>
+                            <div class="span-3"><span>visits</span></div>
+                            <div class="span-4"><span>conversions</span></div>
+                            <div class="span-1"><span>&nbsp;</span></div>
+                            <div class="span-4 append-2 dollars last"><span>sales</span></div>
+                            {% for users in st.users %}
+                            {% for u in users %}
+                            <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-4"><span>{{ u.reach }}</span></div>
+                                <div class="span-1">&nbsp;</div>
+                                <div class="span-3"><span>{{ u.clicks }}</span></div>
+                                <div class="span-4"><span>{{ u.conversions }}</span></div>
+                                <div class="span-1"><span>&nbsp;</span></div>
+                                <div class="span-4 append-2 dollars big last"><span>${{ u.profit }}</span></div>
+                            {% endfor %}{% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+        </div>
+        <div id="pie_chart"></div>
+        <div id="graph_div"></div>
+        <div >
+            <div id='user_box' style='display: none; position: absolute;'>
+                <h3>Barbara</h3>
+                <strong>@barbaraEMAC</strong>
+                <img src="/static/imgs/barbara.png" align="right" />
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

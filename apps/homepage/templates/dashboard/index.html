@@ -1,0 +1,500 @@
+{% extends "../base.html" %}
+
+{% block head %}
+    <script type="text/javascript">
+        var protocol = document.location.protocol == 'https:' ? 'https:' : 'http:';
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"%3E%3C/script%3E'));
+        //document.write(unescape('%3Cscript src="' + protocol + '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"%3E%3C/script%3E'));
+        document.write(unescape('%3Cscript src="' + protocol + '//mixpanel.com/site_media/api/platform/platform.1.min.js" type="text/javascript"%3E%3C/script%3E'));
+    </script>
+    <!-- <script type="text/javascript" src="/static/js/boat.js"></script>-->
+    <script type="text/javascript">
+        window.dbar = null;
+        window.dbar_top = null;
+        window.hover_el = null;
+        window.ub = null;
+        window.users = [];
+
+        var showUserToast = function(obj) {
+            /**
+             * Controls showing the user toast
+             *
+             * obj format
+             *  user_id     users id
+             *  from_json   if data is from json
+             *  had_error   if json request had error
+             */ 
+            var user_id = (obj.user_id == undefined ? -1 : obj.user_id);
+            var from_json = (obj.from_json == undefined ? false : obj.from_json);
+            var had_error = (obj.had_error == undefined ? false : obj.had_error);
+            var toast_div = $('#user_box');
+            var loading = '<img src="/static/imgs/loading.gif" />';
+            if (!from_json) {
+                // we are not coming from json
+                // show the loading box
+                var eleft = window.hover_el.offset().left;
+                var etop = window.hover_el.offset().top;
+                //eleft -= window.hover_el.width();
+                //etop += window.hover_el.height() + 5;
+                etop -= 5;
+                eleft = 150;
+                //console.log('moving toast to', eleft, etop);
+                toast_div.hide()
+                    .css({position: 'absolute', top: etop, left: eleft})
+                    .html(loading) 
+                    .fadeIn('fast')
+                    .css({position: 'absolute', top: etop, left: eleft});
+            }
+            if (had_error) {
+                // we had an error, display that
+                toast_div.html('There was an error loading the user.');
+            } else if (user_id != -1) {
+                user = users[user_id];
+                html = '<div align="right" style="float:right;"><img class="pic" src="'+ user.pic +'" />';
+                html += '<br /><span class="services">Accounts:&nbsp;'; 
+                if (user.has_twitter)
+                    html += '<img src="/static/imgs/db_twitter_small.png" />&nbsp;';
+                if (user.has_facebook)
+                    html += '<img src="/static/imgs/fb-logo-small.png" />&nbsp;';
+                if (user.has_linkedin)
+                    html += '<img src="/static/imgs/linkedin-logo-small.png" />&nbsp;';
+                if (user.has_email)
+                    html += '<img src="/static/imgs/email_logo_small.png" />&nbsp;';
+                
+                html += '</span></div><div align="left">';
+                html += '<h3>'+user.name+'</h3>';
+                html += '<strong><em>'+user.handle+'</em></strong><br />';
+                html += '<strong>Created: </strong>' + user.created + '<br />';
+                html += '<strong>KScore: </strong>' + user.kscore + '<br />';
+                html += '<strong>Reach: </strong>' + user.reach + '</div>';
+                
+                toast_div.html(html);
+            } else {
+                // we are probably waiting on the data from json
+            }
+            return;
+        };
+        $(document).ready(function() {
+            window.dbar = $('#results_header');
+            window.ub = $('#user_box');
+            if (window.dbar.offset() != null)
+                window.dbar_top = window.dbar.offset().top;
+            //$('#results div.row_details a').click(function() {
+            //    $(this).preventDefault();    
+            //});
+            
+            $('#results div.row').click(function() {
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .next('div.details_toggle')
+                        .animate({
+                            height: 'toggle'
+                            }, 100, function() {
+                                var row = $(this);
+                                if (row.height() < 1) {
+                                    row.css('display', 'inline-block');
+                                }
+                        });
+            });
+            $('#results div.row_details').click(function() {
+                $(this)
+                    .toggleClass('expanded')
+                    .toggleClass('expandable')
+                    .children('div.referrers_toggle')
+                    .animate({height: 'toggle'}, 200);
+            });
+            $('#results span a').click(function(e) {
+                /**
+                 * just prevent the div to close 
+                 */
+                e.preventDefault();
+                e.stopPropagation();
+                //$.colorbox({inline:true, href:'#user_box'});
+                //console.log($(this));     
+            });
+            $('#results a.user').hover(function() {
+                try {
+                    clearTimeout(window.ub.data('timeoutID'));
+                    window.hover_el = $(this);
+                    var user_id = window.hover_el.attr('id');
+                    if (window.users[user_id] == undefined) {
+                        // the users data has not been cached yet
+                        showUserToast({'from_json': false});
+                        $.getJSON(
+                            '/campaign/get_user/' + user_id + '/',
+                            function(data) {
+                                // callback for when we get the user details
+                                if (data.success) {
+                                    // request was good
+                                    window.users[data.user.uuid] = data.user;
+                                    console.log('got data for user, showing box', data);
+                                    showUserToast({'user_id': data.user.uuid, 'from_json': true});
+                                } else {
+                                    // error!
+                                    console.log('error getting data for user, got response', data);
+                                    showUserToast({'from_json': true, 'had_error': true});
+                                }
+                            }
+                        );
+                    } else {
+                        // we already have the users data
+                        showUserToast({'user_id': user_id});
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            }, function () {
+                // hover off
+                var timeoutId = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                window.ub.data('timeoutID', timeoutId); 
+            });
+            window.ub.hover(
+                function() {console.log('hovering on ub'); clearTimeout(window.ub.data('timeoutID')); },
+                function() {
+                    var timeoutID = setTimeout(function(){ window.ub.fadeOut("fast");}, 100);
+                    window.ub.data('timeoutID', timeoutID);
+            });
+            $(document).scroll(function() {
+                /**
+                 * CONTROLS CARRYING THE HEADER WITH THE PAGE WHEN USER
+                 * SCROLLS
+                 */
+                // scrolling
+                var scroll_top = $(document).scrollTop();
+                if (window.dbar.offset() != null) {
+                    var current_top = window.dbar.offset().top;
+                } else {
+                    return;
+                }
+                if (current_top < window.dbar_top) {
+                    // move bar back to default position
+                    window.dbar.css('position', 'initial').css('top', window.dbar_top).removeClass('scrolling');
+                } else if (current_top < scroll_top || (current_top > window.dbar_top && current_top > scroll_top)) {
+                    // let's get retarded!
+                    //window.dbar.css('position', 'absolute').css('top', scroll_top).css('left', '30%');
+                    window.dbar.animate({top: 0}, 10, function() {
+                        window.dbar.addClass('scrolling');
+                    });
+                }
+            });
+        });
+        var platform = new Mixpanel.Platform(
+            '{{api_key}}',
+            '{{platform_secret}}',
+            '{{campaign.uuid}}'
+        );
+        {% if has_results %}
+            {{mixpanel}}
+            
+            platform.create_pie_chart('pie_chart', 
+                                     ['Email{{campaign.uuid}}', 'Twitter{{campaign.uuid}}', 'Facebook{{campaign.uuid}}'],
+                                     {labels: true, 
+                                     mapping : { 'Email{{campaign.uuid}}' : 'Email', 'Twitter{{campaign.uuid}}' : 'Twitter', 'Facebook{{campaign.uuid}}' : 'Facebook' }});
+        {% endif %}
+        
+        /*
+        platform.create_line_chart( 'graph_div', [ 'Tweets_{{campaign.uuid}}', 
+        {% for r in results %} 'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
+        ], { 'mapping' : { 'Tweets_{{campaign.uuid}}' : 'Tweets',
+        {% for r in results %}
+            'Clicks_{{campaign.uuid}}_{{r.user.twitter_handle}}' : "{{r.user.twitter_handle}}'s Clickthroughs",
+        {% endfor %}
+        }, 'legend': false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts', interval: 7} );
+        */
+        /*
+        platform.create_line_chart( 'graph_div', [
+            'Tweets_{{campaign.uuid}}_BarbaraEMac', 'Clicks_{{campaign.uuid}}_BarbaraEMac'
+        ], { 'mapping' : { 'Clicks_{{campaign.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
+        */
+    </script>
+    <style type="text/css">
+        .arrow {
+            background: url(/static/imgs/db_arrow.png) no-repeat center center;
+        }
+        #results div.row .dollars {
+            background: url(/static/imgs/db_burst.png) no-repeat center center; 
+            height: 128px;
+            text-align: center;
+        }
+        .dollars span {
+            padding-left: 75px;
+        }
+        .cloud {
+            background: url(/static/imgs/db_cloud.png) no-repeat center center; 
+            height: 85px;
+        }
+        .conversions {
+            
+        }
+        #results div.row,
+        #results div.row_details {
+            display: inline-block;
+            color: #919191;
+        }
+        #results div.row div span {
+            position: relative;
+            top: 30%;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.50);
+        }
+        #results div.row div {
+            height: 128px;
+            vertical-align: middle;
+        }
+        #results div.row_details {
+            font-size: 60%;
+            display: inline-block;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #results div.details_toggle div.twitter {
+            background: rgba(87, 213, 255, 0.15) url(/static/imgs/db_twitter.png) no-repeat 40px 12px !important;
+        }
+        #results div.details_toggle div.facebook {
+            background: rgba(59, 89, 153, 0.15) url(/static/imgs/db_facebook.png) no-repeat 45px 12px !important;
+        }
+        #results div.details_toggle div.linkedin {
+            background: rgba(39, 144, 189, 0.15) url(/static/imgs/linkedin-logo.png) no-repeat 45px 12px !important;
+        }
+        #results div.details_toggle div.email {
+            background: rgba(174, 6, 0, 0.15) url(/static/imgs/email_logo.png) no-repeat 42px 12px !important;
+        }
+        #results div.referrers_toggle div {
+            line-height: 2.0em;
+        }
+        #results div.details_toggle div.big {
+            font-size: 125%;
+            font-weight: 500;
+            color: #000000;
+        }
+        #resi;ts div.referrers_toggle div.big {
+            font-size: 100% !important;
+            font-weight: 400 !important;
+        }
+        #results div.prepend-2 {
+            text-align: left;
+        }
+        #results div.row h3.sales,
+        #results_header h3.sales {
+            text-align: right;
+            padding-right: 17px;
+        }
+        #results div.row div.big {
+            font-weight: 500;
+            font-size: 150%;
+            color: #000000;
+        }
+        #results div.row h4 {
+            text-align: center;
+        }
+        hr {
+            background-color: #8ebbc6;
+        }
+        #results div.row:hover {
+            cursor: pointer; 
+        }
+        #results div.expandable:hover div.icon { 
+             background: url(/static/imgs/plus.gif) no-repeat 5% 50% !important;
+        }
+        #results div.expanded div.icon {
+            background: url(/static/imgs/minus.gif) no-repeat 5% 50% !important;
+        }
+        #results_header {
+            display: inline-block;
+            background: rgba(245, 252, 253, 0.60);
+            width: 950px;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+            z-index: 99;
+            vertical-align: middle;
+        }
+        #results_header div {
+            vertical-align: center;
+        }
+        #results_header h3 {
+            margin-bottom: 0.5em;
+            margin-top: 0.5em;
+        }
+        div.scrolling {
+            position: fixed !important;
+            background: rgba(245, 252, 253, 0.95) !important;
+            -moz-border-radius-topleft: 0px;
+            -moz-border-radius-topright: 0px;
+            -moz-border-radius-bottomright: 5px;
+            -moz-border-radius-bottomleft: 5px;
+            -webkit-border-radius: 0px 0px 5px 5px;
+            border-radius: 0px 0px 5px 5px;
+        }
+        a.user {
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0);
+            z-index: 99;
+            width: 70px;
+        }
+        a.user:hover {
+            background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(252,252,252,1) 12%, rgba(241,241,241,0.89) 50%, rgba(225,225,225,0.89) 51%, rgba(246,246,246,0.75) 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(12%,rgba(252,252,252,1)), color-stop(50%,rgba(241,241,241,0.89)), color-stop(51%,rgba(225,225,225,0.89)), color-stop(100%,rgba(246,246,246,0.75))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Opera11.10+ */
+            background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* IE10+ */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#bff6f6f6',GradientType=0 ); /* IE6-9 */
+            background: linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* W3C */ 
+            border-radius: 5px 5px 5px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            cursor: pointer; 
+        }
+        #user_box {
+            /*background: rgba(255, 255, 250, 0.5);*/
+            background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(252,252,252,1) 12%, rgba(241,241,241,0.89) 50%, rgba(225,225,225,0.89) 51%, rgba(246,246,246,0.75) 100%); /* FF3.6+ */
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(12%,rgba(252,252,252,1)), color-stop(50%,rgba(241,241,241,0.89)), color-stop(51%,rgba(225,225,225,0.89)), color-stop(100%,rgba(246,246,246,0.75))); /* Chrome,Safari4+ */
+            background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Chrome10+,Safari5.1+ */
+            background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* Opera11.10+ */
+            background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* IE10+ */
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#bff6f6f6',GradientType=0 ); /* IE6-9 */
+            background: linear-gradient(top, rgba(255,255,255,1) 0%,rgba(252,252,252,1) 12%,rgba(241,241,241,0.89) 50%,rgba(225,225,225,0.89) 51%,rgba(246,246,246,0.75) 100%); /* W3C */ 
+            padding: 10px;
+            border-radius: 5px 5px 5px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            -webkit-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            -moz-box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.5);
+            width: 276px;
+            cursor: pointer;
+            z-index: 98
+        }
+        #user_box img.pic {
+            clear: right;
+            margin-right: 10px;
+            box-shadow: 2px 2px 3px 0px rgba(0,0,0,0.5);
+        }
+        #user_box h3 {
+            padding-bottom: 0px;
+            margin-bottom: 0px;
+        }
+        #user_box span.services img {
+            vertical-align: bottom;
+        }
+        </style>
+{% endblock head %}
+{% block sidebar %}
+    <!-- Sidebar -->
+    <section class="sidebar nested"> <!-- Use class .nested for diferent style -->
+        <h2>Thank you!</h2>
+        <p>We at the Willet Inc team would like to thank you for using our awesome product.</p>
+        <p>Your continued support while we grow our startup is greatly appriciated.</p>
+    </section>
+    <!-- /Sidebar -->
+{% endblock %}
+{% block breadcrumbs %}
+    <li>Dashboard</li>
+{% endblock %}
+{% block content %}
+    <article class="full-block clearfix">
+        <div class="article-container">
+            {% if has_campaigns %}
+                <header>
+                    <h2>Your Campaigns</h2>
+                    <nav>
+                        <ul class="tab-switch">
+                            <li><a class="default-tab" href="#tab0" rel="tooltip" title="Switch to next tab">All</a></li>
+                            <li><a href="#tab1" rel="tooltip" title="Switch to next tab">Basic Typo</a></li>
+                            <li><a href="#tab2" rel="tooltip" title="Switch to next tab">Table and form</a></li>
+                        </ul>
+                    </nav>
+                </header>
+                <section>
+                    <!-- Tab Content #tab0 -->
+                    <div class="tab default-tab" id="tab0">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="title">Title</th>
+                                    <th class="title">Shares</th>
+                                    <th class="title">Clickthroughs </th>
+                                    <th>&nbsp;</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in campaigns %}
+                                <tr class="bottom_border">
+                                    <td>
+                                        <a href="/dashboard/campaign/{{c.uuid}}/" title="See Campaign Results">{{c.title}}</a>
+                                    </td>
+                                    <td>
+                                        {{c.shares}}
+                                    </td>
+                                    <td>
+                                        {{c.clicks}}
+                                    </td>
+                                    <td>
+                                        {% if c.is_shopify %}
+                                            <a href="/shopify/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <a href="/shopify/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                                        {% else %}
+                                            <a href="/code?id={{c.uuid}}" title="View Embed Code">&lt;/&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <a href="/edit?id={{c.uuid}}" title="Edit Campaign"><img src="/static/imgs/edit.png" width=20 height=20 /></a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="/deleteCampaign" method="post" class="center">
+                                            <input type="hidden" name="campaign_uuid" value="{{c.uuid}}" />
+                                            <input type="image" title="Delete" src="/static/imgs/trashcan.png" height=20 />
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            {% else %}
+                <header>
+                    Start learning about your customers by <a href="/edit">creating a campaign</a>.
+                </header>
+            {% endif %}
+        </div>
+    </article>
+
+    <article class="full-block clearfix">
+        <div class="article-container">
+            <header>
+                <h2>Your Top Referrers</h2>
+            </header>
+            <section>
+               <div class="sidetabs">
+                    <nav class="sidetab-switch">
+                        <ul>
+                            <li><a class="default-sidetab" href="#sidetab1">By number of referrals</a></li>
+                            <li><a href="#sidetab2">By Conversions</a></li>
+                            <li><a href="#sidetab3">By Profit</a></li>
+                        </ul>
+                        <p>Aenean facilisis ligula eget orci adipiscing varius. Curabitur sem ligula, egestas vel bibendum sed, sodales eu nulla. Vestibulum luctus aliquam feugiat. Donec porta interdum placerat.</p>
+                    </nav>
+                    <div class="sidetab default-sidetab" id="sidetab1">
+                        <h3>Top referrers by number of referrals</h3>
+                        <em>Insert table here</em>
+                    </div>
+                    <div class="sidetab" id="sidetab2">
+                        <h3>Top referrers by conversions</h3>
+                        <em>Insert table here</em>
+                    </div>
+                    <div class="sidetab" id="sidetab3">
+                        <h3>Top referrers by profit</h3>
+                        <em>Insert table here</em>
+                    </div>
+                </div> 
+            </section>
+            <footer>
+                <p>
+                    All user data is confidential and is not shared.
+                </p>
+            </footer>
+        </div>
+    </article>
+
+{% endblock content %}
