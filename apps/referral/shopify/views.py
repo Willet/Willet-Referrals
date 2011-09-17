@@ -274,6 +274,7 @@ class DynamicLoader(webapp.RequestHandler):
                 'app' : app,
                 'app_uuid' : app.uuid,
                 'text': share_text,
+                'email_text' : app.share_text,
                 'willt_url' : link.get_willt_url(),
                 'willt_code': link.willt_url_code,
                 'order_id': order.order_id if order else "",

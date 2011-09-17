@@ -41,7 +41,7 @@ def create_referral_shopify_app( client, share_text ):
     
     # Install yourself in the Shopify store
     install_webhooks( client.url, client.token, uuid )
-    install_script_tags( client.url, client.token, store_id )
+    install_script_tags( client.url, client.token, client.id )
     
     return app
 

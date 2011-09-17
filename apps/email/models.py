@@ -54,7 +54,7 @@ class Email():
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.
         to_addr = to_addrs.split(',')
-        subject = 'Check This Out!'
+        subject = 'I\'ve Given You A Gift!'
         body = template.render(Email.template_path('invite.html'),
             {
                 'from_addr' : infrom_addr,

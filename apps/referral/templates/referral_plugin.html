@@ -133,7 +133,7 @@
                         // Make a Gmail String
                         str = 'https://mail.google.com/mail/?view=cm&fs=1' +
                               '&to=' + to_addrs + 
-                              '&su=' + "Check This Out!" + 
+                              '&su=' + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A') + 
                               '&ui=2&tf=1';
 
@@ -143,7 +143,7 @@
                         // Make a Yahoo string
                         str = "http://us.mc1216.mail.yahoo.com/mc/compose?.rand=1915749995" + 
                               "&to=" + to_addrs +
-                              "&subject=" + "Check This Out!" + 
+                              "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
 
                         mixpanelTrack( 'Yahoo' );
@@ -151,14 +151,14 @@
                     } else if (who === 'hotmail') {
                         str = 'http://by156w.bay156.mail.live.com/default.aspx?rru=compose' + 
                               "&to=" + to_addrs +
-                              "&subject=" + "Check This Out!" + 
+                              "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
                 
                         mixpanelTrack( 'Hotmail' );
                     } else if (who === 'aol') {
                         str = "http://mail.aol.com/34007-211/aol-6/en-us/mail/compose-message.aspx?" + 
                               "&to=" + to_addrs +
-                              "&subject=" + "Check This Out!" + 
+                              "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
                 
                         mixpanelTrack( 'AOL' );
@@ -430,18 +430,19 @@
         <!-- If this person was referred, let them know! -->
         {% if show_gift %}
         
-            <h1>Congrats! {{referrer_name}} gave you a gift!</h1>
+            <h2> Your gift from {{app.product_name}} will be included in your order! </h2>
             <div class="last append-bottom center">
-                <img width="120px" src="/static/imgs/gift.png" /> 
+                <img height="75px" src="/static/imgs/gift.png" /> 
             </div>
+
             <div id="step1_a">
-                <h2> Pay it forward! Give your friends <span style="color: #ae432e">free gifts</span> from {{app.product_name}}!</h2>
+                <h2> You too can give a <span style="color: #ae432e">free gifts</span> from {{app.product_name}} to your friends!</h2>
             
         {% else %}
 
             <h1>Invite A Friend</h1>
             <div class="last append-bottom center">
-                <img width="120px" src="/static/imgs/gift.png" /> 
+                <img height="120px" src="/static/imgs/gift.png" /> 
             </div>
             
             <div id="step1_a">
@@ -509,7 +510,7 @@
             <div class="prepend-1 span-8 last">
             <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>I left you a gift at {{app.product_name}} - snag it here {{willt_url}}.
 Here's why: 
-{{ text }}</textarea>
+{{ email_text }}</textarea>
             </div>
             
             <div class="span-1">
