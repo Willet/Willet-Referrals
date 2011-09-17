@@ -181,7 +181,9 @@ a div {
     padding: 0px 0px 0px 0px;
 }
 
-button, button:visited {
+button, 
+button:visited 
+.button {
     display:inline-block;
     -webkit-border-radius:3px;
     -moz-border-radius:3px;
@@ -218,7 +220,8 @@ button, button:visited {
     box-shadow:0 1px 2px #999;
     color:#fce8e3;
 }
-button:hover { 
+button:hover,
+.button:hover { 
     background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
     background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);

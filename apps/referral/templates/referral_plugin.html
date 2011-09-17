@@ -440,28 +440,28 @@
             
         {% else %}
 
-            <h1>Invite A Friend</h1>
+        <h1>Would you like to give a <span style="color: #ae432e">free gift</span> to a friend from {{app.product_name}}?</h1>
             <div class="last append-bottom center">
                 <img height="120px" src="/static/imgs/gift.png" /> 
             </div>
             
             <div id="step1_a">
-                <h2> And you'll both get a <span style="color: #ae432e">free gift</span> from {{app.product_name}}!</h2>
+                <h2>You'll get a free gift too!</h2>
 
         {% endif %}
                 <div class="prepend-top last">
-                    <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Ok</button>
+                    <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Give a Gift</button>
                 </div>
             </div>
 
             
             <div id="step1_b" class="hidden">
-                <a href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
+                <a class='button' href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                     Email
                 </a>
 
-                <a href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
+                <a class='button' href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
@@ -475,17 +475,17 @@
         </div>
             
         <div id="step3" class="last hidden" class='step'>
-            <h2>Your gift will arrive with your order!</h2>
+            <h2>Customize the message below and then chose a way to share</h2>
             <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
             
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>
 
             <div class="last" id="choose_share_type">
-                <a class="prepend-top" href="#" title="Share on Facebook" onclick="share('fb');">
+                <a class="prepend-top button" href="#" title="Share on Facebook" onclick="share('fb');">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
                 </a>
-                <a id="twitter_button" href="#" title="Tweet on Twitter" onclick="share('twitter');">
+                <a id="twitter_button button" href="#" title="Tweet on Twitter" onclick="share('twitter');">
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Tweet on Twitter
                 </a>
@@ -508,10 +508,9 @@
             </div>
             
             <div class="prepend-1 span-8 last">
-                <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>
-                    Hi,
-                    {{ email_text }}
-                    {{willt_url}}
+                <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>Hi,
+{{ email_text }}
+{{willt_url}}
                 </textarea>
             </div>
             
