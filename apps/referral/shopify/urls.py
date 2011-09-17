@@ -3,6 +3,7 @@ from apps.referral.shopify.processes import *
 from apps.referral.shopify.views     import *
 
 urlpatterns = [
+    (r'/r/shopify',                  ShowWelcomePage),
     (r'/r/shopify/code',             ShowCodePage),
     (r'/r/shopify/edit',             ShowEditPage),
     (r'/r/shopify/doUpdateOrCreate', DoUpdateOrCreate),

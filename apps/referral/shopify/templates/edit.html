@@ -48,27 +48,24 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">Welcome {{shop_owner}}!</h1>
+    <h1 class="lower-50 center">Hi {{shop_owner}}!</h1>
 
     <div class="span-8 last center">
-        {% if error %} <p class="error"> {{error}} </p> {% endif %}
-        <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
-            <div>
-                <label class="default_label" for="share_text">Default Message</label>
-                <p style="margin-bottom: 0px; font-size: 1.2em; padding-bottom: 0px;">Please enter short message that your customers can customize and share with their friends.</p>
-                <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
-                <br />
-                <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
-            </div>
 
-            <input class="call_to_action big submit" id="submit" type="submit" value="Finish" title="Finish" />
-            
-            <input type="hidden" name="target_url"   value="{{app.target_url}}" />
-            <input type="hidden" name="product_name" value="{{app.product_name}}" />
-            <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
-            <input type="hidden" name="token"        value="{{store_token}}"  />
-        </form>
+        <h3> Did you know that ... </h3>
+        
+        <p>... people are 4X more likely to buy a product
+        if their friends referred them? </p>
+        <p>... people are 10X more likely to buy a product
+        after a friend buys the same product? </p>
+
+        <p> This is why "Invite for a Friend" will boost your sales! </p>
+        <a href="#chat" onClick="return SnapABug.startChat(false);">
+            <button class="regular_button">
+                <img style="height: 20px" src="/static/imgs/friendship.png" />
+                <p style="margin-bottom: 10px"> Have Questions? </p>
+            </button>
+        </a>
 
     </div>
 
@@ -84,105 +81,27 @@
 {% block right_content %}
         <h1 class="span-15 last lower-75 center">{{NAME}}</h1>
 
-        <div id="step1_right" class="prepend-1 span-14 last">
+        <div id="step1_right" class="prepend-1 span-14 last center">
             <p>
                 Start out by telling us what you'd like your buyers to share on their social networks. Here's
                 what your customers will see:
             </p>
-            <div class="center" id="share_iframe_container" style="height: 302px; width: 395px">
-                <iframe width="393" height="301" src='/r/shopify/load/referral?app_id={{app.uuid}}&style=shopify_demo' id="share_iframe" scrolling="no" onLoad="update_share_text();"></iframe>
-            </div>
-        </div>
-        
-        <script>
-            // Fill examples
-            var i_share_text, i_twitter_url, i_unique_link, i_chars_left, i_plugin_title,
-                share_text    = document.getElementById('share_text'),
-                target_url    = document.getElementById('target_url'),
-                share_i_frame = document.getElementById('share_iframe');
-            
-            function update_share_text() {
-              if (!i_share_text) {
-                    i_share_text   = share_i_frame.contentWindow.document.getElementById('share-text');
-                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('share_code');
-                    i_chars_left   = share_i_frame.contentWindow.document.getElementById('chars-left');
-                    i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
-                }
-                i_share_text.innerHTML   = share_text.value;
-                i_unique_link.value      = "{{app.target_url}}";
-                i_plugin_title.innerText = "Invite Your Friends to {{app.product_name}}";
 
-                var count = 140 - share_text.value.length;
-                i_chars_left.innerHTML = count + " characters left";
-            }
-            
-            function url_text() {
-                document.getElementById('share_text_span').innerText = 'I\'ve given you a gift from ' + target_url.value + ' because ...! Go get it here';
-                $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
+            <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
+                <div>
+                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                    <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
+                </div>
+
+                <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
                 
-                update_share_text();
-            }
+                <input type="hidden" name="target_url"   value="{{app.target_url}}" />
+                <input type="hidden" name="product_name" value="{{app.product_name}}" />
+                <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
+                <input type="hidden" name="token"        value="{{store_token}}"  />
+            </form>
 
-        </script>
-
-
-        <script>
-            // Guiders.js code
-            guiders.createGuider({
-              buttons: [{name: "Next"}],
-              description: "<p> Our App has already been installed onto your store's checkout pages. </p> <p> When your customers complete a purchase, they'll be prompted to refer their friends for a <em>gift</em>. </p> <p>We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders!  </p><p>As for the gift itself, start thinking of the perfect gift for your buyers! Should it be a limited edition item or overstock from last season? <em>Pick something you know your buyers will love! </em> </p> <br />",
-              id: "first",
-              next: "second",
-              overlay: true,
-              width: 600,
-              title: "Juice your sales with {{NAME}}!"
-            }) {% if show_guiders %} .show() {% endif %} ;
-         
-            guiders.createGuider({
-              attachTo: "#share_iframe",
-              buttons: [{name: "Next"}],
-              description: "When your customers checkout, here is what they'll see!",
-              id: "second",
-              next: "third",
-              position: 1,
-              width: 300,
-              title: "Look!"
-            });
-
-            guiders.createGuider({
-              attachTo: "#share_iframe",
-              buttons: [{name: "Next"}],
-              description: "Your customers will use this plugin to refer their friends to your store! Click on 'Ok'. Then, choose how you want to share: email or social network! Try it out! We'll wait until you're done!",
-              id: "third",
-              next: "fourth",
-              position: 6,
-              width: 300,
-              title: "Try it out!"
-            });
-
-            guiders.createGuider({
-              attachTo: "#share_text",
-              buttons: [{name: "Next"}],
-              description: "Start by entering a quick message that your customers can customize and share onto their social networks. <br />",
-              id: "fourth",
-              next: "fifth",
-              width: 300,
-              position: 3,
-              title: "Now, what do you want people to know about {{app.product_name}}?"
-            });
-         
-            guiders.createGuider({
-              attachTo: "#submit",
-              buttons: [{name: "Close"}],
-              description: "When you've crafted the perfect message, click here and you're all done!",
-              id: "fifth",
-              next: "finally",
-              position: 3,
-              width: 300,
-              title: "It's That Simple!"
-            });
-        </script>
-
+        </div>
 {% endblock right_content %}
 
 {% block mixpanelTracking %}

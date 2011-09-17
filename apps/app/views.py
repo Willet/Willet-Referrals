@@ -65,7 +65,7 @@ class ShopifyRedirect( URIHandler ):
 
         if app == 'referral':
             logging.info("GOING TO EDIT")
-            self.redirect( '/r/shopify/edit?%s' % self.request.query_string )
+            self.redirect( '/r/shopify?%s' % self.request.query_string )
 
         else:
             logging.info("GOING HOME %s" % app)

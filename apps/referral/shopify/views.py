@@ -26,6 +26,14 @@ from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
 
+class ShowWelcomePage( URIHandler ):
+    def get( self ):
+        client = self.get_client() # May be None
+        template_values = { 'query_string' : self.request.query_string,
+                            'shop_owner'   : client.merchant.get_attr('full_name') if client else 'Awesome Bob' }
+
+        self.response.out.write( self.render_page( 'welcome.html', template_values)) 
+
 class ShowEditPage( URIHandler ):
     # Renders a app page
     def get(self):
@@ -134,6 +142,7 @@ class ShowEditPage( URIHandler ):
 
 class ShowCodePage( URIHandler ):
     def get(self):
+        client = self.get_client() # May be none
         app_id = self.request.get( 'id' )
         template_values = { 'app' : None }
         
@@ -147,6 +156,7 @@ class ShowCodePage( URIHandler ):
             template_values['app'] = app
         
         template_values['BASE_URL'] = URL
+        template_values['shop_owner'] = client.merchant.get_attr('full_name') if client else 'Awesome Bob'
 
         self.response.out.write( self.render_page( 'code.html', template_values ))
 
@@ -170,11 +180,6 @@ class DoUpdateOrCreate( URIHandler ):
             self.redirect( '/r/shopify/edit?id=%s&t=%s&error=1&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
             return
 
-        # If no one is logged in, make them login!
-        if client is None:
-            self.redirect( '/login?url=/shopify/r/edit?id=%s&t=%s&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
-            return
-        
         # Try to grab the referral app
         referral_app = get_app_by_id( app_id )
         

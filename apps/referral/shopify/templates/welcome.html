@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+    </script>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="lower-50 center">Welcome {{shop_owner}}! </h1>
+    <div class="span-8 last center">
+        <p> You've joined the growing "{{NAME}}" community! We're excite to have you join us. </p>
+
+        <a href="#chat" onClick="return SnapABug.startChat(false);">
+            <button class="regular_button">
+                <img style="height: 20px" src="/static/imgs/friendship.png" />
+                <p style="margin-bottom: 10px"> Have Questions? </p>
+            </button>
+        </a>
+
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
+
+    {% if analytics %}
+        <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
+    {% endif %}
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Invite for a Gift</h1>
+
+        <div class="prepend-top prepend-1 span-14 last">
+            <p>
+                Invite for a Gift is Shopify App to help your store generate more sales by using your customers'
+                social networks.
+            
+            </p>
+
+            <h2> How it Works </h2>
+            <p> 
+                When your customers complete a purchase, they'll be prompted to refer their friends for a gift.
+            </p>
+            <p>
+                When their friends shop on your site, they'll be prompted to complete a purchase so that
+                they can get their gift. 
+            </p>
+            <p>
+                Once the friends have made a purchase, they'll be invited to give gifts to their friends and 
+                the cycle continues! 
+            </p>
+            <p>
+                We'll add a note to your orders to let you know when to include the gift - so be sure to watch for it when fulfilling your orders!
+            </p>
+            
+            <h2> The Gift </h2>
+            <p> 
+                As for the gift itself, start thinking of the perfect gift for your buyers! Should it be a limited edition item or overstock from last season? <em>Pick something you know your buyers will love!
+            </p>
+            <p>
+                The cooler the gift, the more your customers will talk about it on their social networks! 
+            </p>
+
+            <h2> Next Steps </h2>
+            <p> Now, we will help you create the perfect invitation message, unique to your store! </p>
+        </div>
+        <div class="span-15 last center">
+            <a href="/r/shopify/edit?{{query_string}}">
+                <button> Let's Get Started! </button>
+            </a>
+        </div>
+
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+    mpq.push(['track_funnel', 4, 'edit_page']);
+{% endblock mixpanelTracking %}
+
