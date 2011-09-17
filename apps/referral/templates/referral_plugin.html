@@ -436,11 +436,11 @@
             </div>
 
             <div id="step1_a">
-                <h2> You too can give a <span style="color: #ae432e">free gifts</span> from {{app.product_name}} to your friends!</h2>
+                <h2> You too can give a <span class='red'>free gifts</span> from {{app.product_name}} to your friends!</h2>
             
         {% else %}
 
-        <h1>Would you like to give a <span style="color: #ae432e">free gift</span> to a friend from {{app.product_name}}?</h1>
+        <h1>Would you like to give a <span class='red'>free gift</span> to a friend from {{app.product_name}}?</h1>
             <div class="last center">
                 <img height="120px" src="/static/imgs/gifts_for_2.png" /> 
             </div>
@@ -474,7 +474,7 @@
         </div>
             
         <div id="step3" class="last hidden" class='step'>
-            <h2>Customize the message below and then chose a way to share</h2>
+            <h1>Give a <span class='red'>free gift</span> to friends on<br />Facebook or Twitter</h1>
             <div class="prepend-top prepend-5 span-4 last" id="chars-left">140 characters left</div>
             
             <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{ text }}</textarea>

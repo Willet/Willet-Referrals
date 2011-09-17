@@ -160,6 +160,9 @@ a.box div {
 .input-content input {
     width: 300px;
 }
+.red {
+    color: #ae432e;
+}
 #share-area {
     visibility: hidden;
 }
