@@ -497,16 +497,18 @@
             
         </div>
         <div class="span-9 last hidden" id="email_div" class='step'>
-            <h2>Once you are happy with the message, chose your E-Mail provider below.</h2> 
-            <div class="span-1">
-                <div class="input-label">Hi</div>
+            <div class="last center" style="margin-top: 1em">
+                <h2>1. Complete your gift message</h2> 
+            </div>
+            <div class="span-1 clear">
+                <div class="input-label">To</div>
             </div>
             <div class="input-content span-8 last">
                     <span class="defaultValue hidden">Friends' emails, separated by commas.</span>
                     <input id="to-emails" type="text" name="email" value="" />
             </div>
             
-            <div class="prepend-1 span-8 last">
+            <div class="prepend-1 span-8 last clear">
                 <textarea wrap="soft" id="share-text-email" onkeydown="countChars();" value='asd'>Hi,
 {{ email_text }}
 {{willt_url}}
@@ -523,9 +525,10 @@
                 </div>
             </div>
             -->
-            <div class="span-5 small_text"> &nbsp;Choose your email provider: </div>
-            <div class="span-4 last right small_text"> Or, let us email it for you:</div>
-            <div class="span-5" style="margin-top: 5px;" >
+            <div class="span-9" style="margin-top: 2em; margin-bottom: 0.5em">
+                <h2>2. Select your e-mail provider</h2> 
+            </div>
+            <div class="span-5">
                 <a class="email_btn box" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
                     <img src="/static/imgs/gmail_logo.png" width="25px" height="20px" />
                 </a>
@@ -539,13 +542,13 @@
                     <img src="/static/imgs/aol_mail_logo.png" width="27px" height="20px" />
                 </a>
             </div>
-            <div class="span-4 last" style="margin-top: 5px;">
+            <div class="span-3 small_text" style="line-height: 3em;">let us email it for you:</div>
+            <div class="span-1 last">
                 <div class="right">
                     <a class="email_btn box" href="#" onClick="sendEmail(true);" title="We will send an email on your behalf"> 
                         <img src="/static/imgs/email_logo.png" width="27px" height="20px" />
                     </a>
                 </div>
-                <div class="clear"></div>
             </div>
         </div>
 
