@@ -59,7 +59,7 @@
                 <!--<div id="tweet-counter-left" style="float: right; color: #056380; font-weight: bold;">140</div>-->
                 <br />
                 <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                <span class="defaultValue hidden" id="share_text_span">I love {{app.product_name}} because ...! You should check them out at {{app.target_url}}!</span>
+                <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
             </div>
 
             <input class="call_to_action big submit" id="submit" type="submit" value="Finish" title="Finish" />
@@ -104,7 +104,7 @@
             function update_share_text() {
               if (!i_share_text) {
                     i_share_text   = share_i_frame.contentWindow.document.getElementById('share-text');
-                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('unique_link');
+                    i_unique_link  = share_i_frame.contentWindow.document.getElementById('share_code');
                     i_chars_left   = share_i_frame.contentWindow.document.getElementById('chars-left');
                     i_plugin_title = share_i_frame.contentWindow.document.getElementById('plugin-title');
                 }
@@ -117,7 +117,7 @@
             }
             
             function url_text() {
-                document.getElementById('share_text_span').innerText = 'I love ' + target_url.value + ' because ...! You should check them out!';
+                document.getElementById('share_text_span').innerText = 'I\'ve given you a gift from ' + target_url.value + ' because ...! Go get it here';
                 $("#share_text").val($("#share_text").siblings('.defaultValue').attr('innerHTML'));
                 
                 update_share_text();
