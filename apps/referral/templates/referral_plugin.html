@@ -119,8 +119,8 @@
                 }
         
                 sendEmailVia = function( who ){
-                    var from_addr = document.getElementById( 'from-email' ),
-                        to_addrs  = document.getElementById( 'to-emails' ).value,
+                    var from_addr = 'you'; 
+                    var to_addrs  = document.getElementById( 'to-emails' ).value,
                         msg       = $('#share-text-email').val(),
                         str;
 
@@ -167,8 +167,8 @@
                 };
 
                 sendEmail = function( via_willet ) {
-                    var from_addr = document.getElementById( 'from-email' ),
-                        to_addrs  = document.getElementById( 'to-emails' ),
+                    var from_addr = 'you'; 
+                    var to_addrs  = document.getElementById( 'to-emails' ),
                         msg       = $('#share-text-email');
             
                     // Check the fields.
@@ -178,7 +178,7 @@
             
                     $.ajax({url: "/email/sendEmailInvites",
                         type: 'post',
-                        data: { from_addr : from_addr.value, 
+                        data: { from_addr : from_addr, 
                                 to_addrs  : to_addrs.value,
                                 msg       : msg.val(),
                                 url       : "{{willt_url}}",
