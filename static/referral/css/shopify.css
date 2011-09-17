@@ -19,6 +19,7 @@
     background: #F7F7F7;
     border: 1px solid #DDD;
     padding: 10px;
+    padding-top: 15px;
     /*margin: 20px 0;*/
     border-radius: 3px;
 }
@@ -29,7 +30,7 @@ a, a * {
 }
 h1 {
     margin-top: -10px;
-    font-size: 180%;
+    font-size: 150%;
 }
 h2 {
     font-size: 120%;
@@ -178,7 +179,7 @@ a.box div {
     width: 300px;
     margin-left: auto;
     margin-right: auto;
-    background-color: #666;
+    background-color: #C1CDCD;
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 0px 0px 0px 0px;

@@ -441,12 +441,12 @@
         {% else %}
 
         <h1>Would you like to give a <span style="color: #ae432e">free gift</span> to a friend from {{app.product_name}}?</h1>
-            <div class="last append-bottom center">
+            <div class="last center">
                 <img height="120px" src="/static/imgs/gifts_for_2.png" /> 
             </div>
             
             <div id="step1_a">
-                <h2>You'll get a free gift too!</h2>
+                <h2 style="margin-bottom: 15px;">You'll get a free gift too!</h2>
 
         {% endif %}
                 <div class="last">
@@ -455,7 +455,7 @@
             </div>
 
             
-            <div id="step1_b" class="hidden">
+            <div id="step1_b" class="hidden" style="margin-top: 20px;">
                 <a style="width: 110px" class='button-link' href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />Email
                 </a>
@@ -465,7 +465,7 @@
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
                 </a>
-                <div class="last"> 
+                <div class="last" style="padding-top: 0.5em;"> 
                     <hr class="hor_line" />
                     or share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
                     <input id="share_code" readonly="readonly" class='small_text' type="text" value="{{ willt_url }}"  />
@@ -512,7 +512,7 @@
 {{willt_url}}
                 </textarea>
             </div>
-            
+            <!--- 
             <div class="span-1">
                 <div class="input-label">From</div>
             </div>
@@ -522,7 +522,7 @@
                     <input id="from-email" type="text" name="email" value="{{ user_email }}" />
                 </div>
             </div>
-            
+            -->
             <div class="span-5 small_text"> &nbsp;Choose your email provider: </div>
             <div class="span-4 last right small_text"> Or, let us email it for you:</div>
             <div class="span-5" style="margin-top: 5px;" >
