@@ -40,8 +40,8 @@ def create_referral_shopify_app( client, share_text ):
     app.put()
     
     # Install yourself in the Shopify store
-    install_webhooks( client.url, client.token, client.id )
-    install_script_tags( client.url, client.token, client.id )
+    install_webhooks( client.url, client.token, uuid )
+    install_script_tags( client.url, client.token, store_id )
     
     return app
 
@@ -52,8 +52,10 @@ def get_shopify_app_by_id(id):
     return ReferralShopify.all().filter( 'uuid =', id ).get()
 
 # Shopify API Calls ------------------------------------------------------------
-def install_webhooks( store_url, store_token, store_id ):
+def install_webhooks( store_url, store_token, uuid ):
     """ Install the webhooks into the Shopify store """
+
+    logging.info("TOKEN %s" % store_token )
 
     url      = '%s/admin/webhooks.json' % ( store_url )
     username = SHOPIFY_API_KEY
@@ -65,7 +67,7 @@ def install_webhooks( store_url, store_token, store_id ):
     h.add_credentials( username, password )
     
     # Install the "Order Creation" webhook
-    data = { "webhook": { "address": "%s/r/shopify/webhook/order?store_id=%s" % (URL, store_id), "format": "json", "topic": "orders/create" } }
+    data = { "webhook": { "address": "%s/r/shopify/webhook/order?uuid=%s" % (URL, uuid), "format": "json", "topic": "orders/create" } }
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
