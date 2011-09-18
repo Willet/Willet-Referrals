@@ -428,7 +428,7 @@
                     <img height="120px" src="/static/imgs/gifts_for_2.png" /> 
                 </div>
 
-                <div id="step1_a">
+                <div id="step1_a" class="prepend-top">
                     <h2>Give a <span class='red'>free gift</span> from {{app.product_name}} to your friends!</h2>
             {% else %}
                 <h1>Would you like to give a <span class='red'>free gift</span> to a friend from {{app.product_name}}?</h1>
@@ -439,10 +439,10 @@
                 <div id="step1_a">
                     <h2 style="margin-bottom: 15px;">You'll get a free gift too!</h2>
             {% endif %}
-                <div class="last">
-                    <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Give a Gift</button>
+                    <div class="last">
+                        <button style="padding: 10px 30px 30px 30px; font-size: 1.3em" onClick="toggleStep1Btns();">Give a Gift</button>
+                    </div>
                 </div>
-            </div>
 
             
             <div id="step1_b" class="hidden" style="margin-top: 20px;">
