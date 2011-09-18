@@ -8,15 +8,13 @@
 {% block left_content %}
     <h1 class="lower-50 center">Welcome {{shop_owner}}! </h1>
     <div class="span-8 last center">
-        <p> You've joined the growing "{{NAME}}" community! We're excite to have you join us. </p>
-
+        <h1 class="loud">What is &#8220;{{NAME}}&#9221;?</h1>
+        <h1 class='quiet'>Enter my message</h1>
+        <h1 class='quiet'>Preview the App</h1>
+        <br />
         <a href="#chat" onClick="return SnapABug.startChat(false);">
-            <button class="regular_button">
-                <img style="height: 20px" src="/static/imgs/friendship.png" />
-                <p style="margin-bottom: 10px"> Have Questions? </p>
-            </button>
+            <em>I need help</em>
         </a>
-
     </div>
 {% endblock left_content %}
 
