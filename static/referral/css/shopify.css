@@ -63,6 +63,7 @@ textarea {
     max-height: 100px;
     max-width: 360px;
     font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
 }
 #share-text-email {
     width: 300px !important;
