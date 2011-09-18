@@ -20,20 +20,7 @@
 {% endblock head %}
 
 {% block left_content %}
-    <h1 class="lower-50 center">Great job, {{shop_owner}}</h1>
-    <div class="span-8 last center">
-        <h2>1. Getting started</h2>
-        <h2>2. Create Message</h2>
-        <h2 class="loud">3. See results</h2>
-        <h2 class="quiet">4. Finished</h2>
-        <br />
-        
-        <h3>
-            <a href="#chat" onClick="return SnapABug.startChat(false);">
-                <em>I need help</em>
-            </a>
-        </h3>
-    </div>
+    {% include "left_col.html" %} 
     <!--
     <h1 class="lower-50 center">Great Job, {{shop_owner}}</h1>
     <div class="span-8 last center">
