@@ -423,7 +423,7 @@
         
             <!-- If this person was referred, let them know! -->
             {% if show_gift %}
-                <h1>Your gift from {{app.product_name}} will be included in your order!</h1>
+            <h1>Your <span class='red'>free gift</span> from {{app.product_name}} will be shipped with your order!</h1>
                 <div class="last center">
                     <img height="120px" src="/static/imgs/gifts_for_2.png" /> 
                 </div>
@@ -445,7 +445,7 @@
                 </div>
 
             
-            <div id="step1_b" class="hidden" style="margin-top: 20px;">
+            <div id="step1_b" class="hidden" style="margin-top: 40px;">
                 <div style="width: 110px" class='button-link' href="#" onClick="toggleEmailShare();" title="Share using your email account or let us email for you!"> 
                     <img src="/static/imgs/email_logo.png" width="27px" height="20px" />Email
                 </div>
@@ -455,11 +455,13 @@
                     <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
                     Share
                 </div>
+                <!--
                 <div class="last" style="padding-top: 0.5em;"> 
                     <hr class="hor_line" />
                     or share your unique link:&nbsp;&nbsp;&nbsp;&nbsp;
                     <input id="share_code" readonly="readonly" class='small_text' type="text" value="{{ willt_url }}"  />
                 </div>
+                -->
             </div>
         </div>
             
@@ -488,7 +490,7 @@
         </div>
         <div class="span-9 last hidden" id="email_div" class='step'>
             <div class="last center" style="margin-top: 1em">
-                <h2>1. Complete your gift message</h2> 
+                <h2 class='quiet'>1. Complete your gift message</h2> 
             </div>
             <div class="span-1 clear">
                 <div class="input-label">To</div>
@@ -517,7 +519,7 @@ Check it out here: {{willt_url}}</textarea>
             </div>
             -->
             <div class="span-9" style="margin-top: 2em; margin-bottom: 0.5em">
-                <h2>2. Select your e-mail provider</h2> 
+                <h2 class='quiet'>2. Select your e-mail provider</h2> 
             </div>
             <div class="span-5">
                 <a class="email_btn box" href="#" onClick="sendEmailVia( 'gmail' );" title="GMail"> 
