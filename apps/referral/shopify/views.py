@@ -28,9 +28,18 @@ from util.consts import *
 
 class ShowWelcomePage( URIHandler ):
     def get( self ):
+        pages = {
+            'one': 'current',
+            'two': 'next',
+            'three': 'next',
+            'four': 'next'
+        }
         client = self.get_client() # May be None
-        template_values = { 'query_string' : self.request.query_string,
-                            'shop_owner'   : client.merchant.get_attr('full_name') if client else 'Awesome Bob' }
+        template_values = {
+            'pages': pages,
+            'query_string' : self.request.query_string,
+            'shop_owner'   : client.merchant.get_attr('full_name') if client else 'Awesome Bob'
+        }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
 
@@ -51,9 +60,17 @@ class ShowEditPage( URIHandler ):
         shopify_sig  = self.request.get( 'signature' )
         store_token  = self.request.get( 't' )
         shopify_timestamp = self.request.get( 'timestamp' )
-        
+        pages = {
+            'one': 'old',
+            'two': 'current',
+            'three': 'next',
+            'four': 'next'
+        } 
         # Init the template values with a blank app
-        template_values = { 'app' : None }
+        template_values = {
+            'pages': pages,
+            'app' : None
+        }
         
         # Check the Shopify stuff if they gave it to us.
         # If it fails, let's just say they aren't coming from Shopify.
@@ -144,7 +161,16 @@ class ShowCodePage( URIHandler ):
     def get(self):
         client = self.get_client() # May be none
         app_id = self.request.get( 'id' )
-        template_values = { 'app' : None }
+        pages = {
+            'one': 'old',
+            'two': 'old',
+            'three': 'current',
+            'four': 'next'
+        }
+        template_values = {
+            'app' : None,
+            'pages': pages
+        }
         
         if app_id:
             # Updating an existing app here:

@@ -609,7 +609,8 @@ div#footer button {
 }
 .left_col {
     height: 100%;
-    background: #006280;
+    /**background: #006280;**/
+    background: rgba(245, 252, 253, 0.60);
     padding: 30px 5px 30px 5px;
     -khtml-border-bottom-right-radius: 30px;
     -o-border-bottom-right-radius: 30px;
@@ -622,15 +623,55 @@ div#footer button {
     -moz-border-bottom-left-radius: 30px;
     border-bottom-left-radius: 30px;
     behavior: ("../js/PIE.htc");
-
+    /*
     -moz-box-shadow: 0 -5px 5px #222;
     -webkit-box-shadow: 0 -5px 5px #222;
     box-shadow: 0 -5px 5px #222;
+    */
+    box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
 }
 
-.left_col h1, .left_col h2, .left_col p, .left_col a {
-    color: white;
-    text-shadow: #474747 1px 1px 1px;
+.left_col h1,
+.left_col h4,
+.left_col p,
+.left_col a {
+    color: #474747;
+    /**text-shadow: #474747 1px 1px 1px;**/
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 1);
+}
+.left_col ol {
+        
+}
+.left_col ol h3 {
+    margin: 0;
+    color: #474747;
+}
+.left_col ol li {
+    padding: 6px;
+    display: inline-block;
+}
+.left_col ol li.current {
+    border-radius: 5px;
+    background: rgb(136,191,232);
+    background: -moz-linear-gradient(top, rgba(136,191,232,1) 0%, rgba(112,176,224,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(136,191,232,1)), color-stop(100%,rgba(112,176,224,1)));
+    background: -webkit-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
+    background: -o-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
+    background: -ms-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#88bfe8', endColorstr='#70b0e0',GradientType=0 );
+    background: linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
+}
+.left_col ol li.current h3{
+    color: #474747;
+}
+.left_col ol li.next {
+    color: #D1D1D1 !important; 
+}
+.left_col ol li.next * {
+    color: #D1D1D1 !important; 
+}
+.left_col ol li.old * {
+    color: black; 
 }
 
 /*******************************************************************************
