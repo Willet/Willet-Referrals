@@ -8,13 +8,17 @@
 {% block left_content %}
     <h1 class="lower-50 center">Welcome {{shop_owner}}! </h1>
     <div class="span-8 last center">
-        <h1 class="loud">What is &#8220;{{NAME}}&#9221;?</h1>
-        <h1 class='quiet'>Enter my message</h1>
-        <h1 class='quiet'>Preview the App</h1>
+        <h2 class="loud">1. Getting started</h2>
+        <h2 class="quiet">2. Create Message</h2>
+        <h2 class="quiet">3. See results</h2>
+        <h2 class="quiet">4. Finished</h2>
         <br />
-        <a href="#chat" onClick="return SnapABug.startChat(false);">
-            <em>I need help</em>
-        </a>
+        
+        <h3>
+            <a href="#chat" onClick="return SnapABug.startChat(false);">
+                <em>I need help</em>
+            </a>
+        </h3>
     </div>
 {% endblock left_content %}
 
