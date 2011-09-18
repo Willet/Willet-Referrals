@@ -642,7 +642,7 @@ div#footer button {
 .left_col ol {
         
 }
-.left_col ol h3 {
+.left_col ol h4 {
     margin: 0;
     color: #474747;
 }
@@ -651,18 +651,11 @@ div#footer button {
     display: inline-block;
 }
 .left_col ol li.current {
-    border-radius: 5px;
-    background: rgb(136,191,232);
-    background: -moz-linear-gradient(top, rgba(136,191,232,1) 0%, rgba(112,176,224,1) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(136,191,232,1)), color-stop(100%,rgba(112,176,224,1)));
-    background: -webkit-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
-    background: -o-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
-    background: -ms-linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#88bfe8', endColorstr='#70b0e0',GradientType=0 );
-    background: linear-gradient(top, rgba(136,191,232,1) 0%,rgba(112,176,224,1) 100%);
+
 }
-.left_col ol li.current h3{
+.left_col ol li.current h4{
     color: #474747;
+    font-weight: bolder;
 }
 .left_col ol li.next {
     color: #D1D1D1 !important; 
