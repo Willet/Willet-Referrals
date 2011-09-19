@@ -46,45 +46,33 @@
             // CACHE SOME OBJECTS
             var st = $('#share_text');
             var ct = $('#compose_text');
+            var updateST = function(el) {
+                // update the share text
+                var id = el.attr('id');
+                var insert = $('#insert_' + id);
+                var val = el.val();
+                insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'))
+                    .effect("highlight", {}, 3000);
+                st.html(ct.html());
+            };
             $('#step1_right div.wizard input.next').click(function() {
                 // go to next wizard step
                 var el = $(this);
                 var par = el.closest('div.wizard');
                 var next = par.next('div.wizard');
-                var id = next.children('input.helper:first').attr('id');
+                var last = par.children('input.helper:first');
+                var last_id = next.children('input.helper:first').attr('id');
                 par.hide();
                 next.fadeIn();
-                ct.children('span').removeClass('highlight');
-                $('#insert_' + id).addClass('highlight');
+                updateST(last);
             });
             $('#step1_right div.wizard input.first').click(function() {
                 // go back to the first
                 var el = $(this);
                 var par = el.closest('div.wizard');
                 var first = par.closest('#step1_right').find('div.wizard:first');
-                var id = first.children('input.helper:first').attr('id');
                 par.hide();
                 first.fadeIn();
-                ct.children('span').removeClass('highlight');
-                $('#insert_' + id).addClass('highlight');
-            });
-            var updateST = function(el) {
-                // update the share text
-                var el = $(el);
-                var id = el.attr('id');
-                var insert = $('#insert_' + id);
-                var val = el.val();
-                insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'));
-                st.html(ct.html());
-            };
-            $('#step1_right input.helper').keypress(function() {
-                updateST(this);
-            }).keyup(function() {
-                updateST(this);
-            }).keydown(function() {
-                updateST(this);
-            }).change(function() {
-                updateST(this);
             });
         });
     </script>
@@ -146,23 +134,20 @@
                 {% else %}
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
-                        <em>eg, socks, shoes, electronics</em>
-                        <br />
                         <input type="text" class="helper" id="product" />
+                        <em>eg, socks, shoes, electronics</em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
-                        <em>eg, colourful, rare</em>
-                        <br />
                         <input type="text" class="helper" id="product_adj" />
+                        <em>eg, colourful, rare</em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
-                        <em>eg, fast delivery, excellent customer service</em>
-                        <br />
                         <input type="text" class="helper" id="store_adj" />
+                        <em>eg, fast delivery, excellent customer service</em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
