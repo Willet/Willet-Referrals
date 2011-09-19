@@ -856,46 +856,51 @@ td.title {
     border-radius: 5px;
 }
 
-button {
-    font-style: normal;
-    letter-spacing: 0px;
-    border: 2px solid #FFF;
-    padding: 5px 5px 5px 5px;
-    font-size: 1.7em;
-    color: #FFF;
-    text-align: center;
-    background-image: -moz-linear-gradient(top, #d03f31 14%, #ae0909);
-    background-image: -webkit-linear-gradient(top, #d03f31 14%, #ae0909);
-    background-image: -ms-linear-gradient(top, #d03f31 14%, #ae0909);
-    background-image: -o-linear-gradient(top, #d03f31 14%, #ae0909);
-    background-image: linear-gradient(top, #d03f31 14%, #ae0909);
-    -pie-background: linear-gradient(top, #d03f31 14%, #ae0909);
-    -khtml-box-shadow: 0 0 10px #C0C0C0;
-    -o-box-shadow: 0 0 10px #C0C0C0;
-    -webkit-box-shadow: 0 0 10px #C0C0C0;
-    -moz-box-shadow: 0 0 10px #C0C0C0;
-    box-shadow: 0 0 10px #C0C0C0;
-    -khtml-border-radius: 5px;
-    -o-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    behavior: ("../js/PIE.htc");
+button, 
+button:visited {
+    display:inline-block;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:3px;
+    text-decoration:none;
+    text-shadow:0 1px 2px #666;
+    white-space:nowrap;
+    cursor:pointer;
+    vertical-align:baseline;
+    -webkit-transition:all 400ms ease;
+    -moz-transition:all 400ms ease;
+    -o-transition:all 400ms ease;
+    transition:all 400ms ease;
+    overflow:visible;
+    width:auto;
+    background-color:#ae432e;
+    color: #fff;
+
+    border:1px solid;
+    padding:4px 15px;
+    margin-bottom:2px;
+    font-weight:bold;
+    height:28px;
+    cursor:pointer;
+    
+    -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
+
+    border-color:#cb6652 #b74d39 #803121;
+    background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+    background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
+    background:-o-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
+    -webkit-box-shadow:0 1px 2px #999;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+    color:#fce8e3;
 }
-button:hover {
-    cursor: pointer;
-    background-image: -moz-linear-gradient(top, #ae0909 14%, #d03f31);
-    background-image: -webkit-linear-gradient(top, #ae0909 14%, #d03f31);
-    background-image: -ms-linear-gradient(top, #ae0909 14%, #d03f31);
-    background-image: -o-linear-gradient(top, #ae0909 14%, #d03f31);
-    background-image: linear-gradient(top, #ae0909 14%, #d03f31);
-    -pie-background: linear-gradient(top, #ae0909 14%, #d03f31);
-    behavior: ("../js/PIE.htc");
+button:hover { 
+    background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+    background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    color:#fff;
 }
-button:active {
-    background-image: none;
-    background-color: #d03f31;
-}
+button:active { }
 
 .regular_button {
   background: -moz-linear-gradient(top, #bde8f5 0%, #006280 100%);
