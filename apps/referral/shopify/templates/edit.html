@@ -61,8 +61,10 @@
                 var el = $(this);
                 var par = el.closest('div.wizard');
                 var next = par.next('div.wizard');
-                var last = par.children('input.helper:first');
-                var last_id = next.children('input.helper:first').attr('id');
+                var last = par.children('div')
+                    .children('input.helper:first');
+                var last_id = next.children('div')
+                    .children('input.helper:first').attr('id');
 
                 if (next.find('textarea').length > 0) {
                     // there is a textarea, last wizard
@@ -91,7 +93,11 @@
             });
             $('#step1_right div.wizard em span').click(function() {
                 var el = $(this);
-                el.parent('em').parent('p').siblings('input.helper:first').val(el.html());
+                el.parent('em')
+                    .parent('p')
+                    .siblings('div')
+                    .children('input.helper:first')
+                    .val(el.html());
             });
         });
     </script>
@@ -197,7 +203,7 @@
                         </p>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
-                        <h3>What is <em>great</em> about your proudcts?</h3>
+                        <h3>In one word, describe what is <em>great</em> about your products?</h3>
                         <div>
                             <input type="text" class="helper" id="product_adj" /> 
                             <button class="next">Next</button>
