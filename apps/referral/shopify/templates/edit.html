@@ -180,27 +180,33 @@
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <input type="text" class="helper" id="product" />
-                        <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
                         <button class="next">Next</button>
+                        <p>
+                            <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
+                        </p>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
-                        <input type="text" class="helper" id="product_adj" />
-                        <em>eg, <span>colourful</span>, <span>rare</span></em><br />
+                        <input type="text" class="helper" id="product_adj" /> 
                         <button class="next">Next</button>
+                        <p>
+                            <em>eg, <span>colourful</span>, <span>rare</span></em><br />
+                        </p> 
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
                         <input type="text" class="helper" id="store_adj" />
-                        <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em><br />
                         <button class="next">Next</button>
+                        <p>
+                            <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em><br />
+                        </p>
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
                         <h3>Happy with your message?</h3>
                         <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
                         <p>
                                 <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
-                                <button class="goback">Back to the start</button>
+                                <button class="goback blue">Back to the start</button>
                         </p>
                     </div>
                     <br />
