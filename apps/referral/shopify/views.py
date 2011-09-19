@@ -202,7 +202,7 @@ class DoUpdateOrCreate( URIHandler ):
         store_token  = self.request.get( 'token' )
         
         # strip newlines from share text
-        share_text = strip(share_text)
+        share_text = share_text.strip()
 
         # Error check the input!
         if product_name == '' or target_url == ''  or share_text == '':
