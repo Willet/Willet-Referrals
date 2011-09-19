@@ -42,31 +42,46 @@
                     }
                 }
             );
+
+            // CACHE SOME OBJECTS
+            var st = $('#share_text');
+            var ct = $('#compose_text');
             $('#step1_right div.wizard input.next').click(function() {
                 var el = $(this);
                 var par = el.parent('div.wizard');
                 var next = par.next('div.wizard');
+                var id = next.children('input.helper:first').attr('id');
                 par.hide();
                 next.fadeIn();
-                var id = next.children('input.helper:first').attr('id');
-                var st = $('#share_text');
                 st.children('span').removeClass('highlight');
                 $('#insert_' + id).addClass('highlight');
             });
             $('#step1_right div.wizard input.first').click(function() {
+                // go back to the first
                 var el = $(this);
                 var par = el.parent('div.wizard');
                 var first = par.parent('#step1_right').children('div.wizard:first');
+                var id = first.children('input.helper:first').attr('id');
                 par.hide();
                 first.fadeIn();
+                st.children('span').removeClass('highlight');
+                $('#insert_' + id).addClass('highlight');
             });
-            $('#step1_right input.helper').keypress(function() {
+            var updateST(this) {
                 var el = $(this);
                 var id = el.attr('id');
-                var st = $('#share_text');
-                var insert = $('#insert_'+id);
+                var insert = $('#insert_' + id);
                 insert.html(el.val());
-                st.html($('#compose_text').html());
+                st.html(ct.html());
+            }
+            $('#step1_right input.helper').keypress(function() {
+                updateST(this);
+            }).keyup(function() {
+                updateST(this);
+            }).keydown(function() {
+                updateST(this);
+            }).change(function() {
+                updateST(this);
             });
         });
     </script>
@@ -105,9 +120,8 @@
 {% endblock right_head %}
 
 {% block right_content %}
-        <h2 class="span-15 last lower-75">2. Create Message</h2>
-
         <div id="step1_right" class="prepend-1 span-14 last left">
+            <h2 class="span-15 last lower-75">2. Create Message</h2>
             <p>
                 Start out by telling us what you'd like your buyers to share on their social networks. Here's
                 what your customers will see:
@@ -130,18 +144,21 @@
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <em>eg, socks, shoes, electronics</em>
+                        <br />
                         <input type="text" class="helper" id="product" />
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
                         <em>eg, colourful, rare</em>
+                        <br />
                         <input type="text" class="helper" id="product_adj" />
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
                         <em>eg, fast delivery, excellent customer service</em>
+                        <br />
                         <input type="text" class="helper" id="store_adj" />
                         <input type="button" class="next" value="Next" />
                     </div>
@@ -152,7 +169,7 @@
                     </div>
                     <div id="compose_text">
                         I left a free gift at {{STORE_NAME}}. I love their 
-                        <span id="insert_product">...</span> because they are
+                        <span class='highlight' id="insert_product">...</span> because they are
                         <span id="insert_product_adj">...</span> and their store is
                         <span id="insert_store_adj">...</span>.
                     </div>
