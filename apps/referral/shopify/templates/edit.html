@@ -124,7 +124,7 @@
 {% endblock right_head %}
 
 {% block right_content %}
-        <h2 class="span-15 last lower-100">2. Create Message</h2>
+        <h2 class="span-15 last lower-100 center">2. Create Message</h2>
         <div id="step1_right" class="prepend-1 span-14 last left">
             <p>
                 We will now create the message that your customers will share to their friends.
@@ -168,12 +168,7 @@
                         <button class="goback">Back to the start</button>
                     </div>
                     <br />
-                    <div id="compose_text">
-                        I left a free gift at {{STORE_NAME}}. I love their 
-                        <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
-                        <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is
-                        <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.
-                    </div>
+                    <div id="compose_text">I left a free gift at {{STORE_NAME}}. I love their <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
 
                     <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
                 {% endif %}
