@@ -73,7 +73,8 @@
                 var el = $(el);
                 var id = el.attr('id');
                 var insert = $('#insert_' + id);
-                insert.html(el.val());
+                var val = el.val();
+                insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'));
                 st.html(ct.html());
             };
             $('#step1_right input.helper').keypress(function() {
@@ -171,9 +172,9 @@
                     </div>
                     <div id="compose_text">
                         I left a free gift at {{STORE_NAME}}. I love their 
-                        <span class='highlight' id="insert_product">...</span> because they are
-                        <span id="insert_product_adj">...</span> and their store is
-                        <span id="insert_store_adj">...</span>.
+                        <span class='highlight' id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
+                        <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is
+                        <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.
                     </div>
 
                     <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
