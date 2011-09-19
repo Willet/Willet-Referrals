@@ -51,8 +51,8 @@
                 var insert = $('#insert_' + id);
                 var val = el.val();
                 insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'))
-                    .effect("highlight", {}, 3000);
-                st.html(ct.html());
+                    .effect("highlight", {}, 500);
+                st.html(ct.text());
             };
             $('#step1_right div.wizard button.next').click(function(event) {
                 // go to next wizard step
@@ -124,8 +124,8 @@
 {% endblock right_head %}
 
 {% block right_content %}
+        <h2 class="span-15 last lower-100">2. Create Message</h2>
         <div id="step1_right" class="prepend-1 span-14 last left">
-            <h2 class="span-15 last lower-75">2. Create Message</h2>
             <p>
                 We will now create the message that your customers will share to their friends.
             </p>
