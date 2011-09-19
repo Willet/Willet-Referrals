@@ -62,6 +62,17 @@
                 var next = par.next('div.wizard');
                 var last = par.children('input.helper:first');
                 var last_id = next.children('input.helper:first').attr('id');
+
+                if (next.find('textarea')) {
+                    // there is a textarea, last wizard
+                    st.show();
+                    ct.hide();
+                } else {
+                    // any other wizard
+                    st.hide();
+                    ct.show();
+                }
+
                 par.hide();
                 next.fadeIn();
                 updateST(last);
@@ -74,6 +85,8 @@
                 var first = par.closest('#step1_right').find('div.wizard:first');
                 par.hide();
                 first.fadeIn();
+                st.hide();
+                ct.show();
             });
             $('#step1_right div.wizard em span').click(function() {
                 var el = $(this);
@@ -107,6 +120,26 @@
         }
         #step1_right em span:hover {
             border-bottom: 1px solid #006280;
+        }
+        button.blue {
+            -webkit-box-shadow: 0 1px 2px #999;
+            -moz-box-shadow: 0 1px 2px #999;
+            box-shadow: 0 1px 2px #999;
+            color: #FCE8E3;  
+            border-color: #1495CC #2B8AB3 #066D99;
+            background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+            background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#088EC8), color-stop(0.05, #6CB8D9));
+            background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+            color: #EBF9FF;
+        }
+        div.wizard input {
+            margin-bottom: 0px;
+        }
+        div.wizard p {
+            margin-bottom: 0.5em;
+        }
+        div.wizard p em {
+            font-size: 1.3em; 
         }
     </style>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
@@ -147,7 +180,7 @@
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <input type="text" class="helper" id="product" />
-                        <em>eg, <span>socks</span>, <span>shoes</span>, <span>electronics</span></em><br />
+                        <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
                         <button class="next">Next</button>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
@@ -164,13 +197,16 @@
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
                         <h3>Happy with your message?</h3>
-                        <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
-                        <button class="goback">Back to the start</button>
+                        <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                        <p>
+                                <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
+                                <button class="goback">Back to the start</button>
+                        </p>
                     </div>
                     <br />
+                    <h3>Message Preview</h3>
                     <div id="compose_text">I left a free gift at {{app.product_name}}. I love their <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
 
-                    <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
                 {% endif %}
             </form>
         </div>
