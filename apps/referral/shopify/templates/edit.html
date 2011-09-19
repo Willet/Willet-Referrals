@@ -74,6 +74,10 @@
                 par.hide();
                 first.fadeIn();
             });
+            $('#step1_right div.wizard em span').click(function() {
+                var el = $(this);
+                el.parent('em').siblings('input.helper:first').val(el.html());
+            });
         });
     </script>
     <style type="text/css">
@@ -135,19 +139,19 @@
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <input type="text" class="helper" id="product" />
-                        <em>eg, socks, shoes, electronics</em>
+                        <em>eg, <span>socks</span>, <span>shoes</span>, <span>electronics</span></em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
                         <input type="text" class="helper" id="product_adj" />
-                        <em>eg, colourful, rare</em>
+                        <em>eg, <span>colourful</span>, <span>rare</span></em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
                         <input type="text" class="helper" id="store_adj" />
-                        <em>eg, fast delivery, excellent customer service</em>
+                        <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em>
                         <input type="button" class="next" value="Next" />
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
@@ -157,7 +161,7 @@
                     </div>
                     <div id="compose_text">
                         I left a free gift at {{STORE_NAME}}. I love their 
-                        <span class='highlight' id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
+                        <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
                         <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is
                         <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.
                     </div>
