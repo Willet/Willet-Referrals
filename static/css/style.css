@@ -901,6 +901,24 @@ button:hover {
     color:#fff;
 }
 button:active { }
+button.blue {
+    -webkit-box-shadow: 0 1px 2px #999;
+    -moz-box-shadow: 0 1px 2px #999;
+    box-shadow: 0 1px 2px #999;
+    color: #FCE8E3;  
+    border-color: #1495CC #2B8AB3 #066D99;
+    background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+    background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#088EC8), color-stop(0.05, #6CB8D9));
+    background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+    color: #EBF9FF;
+}
+.button.blue:hover,
+button.blue:hover {
+    background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
+    background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#077BAD), color-stop(0.05, #6CB8D9));
+    background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
+    color: white;
+}
 button img {
     float: left;
 }
