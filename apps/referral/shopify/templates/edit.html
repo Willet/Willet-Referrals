@@ -45,6 +45,7 @@
             // CACHE SOME OBJECTS
             var st = $('#share_text');
             var ct = $('#compose_text');
+            var cd = $('#compose_div');
             var updateST = function(el) {
                 // update the share text
                 var id = el.attr('id');
@@ -63,14 +64,14 @@
                 var last = par.children('input.helper:first');
                 var last_id = next.children('input.helper:first').attr('id');
 
-                if (next.find('textarea')) {
+                if (next.find('textarea').length > 0) {
                     // there is a textarea, last wizard
                     st.show();
-                    ct.hide();
+                    cd.hide();
                 } else {
                     // any other wizard
                     st.hide();
-                    ct.show();
+                    cd.show();
                 }
 
                 par.hide();
@@ -86,11 +87,11 @@
                 par.hide();
                 first.fadeIn();
                 st.hide();
-                ct.show();
+                cd.show();
             });
             $('#step1_right div.wizard em span').click(function() {
                 var el = $(this);
-                el.parent('em').siblings('input.helper:first').val(el.html());
+                el.parent('em').parent('p').siblings('input.helper:first').val(el.html());
             });
         });
     </script>
@@ -141,6 +142,14 @@
         div.wizard p em {
             font-size: 1em; 
         }
+        div.wizard div button {
+            top: -3px;
+            position: relative;
+        }
+        div.wizard textarea {
+            width: 500px;
+            max-width: 500px;
+        }
     </style>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
 {% endblock head %}
@@ -179,24 +188,30 @@
                 {% else %}
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
-                        <input type="text" class="helper" id="product" />
-                        <button class="next">Next</button>
+                        <div>
+                            <input type="text" class="helper" id="product" />
+                            <button class="next">Next</button>
+                        </div>
                         <p>
                             <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
                         </p>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
-                        <input type="text" class="helper" id="product_adj" /> 
-                        <button class="next">Next</button>
+                        <div>
+                            <input type="text" class="helper" id="product_adj" /> 
+                            <button class="next">Next</button>
+                        </div>
                         <p>
                             <em>eg, <span>colourful</span>, <span>rare</span></em><br />
                         </p> 
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
-                        <input type="text" class="helper" id="store_adj" />
-                        <button class="next">Next</button>
+                        <div>
+                            <input type="text" class="helper" id="store_adj" />
+                            <button class="next">Next</button>
+                        </div>
                         <p>
                             <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em><br />
                         </p>
@@ -210,9 +225,10 @@
                         </p>
                     </div>
                     <br />
-                    <h3>Message Preview</h3>
-                    <div id="compose_text">I left a free gift at {{app.product_name}}. I love their <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
-
+                    <div id="compose_div">
+                        <h3 class='quiet' style='margin-top:5px; margin-bottom: 5px;'>Message Preview</h3>
+                        <div id="compose_text">I left a free gift at {{app.product_name}}. I love their <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
+                    </div>
                 {% endif %}
             </form>
         </div>
