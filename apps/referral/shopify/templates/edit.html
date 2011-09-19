@@ -67,7 +67,7 @@
                 st.children('span').removeClass('highlight');
                 $('#insert_' + id).addClass('highlight');
             });
-            var updateST(this) {
+            var updateST = function(this) {
                 var el = $(this);
                 var id = el.attr('id');
                 var insert = $('#insert_' + id);
