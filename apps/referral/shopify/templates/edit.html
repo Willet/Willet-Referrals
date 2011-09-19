@@ -42,35 +42,65 @@
                     }
                 }
             );
+
+            // CACHE SOME OBJECTS
+            var st = $('#share_text');
+            var ct = $('#compose_text');
+            var updateST = function(el) {
+                // update the share text
+                var id = el.attr('id');
+                var insert = $('#insert_' + id);
+                var val = el.val();
+                insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'))
+                    .effect("highlight", {}, 3000);
+                st.html(ct.html());
+            };
+            $('#step1_right div.wizard input.next').click(function() {
+                // go to next wizard step
+                var el = $(this);
+                var par = el.closest('div.wizard');
+                var next = par.next('div.wizard');
+                var last = par.children('input.helper:first');
+                var last_id = next.children('input.helper:first').attr('id');
+                par.hide();
+                next.fadeIn();
+                updateST(last);
+            });
+            $('#step1_right div.wizard input.first').click(function() {
+                // go back to the first
+                var el = $(this);
+                var par = el.closest('div.wizard');
+                var first = par.closest('#step1_right').find('div.wizard:first');
+                par.hide();
+                first.fadeIn();
+            });
         });
     </script>
+    <style type="text/css">
+        #compose_text {
+            display: block;
+            width: 100%;
+            background: rgba(245, 252, 253, 0.75);
+            border-radius: 5px;
+            box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            font-size: 160%;
+        }
+        #compose_text span {
+            display: inline-block;
+            background: #F0F0F0;
+            border-radius: 2px;
+            padding: 3px 5px 3px 5px;
+        }
+        #compose_text span.highlight {
+            background: #FFF68F;
+        }
+    </style>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
 {% endblock head %}
 
-{% block left_content %}
+{% block left_content %})
    {% include "left_col.html" %}  
-    <!---
-    <h1 class="lower-50 center">Hi {{shop_owner}}!</h1>
-
-    <div class="span-8 last center">
-
-        <h3> Did you know that ... </h3>
-        
-        <p>... people are 4X more likely to buy a product
-        if their friends referred them? </p>
-        <p>... people are 10X more likely to buy a product
-        after a friend buys the same product? </p>
-
-        <p> This is why "Invite for a Friend" will boost your sales! </p>
-        <a href="#chat" onClick="return SnapABug.startChat(false);">
-            <button class="regular_button">
-                <img style="height: 20px" src="/static/imgs/friendship.png" />
-                <p style="margin-bottom: 10px"> Have Questions? </p>
-            </button>
-        </a>
-    </div>
-    -->
-
 {% endblock left_content %}
 
 {% block right_head %}
@@ -81,27 +111,59 @@
 {% endblock right_head %}
 
 {% block right_content %}
-        <h1 class="span-15 last lower-75 center">2. Create Message</h1>
-
-        <div id="step1_right" class="prepend-1 span-14 last center">
+        <div id="step1_right" class="prepend-1 span-14 last left">
+            <h2 class="span-15 last lower-75">2. Create Message</h2>
             <p>
                 We will now create the message that your customers will share to their friends.
             </p>
-
             <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
-                <div>
-                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                    <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
-                </div>
-
-                <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
-                
                 <input type="hidden" name="target_url"   value="{{app.target_url}}" />
                 <input type="hidden" name="product_name" value="{{app.product_name}}" />
                 <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
                 <input type="hidden" name="token"        value="{{store_token}}"  />
-            </form>
 
+                {% if has_app %}
+                        <div>
+                            <textarea id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                            <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
+                        </div>
+
+                        <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
+                        
+                {% else %}
+                    <div class='wizard' id="compose_1">
+                        <h3>What type of products does your store specialize in?</h3>
+                        <input type="text" class="helper" id="product" />
+                        <em>eg, socks, shoes, electronics</em>
+                        <input type="button" class="next" value="Next" />
+                    </div>
+                    <div class='wizard' id="compose_2" style="display: none;">
+                        <h3>What is <em>great</em> about your proudcts?</h3>
+                        <input type="text" class="helper" id="product_adj" />
+                        <em>eg, colourful, rare</em>
+                        <input type="button" class="next" value="Next" />
+                    </div>
+                    <div class='wizard' id="compose_3" style="display: none;">
+                        <h3>What is <em>special</em> about your store?</h3>
+                        <input type="text" class="helper" id="store_adj" />
+                        <em>eg, fast delivery, excellent customer service</em>
+                        <input type="button" class="next" value="Next" />
+                    </div>
+                    <div class='wizard' id="compose_4" style="display: none;">
+                        <h3>Happy with your message?</h3>
+                        <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
+                        <input class="first" value="Back to the start" type="button" />
+                    </div>
+                    <div id="compose_text">
+                        I left a free gift at {{STORE_NAME}}. I love their 
+                        <span class='highlight' id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
+                        <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is
+                        <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.
+                    </div>
+
+                    <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                {% endif %}
+            </form>
         </div>
 {% endblock right_content %}
 

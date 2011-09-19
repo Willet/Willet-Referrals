@@ -69,7 +69,8 @@ class ShowEditPage( URIHandler ):
         # Init the template values with a blank app
         template_values = {
             'pages': pages,
-            'app' : None
+            'app' : None,
+            'has_app': False
         }
         
         # Check the Shopify stuff if they gave it to us.
@@ -102,9 +103,9 @@ class ShowEditPage( URIHandler ):
                     'target_url'   : client.url,
                     'uuid': ''
                 }
-                template_values['has_app'] = False
             else:
                 template_values['app']     = app
+                template_values['has_app'] = True 
                     
             template_values['shop_owner'] = client.merchant.get_attr('full_name') if client else 'Awesome Bob'
 
@@ -150,11 +151,12 @@ class ShowEditPage( URIHandler ):
                 self.redirect( '/r/edit' )
                 return
             
+            template_values['has_app'] = True 
             template_values['app']       = app
             template_values['analytics'] = True if app.cached_clicks_count != 0 else False
 
         template_values['BASE_URL']  = URL
-
+        template_values['has_app'] = False
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
 class ShowCodePage( URIHandler ):
@@ -181,6 +183,7 @@ class ShowCodePage( URIHandler ):
 
             template_values['app'] = app
         
+        template_values['has_app'] = app != None 
         template_values['BASE_URL'] = URL
         template_values['shop_owner'] = client.merchant.get_attr('full_name') if client else 'Awesome Bob'
 
