@@ -1,6 +1,6 @@
 #wrapper {
     text-align: center;
-    padding: 0px !important;
+    padding: 10px 10px 10px 10px;
     font-size: 80%; 
     float: none;
     min-height: 315px;
@@ -9,15 +9,18 @@
 }
 #invite {
     width: 371px;
-    margin: 0px !important;
-    margin-top: 0 !important;
-    margin-right: 0 !important;
+    height: 295px;
+}
+#thanks {
+    width: 371px;
+    height: 295px;
 }
 .willt {
     background: #F7F7F7;
     border: 1px solid #DDD;
     padding: 10px;
-    margin: 20px 0;
+    padding-top: 15px;
+    /*margin: 20px 0;*/
     border-radius: 3px;
 }
 a, a * { 
@@ -27,7 +30,7 @@ a, a * {
 }
 h1 {
     margin-top: -10px;
-    font-size: 180%;
+    font-size: 150%;
 }
 h2 {
     font-size: 120%;
@@ -57,39 +60,68 @@ textarea {
     padding: 4px; 
     color: black;
     margin: 0px 0px 0px 0px;
-    max-height: 75px;
-    max-width: 300px;
+    max-height: 100px;
+    max-width: 360px;
     font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
     overflow-x: hidden;
 }
 #share-text-email {
     width: 300px !important;
 }
-a {
-    display: -moz-inline-stack;
-    display: inline-block;
-    position: relative;
-    color: #1f75cc;
-    background-color: #fafcff;
-    margin: 1px -1px 0 0; 
-    border: 1px solid #5e8bf0;
-    border-width: 1px 1px;  
-    _padding: 3px; 
-    _border-width: 1px; 
-    _display: inline;  
-    height: 23px; 
-    line-height: 23px;
-    padding: 1px 10px 1px 10px; 
-    _border:none;         
+a.box {
+    display:inline-block;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:3px;
+    text-decoration:none;
+    text-shadow:0 1px 2px #666;
+    white-space:nowrap;
+    cursor:pointer;
+    vertical-align:baseline;
+    -webkit-transition:all 400ms ease;
+    -moz-transition:all 400ms ease;
+    -o-transition:all 400ms ease;
+    transition:all 400ms ease;
+    overflow:visible;
+    width:auto;
+
+    border:1px solid;
+    padding: 5px 5px 0px 5px;
+    margin-bottom:2px;
+    font-weight:bold;
+    height:28px;
+    cursor:pointer;
+    
+    -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
+
+    background: rgb(175,212,237);
+    background: -moz-linear-gradient(top, rgba(175,212,237,1) 0%, rgba(89,156,204,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(175,212,237,1)), color-stop(100%,rgba(89,156,204,1)));
+    background: -webkit-linear-gradient(top, rgba(175,212,237,1) 0%,rgba(89,156,204,1) 100%);
+    background: -o-linear-gradient(top, rgba(175,212,237,1) 0%,rgba(89,156,204,1) 100%);
+    background: -ms-linear-gradient(top, rgba(175,212,237,1) 0%,rgba(89,156,204,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#afd4ed', endColorstr='#599ccc',GradientType=0 );
+    background: linear-gradient(top, rgba(175,212,237,1) 0%,rgba(89,156,204,1) 100%);
+
+    border-color:#d4e4ef;
+    -webkit-box-shadow:0 1px 2px #999;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+    color:#fff;      
 }
-a:hover { 
-    color: #1f75cc;
-    text-decoration: none;
-    border-color: #4291df; 
-    position: relative; 
-    z-index:2;
+a.box:hover { 
+    background: rgb(150,200,234);
+    background: -moz-linear-gradient(top, rgba(150,200,234,1) 0%, rgba(73,149,204,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(150,200,234,1)), color-stop(100%,rgba(73,149,204,1)));
+    background: -webkit-linear-gradient(top, rgba(150,200,234,1) 0%,rgba(73,149,204,1) 100%);
+    background: -o-linear-gradient(top, rgba(150,200,234,1) 0%,rgba(73,149,204,1) 100%);
+    background: -ms-linear-gradient(top, rgba(150,200,234,1) 0%,rgba(73,149,204,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#96c8ea', endColorstr='#4995cc',GradientType=0 );
+    background: linear-gradient(top, rgba(150,200,234,1) 0%,rgba(73,149,204,1) 100%);
+
+    color:#fff;
 }
-a:active {
+a.box:active {
     background-color: #4291df;
     color: #fff;
 }
@@ -101,7 +133,7 @@ input {
 .disabled:active,
 .disabled:hover,
 .disabled:visited,
-a:hover .disabled  {
+a.box:hover .disabled  {
     cursor: not-allowed;
     border: 1px solid #DDDDDD;
     color: #DDDDDD;
@@ -125,13 +157,13 @@ div#use_us {
     float: right;
 }
 a.box img,
-.button-link img{
+.button-link img {
     float: left;
     height: 20px;
     padding: 0px 5px 0px 5px;
     margin-top: 1px;
 }
-a div {
+a.box div {
     padding: 0px 0px 0px 0px;
     float: left;
     margin-top: -1px;
@@ -158,6 +190,9 @@ a div {
 .input-content input {
     width: 300px;
 }
+.red {
+    color: #ae432e;
+}
 #share-area {
     visibility: hidden;
 }
@@ -177,13 +212,14 @@ a div {
     width: 300px;
     margin-left: auto;
     margin-right: auto;
-    background-color: #666;
+    background-color: #C1CDCD;
     margin-top: 5px;
     margin-bottom: 5px;
     padding: 0px 0px 0px 0px;
 }
 
-button, button:visited {
+button, 
+button:visited {
     display:inline-block;
     -webkit-border-radius:3px;
     -moz-border-radius:3px;

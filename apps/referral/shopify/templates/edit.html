@@ -194,73 +194,73 @@
 {% endblock right_head %}
 
 {% block right_content %}
-        <h2 class="span-15 last lower-100 center">2. Create Message</h2>
-        <div id="step1_right" class="prepend-1 prepend-top span-14 last left">
-            <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
-                <input type="hidden" name="target_url"   value="{{app.target_url}}" />
-                <input type="hidden" name="product_name" value="{{app.product_name}}" />
-                <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
-                <input type="hidden" name="token"        value="{{store_token}}"  />
+    <h2 class="span-15 last lower-100 center">2. Create Message</h2>
+    <div id="step1_right" class="prepend-1 prepend-top span-14 last left">
+        <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
+            <input type="hidden" name="target_url"   value="{{app.target_url}}" />
+            <input type="hidden" name="product_name" value="{{app.product_name}}" />
+            <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
+            <input type="hidden" name="token"        value="{{store_token}}"  />
 
-                {% if has_app %}
-                        <div>
-                            <textarea id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                            <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
-                        </div>
+            {% if has_app %}
+                    <div>
+                        <textarea id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                        <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
+                    </div>
 
-                        <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
-                        
-                {% else %}
-                    <div class="error" id="compose_error" style="display: none;">&nbsp;</div>
-                    <div class='wizard' id="compose_1">
-                        <h3>What type of products does your store specialize in?</h3>
-                        <div>
-                            <input type="text" class="helper" id="product" />
-                            <button class="next">Next</button>
-                        </div>
-                        <p>
-                            <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
-                        </p>
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
+                    
+            {% else %}
+                <div class="error" id="compose_error" style="display: none;">&nbsp;</div>
+                <div class='wizard' id="compose_1">
+                    <h3>What type of products does your store specialize in?</h3>
+                    <div>
+                        <input type="text" class="helper" id="product" />
+                        <button class="next">Next</button>
                     </div>
-                    <div class='wizard' id="compose_2" style="display: none;">
-                        <h3>In one word, describe what is <em>great</em> about your products?</h3>
-                        <div>
-                            <input type="text" class="helper" id="product_adj" /> 
-                            <button class="next">Next</button>
-                        </div>
-                        <p>
-                            <em>eg, <span>colourful</span>, <span>rare</span>, <span>unique</span></em><br />
-                        </p> 
+                    <p>
+                        <em>eg, <span>purses</span>, <span>shoes</span>, <span>electronics</span></em><br />
+                    </p>
+                </div>
+                <div class='wizard' id="compose_2" style="display: none;">
+                    <h3>In one word, describe what is <em>great</em> about your products?</h3>
+                    <div>
+                        <input type="text" class="helper" id="product_adj" /> 
+                        <button class="next">Next</button>
                     </div>
-                    <div class='wizard' id="compose_3" style="display: none;">
-                        <h3>What is <em>special</em> about your store?</h3>
-                        <div>
-                            <input type="text" class="helper" id="store_adj" />
-                            <button class="next">Next</button>
-                        </div>
-                        <p>
-                            <em>eg, <span>delivery times</span>, <span>customer service</span></em><br />
-                        </p>
+                    <p>
+                        <em>eg, <span>colourful</span>, <span>rare</span>, <span>unique</span></em><br />
+                    </p> 
+                </div>
+                <div class='wizard' id="compose_3" style="display: none;">
+                    <h3>What is <em>special</em> about your store?</h3>
+                    <div>
+                        <input type="text" class="helper" id="store_adj" />
+                        <button class="next">Next</button>
                     </div>
-                    <div class='wizard' id="compose_4" style="display: none;">
-                        <h3>Happy with your message?</h3>
-                        <p class="quiet">
-                            <em>
-                                Please check the grammar of this message.
-                            </em>
-                        </p>
-                        <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                        <button class="submit" id="submit">Save my message</button>
-                        <button class="goback blue">Back to the start</button>
-                    </div>
-                    <br />
-                    <div id="compose_div">
-                        <h3 class='quiet' style='margin-top:15px; margin-bottom: 5px;'>Message Preview</h3>
-                        <div id="compose_text">I left a free gift for you at {{app.product_name}}. I love their <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> and their store has great <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
-                    </div>
-                {% endif %}
-            </form>
-        </div>
+                    <p>
+                        <em>eg, <span>delivery times</span>, <span>customer service</span></em><br />
+                    </p>
+                </div>
+                <div class='wizard' id="compose_4" style="display: none;">
+                    <h3>Happy with your message?</h3>
+                    <p class="quiet">
+                        <em>
+                            Please check the grammar of this message.
+                        </em>
+                    </p>
+                    <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                    <button class="submit" id="submit">Save my message</button>
+                    <button class="goback blue">Back to the start</button>
+                </div>
+                <br />
+                <div id="compose_div">
+                    <h3 class='quiet' style='margin-top:15px; margin-bottom: 5px;'>Message Preview</h3>
+                    <div id="compose_text">I left a free gift for you at {{app.product_name}}. I love their <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> and their store has great <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
+                </div>
+            {% endif %}
+        </form>
+    </div>
 {% endblock right_content %}
 
 {% block mixpanelTracking %}
