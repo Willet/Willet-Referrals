@@ -201,6 +201,9 @@ class DoUpdateOrCreate( URIHandler ):
         share_text   = self.request.get( 'share_text' )
         store_token  = self.request.get( 'token' )
         
+        # strip newlines from share text
+        share_text = strip(share_text)
+
         # Error check the input!
         if product_name == '' or target_url == ''  or share_text == '':
             self.redirect( '/r/shopify/edit?id=%s&t=%s&error=2&share_text=%s&target_url=%s&product_name=%s' % (app_id, store_token, share_text, target_url, product_name) )
