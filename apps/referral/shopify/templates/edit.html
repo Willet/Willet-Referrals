@@ -46,7 +46,7 @@
             var st = $('#share_text');
             var ct = $('#compose_text');
             var cd = $('#compose_div');
-            var ce = $('#compose_error');
+            window.ce = $('#compose_error');
             var updateST = function(el) {
                 // update the share text
                 var id = el.attr('id');
@@ -73,12 +73,12 @@
                 // make sure value is not blank
                 if (last.val() == '') {
                     // too short
-                    ce.html('Please enter a longer answer').slideDown();
-                    ce.data('timeout', setTimeout('ce.slideUp();', 3000));
+                    window.ce.html('Please enter a longer answer').slideDown();
+                    window.ce.data('timeout', setTimeout('window.ce.slideUp();', 3000));
                 } else if (st.text().length > 120) {
                     // too long
-                    ce.html('Please enter a shorter answer').slideDown();
-                    ce.data('timeout', setTimeout('ce.slideUp();', 3000));
+                    window.ce.html('Please enter a shorter answer').slideDown();
+                    window.ce.data('timeout', setTimeout('window.ce.slideUp();', 3000));
                 } else {
                     // good to go!
                     if (next.find('textarea').length > 0) {
@@ -161,11 +161,7 @@
             margin-bottom: 0.5em;
         }
         div.wizard p em {
-            font-size: 1em; 
-        }
-        div.wizard div button {
-            top: -3px;
-            position: relative;
+            font-size: 90%; 
         }
         div.wizard textarea {
             width: 500px;
