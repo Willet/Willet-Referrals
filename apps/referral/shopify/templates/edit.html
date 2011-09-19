@@ -54,7 +54,7 @@
                     .effect("highlight", {}, 3000);
                 st.html(ct.html());
             };
-            $('#step1_right div.wizard input.next').click(function() {
+            $('#step1_right div.wizard button.next').click(function() {
                 // go to next wizard step
                 var el = $(this);
                 var par = el.closest('div.wizard');
@@ -65,7 +65,7 @@
                 next.fadeIn();
                 updateST(last);
             });
-            $('#step1_right div.wizard input.first').click(function() {
+            $('#step1_right div.wizard button.first').click(function() {
                 // go back to the first
                 var el = $(this);
                 var par = el.closest('div.wizard');
@@ -145,25 +145,25 @@
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <input type="text" class="helper" id="product" />
-                        <em>eg, <span>socks</span>, <span>shoes</span>, <span>electronics</span></em>
-                        <input type="button" class="next" value="Next" />
+                        <em>eg, <span>socks</span>, <span>shoes</span>, <span>electronics</span></em><br />
+                        <button class="next">Next</button>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
                         <h3>What is <em>great</em> about your proudcts?</h3>
                         <input type="text" class="helper" id="product_adj" />
-                        <em>eg, <span>colourful</span>, <span>rare</span></em>
-                        <input type="button" class="next" value="Next" />
+                        <em>eg, <span>colourful</span>, <span>rare</span></em><br />
+                        <button class="next">Next</button>
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
                         <h3>What is <em>special</em> about your store?</h3>
                         <input type="text" class="helper" id="store_adj" />
-                        <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em>
-                        <input type="button" class="next" value="Next" />
+                        <em>eg, <span>fast delivery</span>, <span>excellent customer service</span></em><br />
+                        <button class="next">Next</button>
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
                         <h3>Happy with your message?</h3>
-                        <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
-                        <input class="first" value="Back to the start" type="button" />
+                        <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
+                        <button class="first">Back to the start</button>
                     </div>
                     <div id="compose_text">
                         I left a free gift at {{STORE_NAME}}. I love their 
