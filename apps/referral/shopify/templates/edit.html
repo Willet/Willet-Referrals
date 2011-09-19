@@ -54,8 +54,9 @@
                     .effect("highlight", {}, 3000);
                 st.html(ct.html());
             };
-            $('#step1_right div.wizard button.next').click(function() {
+            $('#step1_right div.wizard button.next').click(function(event) {
                 // go to next wizard step
+                event.preventDefault();
                 var el = $(this);
                 var par = el.closest('div.wizard');
                 var next = par.next('div.wizard');
@@ -65,8 +66,9 @@
                 next.fadeIn();
                 updateST(last);
             });
-            $('#step1_right div.wizard button.first').click(function() {
+            $('#step1_right div.wizard button.goback').click(function(event) {
                 // go back to the first
+                event.preventDefault();
                 var el = $(this);
                 var par = el.closest('div.wizard');
                 var first = par.closest('#step1_right').find('div.wizard:first');
@@ -163,8 +165,9 @@
                     <div class='wizard' id="compose_4" style="display: none;">
                         <h3>Happy with your message?</h3>
                         <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
-                        <button class="first">Back to the start</button>
+                        <button class="goback">Back to the start</button>
                     </div>
+                    <br />
                     <div id="compose_text">
                         I left a free gift at {{STORE_NAME}}. I love their 
                         <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are
