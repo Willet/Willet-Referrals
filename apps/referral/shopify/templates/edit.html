@@ -46,13 +46,15 @@
             var st = $('#share_text');
             var ct = $('#compose_text');
             var cd = $('#compose_div');
+            var ce = $('#compose_error');
             var updateST = function(el) {
                 // update the share text
                 var id = el.attr('id');
                 var insert = $('#insert_' + id);
                 var val = el.val();
+                
                 insert.html((val != '' ? val : '&nbsp;&nbsp;&nbsp;'))
-                    .effect("highlight", {}, 500);
+                    .effect("highlight", {}, 3000);
                 st.html(ct.text());
             };
             $('#step1_right div.wizard button.next').click(function(event) {
@@ -66,19 +68,32 @@
                 var last_id = next.children('div')
                     .children('input.helper:first').attr('id');
 
-                if (next.find('textarea').length > 0) {
-                    // there is a textarea, last wizard
-                    st.show();
-                    cd.hide();
-                } else {
-                    // any other wizard
-                    st.hide();
-                    cd.show();
-                }
-
-                par.hide();
-                next.fadeIn();
                 updateST(last);
+                
+                // make sure value is not blank
+                if (last.val() == '') {
+                    // too short
+                    ce.html('Please enter a longer answer').slideDown();
+                    ce.data('timeout', setTimeout('ce.slideUp();', 3000));
+                } else if (st.text().length > 120) {
+                    // too long
+                    ce.html('Please enter a shorter answer').slideDown();
+                    ce.data('timeout', setTimeout('ce.slideUp();', 3000));
+                } else {
+                    // good to go!
+                    if (next.find('textarea').length > 0) {
+                        // there is a textarea, last wizard
+                        st.show();
+                        cd.hide();
+                    } else {
+                        // any other wizard
+                        st.hide();
+                        cd.show();
+                    }
+
+                    par.hide();
+                    next.fadeIn();
+                }
             });
             $('#step1_right div.wizard button.goback').click(function(event) {
                 // go back to the first
@@ -192,6 +207,7 @@
                         <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
                         
                 {% else %}
+                    <div class="error" id="compose_error" style="display: none;">&nbsp;</div>
                     <div class='wizard' id="compose_1">
                         <h3>What type of products does your store specialize in?</h3>
                         <div>
@@ -224,6 +240,11 @@
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
                         <h3>Happy with your message?</h3>
+                        <p class="quiet">
+                            <em>
+                                Please check the grammar of this message.
+                            </em>
+                        </p>
                         <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
                         <p>
                                 <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
@@ -233,7 +254,7 @@
                     <br />
                     <div id="compose_div">
                         <h3 class='quiet' style='margin-top:5px; margin-bottom: 5px;'>Message Preview</h3>
-                        <div id="compose_text">I left a free gift at {{app.product_name}}. I love their <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> because they are <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> and their store is <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
+                        <div id="compose_text">I left a free gift for you at {{app.product_name}}. I love their <span id="insert_product_adj">&nbsp;&nbsp;&nbsp;</span> <span id="insert_product">&nbsp;&nbsp;&nbsp;</span> and their store has great <span id="insert_store_adj">&nbsp;&nbsp;&nbsp;</span>.</div>
                     </div>
                 {% endif %}
             </form>
