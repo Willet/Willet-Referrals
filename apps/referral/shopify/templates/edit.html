@@ -48,6 +48,10 @@
                 var next = par.next('div.wizard');
                 par.hide();
                 next.fadeIn();
+                var id = next.children('input.helper:first').attr('id');
+                var st = $('#share_text');
+                st.children('span').removeClass('highlight');
+                $('#insert_' + id).addClass('highlight');
             });
             $('#step1_right div.wizard input.first').click(function() {
                 var el = $(this);
@@ -70,15 +74,20 @@
         #compose_text {
             display: block;
             width: 100%;
-            background: #eff;
+            background: rgba(245, 252, 253, 0.75);
             border-radius: 5px;
-            border: 1px solid rgba(0,0,0,0.5);
-            box-shadow: 0px 0px 1px rgba(0,0,0,0.25);
+            box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            font-size: 160%;
         }
         #compose_text span {
             display: inline-block;
-            background: #FFF68F;
+            background: #F0F0F0;
             border-radius: 2px;
+            padding: 3px 5px 3px 5px;
+        }
+        #compose_text span.highlight {
+            background: #FFF68F;
         }
     </style>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
@@ -119,25 +128,25 @@
                         
                 {% else %}
                     <div class='wizard' id="compose_1">
-                        What type of products does your store specialize in? <br />
+                        <h3>What type of products does your store specialize in?</h3>
+                        <em>eg, socks, shoes, electronics</em>
                         <input type="text" class="helper" id="product" />
                         <input type="button" class="next" value="Next" />
-                        <em>eg, socks, shoes, electronics</em>
                     </div>
                     <div class='wizard' id="compose_2" style="display: none;">
-                        What is <em>great</em> about your proudcts? <br />
+                        <h3>What is <em>great</em> about your proudcts?</h3>
+                        <em>eg, colourful, rare</em>
                         <input type="text" class="helper" id="product_adj" />
                         <input type="button" class="next" value="Next" />
-                        <em>eg, colourful, rare</em>
                     </div>
                     <div class='wizard' id="compose_3" style="display: none;">
-                        What is <em>special</em> about your store? <br />
+                        <h3>What is <em>special</em> about your store?</h3>
+                        <em>eg, fast delivery, excellent customer service</em>
                         <input type="text" class="helper" id="store_adj" />
                         <input type="button" class="next" value="Next" />
-                        <em>eg, fast delivery, excellent customer service</em>
                     </div>
                     <div class='wizard' id="compose_4" style="display: none;">
-                        Happy with your message?
+                        <h3>Happy with your message?</h3>
                         <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
                         <input class="first" value="Back to the start" type="button" />
                     </div>
