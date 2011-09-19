@@ -42,35 +42,48 @@
                     }
                 }
             );
+            $('#step1_right div.wizard input.next').click(function() {
+                var el = $(this);
+                var par = el.parent('div.wizard');
+                var next = par.next('div.wizard');
+                par.hide();
+                next.fadeIn();
+            });
+            $('#step1_right div.wizard input.first').click(function() {
+                var el = $(this);
+                var par = el.parent('div.wizard');
+                var first = par.parent('#step1_right').children('div.wizard:first');
+                par.hide();
+                first.fadeIn();
+            });
+            $('#step1_right input.helper').keypress(function() {
+                var el = $(this);
+                var id = el.attr('id');
+                var insert = $('#insert_'+id);
+                insert.html(el.val());
+            });
         });
     </script>
+    <style type="text/css">
+        #compose_text {
+            display: block;
+            width: 100%;
+            background: #eff;
+            border-radius: 5px;
+            border: 1px solid rgba(0,0,0,0.5);
+            box-shadow: 0px 0px 1px rgba(0,0,0,0.25);
+        }
+        #compose_text span {
+            display: inline-block;
+            background: #FFF68F;
+            border-radius: 2px;
+        }
+    </style>
     <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
 {% endblock head %}
 
 {% block left_content %}
    {% include "left_col.html" %}  
-    <!---
-    <h1 class="lower-50 center">Hi {{shop_owner}}!</h1>
-
-    <div class="span-8 last center">
-
-        <h3> Did you know that ... </h3>
-        
-        <p>... people are 4X more likely to buy a product
-        if their friends referred them? </p>
-        <p>... people are 10X more likely to buy a product
-        after a friend buys the same product? </p>
-
-        <p> This is why "Invite for a Friend" will boost your sales! </p>
-        <a href="#chat" onClick="return SnapABug.startChat(false);">
-            <button class="regular_button">
-                <img style="height: 20px" src="/static/imgs/friendship.png" />
-                <p style="margin-bottom: 10px"> Have Questions? </p>
-            </button>
-        </a>
-    </div>
-    -->
-
 {% endblock left_content %}
 
 {% block right_head %}
@@ -81,28 +94,58 @@
 {% endblock right_head %}
 
 {% block right_content %}
-        <h1 class="span-15 last lower-75 center">{{NAME}}</h1>
+        <h1 class="span-15 last lower-75 center">2. Create Message</h1>
 
-        <div id="step1_right" class="prepend-1 span-14 last center">
+        <div id="step1_right" class="prepend-1 span-14 last ">
             <p>
                 Start out by telling us what you'd like your buyers to share on their social networks. Here's
                 what your customers will see:
             </p>
+            {% if has_app %}
+                <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
+                    <div>
+                        <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
+                        <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
+                    </div>
 
-            <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
-                <div>
-                    <textarea id="share_text" name="share_text" onFocus="update_share_text();" onKeyUp="update_share_text()"; onBlur="update_share_text();">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                    <span class="defaultValue hidden" id="share_text_span">I've given you a gift from {{app.product_name}} because ...! Go grab it here: {{app.target_url}}!</span>
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
+                    
+                    <input type="hidden" name="target_url"   value="{{app.target_url}}" />
+                    <input type="hidden" name="product_name" value="{{app.product_name}}" />
+                    <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
+                    <input type="hidden" name="token"        value="{{store_token}}"  />
+                </form>
+            {% else %}
+                <div class='wizard' id="compose_1">
+                    What type of products does your store specialize in? <br />
+                    <input type="text" class="helper" id="product" />
+                    <input type="button" class="next" value="Next" />
+                    <em>eg, socks, shoes, electronics</em>
                 </div>
-
-                <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
-                
-                <input type="hidden" name="target_url"   value="{{app.target_url}}" />
-                <input type="hidden" name="product_name" value="{{app.product_name}}" />
-                <input type="hidden" name="uuid"         value="{{app.uuid}}"  />
-                <input type="hidden" name="token"        value="{{store_token}}"  />
-            </form>
-
+                <div class='wizard' id="compose_2" style="display: none;">
+                    What is <em>great</em> about your proudcts? <br />
+                    <input type="text" class="helper" id="product_adj" />
+                    <input type="button" class="next" value="Next" />
+                    <em>eg, colourful, rare</em>
+                </div>
+                <div class='wizard' id="compose_3" style="display: none;">
+                    What is <em>special</em> about your store? <br />
+                    <input type="text" class="helper" id="store_adj" />
+                    <input type="button" class="next" value="Next" />
+                    <em>eg, fast delivery, excellent customer service</em>
+                </div>
+                <div class='wizard' id="compose_4" style="display: none;">
+                    Happy with your message?
+                    <input class="call_to_action big submit" id="submit" type="submit" value="Save" title="Save" />
+                    <input class="first" value="Back to the start" type="button" />
+                </div>
+                <div id="compose_text">
+                    I left a free gift at {{STORE_NAME}}. I love their 
+                    <span id="insert_product">...</span> because they are
+                    <span id="insert_product_adj">...</span> and their store is
+                    <span id="insert_store_adj">...</span>.
+                </div>
+            {% endif %}
         </div>
 {% endblock right_content %}
 
