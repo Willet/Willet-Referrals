@@ -47,6 +47,7 @@
             var st = $('#share_text');
             var ct = $('#compose_text');
             $('#step1_right div.wizard input.next').click(function() {
+                // go to next wizard step
                 var el = $(this);
                 var par = el.parent('div.wizard');
                 var next = par.next('div.wizard');
@@ -68,12 +69,13 @@
                 $('#insert_' + id).addClass('highlight');
             });
             var updateST = function(this) {
+                // update the share text
                 var el = $(this);
                 var id = el.attr('id');
                 var insert = $('#insert_' + id);
                 insert.html(el.val());
                 st.html(ct.html());
-            }
+            };
             $('#step1_right input.helper').keypress(function() {
                 updateST(this);
             }).keyup(function() {
