@@ -68,9 +68,9 @@
                 st.children('span').removeClass('highlight');
                 $('#insert_' + id).addClass('highlight');
             });
-            var updateST = function(this) {
+            var updateST = function(el) {
                 // update the share text
-                var el = $(this);
+                var el = $(el);
                 var id = el.attr('id');
                 var insert = $('#insert_' + id);
                 insert.html(el.val());
