@@ -197,9 +197,6 @@
 {% block right_content %}
         <h2 class="span-15 last lower-100 center">2. Create Message</h2>
         <div id="step1_right" class="prepend-1 span-14 last left">
-            <p>
-                We will now create the message that your customers will share to their friends.
-            </p>
             <form action="/r/shopify/doUpdateOrCreate" class="offer_form" method="post">
                 <input type="hidden" name="target_url"   value="{{app.target_url}}" />
                 <input type="hidden" name="product_name" value="{{app.product_name}}" />
@@ -254,7 +251,7 @@
                             </em>
                         </p>
                         <textarea style="display: none;" id="share_text" name="share_text">{% if app %}{{app.share_text}}{% endif %}</textarea>
-                        <button class="submit" id="submit">Save my message</button>&nbsp;or&nbsp;
+                        <button class="submit" id="submit">Save my message</button>
                         <button class="goback blue">Back to the start</button>
                     </div>
                     <br />
