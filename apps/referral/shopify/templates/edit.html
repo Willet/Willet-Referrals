@@ -54,18 +54,18 @@
                 var id = next.children('input.helper:first').attr('id');
                 par.hide();
                 next.fadeIn();
-                st.children('span').removeClass('highlight');
+                ct.children('span').removeClass('highlight');
                 $('#insert_' + id).addClass('highlight');
             });
             $('#step1_right div.wizard input.first').click(function() {
                 // go back to the first
                 var el = $(this);
                 var par = el.parent('div.wizard');
-                var first = par.parent('#step1_right').children('div.wizard:first');
+                var first = par.parent('#step1_right').children('div.wizard').first();
                 var id = first.children('input.helper:first').attr('id');
                 par.hide();
                 first.fadeIn();
-                st.children('span').removeClass('highlight');
+                ct.children('span').removeClass('highlight');
                 $('#insert_' + id).addClass('highlight');
             });
             var updateST = function(el) {
