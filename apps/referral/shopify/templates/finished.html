@@ -1,25 +1,10 @@
 {% extends "base.html" %}
 
-{% block head %}
-    <!-- Guiders stuff -->
-    <script src="/static/guiders/guiders-1.1.0.js" type="text/javascript"></script>
-    <script>
-        $(document).ready(function(){
-            // jquery code here 
-        });
-    </script>
-    <style type="text/css">
-       
-    </style>
-    <link rel="stylesheet" href="/static/guiders/guiders-1.1.0.css" type="text/css" />
-{% endblock head %}
-
 {% block left_content %})
    {% include "left_col.html" %}  
 {% endblock left_content %}
 
 {% block right_head %}
-    <!-- <p><a href="{{logout_url}}">Logout</a></p> -->
     {% if analytics %}
         <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
     {% endif %}
@@ -28,10 +13,10 @@
 {% block right_content %}
     <h2 class="span-15 last lower-100 center">4. Finished</h2>
     <div id="step2_right" class="prepend-1 center prepend-top span-14 last left">
-        <p>
+        <p style='text-align: left'>
             Congratulations, <em>{{NAME}}</em> is now installed on your store.   
         </p>
-        <p>
+        <p style='text-align: left'>
             We will e-mail you as soon as your users start referring! 
         </p>
 
