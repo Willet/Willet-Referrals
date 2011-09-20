@@ -17,8 +17,11 @@
     };
         $(document).ready(function() {
             $('#go_to_shopify').click(function() {
-                window.location = "{{app.target_url}}/admin";
-            })
+                window.location = "/r/shopify/finished?id={{app.uuid}}";
+            });
+            $('#go_back').click(function() {
+                window.location = "/r/shopify/edit?id={{app.uuid}}";
+            });
         });
     </script>
 {% endblock head %}
@@ -38,21 +41,13 @@
     <h2 class="span-15 last lower-100 center">3. See Results</h2>
     <div id="step2_right" class="prepend-1 prepend-top span-14 last left">
         <p>
-            &#8220;{{NAME}}&#8221; has been installed on your store, and
-            you have crafted the default sharing message.
-        </p>
-        <p>
-            Below is the app as it will appear to a customer when they complete 
+            Below is the {{NAME}} app as it will appear to a customer when they complete 
             a purchase. Try it out!
         </p>
         <iframe width="393" height="322" src='/r/shopify/load/referral?app_id={{app.uuid}}&style=shopify_demo' id="share_iframe" scrolling="no"></iframe>
-
-        <button class='blue' id='go_to_shopify'>
-            <img src="/static/imgs/shopify-bag-36.png" />
-            <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                Back to your Store 
-            </span>
-        </button>
+        
+        <button id='go_to_shopify'>I like the message</button>
+        <button class='blue' id='go_back'>Let me change the message</button>
     </div>
 {% endblock right_content %}
 
