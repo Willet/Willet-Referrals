@@ -40,15 +40,15 @@
 {% block right_content %}
     <h2 class="span-15 last lower-100 center">3. See Results</h2>
     <div id="step2_right" class="prepend-1 center prepend-top span-14 last left">
-        <p>
-            Below is the {{NAME}} app as it will appear to a customer when they complete 
+        <p style="text-align: left">
+            Below is the <em>{{NAME}}</em> app as it will appear to a customer when they complete 
             a purchase. Try it out!
         </p>
         <iframe width="393" height="322" src='/r/shopify/load/referral?app_id={{app.uuid}}&style=shopify_demo' id="share_iframe" scrolling="no"></iframe>
-        <p>
-            <button id='go_to_shopify'>Finish</button>
-            <button class='blue' id='go_back'>Back</button>
-        </p>
+        <div class='prepend-top'>
+            <button id='go_to_shopify' class='blue'>Finish</button>
+            <button class='grey' id='go_back'>Back</button>
+        </div>
     </div>
 {% endblock right_content %}
 
