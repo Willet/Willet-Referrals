@@ -919,6 +919,31 @@ button.blue:hover {
     background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
     color: white;
 }
+button.grey,
+.button.grey {
+    -webkit-box-shadow: 0 1px 2px #999;
+    -moz-box-shadow: 0 1px 2px #999;
+    box-shadow: 0 1px 2px #999;
+    background: rgb(238,238,238);
+    background: -moz-linear-gradient(top, rgba(238,238,238,1) 0%, rgba(204,204,204,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(204,204,204,1)));
+    background: -webkit-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: -o-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: -ms-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
+    background: linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+}
+.button.grey:hover,
+button.grey:hover {
+    background: rgb(216,216,216);
+    background: -moz-linear-gradient(top, rgba(216,216,216,1) 0%, rgba(147,147,147,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(216,216,216,1)), color-stop(100%,rgba(147,147,147,1)));
+    background: -webkit-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -o-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    background: -ms-linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d8d8d8', endColorstr='#939393',GradientType=0 );
+    background: linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
+}
 button img {
     float: left;
 }
