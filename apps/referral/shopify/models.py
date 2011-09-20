@@ -21,7 +21,8 @@ from util.helpers         import generate_uuid
 # ------------------------------------------------------------------------------
 class ReferralShopify( Referral ):
     
-    store_id = db.IntegerProperty( required = True )
+    # Shopify's ID for this store
+    store_id = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -117,4 +118,3 @@ def install_script_tags( store_url, store_token, store_id ):
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
-
