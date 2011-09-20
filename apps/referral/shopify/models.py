@@ -37,7 +37,7 @@ def create_referral_shopify_app( client, share_text ):
     uuid = generate_uuid( 16 )
     app = ReferralShopify( key_name     = uuid,
                            uuid         = uuid,
-                           client       = client.client,
+                           client       = client,
                            product_name = client.name, # Store name
                            target_url   = client.url, # Store url
                            store_id     = client.id, # Store id
