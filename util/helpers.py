@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
+import sys
+
+from google.appengine.ext        import webapp
 
 from util.consts  import *
 from util.cookies import LilCookies
@@ -153,42 +156,43 @@ def is_blacklisted( header ):
         return header in user_agent_blacklist
 
 
-def getIndexOfTuple(l, index, value):
+def getURIForView(l, index, value):
     """ gets index of value in tuple"""
     for pos,t in enumerate(l):
-        if t[index] == value:
+        if t[index].__name__ == value:
             return pos
 
     # Matches behavior of list.index
     raise ValueError("list.index(x): x not in list")
 
-def reverse(view, qs=None):
-    uris = []
-    url = '/error'
+def url(view, *args, **kwargs):
+    """
+    looks up a url for a view
+        - view is a string, name of the view (such as ShowRoutes)
+        - args are optional parameters for that view
+        - **kwargs takes a named argument qs. qs is passed to
+            urllib.urlencode and tacked on to the end of the url
+            Basically, use this to pass a dict of arguments
+        example usage: url('ShowDashboard', '12512512', qs={'order': 'date'})
+            - this would return a url to the ShowDashboard view, for the
+              dashboard id 12512512, and pass the order=date
+            - /app/12512512/?order=date
+        example: url('ShowProfilePage', '1252', '2151', qs={'format':'json'})
+            - /user/1252/2151/?format=json
+    """
+    app = webapp.WSGIApplication.active_instance
+    handler = app.get_registered_handler_by_name(view)
 
-    for app in INSTALLED_APPS:
-        try:
-            import_str = 'apps.%s.urls' % app
-            __import__(import_str, globals(), locals(), [], -1)
-            app_urls = sys.modules[import_str]
-            uris.extend(app_urls.urlpatterns)
+    logging.error('handler: %s' % handler)
 
-        except Exception:
-            logging.error('Error reversing url %s' % app, exc_info=True)
+    url = handler.get_url(*args)
 
-    # we have all the urls now
-
-    # urls are in format (url, view)
-    # we want a particular view
-    try:
-        index = getIndexOfTuple(uris, 1, view)
-    except Exception,e:
-        logging.error('could not reverse view %s' % view, exc_info=True)
-    else:
-        url = uris[index][0]
-    
-    if qs != None:
+    qs = kwargs.get('qs', ())
+    if qs:
         url += '?%s' % urllib.urlencode(qs)
 
-    return url
+    logging.error(qs)
+    logging.error('got url: %s' % url)
+
+    return url  
 

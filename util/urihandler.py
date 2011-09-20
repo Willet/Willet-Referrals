@@ -56,6 +56,7 @@ class URIHandler( webapp.RequestHandler ):
         
         app_path = self.get_app_path()
         
+
         if template_path != None:
             logging.info('got template_path: %s' % template_path)
             path = os.path.join(template_path, path)
