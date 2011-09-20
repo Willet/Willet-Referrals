@@ -7,6 +7,7 @@ urlpatterns = [
     (r'/r/shopify/code',             ShowCodePage),
     (r'/r/shopify/edit',             ShowEditPage),
     (r'/r/shopify/doUpdateOrCreate', DoUpdateOrCreate),
+    (r'/r/shopify/finished',         ShowFinishedPage),
     (r'/r/shopify/load/(.*)',        DynamicLoader),
 
     # processes

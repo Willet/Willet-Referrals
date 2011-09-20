@@ -26,7 +26,7 @@ from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
 
-class ShowWelcomePage( URIHandler ):
+class ShowWelcomePage(URIHandler):
     def get( self ):
         pages = {
             'one': 'current',
@@ -43,7 +43,7 @@ class ShowWelcomePage( URIHandler ):
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
 
-class ShowEditPage( URIHandler ):
+class ShowEditPage(URIHandler):
     # Renders a app page
     def get(self):
         client = self.get_client() # May be None
@@ -159,6 +159,38 @@ class ShowEditPage( URIHandler ):
         template_values['has_app'] = False
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
+class ShowFinishedPage(URIHandler):
+    def get(self):
+        app_id       = self.request.get( 'id' )
+        pages = {
+            'one': 'old',
+            'two': 'old',
+            'three': 'old',
+            'four': 'current'
+        } 
+        # Init the template values with a blank app
+        template_values = {
+            'pages': pages,
+            'app' : None,
+            'has_app': False
+        }
+        app = get_app_by_id( app_id )
+        if app == None:
+            self.redirect( '/r/edit' )
+            return
+            
+        template_values['has_app'] = True 
+        template_values['app']       = app
+        template_values['analytics'] = True if app.cached_clicks_count != 0 else False
+        template_values['BASE_URL']  = URL
+
+        self.response.out.write(
+            self.render_page(
+                'finished.html',
+                template_values
+            )
+        ) 
+
 class ShowCodePage( URIHandler ):
     def get(self):
         client = self.get_client() # May be none
@@ -190,7 +222,6 @@ class ShowCodePage( URIHandler ):
         self.response.out.write( self.render_page( 'code.html', template_values ))
 
 class DoUpdateOrCreate( URIHandler ):
-    
     def post( self ):
         client      = self.get_client() # might be None
         logging.info("CLIENT: %r:" % client)
@@ -231,7 +262,6 @@ class DoUpdateOrCreate( URIHandler ):
 class DynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-    
     def get(self, input_path):
         logging.info('Token %s' % self.request.get('order_token'))
         template_values = {}
