@@ -12,6 +12,7 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.models      import App
+from apps.action.models   import create_click_action
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -35,6 +36,16 @@ class SIBT( App ):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
     
+    def handleLinkClick( self, urihandler, link ):
+        # Fetch User by cookie
+        user = get_or_create_user_by_cookie( urihandler )
+
+        # Create a ClickAction
+        act = create_click_action( user, self, link )
+
+        # Go to where the link points
+        self.redirect(link.target_url)
+
     def create_instance( self, user, end, link ):
         # Make the properties
         uuid = generate_uuid( 16 )

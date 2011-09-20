@@ -80,6 +80,24 @@ class ClickAction( Action ):
     def __str__(self):
         return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
 
+    def create_click_action( user, app, link ):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = ClickAction( key_name = uuid,
+                            uuid     = uuid,
+                            user     = user,
+                            app      = app,
+                            link     = link )
+        act.put()
+
+        # Tell Mixplanel that we got a click
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Clicks', 
+                                     'app_uuid' : app.uuid } )
+
+        return act
+        
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -89,3 +107,21 @@ class VoteAction( Action ):
     
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+
+    def create_vote_action( user, app, link ):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = VoteAction( key_name = uuid,
+                           uuid     = uuid,
+                           user     = user,
+                           app      = app,
+                           link     = link )
+        act.put() 
+
+        # Tell Mixplanel that we got a vote
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Votes', 
+                                     'app_uuid' : app.uuid } )
+
+        return act

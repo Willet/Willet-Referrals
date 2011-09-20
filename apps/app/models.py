@@ -58,6 +58,11 @@ class App( Model, polymodel.PolyModel ):
         # Subclasses should override this
         return
 
+    def handleLinkClick( self ):
+        # Subclasses must override this
+        logging.error("THIS FCN SHOULD NEVER GET CALLED. FIX ME.")
+        raise Exception("THIS FCN SHOULD NEVER GET CALLED. SUBCLASS ME!")
+
     def delete( self ):
         self.old_client = self.client
         self.client     = None
