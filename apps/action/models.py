@@ -75,9 +75,11 @@ class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
         Currently used for 'Referral' and 'SIBT' Apps """
 
-    def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(ClickAction, self).__init__(*args, **kwargs)
+    def __unicode__(self):
+        return self.___str__()
+
+    def __str__(self):
+        return 'click for shit'
 
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------

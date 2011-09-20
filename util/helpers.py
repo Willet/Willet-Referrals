@@ -152,3 +152,43 @@ def is_blacklisted( header ):
     else:
         return header in user_agent_blacklist
 
+
+def getIndexOfTuple(l, index, value):
+    """ gets index of value in tuple"""
+    for pos,t in enumerate(l):
+        if t[index] == value:
+            return pos
+
+    # Matches behavior of list.index
+    raise ValueError("list.index(x): x not in list")
+
+def reverse(view, qs=None):
+    uris = []
+    url = '/error'
+
+    for app in INSTALLED_APPS:
+        try:
+            import_str = 'apps.%s.urls' % app
+            __import__(import_str, globals(), locals(), [], -1)
+            app_urls = sys.modules[import_str]
+            uris.extend(app_urls.urlpatterns)
+
+        except Exception:
+            logging.error('Error reversing url %s' % app, exc_info=True)
+
+    # we have all the urls now
+
+    # urls are in format (url, view)
+    # we want a particular view
+    try:
+        index = getIndexOfTuple(uris, 1, view)
+    except Exception,e:
+        logging.error('could not reverse view %s' % view, exc_info=True)
+    else:
+        url = uris[index][0]
+    
+    if qs != None:
+        url += '?%s' % urllib.urlencode(qs)
+
+    return url
+

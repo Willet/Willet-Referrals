@@ -451,8 +451,10 @@
                 </div>
 
                 <div style="width: 110px" class='button-link' href="#" onClick="toggleSocialShare();" title="Share on Facebook or Twitter!"> 
-                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />&nbsp;&nbsp;&nbsp;
-                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    <div style="float: left">
+                        <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />&nbsp;&nbsp;&nbsp;
+                        <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    </div>
                     Share
                 </div>
                 <!--
@@ -497,7 +499,7 @@
             </div>
             <div class="input-content span-8 last">
                     <span class="defaultValue hidden">Friends' emails, separated by commas.</span>
-                    <input id="to-emails" type="text" name="email" value="" />
+                    <input style='color: #777;' id="to-emails" type="text" name="email" value="" />
             </div>
             
             <div class="prepend-1 span-8 last clear">
