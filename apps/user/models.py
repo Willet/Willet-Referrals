@@ -26,9 +26,9 @@ from google.appengine.ext import db
 
 import apps.oauth.models
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
+from apps.email.models import Email
 
 from util.model         import Model
-from util.emails          import Email
 from util.helpers         import *
 from util import oauth2 as oauth
 

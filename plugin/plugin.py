@@ -20,11 +20,11 @@ from apps.oauth.models import OAuthClient
 from apps.referral.shopify.models import ReferralShopify
 from apps.testimonial.models import create_testimonial
 from apps.user.models import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
+from apps.email.models import Email
 
 # helpers
 from apps.referral.shopify.api_wrapper import add_referrer_gift_to_shopify_order
 from util.consts import *
-from util.emails import Email
 from util.helpers import read_user_cookie, generate_uuid, get_request_variables
 
 class ServeSharingPlugin(webapp.RequestHandler):

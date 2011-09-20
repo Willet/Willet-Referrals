@@ -17,9 +17,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.user.models import *
 from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import *
+from apps.email.models import Email
 
 from util.consts import *
-from util.emails import Email
 from util.helpers import *
 from util.urihandler import URIHandler
 

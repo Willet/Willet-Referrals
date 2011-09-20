@@ -18,9 +18,9 @@ from apps.stats.models import *
 from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import Link, LinkCounter
 from apps.user.models import User
+from apps.email.models import Email
 
 from util.consts import *
-from util.emails import Email
 from util.helpers import *
 from util.urihandler import URIHandler
 

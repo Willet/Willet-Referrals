@@ -18,8 +18,8 @@ from apps.order.models import *
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
 from apps.referral.shopify.models import get_shopify_app_by_store_id
+from apps.email.models       import Email
 
-from util.emails       import Email
 from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
