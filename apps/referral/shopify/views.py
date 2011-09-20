@@ -15,7 +15,7 @@ from time import time
 from apps.app.models import *
 from apps.referral.models import get_referral_app_by_url
 from apps.referral.shopify.api_wrapper import add_referree_gift_to_shopify_order
-from apps.referral.shopify.models import ReferralShopify, get_shopify_app_by_id, create_referral_shopify_app
+from apps.referral.shopify.models import ReferralShopify, get_shopify_app_by_uuid, create_referral_shopify_app
 from apps.link.models import Link, get_link_by_willt_code, create_link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
@@ -176,7 +176,7 @@ class ShowCodePage( URIHandler ):
         
         if app_id:
             # Updating an existing app here:
-            app = get_shopify_app_by_id(app_id)
+            app = get_shopify_app_by_uuid(app_id)
             if app == None:
                 self.redirect( '/account' )
                 return

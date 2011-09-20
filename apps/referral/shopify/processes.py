@@ -17,7 +17,7 @@ from apps.app.models import *
 from apps.order.models import *
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
-from apps.referral.shopify.models import get_shopify_app_by_id
+from apps.referral.shopify.models import get_shopify_app_by_store_id
 
 from util.emails       import Email
 from util.helpers import *
@@ -28,10 +28,11 @@ from util.gaesessions import get_current_session
 class DoProcessOrder( URIHandler ):
     def post( self ):
         logging.info("HEADERS : %s %r" % (self.request.headers, self.request.headers ))
+        store_id = self.request.headers['X-Shopify-Shop-Id']
+
         # Grab the ShopifyApp
-        store_id = self.request.get('store_id')
         logging.info("store: %s " %  store_id )
-        app = get_shopify_app_by_id( store_id )
+        app = get_shopify_app_by_store_id( store_id )
 
         # Grab the data about the order from Shopify
         order = json.loads( self.request.body ) #['orders'] # Fetch the order
@@ -125,5 +126,4 @@ class DoProcessOrder( URIHandler ):
 
 class DoUninstalledApp( URIHandler ):
     def post( self ):
-        Email.emailBarbara( "UNinstall %s" % self.request.query_string )
-
+        Email.emailBarbara( "UNinstall %r %s" % (self.request, self.request.headers) )

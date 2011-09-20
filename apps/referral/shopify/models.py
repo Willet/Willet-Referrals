@@ -21,6 +21,8 @@ from util.helpers         import generate_uuid
 # ------------------------------------------------------------------------------
 class ReferralShopify( Referral ):
     
+    store_id = db.IntegerProperty( required = True )
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReferralShopify, self).__init__(*args, **kwargs)
@@ -34,6 +36,7 @@ def create_referral_shopify_app( client, share_text ):
                            client       = client,
                            product_name = client.name, # Store name
                            target_url   = client.url, # Store url
+                           store_id     = client.id, # Store id
                            store_token  = client.token,
                            webhook_url  = None, # Don't need one
                            share_text   = share_text )
@@ -46,13 +49,18 @@ def create_referral_shopify_app( client, share_text ):
     return app
 
 # Accessors --------------------------------------------------------------------
-def get_shopify_app_by_id(id):
-    """ Fetch a Shopify obj from the DB via the id"""
+def get_shopify_app_by_uuid(id):
+    """ Fetch a Shopify obj from the DB via the uuid"""
     logging.info("Shopify: Looking for %s" % id)
     return ReferralShopify.all().filter( 'uuid =', id ).get()
 
+def get_shopify_app_by_store_id(id):
+    """ Fetch a Shopify obj from the DB via the store's id"""
+    logging.info("Shopify: Looking for %s" % id)
+    return ReferralShopify.all().filter( 'store_id =', id ).get()
+
 # Shopify API Calls ------------------------------------------------------------
-def install_webhooks( store_url, store_token, uuid ):
+def install_webhooks( store_url, store_token ):
     """ Install the webhooks into the Shopify store """
 
     logging.info("TOKEN %s" % store_token )
@@ -67,7 +75,7 @@ def install_webhooks( store_url, store_token, uuid ):
     h.add_credentials( username, password )
     
     # Install the "Order Creation" webhook
-    data = { "webhook": { "address": "%s/r/shopify/webhook/order?uuid=%s" % (URL, uuid), "format": "json", "topic": "orders/create" } }
+    data = { "webhook": { "address": "%s/r/shopify/webhook/order" % (URL), "format": "json", "topic": "orders/create" } }
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
