@@ -1,4 +1,13 @@
 {% extends "base.html" %}
+{% block head %}
+    <script>
+        $(document).ready(function() {
+            $('#go_to_shopify').click(function() {
+                window.location = "{{app.target_url}}";
+            });
+        });
+    </script>
+{% endblock head %}
 
 {% block left_content %})
    {% include "left_col.html" %}  
