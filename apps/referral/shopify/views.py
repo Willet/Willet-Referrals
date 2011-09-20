@@ -364,6 +364,10 @@ class DynamicLoader(webapp.RequestHandler):
                 
                 template_values['profile_pic']   = referrer_link.user.get_attr( 'pic' )
                 template_values['show_gift']     = True
+ 
+                # TODO (Barbara): Pull this out of here!!
+                if order:
+                    add_referree_gift_to_shopify_order( order.order_id )
         
         if self.request.url.startswith('http://localhost'):
             template_values['BASE_URL'] = self.request.url[0:21]
@@ -374,10 +378,6 @@ class DynamicLoader(webapp.RequestHandler):
         path = ''
         if 'referral' in input_path:
             path = 'referral_plugin.html'
-
-            # TODO (Barbara): Pull this out of here!!
-            if referrer_link and order:
-                add_referree_gift_to_shopify_order( order.order_id )
 
         elif 'bar' in input_path:
             self.response.headers['Content-Type'] = 'javascript'
