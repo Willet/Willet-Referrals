@@ -29,9 +29,7 @@ def add_referree_gift_to_shopify_order( order_id ):
         name = order.user.get_full_name()
     else:
         name = 'an unknown user'
-    note  = '[Willet] %s was referred to your store by a friend.\
-            Please add a gift into their purchase as a reward for\
-            being referred. Thanks!' % name 
+    note  = 'GIFT - %s was referred by their friends to your store. Reward them by adding a gift to their order. Thanks, Willet!' % name 
 
     add_note_to_shopify_order( order, note )
 
@@ -42,9 +40,7 @@ def add_referrer_gift_to_shopify_order( order_id ):
         name = order.user.get_full_name()
     else:
         name = 'an unknown user'
-    note  = '[Willet] %s referred their friends to your store.\
-            Please add a gift into their purchase as a reward for\
-            spreading their love for your store. Thanks!' % name 
+    note  = 'GIFT - %s referred their friends to your store. Reward them for spreading their love for your store by adding a gift to their order.  Thanks, Willet!' % name 
 
     add_note_to_shopify_order( order, note )
 
@@ -61,7 +57,17 @@ def add_note_to_shopify_order( order, note ):
         
         h.add_credentials( username, password )
 
-        data = { 'order' : { 'id' : int(order.order_id), 'note' : note } }
+        # First, GET the Order to see if there is a note already.
+        resp, content = h.request( url, "GET" )
+        details = json.loads( content )
+        logging.info("GOT %r" % details)
+        previous_note = details['order']['note']
+
+        # Construct the new note message
+        new_note = "%s \n %s" % (note, previous_note)
+
+        # Second, PUT the new note to the Order
+        data = { 'order' : { 'id' : int(order.order_id), 'note' : new_note } }
         payload = json.dumps( data )
 
         logging.info("PUTTING to %s %r " % ( url, payload) )
@@ -70,35 +76,3 @@ def add_note_to_shopify_order( order, note ):
         logging.info('%r %r' % (resp, content))
     else:
         logging.info('tried to add note but order is None')
-
-    """
-    url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.campaign.store_token).hexdigest()
-
-    # this creates a password manager
-    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # because we have put None at the start it will always
-    # use this username/password combination for  urls
-    # for which `url` is a super-url
-    passman.add_password(None, url, username, password)
-
-    # create the AuthHandler
-    authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-    opener = urllib2.build_opener(authhandler)
-
-    # All calls to urllib2.urlopen will now use our handler
-    # Make sure not to include the protocol in with the URL, or
-    # HTTPPasswordMgrWithDefaultRealm will be very confused.
-    # You must (of course) use it when fetching the page though.
-    urllib2.install_opener(opener)
-    
-    # authentication is now handled automatically for us
-    logging.info("Querying %s" % url )
-
-    data = { 'id' : order.order_id, 'note' : note }
-    payload = urllib.urlencode( data )
-
-    result = urllib2.urlopen(url, payload)
-    """
