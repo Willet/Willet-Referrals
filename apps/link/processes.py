@@ -31,29 +31,21 @@ class TrackWilltURL( webapp.RequestHandler ):
             self.redirect( 'http://social-referral.appspot.com/%s' % code )
             return
 
+        # Fetch the Link
         link = get_link_by_willt_code(code)
         if not link:
             self.redirect("/")
             return
-        #logging.info('Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
-        
-        clickCookie = self.request.cookies.get(code, False)
-        if not clickCookie and not is_blacklisted(self.request.headers['User-Agent']):
+
+        #  Let the App handle the 'click'
+        if not is_blacklisted(self.request.headers['User-Agent']):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
-            link.increment_clicks()
-            logging.info('After Link %s %s clicks: %d' % (link.target_url, link.willt_url_code, link.count_clicks()))
-            set_referrer_cookie(self.response.headers, link.app_.uuid, link.willt_url_code)
+
+            link.app_.handleLinkClick( self, link )
+            
+            # TODO(Barbara): Remove this when we make Referral app use Actions
             set_clicked_cookie(self.response.headers, code)
 
-            # Tell Mixplanel that we got a click
-            taskqueue.add( queue_name = 'mixpanel', 
-                           url        = '/mixpanel', 
-                           params     = {'event'          : 'Clicks', 
-                                         'app_uuid'  : link.app_.uuid,
-                                         'twitter_handle' : link.user.get_attr('twitter_handle') if link.user else ''} )
-
-        set_referral_cookie(self.response.headers, code)
-        self.redirect(link.target_url)
         return
             
 class DynamicLinkLoader(webapp.RequestHandler):

@@ -49,10 +49,13 @@ class Action( Model, polymodel.PolyModel ):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return Action.all().filter('uuid =', uuid).get()
+ 
+    def __unicode__(self):
+        return self.__str__()
 
-    def toString( self ):
+    def __str__(self):
         # Subclasses should override this
-        return
+        pass
 
 ## Accessors -------------------------------------------------------------------
 def get_action_by_uuid( uuid ):
@@ -64,9 +67,8 @@ def get_actions_by_user( user ):
 def get_actions_by_app( app ):
     return Action.all().filter( 'app =', app ).get()
 
-def get_actions_by_user_for_app( app, user ):
+def get_actions_by_user_for_app( user, app ):
     return Action.all().filter( 'user =', user).filter( 'app =', app ).get()
-
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
@@ -75,19 +77,51 @@ class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
         Currently used for 'Referral' and 'SIBT' Apps """
 
-    def __unicode__(self):
-        return self.___str__()
-
     def __str__(self):
-        return 'click for shit'
+        return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
 
+    def create_click_action( user, app, link ):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = ClickAction( key_name = uuid,
+                            uuid     = uuid,
+                            user     = user,
+                            app      = app,
+                            link     = link )
+        act.put()
+
+        # Tell Mixplanel that we got a click
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Clicks', 
+                                     'app_uuid' : app.uuid } )
+
+        return act
+        
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class VoteAction( Action ):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
+    
+    def __str__(self):
+        return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
 
-    def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(VoteAction, self).__init__(*args, **kwargs)
+    def create_vote_action( user, app, link ):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = VoteAction( key_name = uuid,
+                           uuid     = uuid,
+                           user     = user,
+                           app      = app,
+                           link     = link )
+        act.put() 
+
+        # Tell Mixplanel that we got a vote
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Votes', 
+                                     'app_uuid' : app.uuid } )
+
+        return act

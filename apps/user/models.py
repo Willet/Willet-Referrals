@@ -1039,6 +1039,10 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
     user= get_user_by_cookie( request_handler )
     if user is None:
         user = create_user( referrer )
+
+    # Set a cookie to identify the user in the future
+    set_user_cookie(request_handler, user.uuid)
+
     return user
 
 # ------------------------------------------------------------------------------
