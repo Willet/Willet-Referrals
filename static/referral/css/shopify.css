@@ -68,7 +68,7 @@ textarea {
 #share-text-email {
     width: 300px !important;
 }
-a.box {
+.box {
     display:inline-block;
     -webkit-border-radius:3px;
     -moz-border-radius:3px;
@@ -109,7 +109,7 @@ a.box {
     box-shadow:0 1px 2px #999;
     color:#fff;      
 }
-a.box:hover { 
+.box:hover { 
     background: rgb(150,200,234);
     background: -moz-linear-gradient(top, rgba(150,200,234,1) 0%, rgba(73,149,204,1) 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(150,200,234,1)), color-stop(100%,rgba(73,149,204,1)));
@@ -121,7 +121,7 @@ a.box:hover {
 
     color:#fff;
 }
-a.box:active {
+.box:active {
     background-color: #4291df;
     color: #fff;
 }
@@ -133,7 +133,7 @@ input {
 .disabled:active,
 .disabled:hover,
 .disabled:visited,
-a.box:hover .disabled  {
+.box:hover .disabled  {
     cursor: not-allowed;
     border: 1px solid #DDDDDD;
     color: #DDDDDD;
@@ -156,14 +156,14 @@ div#use_us {
     text-align: right;
     float: right;
 }
-a.box img,
+.box img,
 .button-link img {
     float: left;
     height: 20px;
     padding: 0px 5px 0px 5px;
     margin-top: 1px;
 }
-a.box div {
+.box div {
     padding: 0px 0px 0px 0px;
     float: left;
     margin-top: -1px;
@@ -172,7 +172,7 @@ a.box div {
     font-size: 80% !important;
 }
 .email_btn {
-    padding: 0px 0px 3px 0px;
+    /**padding: 0px 0px 3px 0px;*/
 }
 .email_btn img {
     padding: 2px 5px 2px 5px;
