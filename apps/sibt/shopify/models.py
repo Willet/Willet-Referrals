@@ -22,7 +22,7 @@ from util.helpers         import generate_uuid
 class SIBTShopify( SIBT ):
     
     # Shopify's ID for this store
-    store_id = db.StringProperty( indexed = True )
+    store_id    = db.StringProperty( indexed = True )
 
     # Shopify's token for this store
     store_token = db.StringProperty( indexed = True )
@@ -64,6 +64,7 @@ def get_sibt_shopify_app_by_store_id(id):
     return SIBTShopify.all().filter( 'store_id =', id ).get()
 
 # Shopify API Calls ------------------------------------------------------------
+# TODO: Update these!!
 def install_webhooks( store_url, store_token ):
     """ Install the webhooks into the Shopify store """
 
