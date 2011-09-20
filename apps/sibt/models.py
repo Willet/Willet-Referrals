@@ -44,7 +44,7 @@ class SIBT( App ):
         act = create_click_action( user, self, link )
 
         # Go to where the link points
-        self.redirect(link.target_url)
+        urihandler.redirect(link.target_url)
 
     def create_instance( self, user, end, link ):
         # Make the properties

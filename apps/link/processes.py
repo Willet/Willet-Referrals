@@ -38,10 +38,13 @@ class TrackWilltURL( webapp.RequestHandler ):
             return
 
         #  Let the App handle the 'click'
-        if not is_blacklisted(request.headers['User-Agent'])
-            logging.info("WHO IS THIS? -> " + request.headers['User-Agent'])
+        if not is_blacklisted(self.request.headers['User-Agent']):
+            logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
 
             link.app_.handleLinkClick( self, link )
+            
+            # TODO(Barbara): Remove this when we make Referral app use Actions
+            set_clicked_cookie(self.response.headers, code)
 
         return
             

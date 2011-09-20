@@ -48,8 +48,13 @@ class Referral( App ):
         if not clickCookie:
             
             # Set cookies
+            logging.info('A %r' % (urihandler))
+            logging.info('B %r' % (urihandler.response))
+            logging.info('C %r' % (urihandler.response.headers))
+            
             set_referrer_cookie(urihandler.response.headers, self.uuid, code)
-            set_clicked_cookie(urihandler.response.headers, code)
+            # set_clicked_cookie should be here but for some weird reason, that doesn't work.
+            # Therefore, it's in Link::processes.py:: TrackWilltUrl
             
             # Add to clicks count
             link.increment_clicks()
@@ -64,7 +69,7 @@ class Referral( App ):
         set_referral_cookie(urihandler.response.headers, code)
 
         # Go to where the link points
-        self.redirect(link.target_url)
+        urihandler.redirect(link.target_url)
 
     def update( self, title, product_name, target_url, share_text, webhook_url ):
         """Update the app with new data"""
