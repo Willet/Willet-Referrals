@@ -120,7 +120,7 @@ class DoProcessOrder( URIHandler ):
                                   subtotal, referring_site, user )
 
         # Store the purchased items in the order
-        o.items.extend( items )
+        o.products.extend( items )
         o.put()
 
 

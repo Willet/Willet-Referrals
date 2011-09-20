@@ -24,6 +24,9 @@ class ReferralShopify( Referral ):
     # Shopify's ID for this store
     store_id = db.StringProperty( indexed = True )
 
+    # Shopify's token for this store
+    store_token = db.StringProperty( indexed = True )
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ReferralShopify, self).__init__(*args, **kwargs)
@@ -34,7 +37,7 @@ def create_referral_shopify_app( client, share_text ):
     uuid = generate_uuid( 16 )
     app = ReferralShopify( key_name     = uuid,
                            uuid         = uuid,
-                           client       = client,
+                           client       = client.client,
                            product_name = client.name, # Store name
                            target_url   = client.url, # Store url
                            store_id     = client.id, # Store id

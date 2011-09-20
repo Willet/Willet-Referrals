@@ -13,6 +13,7 @@ from google.appengine.ext    import db
 from google.appengine.ext.db import polymodel
 
 from util.model              import Model, ObjectListProperty
+from util.helpers            import generate_uuid
 
 # ------------------------------------------------------------------------------
 # Product Class Definition -----------------------------------------------------
@@ -100,12 +101,12 @@ class OrderShopify( Order ):
         super(OrderShopify, self).__init__(*args, **kwargs)
 
 # Constructor ------------------------------------------------------------------
-def create_shopify_order( client, order_token, order_id, order_num,
+def create_shopify_order( app, order_token, order_id, order_num,
                           subtotal, referrer, user ):
     """ Create an Order for a Shopify store """
     
     logging.info(referrer)
-    logging.info(client.target_url)
+    logging.info(app.target_url)
 
     uuid = generate_uuid( 16 )
 
@@ -113,9 +114,9 @@ def create_shopify_order( client, order_token, order_id, order_num,
                       uuid         = uuid,
                       order_token  = order_token,
                       order_id     = str(order_id),
-                      client       = client,
-                      store_name   = client.product_name,
-                      store_url    = client.product_url,
+                      client       = app.client,
+                      store_name   = app.product_name,
+                      store_url    = app.target_url,
                       order_number = str(order_num),
                       subtotal_price = float(subtotal), 
                       referring_site = referrer,
