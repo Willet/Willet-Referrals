@@ -15,7 +15,7 @@
 
 {% block right_head %}
     {% if analytics %}
-        <p><a href="/r/app/{{app.uuid}}">See Your Referral Analytics</a></p>
+        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
     {% endif %}
 {% endblock right_head %}
 
