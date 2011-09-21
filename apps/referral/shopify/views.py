@@ -386,4 +386,3 @@ class DynamicLoader(webapp.RequestHandler):
         path = os.path.join('apps/referral/templates/', path)
         self.response.out.write(template.render(path, template_values))
         return
-

@@ -11,8 +11,8 @@ import hashlib, logging, datetime
 from django.utils         import simplejson as json
 from google.appengine.ext import db
 
-from apps.app.models      import App
 from apps.action.models   import create_click_action
+from apps.app.models      import App
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -23,14 +23,10 @@ NUM_VOTE_SHARDS = 15
 # SIBT Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBT( App ):
-    """Model storing the data for a client's sharing app"""
+    """Model storing the data for a client's 'Should I Buy This?' app"""
     emailed_at_10 = db.BooleanProperty( default = False )
    
-    product_name  = db.StringProperty( indexed = True )
-    target_url    = db.LinkProperty  ( indexed = True )
-    
-    share_text    = db.StringProperty( indexed = False )
-    webhook_url   = db.LinkProperty( indexed = False, default = None, required = False )
+    store_name    = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -41,10 +37,11 @@ class SIBT( App ):
         user = get_or_create_user_by_cookie( urihandler )
 
         # Create a ClickAction
-        act = create_click_action( user, self, link )
+        act = create_sibt_click_action( user, self, link )
 
         # Go to where the link points
-        urihandler.redirect(link.target_url)
+        # Flag it so we know they came from the short link
+        urihandler.redirect('%s?code=%s' % (link.target_url, link.willt_url_code))
 
     def create_instance( self, user, end, link ):
         # Make the properties
@@ -56,16 +53,13 @@ class SIBT( App ):
                                  asker        = user,
                                  app          = self,
                                  end_datetime = end,
-                                 link         = link )
+                                 link         = link,
+                                 url          = link.target_url )
         instance.put()
         
         return instance
 
 # Accessors --------------------------------------------------------------------
-def get_sibt_app_by_url( url ):
-    """ Fetch a SIBT obj from the DB via the url """
-    logging.info("SIBT: Looking for %s" % url )
-    return SIBT.all().filter( 'target_url =', url ).get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------
@@ -83,12 +77,18 @@ class SIBTInstance( Model ):
     # Parent App that "owns" these instances
     app             = db.ReferenceProperty( db.Model, collection_name="instances" )
 
-    # Datetime when this instance should shut down and email asker 
-    end_datetime    = db.DateTimeProperty( auto_now_add=True )
-
     # The Link for this instance (1 per instance)
     link            = db.ReferenceProperty( db.Model, collection_name="sibt_instance" )
     
+    # URL of the Link (here for quick filter)
+    url             = db.LinkProperty  ( indexed = True )
+    
+    # Datetime when this instance should shut down and email asker 
+    end_datetime    = db.DateTimeProperty( )
+
+    # True iff end_datetime < now. False, otherwise.
+    is_live         = db.BooleanProperty( default = True )
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBTInstance, self).__init__(*args, **kwargs)
@@ -151,6 +151,12 @@ class SIBTInstance( Model ):
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
 
+# Accessor ---------------------------------------------------------------------
+def get_sibt_instance_by_asker_for_url( user, url ):
+    return SIBTInstance.all().filter( 'asker = ', user ).filter( 'url = ', url ).get()
+
+def get_sibt_instance_by_link( link ):
+    return SIBTInstance.all().filter( 'link =', link ).get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------
@@ -162,10 +168,3 @@ class VoteCounter(db.Model):
     instance_uuid = db.StringProperty(indexed=True, required=True)
     yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
     nos           = db.IntegerProperty(indexed=False, required=True, default=0)
-
-
-
-
-
-
-

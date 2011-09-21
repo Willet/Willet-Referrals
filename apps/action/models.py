@@ -4,8 +4,8 @@
 # A parent class for all User actions 
 # ie. ClickAction, VoteAction, ViewAction, etc
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__    = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime, logging
 
@@ -90,17 +90,17 @@ class ClickAction( Action ):
     def __str__(self):
         return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
 
-    def create_click_action( user, app, link ):
-        # Make the action
-        uuid = generate_uuid( 16 )
-        act  = ClickAction( key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app      = app,
-                            link     = link )
-        act.put()
+def create_click_action( user, app, link ):
+    # Make the action
+    uuid = generate_uuid( 16 )
+    act  = ClickAction( key_name = uuid,
+                        uuid     = uuid,
+                        user     = user,
+                        app      = app,
+                        link     = link )
+    act.put()
 
-        return act
+    return act
    
 ## -----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ----------------------------------------------------
@@ -110,6 +110,9 @@ class SIBTClickAction( ClickAction ):
         Currently used for 'Referral' and 'SIBT' Apps """
 
     sibt_instance = db.ReferenceProperty( db.Model, collection_name="click_actions" )
+
+    # URL that was clicked on
+    url           = db.LinkProperty( indexed = True )
 
     def __str__(self):
         return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
@@ -122,14 +125,15 @@ class SIBTClickAction( ClickAction ):
                                 user     = user,
                                 app      = app,
                                 link     = link,
+                                url      = link.target_url,
                                 sibt_instance = instance )
         act.put()
 
         return act
 
 ## Accessors -------------------------------------------------------------------
-def get_sibt_click_action_by_user( user ):
-    return SIBTClickAction.all().filter( 'user =', user )
+def get_sibt_click_actions_by_user_for_url( user, url ):
+    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
 
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------

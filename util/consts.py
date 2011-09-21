@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'referral',
     'referral.shopify',
     'sibt',
+    'sibt.shopify',
     'stats',
     'testimonial',
     'user',
