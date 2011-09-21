@@ -156,7 +156,6 @@ class ShowEditPage(URIHandler):
             template_values['analytics'] = True if app.cached_clicks_count != 0 else False
 
         template_values['BASE_URL']  = URL
-        template_values['has_app'] = False
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
 class ShowFinishedPage(URIHandler):
