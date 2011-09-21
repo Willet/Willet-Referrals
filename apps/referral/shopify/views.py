@@ -178,7 +178,7 @@ class ShowFinishedPage(URIHandler):
             self.redirect( '/r/edit' )
             return
             
-        template_values['has_app'] = True 
+        template_values['has_app'] = app != None 
         template_values['app']       = app
         template_values['analytics'] = True if app.cached_clicks_count != 0 else False
         template_values['BASE_URL']  = URL
