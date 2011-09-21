@@ -22,9 +22,9 @@
         <br />
 
         <p style="margin-bottom: 0px;"> Give Us Feedback: </p>
-        <form action="/doFeedback" method="post" class="center">
+        <form action="{% url AddFeedback %}" method="post" class="center">
             <textarea style="height: 100px" name="message" id="message"></textarea> </br >
-            <input type="submit" value="Submit"/>
+            <button class='blue' type="submit" value="Submit">Send Feedback</button>
         </form>
     </div>
 {% endblock left_content %}
@@ -42,7 +42,7 @@
 
     <div class="about prepend-top append-bottom span-15 last">
         <div class="span-5">
-            <div class="span-5 last center">
+            <div class="span-5 last center about">
                 <img src="/static/imgs/fraser.png" width=141 height=150> </img>
             </div>
         </div>
@@ -55,7 +55,7 @@
     
     <div class="about prepend-top append-bottom span-15 last">
         <div class="span-5">
-            <div class="span-5 last center">
+            <div class="span-5 last center about">
                 <img src="/static/imgs/barbara.png" width=135 height=150></img>
             </div>
         </div>

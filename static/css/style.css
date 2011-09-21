@@ -1023,3 +1023,10 @@ button img {
     margin-top: -20px;
     font-size: 1.2em;
 }
+
+/*** ABOUT PAGE ***/
+div.about img {
+    -webkit-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+}

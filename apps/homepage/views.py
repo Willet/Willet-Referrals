@@ -67,13 +67,3 @@ class ShowDashboardTestPage(URIHandler):
         self.response.out.write(self.render_page('dashboard/backup_base.html', template_values))
 
 
-
-class DoAddFeedback( URIHandler ):
-    def post( self ):
-        client = self.get_client()
-        msg    = self.request.get('message')
-        
-        feedback = Feedback( client=client, message=msg )
-        feedback.put()
-        
-        self.redirect( '/about?thx=1' )
