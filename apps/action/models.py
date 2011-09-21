@@ -76,6 +76,16 @@ def get_actions_by_user_for_app( user, app ):
 class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
         Currently used for 'Referral' and 'SIBT' Apps """
+    
+    def __init__(self, *args, **kwargs):
+
+        # Tell Mixplanel that we got a click
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Clicks', 
+                                     'app_uuid' : kwargs['app'].uuid } )
+
+        super(ClickAction, self).__init__(*args, **kwargs)
 
     def __str__(self):
         return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
@@ -90,20 +100,52 @@ class ClickAction( Action ):
                             link     = link )
         act.put()
 
-        # Tell Mixplanel that we got a click
-        taskqueue.add( queue_name = 'mixpanel', 
-                       url        = '/mixpanel', 
-                       params     = {'event'    : 'Clicks', 
-                                     'app_uuid' : app.uuid } )
+        return act
+   
+## -----------------------------------------------------------------------------
+## SIBTClickAction Subclass ----------------------------------------------------
+## -----------------------------------------------------------------------------
+class SIBTClickAction( ClickAction ):
+    """ Designates a 'click' action for a User on a SIBT instance. 
+        Currently used for 'Referral' and 'SIBT' Apps """
+
+    sibt_instance = db.ReferenceProperty( db.Model, collection_name="click_actions" )
+
+    def __str__(self):
+        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+
+    def create_sibt_click_action( user, app, link, instance ):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = SIBTClickAction( key_name = uuid,
+                                uuid     = uuid,
+                                user     = user,
+                                app      = app,
+                                link     = link,
+                                sibt_instance = instance )
+        act.put()
 
         return act
-        
+
+## Accessors -------------------------------------------------------------------
+def get_sibt_click_action_by_user( user ):
+    return SIBTClickAction.all().filter( 'user =', user )
+
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class VoteAction( Action ):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
+    
+    def __init__(self, *args, **kwargs):
+        # Tell Mixplanel that we got a vote
+        taskqueue.add( queue_name = 'mixpanel', 
+                       url        = '/mixpanel', 
+                       params     = {'event'    : 'Votes', 
+                                     'app_uuid' : kwargs['app'].uuid } )
+
+        super(VoteAction, self).__init__(*args, **kwargs)
     
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
@@ -117,11 +159,5 @@ class VoteAction( Action ):
                            app      = app,
                            link     = link )
         act.put() 
-
-        # Tell Mixplanel that we got a vote
-        taskqueue.add( queue_name = 'mixpanel', 
-                       url        = '/mixpanel', 
-                       params     = {'event'    : 'Votes', 
-                                     'app_uuid' : app.uuid } )
 
         return act
