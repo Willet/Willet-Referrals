@@ -66,4 +66,11 @@ class ShowDashboardTestPage(URIHandler):
         template_values = {}
         self.response.out.write(self.render_page('dashboard/backup_base.html', template_values))
 
+class ShowBetaPage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = []
+        
+        self.response.out.write(self.render_page('beta.html', template_values))
+
 

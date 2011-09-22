@@ -9,5 +9,6 @@ urlpatterns = [
     (r'/contact',        ShowAboutPage),
     (r'/dashboard/test', ShowDashboardTestPage),
     (r'/demo(.*)',       ShowDemoSitePage),
+    (r'/beta',           ShowBetaPage),
     (r'/()',             ShowLandingPage) # Must be last
 ]
