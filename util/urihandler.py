@@ -12,6 +12,7 @@ from google.appengine.ext.webapp import template
 from apps.client.models import get_client_by_email
 from util.consts        import *
 from util.gaesessions   import get_current_session
+from util.templates     import render 
 
 class URIHandler( webapp.RequestHandler ):
 
@@ -64,7 +65,8 @@ class URIHandler( webapp.RequestHandler ):
             path = os.path.join(app_path, path)
 
         logging.info("Rendering %s" % path )
-        return template.render(path, merged_values)
+        return render(path, merged_values)
+        #return template.render(path, merged_values)
 
     def get_app_path(self):
         module = inspect.getmodule(self).__name__

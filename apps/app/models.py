@@ -162,20 +162,38 @@ class App( Model, polymodel.PolyModel ):
         """ Get the reports analytics for this app since 't'"""
         ca = get_analytics_report_since(self.uuid, scope, t, count)
         social_media_stats = []
+        totals = {
+            'shares': 0,
+            'reach': 0,
+            'clicks': 0,
+            'conversiosn': 0,
+            'profit': 0
+        }
         for c in ca:
-            for s in ['facebook', 'twitter', 'linkedin', 'email']:
+            #for s in ['facebook', 'twitter', 'linkedin', 'email']:
+            for s in ['facebook', 'twitter', 'email']:
                 stats = getattr(c, s+'_stats')
                 sms = {}
-                sms['shares'] = stats[0]
-                sms['reach'] = stats[1]
-                sms['clicks'] = stats[2]
                 sms['name'] = s
+
+                sms['shares'] = stats[0]
+                totals['shares'] += stats[0] 
+
+                sms['reach'] = stats[1]
+                totals['reach'] += stats[1]
+
+                sms['clicks'] = stats[2]
+                totals['clicks'] += stats[2]
+
+
                 sms['conversions'] = stats[3]
+                totals['conversions'] += stats[3]
+
                 sms['profit'] = stats[4]
+                totals['profit'] += stats[4]
 
                 users = []
-                user_stats = map(lambda x: x.split(","), 
-                    getattr(c, s+'_user_stats', ""))
+                user_stats = map(lambda x: x.split(","), getattr(c, s+'_user_stats', ""))
                 for u_stat_list in user_stats:
                     user = db.get(u_stat_list[0])
                     if user:
@@ -199,9 +217,8 @@ class App( Model, polymodel.PolyModel ):
                 sms['users'] = users
                 social_media_stats.append(sms)
         logging.info(social_media_stats)
-        return(social_media_stats)
+        return social_media_stats, totals
              
-
     def get_results( self, total_clicks ) :
         """Get the results of this app, sorted by link count"""
         if total_clicks == 0:
