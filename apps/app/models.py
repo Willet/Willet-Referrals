@@ -20,6 +20,9 @@ from google.appengine.ext.db import polymodel
 from apps.link.models     import Link, get_link_by_willt_code 
 from apps.order.models    import Order
 from apps.user.models     import User
+from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats
+
+
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -114,7 +117,7 @@ class App( Model, polymodel.PolyModel ):
                             users[abbr][userID]['sh'] += 1
                             users[abbr][userID]['cl'] += link_clicks
                         else:
-                            lost += 1
+                            lost += 1)
                         if abbr == 'f':
                             ao[abbr]['re'] += len(getattr(user, 'fb_friends', []))
                         elif abbr == 't':
@@ -273,7 +276,6 @@ class App( Model, polymodel.PolyModel ):
     
     def get_shares_count(self):
         """Count this apps sharded shares"""
-        
         total = memcache.get(self.uuid+"ShareCounter")
         if total is None:
             total = 0
@@ -285,7 +287,6 @@ class App( Model, polymodel.PolyModel ):
     
     def add_shares(self, num):
         """add num clicks to this app's share counter"""
-
         def txn():
             index = random.randint(0, NUM_SHARE_SHARDS-1)
             shard_name = self.uuid + str(index)
@@ -318,6 +319,43 @@ class ShareCounter(db.Model):
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
+#class AppAnalytics(Model):
+#    an_app = db.ReferenceProperty(App, collection_name='analytics')
+#    uuid = db.StringProperty(indexed=True)
+#
+#    # scope is either day, week, month, year
+#    scope = db.StringProperty(indexed=True)
+#    
+#    start_time = db.DateTimeProperty(indexed=True)
+#    end_time = db.DateTimeProperty()
+#    creation_time = db.DateTimeProperty(auto_now_add=True)
+#
+#    def __init__(self, *args, **kwargs):
+#        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+#        super(AppAnalytics, self).__init__(*args, **kwargs)
+#    
+#
+#class AppServiceAnalytics(Model):
+#    app_analytics = db.ReferenceProperty(AppAnalytics, collection_name='service_analytics')
+#    uuid = db.StringProperty(indexed=True)
+#    
+#    # ex: 'facebook', 'linkedin', 'twitter', 'total'
+#    service = db.StringProperty(indexed=True)
+#    
+#    # these are the TOTALS for this service (facebook)
+#    # the users who have analytics for this APP and this SERVICE
+#    # are available as user_service_analytics
+#    shares = db.IntegerProperty(default=0)
+#    clicks = db.IntegerProperty(default=0)
+#    conversions = db.IntegerProperty(default=0)
+#    profit = db.IntegerProperty(default=0)
+#    reach = db.IntegerProperty(default=0)
+#
+#    def __init__(self, *args, **kwargs):
+#        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+#        super(AppServiceAnalytics, self).__init__(*args, **kwargs)
+#    
+
 class AppAnalytics(Model):
     """Model containing aggregated analytics about a specific app
     

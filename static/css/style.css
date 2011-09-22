@@ -668,6 +668,12 @@ div#footer button {
 div#right_header a,
 div#right_header a:link,
 div#right_header a:visited {
+
+    transition: 0.3s;
+    -o-transition: 0.3s;
+    -webkit-transition: 0.3s;
+    -moz-transition: 0.3s;
+
     font-size: 15px;
     border-radius: 10px;
     border: 1px solid rgba(0,0,0,0.1);
@@ -712,13 +718,13 @@ div#right_header a:active {
     box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
 
     background: #ffffff;
-background: -moz-linear-gradient(top, #ffffff 0%, #f6f6f6 47%, #eeeeee 100%);
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(47%,#f6f6f6), color-stop(100%,#eeeeee));
-background: -webkit-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
-background: -o-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
-background: -ms-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#eeeeee',GradientType=0 );
-background: linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
+    background: -moz-linear-gradient(top, #ffffff 0%, #f6f6f6 47%, #eeeeee 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(47%,#f6f6f6), color-stop(100%,#eeeeee));
+    background: -webkit-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
+    background: -o-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
+    background: -ms-linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#eeeeee',GradientType=0 );
+    background: linear-gradient(top, #ffffff 0%,#f6f6f6 47%,#eeeeee 100%);
 }
 /*******************************************************************************
 |                                   PAGES                                      |
@@ -910,6 +916,8 @@ td.title {
     border-radius: 5px;
 }
 
+.button,
+.button:visited,
 button, 
 button:visited {
     display:inline-block;
@@ -948,6 +956,7 @@ button:visited {
     box-shadow:0 1px 2px #999;
     color:#fce8e3;
 }
+.button:hover,
 button:hover { 
     background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
@@ -955,6 +964,7 @@ button:hover {
     color:#fff;
 }
 button:active { }
+.button.blue,
 button.blue {
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
@@ -1001,6 +1011,7 @@ button.grey:hover {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d8d8d8', endColorstr='#939393',GradientType=0 );
     background: linear-gradient(top, rgba(216,216,216,1) 0%,rgba(147,147,147,1) 100%);
 }
+.button img,
 button img {
     float: left;
 }
