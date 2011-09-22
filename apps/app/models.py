@@ -117,7 +117,7 @@ class App( Model, polymodel.PolyModel ):
                             users[abbr][userID]['sh'] += 1
                             users[abbr][userID]['cl'] += link_clicks
                         else:
-                            lost += 1)
+                            lost += 1
                         if abbr == 'f':
                             ao[abbr]['re'] += len(getattr(user, 'fb_friends', []))
                         elif abbr == 't':
