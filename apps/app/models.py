@@ -122,7 +122,7 @@ class App( Model, polymodel.PolyModel ):
                         # this link was shared on this service
                         abbr = smp[0] # 'f', 't', or 'l'
                 
-                if shared == False:
+                if abbr == False:
                     # we didn't detect it shared, double check for email
                     if hasattr(l, 'email_sent'):
                         if getattr(l, 'email_sent') == True:
