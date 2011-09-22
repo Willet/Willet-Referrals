@@ -105,7 +105,7 @@ class App( Model, polymodel.PolyModel ):
                 userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
                 if userID:
                     #users[abbr][userID] = {}
-                    for service in ['t', 'f', 'l']: #twitter, facebook, linkedin
+                    for service in ['t', 'f', 'l', 'e']: #twitter, facebook, linkedin
                         # [co]nversions, [cl]icks, [sh]are
                         if not users[service].has_key(userID):
                             users[service][userID] = {
