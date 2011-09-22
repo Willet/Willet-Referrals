@@ -181,6 +181,14 @@ class User( db.Expando ):
     def get_reach(self, service=None):
         """ returns this users social "reach" """
         reach = 0
+        # ugly hacks for reach
+        if service == 't':
+            service = 'twitter'
+        elif service == 'f':
+            service = 'facebook'
+        elif service == 'l':
+            service = 'linkedin'
+
         if hasattr(self, 'titter_followers_count') and service == 'twitter':
             reach += int(self.twitter_followers_count)
         elif hasattr(self, 'linkedin_num_connections') and service == 'linkedin':

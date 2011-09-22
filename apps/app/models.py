@@ -76,87 +76,124 @@ class App( Model, polymodel.PolyModel ):
             with latest available data""" 
 
         app = get_app_by_id(self.uuid)
+        service_keys = ['facebook_share_id', 'tweet_id', 'linkedin_share_url']
+        
         # interpret the scope to a date
         scope_string = scope
         scope = datetime.datetime.today() - datetime.timedelta(30) if scope == 'month'\
             else datetime.datetime.today()-datetime.timedelta(7)
 
         # twitter, facebook, linkedin
-        ao, users = {}, {}
+        app_analytics, users = {}, {}
         lost = 0
         for smp in ['t', 'f', 'l', 'e']:
             # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
-            ao[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
+            app_analytics[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
             users[smp] = {}
-
+        
         if app:
             # this filter should work but doesn't for some reason
             links = app.links_ # .filter('creation_time >=', scope)
             for l in links: #[l for l in app.links_ if hasattr(l, 'user')]:
+                # by default assume a link has not been shared, abbr is false
+                abbr = False
                 if l.creation_time < scope:
                     logging.info("Skipping: " + str(l.creation_time))
                     continue
+
                 user = getattr(l, 'user', None)
                 userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
                 if userID:
                     #users[abbr][userID] = {}
-                    for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
+                    for service in ['t', 'f', 'l']: #twitter, facebook, linkedin
                         # [co]nversions, [cl]icks, [sh]are
-                        if not users[m].has_key(userID):
-                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0,
-                            'pr': 0, 'uid': user.key()}
-
-                for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
-                    abbr = smp[0] # 'f', 't', or 'l'
+                        if not users[service].has_key(userID):
+                            users[service][userID] = {
+                                'co': 0,
+                                'cl': 0,
+                                'sh': 0,
+                                'pr': 0,
+                                'uid': user.key()
+                            }
+                
+                for smp in service_keys:
                     if hasattr(l, smp) and getattr(l, smp) is not None and\
                         len(getattr(l, smp)) > 0:
-                        ao[abbr]['sh'] += 1
-                        link_clicks = l.count_clicks()
-                        ao[abbr]['cl'] += link_clicks
-                        if userID:
-                            users[abbr][userID]['sh'] += 1
-                            users[abbr][userID]['cl'] += link_clicks
+                        # this link was shared on this service
+                        abbr = smp[0] # 'f', 't', or 'l'
+                
+                if shared == False:
+                    # we didn't detect it shared, double check for email
+                    if hasattr(l, 'email_sent'):
+                        if getattr(l, 'email_sent') == True:
+                            # woohoo, it was shared!
+                            abbr = 'e'
                         else:
-                            lost += 1
-                        if abbr == 'f':
-                            ao[abbr]['re'] += len(getattr(user, 'fb_friends', []))
-                        elif abbr == 't':
-                            twitter_follower_count = getattr(user, 'twitter_follower_count', 0) 
-                            # this returned as none sometimes when it's null
-                            twitter_follower_count = 0 if twitter_follower_count\
-                                is None else twitter_follower_count
-                            ao[abbr]['re'] += twitter_follower_count
-                        elif abbr == 'l':
-                            ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
-                    if hasattr(l, 'link_conversions'):
-                            ao[abbr]['co'] += 1
-                            order_id = l.link_conversions.order
+                            continue
+                    else:
+                        continue
 
-                            # ugly hack to make sure there is an order_id
-                            if type(order_id) == type(str()):
-                                order = Order.all().filter('app =', app)\
-                                            .filter('order_id =', order_id)
-                                for o in order:
-                                    if hasattr(o, 'subtotal_price'):
-                                        subtotal_price += o.subtotal_price
-                            else:
-                                subtotal_price = 0
+                # okay if we got here this link was shared
+                app_analytics[abbr]['sh'] += 1
+                link_clicks = l.count_clicks()
+                app_analytics[abbr]['cl'] += link_clicks
+                if userID:
+                    users[abbr][userID]['sh'] += 1
+                    users[abbr][userID]['cl'] += link_clicks
+                else:
+                    lost += 1
+                app_analytics[abbr]['re'] += user.get_reach(service=abbr) 
+                #if abbr == 'f':
+                #    app_analytics[abbr]['re'] += len(getattr(user, 'fb_friends', []))
+                #elif abbr == 't':
+                #    twitter_follower_count = getattr(user, 'twitter_follower_count', 0) 
+                #    # this returned as none sometimes when it's null
+                #    twitter_follower_count = 0 if twitter_follower_count\
+                #        is None else twitter_follower_count
+                #    app_analytics[abbr]['re'] += twitter_follower_count
+                #elif abbr == 'l':
+                #    app_analytics[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
+                if hasattr(l, 'link_conversions'):
+                    app_analytics[abbr]['co'] += 1
+                    order_id = l.link_conversions.order
 
-                            # hack to make sure there is a subtotal price
-                            # and cuz we can't get the sbtl_price from a queryset
-                            
-                            ao[abbr]['pr'] += subtotal_price
-                            if userID:
-                                users[abbr][userID]['co'] += 1
-                                users[abbr][userID]['pr'] += subtotal_price
+                    # ugly hack to make sure there is an order_id
+                    if type(order_id) == type(str()):
+                        order = Order.all().filter('app =', app)\
+                                    .filter('order_id =', order_id)
+                        for o in order:
+                            if hasattr(o, 'subtotal_price'):
+                                subtotal_price += o.subtotal_price
+                    else:
+                        subtotal_price = 0
+
+                    # hack to make sure there is a subtotal price
+                    # and cuz we can't get the sbtl_price from a queryset
+                    
+                    app_analytics[abbr]['pr'] += subtotal_price
+                    if userID:
+                        users[abbr][userID]['co'] += 1
+                        users[abbr][userID]['pr'] += subtotal_price
 
         top_user_lists = { 'f': [], 't': [], 'l': [] }
         for k, v in top_user_lists.iteritems():
-            top_user_lists[k] = sorted(users[k].iteritems(),
-                                       key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
-                                       reverse=True)
-        create_app_analytics(self.uuid, scope_string, scope, datetime.datetime.today(),\
-            ao['f'], ao['t'], ao['l'], ao['e'], top_user_lists)
+            top_user_lists[k] = sorted (
+                users[k].iteritems(),
+                key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
+                reverse=True
+            )
+
+        create_app_analytics(
+            self.uuid,
+            scope_string,
+            scope,
+            datetime.datetime.today(),
+            app_analytics['f'],
+            app_analytics['t'],
+            app_analytics['l'],
+            app_analytics['e'],
+            top_user_lists
+        )
 
     def get_reports_since(self, scope, t, count=None):
         """ Get the reports analytics for this app since 't'"""

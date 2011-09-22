@@ -46,26 +46,6 @@ class ShowDashboard(URIHandler):
         total_clicks = app.count_clicks()
         template_values['total_clicks'] = total_clicks
 
-        #results, mixpanel = app.get_results( total_clicks )
-        
-        #smap = {'twitter': 0, 'linkedin': 1, 'facebook': 2, 'email': 3}
-
-        #totals = {'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''}
-        #service_totals = []
-        #props = ['shares', 'reach', 'clicks', 'conversions', 'profit']
-        #while len(service_totals) < len(smap):
-        #    service_totals.append({'shares':0, 'reach' : 0, 'clicks': 0, 'conversions': 0, 'profit': 0, 'users': [], 'name':''})
-                
-        #for s in sms:
-        #    row = smap[s['name']]
-        #    service_totals[row]['name'] = s['name']
-        #    service_totals[row]['users'].append(s['users'])
-        #    for prop in props:
-        #        totals[prop] += s[prop]
-        #        service_totals[row][prop] += s[prop]
-            
-        #template_values['results']     = results
-        #template_values['mixpanel']    = mixpanel
         template_values['has_results'] = len(sms) != 0
         template_values['current'] = 'app'
 
