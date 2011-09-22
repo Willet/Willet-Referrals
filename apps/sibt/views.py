@@ -51,14 +51,21 @@ class DynamicLoader(webapp.RequestHandler):
        
         # Make a new Link
         link = create_link( target, app, origin_domain, user )
+        
+        # User stats
+        user_email = user.get_attr('email') if user else ""
+        user_found = True if hasattr(user, 'fb_access_token') else False
 
         template_values = {
                 'product_img' : self.request.get( 'photo' ),
                 'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
                 'app' : app,
-                'willt_url' : link.get_willt_url() if link else '',
+                'willt_url' : link.get_willt_url(),
+                'willt_code' : link.willt_url_code,
                 
                 'user': user,
+                'user_email': user_email,
+                'user_found': str(user_found).lower()
         }
 
         # Finally, render the HTML!
