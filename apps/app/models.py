@@ -103,18 +103,6 @@ class App( Model, polymodel.PolyModel ):
 
                 user = getattr(l, 'user', None)
                 userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
-                if userID:
-                    #users[abbr][userID] = {}
-                    for service in ['t', 'f', 'l', 'e']: #twitter, facebook, linkedin
-                        # [co]nversions, [cl]icks, [sh]are
-                        if not users[service].has_key(userID):
-                            users[service][userID] = {
-                                'co': 0,
-                                'cl': 0,
-                                'sh': 0,
-                                'pr': 0,
-                                'uid': user.key()
-                            }
                 
                 for smp in service_keys:
                     if hasattr(l, smp) and getattr(l, smp) is not None and\
@@ -132,6 +120,25 @@ class App( Model, polymodel.PolyModel ):
                             continue
                     else:
                         continue
+
+                if userID:
+                    #users[abbr][userID] = {}
+                    #for service in ['t', 'f', 'l', 'e']: #twitter, facebook, linkedin
+                        # [co]nversions, [cl]icks, [sh]are
+                    if not users[abbr].has_key(userID):
+                        users[abbr][userID] = {
+                            'co': 0,
+                            'cl': 0,
+                            'sh': 0,
+                            'pr': 0,
+                            'uid': user.key()
+                        }
+                
+                logging.info('got link: %s\nuser: %s\nservice: %s' % (
+                    l,
+                    user,
+                    abbr
+                ))
 
                 # okay if we got here this link was shared
                 app_analytics[abbr]['sh'] += 1
@@ -373,43 +380,6 @@ class ShareCounter(db.Model):
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
-#class AppAnalytics(Model):
-#    an_app = db.ReferenceProperty(App, collection_name='analytics')
-#    uuid = db.StringProperty(indexed=True)
-#
-#    # scope is either day, week, month, year
-#    scope = db.StringProperty(indexed=True)
-#    
-#    start_time = db.DateTimeProperty(indexed=True)
-#    end_time = db.DateTimeProperty()
-#    creation_time = db.DateTimeProperty(auto_now_add=True)
-#
-#    def __init__(self, *args, **kwargs):
-#        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-#        super(AppAnalytics, self).__init__(*args, **kwargs)
-#    
-#
-#class AppServiceAnalytics(Model):
-#    app_analytics = db.ReferenceProperty(AppAnalytics, collection_name='service_analytics')
-#    uuid = db.StringProperty(indexed=True)
-#    
-#    # ex: 'facebook', 'linkedin', 'twitter', 'total'
-#    service = db.StringProperty(indexed=True)
-#    
-#    # these are the TOTALS for this service (facebook)
-#    # the users who have analytics for this APP and this SERVICE
-#    # are available as user_service_analytics
-#    shares = db.IntegerProperty(default=0)
-#    clicks = db.IntegerProperty(default=0)
-#    conversions = db.IntegerProperty(default=0)
-#    profit = db.IntegerProperty(default=0)
-#    reach = db.IntegerProperty(default=0)
-#
-#    def __init__(self, *args, **kwargs):
-#        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-#        super(AppServiceAnalytics, self).__init__(*args, **kwargs)
-#    
-
 class AppAnalytics(Model):
     """Model containing aggregated analytics about a specific app
     
@@ -473,6 +443,7 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
     fb_user_stats = map(fcsv, map(user_stats_obj_to_list, users['f']))
     tw_user_stats = map(fcsv, map(user_stats_obj_to_list, users['t']))
     li_user_stats = map(fcsv, map(user_stats_obj_to_list, users['l']))
+    e_user_stats = map(fcsv, map(user_stats_obj_to_list, users['e']))
     logging.info(tw_user_stats)
     ca = AppAnalytics(uuid=generate_uuid(16),
         app_uuid=app_uuid,
@@ -485,7 +456,8 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
         email_stats=email_stats,
         facebook_user_stats=fb_user_stats,
         twitter_user_stats=tw_user_stats,
-        linkedin_user_stats=li_user_stats
+        linkedin_user_stats=li_user_stats,
+        email_user_stats = e_user_stats
     )
     ca.save()
     
