@@ -269,7 +269,8 @@ class DynamicLoader(webapp.RequestHandler):
                 'willt_url' : link.get_willt_url() if link else '',
                 'willt_code': link.willt_url_code if link else '',
                 
-                'user': user
+                'user': user,
+                'store_id' : self.request.get('store_id') # TODO
         }
 
         # Finally, render the JS!
