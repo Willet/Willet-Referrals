@@ -30,14 +30,14 @@ from util import oauth2 as oauth
 # ------------------------------------------------------------------------------
 # CALLBACKS FOR OAUTH
 # ------------------------------------------------------------------------------
-def twitter_callback(client, message, willt_code):
+def twitter_callback(client, message, willt_code, img=None):
     """callback for twitter"""
     # check to see if we have a user with this twitter handle
     user = apps.user.models.get_or_create_user_by_twitter(t_handle=client.token.specifier,
                                                      token=client.token,
                                                      request_handler=client.handler)
     # tweet and save results to user's twitter profle
-    tweet_id, html_response = user.tweet(message)
+    tweet_id, html_response = user.tweet(message, img)
     # update link with tweet id
     link = get_link_by_willt_code(willt_code)
     if link:
@@ -180,6 +180,7 @@ class OAuthRequestToken(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     message = db.StringProperty(indexed=False)
     willt_code = db.StringProperty()
+    img = db.LinkProperty(default=None, required=False)
 
 class OAuthAccessToken(db.Model):
     """OAuth Access Token."""
@@ -317,7 +318,8 @@ class OAuthClient(object):
             return decode_json(content)
         return content
     
-    def login(self, message, willt_code):
+    def login(self, message, willt_code, img):
+        logging.info("LOGIN wihth %s" % img )
         
         proxy_id = self.get_cookie()
         
@@ -326,7 +328,7 @@ class OAuthClient(object):
             self.expire_cookie()
             
         logging.info("We're sending you to get your request token with your message: " + message)
-        return self.get_request_token(message, willt_code)
+        return self.get_request_token(msg=message, wcode=willt_code, img=img)
     
     def logout(self, return_to='/'):
         self.expire_cookie()
@@ -334,7 +336,8 @@ class OAuthClient(object):
     
     # oauth workflow
     
-    def get_request_token(self, msg='', wcode='', expected_status=(200,)):
+    def get_request_token(self, msg='', wcode='', img=None, expected_status=(200,)):
+        logging.info("get requ %s" % img )
         
         #consumer = oauth.Consumer(self.service_info['consumer_key'], self.service_info['consumer_secret'])
         client = oauth.Client(self.consumer)
@@ -348,6 +351,7 @@ class OAuthClient(object):
         token = OAuthRequestToken(
             message=msg,
             willt_code=wcode,
+            img=img,
             service=self.service,
             oauth_token = request_token['oauth_token'],
             oauth_token_secret = request_token['oauth_token_secret']
@@ -396,6 +400,7 @@ class OAuthClient(object):
         
         message = ''
         willt_code = ''
+        img = None
         
         if not oauth_token:
             return self.get_request_token()
@@ -405,6 +410,7 @@ class OAuthClient(object):
             'service =', self.service).fetch(1)[0]
         message = oauth_token.message
         willt_code = oauth_token.willt_code
+        img = oauth_token.img
         
         logging.info('set oauth_verifier=%s' % oauth_verifier)
         
@@ -457,7 +463,7 @@ class OAuthClient(object):
         self.token.put()
         
         if 'callback' in self.service_info:
-            html_response = self.service_info['callback'](self, message, willt_code)
+            html_response = self.service_info['callback'](self, message, willt_code, img)
         else:
             html_response = 'poop'
         

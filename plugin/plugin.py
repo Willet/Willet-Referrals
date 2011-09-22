@@ -167,14 +167,14 @@ class TwitterOAuthHandler(webapp.RequestHandler):
     def get(self, action=''):
         
         service = 'twitter' # hardcoded because we aded the linkedin handler
-        rq_vars = get_request_variables(['m', 'wcode', 'order_id'], self)
+        rq_vars = get_request_variables(['m', 'wcode', 'order_id', 'img'], self)
         user = get_user_by_cookie(self)
         
         if user and getattr(user, 'twitter_access_token', False)\
             and rq_vars.has_key('m') and rq_vars.has_key('wcode'):
             logging.info("tweeting: " + rq_vars['wcode'])
             # tweet and update user model from twitter
-            tweet_id, res = user.tweet(rq_vars['m'])
+            tweet_id, res = user.tweet(rq_vars['m'], rq_vars['img'])
 
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
@@ -201,11 +201,14 @@ class TwitterOAuthHandler(webapp.RequestHandler):
                 if action == 'login':
                     logging.info("We didn't recognize you so we're sending you to oauth with your message: " + rq_vars['m'])
                     self.response.out.write(getattr(client, action)(rq_vars['m'],
-                                                                    rq_vars['wcode']))
+                                                                    rq_vars['wcode'],
+                                                                    rq_vars['img']))
                 else:
                     self.response.out.write(getattr(client, action)())
             else:
-                self.response.out.write(client.login())
+                self.response.out.write(client.login(message=rq_vars['m'], 
+                                                     willt_code=rq_vars['wcode'],
+                                                     img=rq_vars['img']))
     
 
 class LinkedInOAuthHandler(webapp.RequestHandler):

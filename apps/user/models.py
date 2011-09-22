@@ -590,13 +590,31 @@ class User( db.Expando ):
     # Social Networking Share Functionality
     # 
     
-    def tweet(self, message):
+    def tweet(self, message, img=None):
         """Tweet on behalf of a user. returns tweet_id, html_response.
            invocation: tweet_id, resp = user.tweet(message)
                        . . . self response.out.write(resp)"""
         
         # prepare the signed message to be sent to twitter
-        twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+        if img != None:
+            """
+            twitter_post_url = 'http://upload.twitter.com/1/statuses/update_with_media.json'
+            body= urllib.urlencode( {"status": message.encode("UTF-8"),
+                                     "media[]" : img
+                                                     } )
+            
+            content_type = "multipart/form-data"
+            """
+
+            twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+            msg = "%s %s" % (message, img)
+
+            body= urllib.urlencode( {"status": msg.encode("UTF-8")} )
+            content_type = "application/x-www-form-urlencoded"
+        else:
+            twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+            body= urllib.urlencode( {"status": message.encode("UTF-8")} )
+            content_type = "application/x-www-form-urlencoded"
 
         token = oauth.Token(
             key=self.twitter_access_token.oauth_token,
@@ -607,15 +625,16 @@ class User( db.Expando ):
 
         client = oauth.Client(consumer, token)
         
-        #logging.info("Tweeting at %s" % twitter_post_url )
+        logging.info("Tweeting at %s" % twitter_post_url )
+        logging.info("body: %s" %  body )
         
         response, content = client.request(
             twitter_post_url, 
             "POST", 
-            body= urllib.urlencode( {"status": message.encode("UTF-8")} ),
-            headers={ "Content-type":"application/x-www-form-urlencoded" }
+            body=body,
+            headers={ "Content-type": content_type }
         )
-        #logging.info("%r %r" % ( response, content ))
+        logging.info("%r %r" % ( response, content ))
 
         res = simplejson.loads( content )
 
@@ -717,11 +736,18 @@ class User( db.Expando ):
                         ... self.response.out.write(res) """
         
         facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
-        params = urllib.urlencode({
-            'access_token': self.fb_access_token,
-            'message': msg,
-            'picture' : img
-        })
+        if img != "":
+            params = urllib.urlencode({
+                'access_token': self.fb_access_token,
+                'message': msg,
+                'picture' : img
+            })
+        else:
+            params = urllib.urlencode({
+                'access_token': self.fb_access_token,
+                'message': msg
+            })
+
         fb_response, plugin_response, fb_share_id = None, None, None
         try:
             logging.info(facebook_share_url + params)
