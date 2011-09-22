@@ -117,8 +117,7 @@
                             <div class="span-4"><span>conversions</span></div>
                             <div class="span-1"><span>&nbsp;</span></div>
                             <div class="span-4 append-2 dollars last"><span>sales</span></div>
-                            {% for users in st.users %}
-                            {% for u in users %}
+                            {% for u in st.users %}
                             <div class="prepend-2 span-2"><span><a href='#' class='user' id='{{ u.uuid }}'>{{ u.handle }}</a></span></div>
                                 <div class="span-1">&nbsp;</div>
                                 <div class="span-4"><span>{{ u.reach }}</span></div>
@@ -127,7 +126,7 @@
                                 <div class="span-4"><span>{{ u.conversions }}</span></div>
                                 <div class="span-1"><span>&nbsp;</span></div>
                                 <div class="span-4 append-2 dollars big last"><span>${{ u.profit }}</span></div>
-                            {% endfor %}{% endfor %}
+                            {% endfor %}
                         </div>
                     </div>
                 {% endfor %}
