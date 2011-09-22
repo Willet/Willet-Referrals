@@ -711,7 +711,7 @@ class User( db.Expando ):
         logging.info('li share: %s' % response)
         return content, html_response
     
-    def facebook_share(self, msg):
+    def facebook_share(self, msg, img=''):
         """Share 'message' on behalf of this user. returns share_id, html_response
            invoation: fb_share_id, res = self.facebook_share(msg)...
                         ... self.response.out.write(res) """
@@ -719,7 +719,8 @@ class User( db.Expando ):
         facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
         params = urllib.urlencode({
             'access_token': self.fb_access_token,
-            'message': msg
+            'message': msg,
+            'picture' : img
         })
         fb_response, plugin_response, fb_share_id = None, None, None
         try:

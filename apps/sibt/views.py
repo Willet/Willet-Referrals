@@ -39,11 +39,8 @@ class DynamicLoader(webapp.RequestHandler):
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
-        page_url = urlparse( self.request.remote_addr )
+        page_url = urlparse( self.request.get('url') )
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        if target == "://127.0.0.1":
-            target = 'http://www.rf.rs' # HACK
-            origin_domain = 'http://www.rf.rs' # HACK
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)

@@ -321,7 +321,8 @@ class FacebookShare(webapp.RequestHandler):
             'wcode',
             'fb_token',
             'fb_id',
-            'order_id'], 
+            'order_id',
+            'img'], 
             self
         )
         user = get_user_by_cookie(self)
@@ -356,7 +357,7 @@ class FacebookShare(webapp.RequestHandler):
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
             logging.info('got user and have facebook jazz')
 
-            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'])
+            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'], rq_vars['img'])
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])

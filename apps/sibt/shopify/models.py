@@ -100,7 +100,7 @@ def install_script_tags( store_url, store_token, store_id ):
     logging.info('%r %r' % (resp, content))
 
     # Install the SIBT script
-    data = { "script_tag": { "src": "http://social-referral.appspot.com/s/sibt.js", "event": "onload" } }      
+    data = { "script_tag": { "src": "http://social-referral.appspot.com/s/sibt.js?store_id=%s" % store_id, "event": "onload" } }      
 
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)

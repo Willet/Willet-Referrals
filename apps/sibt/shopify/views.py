@@ -209,14 +209,8 @@ class DynamicLoader(webapp.RequestHandler):
         is_asker = show_votes = False
         instance = None
 
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
         page_url = urlparse( self.request.remote_addr )
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        if target == "://127.0.0.1":
-            target = 'http://www.rf.rs' # HACK
-            origin_domain = 'http://www.rf.rs' # HACK
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -253,24 +247,17 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = True
                     instance   = actions[0].sibt_instance
             
-        # If we're not showing a voting screen, then we're showing the button!
-        if not show_votes:
-
-            # Make a new Link
-            link = create_link( target, app, origin_domain, user)
-
         template_values = {
+                'URL' : URL,
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
                 'show_button' : not show_votes,
                 'instance' : instance,
 
                 'app' : app,
-                'willt_url' : link.get_willt_url() if link else '',
-                'willt_code': link.willt_url_code if link else '',
                 
                 'user': user,
-                'store_id' : self.request.get('store_id') # TODO
+                'store_id' : self.request.get('store_id')
         }
 
         # Finally, render the JS!

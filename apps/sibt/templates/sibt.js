@@ -18,7 +18,7 @@
 
 window.onload =  function () {
     var photo = getFirstImgChild( document.getElementById( 'product-photos' ) );
-    var url = "http://localhost:8080/s/ask.html?store_id={{ store_id }}&photo=" + photo.src;
+    var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&photo=" + photo.src + "&url=" + window.location.href;
     var colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, href:'" + url + "' })";
     
     // Construct button.
