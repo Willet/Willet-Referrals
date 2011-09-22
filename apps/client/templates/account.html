@@ -1,28 +1,18 @@
 {% extends "base.html" %}
 
-{% block head %}
-{% endblock head %}
-
 {% block left_content %}
-    <h1 class="prepend-top span-8 last center"><a href="/">{{NAME}}</a></h1>
+    <h1 class="prepend-top span-8 last center">
+        <a href="/">{{NAME}}</a>
+    </h1>
     
-    <h2 class="span-8 last center"> Tagline </h2>
-    
-    <div class="prepend-1 span-6 append-1 last append-bottom center">
-        <p>
-        </p>
-        <p>
-        </p>
-    </div>
-    
+    <h2 class="span-8 last center">Tagline</h2>
+       
     <div class="prepend-top span-8 last center">
         <a class="call_to_action big" href="/r/edit">New Referral App</a>
     </div>
-
 {% endblock left_content %}
 {% block right_content %}
     <h1 class="span-15 last lower-75 center">Your Apps</h1>
-
     <div class="prepend-top span-15 last">
         {% if has_apps %}
             <table>
@@ -63,11 +53,9 @@
                 {% endfor %}
             </table>
         {% else %}
-        
             <h3 class="center">
                 Start learning about your customers by <a href="/r/edit">creating a campaign</a>.
             </h3>
-
         {% endif %}
     </div>
 {% endblock right_content %}

@@ -24,17 +24,17 @@ from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
 
-class ShowDashboard( URIHandler ):
+class ShowDashboard(URIHandler):
     # Renders a app page
     def get(self, app_id = ''):
         #client          = self.get_client()
         #app_id     = self.request.get( 'id' )
-        template_values = { 'app' : None }
+        template_values = {'app' : None}
         
         # Grab the app
         app = get_app_by_id(app_id)
         if app == None:
-            self.redirect('/account')
+            self.redirect(url('ShowAccountPage'))
             return
         
         app.compute_analytics('month')
@@ -72,6 +72,7 @@ class ShowDashboard( URIHandler ):
         template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
         logging.info(service_totals) 
+        
         self.response.out.write(
             self.render_page(
                 'app.html', 

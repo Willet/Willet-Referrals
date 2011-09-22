@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <style>
-      
+    <style tyle="text/css">
         div.input_box {
             padding: 30px;
             margin: 20px 0 30px 0;
@@ -101,99 +100,99 @@
         }
 
 
-/* -----------------------------------------------------------------------------
+    /* -----------------------------------------------------------------------------
 
-    APROCITY.COM SITE STYLES
+        APROCITY.COM SITE STYLES
 
------------------------------------------------------------------------------ */
+    ----------------------------------------------------------------------------- */
 
-p {
-    font-size: 1.3em;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    margin-bottom: 20px;
-    line-height: 150%;
-}
-p+p {
-    text-indent: 0;
-}
-p.title {
-    width: 100%;
-    margin: 0 0 15px 0;
-    text-align: center;
-    color: #FFFFFF;
-    font-size: 20px;
-    text-shadow: 0 1px #FFF;
-    font-family: 'Arvo', arial, serif;
-}
-p.last {
-    margin-bottom: 0px;
-   
-}
-p.attention {
-    font-family: 'Arvo', arial, serif;
-    text-align: center;
-    font-size: 1.8em;
-    line-height: 200%;
-}
-
-
-
-.action {
+    p {
+        font-size: 1.3em;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin-bottom: 20px;
+        line-height: 150%;
+    }
+    p+p {
+        text-indent: 0;
+    }
+    p.title {
+        width: 100%;
+        margin: 0 0 15px 0;
+        text-align: center;
+        color: #FFFFFF;
+        font-size: 20px;
+        text-shadow: 0 1px #FFF;
+        font-family: 'Arvo', arial, serif;
+    }
+    p.last {
+        margin-bottom: 0px;
     
-    font-weight: bold;
-    font-size: 18px;
-    text-shadow: 0 1px #FFF;
-    font-family: 'Arvo', arial, serif;
-}
-
-a.action {
-    color:black;
-    text-shadow:none;
-}
-.action:hover {
-    cursor: pointer;
-    color:red;
-}
-
-
-div.input_box {
-    background: #FFFFFF;
-    padding: 30px;
-    margin: 20px 0 30px 0;
-    -khtml-border-radius: 15px;
-    -o-border-radius: 15px;
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-    border-radius: 15px;
-    /* IE CSS3 support, serious black magic */
-    behavior:url('static/js/PIE.htc');
-}
-div.input_box.has_tabs {
-    margin-top: -40px;
-    position: relative;
-    z-index: 2;
-}
-div.input_box select {
-    font-size: 1.2em;
-    margin: 0;
-    width: 100%;
-    text-align: center;
-    padding: 2px;
-}
+    }
+    p.attention {
+        font-family: 'Arvo', arial, serif;
+        text-align: center;
+        font-size: 1.8em;
+        line-height: 200%;
+    }
 
 
 
-div.input_box button {
-    width: 100%;
-    margin: 0;
-    border: none;
-    text-align: center;
-    background: white;
-}
-div.input_box button:hover {
-    cursor: pointer;
-    color:red;
-}
+    .action {
+        
+        font-weight: bold;
+        font-size: 18px;
+        text-shadow: 0 1px #FFF;
+        font-family: 'Arvo', arial, serif;
+    }
+
+    a.action {
+        color:black;
+        text-shadow:none;
+    }
+    .action:hover {
+        cursor: pointer;
+        color:red;
+    }
+
+
+    div.input_box {
+        background: #FFFFFF;
+        padding: 30px;
+        margin: 20px 0 30px 0;
+        -khtml-border-radius: 15px;
+        -o-border-radius: 15px;
+        -moz-border-radius: 15px;
+        -webkit-border-radius: 15px;
+        border-radius: 15px;
+        /* IE CSS3 support, serious black magic */
+        behavior:url('static/js/PIE.htc');
+    }
+    div.input_box.has_tabs {
+        margin-top: -40px;
+        position: relative;
+        z-index: 2;
+    }
+    div.input_box select {
+        font-size: 1.2em;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+        padding: 2px;
+    }
+
+
+
+    div.input_box button {
+        width: 100%;
+        margin: 0;
+        border: none;
+        text-align: center;
+        background: white;
+    }
+    div.input_box button:hover {
+        cursor: pointer;
+        color:red;
+    }
 
 
 
@@ -201,7 +200,7 @@ div.input_box button:hover {
     </style>
     <script type="text/javascript" src="http://www.approcity.com/static/js/jquery-validation-1.8.0/jquery.validate.js"></script>
     <script type="text/javascript" src="http://www.approcity.com/static/js/sha256.js"></script>
-    <script>
+    <script type="text/javascript">
         $(document).ready(function() {
             // Decide which form to show first
             var registered = {{ registered }},
@@ -315,20 +314,12 @@ div.input_box button:hover {
     
     <div class="center">
         <p>
-            {{NAME}} has
-            <br /><br />
-            {{stats.total_campaigns}} campaigns
-            <br />
-            {{total_users}} users
-            <br />
-             {{stats.total_tweets}} shares 
-             <br />
-             {{stats.total_links}} shortened links
-            <br />
-            and {{stats.total_clicks}} clicks.
-            <br />
+            {{NAME}} is currently in a private beta.
         </p>
-        <p><a href="mailto:info@wil.lt">info@wil.lt</a></p>
+        <p>
+            For more infomration please contact us at:<br />
+            <a href="mailto:info@wil.lt">info@wil.lt</a>
+        </p>
         
         <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
     </div>
