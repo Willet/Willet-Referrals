@@ -83,6 +83,9 @@ class SIBTInstance( Model ):
     # URL of the Link (here for quick filter)
     url             = db.LinkProperty  ( indexed = True )
     
+    # URL of the product image
+    product_img     = db.LinkProperty  ( indexed = False )
+    
     # Datetime when this instance should shut down and email asker 
     end_datetime    = db.DateTimeProperty( )
 

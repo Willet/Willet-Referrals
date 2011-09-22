@@ -17,14 +17,17 @@
 {% else %}
 
 window.onload =  function () {
-
+    var photo = getFirstImgChild( document.getElementById( 'product-photos' ) );
+    var url = "http://localhost:8080/s/ask.html?store_id={{ store_id }}&photo=" + photo.src;
+    var colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, href:'" + url + "' })";
+    
     // Construct button.
     var button = document.createElement( 'a' );
     button.setAttribute( 'class', 'button' );
     button.setAttribute( 'style', 'margin: 5px 10px 5px 10px' );
     button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
     button.setAttribute( 'value', '' );
-    button.setAttribute( 'onClick', '$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, href:"http://localhost:8080/s/ask.html?store_id={{ store_id }}" } )' );
+    button.setAttribute( 'onClick', colorBoxStr);
     button.setAttribute( 'id', '_willet_button' );
 
     button.innerText = 'Not Sure? Ask your friends';
@@ -35,6 +38,20 @@ window.onload =  function () {
     purchase_cta.parentNode.appendChild( button );
 };
 
+var getFirstImgChild = function( elem ) {
+    var childNodes = elem.childNodes;
+
+    for (var i = 0; i < childNodes.length; i++) {
+        var child = childNodes[i];
+        if ( child.tagName == 'img' || child.tagName == "IMG" ) {
+            return child;
+        }
+        else {
+            var maybe = getFirstImgChild( child );
+            if ( maybe != null ) return maybe;
+        }
+    }
+};
 
 var _willet_closeCallback = function () {
     var button = document.getElementById( '_willet_button' );

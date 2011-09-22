@@ -53,6 +53,7 @@ class DynamicLoader(webapp.RequestHandler):
         link = create_link( target, app, origin_domain, user )
 
         template_values = {
+                'product_img' : self.request.get( 'photo' ),
                 'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
                 'app' : app,
                 'willt_url' : link.get_willt_url() if link else '',
