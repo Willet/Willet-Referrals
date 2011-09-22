@@ -182,7 +182,12 @@ class App( Model, polymodel.PolyModel ):
                         users[abbr][userID]['co'] += 1
                         users[abbr][userID]['pr'] += subtotal_price
 
-        top_user_lists = { 'f': [], 't': [], 'l': [] }
+        top_user_lists = {
+            'f': [],
+            't': [],
+            'l': [],
+            'e': [] 
+        }
         for k, v in top_user_lists.iteritems():
             top_user_lists[k] = sorted (
                 users[k].iteritems(),
