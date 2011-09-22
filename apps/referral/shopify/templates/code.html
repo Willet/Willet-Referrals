@@ -17,7 +17,7 @@
     };
         $(document).ready(function() {
             $('#go_to_shopify').click(function() {
-                window.location = "{% url ShowFinishedPage %}?id={{app.uuid}}";
+                window.location = "/r/shopify/finished?id={{app.uuid}}";
             });
             $('#go_back').click(function() {
                 window.location = "/r/shopify/edit?id={{app.uuid}}";
