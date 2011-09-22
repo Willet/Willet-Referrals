@@ -16,6 +16,7 @@
             '{{platform_secret}}',
             '{{app.uuid}}'
         );
+        /*
         {% if has_results %}
             {{mixpanel}}
             
@@ -24,7 +25,7 @@
                                      {labels: true, 
                                      mapping : { 'Email{{app.uuid}}' : 'Email', 'Twitter{{app.uuid}}' : 'Twitter', 'Facebook{{app.uuid}}' : 'Facebook' }});
         {% endif %}
-        
+        */
         /*
         platform.create_line_chart( 'graph_div', [ 'Tweets_{{app.uuid}}', 
         {% for r in results %} 'Clicks_{{app.uuid}}_{{r.user.twitter_handle}}', {% endfor %}
