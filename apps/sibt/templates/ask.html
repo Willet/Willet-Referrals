@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+       <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+        
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Should I Buy This?</title>
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+        <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script> 
+
+        <script type="text/javascript">
+     
+            var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
+                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
+            
+            $(document).ready(function() {
+                iframeBody = document.getElementById('willt');
+                shareFrame = document.getElementById('willt-frame');
+                shareArea = document.getElementById('share-area'),
+                userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+                shareText = document.getElementById('share-text'),
+                charsLeft = document.getElementById('chars-left');
+
+                if ( FB ) {
+                    FB.init({ appId: '{{FACEBOOK_APP_ID}}',
+                        status: true,
+                        cookie: true,
+                        xfbml: true,
+                        oauth: true
+                    });
+                }
+        
+                // clear the share text
+                shareComplete = function() {
+                    toggleThanks();
+                    console.log("Sharing complete!");
+                    return true;
+                };
+            
+                clearText = function( elem ) {
+                    elem.value = "";
+                };
+ 
+                toggleThanks = function () {
+                    $("#invite").toggle();
+                    $("#thanks").fadeIn(300);
+                };
+    
+                // use the selected medium to share about your purchase
+                share = function(medium, uid) {
+                    var fb_share_handler = function(payload) {
+                        console.log(payload)
+                        $.ajax({url: "/fbShare",
+                                type: 'post',
+                                data: payload,
+                                success: function (tr) {
+                                    if (tr === 'ok') {
+                                        shareComplete();
+                                    } else {
+                                        console.log("Facebook post failure");
+                                    }
+                                }
+                        });
+                    },
+                    uid = uid || '';
+                    var message = shareText.value.substring(0,141);
+                    if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
+                        // initiate facebook login event if requested
+                        if (medium === 'fb') {
+                            var fbData = {msg: message, wcode: '{{willt_code}}', order_id: '{{order_id}}'};
+                            // first attempt server-provided token
+                            if (userFound) {
+                                fb_share_handler(fbData)
+                                return;
+                            } else {
+                                if (!FB) {
+                                    alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
+                                    return;
+                                }
+                                FB.login(function(lr) {
+                                        console.log(lr);
+                                        if (!lr.authResponse) {
+                                            // we weren't given permission
+                                            window.close();
+                                        } else { 
+                                            fbData.fb_token = lr.authResponse.accessToken;
+                                            fbData.fb_id = lr.authResponse.userID;
+                                            fb_share_handler(fbData);
+                                            mixpanelTrack( 'Facebook' );
+                                            mixpanelTrack( 'Share' );
+                                        }
+                                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                                );
+                    
+                            } // if (userFound u
+                        } else if (medium === 'twitter'){
+                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                                            + '&m=' + message + '&wcode={{willt_code}}&order_id={{order_id}}',
+                                            AuthWindow = window.open(OAuthURL, '_blank');
+                        } else if (medium === 'linkedin') {
+                            console.log('linkedin share', message);
+                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
+                                            + '&m=' + message + '&wcode={{willt_code}}&order_id={{order_id}}',
+                                            AuthWindow = window.open(OAuthURL, '_blank');       
+                        } else {
+                            // style shareArea according to different social loader
+                        }
+                        shareArea.style.visibility = 'visible';
+                    } else {
+                        // social media provider not found
+                    }
+                };
+            
+                countChars = function() {
+                    var count = 140 - shareText.value.length;
+                    charsLeft.innerHTML = count + " characters left";
+                    if (count < 0){
+                        $('#twitter_button')
+                        .addClass('disabled')
+                        .attr('onclick', '');
+                    } else {
+                        $('#twitter_button')
+                        .removeClass('disabled')
+                        .attr('onclick', 'share("twitter");');
+                    }
+                };
+        
+                reset = function() { 
+                    iframeBody.style.visibility = 'visible';
+                    shareArea.style.visibility = 'hidden';
+                    shareFrame.src = '';
+                };
+        
+                toggleDefaultValue = function(el, onoff) {
+                    if (onoff) {
+                        var defaultvalue = el.siblings('.defaultValue').html();
+                        el.css('color', '#777').val(defaultvalue);
+                    } else {
+                        el.css('color', '#444').val('');
+                    }
+                } // end function
+            
+                // Controls default values of input & textarea elements
+                $('.defaultValue').siblings('input, textarea').focus(
+                    function () {
+                        var el = $(this),
+                            defaultValue = el.siblings('.defaultValue').html();
+                        if (el.val() === defaultValue) {
+                            toggleDefaultValue(el, false);
+                        }
+                    }
+                ).blur(
+                    function () { 
+                        var el = $(this);
+                        if (el.val() === '' ) {
+                            toggleDefaultValue(el, true);
+                        }
+                    }
+                ).each(
+                    function () { 
+                        var el = $(this);
+                        if (el.val() === '') {
+                            toggleDefaultValue(el, true); 
+                        }
+                    }
+                );
+            
+                countChars();
+            });
+        </script>
+        
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+
+    </head>
+    <body>
+
+    <div id="fb-root"></div>
+    <div id="wrapper">
+        <div id="invite" class="willt">
+            
+            <div id="top-div" width="100%">
+                <div id="product-img">
+                    <img src="/static/imgs/fb-logo.png" />
+                </div>
+
+                <div id="text-div">
+                    <div class="" id="chars-left">140 characters left</div>
+
+                    <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">I don't know if I should buy this. Help me by voting here: {{willt_url}}.</textarea>
+                </div>
+            </div>
+
+            <div width="100%" id="buttons">
+                <div class="prepend-top button-link" title="Share on Facebook" onclick="share('fb');">
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    Share on Facebook
+                </div>
+                <div id="twitter_button" class='button-link' title="Tweet on Twitter" onclick="share('twitter');">
+                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
+                    Tweet on Twitter
+                </div>
+            </div>
+        </div>
+
+        <div id="thanks" class="willt hidden">
+            <h1 style="margin-top: 1.5em">Shared!</h1>
+
+            <h1 class="center">We'll email you when your friends have voted.</h1>
+        </div>
+
+        <div id="tweet-complete" onclick="shareComplete();"></div>
+        <div id="share-area">
+            <iframe id="willt-frame" class="hidden"></iframe>
+        </div>
+    </div>
+    </body>
+</html>
