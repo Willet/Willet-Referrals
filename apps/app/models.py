@@ -166,7 +166,7 @@ class App( Model, polymodel.PolyModel ):
             'shares': 0,
             'reach': 0,
             'clicks': 0,
-            'conversiosn': 0,
+            'conversions': 0,
             'profit': 0
         }
         for c in ca:
