@@ -42,8 +42,10 @@ class ShowDashboard(URIHandler):
         template_values['app'] = app
         template_values['totals'] = totals 
         template_values['sms'] = sms
+
         total_clicks = app.count_clicks()
         template_values['total_clicks'] = total_clicks
+
         #results, mixpanel = app.get_results( total_clicks )
         
         #smap = {'twitter': 0, 'linkedin': 1, 'facebook': 2, 'email': 3}
@@ -64,15 +66,12 @@ class ShowDashboard(URIHandler):
             
         #template_values['results']     = results
         #template_values['mixpanel']    = mixpanel
-        template_values['has_results'] = len( results ) != 0
+        template_values['has_results'] = len(sms) != 0
         template_values['current'] = 'app'
 
         template_values['api_key'] = MIXPANEL_API_KEY
         template_values['platform_secret'] = hashlib.md5(MIXPANEL_SECRET + app.uuid).hexdigest()
-        template_values['totals'] = totals
-        template_values['service_totals'] = service_totals
         template_values['BASE_URL'] = URL
-        logging.info(service_totals) 
         
         self.response.out.write(
             self.render_page(
