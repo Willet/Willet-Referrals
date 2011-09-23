@@ -59,6 +59,13 @@ REFERRAL_SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb'
 SIBT_SHOPIFY_API_KEY = 'c59032b6b1a3c2cfea2caa9ee8b3a06e'
 SIBT_SHOPIFY_API_SHARED_SECRET = '513d4c16b09654e2358a1bc767cb2ed4'
 
+# List of root template directories
+# to import templates from
+TEMPLATE_DIRS = (
+    'apps/homepage/templates',        
+)
+
+# the apps we are using
 INSTALLED_APPS = [
     'admin',
     'app',

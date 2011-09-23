@@ -20,6 +20,9 @@ from google.appengine.ext.db import polymodel
 from apps.link.models     import Link, get_link_by_willt_code 
 from apps.order.models    import Order
 from apps.user.models     import User
+from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats
+
+
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -73,106 +76,173 @@ class App( Model, polymodel.PolyModel ):
             with latest available data""" 
 
         app = get_app_by_id(self.uuid)
+        service_keys = ['facebook_share_id', 'tweet_id', 'linkedin_share_url']
+        
         # interpret the scope to a date
         scope_string = scope
         scope = datetime.datetime.today() - datetime.timedelta(30) if scope == 'month'\
             else datetime.datetime.today()-datetime.timedelta(7)
 
         # twitter, facebook, linkedin
-        ao, users = {}, {}
+        app_analytics, users = {}, {}
         lost = 0
         for smp in ['t', 'f', 'l', 'e']:
             # [cl]icks, [co]nversions, [sh]ares, [re]ach, [pr]ofit
-            ao[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
+            app_analytics[smp] = {'cl': 0, 'co': 0, 'sh': 0, 're': 0, 'pr': 0} 
             users[smp] = {}
-
+        
         if app:
             # this filter should work but doesn't for some reason
             links = app.links_ # .filter('creation_time >=', scope)
             for l in links: #[l for l in app.links_ if hasattr(l, 'user')]:
+                # by default assume a link has not been shared, abbr is false
+                abbr = False
                 if l.creation_time < scope:
                     logging.info("Skipping: " + str(l.creation_time))
                     continue
+
                 user = getattr(l, 'user', None)
                 userID = getattr(user, 'uuid', None)# if hasattr(l, 'user') else None
-                if userID:
-                    #users[abbr][userID] = {}
-                    for m in ['t', 'f', 'l']: #twitter, facebook, linkedin
-                        # [co]nversions, [cl]icks, [sh]are
-                        if not users[m].has_key(userID):
-                            users[m][userID] = {'co': 0, 'cl': 0, 'sh': 0,
-                            'pr': 0, 'uid': user.key()}
-
-                for smp in ['facebook_share_id', 'tweet_id', 'linkedin_share_url']:
-                    abbr = smp[0] # 'f', 't', or 'l'
+                
+                for smp in service_keys:
                     if hasattr(l, smp) and getattr(l, smp) is not None and\
                         len(getattr(l, smp)) > 0:
-                        ao[abbr]['sh'] += 1
-                        link_clicks = l.count_clicks()
-                        ao[abbr]['cl'] += link_clicks
-                        if userID:
-                            users[abbr][userID]['sh'] += 1
-                            users[abbr][userID]['cl'] += link_clicks
+                        # this link was shared on this service
+                        abbr = smp[0] # 'f', 't', or 'l'
+                
+                if abbr == False:
+                    # we didn't detect it shared, double check for email
+                    if hasattr(l, 'email_sent'):
+                        if getattr(l, 'email_sent') == True:
+                            # woohoo, it was shared!
+                            abbr = 'e'
                         else:
-                            lost += 1
-                        if abbr == 'f':
-                            ao[abbr]['re'] += len(getattr(user, 'fb_friends', []))
-                        elif abbr == 't':
-                            twitter_follower_count = getattr(user, 'twitter_follower_count', 0) 
-                            # this returned as none sometimes when it's null
-                            twitter_follower_count = 0 if twitter_follower_count\
-                                is None else twitter_follower_count
-                            ao[abbr]['re'] += twitter_follower_count
-                        elif abbr == 'l':
-                            ao[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
-                    if hasattr(l, 'link_conversions'):
-                            ao[abbr]['co'] += 1
-                            order_id = l.link_conversions.order
+                            continue
+                    else:
+                        continue
 
-                            # ugly hack to make sure there is an order_id
-                            if type(order_id) == type(str()):
-                                order = Order.all().filter('app =', app)\
-                                            .filter('order_id =', order_id)
-                                for o in order:
-                                    if hasattr(o, 'subtotal_price'):
-                                        subtotal_price += o.subtotal_price
-                            else:
-                                subtotal_price = 0
+                if userID:
+                    #users[abbr][userID] = {}
+                    #for service in ['t', 'f', 'l', 'e']: #twitter, facebook, linkedin
+                        # [co]nversions, [cl]icks, [sh]are
+                    if not users[abbr].has_key(userID):
+                        users[abbr][userID] = {
+                            'co': 0,
+                            'cl': 0,
+                            'sh': 0,
+                            'pr': 0,
+                            'uid': user.key()
+                        }
+                
+                logging.info('got link: %s\nuser: %s\nservice: %s' % (
+                    l,
+                    user,
+                    abbr
+                ))
 
-                            # hack to make sure there is a subtotal price
-                            # and cuz we can't get the sbtl_price from a queryset
-                            
-                            ao[abbr]['pr'] += subtotal_price
-                            if userID:
-                                users[abbr][userID]['co'] += 1
-                                users[abbr][userID]['pr'] += subtotal_price
+                # okay if we got here this link was shared
+                app_analytics[abbr]['sh'] += 1
+                link_clicks = l.count_clicks()
+                app_analytics[abbr]['cl'] += link_clicks
+                if userID:
+                    users[abbr][userID]['sh'] += 1
+                    users[abbr][userID]['cl'] += link_clicks
+                else:
+                    lost += 1
+                app_analytics[abbr]['re'] += user.get_reach(service=abbr) 
+                #if abbr == 'f':
+                #    app_analytics[abbr]['re'] += len(getattr(user, 'fb_friends', []))
+                #elif abbr == 't':
+                #    twitter_follower_count = getattr(user, 'twitter_follower_count', 0) 
+                #    # this returned as none sometimes when it's null
+                #    twitter_follower_count = 0 if twitter_follower_count\
+                #        is None else twitter_follower_count
+                #    app_analytics[abbr]['re'] += twitter_follower_count
+                #elif abbr == 'l':
+                #    app_analytics[abbr]['re'] += len(getattr(user, 'linkedin_connected_users', []))
+                if hasattr(l, 'link_conversions'):
+                    app_analytics[abbr]['co'] += 1
+                    order_id = l.link_conversions.order
 
-        top_user_lists = { 'f': [], 't': [], 'l': [] }
+                    # ugly hack to make sure there is an order_id
+                    if type(order_id) == type(str()):
+                        order = Order.all().filter('app =', app)\
+                                    .filter('order_id =', order_id)
+                        for o in order:
+                            if hasattr(o, 'subtotal_price'):
+                                subtotal_price += o.subtotal_price
+                    else:
+                        subtotal_price = 0
+
+                    # hack to make sure there is a subtotal price
+                    # and cuz we can't get the sbtl_price from a queryset
+                    
+                    app_analytics[abbr]['pr'] += subtotal_price
+                    if userID:
+                        users[abbr][userID]['co'] += 1
+                        users[abbr][userID]['pr'] += subtotal_price
+
+        top_user_lists = {
+            'f': [],
+            't': [],
+            'l': [],
+            'e': [] 
+        }
         for k, v in top_user_lists.iteritems():
-            top_user_lists[k] = sorted(users[k].iteritems(),
-                                       key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
-                                       reverse=True)
-        create_app_analytics(self.uuid, scope_string, scope, datetime.datetime.today(),\
-            ao['f'], ao['t'], ao['l'], ao['e'], top_user_lists)
+            top_user_lists[k] = sorted (
+                users[k].iteritems(),
+                key=lambda u: (u[1]['co'], u[1]['cl'], u[1]['sh']),
+                reverse=True
+            )
+
+        create_app_analytics(
+            self.uuid,
+            scope_string,
+            scope,
+            datetime.datetime.today(),
+            app_analytics['f'],
+            app_analytics['t'],
+            app_analytics['l'],
+            app_analytics['e'],
+            top_user_lists
+        )
 
     def get_reports_since(self, scope, t, count=None):
         """ Get the reports analytics for this app since 't'"""
         ca = get_analytics_report_since(self.uuid, scope, t, count)
         social_media_stats = []
+        totals = {
+            'shares': 0,
+            'reach': 0,
+            'clicks': 0,
+            'conversions': 0,
+            'profit': 0
+        }
         for c in ca:
-            for s in ['facebook', 'twitter', 'linkedin', 'email']:
+            #for s in ['facebook', 'twitter', 'linkedin', 'email']:
+            for s in ['facebook', 'twitter', 'email']:
                 stats = getattr(c, s+'_stats')
                 sms = {}
-                sms['shares'] = stats[0]
-                sms['reach'] = stats[1]
-                sms['clicks'] = stats[2]
                 sms['name'] = s
+
+                sms['shares'] = stats[0]
+                totals['shares'] += stats[0] 
+
+                sms['reach'] = stats[1]
+                totals['reach'] += stats[1]
+
+                sms['clicks'] = stats[2]
+                totals['clicks'] += stats[2]
+
+
                 sms['conversions'] = stats[3]
+                totals['conversions'] += stats[3]
+
                 sms['profit'] = stats[4]
+                totals['profit'] += stats[4]
 
                 users = []
-                user_stats = map(lambda x: x.split(","), 
-                    getattr(c, s+'_user_stats', ""))
+                user_stats = map(lambda x: x.split(","), getattr(c, s+'_user_stats', ""))
                 for u_stat_list in user_stats:
                     user = db.get(u_stat_list[0])
                     if user:
@@ -196,9 +266,8 @@ class App( Model, polymodel.PolyModel ):
                 sms['users'] = users
                 social_media_stats.append(sms)
         logging.info(social_media_stats)
-        return(social_media_stats)
+        return social_media_stats, totals
              
-
     def get_results( self, total_clicks ) :
         """Get the results of this app, sorted by link count"""
         if total_clicks == 0:
@@ -273,7 +342,6 @@ class App( Model, polymodel.PolyModel ):
     
     def get_shares_count(self):
         """Count this apps sharded shares"""
-        
         total = memcache.get(self.uuid+"ShareCounter")
         if total is None:
             total = 0
@@ -285,7 +353,6 @@ class App( Model, polymodel.PolyModel ):
     
     def add_shares(self, num):
         """add num clicks to this app's share counter"""
-
         def txn():
             index = random.randint(0, NUM_SHARE_SHARDS-1)
             shard_name = self.uuid + str(index)
@@ -381,6 +448,7 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
     fb_user_stats = map(fcsv, map(user_stats_obj_to_list, users['f']))
     tw_user_stats = map(fcsv, map(user_stats_obj_to_list, users['t']))
     li_user_stats = map(fcsv, map(user_stats_obj_to_list, users['l']))
+    e_user_stats = map(fcsv, map(user_stats_obj_to_list, users['e']))
     logging.info(tw_user_stats)
     ca = AppAnalytics(uuid=generate_uuid(16),
         app_uuid=app_uuid,
@@ -393,7 +461,8 @@ fb_stats=None, twitter_stats=None,linkedin_stats=None,email_stats=None,users=Non
         email_stats=email_stats,
         facebook_user_stats=fb_user_stats,
         twitter_user_stats=tw_user_stats,
-        linkedin_user_stats=li_user_stats
+        linkedin_user_stats=li_user_stats,
+        email_user_stats = e_user_stats
     )
     ca.save()
     
