@@ -87,9 +87,18 @@ class VoteDynamicLoader(webapp.RequestHandler):
         user = get_or_create_user_by_cookie(self)
         app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
        
+        # Grab the link
+        link = get_link_by_willt_code( self.request.get('willt_code') )
+
+        # Make sure User has a click action for this code
+        actions = get_sibt_click_actions_by_user_and_link( user, target )
+
+        # TODO: If no actions, this User didn't click on a link - THEY FAKED IT.
+        
         # Grab the instance.
-        instance = get_sibt_instance_by_uuid( self.request.get('instance_uuid') )
+        instance = link.sibt_instance.get()
         name = instance.asker.get_full_name()
+        is_asker = (instance.asker.key() == user.key())
 
         template_values = {
                 'product_img' : self.request.get( 'photo' ),
@@ -99,7 +108,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 'asker_name' : name if name != '' else "your friend",
                 'fb_comments_url' : target + '/asd',
 
-                'is_asker' : self.request.get('is_asker'),
+                'is_asker' : is_asker,
                 'instance' : instance,
         }
 

@@ -55,7 +55,7 @@
                                   },
                             success: function (tr) {
                                 if (tr === 'ok') {
-                                    voteComplete();
+                                    voteComplete( {{is_asker}} );
                                 } else {
                                     console.log("Facebook post failure");
                                 }
@@ -63,7 +63,7 @@
                         });
                 };
 
-                voteComplete = function() {
+                voteComplete = function( is_asker ) {
                     var c   = document.getElementById( 'FOO' );
                     var yes = document.getElementById( 'yesBtn' );
                     var no  = document.getElementById( 'noBtn' );
@@ -81,10 +81,15 @@
                     yesCount.style.display  = "inline";
                     noCount.style.display   = "inline";
 
-                    title.innerHTML = "Tell {{asker_name}} Why You Voted";
-                    title.innerText = "Tell {{asker_name}} Why You Voted";
-                    
-                    alert( "Thanks for voting!" );
+                    if( !is_asker ) {
+                        title.innerHTML = "Tell {{asker_name}} Why You Voted";
+                        title.innerText = "Tell {{asker_name}} Why You Voted";
+                        
+                        alert( "Thanks for voting!" );
+                    } else {
+                        title.innerHTML = "{{asker_name}}, here's what your friends think!";
+                        title.innerText = "{{asker_name}}, here's what your friends think!";
+                    }
                 };
 
                 // clear the share text
@@ -170,7 +175,7 @@
 
                 // If this is the Asker, show the results.
                 {% if is_asker %}
-                    voteComplete();
+                    voteComplete( {{is_asker}} );
                 {% endif %}
             });
         </script>

@@ -209,7 +209,7 @@ class DynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
             
-        is_asker = show_votes = False
+        is_asker = show_votes = 0
         instance = None
 
         page_url = urlparse( self.request.remote_addr )
@@ -219,26 +219,13 @@ class DynamicLoader(webapp.RequestHandler):
         user = get_or_create_user_by_cookie(self)
         app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
        
-        # If the User came directly from a short link:
-        link_code = self.request.get( 'code' )
-        link = get_link_by_willt_code( link_code )
-        if link and hasattr(link, 'sibt_instance'):
-            
-            # If user is the 'asker':
-            if link.sibt_instance.asker.key() == user.key():
-                is_asker   = True
-            
-            show_votes = True
-            instance   = link.sibt_instance
-
-        # Otherwise, figure it out!
-        elif app:
+        if app:
 
             # Is User an asker for this URL?
             instance = get_sibt_instance_by_asker_for_url( user, target )
             if instance:
-                is_asker   = True
-                show_votes = True
+                is_asker   = 1
+                show_votes = 1
 
             # Has User clicked on an instance for the URL?
             else:
@@ -248,14 +235,13 @@ class DynamicLoader(webapp.RequestHandler):
                 logging.info("%s %r" % (actions, actions))
 
                 if actions.count() != 0:
-                    show_votes = True
+                    show_votes = 1
                     instance   = actions[0].sibt_instance
             
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
-                'show_button' : not show_votes,
                 
                 'app' : app,
                 'instance' : instance,

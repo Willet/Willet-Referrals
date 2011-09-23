@@ -46,7 +46,7 @@ class SIBT( App ):
 
         # Go to where the link points
         # Flag it so we know they came from the short link
-        urihandler.redirect('%s?code=%s' % (link.target_url, link.willt_url_code))
+        urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
     def create_instance( self, user, end, link ):
         # Make the properties

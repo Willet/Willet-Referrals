@@ -135,6 +135,9 @@ def create_sibt_click_action( user, app, link ):
 def get_sibt_click_actions_by_user_for_url( user, url ):
     return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
 
+def get_sibt_click_actions_by_user_and_link( user, url ):
+    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
+
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
