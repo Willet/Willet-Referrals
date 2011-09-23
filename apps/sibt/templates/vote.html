@@ -26,8 +26,9 @@
 
         <script type="text/javascript">
      
-            var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
-                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
+            var vote, share, reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
+                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, 
+                voteComplete, next;
             
             $(document).ready(function() {
                 iframeBody = document.getElementById('willt');
@@ -46,19 +47,50 @@
                     });
                 }
         
+                vote = function( which ) {
+                    $.ajax({url: "/s/doVote",
+                            type: 'post',
+                            data: { instance_uuid : "{{instance.uuid}}",
+                                    which : which
+                                  },
+                            success: function (tr) {
+                                if (tr === 'ok') {
+                                    voteComplete();
+                                } else {
+                                    console.log("Facebook post failure");
+                                }
+                            }
+                        });
+                };
+
+                voteComplete = function() {
+                    var c   = document.getElementById( 'FOO' );
+                    var yes = document.getElementById( 'yesBtn' );
+                    var no  = document.getElementById( 'noBtn' );
+                    
+                    var yesCount = document.getElementById( 'yesCount' );
+                    var noCount  = document.getElementById( 'noCount' );
+                    var title  = document.getElementById( 'title' );
+
+                    // Turn things Off
+                    yes.style.display = "none";
+                    no.style.display  = "none";
+
+                    // Turn things On
+                    c.style.display         = "inline";
+                    yesCount.style.display  = "inline";
+                    noCount.style.display   = "inline";
+
+                    title.innerHTML = "Tell {{asker_name}} Why You Voted";
+                    title.innerText = "Tell {{asker_name}} Why You Voted";
+                    
+                    alert( "Thanks for voting!" );
+                };
+
                 // clear the share text
                 shareComplete = function() {
-                    console.log("Sharing complete!");
                     toggleThanks();
-
-                    $.ajax({url: "/s/startInstance",
-                            type: 'post',
-                            data: { app_uuid : "{{app.uuid}}",
-                                    willt_code : "{{willt_code}}" },
-                            success: function (tr) {
-                            }
-                    });
-
+                    console.log("Sharing complete!");
                     return true;
                 };
             
@@ -135,108 +167,51 @@
                         // social media provider not found
                     }
                 };
-            
-                countChars = function() {
-                    var count = 140 - shareText.value.length;
-                    charsLeft.innerHTML = count + " characters left";
-                    if (count < 0){
-                        $('#twitter_button')
-                        .addClass('disabled')
-                        .attr('onclick', '');
-                    } else {
-                        $('#twitter_button')
-                        .removeClass('disabled')
-                        .attr('onclick', 'share("twitter");');
-                    }
-                };
-        
-                reset = function() { 
-                    iframeBody.style.visibility = 'visible';
-                    shareArea.style.visibility = 'hidden';
-                    shareFrame.src = '';
-                };
-        
-                toggleDefaultValue = function(el, onoff) {
-                    if (onoff) {
-                        var defaultvalue = el.siblings('.defaultValue').html();
-                        el.css('color', '#777').val(defaultvalue);
-                    } else {
-                        el.css('color', '#444').val('');
-                    }
-                } // end function
-            
-                // Controls default values of input & textarea elements
-                $('.defaultValue').siblings('input, textarea').focus(
-                    function () {
-                        var el = $(this),
-                            defaultValue = el.siblings('.defaultValue').html();
-                        if (el.val() === defaultValue) {
-                            toggleDefaultValue(el, false);
-                        }
-                    }
-                ).blur(
-                    function () { 
-                        var el = $(this);
-                        if (el.val() === '' ) {
-                            toggleDefaultValue(el, true);
-                        }
-                    }
-                ).each(
-                    function () { 
-                        var el = $(this);
-                        if (el.val() === '') {
-                            toggleDefaultValue(el, true); 
-                        }
-                    }
-                );
-            
-                countChars();
+
+                // If this is the Asker, show the results.
+                {% if is_asker %}
+                    voteComplete();
+                {% endif %}
             });
         </script>
         
-        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+        <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
 
     </head>
     <body>
 
-    <div id="fb-root"></div>
     <div id="wrapper">
-        <div id="invite" class="willt">
+        <h1 id="title"> Should {{asker_name}} Buy This? </h1>
+
+        <div id="top-div">
+            <div id="left-content">
+                <button id="yesBtn" class="button-link" onClick="vote('yes');"> Yes </button>
+
+                <h2 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h2>
+            </div>
             
-            <div id="top-div" width="100%">
-                <div id="product-img">
-                    <img src="{{product_img}}" />
-                </div>
+            <img src="{{product_img}}"> </img>
+            
+            <div id="right-content">
+                <button id="noBtn" class="button-link" onClick="vote('no');"> No </button>
 
-                <div id="text-div">
-                    <div class="" id="chars-left">140 characters left</div>
-
-                    <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">I don't know if I should buy this. Help me by voting here: {{willt_url}}.</textarea>
-                </div>
-            </div>
-
-            <div width="100%" id="buttons">
-                <div class="prepend-top button-link" title="Share on Facebook" onclick="share('fb');">
-                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                    Share on Facebook
-                </div>
-                <div id="twitter_button" class='button-link' title="Tweet on Twitter" onclick="share('twitter');">
-                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                    Tweet on Twitter
-                </div>
+                <h2 id="noCount" class="hidden">No: <br \> {{nos}} </h2>
             </div>
         </div>
 
-        <div id="thanks" class="willt hidden">
-            <h1 style="margin-top: 1.5em">Shared!</h1>
-
-            <h1 class="center">We'll email you when your friends have voted.</h1>
+        <div id="comments-div" >
+            <script>(function(d, s, id) {
+              var js, fjs = d.getElementsByTagName(s)[0];
+              if (d.getElementById(id)) {return;}
+              js = d.createElement(s); js.id = id;
+              js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+              fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));</script>
+                
+            <div id="fb-root"></div>
+            <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="575"></div>
         </div>
 
-        <div id="tweet-complete" onclick="shareComplete();"></div>
-        <div id="share-area">
-            <iframe id="willt-frame" class="hidden"></iframe>
-        </div>
     </div>
     </body>
 </html>

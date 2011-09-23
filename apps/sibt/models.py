@@ -11,8 +11,11 @@ import hashlib, logging, datetime
 from django.utils         import simplejson as json
 from google.appengine.ext import db
 
-from apps.action.models   import create_click_action
+from apps.action.models   import create_sibt_click_action
 from apps.app.models      import App
+from apps.link.models     import Link
+from apps.user.models     import get_or_create_user_by_cookie
+
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -33,6 +36,8 @@ class SIBT( App ):
         super(SIBT, self).__init__(*args, **kwargs)
     
     def handleLinkClick( self, urihandler, link ):
+        logging.info("SIBTAPP HANDLING LINK CLICK" )
+
         # Fetch User by cookie
         user = get_or_create_user_by_cookie( urihandler )
 
@@ -51,7 +56,7 @@ class SIBT( App ):
         instance = SIBTInstance( key_name     = uuid,
                                  uuid         = uuid,
                                  asker        = user,
-                                 app          = self,
+                                 app_         = self,
                                  end_datetime = end,
                                  link         = link,
                                  url          = link.target_url )
@@ -65,7 +70,7 @@ class SIBT( App ):
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTInstance( Model ):
-    # Unique identifier for memcache and DB key
+    # Unique identifier for ndlmemcache and DB key
     uuid            = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
@@ -75,7 +80,7 @@ class SIBTInstance( Model ):
     asker           = db.ReferenceProperty( db.Model, collection_name='sibt_instances' )
    
     # Parent App that "owns" these instances
-    app             = db.ReferenceProperty( db.Model, collection_name="instances" )
+    app_            = db.ReferenceProperty( db.Model, collection_name="instances" )
 
     # The Link for this instance (1 per instance)
     link            = db.ReferenceProperty( db.Model, collection_name="sibt_instance" )
@@ -94,6 +99,7 @@ class SIBTInstance( Model ):
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
     
     def get_yesses_count(self):
@@ -160,6 +166,9 @@ def get_sibt_instance_by_asker_for_url( user, url ):
 
 def get_sibt_instance_by_link( link ):
     return SIBTInstance.all().filter( 'link =', link ).get()
+
+def get_sibt_instance_by_uuid( uuid ):
+    return SIBTInstance.all().filter( 'uuid =', uuid ).get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------

@@ -67,6 +67,9 @@ class ShopifyRedirect( URIHandler ):
             logging.info("GOING TO EDIT")
             self.redirect( '/r/shopify?%s' % self.request.query_string )
 
+        elif app == 'sibt':
+            self.redirect( '/s/shopify?%s' % self.request.query_string )
+
         else:
             logging.info("GOING HOME %s" % app)
             self.redirect( '/' )

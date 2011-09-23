@@ -47,7 +47,7 @@ def create_referral_shopify_app( client, share_text ):
     app.put()
     
     # Install yourself in the Shopify store
-    install_webhooks( client.url, client.token, uuid )
+    install_webhooks( client.url, client.token )
     install_script_tags( client.url, client.token, client.id )
     
     return app
@@ -70,8 +70,8 @@ def install_webhooks( store_url, store_token ):
     logging.info("TOKEN %s" % store_token )
 
     url      = '%s/admin/webhooks.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    username = REFERRAL_SHOPIFY_API_KEY
+    password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
@@ -94,8 +94,8 @@ def install_script_tags( store_url, store_token, store_id ):
     """ Install our script tags onto the Shopify store """
 
     url      = '%s/admin/script_tags.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    username = REFERRAL_SHOPIFY_API_KEY
+    password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     

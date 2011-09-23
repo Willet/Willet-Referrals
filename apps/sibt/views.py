@@ -27,9 +27,7 @@ from util.helpers             import *
 from util.urihandler          import URIHandler
 from util.consts              import *
 
-
-
-class DynamicLoader(webapp.RequestHandler):
+class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -41,10 +39,13 @@ class DynamicLoader(webapp.RequestHandler):
         
         page_url = urlparse( self.request.get('url') )
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        if target == "://":
+            target = "http://www.social-referral.appspot.com"
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
+        logging.info("APP: %r" % app)
        
         # Make a new Link
         link = create_link( target, app, origin_domain, user )
@@ -62,10 +63,47 @@ class DynamicLoader(webapp.RequestHandler):
                 
                 'user': user,
                 'user_email': user_email,
-                'user_found': str(user_found).lower()
+                'user_found': str(user_found).lower(),
         }
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
+        self.response.out.write(template.render(path, template_values))
+        return
+
+class VoteDynamicLoader(webapp.RequestHandler):
+    """When requested serves a plugin that will contain various functionality
+       for sharing information about a purchase just made by one of our clients"""
+    
+    def get(self):
+        template_values = {}
+            
+        page_url = urlparse( self.request.get('url') )
+        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        if target == "://":
+            target = "http://www.social-referral.appspot.com"
+
+        # Grab a User and App
+        user = get_or_create_user_by_cookie(self)
+        app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
+       
+        # Grab the instance.
+        instance = get_sibt_instance_by_uuid( self.request.get('instance_uuid') )
+        name = instance.asker.get_full_name()
+
+        template_values = {
+                'product_img' : self.request.get( 'photo' ),
+                'app' : app,
+                
+                'user': user,
+                'asker_name' : name if name != '' else "your friend",
+                'fb_comments_url' : target + '/asd',
+
+                'is_asker' : self.request.get('is_asker'),
+                'instance' : instance,
+        }
+
+        # Finally, render the HTML!
+        path = os.path.join('apps/sibt/templates/', 'vote.html')
         self.response.out.write(template.render(path, template_values))
         return

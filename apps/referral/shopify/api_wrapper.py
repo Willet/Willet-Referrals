@@ -50,8 +50,8 @@ def add_referrer_gift_to_shopify_order( order_id ):
 def add_note_to_shopify_order( order, note ):
     if order != None:
         url      = '%s/admin/orders/%s.json' % ( order.store_url, order.order_id )
-        username = SHOPIFY_API_KEY
-        password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + order.client.token).hexdigest()
+        username = REFERRAL_SHOPIFY_API_KEY
+        password = hashlib.md5(REFERRRAL_SHOPIFY_API_SHARED_SECRET + order.client.token).hexdigest()
         header   = {'content-type':'application/json'}
         h        = httplib2.Http()
         

@@ -27,8 +27,8 @@ class TrackWilltURL( webapp.RequestHandler ):
 
     def get( self, code ):
         logging.info("PATH %s" % self.request.url )
-        if 'social-referral.appspot.com' not in self.request.url:
-            self.redirect( 'http://social-referral.appspot.com/%s' % code )
+        if APP_DOMAIN not in self.request.url:
+            self.redirect( '%s/%s' % (URL, code) )
             return
 
         # Fetch the Link

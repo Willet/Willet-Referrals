@@ -12,7 +12,7 @@ NAME = 'Invite for a Gift'
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
+APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'barbara-willet.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
@@ -53,8 +53,11 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
 
 # Shopify Stuff
-SHOPIFY_API_KEY = 'c46f84fb6458a72c774504ba372757f1' #'3337f51dd5d202486d360773a4c29db4' #'c38cec921dd34143f581c9c889527d55' #'2b9850499a01972490e5ddd79aa03b1c'
-SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb' #'82e2c5a9d210be294c046b7bc9ff55eb' #'caf09e36b7bbaccda5210983c7e234ed' #'74a8223c64027a259add577dab98e403' #'0531f9818eb9eecaee6160583df9eea3'
+REFERRAL_SHOPIFY_API_KEY = 'c46f84fb6458a72c774504ba372757f1' 
+REFERRAL_SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb' 
+
+SIBT_SHOPIFY_API_KEY = 'c59032b6b1a3c2cfea2caa9ee8b3a06e'
+SIBT_SHOPIFY_API_SHARED_SECRET = '513d4c16b09654e2358a1bc767cb2ed4'
 
 INSTALLED_APPS = [
     'admin',

@@ -1,25 +1,41 @@
+{{show_votes}}
+{{is_asker}}
+
 /** Willet's "Should I Buy This?" Shopify App
   * Copyright 2011, Willet, Inc.
  **/
 
-    /* Voting Results Screen for Asker */
-{% if is_asker %}
+var _willet_closeCallback = function () {
+    var button = document.getElementById( '_willet_button' );
+    button.innerText = 'Awaiting Friend\'s Thoughts!';
+    button.innerHTML = 'Awaiting Friend\'s Thoughts!';
 
+    button.disabled = true;
+    button.setAttribute( 'onClick', ';');
+};
 
+var showVote = function( instance_uuid ) {
+    var url = "{{URL}}/s/vote.html?instance_uuid=" + instance.uuid + "&is_asker={{is_asker}}&store_id={{ store_id }}&photo=" + photo.src + "&url=" + window.location.href;
+    $.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, href: url });
+
+    // Hide other stuff.
+    document.getElementById( 'sub-banner-wrapper' ).style.display   = 'none';
+    document.getElementById( 'content-wrapper' ).style.display      = 'none';
+    document.getElementById( 'footer' ).style.display               = 'none';
+};
 
 /* Voting Screen for Friends of Asker */
-{% else %}  {% if show_vote %}
-
-
-
-
+{% if show_vote %}
+    window.onload =  function () {
+        showVote( "{{instance_uuid}}" );
+    };
 /* Regular Page with 'SIBT' Button */
 {% else %}
 
 window.onload =  function () {
     var photo = getFirstImgChild( document.getElementById( 'product-photos' ) );
     var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&photo=" + photo.src + "&url=" + window.location.href;
-    var colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, href:'" + url + "' })";
+    var colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, callback: _willet_closeCallback, href:'" + url + "' })";
     
     // Construct button.
     var button = document.createElement( 'a' );
@@ -53,27 +69,10 @@ var getFirstImgChild = function( elem ) {
     }
 };
 
-var _willet_closeCallback = function () {
-    var button = document.getElementById( '_willet_button' );
-    button.innerText = 'Awaiting Results!';
-    button.innerHTML = 'Awaiting Results!';
-};
 
-var _willet_startVote = function () {
-    event.preventDefault();
-/*
-    var iframe = document.createElement( 'iframe' );
-    iframe.setAttribute( 'src', '' );
-    iframe.setAttribute( 'allowtransparency', "true" );
-    iframe.setAttribute( 'scrolling', "no" );
-    iframe.setAttribute( 'style', "width:403px; min-height: 350px" );
 
-    document.body.appendChild( iframe );
 
-*/
-};
-
-{% endif %} {% endif %}
+{% endif %}
 /*
 
 

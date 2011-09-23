@@ -32,7 +32,7 @@ class SIBTShopify( SIBT ):
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
 # Constructor ------------------------------------------------------------------
-def create_sibt_shopify_app( client, share_text ):
+def create_sibt_shopify_app( client ):
 
     uuid = generate_uuid( 16 )
     app = SIBTShopify( key_name    = uuid,
@@ -44,7 +44,7 @@ def create_sibt_shopify_app( client, share_text ):
     app.put()
     
     # Install yourself in the Shopify store
-    install_webhooks( client.url, client.token, uuid )
+    install_webhooks( client.url, client.token )
     install_script_tags( client.url, client.token, client.id )
     
     return app
@@ -67,8 +67,8 @@ def install_webhooks( store_url, store_token ):
     logging.info("TOKEN %s" % store_token )
 
     url      = '%s/admin/webhooks.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    username = SIBT_SHOPIFY_API_KEY
+    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
@@ -85,22 +85,22 @@ def install_script_tags( store_url, store_token, store_id ):
     """ Install our script tags onto the Shopify store """
 
     url      = '%s/admin/script_tags.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    username = SIBT_SHOPIFY_API_KEY
+    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     header   = {'content-type':'application/json'}
     h        = httplib2.Http()
     
     h.add_credentials( username, password )
     
     # Install jquery cookies
-    data = { "script_tag": { "src": "http://social-referral.appspot.com/static/js/jquery.cookie.js", "event": "onload" } }      
+    data = { "script_tag": { "src": "%s/static/js/jquery.cookie.js" % URL, "event": "onload" } }      
     
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
 
     # Install the SIBT script
-    data = { "script_tag": { "src": "http://social-referral.appspot.com/s/sibt.js?store_id=%s" % store_id, "event": "onload" } }      
+    data = { "script_tag": { "src": "%s/s/sibt.js?store_id=%s" % (URL, store_id), "event": "onload" } }      
 
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)

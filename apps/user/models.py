@@ -605,12 +605,7 @@ class User( db.Expando ):
             
             content_type = "multipart/form-data"
             """
-
-            twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
-            msg = "%s %s" % (message, img)
-
-            body= urllib.urlencode( {"status": msg.encode("UTF-8")} )
-            content_type = "application/x-www-form-urlencoded"
+            message = "%s %s" % (message, img)
         else:
             twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
             body= urllib.urlencode( {"status": message.encode("UTF-8")} )
@@ -625,15 +620,16 @@ class User( db.Expando ):
 
         client = oauth.Client(consumer, token)
         
+        twitter_post_url = 'http://api.twitter.com/1/statuses/update.json'
+        
         logging.info("Tweeting at %s" % twitter_post_url )
-        logging.info("body: %s" %  body )
         
         response, content = client.request(
             twitter_post_url, 
             "POST", 
-            body=body,
-            headers={ "Content-type": content_type }
-        )
+            body= urllib.urlencode( {"status": message.encode("UTF-8")} ),
+            headers={ "Content-type":"application/x-www-form-urlencoded" }
+        ) 
         logging.info("%r %r" % ( response, content ))
 
         res = simplejson.loads( content )

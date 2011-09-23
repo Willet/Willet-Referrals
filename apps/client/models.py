@@ -176,8 +176,9 @@ def create_shopify_store( url, token, request_handler ):
 def get_store_info( store_url, store_token ):
 
     url      = '%s/admin/shop.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    # TODO: FIX THIS!!!!!
+    username = SIBT_SHOPIFY_API_KEY
+    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -211,8 +212,8 @@ def get_product_imgs( store_url, store_token ):
     """ Fetch images for all the products in this store """
 
     url      = '%s/admin/products.json' % ( store_url )
-    username = SHOPIFY_API_KEY
-    password = hashlib.md5(SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    username = SIBT_SHOPIFY_API_KEY
+    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()

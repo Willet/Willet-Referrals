@@ -16,7 +16,7 @@ from urlparse import urlparse
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id
+from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, create_sibt_shopify_app
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models       import *
@@ -41,6 +41,9 @@ class ShowWelcomePage(URIHandler):
             'query_string' : self.request.query_string,
             'shop_owner'   : client.merchant.get_attr('full_name') if client else 'Awesome Bob'
         }
+
+        # TODO: put this somewhere smarter
+        create_sibt_shopify_app( client )
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
 
@@ -82,7 +85,7 @@ class ShowEditPage(URIHandler):
         if shopify_sig != '' and shopify_url != '':
             # Verify Shopify varZ
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
-            d = hashlib.md5( SHOPIFY_API_SHARED_SECRET + s).hexdigest()
+            d = hashlib.md5( SIBT_SHOPIFY_API_SHARED_SECRET + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
             
             # TODO(Barbara): What the heck happened here? Shopify stopped working.
@@ -232,7 +235,7 @@ class DynamicLoader(webapp.RequestHandler):
         elif app:
 
             # Is User an asker for this URL?
-            instance = get_sibt_instance_by_asker_for_url( user, url )
+            instance = get_sibt_instance_by_asker_for_url( user, target )
             if instance:
                 is_asker   = True
                 show_votes = True
@@ -242,8 +245,9 @@ class DynamicLoader(webapp.RequestHandler):
 
                 # Grab this user's SIBTClickActions
                 actions = get_sibt_click_actions_by_user_for_url( user, target )
+                logging.info("%s %r" % (actions, actions))
 
-                if actions != None:
+                if actions.count() != 0:
                     show_votes = True
                     instance   = actions[0].sibt_instance
             
@@ -252,9 +256,9 @@ class DynamicLoader(webapp.RequestHandler):
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
                 'show_button' : not show_votes,
-                'instance' : instance,
-
+                
                 'app' : app,
+                'instance' : instance,
                 
                 'user': user,
                 'store_id' : self.request.get('store_id')
