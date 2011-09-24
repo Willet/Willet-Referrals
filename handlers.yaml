@@ -3,6 +3,16 @@ handlers:
 - url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
   script: plugin/plugin.py
 
+# Google App Engine Bingo
+#- url: /gae_bingo/static
+#  static_dir: apps/gae_bingo/static
+
+#- url: /gae_bingo/tests/.*
+#  script: apps/gae_bingo/tests/main.py
+
+#- url: /gae_bingo/.*
+#  script: apps/gae_bingo/main.py
+
 # queues that check our models for dead references
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py

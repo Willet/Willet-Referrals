@@ -84,12 +84,12 @@ class DynamicLinkLoader(webapp.RequestHandler):
 
             template_values = {
                 'text': share_text.replace("\"", "'"),
-                'willt_url' : link.get_willt_url(),
+                'willt_url': link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'app_uuid' : app.uuid,
-                'target_url' : app.target_url,
-                'redirect_url' : app.redirect_url if app.redirect_url else "",
-                'MIXPANEL_TOKEN' : MIXPANEL_TOKEN
+                'app_uuid': app.uuid,
+                'target_url': app.target_url,
+                'redirect_url': app.redirect_url if app.redirect_url else "",
+                'MIXPANEL_TOKEN': MIXPANEL_TOKEN
             }
         
         path = os.path.join(os.path.dirname(__file__), 'templates/willet.html')

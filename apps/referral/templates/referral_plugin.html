@@ -76,10 +76,28 @@
             
                 errorCheckEmails = function () {
                     var to           = document.getElementById( 'to-emails' ),
+                        from         = document.getElementById('from-email'),
                         msg          = $('#share-text-email'),
                         ret          = true,
                         emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;  
-            
+
+                    if (!emailPattern.test(from.value) || from.value == "") {
+                        toggleDefaultValue($(from), true);
+                        ret = false;
+                    }
+
+                    var parts = to.value.split(',');
+                    console.log('got parts', parts, parts.length);
+                    for (i = 0; i < parts.length; i++) {
+                        var trimmed_string = parts[i].replace(/^\s+|\s+$/g,"");
+                        if (!emailPattern.test(trimmed_string)) {
+                            to.value = "Please enter your friends' email addresses!";
+                            toggleDefaultValue($(to), true);
+                            ret = false;
+                            break;
+                        }
+                    }
+
                     if ( to.value == "" ) {
                         to.value = "Please enter your friends' email addresses!";
                         ret = false;
@@ -113,8 +131,8 @@
                 }
         
                 sendEmailVia = function( who ){
-                    var from_addr = 'you'; 
                     var to_addrs  = document.getElementById( 'to-emails' ).value,
+                        from_addr = document.getElementById( 'from-email' ).value,
                         msg       = $('#share-text-email').val(),
                         str;
 
@@ -161,8 +179,8 @@
                 };
 
                 sendEmail = function( via_willet ) {
-                    var from_addr = 'you'; 
                     var to_addrs  = document.getElementById( 'to-emails' ),
+                        from_addr = document.getElementById('from-email'),
                         msg       = $('#share-text-email');
             
                     // Check the fields.
@@ -170,19 +188,20 @@
                         return false;
                     }
             
-                    $.ajax({url: "/email/sendEmailInvites",
-                        type: 'post',
-                        data: { from_addr : from_addr, 
+                    $.ajax({
+                        url: "/email/sendEmailInvites",
+                        type: 'POST',
+                        data: { from_addr : from_addr.value, 
                                 to_addrs  : to_addrs.value,
                                 msg       : msg.val(),
                                 url       : "{{willt_url}}",
                                 willt_url_code : "{{willt_code}}",
                                 via_willet : via_willet,
-                                order_id  : '{{order_id}}'},
-                        success: function(foo) {
+                                order_id  : '{{order_id}}',
+                        }, success: function(foo) {
                             toggleThanks();
-                        },
-                        error: function(foo) {
+                        }, error: function(foo) {
+                            console.log('error posting', foo);     
                         }
                     });// end ajax
             
@@ -491,9 +510,20 @@
             
         </div>
         <div class="span-9 last hidden" id="email_div" class='step'>
-            <div class="last center" style="margin-top: 1em">
+           <div class="last center">
                 <h2 class='quiet'>1. Complete your gift message</h2> 
+            </div> 
+            
+            <div class="span-1">
+                <div class="input-label">From</div>
             </div>
+            <div class="span-8 last">
+                <div class="input-content">
+                    <span class="defaultValue hidden">your email</span>
+                    <input id="from-email" type="text" name="email" value="{{ user_email }}" />
+                </div>
+            </div>
+            
             <div class="span-1 clear">
                 <div class="input-label">To</div>
             </div>
@@ -509,18 +539,8 @@
 
 Check it out here: {{willt_url}}</textarea>
             </div>
-            <!--- 
-            <div class="span-1">
-                <div class="input-label">From</div>
-            </div>
-            <div class="span-8 append-bottom last">
-                <div class="input-content">
-                    <span class="defaultValue hidden">your email</span>
-                    <input id="from-email" type="text" name="email" value="{{ user_email }}" />
-                </div>
-            </div>
-            -->
-            <div class="span-9" style="margin-top: 2em; margin-bottom: 0.5em">
+             
+            <div class="span-9" style="margin-bottom: 0.5em">
                 <h2 class='quiet'>2. Select your e-mail provider</h2> 
             </div>
             <div class="span-5">

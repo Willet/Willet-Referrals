@@ -79,8 +79,17 @@
                     if( !emailPattern.test(from.value) ) {
                         from.value = "Please enter your email address.";
                         ret = false; 
-                    }  
-                
+                    }
+
+                    // to can be multiple comma separted addresses
+                    var parts = to.value.split(",");
+                    for (i = 0; i < parts.length; i++) {
+                        if (!emailPattern.test(parts[i])) {
+                            to.value = "Please enter your friends' email addresses!";
+                            break;
+                        }
+                    }
+
                     if ( to.value == "" ) {
                         to.value = "Please enter your friends' email addresses!";
                         ret = false;

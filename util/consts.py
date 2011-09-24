@@ -84,6 +84,8 @@ INSTALLED_APPS = [
     'user_analytics',
     'email',
     'feedback',
+    'gae_bingo',
+    'gae_bingo.tests',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]

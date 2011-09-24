@@ -4,3 +4,4 @@ util/local_consts.py
 *.swp
 *#
 *.marks
+.ropeproject
