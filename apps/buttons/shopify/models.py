@@ -15,10 +15,9 @@ from apps.app.models      import App
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
 from apps.button.models   import Buttons, ClientsButtons, ButtonFBActions 
+from apps.client.models   import ShopifyClient
 
 from util.consts          import *
-from util.helpers         import generate_uuid
-from util.model           import Model
 
 NUM_VOTE_SHARDS = 15
 
@@ -30,9 +29,16 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 # Button Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class ButtonShopify(Buttons):
-    
+class ButtonsShopify(Buttons):
+
+    client = db.ReferenceProperty(ShopifyClient, collection_name='shopify_buttons')
+
+    title_selector = db.StringProperty()
+    description_selector = db.StringProperty()
+    image_selector = db.StringProperty()
+    button_selector = db.StringProperty()
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
-        super(Buttons, self).__init__(*args, **kwargs)
+        super(ButtonsShopify, self).__init__(*args, **kwargs)
 

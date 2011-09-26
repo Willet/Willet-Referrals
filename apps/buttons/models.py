@@ -16,7 +16,6 @@ from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
 
 from util.consts          import *
-from util.helpers         import generate_uuid
 from util.model           import Model
 
 NUM_VOTE_SHARDS = 15

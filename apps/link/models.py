@@ -121,7 +121,7 @@ def create_link(targetURL, app, domain, user=None, usr=""):
     link.put()
     logging.info("Successful put of Link %s" % code)
     return link
-    
+
 def get_link_by_url( url_arg ):
     return Link.all().filter( 'target_url =', url_arg ).get()
 

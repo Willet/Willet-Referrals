@@ -2,6 +2,7 @@
 
 import os
 import logging
+from django.utils import simplejson as json
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -10,21 +11,43 @@ from apps.buttons.shopify.models import ButtonsShopify
 from apps.app.models import App
 from apps.user.models import get_or_create_user_by_cookie
 from apps.client.models import ClientShopify
-from apps.link.models import create_link
+from apps.link.models import create_link, get_link_by_url
 
-from util.consts import URL, NAME
+from util.consts import URL, NAME, BUTTONS_FACEBOOK_APP_ID, BUTTONS_FACEBOOK_APP_SECRET
 from util.helpers import get_request_variables
 from util.urihandler import URIHandler
 
 class EditButtonAjax(URIHandler):
     def post(self, button_id):
         # handle posting from the edit form
-        pass
+        client = self.get_client()
+        
+        response = {}
+
+        button = ButtonsShopify.all().filter('uuid =', button_id).get()
+        if button == None:
+            response['status'] = False
+        else:
+            response['status'] = True
+
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(json.dumps(response))
 
 class EditButton(URIHandler):
     def get(self, button_id):
         # show the edit form
-        pass
+        client = self.get_client()
+
+        button = ButtonsShopify.all().filter('uuid =', button_id).get()
+        if button == None:
+            self.redirect('/b/shopify/')
+
+        template_values = {
+            'button': button,        
+            'client': client
+        }
+
+        self.response.out.write(self.render_page('edit.html', template_values))
 
 class ListButtons(URIHandler):
     def get(self):
@@ -73,48 +96,32 @@ class DynamicLoader(webapp.RequestHandler):
             if app != None:
                 client = app.client 
         else:
-            app = None
             # cant get the app, so get the client first
+            app = None
         
         if client == None:
             client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
         
         # If they give a bogus app id, show the landing page app!
-        logging.info(client)
-        if client == None:
-            template_values = {
-                'NAME' : NAME,
-                'style': style,
-                
-                'text': "",
-                'willt_url' : URL,
-                'willt_code': "",
-                'app_uuid' : "",
-                'target_url' : URL,
-            }
-        else:
-            if app == None:
-                app = ButtonsShopify.all().filter('client =', client).get()
+        if app == None:
+            app = ButtonsShopify.all().filter('client =', client).get()
 
-            # Make a new Link
-            #link = create_link(app.target_url, app, origin_domain, user)
-            #logging.info("link created is %s" % link.willt_url_code)
+        # Make a new Link
+        link = get_link_by_url(origin_domain)
+        if link == None:
+            # link does not exist yet
+            # we create links with no user
+            link = create_link(self.request.url, app, origin_domain, None)
 
-            template_values = {
-                'URL' : URL,
-                'NAME' : NAME,
-                'style': style,
-                
-                'app' : app,
-                'app_uuid' : app.uuid,
-                'text': share_text,
-                'email_text' : app.share_text,
-                'willt_url' : link.get_willt_url(),
-                'willt_code': link.willt_url_code,
-                
-                'FACEBOOK_APP_ID': FACEBOOK_APP_ID,
-            }
-        
+        template_values = {
+            'app' : app,
+            'app_uuid' : app.uuid,
+            'willt_url' : link.get_willt_url(),
+            'willt_code': link.willt_url_code,
+            
+            'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
+        }
+    
         if self.request.url.startswith('http://localhost'):
             template_values['BASE_URL'] = self.request.url[0:21]
         else:

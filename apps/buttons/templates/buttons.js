@@ -2,6 +2,8 @@
  * Buttons JS
  */
 
+
+
 /**
  * quick helper function to add scripts to dom
  */
@@ -35,7 +37,7 @@ var addEl = function(head, el, property, content) {
 var scripts = [
     {
         'name': 'jQuery',
-        'url': 'http://rf.fs/static/js/jquery.js',
+        'url': 'http://rf.fs/static/js/jquery.min.js',
         'dom_el': null,
         'loaded': false,
         'test': function() {
@@ -65,30 +67,7 @@ var scripts = [
     }
 ];
 
-/**
- * META tags we are going to inject
- */
-var meta_tags = [
-    {
-        'property': "fb:app_id",
-        'content': "{{ FB_APP_ID }}",
-    }, {
-        'property': "og:type",
-        'content': "shopify_buttons:product"
-    }, {
-        'property': "og:title",
-        'content': "{{ product_title }}"
-    }, {
-        'property': "og:image",
-        'content': "{{ product.image }}"
-    }, {
-        'property': "og:description",
-        'content': "{{ product.description }}"
-    }, {
-        'property': "og:url",
-        'content': "{{ product.url }}"
-    }
-];
+
 
 /**
  * checkScripts checks the scripts var and uses
@@ -131,36 +110,72 @@ var checkScripts = function() {
 var run = function() {
     // HERE IS OUR REAL CODE
     FB.init({ 
-        appId: 'YOUR_APP_ID',
+        appId: '{{ FACEBOOK_APP_ID }}',
         cookie: true, 
         status: true,
         xfbml: true,
         oauth: true
     });
-    $('img').sort(function(a,b) {
-        a = $(a);
-        b = $(b);
 
-        if (a.width() > b.width()) {
-        }
-    });
+    // get the button where we are going to insert
+    var button_selector = '{{ app.button_selector }}';
+    var button_insert = $(button_selector);
     
+    // try to get the json for this location
+    var here = window.location;
+    here = here + '.json';
+
+    $.getJSON (
+        here,
+        function(data) {
+            // callback function
+            /**
+             * META tags we are going to inject
+            */
+            var meta_tags = [
+                {
+                    'property': "fb:app_id",
+                    'content': "{{ FACEBOOK_APP_ID }}",
+                }, {
+                    'property': "og:type",
+                    'content': "shopify_buttons:product"
+                }, {
+                    'property': "og:title",
+                    'content': data.product.title, 
+                }, {
+                    'property': "og:image",
+                    'content': data.product.images[0].src, 
+                }, {
+                    'property': "og:description",
+                    'content': data.product.body_html, 
+                }, {
+                    'property': "og:url",
+                    'content': "{{ willt_url }}"
+                }
+            ];
+
+            /**
+            * Insert Facebook DOM El
+            */
+            var fb_dom_el = document.createElement('fb:add-to-timeline');
+            button_insert.append(fb_dom_el); 
+
+            /**
+             *  Add META tags to HEAD
+             */
+            var head = document.getElementsByTagName('head')[0];
+            head.setAttribute('prefix', 'og: http://ogp.me/ns# shopify_buttons:http://ogp.me/ns/apps/shopify_buttons#')
+
+            console.log('got meta tags', meta_tags); 
+            
+            // add all those meta tags
+            for (i = 0; i < meta_tags.length; i++) {
+                addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
+            }
+        }
+    );
 }
 
-// kick off script injection
+// let's get this party started 
 checkScripts();
-
-/**
- *  Add META tags to HEAD
- */
-var head = document.getElementsByTagName('head')[0];
-var body = document.getElementsByTagName('body')[0];
-var fb_dom_el = document.createElement('fb:add-to-timeline');
-head.setAttribute('prefix', 'og: http://ogp.me/ns# shopify_buttons:http://ogp.me/ns/apps/shopify_buttons#')
-body.appendChild(fb_dom_el);
-
-// add all those meta tags
-for (i = 0; i < meta_tags.length; i++) {
-    addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
-}
 
