@@ -63,6 +63,7 @@ class ShopifyRedirect( URIHandler ):
             # Cache the client!
             self.db_client = client
 
+        # @todo write a smart importer here so we don't have to hardcode these
         if app == 'referral':
             logging.info("GOING TO EDIT")
             self.redirect('/r/shopify?%s' % self.request.query_string)

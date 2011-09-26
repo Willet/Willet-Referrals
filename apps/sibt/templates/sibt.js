@@ -33,10 +33,12 @@ var getFirstChild = function( elem, tagName, className ) {
 
 function includeCSS(p_file) {
 	var v_css   = document.createElement('link');
-	v_css.rel   = 'stylesheet'
-	v_css.type  = 'text/css';
-    v_css.media = 'screen';
-	v_css.href  = p_file;
+    v_css.setAttribute('rel', 'stylesheet');
+    v_css.setAttribute('type', 'text/css');
+    v_css.setAttribute('media', 'screen');
+    v_css.setAttribute('href', p_file);
+    var parts = p_file.split('/');
+    v_css.setAttribute('id', parts[parts.length-1]);
 	document.getElementsByTagName('head')[0].appendChild(v_css);
 };
 

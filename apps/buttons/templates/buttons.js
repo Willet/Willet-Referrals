@@ -109,13 +109,7 @@ var checkScripts = function() {
  */
 var run = function() {
     // HERE IS OUR REAL CODE
-    FB.init({ 
-        appId: '{{ FACEBOOK_APP_ID }}',
-        cookie: true, 
-        status: true,
-        xfbml: true,
-        oauth: true
-    });
+    
 
     // get the button where we are going to insert
     var button_selector = '{{ app.button_selector }}';
@@ -172,6 +166,17 @@ var run = function() {
             for (i = 0; i < meta_tags.length; i++) {
                 addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
             }
+
+            /**
+             * call fb.init after everything has been added to page
+             */
+            FB.init({ 
+                appId: '{{ FACEBOOK_APP_ID }}',
+                cookie: true, 
+                status: true,
+                xfbml: true,
+                oauth: true
+            });
         }
     );
 }
