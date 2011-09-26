@@ -128,20 +128,20 @@ def get_shopify_client_by_url( store_url ):
     store = ClientShopify.all().filter( 'url =', store_url ).get()
     return store
 
-def get_or_create_shopify_store( store_url, store_token='', request_handler=None ):
+def get_or_create_shopify_store( store_url, store_token='', request_handler=None, app_type="" ):
     store = get_shopify_client_by_url( store_url )
 
     if store == None:
-        store = create_shopify_store( store_url, store_token, request_handler )
+        store = create_shopify_store( store_url, store_token, request_handler, app_type )
 
     return store
 
 # Constructor ------------------------------------------------------------------
-def create_shopify_store( url, token, request_handler ):
+def create_shopify_store( url, token, request_handler, app_type ):
     """ Create a Shopify Store as a Client"""
 
     # Query the Shopify API to learn more about this store
-    data = get_store_info( url, token )
+    data = get_store_info( url, token, app_type )
 
     # Make the Merchant
     merchant = get_or_create_user_by_email( email=data['email'], referrer=None, request_handler=request_handler )
@@ -173,12 +173,15 @@ def create_shopify_store( url, token, request_handler ):
     return store
 
 # Shopify API Calls  -----------------------------------------------------------
-def get_store_info( store_url, store_token ):
+def get_store_info( store_url, store_token, app_type ):
 
     url      = '%s/admin/shop.json' % ( store_url )
-    # TODO: FIX THIS!!!!!
-    username = SIBT_SHOPIFY_API_KEY
-    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    if app_type == "referral":
+        username = REFERRAL_SHOPIFY_API_KEY
+        password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    else:   
+        username = SIBT_SHOPIFY_API_KEY
+        password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()

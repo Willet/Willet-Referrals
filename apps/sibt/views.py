@@ -31,6 +31,7 @@ class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
+    # TODO: THis code is Shopify specific. Refactor.
     def get(self):
         template_values = {}
             
@@ -46,7 +47,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         user = get_or_create_user_by_cookie(self)
         app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
         logging.info("APP: %r" % app)
-       
+
+        # Grab the product info
+        result = urlfetch.fetch( url    = '%s.json' % self.request.get('url'),
+                                 method = urlfetch.GET )
+        data = json.loads( result.content )['product']
+
         # Make a new Link
         link = create_link( target, app, origin_domain, user )
         
@@ -55,7 +61,10 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_found = True if hasattr(user, 'fb_access_token') else False
 
         template_values = {
-                'product_img' : self.request.get( 'photo' ),
+                'productImg' : data['images'][0]['src'],
+                'productName' : data['title'],
+                'productDesc' : remove_html_tags( data['body_html'].strip() ),
+
                 'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
                 'app' : app,
                 'willt_url' : link.get_willt_url(),

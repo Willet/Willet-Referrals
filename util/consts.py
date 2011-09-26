@@ -7,12 +7,12 @@ import os
 from urlparse import urlunsplit
 
 # Product Stuff
-NAME = 'Invite for a Gift'
+NAME = 'Willet Inc.'
 
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'barbara-willet.appspot.com'
+APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
@@ -60,8 +60,8 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 REFERRAL_SHOPIFY_API_KEY = 'c46f84fb6458a72c774504ba372757f1' 
 REFERRAL_SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb' 
 
-SIBT_SHOPIFY_API_KEY = 'c59032b6b1a3c2cfea2caa9ee8b3a06e'
-SIBT_SHOPIFY_API_SHARED_SECRET = '513d4c16b09654e2358a1bc767cb2ed4'
+SIBT_SHOPIFY_API_KEY = 'b153f0ccc9298a8636f92247e0bc53dd'
+SIBT_SHOPIFY_API_SHARED_SECRET = '735be9bc6b3e39b352aa5c287f4eead5'
 
 # List of root template directories
 # to import templates from
