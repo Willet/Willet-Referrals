@@ -54,7 +54,7 @@ var _willet_button_onclick = function() {
         innerWidth: 420,
         innerHeight: 232, 
         callback: _willet_closeCallback, 
-        href:'" + url + "' 
+        href: url
     });
 }
 
@@ -62,7 +62,8 @@ var _willet_button_onclick = function() {
  * Main script to run
  */
 var run_scripts = function() {
-    var button      = document.createElement( 'a' );
+    console.log('running scripts');
+    var button      = document.createElement('a');
     var hash        = window.location.hash;
 
     // Construct button.
@@ -72,7 +73,7 @@ var run_scripts = function() {
     button.setAttribute( 'style', 'display:none; margin: 15px 15px 15px 15px; font-size: 0.7em;' );
     button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
     button.setAttribute( 'value', '' );
-    button.setAttribute( 'onClick', colorBoxStr);
+    button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
     button.setAttribute( 'id', '_willet_button' );
 
     // Put button on the page.
@@ -105,7 +106,9 @@ var run_scripts = function() {
  */
 var style_url = "{{URL}}/static/colorbox/example4/colorbox.css";
 var style = document.createElement('style');
+var head = document.getElementsByTagName('head')[0];
 style.textContent = '@import "' + style_url + '"';
+head.appendChild(style);
 
 var style_timeout = setInterval(function() {
   try {
@@ -114,8 +117,8 @@ var style_timeout = setInterval(function() {
     
     // style is loaded
     run_scripts();
-  } catch (e){}
+  } catch (e) {
+    console.log('rules failed', e);
+  }
 }, 10);  
-
-head.appendChild(style);
 
