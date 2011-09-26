@@ -240,6 +240,37 @@ class SendEmailInvites( webapp.RequestHandler ):
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, campaign=link.campaign)
 
+class FacebookCallback( webapp.RequestHandler ):
+    
+    def post( self ):
+        rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
+        
+        # check to see if this user has a referral cookie set
+        referrer_code = self.request.cookies.get('referral', None)
+        referrer = None
+        logging.info(referrer_code)
+        if referrer_code:
+            referral_link = get_link_by_willt_code(referrer_code)
+            if referral_link and referral_link.user:
+                referrer = referral_link.user
+        
+        # Grab the User!
+        user = get_or_create_user_by_facebook(rq_vars['fb_id'], 
+                                              token=rq_vars['fb_token'],
+                                              request_handler=self)
+        
+        # Grab the Link & update it!
+        link = get_link_by_willt_code(rq_vars['wcode'])
+        if link:
+            link.user = user
+            link.facebook_share_id = rq_vars['share_id']
+            link.save()
+            
+            link.campaign.increment_shares()
+            
+            # Save this Testimonial
+            create_testimonial(user=user, message=rq_vars['msg'], link=link)
+
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user

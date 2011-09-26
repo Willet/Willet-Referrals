@@ -151,7 +151,7 @@ class User( db.Expando ):
         self.update(**insertion)
 
     #
-    # Social Networking Functionality
+    # Social Networking Share Functionality
     # 
 
     def tweet(self, message):
@@ -268,7 +268,7 @@ def get_user_by_email( email ):
     return email_model.user if email_model else None
 
 # Create by X
-def create_user_by_twitter(t_handle, referrer):
+def create_user_by_twitter(t_handle, referrer, ip=''):
     """Create a new User object with the given attributes"""
     # check to see if this t_handle has an oauth token
     OAuthToken = models.oauth.get_oauth_by_twitter(t_handle)
@@ -276,7 +276,8 @@ def create_user_by_twitter(t_handle, referrer):
     user = User(key_name=t_handle,
                 uuid=generate_uuid(16),
                 twitter_handle=t_handle,
-                referrer=referrer)
+                referrer=referrer,
+                ip=ip)
     
     if OAuthToken:
         user.twitter_access_token=OAuthToken
@@ -291,12 +292,15 @@ def create_user_by_twitter(t_handle, referrer):
 
     return user
 
-def create_user_by_facebook(fb_id, first_name, last_name, email, referrer, token):
+def create_user_by_facebook(fb_id, first_name, last_name, name, email, referrer, token, would_be, friends):
     """Create a new User object with the given attributes"""
     user = User(key_name=fb_id,
                 uuid=generate_uuid(16), fb_identity=fb_id, 
-                first_name=first_name, last_name=last_name,
-                referrer=referrer, facebook_access_token=token)
+                fb_first_name=first_name, fb_last_name=last_name, fb_name=name,
+                referrer=referrer, fb_access_token=token,
+                would_be=would_be)
+    if friends:
+        user.fb_friends = friends
     user.put()
 
     # Query the SocialGraphAPI
@@ -322,8 +326,8 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
 
     # First try to find them by cookie
     user = get_user_by_cookie( request_handler )
+    # Update the info
     if user:
-        # Update the info
         user.update(twitter_handle=t_handle, twitter_name=name, 
                     twitter_follower_count=followers, 
                     twitter_profile_pic=profile_pic, referrer=referrer,
@@ -344,16 +348,18 @@ def get_or_create_user_by_twitter(t_handle, name='', followers=None, profile_pic
     logging.info('get_or_create_user: %s %s %s %s' % (t_handle, user.get_attr('twitter_pic_url'), user.get_attr('twitter_name'), user.get_attr('twitter_followers_count')))
     return user
 
-def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='', referrer=None, verified=None, gender='', token='', request_handler=None):
+def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', email='', referrer=None, verified=None, gender='', token='', would_be=False, friends=[], request_handler=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
      
-    # First try to find them by cookie
-    user = get_user_by_cookie( request_handler )
+    # First try to find them by cookie if request handle present
+    user = get_user_by_cookie(request_handler) if request_handler is not None\
+        else None
     if user:
-        user.update( fb_identity=fb_id, first_name=first_name, 
-                     last_name=last_name, email=email, referrer=referrer,
-                     gender=gender, verified=verified, facebook_access_token=token )
+        user.update( fb_identity=fb_id, fb_first_name=first_name, 
+                     fb_last_name=last_name, fb_name=name, fb_email=email,
+                     referrer=referrer, fb_gender=gender, fb_verified=verified,
+                     fb_access=token, fb_friends=friends )
 
     # Try looking by FB identity
     if user is None:
@@ -364,11 +370,17 @@ def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', email='',
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + fb_id)
-        user = create_user_by_facebook(fb_id, first_name, last_name, 
-                                       email, referrer, token)
-    
+        user = create_user_by_facebook(fb_id, first_name, last_name, name, 
+                                       email, referrer, token, would_be, friends)
+        # check to see if this user was added by reading another user's social graph
+        # if so, pull profile data
+        if user.would_be:
+            taskqueue.add(url = '/fetchFB',
+                              params = {'fb_id': user.fb_identity})
+
     # Set a cookie to identify the user in the future
-    set_user_cookie( request_handler, user.uuid )
+    if request_handler is not None:
+        set_user_cookie( request_handler, user.uuid )
     
     return user
 
@@ -396,8 +408,16 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     return user
 
 def get_user_by_cookie(request_handler):
+    """Read a user by cookie. Update IP address if present"""
     uuid = read_user_cookie( request_handler )
     if uuid:
-        return get_user_by_uuid( uuid )
+        user = get_user_by_uuid(uuid)
+        ip = request_handler.request.remote_addr
+        if hasattr(user, 'ips'):
+            user.ips.append(ip) if ip not in user.ips
+        else: 
+            user.ips = [ip]
+        user.save()
+        return user
     return None
 
