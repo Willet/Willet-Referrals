@@ -37,21 +37,33 @@ function includeCSS(p_file) {
     v_css.setAttribute('type', 'text/css');
     v_css.setAttribute('media', 'screen');
     v_css.setAttribute('href', p_file);
-    var parts = p_file.split('/');
-    v_css.setAttribute('id', parts[parts.length-1]);
 	document.getElementsByTagName('head')[0].appendChild(v_css);
 };
 
-//window.onload =  function () {
-    //document.write('<link rel="stylesheet" type="text/css" href="{{URL}}/static/colorbox/example4/colorbox.css">');
+/**
+ * Onclick event handler for the 'sibt' button
+ */
+var _willet_button_onclick = function() {
+    var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
+    $.colorbox({
+        transition: 'fade',
+        scrolling: false,
+        iframe: true, 
+        initialWidth: 0, 
+        initialHeight: 0, 
+        innerWidth: 420,
+        innerHeight: 232, 
+        callback: _willet_closeCallback, 
+        href:'" + url + "' 
+    });
+}
 
-    // Insert ColorBox CSS into the page
-    includeCSS( "{{URL}}/static/colorbox/example4/colorbox.css" );
-
+/**
+ * Main script to run
+ */
+var run_scripts = function() {
     var button      = document.createElement( 'a' );
     var hash        = window.location.hash;
-    var url         = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
-    var colorBoxStr = "$.colorbox({ transition: 'fade', scrolling: false, iframe:true, initialWidth:0, initialHeight:0, innerWidth:420, innerHeight:232, callback: _willet_closeCallback, href:'" + url + "' })";
 
     // Construct button.
     button.innerText = 'Not Sure? Ask your friends';
@@ -84,5 +96,24 @@ function includeCSS(p_file) {
     if ( purchase_cta ) {
         purchase_cta.parentNode.appendChild( button );
     }
-//};
+}
+
+/**
+ * Insert style and get the ball rolling
+ */
+var style_url = "{{URL}}/static/colorbox/example4/colorbox.css";
+var style = document.createElement('style');
+style.textContent = '@import "' + style_url + '"';
+
+var style_timeout = setInterval(function() {
+  try {
+    style.sheet.cssRules; // <--- MAGIC: only populated when file is loaded
+    clearInterval(style_timeout);
+    
+    // style is loaded
+    run_scripts();
+  } catch (e){}
+}, 10);  
+
+head.appendChild(style);
 
