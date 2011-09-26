@@ -2,6 +2,9 @@
   * Copyright 2011, Willet, Inc.
  **/
 
+{% include "js/jquery.min.js" %}
+{% include "js/jquery.colorbox.js" %}
+
 var _willet_closeCallback = function () {
     document.getElementById( '_willet_button' ).style.display = "none";
 };
@@ -52,7 +55,7 @@ function includeCSS(p_file) {
     button.innerText = 'Not Sure? Ask your friends';
     button.innerHTML = 'Not Sure? Ask your friends';
     button.setAttribute( 'class', 'button' );
-    button.setAttribute( 'style', 'margin: 15px 15px 15px 15px' );
+    button.setAttribute( 'style', 'margin: 15px 15px 15px 15px; font-size: 0.7em;' );
     button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
     button.setAttribute( 'value', '' );
     button.setAttribute( 'onClick', colorBoxStr);
@@ -65,6 +68,9 @@ function includeCSS(p_file) {
     }
     if ( !purchase_cta ) {
         purchase_cta = document.getElementById( 'add' );
+    }
+    if ( !purchase_cta ) {
+        purchase_cta = document.getElementById( 'add-to-cart' );
     }
     if ( !purchase_cta ) {
         purchase_cta = document.getElementById( 'buy' );
