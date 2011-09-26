@@ -26,6 +26,13 @@ from util.helpers import *
 from util.urihandler import URIHandler
 from util.consts import *
 
+class ShowBetaPage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = []
+        
+        self.response.out.write(self.render_page('beta.html', template_values))
+
 class ShowWelcomePage(URIHandler):
     def get( self ):
         pages = {

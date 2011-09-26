@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        input[type='text'], textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+        div button {
+            position: relative;
+            top: -1px;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var site = $('#site');
+            var site_input = $('#site_input');
+            var install_link = $('#install_link');
+            var install_url = $('#install_url');
+            var input_default = $('#input_default');
+            
+            var setDefault = function() {
+                site_input.css('color', 'grey');
+                site_input.val(input_default.val());
+            }
+            var update = function() {
+                site.html(site_input.val());
+                install_link.attr('href', install_link.text());
+            }
+            site_input.keypress(function() {
+                update();
+            }).keyup(function() {
+                update(); 
+            }).keydown(function() {
+                update(); 
+            }).focus(function() {
+                if (site_input.val() == input_default.val()) {
+                    site_input.val('');
+                }
+                site_input.css('color', 'black');
+            }).blur(function() {
+                if (site_input.val() == '' || site_input.val() == input_default.val()){
+                    setDefault();
+                }
+            });
+            $('#do_install').click(function() {
+                window.location = install_link.attr('href'); 
+            });
+            setDefault();
+        });
+    </script>
+{% endblock head %}
+
+{% block left_content %}
+    <h2 class="lower-75 center">Need Help?</h2>
+    
+    <div class="center">
+        <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
+        <p> OR </p>
+        <h4>Email Barbara at</h4>
+        <p><a href="mailto:barbara@getwillet.com">barbara@getwillet.com</a></p>
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/">Home</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">Should I Buy This?</h1>
+    <h2 class="span-15 last center">Beta Signup</h2>
+
+    <div class="about prepend-top append-bottom span-15 last">
+        <p>
+            Please enter your <strong>myshopify.com</strong> store name below to get your <em>Should I Buy This?</em> signup link.
+        </p>
+        <div>
+            <input type="hidden" id="input_default" value="your site" />
+            <input type="text" id="site_input" value="your site" />
+            <button id="do_install">Install Now</button>
+        </div>
+    </div>
+    
+    <div class="about prepend-top append-bottom span-15 last">
+        or copy your install url manually:<br />
+        <div id="install_url">
+            <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SIBT_SHOPIFY_API_KEY}}</a>
+        </div>
+    </div>
+{% endblock right_content %}
