@@ -162,6 +162,10 @@ class ShowEditPage(URIHandler):
             template_values['app']       = app
             template_values['analytics'] = True if app.cached_clicks_count != 0 else False
 
+        force_has_app = self.request.get('has_app')
+        if force_has_app != '':
+            template_values['has_app'] = (force_has_app == 'true')
+
         template_values['BASE_URL']  = URL
         self.response.out.write( self.render_page( 'edit.html', template_values)) 
 
