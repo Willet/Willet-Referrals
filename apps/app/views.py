@@ -56,7 +56,7 @@ class ShopifyRedirect( URIHandler ):
             # remember form values
             session['correctEmail'] = client.email
             session['email']        = client.email
-            session['reg-errors']   = [ ]
+            session['reg-errors']   = []
             
             logging.info("CLIENT: %s" % client.email)
 
@@ -65,11 +65,11 @@ class ShopifyRedirect( URIHandler ):
 
         if app == 'referral':
             logging.info("GOING TO EDIT")
-            self.redirect( '/r/shopify?%s' % self.request.query_string )
-
+            self.redirect('/r/shopify?%s' % self.request.query_string)
         elif app == 'sibt':
-            self.redirect( '/s/shopify?%s' % self.request.query_string )
-
+            self.redirect('/s/shopify?%s' % self.request.query_string)
+        elif app == 'buttons':
+            self.redirect('/b/shopify/?%s' % self.request.query_string)
         else:
             logging.info("GOING HOME %s" % app)
             self.redirect( '/' )
@@ -87,3 +87,4 @@ class DoDeleteApp( URIHandler ):
             app.delete()
         
         self.redirect( '/client/account' )
+
