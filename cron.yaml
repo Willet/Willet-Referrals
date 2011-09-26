@@ -50,7 +50,7 @@ cron:
   schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
 
 # App Engine Bingo Crons
-– description: persist gae bingo experiments to datastore
+- description: persist gae bingo experiments to datastore
   url: /gae_bingo/persist
   schedule: every 5 minutes
 
