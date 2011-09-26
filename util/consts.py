@@ -4,6 +4,8 @@
 # constants for referrals
 
 import os
+import logging
+
 from urlparse import urlunsplit
 
 # Product Stuff
