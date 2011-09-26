@@ -4,11 +4,8 @@ from apps.referral.shopify.views     import *
 
 urlpatterns = [
     (r'/r/shopify',                  ShowWelcomePage),
-<<<<<<< HEAD
     (r'/r/shopify/',                 ShowWelcomePage),
-=======
     (r'/r/shopify/beta',             ShowBetaPage),
->>>>>>> 97572969fad769279483dc1139d54acd116f4eb8
     (r'/r/shopify/code',             ShowCodePage),
     (r'/r/shopify/edit',             ShowEditPage),
     (r'/r/shopify/doUpdateOrCreate', DoUpdateOrCreate),
