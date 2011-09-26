@@ -6,7 +6,7 @@
 {% include "js/jquery.colorbox.js" %}
 
 var _willet_closeCallback = function () {
-    document.getElementById( '_willet_button' ).style.display = "none";
+    //document.getElementById( '_willet_button' ).style.display = "none";
 };
 
 var getFirstChild = function( elem, tagName, className ) {
@@ -69,7 +69,7 @@ var run_scripts = function() {
     button.innerText = 'Not Sure? Ask your friends';
     button.innerHTML = 'Not Sure? Ask your friends';
     button.setAttribute( 'class', 'button' );
-    button.setAttribute( 'style', 'margin: 15px 15px 15px 15px; font-size: 0.7em;' );
+    button.setAttribute( 'style', 'display:none; margin: 15px 15px 15px 15px; font-size: 0.7em;' );
     button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
     button.setAttribute( 'value', '' );
     button.setAttribute( 'onClick', colorBoxStr);
@@ -95,6 +95,8 @@ var run_scripts = function() {
 
     if ( purchase_cta ) {
         purchase_cta.parentNode.appendChild( button );
+
+        $("#_willet_button").fadeIn(150);
     }
 }
 
