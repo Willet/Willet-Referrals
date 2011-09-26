@@ -92,7 +92,11 @@
                     if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
                         // initiate facebook login event if requested
                         if (medium === 'fb') {
-                            var fbData = {msg: message, wcode: '{{willt_code}}', img: '{{product_img}}'};
+                            var fbData = { msg: message, 
+                                           wcode: '{{willt_code}}', 
+                                           img: '{{productImg}}', 
+                                           name: '{{productName}}',
+                                           desc: '{{productDesc}}' };
                             // first attempt server-provided token
                             if (userFound) {
                                 fb_share_handler(fbData)
@@ -119,13 +123,21 @@
                     
                             } // if (userFound u
                         } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}&img={{product_img}}',
+                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid=' +
+                                            '&m=' + message + 
+                                            '&wcode={{willt_code}}' + 
+                                            '&img={{productImg}}' + 
+                                            '&name={{productName}}' + 
+                                            '&desc={{productDesc}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');
                         } else if (medium === 'linkedin') {
                             console.log('linkedin share', message);
-                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}&img={{product_img}}',
+                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid=' +
+                                            '&m=' + message + 
+                                            '&wcode={{willt_code}}' + 
+                                            '&img={{productImg}}' + 
+                                            '&name={{productName}}' + 
+                                            '&desc={{productDesc}}',
                                             AuthWindow = window.open(OAuthURL, '_blank');       
                         } else {
                             // style shareArea according to different social loader
@@ -205,13 +217,13 @@
             
             <div id="top-div" width="100%">
                 <div id="product-img">
-                    <img src="{{product_img}}" />
+                    <img src="{{productImg}}" />
                 </div>
 
                 <div id="text-div">
                     <div class="" id="chars-left">140 characters left</div>
 
-                    <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">I don't know if I should buy this. Help me by voting here: {{willt_url}}.</textarea>
+                    <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">I'm not sure I should buy this. What do you think? {{willt_url}}</textarea>
                 </div>
             </div>
 
@@ -230,7 +242,7 @@
         <div id="thanks" class="willt hidden">
             <h1 style="margin-top: 1.5em">Shared!</h1>
 
-            <h1 class="center">We'll email you when your friends have voted.</h1>
+            <h1 class="center">Keep your eyes peeled for your friends' comments!</h1>
         </div>
 
         <div id="tweet-complete" onclick="shareComplete();"></div>

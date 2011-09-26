@@ -30,6 +30,10 @@ class SIBT( App ):
     emailed_at_10 = db.BooleanProperty( default = False )
    
     store_name    = db.StringProperty( indexed = True )
+    store_url     = db.LinkProperty( indexed = False, default = None, required = False )
+
+    # Div IDs or class names
+    buy_btn_id    = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

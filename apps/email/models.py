@@ -13,7 +13,6 @@ from google.appengine.api.mail import EmailMessage
 
 from util.consts import *
 
-
 ###################
 #### Addresses ####
 ###################
@@ -37,6 +36,7 @@ class Email():
         subject = '[Willet] Message to Self'
         body    = '<p> %s </p>' % msg
  
+        logging.info("Emailing Barbara")
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod

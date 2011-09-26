@@ -319,15 +319,7 @@ class FacebookShare(webapp.RequestHandler):
     
     def post(self):
         logging.info("We are posting to facebook")
-        rq_vars = get_request_variables([
-            'msg',
-            'wcode',
-            'fb_token',
-            'fb_id',
-            'order_id',
-            'img'], 
-            self
-        )
+        rq_vars = get_request_variables([ 'msg', 'wcode', 'fb_token', 'fb_id', 'order_id', 'name', 'desc', 'img'], self)
         user = get_user_by_cookie(self)
         if user is None:
             logging.info("creating a new user")
@@ -358,10 +350,12 @@ class FacebookShare(webapp.RequestHandler):
             )
 
         if hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
-            logging.info('got user and have facebook jazz')
+            logging.info('got user and have facebook jazz %r %s' % (self.request.arguments, self.request.get('img') ))
 
-            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'], rq_vars['img'])
             link = get_link_by_willt_code(rq_vars['wcode'])
+
+            facebook_share_id, plugin_response = user.facebook_share(rq_vars['msg'], rq_vars['img'], rq_vars['name'], rq_vars['desc'], link)
+            
             if link:
                 link = get_link_by_willt_code(rq_vars['wcode'])
                 link.app_.increment_shares()

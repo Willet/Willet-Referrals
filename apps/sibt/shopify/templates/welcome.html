@@ -2,12 +2,13 @@
 
 {% block head %}
     <script>
+        $(document).ready(function() {
+            $('#go_to_shopify').click(function() {
+                window.location = "{{app.store_url}}/admin";
+            });
+        });
     </script>
 {% endblock head %}
-
-{% block left_content %}
-    {% include "left_col.html" %}
-{% endblock left_content %}
 
 {% block right_head %}
     {% if analytics %}
@@ -15,17 +16,29 @@
     {% endif %}
 {% endblock right_head %}
 
-{% block right_content %}
-        <h2 class="span-15 last lower-100 center">Thanks!</h2>
-        <div class="prepend-top prepend-1 span-14 last">
+{% block content %}
+        <h2 class="span-24 last lower-100 center">Thanks!</h2>
+        <div class="prepend-top span-24 last center">
             <p>
-                Thanks for installing "Should I Buy This"!  We will send you an
-                email as results come in.
+                Thanks for installing "Should I Buy This"! 
+
+                <br /><br />
+                The entire app has now been installed! Right now, conversations are starting about your products on social networks!
+
+                <br /><br />
+
+                To view our app in action, visit any product page on your website. Click on the "Not sure? Ask your friends!" button!
             </p>
+
+            <button class='blue' id='go_to_shopify'>
+                <img src="/static/imgs/shopify-bag-36.png" />
+                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                    Return to your Store 
+                </span>
+            </button>
+
         </div>
-{% endblock right_content %}
+{% endblock content %}
 
 {% block mixpanelTracking %}
-    mpq.push(['track_funnel', 4, 'edit_page']);
 {% endblock mixpanelTracking %}
-

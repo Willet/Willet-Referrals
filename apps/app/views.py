@@ -47,7 +47,7 @@ class ShopifyRedirect( URIHandler ):
             
             logging.info('asd')
             # Get the store or create a new one
-            client = get_or_create_shopify_store( shopify_url, store_token, self )
+            client = get_or_create_shopify_store( shopify_url, store_token, self, app )
             
             # initialize session
             session = get_current_session()

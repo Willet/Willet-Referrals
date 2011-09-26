@@ -16,7 +16,7 @@ from urlparse import urlparse
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, create_sibt_shopify_app
+from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models       import *
@@ -29,21 +29,15 @@ from util.consts              import *
 
 class ShowWelcomePage(URIHandler):
     def get( self ):
-        pages = {
-            'one': 'current',
-            'two': 'next',
-            'three': 'next',
-            'four': 'next'
-        }
         client = self.get_client() # May be None
-        template_values = {
-            'pages': pages,
-            'query_string' : self.request.query_string,
-            'shop_owner'   : client.merchant.get_attr('full_name') if client else 'Awesome Bob'
-        }
-
+       
         # TODO: put this somewhere smarter
-        create_sibt_shopify_app( client )
+        app = get_or_create_sibt_shopify_app( client )
+ 
+        template_values = {
+            'app'        : app,
+            'shop_owner' : client.merchant.get_attr('full_name') if client else 'Awesome Bob'
+        }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
 
