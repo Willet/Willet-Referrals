@@ -95,9 +95,9 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-from local_consts import *
-#except:
-    #logging.error('no local_consts.py')
-    #pass
+try:
+    from local_consts import *
+except:
+    logging.error('no local_consts.py')
+    pass
 
