@@ -1,3 +1,0 @@
-[submodule "apps/gae_bingo"]
-    path = apps/gae_bingo
-    url = https://github.com/kamens/gae_bingo.git 
