@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
+import sys
+
+from google.appengine.ext        import webapp
 
 from util.consts  import *
 from util.cookies import LilCookies
@@ -116,7 +119,7 @@ def login_required( fn ):
 
 def admin_required( fn ):
     def check(self, param=None):
-        admin  = [ 'harrismc@gmail.com', 'z4beth@gmail.com', 'sy@sayedkhader.com', 'barbara@wil.lt', 'fraser.harris@gmail.com'  ]
+        admin  = [ 'harrismc@gmail.com', 'z4beth@gmail.com', 'barbara@getwillet.com', 'barbara@wil.lt', 'fraser.harris@gmail.com'  ]
         client = self.get_client()
 
         if client and client.email in admin: 
@@ -152,3 +155,47 @@ def is_blacklisted( header ):
     else:
         return header in user_agent_blacklist
 
+
+def getURIForView(l, index, value):
+    """ gets index of value in tuple"""
+    for pos,t in enumerate(l):
+        if t[index].__name__ == value:
+            return pos
+
+    # Matches behavior of list.index
+    raise ValueError("list.index(x): x not in list")
+
+def url(view, *args, **kwargs):
+    """
+    looks up a url for a view
+        - view is a string, name of the view (such as ShowRoutes)
+        - args are optional parameters for that view
+        - **kwargs takes a named argument qs. qs is passed to
+            urllib.urlencode and tacked on to the end of the url
+            Basically, use this to pass a dict of arguments
+        example usage: url('ShowDashboard', '12512512', qs={'order': 'date'})
+            - this would return a url to the ShowDashboard view, for the
+              dashboard id 12512512, and pass the order=date
+            - /app/12512512/?order=date
+        example: url('ShowProfilePage', '1252', '2151', qs={'format':'json'})
+            - /user/1252/2151/?format=json
+    """
+    app = webapp.WSGIApplication.active_instance
+    handler = app.get_registered_handler_by_name(view)
+
+    logging.error('handler: %s' % handler)
+
+    url = handler.get_url(*args)
+
+    qs = kwargs.get('qs', ())
+    if qs:
+        url += '?%s' % urllib.urlencode(qs)
+
+    logging.error(qs)
+    logging.error('got url: %s' % url)
+
+    return url  
+
+def remove_html_tags(data):
+    p = re.compile(r'<.*?>')
+    return p.sub('', data)

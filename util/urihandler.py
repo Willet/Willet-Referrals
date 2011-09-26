@@ -3,14 +3,16 @@
 __author__      = "Willet Inc."
 __copyright__   = "Copyright 2011, Willet Inc."
 
-import os
+import logging, os
+import inspect
 
-from gaesessions                 import get_current_session
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
-from models.client   import get_client_by_email
-from util.consts     import *
+from apps.client.models import get_client_by_email
+from util.consts        import *
+from util.gaesessions   import get_current_session
+from util.templates     import render 
 
 class URIHandler( webapp.RequestHandler ):
 
@@ -26,7 +28,8 @@ class URIHandler( webapp.RequestHandler ):
 
         session = get_current_session()
         session.regenerate_id()
-        email   = session.get('email', '');
+        email   = session.get('email', '')
+        logging.info("GETTING EMAIL: %s" % email)
         
         self.db_client = get_client_by_email( email )
             
@@ -35,13 +38,13 @@ class URIHandler( webapp.RequestHandler ):
 
         return self.db_client
     
-    def render_page(self, template_file_name, content_template_values):
+    def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
         template_values = {
-            'login_url'  : '/login',
-            'logout_url' : '/logout',
+            'login_url'  : '/client/login',
+            'logout_url' : '/client/logout',
             'URL'        : URL,
             'NAME'       : NAME,
             'MIXPANEL_TOKEN' : MIXPANEL_TOKEN,
@@ -49,6 +52,31 @@ class URIHandler( webapp.RequestHandler ):
         }
         merged_values = dict(template_values)
         merged_values.update(content_template_values)
+        
+        path = os.path.join('templates/', template_file_name)
+        
+        app_path = self.get_app_path()
+        
 
-        path = os.path.join('templates/' + template_file_name )
-        return template.render(path, merged_values)
+        if template_path != None:
+            logging.info('got template_path: %s' % template_path)
+            path = os.path.join(template_path, path)
+        elif app_path != None:
+            path = os.path.join(app_path, path)
+
+        logging.info("Rendering %s" % path )
+        return render(path, merged_values)
+        #return template.render(path, merged_values)
+
+    def get_app_path(self):
+        module = inspect.getmodule(self).__name__
+        parts = module.split('.')
+        app_path = None 
+
+        if len(parts) > 2:
+            if parts[0] == 'apps':
+                # we have an app
+                app_path = '/'.join(parts[:-1])
+
+        return app_path
+

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+        <title>Willet Referral</title>
+        <meta name="description" content="What's the social value of your users?" />
+        <meta name="keywords" content="social value, social payment, social worth, twitter value, twitter account value,
+        tweet value, twittervalue, tweetvalue, social payments, twitter worth" />
+        <link rel="start" href="http://www.wil.lt" title="{{NAME}}" />
+        <link rel="bookmark" href="http://www.capption.tv" title="cAPPtion: Video Reviews of Web Apps" />
+        <link rel="bookmark" href="http://www.getwillet.com" title="Willet: Monetization Simplified" />
+        <link rel="bookmark" href="http://www.bitwillet.com" title="BitWillet: Accept Bitcoins on your website!" />
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+
+        <!-- Blueprint CSS -->
+        <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+
+        <!-- Scripts -->
+        <!-- Mixpanel -->
+        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
+        <!-- End Mixpanel -->
+        
+        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+       
+       <!-- Google Analytics -->
+        <script type="text/javascript">
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-23764505-9']);
+          _gaq.push(['_trackPageview']);
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+        </script>
+            
+        <script type="text/javascript">
+        document.write(unescape("%3Cscript src='" + ((document.location.protocol=="https:")?"https://snapabug.appspot.com":"http://www.snapengage.com") + "/snapabug.js' type='text/javascript'%3E%3C/script%3E"));</script><script type="text/javascript">
+        SnapABug.addButton("a9fae0a0-daea-42c5-a125-eafa1ffd0ac8","3","80%");
+        </script>
+
+        <!-- NEW TEMPLATE CSS -->>
+        <!-- CSS Styles -->
+        <link rel="stylesheet" href="/static/db/css/style.css">
+        <link rel="stylesheet" href="/static/db/css/colors.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.tipsy.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.wysiwyg.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.datatables.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.nyromodal.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.datepicker.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.fileinput.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.fullcalendar.css">
+        <link rel="stylesheet" href="/static/db/css/jquery.visualize.css">
+
+        <!-- Google WebFonts -->
+        <link href='http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic' rel='stylesheet' type='text/css'>
+
+        <script src="/static/db/js/libs/modernizr-1.7.min.js"></script>
+            
+        {% block head %}{% endblock head %}
+	</head>
+	<body class='fixed'>
+        <div id="background"></div>
+        <div id="starburst"><div><div></div></div></div>
+
+        <!-- CONTENT -->
+        <div id='header'>
+            <div id="white"></div>
+            <div id="cloud_bottom"></div>
+            <div id="cloud_top"></div>
+        </div>
+        <div id='wrap'>
+            <div id='main' class='container'>
+                <div class="span-24 append-bottom last">
+                    {% block right_header %}
+                        <div class="span-22 last lower-15" id="right_header">
+                            <p><a href='{{logout_url}}'>Logout</a></p>
+                            <p><a href='/account'>Your Campaigns</a></p>
+                        </div>
+                    {% endblock %}
+                    {% block content %}
+                    <div class="span-8 left_col">
+                        {% block left_content %}
+                        {% endblock left_content %}
+                    </div>
+                    <div class="prepend-top span-15 last right_col">
+                        <div id="right_header" class="span-15 last">
+                            
+                            {% if client %}
+                                <p><a class="login" href='{{logout_url}}'>Logout</a></p>
+                            {% else %}
+                                <p><a class="login" href='{{login_url}}'>Login</a></p>
+                            {% endif %}
+                            
+                            {% block right_head %}{% endblock right_head %}
+                        </div>
+                        
+                        {% block right_content %}
+                        
+                        {% endblock right_content %}
+                    </div>
+                    {% endblock content %}
+                </div>
+                <div class="lower-50 span-24 append-bottom last">
+                    {% block bottom_content %}
+                    {% endblock bottom_content %}
+                </div>
+            </div>
+        </div>
+        <!-- END CONTENT -->
+        
+        <!-- FOOTER -->
+        <div id='footer' class='stripe'>
+            <div id="sailboat">
+                <img width="109" height="124" src="/static/imgs/sailboat.png" alt="Sailboat" />
+            </div>
+            <div id="ocean"></div>
+            <div id="surf"></div>
+            <div id="beach"></div>
+
+            <div class='container'>
+                <div class="prepend-top span-24 last">
+                    <div class="prepend-1 span-5 lower-50" style="font-size: 1.4em"> 
+                        <a href="/">Home</a> <br />
+                        <a href="/about">About / Contact Us</a> <br />  
+                        <a href="/account">Get Started</a> <br />
+                        <button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us</button>
+                    </div>
+                    <div class="prepend-2 span-8 lower-50 center">
+                        <h1 style="margin-bottom: 15px;"><a href="/">{{NAME}}</a></h1>
+                        <h3>Reach out and refer someone<h3>
+                    </div>
+                    <div class="prepend-2 span-6 lower-75 last center" style="margin-top: 5px;">
+                        <p>Copyright &copy; 2011 <a href='http://www.getwillet.com'>Willet Inc</a></p>
+                        <a  href="http://mixpanel.com/f/partner"><img style="margin-top: -25px" src="http://mixpanel.com/site_media/images/partner/badge_blue.png" alt="Web Analytics" /></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END FOOTER -->
+        
+        <!-- Preload these images -->
+        <div class='hidden'>
+        {% block hidden %}{% endblock %}
+        </div>
+     
+        <!-- JS Libs at the end for faster loading -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+        <script>!window.jQuery && document.write(unescape('%3Cscript src="/static/db/js/jquery/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
+        <script src="/static/db/js/libs/selectivizr.js"></script>
+        <script src="/static/db/js/jquery/jquery.nyromodal.js"></script>
+        <script src="/static/db/js/jquery/jquery.tipsy.js"></script>
+        <script src="/static/db/js/jquery/jquery.wysiwyg.js"></script>
+        <script src="/static/db/js/jquery/jquery.datatables.js"></script>
+        <script src="/static/db/js/jquery/jquery.datepicker.js"></script>
+        <script src="/static/db/js/jquery/jquery.fileinput.js"></script>
+        <script src="/static/db/js/jquery/jquery.fullcalendar.min.js"></script>
+        <script src="/static/db/js/jquery/excanvas.js"></script>
+        <script src="/static/db/js/jquery/jquery.visualize.js"></script>
+        <script src="/static/db/js/jquery/jquery.visualize.tooltip.js"></script>
+        <script src="/static/db/js/script.js"></script>
+        <script>
+        // Tell Mixpanel who this person is!
+        {% if client %} 
+            mpq.push(['name_tag', '{{client.email}}']);
+            mpq.push(['identify', '{{client.email}}']);
+        {% endif %}
+        {% block mixpanelTracking %} {% endblock mixpanelTracking %}
+        </script>
+     
+         <!-- Late loading scripts -->
+        {% block lazyload %}{% endblock %}
+
+	</body>
+</html>

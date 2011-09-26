@@ -1,0 +1,41 @@
+    <h2 class="lower-75 center">{{ NAME }}</h2>
+    <div class="prepend-top span-8 last left">
+        <ol>
+            <li class='{{ pages.one }}'>
+                <h4>
+                    {% ifequal pages.one "old" %}
+                        <a href="/r/shopify?app=referral&id={{app.uuid}}">1. Getting Started</a>
+                    {% else %}
+                        1. Getting Started
+                    {% endifequal %}
+                </h4>
+            </li>
+            <li class='{{ pages.two }}'>
+                <h4>
+                    {% ifequal pages.two "old" %}
+                        <a href="/r/shopify/edit?id={{app.uuid}}">2. Create Message</a>
+                    {% else %}
+                        2. Create Message
+                    {% endifequal %}
+                </h4>
+            </li>
+            <li class='{{ pages.three }}'>
+                <h4>
+                    {% ifequal pages.three "old" %}
+                        <a href="/r/shopify/code?id={{app.uuid}}">3. See Results</a>
+                    {% else %}
+                        3. See Results
+                    {% endifequal %}
+                </h4>            
+            </li>
+            <li class='{{ pages.four }}'>
+                <h4>
+                    {% ifequal pages.four "old" %}
+                        <a href="/r/shopify/finished?id={{app.uuid}}">4. Finished</a>
+                    {% else %}
+                        4. Finished
+                    {% endifequal %}
+                </h4>               
+            </li>
+        </ol>
+    </div>

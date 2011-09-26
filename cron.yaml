@@ -1,22 +1,56 @@
 cron:
-- description: check recently tweeted urls to see if they were actually tweeted
-  url: /getTweets
-  schedule: every 5 minutes
-- description: Updating landing page results
-  url: /updateLanding
-  schedule: every 15 minutes
-- description: Clean bad links
-  url: /cleanBadLinks
-  schedule: every 30 minutes
+
+# App Crons
+- description: compute weekly analytics for all apps
+  url: /a/triggerAppAnalytics
+  schedule: every monday 01:00
+
+- description: compute monthly analytics for all apps
+  url: /a/triggerAppAnalytics?scope=month
+  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
+
+# Referral App Crons
 - description: Email results out
-  url: /emailerCron
+  url: /r/emailerCron
   schedule: every 2 hours
+
+# Admin Statistics
 - description: Updating login page stats (counts)
-  url: /updateCounts
+  url: /stats/updateCounts
   schedule: every 6 hours
+
 - description: Updating login page stats (tweets)
-  url: /updateTweets
+  url: /stats/updateTweets
   schedule: every 6 hours
+
 - description: Updating login page stats (clicks)
-  url: /updateClicks
+  url: /stats/updateClicks
   schedule: every 6 hours
+
+# Link Crons
+- description: check recently tweeted urls to see if they were actually tweeted
+  url: /link/getTweets
+  schedule: every 5 minutes
+
+- description: Clean bad links
+  url: /link/cleanBadLinks
+  schedule: every 30 minutes
+
+# User Crons
+- description: compute daily analytics for users 
+  url: /user_analytics/trigger
+  schedule: every 24 hours 
+
+- description: compute weekly analytics for users 
+  url: /user_analytics/trigger?scope=week
+  schedule: every monday 01:00
+
+- description: compute monthly analytics for users 
+  url: /user_analytics/trigger?scope=month
+  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
+
+# App Engine Bingo Crons
+- description: persist gae bingo experiments to datastore
+  url: /gae_bingo/persist
+  schedule: every 5 minutes
+

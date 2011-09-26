@@ -36,7 +36,7 @@
 }
 
 .guider_content h1 {
-  color: #114542;
+  color: #006280;
   font-size: 21px;
   margin-top: 20px;
   letter-spacing: -1px;
@@ -49,9 +49,9 @@
 }
 
 .guider_button {
-  background: -moz-linear-gradient(top, #bde8f5 0%, #114542 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #bde8f5), color-stop(100%, #114542));
-  border: solid 1px #114542;
+  background: -moz-linear-gradient(top, #bde8f5 0%, #006280 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #bde8f5), color-stop(100%, #006280));
+  border: solid 1px #006280;
   color: white;
   cursor: pointer;
   display: inline-block;

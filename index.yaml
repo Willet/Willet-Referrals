@@ -2,16 +2,36 @@ indexes:
 
 - kind: Link
   properties:
-  - name: tweet_id
   - name: creation_time
+  - name: tweet_id
+  - name: campaign
+
+- kind: App
+  properties:
+  - name: client
+  - name: created
+    direction: desc
+
+- kind: AppAnalytics
+  properties:
+  - name: app_uuid
+  - name: scope
+  - name: start_time
+
+- kind: ShopifyOrder
+  properties:
+  - name: campaign
+  - name: created
 
 - kind: Link
   properties:
-  - name: campaign
-  - name: tweet_id
+  - name: user
+  - name: creation_time
 
-- kind: Campaign
+- kind: UserAnalytics
   properties:
-   - name: client
-   - name: created
-     direction: desc
+  - name: campaign
+  - name: scope
+  - name: user
+  - name: period_start
+

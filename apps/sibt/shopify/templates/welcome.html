@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+        $(document).ready(function() {
+            $('#go_to_shopify').click(function() {
+                window.location = "{{app.store_url}}/admin";
+            });
+        });
+    </script>
+{% endblock head %}
+
+{% block right_head %}
+    {% if analytics %}
+        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
+    {% endif %}
+{% endblock right_head %}
+
+{% block content %}
+        <h2 class="span-24 last lower-100 center">Thanks!</h2>
+        <div class="prepend-top span-24 last center">
+            <p>
+                Thanks for installing "Should I Buy This"! 
+
+                <br /><br />
+                The entire app has now been installed! Right now, conversations are starting about your products on social networks!
+
+                <br /><br />
+
+                To view our app in action, visit any product page on your website. Click on the "Not sure? Ask your friends!" button!
+            </p>
+
+            <button class='blue' id='go_to_shopify'>
+                <img src="/static/imgs/shopify-bag-36.png" />
+                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                    Return to your Store 
+                </span>
+            </button>
+
+        </div>
+{% endblock content %}
+
+{% block mixpanelTracking %}
+{% endblock mixpanelTracking %}

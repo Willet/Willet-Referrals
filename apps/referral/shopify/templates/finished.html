@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block head %}
+    <script>
+        $(document).ready(function() {
+            $('#go_to_shopify').click(function() {
+                window.location = "{{app.target_url}}/admin";
+            });
+        });
+    </script>
+{% endblock head %}
+
+{% block left_content %})
+   {% include "left_col.html" %}  
+{% endblock left_content %}
+
+{% block right_head %}
+    {% if analytics %}
+        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
+    {% endif %}
+{% endblock right_head %}
+
+{% block right_content %}
+    <h2 class="span-15 last lower-100 center">4. Finished</h2>
+    <div id="step2_right" class="prepend-1 center prepend-top span-14 last left">
+        <p style='text-align: left'>
+            Congratulations, <em>{{NAME}}</em> is now installed on your store.   
+        </p>
+        <p style='text-align: left'>
+            We will e-mail you as soon as your users start referring! 
+        </p>
+        <p style='text-align: left'>
+            If a customer refers a friend, a note will be appended to the customers order, as seen below. 
+        </p>
+        <p>
+            <img title="Notes are appended to orders upon referral" src="/static/imgs/note_appended_to_order.png" />
+        </p>
+        <button class='blue' id='go_to_shopify'>
+            <img src="/static/imgs/shopify-bag-36.png" />
+            <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                Return to your Store 
+            </span>
+        </button>
+    </div>
+{% endblock right_content %}
+
+{% block mixpanelTracking %}
+{% endblock mixpanelTracking %}

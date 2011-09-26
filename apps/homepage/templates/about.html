@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        input[type='text'], textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+    </style>
+{% endblock head %}
+
+{% block left_content %}
+    <h1 class="prepend-top center">Contact Us</h1>
+    
+    <div class="center">
+        
+        <p><a href="mailto:info@getwillet.com">info@getwillet.com</a></p>
+
+        <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
+        
+        <hr style="width: 75%; margin-left: 40px;" class="center" />
+        <br />
+
+        <p style="margin-bottom: 0px;"> Give Us Feedback: </p>
+        <form action="{% url AddFeedback %}" method="post" class="center">
+            <textarea style="height: 100px" name="message" id="message"></textarea> </br >
+            <button class='blue' type="submit" value="Submit">Send Feedback</button>
+        </form>
+    </div>
+{% endblock left_content %}
+
+{% block right_head %}
+    <p><a href="/">Home</a></p>
+{% endblock right_head %}
+
+{% block right_content %}
+    <h1 class="span-15 last lower-75 center">About Us</h1>
+
+    {% if thanks %}
+        <p class="error">Thanks for your feedback! We appreciate your help! </p>
+    {% endif %}
+
+    <div class="about prepend-top append-bottom span-15 last">
+        <div class="span-5">
+            <div class="span-5 last center about">
+                <img src="/static/imgs/fraser.png" width=141 height=150> </img>
+            </div>
+        </div>
+        <div class="span-10 last">
+            <h3>Fraser Harris</h3>
+            Mountains, projects, startups - whatever he's doing, Fraser is leading.
+            Loves to chat entrepreneurship, and uses "entrepreneuring" as a verb.
+        </div>
+    </div>
+    
+    <div class="about prepend-top append-bottom span-15 last">
+        <div class="span-5">
+            <div class="span-5 last center about">
+                <img src="/static/imgs/barbara.png" width=135 height=150></img>
+            </div>
+        </div>
+        <div class="span-10 last">
+            <h3>Barbara Macdonald</h3>
+            Phew! Just barely escaped a zombie outbreak in time to hack this up! Barbara is the <em>ultimate</em> hacker. She once wrote a operating system in 1
+            month!
+        </div>
+    </div>
+{% endblock right_content %}
