@@ -255,3 +255,4 @@ class DynamicLoader(webapp.RequestHandler):
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.out.write(template.render(path, template_values))
         return
+

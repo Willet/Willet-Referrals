@@ -47,4 +47,5 @@ class DoVote( URIHandler ):
         else:
             instance.increment_nos()
 
-        self.response.out.write( 'ok' );
+        self.response.out.write('ok')
+

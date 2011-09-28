@@ -13,7 +13,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.action.models       import SIBTClickAction
+from apps.action.models import get_sibt_click_actions_by_user_and_link
 from apps.app.models          import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id
@@ -119,9 +120,13 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
                 'is_asker' : is_asker,
                 'instance' : instance,
+
+                'yesses': instance.get_yesses_count(),
+                'noes': instance.get_nos_count()
         }
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'vote.html')
         self.response.out.write(template.render(path, template_values))
         return
+

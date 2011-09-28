@@ -37,7 +37,7 @@ var addEl = function(head, el, property, content) {
 var scripts = [
     {
         'name': 'jQuery',
-        'url': 'http://rf.fs/static/js/jquery.min.js',
+        'url': 'http://rf.rs/static/js/jquery.min.js',
         'dom_el': null,
         'loaded': false,
         'test': function() {
@@ -92,8 +92,6 @@ var checkScripts = function() {
             } else {
                 all_loaded = false;
             }
-        } else {
-            all_loaded = false;
         }
     }
 

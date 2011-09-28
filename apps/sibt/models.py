@@ -7,9 +7,11 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, datetime
+import random
 
 from django.utils         import simplejson as json
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
 from apps.action.models   import create_sibt_click_action
 from apps.app.models      import App
@@ -113,7 +115,7 @@ class SIBTInstance( Model ):
         if total is None:
             total = 0
             for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARES ):
+            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
                 total += counter.yesses
             memcache.add(key=self.uuid+"VoteCounter_yesses", value=total)
         
@@ -126,7 +128,7 @@ class SIBTInstance( Model ):
         if total is None:
             total = 0
             for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARES ):
+            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
                 total += counter.nos
             memcache.add(key=self.uuid+"VoteCounter_nos", value=total)
         
@@ -184,3 +186,4 @@ class VoteCounter(db.Model):
     instance_uuid = db.StringProperty(indexed=True, required=True)
     yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
     nos           = db.IntegerProperty(indexed=False, required=True, default=0)
+
