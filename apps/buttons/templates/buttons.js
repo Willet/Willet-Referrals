@@ -41,13 +41,9 @@ var scripts = [
         'dom_el': null,
         'loaded': false,
         'test': function() {
-            if(typeof unsafeWindow.jQuery == 'undefined') {   
-                return false;
-            } else {
-                return true;
-            }
+            return (typeof jQuery == 'function');
         }, 'callback': function() {
-            $ = unsafeWindow.jQuery;
+            $ = jQuery;
         }
     }, {
         'name': 'Facebook',
@@ -75,37 +71,37 @@ var scripts = [
  * when a script has been loaded and is ready to be
  * used
  */
-var checkScripts = function() {
+var _willet_check_scripts = function() {
     var all_loaded = true;
 
     for (i = 0; i < scripts.length; i++) {
         var row  = scripts[i];
-        if (row.dom_el == null) {
-            // insert the script into the dom
-            row.dom_el = loadremoteScript(row.url);
-        }
+        
         if (row.loaded == false) {
             if (row.test()) {
                 // script is now loaded!
                 row.callback();
                 row.loaded = true;
             } else {
+                if (row.dom_el == null) {
+                    row.dom_el = loadremoteScript(row.url);
+                }    
                 all_loaded = false;
             }
         }
     }
 
     if (all_loaded) {
-        run();
+        _willet_run_scripts();
     } else {
-        window.setTimeout(checkScripts,100);
+        window.setTimeout(_willet_check_scripts,100);
     }
 }
 
 /**
  * body of code to run when all scripts have been injected
  */
-var run = function() {
+var _willet_run_scripts = function() {
     // HERE IS OUR REAL CODE
     
 
@@ -180,5 +176,5 @@ var run = function() {
 }
 
 // let's get this party started 
-checkScripts();
+_willet_check_scripts();
 

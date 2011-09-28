@@ -6,16 +6,16 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib, logging, datetime
+#import hashlib, logging, datetime
 
-from django.utils         import simplejson as json
+#from django.utils         import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.models      import App
-from apps.link.models     import Link
-from apps.user.models     import get_or_create_user_by_cookie
+#from apps.link.models     import Link
+#from apps.user.models     import get_or_create_user_by_cookie
 
-from util.consts          import *
+#from util.consts          import *
 from util.model           import Model
 
 NUM_VOTE_SHARDS = 15
@@ -29,26 +29,27 @@ NUM_VOTE_SHARDS = 15
 # Button Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
 class Buttons(App):
-    
+    """Clients install the buttons App"""    
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
-        super(ButtonApp, self).__init__(*args, **kwargs)
+        super(Buttons, self).__init__(*args, **kwargs)
 
-class ClientsButtons(Model):
-    
-    app_ = db.ReferenceProperty(ButtonApp, collection_name="buttons")
-    action = db.ReferenceProperty(ButtonFBAction, colleciton_name="_buttons")
-    
-    css_class = db.StringProperty()
-    
-    def __init__(self, *args, **kwargs):
-        super(Button, self).__init__(*args, **kwargs)
-
-class ButtonFBActions(Model):
+class ButtonsFBActions(Model):
+    """We have various different FB actions (want, own)"""
     name = db.StringProperty()
     default_css = db.StringProperty()    
     
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
-        super(ButtonFBAction, self).__init__(*args, **kwargs)
+        super(ButtonsFBActions, self).__init__(*args, **kwargs)
+ 
+class ClientsButtons(Model):
+    """Clients can add multiple buttons (want, own)""" 
+    app_ = db.ReferenceProperty(Buttons, collection_name="buttons")
+    action = db.ReferenceProperty(ButtonsFBActions, colleciton_name="_buttons")
     
+    css_class = db.StringProperty()
+    
+    def __init__(self, *args, **kwargs):
+        super(ClientsButtons, self).__init__(*args, **kwargs)
+
