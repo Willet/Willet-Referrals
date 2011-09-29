@@ -21,7 +21,8 @@ from_addr = 'z4beth@gmail.com' # must be registered with app engine account
 
 barbara   = 'barbara@getwillet.com'
 fraser    = 'fraser.harris@gmail.com'
-dev_team  = '%s' % (barbara)
+matt      = 'harrismc@gmail.com'
+dev_team  = '%s, %s' % (barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
 
 #####################
@@ -32,8 +33,8 @@ class Email():
 #### Dev Team Emails ####
     @staticmethod
     def emailBarbara(msg):
-        to_addr = barbara
-        subject = '[Willet] Message to Self'
+        to_addr = dev_team #barbara
+        subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
         logging.info("Emailing Barbara")
