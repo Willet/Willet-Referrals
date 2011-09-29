@@ -15,7 +15,6 @@ body {
     /*margin: 20px 0;*/
     border-radius: 3px;
 
-
     float: none;
     width: 600px;
 }
@@ -27,22 +26,34 @@ body {
     width: 100px;
     margin-right: 10px;
 }
+
+#img-div {
+    float: left;
+    height: 100%;
+    width: 50%;
+}
+
+#img-div img {
+    border: 1px solid;
+
+    -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
+    border-color:#d4e4ef;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+}
 #left-content {
     float: left;
-    margin: 0;
+    margin-top: 30%;
+    margin-left: 5%;
 }
 #right-content {
     float: right;
-    margin: 0;
-}
-#top-div img {
-    margin: 0;
+    margin-right: 5%;
+    margin-top: 30%;
 }
 #voting {
-    padding-left: 25%;
-    padding-right: 25%;
-    clear: both;
-    display: inline-block;
+    float: right;
+    width: 49%;
 }
 #comments-div {
     width: 100%;
