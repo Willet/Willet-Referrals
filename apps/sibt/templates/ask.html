@@ -26,8 +26,9 @@
 
         <script type="text/javascript">
      
-            var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
-                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
+            var share, reset, countChars, willet_conversion, sendGmail, 
+                fbToken, next, highlight, sendEmailiframeBody, updateEmailAddress,
+                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete; 
             
             $(document).ready(function() {
                 iframeBody = document.getElementById('willt');
@@ -162,6 +163,21 @@
                         .attr('onclick', 'share("twitter");');
                     }
                 };
+
+                updateEmailAddress = function() {
+                    var addr = document.getElementById( 'email-field' ).value;
+                        
+                    $.ajax({url: "/updateEmailAddress",
+                            type: 'post',
+                            data: { email : addr },
+                            success: function (tr) {
+                                document.getElementById('email-field').style.display = 'none';
+                                document.getElementById('email-btn').style.display = 'none';
+                                document.getElementById('email-conf').style.display = 'inline';
+                            }
+                    });
+
+                };
         
                 reset = function() { 
                     iframeBody.style.visibility = 'visible';
@@ -243,7 +259,15 @@
         <div id="thanks" class="willt hidden">
             <h1 style="margin-top: 1.5em">Shared!</h1>
 
-            <h1 class="center">Keep your eyes peeled for your friends' comments!</h1>
+            <h2 class="center">Keep your eyes peeled for your friends' comments!</h2>
+
+            <div id="email-wrapper">
+                <h1 class="center">Want to be notified when friend's vote? Enter your email here:</h1>
+                
+                <input id="email-field" type="text"> </input>
+                <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
+                <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+            </div>
         </div>
 
         <div id="tweet-complete" onclick="shareComplete();"></div>

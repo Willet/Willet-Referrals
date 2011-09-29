@@ -326,4 +326,8 @@ def unpacker(obj, user):
             continue
     return r
 
+class UpdateEmailAddress(webapp.RequestHandler):
+    def post( self ):
+        user = get_user_by_cookie( self )
 
+        user.update( email=self.request.get('email')
