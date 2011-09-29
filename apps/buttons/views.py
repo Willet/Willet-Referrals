@@ -2,10 +2,11 @@
 
 from util.urihandler import URIHandler
 
-class ButtonLoader(URIHandler):
+class DynamicLoader(URIHandler):
     def get(self):
         # dyncamic loader for buttons
         # this will return js
+        pass
 
 class EditButtonAjax(URIHandler):
     def post(self, button_id):

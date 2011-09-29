@@ -179,6 +179,9 @@ def get_store_info( store_url, store_token, app_type ):
     if app_type == "referral":
         username = REFERRAL_SHOPIFY_API_KEY
         password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    elif app_type == 'buttons':
+        username = BUTTONS_SHOPIFY_API_KEY
+        password = hashlib.md5(BUTTONS_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     else:   
         username = SIBT_SHOPIFY_API_KEY
         password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()

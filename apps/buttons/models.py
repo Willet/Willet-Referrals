@@ -46,7 +46,7 @@ class ButtonsFBActions(Model):
 class ClientsButtons(Model):
     """Clients can add multiple buttons (want, own)""" 
     app_ = db.ReferenceProperty(Buttons, collection_name="buttons")
-    action = db.ReferenceProperty(ButtonsFBActions, colleciton_name="_buttons")
+    action = db.ReferenceProperty(ButtonsFBActions, collection_name="_buttons")
     
     css_class = db.StringProperty()
     

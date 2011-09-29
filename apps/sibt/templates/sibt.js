@@ -18,7 +18,7 @@ var _willet_load_remote_script = function(script) {
 var _willet_closeCallback = function () {
     //document.getElementById( '_willet_button' ).style.display = "none";
 }
-_willet_check_scripts
+
 /**
  * Onclick event handler for the 'sibt' button
  */
