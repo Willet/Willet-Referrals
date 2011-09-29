@@ -190,15 +190,17 @@
         <h1 id="title"> Should {{asker_name}} Buy This? </h1>
 
         <div id="top-div">
-            <img src="{{product_img}}" />
+            <div id="img-div">
+                <img src="{{product_img}}" />
+            </div>
             <div id="voting">
                 <div id="left-content">
                     <button id="yesBtn" class="button-link" onClick="vote('yes');">Yes</button>
-                    <h2 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h2>
+                    <h1 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h1>
                 </div>
                 <div id="right-content">
                     <button id="noBtn" class="button-link" onClick="vote('no');">No</button>
-                    <h2 id="noCount" class="hidden">No: <br \> {{nos}} </h2>
+                    <h1 id="noCount" class="hidden">No: <br \> {{nos}} </h1>
                 </div>
             </div>  
         </div>
