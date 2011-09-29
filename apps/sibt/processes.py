@@ -24,7 +24,7 @@ class StartInstance( URIHandler ):
 
         app  = get_app_by_id( self.request.get('app_uuid') )
         link = get_link_by_willt_code( self.request.get('willt_code') )
-        link = self.request.get('product_img') )
+        img = self.request.get('product_img')
 
         # Make the Instance!
         instance = app.create_instance( user, None, link, img )
@@ -50,7 +50,7 @@ class DoVote( URIHandler ):
             instance.increment_nos()
 
         # Tell the Asker they got a vote!
-        email = instance.asker.get_email()
+        email = instance.asker.get_attr('email')
         if email != "":
             Email.SIBTVoteNotification( email, 
                                         instance.asker.get_full_name(), 

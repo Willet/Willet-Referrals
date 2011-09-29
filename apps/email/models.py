@@ -71,7 +71,7 @@ class Email():
     def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
-        if name = "":
+        if name == "":
             name = "Savvy Shopper"
         body = template.render(Email.template_path('sibt_voteNotification.html'),
             {
