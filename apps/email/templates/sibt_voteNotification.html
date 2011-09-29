@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}A Friend Voted!{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:110%">
+                    <p> Hi {{name}}, </p>
+                    <p> Your friend voted "{{vote_type}}" for the following product:
+                    </p>
+
+                    <img src="{{product_img}}" style="max-height: 25%; max-width: 25%; text-align: center"> </img>
+!
+                    <p><a href="{{vote_url}}">Click here to view their comments!</a></p>
+				</div>
+			</td>
+        </tr>
+    </table>
+{% endblock %}

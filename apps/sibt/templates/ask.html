@@ -53,8 +53,9 @@
 
                     $.ajax({url: "/s/startInstance",
                             type: 'post',
-                            data: { app_uuid : "{{app.uuid}}",
-                                    willt_code : "{{willt_code}}" },
+                            data: { app_uuid    : "{{app.uuid}}",
+                                    willt_code  : "{{willt_code}}",
+                                    product_img : "{{productImg}}" },
                             success: function (tr) {
                             }
                     });

@@ -68,7 +68,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_found = True if hasattr(user, 'fb_access_token') else False
 
         template_values = {
-                'productImg' : data['images'][0]['src'],
+                'productImg'  : data['images'][0]['src'],
                 'productName' : data['title'],
                 'productDesc' : remove_html_tags( data['body_html'].strip() ),
 
@@ -122,7 +122,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 
                 'user': user,
                 'asker_name' : name if name != '' else "your friend",
-                'fb_comments_url' : target + '/asd',
+                'fb_comments_url' : '%s/%s' % (target, instance.uuid),
 
                 'is_asker' : is_asker,
                 'instance' : instance,

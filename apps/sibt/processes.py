@@ -9,9 +9,10 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import create_sibt_vote_action
 from apps.app.models          import get_app_by_id
+from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
-from apps.user.models         import get_or_create_user_by_cookie
+from apps.user.models         import User, get_or_create_user_by_cookie
 
 from util.urihandler          import URIHandler
 from util.consts              import *
@@ -23,9 +24,10 @@ class StartInstance( URIHandler ):
 
         app  = get_app_by_id( self.request.get('app_uuid') )
         link = get_link_by_willt_code( self.request.get('willt_code') )
+        link = self.request.get('product_img') )
 
         # Make the Instance!
-        instance = app.create_instance( user, None, link )
+        instance = app.create_instance( user, None, link, img )
 
         self.response.out.write( instance.uuid ) # give back to script.
 
@@ -46,6 +48,15 @@ class DoVote( URIHandler ):
             instance.increment_yesses()
         else:
             instance.increment_nos()
+
+        # Tell the Asker they got a vote!
+        email = instance.asker.get_email()
+        if email != "":
+            Email.SIBTVoteNotification( email, 
+                                        instance.asker.get_full_name(), 
+                                        which, 
+                                        instance.link.get_willt_url(), 
+                                        instance.product_img ) 
 
         self.response.out.write('ok')
 

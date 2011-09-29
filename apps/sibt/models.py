@@ -54,7 +54,7 @@ class SIBT( App ):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance( self, user, end, link ):
+    def create_instance( self, user, end, link, img ):
         # Make the properties
         uuid = generate_uuid( 16 )
 
@@ -65,6 +65,7 @@ class SIBT( App ):
                                  app_         = self,
                                  end_datetime = end,
                                  link         = link,
+                                 product_img  = img,
                                  url          = link.target_url )
         instance.put()
         
