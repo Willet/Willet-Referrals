@@ -2,7 +2,7 @@
 
 from util.urihandler import URIHandler
 
-class DynamicLoader(URIHandler):
+class ButtonsJS(URIHandler):
     def get(self):
         # dyncamic loader for buttons
         # this will return js

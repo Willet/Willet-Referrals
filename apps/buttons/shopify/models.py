@@ -20,7 +20,6 @@ from apps.email.models    import Email
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
 
-from util                 import httplib2
 from util.consts          import *
 from util.helpers         import generate_uuid
 
@@ -61,26 +60,37 @@ def create_buttons_shopify_app(client, app_token):
     )
     app.put()
     
+    # Define our script tag 
+    tags = [{
+        "script_tag": {
+            "src": "%s/b/shopify/load/buttons.js?store_url=%s" % (
+                URL,
+                client.url 
+            ),
+            "event": "onload"
+        }
+    }]
+
     # Install yourself in the Shopify store
-    self.install_webhooks()
-    self.install_script_tags()
+    app.install_webhooks()
+    app.install_script_tags(script_tags=tags)
 
     # Email Barbara
-    Email.emailBarbara(
-        'ButtonsShopify Install: %s %s %s' % (
-            uuid,
-            client.name,
-            client.url
-        )
-    )
+    #Email.emailBarbara(
+    #    'ButtonsShopify Install: %s %s %s' % (
+    #        uuid,
+    #        client.name,
+    #        client.url
+    #    )
+    #)
     
     return app
 
 # Accessors --------------------------------------------------------------------
-def get_or_create_buttons_shopify_app( client ):
+def get_or_create_buttons_shopify_app(client, app_token):
     app = get_buttons_shopify_app_by_store_id( client.id )
     if app is None:
-        app = create_buttons_shopify_app( client )
+        app = create_buttons_shopify_app(client, app_token)
     return app
 
 def get_buttons_shopify_app_by_uuid(id):

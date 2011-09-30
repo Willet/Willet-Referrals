@@ -24,57 +24,6 @@ from util.helpers     import *
 from util.urihandler  import URIHandler
 from util.consts      import *
 
-# The "Shows" ------------------------------------------------------------------
-class ShopifyRedirect( URIHandler ):
-    # Renders a app page
-    def get(self):
-        # Request varZ from us
-        app          = self.request.get( 'app' )
-        
-        # Request varZ from Shopify
-        shopify_url  = self.request.get( 'shop' )
-        shopify_sig  = self.request.get( 'signature' )
-        store_token  = self.request.get( 't' )
-        shopify_timestamp = self.request.get( 'timestamp' )
-
-        # Try to get the Client if they are logged in
-        client = self.get_client() 
-        if client is None:
-
-            # Ensure the 'http' is in the URL
-            if 'http' not in shopify_url:
-                shopify_url = 'http://%s' % shopify_url
-            
-            logging.info('asd')
-            # Get the store or create a new one
-            client = get_or_create_shopify_store( shopify_url, store_token, self, app )
-            
-            # initialize session
-            session = get_current_session()
-            session.regenerate_id()
-            
-            # remember form values
-            session['correctEmail'] = client.email
-            session['email']        = client.email
-            session['reg-errors']   = []
-            
-            logging.info("CLIENT: %s" % client.email)
-
-            # Cache the client!
-            self.db_client = client
-
-        # @todo write a smart importer here so we don't have to hardcode these
-        if app == 'referral':
-            logging.info("GOING TO EDIT")
-            self.redirect('/r/shopify?%s' % self.request.query_string)
-        elif app == 'sibt':
-            self.redirect('/s/shopify?%s' % self.request.query_string)
-        elif app == 'buttons':
-            self.redirect('/b/shopify/?%s' % self.request.query_string)
-        else:
-            logging.info("GOING HOME %s" % app)
-            self.redirect( '/' )
-
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp( URIHandler ):
     def post( self ):

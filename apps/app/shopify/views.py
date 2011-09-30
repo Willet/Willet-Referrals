@@ -47,7 +47,7 @@ class ShopifyRedirect( URIHandler ):
             
             logging.info('asd')
             # Get the store or create a new one
-            client = get_or_create_shopify_store( shopify_url, store_token, self, app )
+            client = get_or_create_shopify_store(shopify_url, store_token, self, app)
             
             # initialize session
             session = get_current_session()
@@ -64,6 +64,7 @@ class ShopifyRedirect( URIHandler ):
             self.db_client = client
 
         # @todo write a smart importer here so we don't have to hardcode these
+        # self.redirect(reverse(app+'Welcome'))
         if app == 'referral':
             logging.info("GOING TO EDIT")
             self.redirect('/r/shopify?%s' % self.request.query_string)

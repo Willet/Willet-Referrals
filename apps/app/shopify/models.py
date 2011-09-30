@@ -7,19 +7,20 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-#import hashlib
+import hashlib
 #import logging, random, urllib2, datetime
 
-#from django.utils         import simplejson as json
+from django.utils         import simplejson as json
 #from google.appengine.api import memcache
 #from google.appengine.api import urlfetch
 #from google.appengine.api import taskqueue
-#from google.appengine.ext import db
+from google.appengine.ext import db
 #from google.appengine.ext.db import polymodel
 
 from apps.app.models import App
 
 from util.consts          import *
+from util                 import httplib2
 from util.model import Model
 
 NUM_SHARE_SHARDS = 15
@@ -88,7 +89,7 @@ class AppShopify(Model):
                 url,
                 "POST",
                 body = json.dumps(webhook),
-                headers=header
+                headers = header
             )
             logging.info('%r %r' % (resp, content)) 
 
@@ -100,26 +101,31 @@ class AppShopify(Model):
 
         url      = '%s/admin/script_tags.json' % self.store_url
         username = self.settings['api_key'] 
-        password = hashlib.md5(self.settings['api_secret'] + store_token).hexdigest()
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
         h        = httplib2.Http()
         
         h.add_credentials(username, password)
         
         # Install the SIBT script
-        data = {
-            "script_tag": {
-                "src": "%s/b/shopify/buttons.js?store_url=%s" % (
-                    URL,
-                    self.store_url 
-                ),
-                "event": "onload"
-            }
-        }      
-        script_tags.append(data)
+        #data = {
+        #    "script_tag": {
+        #        "src": "%s/b/shopify/buttons.js?store_url=%s" % (
+        #            URL,
+        #            self.store_url 
+        #        ),
+        #        "event": "onload"
+        #    }
+        #}      
+        #script_tags.append(data)
         
-        for script_tag in extra_script_tags:
-            logging.info("POSTING to %s %r " % (url, data) )
-            resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
+        for script_tag in script_tags:
+            logging.info("POSTING to %s %r " % (url, script_tag) )
+            resp, content = h.request(
+                url,
+                "POST",
+                body = json.dumps(script_tag),
+                headers = header
+            )
             logging.info('%r %r' % (resp, content))
 

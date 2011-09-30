@@ -118,18 +118,18 @@ class ClientShopify( Client ):
         """ Initialize this obj """
         super(ClientShopify, self).__init__(*args, **kwargs)
     
-    def validateSelf( self ):
+    def validateSelf(self):
         """ Validate this obj's properties before storing in DB """
         # Fetch product imgs before saving in the DB
-        self.product_imgs = get_product_imgs( self.url, self.token )
+        pass
 
 # Accessors --------------------------------------------------------------------
-def get_shopify_client_by_url( store_url ):
+def get_shopify_client_by_url(store_url):
     store = ClientShopify.all().filter( 'url =', store_url ).get()
     return store
 
 def get_or_create_shopify_store( store_url, store_token='', request_handler=None, app_type="" ):
-    store = get_shopify_client_by_url( store_url )
+    store = get_shopify_client_by_url(store_url)
 
     if store == None:
         store = create_shopify_store( store_url, store_token, request_handler, app_type )
@@ -157,6 +157,9 @@ def create_shopify_store( url, token, request_handler, app_type ):
                            token    = token,
                            id       = str(data['id']),
                            merchant = merchant  )
+
+    # moved this here so we could pass the app_type
+    store.product_imgs = get_product_imgs(url, token, app_type)
     store.put()
 
     # Update the merchant with data from Shopify
@@ -173,7 +176,7 @@ def create_shopify_store( url, token, request_handler, app_type ):
     return store
 
 # Shopify API Calls  -----------------------------------------------------------
-def get_store_info( store_url, store_token, app_type ):
+def get_store_info(store_url, store_token, app_type):
 
     url      = '%s/admin/shop.json' % ( store_url )
     if app_type == "referral":
@@ -214,12 +217,22 @@ def get_store_info( store_url, store_token, app_type ):
     
     return shop
 
-def get_product_imgs( store_url, store_token ):
+def get_product_imgs(store_url, store_token, app_type):
     """ Fetch images for all the products in this store """
 
-    url      = '%s/admin/products.json' % ( store_url )
-    username = SIBT_SHOPIFY_API_KEY
-    password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    url      = '%s/admin/products.json' % (store_url)
+    
+    # eventually this will be:
+    #SHOPIFY_APPS[app]['api_key']
+    if app_type == "referral":
+        username = REFERRAL_SHOPIFY_API_KEY
+        password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    elif app_type == 'buttons':
+        username = BUTTONS_SHOPIFY_API_KEY
+        password = hashlib.md5(BUTTONS_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+    else:   
+        username = SIBT_SHOPIFY_API_KEY
+        password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()

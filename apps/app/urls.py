@@ -4,7 +4,7 @@ from apps.app.processes import *
 
 urlpatterns = [
     # Views
-    (r'/a/shopify',   ShopifyRedirect),
+    #(r'/a/shopify',   ShopifyRedirect),
     (r'/a/deleteApp', DoDeleteApp),
 
     # Processes

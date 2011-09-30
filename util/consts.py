@@ -74,8 +74,8 @@ SHOPIFY_APPS = {
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
         'class_name': 'ReferralShopify'        
     }, 'ButtonsShopify': {
-        'api_key': '34964cf4fc964b8dd2e1760cd002b716',
-        'api_secret': '4bf2c491c5b0f8f3e31c1007af96ae52',
+        'api_key': '5fe8fa18137ddfc5912de35428f738a1',
+        'api_secret': '9aca00dc207a002e499694355cd71882',
         'class_name': 'ButtonsShopify'       
     }
 }
@@ -87,8 +87,8 @@ REFERRAL_SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb'
 SIBT_SHOPIFY_API_KEY = 'b153f0ccc9298a8636f92247e0bc53dd'
 SIBT_SHOPIFY_API_SHARED_SECRET = '735be9bc6b3e39b352aa5c287f4eead5'
 
-BUTTONS_SHOPIFY_API_KEY = '34964cf4fc964b8dd2e1760cd002b716'
-BUTTONS_SHOPIFY_API_SHARED_SECRET = '4bf2c491c5b0f8f3e31c1007af96ae52'
+BUTTONS_SHOPIFY_API_KEY = '5fe8fa18137ddfc5912de35428f738a1'
+BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 
 # List of root template directories
 # to import templates from
@@ -100,6 +100,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = [
     'admin',
     'app',
+    'app.shopify',
     'client',
     'homepage',
     'mixpanel',
