@@ -66,12 +66,13 @@
 
                 voteComplete = function( is_asker ) {
                     var c   = document.getElementById( 'FOO' );
+                    var b   = document.getElementById( 'BAR' );
                     var yes = document.getElementById( 'yesBtn' );
                     var no  = document.getElementById( 'noBtn' );
                     
                     var yesCount = document.getElementById( 'yesCount' );
                     var noCount  = document.getElementById( 'noCount' );
-                    var title  = document.getElementById( 'title' );
+                    var title    = document.getElementById( 'title' );
 
                     // Turn things Off
                     yes.style.display = "none";
@@ -79,14 +80,13 @@
 
                     // Turn things On
                     c.style.display         = "inline";
+                    b.style.display         = "inline";
                     yesCount.style.display  = "inline";
                     noCount.style.display   = "inline";
 
                     if( !is_asker ) {
-                        title.innerHTML = "Tell {{asker_name}} Why You Voted";
-                        title.innerText = "Tell {{asker_name}} Why You Voted";
-                        
-                        alert( "Thanks for voting!" );
+                        title.innerHTML = "Thanks for voting!";
+                        title.innerText = "Thanks for voting!";
                     } else {
                         title.innerHTML = "{{asker_name}}, here's what your friends think!";
                         title.innerText = "{{asker_name}}, here's what your friends think!";
@@ -190,20 +190,23 @@
         <h1 id="title"> Should {{asker_name}} Buy This? </h1>
 
         <div id="top-div">
-            <img src="{{product_img}}" />
+            <div id="img-div">
+                <img src="{{product_img}}" />
+            </div>
             <div id="voting">
                 <div id="left-content">
                     <button id="yesBtn" class="button-link" onClick="vote('yes');">Yes</button>
-                    <h2 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h2>
+                    <h1 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h1>
                 </div>
                 <div id="right-content">
                     <button id="noBtn" class="button-link" onClick="vote('no');">No</button>
-                    <h2 id="noCount" class="hidden">No: <br \> {{nos}} </h2>
+                    <h1 id="noCount" class="hidden">No: <br \> {{nos}} </h1>
                 </div>
             </div>  
         </div>
 
-        <div id="comments-div" >
+        <div id="comments-div">
+            <h2 id="BAR" class="hidden">Tell {{asker_name}} Why Your Voted!</h2>
             <script>(function(d, s, id) {
               var js, fjs = d.getElementsByTagName(s)[0];
               if (d.getElementById(id)) {return;}

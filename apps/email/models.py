@@ -67,6 +67,24 @@ class Email():
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
+    @staticmethod
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img ):
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('sibt_voteNotification.html'),
+            {
+                'name'        : name,
+                'vote_type'   : vote_type,
+                'vote_url'    : vote_url,
+                'product_img' :  product_img
+            }
+        )
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+
     @staticmethod 
     def template_path(path):
         return os.path.join('apps/email/templates/', path)

@@ -16,14 +16,13 @@ var _willet_load_remote_script = function(script) {
 }
 
 var _willet_closeCallback = function () {
-    //document.getElementById( '_willet_button' ).style.display = "none";
+    return;
 }
 
 /**
  * Onclick event handler for the 'sibt' button
  */
 var _willet_button_onclick = function(url) {
-    //var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
     $.colorbox({
         transition: 'fade',
         scrolling: false,
@@ -47,7 +46,7 @@ var _willet_show_vote = function(willt_code, photo_url) {
     //$.colorbox.init();
     $.colorbox({
         transition: 'fade',
-        scrolling: false, 
+        scrolling: true, 
         iframe: true,
         width: '690px',
         height: '90%',
@@ -149,25 +148,6 @@ var _willet_run_scripts = function() {
         _willet_show_vote(willt_code, photo_src);
     }
     
-    /*
-    if ( {{show_votes}} || hash.indexOf( '#code=' ) != -1 ) {
-        var willt_code = hash.substring( hash.length - 1, hash.length );
-        url = "{{URL}}/s/vote.html?willt_code=" + willt_code + "&is_asker={{is_asker}}&store_id={{ store_id }}&photo=" + photo.src + "&url=" + window.location.href;
-        colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, width:'690px', height:'90%', callback: _willet_closeCallback, href:'" + url + "' })";
-        
-        showVote( willt_code, photo.src );
-        
-        button.innerText = 'Should your friend buy this?';
-        button.innerHTML = 'Should your friend buy this?';
-
-    } else {
-
-        url = "{{URL}}/s/ask.html?store_id={{ store_id }}&photo=" + photo.src + "&url=" + window.location.href;
-        colorBoxStr = "$.colorbox({ scrolling: false, iframe:true, innerWidth:420, innerHeight:232, callback: _willet_closeCallback, href:'" + url + "' })";
-        button.innerText = 'Not Sure? Ask your friends';
-        button.innerHTML = 'Not Sure? Ask your friends';
-    }
-    */
     // Construct button.
     var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
     button.innerText = 'Not Sure?<br />Ask your friends';
@@ -199,19 +179,17 @@ var _willet_run_scripts = function() {
 
     if ( purchase_cta ) {
         purchase_cta.parentNode.appendChild( button );
-        $("#_willet_button").fadeIn(150);
+        $("#_willet_button").fadeIn(250);
     }
 }
 
 /**
  * Insert style and get the ball rolling
  */
-//var style_url = "{{URL}}/static/colorbox/example4/colorbox.css";
 var _willet_style = document.createElement('style');
-var _willet_head = document.getElementsByTagName('head')[0];
+var _willet_head  = document.getElementsByTagName('head')[0];
 _willet_style.textContent = _willet_css;
 _willet_head.appendChild(_willet_style);
 
 // run our scripts
 _willet_check_scripts();
-

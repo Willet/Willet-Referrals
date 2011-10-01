@@ -5,28 +5,34 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re, urllib
 
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template
+from django.utils               import simplejson as json
+from google.appengine.api       import urlfetch
+from google.appengine.api       import memcache
+from google.appengine.ext       import webapp
+from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from time import time
-from urlparse import urlparse
+from time                       import time
+from urlparse                   import urlparse
 
-from apps.action.models       import SIBTClickAction
-from apps.action.models import get_sibt_click_actions_by_user_and_link
-from apps.app.models          import *
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id
-from apps.link.models         import Link, get_link_by_willt_code, create_link
-from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.models       import *
-from apps.order.models        import *
-from apps.stats.models        import Stats
+from apps.action.models         import SIBTClickAction
+from apps.action.models         import get_sibt_click_actions_by_user_and_link
+from apps.app.models            import *
+from apps.sibt.models           import get_sibt_instance_by_asker_for_url
+from apps.sibt.shopify.models   import SIBTShopify
+from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
+from apps.link.models           import Link
+from apps.link.models           import create_link
+from apps.link.models           import get_link_by_willt_code
+from apps.user.models           import User
+from apps.user.models           import get_or_create_user_by_cookie
+from apps.user.models           import get_user_by_cookie
+from apps.client.models         import *
+from apps.order.models          import *
+from apps.stats.models          import Stats
 
-from util.helpers             import *
-from util.urihandler          import URIHandler
-from util.consts              import *
+from util.consts                import *
+from util.helpers               import *
+from util.urihandler            import URIHandler
 
 class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -62,7 +68,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_found = True if hasattr(user, 'fb_access_token') else False
 
         template_values = {
-                'productImg' : data['images'][0]['src'],
+                'productImg'  : data['images'][0]['src'],
                 'productName' : data['title'],
                 'productDesc' : remove_html_tags( data['body_html'].strip() ),
 
@@ -116,7 +122,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 
                 'user': user,
                 'asker_name' : name if name != '' else "your friend",
-                'fb_comments_url' : target + '/asd',
+                'fb_comments_url' : '%s/%s' % (target, instance.uuid),
 
                 'is_asker' : is_asker,
                 'instance' : instance,

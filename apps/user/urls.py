@@ -8,6 +8,7 @@ urlpatterns = [
     (r'/user/(.*)/(.*)/', ShowProfilePage),
     
     # processes
+    (r'/updateEmailAddress', UpdateEmailAddress),
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),
     (r'/klout', QueryKloutAPI),
