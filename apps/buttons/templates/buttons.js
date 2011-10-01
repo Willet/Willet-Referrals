@@ -11,6 +11,7 @@
  *   test - method to test if it has been loaded
  *   callback - callback after test is success
  */
+/*
 var scripts = [
     {
         'name': 'jQuery',
@@ -39,17 +40,16 @@ var scripts = [
         }
     }
 ];
-
+*/
 /**
  * checkScripts checks the scripts var and uses
  * the defined `test` and `callack` methods to tell
  * when a script has been loaded and is ready to be
  * used
  */
+/*
 var _willet_check_scripts = function() {
-    /**
-     * quick helper function to add scripts to dom
-     */
+    // quick helper function to add scripts to dom
     var loadRemoteScript = function(script) {
         var dom_el = document.createElement('script'); 
         dom_el.src = script;
@@ -82,18 +82,12 @@ var _willet_check_scripts = function() {
         window.setTimeout(_willet_check_scripts,100);
     }
 };
-
+*/
 /**
  * body of code to run when all scripts have been injected
  */
 var _willet_run_scripts = function() {
-    // HERE IS OUR REAL CODE
-    
-
     // get the button where we are going to insert
-    var button_selector = '{{ app.button_selector }}';
-    var button_insert = $(button_selector);
-    var userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %}; 
     var here = window.location + '.json';
 
     $.getJSON (
@@ -108,25 +102,6 @@ var _willet_run_scripts = function() {
                 dom_el.setAttribute('property', property);
                 dom_el.content = content;
                 head.appendChild(dom_el);
-            };
-
-            /**
-             * post to facebook
-             */
-            var fb_share_handler = function(payload) {
-                console.log(payload)
-                $.ajax({
-                    url: '/fbShare',
-                    type: 'post',
-                    data: payload,
-                    success: function(data) {
-                        if (data) {
-                            shareComplete();
-                        } else {
-                            console.log("Facebook post failure");
-                        }
-                    }
-                });
             };
 
             /**
@@ -157,59 +132,15 @@ var _willet_run_scripts = function() {
             /**
             * Insert Faceb)ok DOM El
             */
-            var fb_dom_el = document.createElement('div');
-            var fb_root_el = document.createElement('div');
-            var html_el = document.getElementsByTagName('html')[0];
-            html_el.setAttribute('xmlns:fb', "https://www.facebook.com/2008/fbml");
+            //var fb_dom_el = document.createElement('div');
+            //var fb_root_el = document.createElement('div');
+            //var html_el = document.getElementsByTagName('html')[0];
+            //html_el.setAttribute('xmlns:fb', "https://www.facebook.com/2008/fbml");
             //$(fb_dom_el).attr('data-mode', 'button');
             //$(fb_dom_el).addClass('fb-add-to-timeline');
-            $(fb_root_el).attr('id', 'fb-root');
-            button_insert.append(fb_root_el); 
+            //$(fb_root_el).attr('id', 'fb-root');
             //button_insert.append(fb_dom_el); 
-            
-            var want = document.createElement('input');
-            $(want).attr('type', 'button');
-            $(want).val('I want this!');
-            $(want).click(function(e) {
-                e.preventDefault();
-                var fbData = {msg: message, wcode: '{{willt_code}}'}; 
-                if (userFound) {
-                    fb_share_handler(fbData)
-                    return; 
-                } else {
-                    FB.login(
-                        function(login_response) {
-                            console.log(login_response);
-                            if (!login_response.authResponse) {
-                                // we weren't given permission
-                                window.close();
-                            } else { 
-                                fbData.fb_token = login_response.authResponse.accessToken;
-                                fbData.fb_id = login_response.authResponse.userID;
-                                fb_share_handler(fbData);
-                            }
-                        }, {
-                            scope: 'publish_stream,offline_access,user_about_me,email'
-                        }
-                    );
-                }
 
-
-
-                FB.api('/me/shopify_buttons:want?product={{willt_url}}',
-                    'post',
-                    function(response) {
-                        if (!response || response.error) {
-                            console.log('Error occured', response);
-                        } else {
-                            console.log('Post was successful! Action ID: ', response.id);
-                        }
-                    }
-                );
-            });
-            
-            button_insert.append(want);
-            
             /**
              *  Add META tags to HEAD
              */
@@ -222,10 +153,36 @@ var _willet_run_scripts = function() {
             for (i = 0; i < meta_tags.length; i++) {
                 addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
             }
+            
+
+            /**
+             * INSERT IFRAME WITH DATA
+             */
+            var button_selector = '{{ app.button_selector }}';
+            var button_insert = $(button_selector);
+            var url         = location.href.split('/');
+            var l           = url.length;
+
+            if (button_insert &&  window.iframe_loaded == undefined) {
+                window.iframe_loaded = "teh iframe haz been loaded";
+                console.log('loading iframe');
+                var surround    = document.createElement('div');
+                var iframe      = document.createElement('iframe');
+                surround.setAttribute('style', 'width: 200px;')
+                iframe.setAttribute('allowtransparency', 'true');
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('scrolling', 'no');
+                iframe.setAttribute('style', 'width:100%; min-height:340px; display: block;');
+                iframe.setAttribute('src', '{{ URL }}/b/shopify/load/iframe.html?store_url=http://' + Shopify.shop);
+
+                button_insert.append(surround);
+                $(surround).append(iframe);
+                console.log('iframe inserted');
+            }
 
             /**
              * call fb.init after everything has been added to page
-             */
+             *
             FB.init({ 
                 appId: '{{ FACEBOOK_APP_ID }}',
                 cookie: true, 
@@ -233,31 +190,11 @@ var _willet_run_scripts = function() {
                 xfbml: true,
                 oauth: true
             });
+            */
         }
     );
 };
 
 // let's get this party started 
-//_willet_check_scripts();
-var button_selector = '{{ app.button_selector }}';
-var button_insert = $(button_selector);
-var url         = location.href.split('/');
-var l           = url.length;
-
-if (button_insert &&  window.iframe_loaded == undefined) {
-    window.iframe_loaded = "teh iframe haz been loaded";
-    console.log('loading iframe');
-    var surround    = document.createElement('div');
-    var iframe      = document.createElement('iframe');
-    surround.setAttribute('style', 'width: 200px;')
-    iframe.setAttribute('allowtransparency', 'true');
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('style', 'width:100%; min-height:340px; display: block;');
-    iframe.setAttribute('src', '{{ URL }}/b/shopify/load/iframe.html?store_url=http://' + Shopify.shop);
-
-    button_insert.append(surround);
-    $(surround).append(iframe);
-    console.log('iframe inserted');
-}
+_willet_run_scripts();
 

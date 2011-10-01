@@ -44,13 +44,15 @@
                 }
             };
             var fb_share_handler = function(payload) {
+                var action = '{% firstof app.action "want" %}';
+                var obj = '{% firstof app.obj "product" %}';
                 console.log(payload)
                 $.ajax({
-                    url: "/b/want/",
+                url: "/b/action/want/product/",
                     type: 'post',
                     data: payload,
-                    success: function (tr) {
-                        if (tr === 'ok') {
+                    success: function (response) {
+                        if (response && response.status) {
                             shareComplete();
                         } else {
                             console.log("Facebook post failure");
@@ -61,7 +63,7 @@
     
             // use the selected medium to share about your purchase
             var share = function() {
-                var data = {msg: message, wcode: '{{willt_code}}'};
+                var data = {wcode: '{{willt_code}}'};
                 // first attempt server-provided token
                 if (userFound) {
                     fb_share_handler(data)

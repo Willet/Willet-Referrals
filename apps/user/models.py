@@ -785,7 +785,47 @@ class User( db.Expando ):
             
             
         return fb_share_id, plugin_response
-    
+
+    def facebook_action(self, action, obj, obj_link):
+        """Does an ACTION on OBJECT on users timeline"""
+            
+        url = "https://graph.facebook.com/me/shopify_buttons:%s?" % action 
+        params = urllib.urlencode({
+            'access_token': self.fb_access_token,
+            obj: obj_link
+        })
+
+        fb_response, plugin_response, fb_share_id = None, False, None
+        try:
+            logging.info(url + params)
+            fb_response = urlfetch.fetch(
+                url, 
+                params,
+                method=urlfetch.POST,
+                deadline=7
+            )
+        except urlfetch.DownloadError, e: 
+            logging.error('error sending fb request: %s' % e)
+            plugin_response = False
+        else:
+            try:
+                results_json = simplejson.loads(fb_response.content)
+                fb_share_id = results_json['id']
+                plugin_response = True
+                    
+                # let's pull this users info
+                taskqueue.add(
+                    url = '/fetchFB',
+                    params = {
+                        'fb_id': self.fb_identity
+                    }
+                )
+            except Exception, e:
+                fb_share_id = None
+                plugin_response = False
+                logging.error('Error posting action: %s' % fb_response)
+            
+        return fb_share_id, plugin_response 
 
 # Gets by X
 def get_user_by_uuid( uuid ):
