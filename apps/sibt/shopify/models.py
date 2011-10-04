@@ -46,9 +46,20 @@ def create_sibt_shopify_app( client ):
                        store_token = client.token )
     app.put()
     
+    data = {
+        "script_tag": {
+            "src": "%s/s/shopify/sibt.js?store_id=%s" % (
+                URL,
+                app.store_id
+            ),
+            "event": "onload"
+        }
+    }      
     # Install yourself in the Shopify store
-    install_webhooks( client.url, client.token )
-    install_script_tags( client.url, client.token, client.id )
+    app.install_webhooks()
+    app.install_script_tags(script_tags=data)
+    #install_webhooks(client.url, client.token)
+    #install_script_tags(client.url, client.token, client.id)
 
     # Email Barbara
     Email.emailBarbara( 'SIBT Install: %s %s %s' % (uuid, client.name, client.url) )
@@ -98,6 +109,14 @@ def install_webhooks( store_url, store_token ):
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
+
+    if int(resp.status) == 401:
+        Email.emailBarbara(
+            'SIBT WEBHOOK INSTALL FAILED\n%s\n%s' % (
+                resp,
+                content
+            )        
+        )
     
 def install_script_tags( store_url, store_token, store_id ):
     """ Install our script tags onto the Shopify store """
@@ -116,6 +135,14 @@ def install_script_tags( store_url, store_token, store_id ):
     logging.info("POSTING to %s %r " % (url, data) )
     resp, content = h.request(url, "POST", body=json.dumps(data), headers=header)
     logging.info('%r %r' % (resp, content))
+
+    if int(resp.status) == 401:
+        Email.emailBarbara(
+            'SIBT WEBHOOK INSTALL FAILED\n%s\n%s' % (
+                resp,
+                content
+            )        
+        )
     """
     # Install jquery colorbox
     data = { "script_tag": { "src": "%s/static/colorbox/colorbox/jquery.colorbox.js" % URL, "event": "onload" } }      
