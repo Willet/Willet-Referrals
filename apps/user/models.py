@@ -285,7 +285,10 @@ class User( db.Expando ):
 
     def get_attr( self, attr_name ):
         if attr_name == 'email':
-            return self.emails[0].address if self.emails.count() > 0 else ''
+            if hasattr(self, 'fb_email'):
+                return self.fb_email
+            else:
+                return self.emails[0].address if self.emails.count() > 0 else ''
         
         if attr_name == 'pic':
             if hasattr(self, 'facebook_profile_pic'):

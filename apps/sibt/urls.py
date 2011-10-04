@@ -11,4 +11,6 @@ urlpatterns = [
     # Processes
     (r'/s/doVote',        DoVote),
     (r'/s/startInstance', StartInstance),
+    (r'/s/getExpired',    GetExpiredSIBTInstances),
+    (r'/s/removeExpired', RemoveExpiredSIBTInstance)
 ]

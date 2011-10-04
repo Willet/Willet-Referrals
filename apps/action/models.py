@@ -123,23 +123,29 @@ class SIBTClickAction( ClickAction ):
 def create_sibt_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
-    act  = SIBTClickAction( key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = app,
-                            link     = link,
-                            url      = link.target_url,
-                            sibt_instance = link.sibt_instance.get() )
+    act  = SIBTClickAction(
+        key_name = uuid,
+        uuid = uuid,
+        user = user,
+        app_ = app,
+        link = link,
+        url = link.target_url,
+        sibt_instance = link.sibt_instance.get()
+    )
     act.put()
 
     return act
 
 ## Accessors -------------------------------------------------------------------
 def get_sibt_click_actions_by_user_for_url( user, url ):
-    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
+    return SIBTClickAction.all()\
+            .filter('user =', user)\
+            .filter('url =', url)
 
 def get_sibt_click_actions_by_user_and_link( user, url ):
-    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
+    return SIBTClickAction.all()\
+            .filter('user =', user)\
+            .filter('url =', url)
 
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------

@@ -54,3 +54,7 @@ cron:
   url: /gae_bingo/persist
   schedule: every 5 minutes
 
+- description: scan for expired SIBT votes
+  url: /s/getExpired
+  schedule: every 5 minutes
+

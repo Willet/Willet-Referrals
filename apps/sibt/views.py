@@ -139,43 +139,49 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
         logging.info("Did we get an instance? %s" % instance)
 
-        name = instance.asker.get_full_name()
-        is_asker = (instance.asker.key() == user.key())
-        vote_action = SIBTVoteAction.all()\
-                .filter('app_ =', app)\
-                .filter('sibt_instance =', instance)\
-                .filter('user =', user)\
-                .get()
-        logging.info('got vote action: %s' % vote_action)
-        has_voted = (vote_action != None)
+        if instance.is_live:
+            name = instance.asker.get_full_name()
+            is_asker = (instance.asker.key() == user.key())
+            vote_action = SIBTVoteAction.all()\
+                    .filter('app_ =', app)\
+                    .filter('sibt_instance =', instance)\
+                    .filter('user =', user)\
+                    .get()
+            logging.info('got vote action: %s' % vote_action)
+            has_voted = (vote_action != None)
 
-        link = instance.link
-        share_url = '%s/%s' % (
-            URL,
-            link.willt_url_code
-        )
+            link = instance.link
+            share_url = '%s/%s' % (
+                URL,
+                link.willt_url_code
+            )
 
-        template_values = {
-                'product_img' : self.request.get( 'photo' ),
-                'app' : app,
-                'URL': URL,
-                
-                'user': user,
-                'asker_name' : name if name != '' else "your friend",
-                'asker_pic' : instance.asker.get_attr('pic'),
-                'fb_comments_url' : '%s/%s' % (target, instance.uuid),
+            template_values = {
+                    'product_img' : self.request.get( 'photo' ),
+                    'app' : app,
+                    'URL': URL,
+                    
+                    'user': user,
+                    'asker_name' : name if name != '' else "your friend",
+                    'asker_pic' : instance.asker.get_attr('pic'),
+                    'fb_comments_url' : '%s/%s' % (target, instance.uuid),
 
-                'share_url': share_url,
-                'is_asker' : is_asker,
-                'instance' : instance,
-                'has_voted': has_voted,
+                    'share_url': share_url,
+                    'is_asker' : is_asker,
+                    'instance' : instance,
+                    'has_voted': has_voted,
 
-                'yesses': instance.get_yesses_count(),
-                'noes': instance.get_nos_count()
-        }
+                    'yesses': instance.get_yesses_count(),
+                    'noes': instance.get_nos_count()
+            }
 
-        # Finally, render the HTML!
-        path = os.path.join('apps/sibt/templates/', 'vote.html')
+            # Finally, render the HTML!
+            path = os.path.join('apps/sibt/templates/', 'vote.html')
+        else:
+            template_values = {
+                'output': 'Vote is over'        
+            }
+            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
         self.response.out.write(template.render(path, template_values))
         return
 

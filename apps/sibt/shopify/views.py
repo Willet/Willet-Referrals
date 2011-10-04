@@ -239,12 +239,13 @@ class DynamicLoader(webapp.RequestHandler):
                 target,
                 instance
             ))
-            if instance:
+            if instance and instance.is_live:
                 is_asker   = 1
                 show_votes = 1
             elif actions.count() != 0:
+                instance   = actions[0].sibt_instance
+                if instance.is_live:
                     show_votes = 1
-                    instance   = actions[0].sibt_instance
 
             for action in actions:
                 inst = action.sibt_instance
