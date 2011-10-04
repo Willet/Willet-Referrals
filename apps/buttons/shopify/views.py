@@ -7,17 +7,25 @@ from django.utils import simplejson as json
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
-from apps.buttons.shopify.models import ButtonsShopify
+from apps.buttons.shopify.models import * 
 from apps.app.models import App
-from apps.user.models import get_or_create_user_by_cookie
+#from apps.user.models import get_or_create_user_by_cookie
 from apps.client.models import ClientShopify
 from apps.link.models import create_link, get_link_by_url
 
-from util.consts import URL, NAME, BUTTONS_FACEBOOK_APP_ID, BUTTONS_FACEBOOK_APP_SECRET
+from util.consts import *
 from util.helpers import get_request_variables
 from util.urihandler import URIHandler
 
-class EditButtonAjax(URIHandler):
+class ButtonsShopifyBeta(URIHandler):
+    def get(self):
+        template_values = {
+            "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
+        }
+        
+        self.response.out.write(self.render_page('beta.html', template_values))
+
+class ButtonsShopifyEditAjax(URIHandler):
     def post(self, button_id):
         # handle posting from the edit form
         client = self.get_client()
@@ -33,7 +41,7 @@ class EditButtonAjax(URIHandler):
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(json.dumps(response))
 
-class EditButton(URIHandler):
+class ButtonsShopifyEdit(URIHandler):
     def get(self, button_id):
         # show the edit form
         client = self.get_client()
@@ -49,7 +57,26 @@ class EditButton(URIHandler):
 
         self.response.out.write(self.render_page('edit.html', template_values))
 
-class ListButtons(URIHandler):
+class ButtonsShopifyWelcome(URIHandler):
+    def get( self ):
+        client = self.get_client() # May be None
+       
+        # TODO: put this somewhere smarter
+        app_token = self.request.get( 't' )
+        app = get_or_create_buttons_shopify_app(client, app_token)
+        
+        shop_owner = 'a Shopify store'
+        if client:
+            shop_owner = client.merchant.get_attr('full_name')
+
+        template_values = {
+            'app'        : app,
+            'shop_owner' : shop_owner 
+        }
+
+        self.response.out.write(self.render_page('welcome.html', template_values)) 
+
+class ButtonsShopifyList(URIHandler):
     def get(self):
         # show the buttons enabled for this site
         client = self.get_client()
@@ -65,13 +92,12 @@ class ListButtons(URIHandler):
         
         self.response.out.write(self.render_page('list.html', template_values))
 
-class DynamicLoader(webapp.RequestHandler):
+class ButtonsShopifyJS(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self, input_path):
-
         template_values = {}
-        rq_vars = get_request_variables(['store_id', 'demo'], self)
+        rq_vars = get_request_variables(['store_url', 'demo'], self)
 
         if os.environ.has_key('HTTP_REFERER'):
             origin_domain = os.environ['HTTP_REFERER'] 
@@ -100,7 +126,7 @@ class DynamicLoader(webapp.RequestHandler):
             app = None
         
         if client == None:
-            client = ClientShopify.all().filter('id =', rq_vars['store_id']).get()
+            client = ClientShopify.all().filter('url =', rq_vars['store_url']).get()
         
         # If they give a bogus app id, show the landing page app!
         if app == None:
@@ -118,7 +144,8 @@ class DynamicLoader(webapp.RequestHandler):
             'app_uuid' : app.uuid,
             'willt_url' : link.get_willt_url(),
             'willt_code': link.willt_url_code,
-            
+            'want_text': 'I want this!',
+            'URL': URL, 
             'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
         }
     
@@ -128,8 +155,12 @@ class DynamicLoader(webapp.RequestHandler):
             template_values['BASE_URL'] = URL
         
         # Finally, render the plugin!
-        path = os.path.join('apps/buttons/templates/', 'buttons.js')
-        self.response.headers['Content-Type'] = 'javascript'
+        path = os.path.join('apps/buttons/templates/', input_path)
+        
+        if input_path.find('.js') != -1:
+            self.response.headers['Content-Type'] = 'javascript'
+        else:
+            self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write(template.render(path, template_values))
         return
 

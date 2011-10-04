@@ -80,15 +80,18 @@ class ClickAction( Action ):
     def __init__(self, *args, **kwargs):
 
         # Tell Mixplanel that we got a click
-        taskqueue.add( queue_name = 'mixpanel', 
+        try:
+            taskqueue.add( queue_name = 'mixpanel', 
                        url        = '/mixpanel', 
                        params     = {'event'    : 'Clicks', 
                                      'app_uuid' : kwargs['app_'].uuid } )
-
+        except:
+            # who tf cares about mixpanel anyways
+            pass
         super(ClickAction, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+        return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
 def create_click_action( user, app, link ):
     # Make the action
@@ -115,7 +118,7 @@ class SIBTClickAction( ClickAction ):
     url           = db.LinkProperty( indexed = True )
 
     def __str__(self):
-        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
 def create_sibt_click_action( user, app, link ):
     # Make the action
@@ -147,15 +150,22 @@ class VoteAction( Action ):
     
     def __init__(self, *args, **kwargs):
         # Tell Mixplanel that we got a vote
-        taskqueue.add( queue_name = 'mixpanel', 
-                       url        = '/mixpanel', 
-                       params     = {'event'    : 'Votes', 
-                                     'app_uuid' : kwargs['app'].uuid } )
+        try:
+            taskqueue.add(
+                queue_name = 'mixpanel', 
+                url        = '/mixpanel', 
+                params     = {
+                    'event'    : 'Votes', 
+                    'app_uuid' : kwargs['app_'].uuid
+                }
+            )
+        except:
+            pass
 
         super(VoteAction, self).__init__(*args, **kwargs)
     
     def __str__(self):
-        return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+        return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
 def create_vote_action( user, app, link ):
     # Make the action
@@ -172,7 +182,7 @@ def create_vote_action( user, app, link ):
 ## -----------------------------------------------------------------------------
 ## SIBTVoteAction Subclass ----------------------------------------------------
 ## -----------------------------------------------------------------------------
-class SIBTVoteAction( ClickAction ):
+class SIBTVoteAction( VoteAction ):
     """ Designates a 'vote' action for a User on a SIBT instance. 
         Currently used for 'SIBT' App """
 
@@ -182,7 +192,7 @@ class SIBTVoteAction( ClickAction ):
     url           = db.LinkProperty( indexed = True )
 
     def __str__(self):
-        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app.uuid)
+        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
 def create_sibt_vote_action( user, instance ):
     # Make the action

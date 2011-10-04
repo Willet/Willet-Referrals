@@ -20,7 +20,7 @@
 willet_conversion = function ( user_id, campaign_id ) {
     alert(user_id+ " " +campaign_id);
     $.ajax({
-        url: "http://barbara-willet.appspot.com/conversion",
+        url: "http://social-referral.appspot.com/conversion",
         type: 'post',
         data: { "referree_uid" : user_id, "campaign_uuid" : campaign_id }
     });// end ajax

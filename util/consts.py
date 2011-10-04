@@ -14,7 +14,7 @@ NAME = 'Willet Inc.'
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'barbara-willet.appspot.com'
+APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
@@ -57,6 +57,28 @@ GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 
 # LilCookies (secure cookies) Stuff
 COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde03732'
+SHOPIFY_APPS = {
+    'sbit': {
+        'api_key': '',
+        'api_secret': ''
+    }        
+}
+
+SHOPIFY_APPS = {
+    'SIBTShopify': {
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'SIBTShopify'
+    }, 'ReferralShopify': {
+        'api_key': 'c46f84fb6458a72c774504ba372757f1',
+        'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
+        'class_name': 'ReferralShopify'        
+    }, 'ButtonsShopify': {
+        'api_key': '5fe8fa18137ddfc5912de35428f738a1',
+        'api_secret': '9aca00dc207a002e499694355cd71882',
+        'class_name': 'ButtonsShopify'       
+    }
+}
 
 # Shopify Stuff
 REFERRAL_SHOPIFY_API_KEY = 'c46f84fb6458a72c774504ba372757f1' 
@@ -64,6 +86,9 @@ REFERRAL_SHOPIFY_API_SHARED_SECRET = '82e2c5a9d210be294c046b7bc9ff55eb'
 
 SIBT_SHOPIFY_API_KEY = 'b153f0ccc9298a8636f92247e0bc53dd'
 SIBT_SHOPIFY_API_SHARED_SECRET = '735be9bc6b3e39b352aa5c287f4eead5'
+
+BUTTONS_SHOPIFY_API_KEY = '5fe8fa18137ddfc5912de35428f738a1'
+BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 
 # List of root template directories
 # to import templates from
@@ -75,6 +100,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = [
     'admin',
     'app',
+    'app.shopify',
     'client',
     'homepage',
     'mixpanel',
@@ -84,6 +110,8 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'buttons',
+    'buttons.shopify',
     'stats',
     'testimonial',
     'user',

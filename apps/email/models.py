@@ -21,7 +21,8 @@ from_addr = 'z4beth@gmail.com' # must be registered with app engine account
 
 barbara   = 'barbara@getwillet.com'
 fraser    = 'fraser.harris@gmail.com'
-dev_team  = '%s' % (barbara)
+matt      = 'harrismc@gmail.com'
+dev_team  = '%s, %s' % (barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
 
 #####################
@@ -32,8 +33,8 @@ class Email():
 #### Dev Team Emails ####
     @staticmethod
     def emailBarbara(msg):
-        to_addr = barbara
-        subject = '[Willet] Message to Self'
+        to_addr = dev_team #barbara
+        subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
         logging.info("Emailing Barbara")
@@ -60,6 +61,24 @@ class Email():
                 'from_addr' : infrom_addr,
                 'msg' : msg,
                 'app' : app 
+            }
+        )
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+
+    @staticmethod
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img ):
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('sibt_voteNotification.html'),
+            {
+                'name'        : name,
+                'vote_type'   : vote_type,
+                'vote_url'    : vote_url,
+                'product_img' :  product_img
             }
         )
         

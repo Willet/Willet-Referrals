@@ -35,12 +35,23 @@ class FetchFacebookData(webapp.RequestHandler):
                 fb_response = json.loads(urllib.urlopen(url).read())
                 logging.info(fb_response)
                 target_data = [
-                    'first_name', 'last_name', 'gender', 'verified',
-                    'timezone', 'email'] 
+                    'first_name',
+                    'last_name',
+                    'gender',
+                    'verified',
+                    'timezone',
+                    'email',
+                    'name',
+                    'username'
+                ] 
                 collected_data = {}
                 for td in target_data:
                     if fb_response.has_key(td):
-                        collected_data['fb_'+td] = fb_response[td]
+                        collected_data['fb_'+str(td)] = str(fb_response[td])
+                collected_data['facebook_profile_pic'] = '%s%s/picture' % (
+                        FACEBOOK_QUERY_URL,
+                        collected_data['fb_username']
+                )
                 user.update(**collected_data)
             else:
                 pass
@@ -326,4 +337,8 @@ def unpacker(obj, user):
             continue
     return r
 
+class UpdateEmailAddress(webapp.RequestHandler):
+    def post( self ):
+        user = get_user_by_cookie( self )
 
+        user.update( email=self.request.get('email') )

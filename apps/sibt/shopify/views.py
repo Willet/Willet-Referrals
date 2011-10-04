@@ -15,8 +15,8 @@ from urlparse import urlparse
 
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app
+from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
+from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models       import *
@@ -28,7 +28,6 @@ from util.urihandler          import URIHandler
 from util.consts              import *
 
 class ShowBetaPage(URIHandler):
-    # Renders the main template
     def get(self):
         template_values = { "SIBT_SHOPIFY_API_KEY" : SIBT_SHOPIFY_API_KEY }
         
@@ -39,11 +38,14 @@ class ShowWelcomePage(URIHandler):
         client = self.get_client() # May be None
        
         # TODO: put this somewhere smarter
-        app = get_or_create_sibt_shopify_app( client )
- 
+        app = get_or_create_sibt_shopify_app(client)
+        
+        shop_owner = 'Shopify Merchant'
+        if client != None:
+            shop_owner = client.merchant.get_attr('full_name')
         template_values = {
-            'app'        : app,
-            'shop_owner' : client.merchant.get_attr('full_name') if client else 'Awesome Bob'
+            'app': app,
+            'shop_owner': shop_owner 
         }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
@@ -212,32 +214,45 @@ class DynamicLoader(webapp.RequestHandler):
             
         is_asker = show_votes = 0
         instance = None
-
-        page_url = urlparse( self.request.remote_addr )
+        other_instances = []
+        
+        page_url = urlparse(self.request.remote_addr)
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+
+        target = self.request.headers['REFERER']
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
-        app  = get_sibt_shopify_app_by_store_id( self.request.get('store_id') )
-       
-        if app:
+        shop_url = self.request.get('shop')
+        if shop_url[:7] != 'http://':
+            shop_url = 'http://%s' % shop_url 
 
+        #app  = get_sibt_shopify_app_by_store_url(shop_url)
+        app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+
+        if app:
             # Is User an asker for this URL?
-            instance = get_sibt_instance_by_asker_for_url( user, target )
+            actions = get_sibt_click_actions_by_user_for_url(user, target)
+            instance = get_sibt_instance_by_asker_for_url(user, target)
+            logging.info('trying to get instance for\nuser: %s\ntarget: %s\ninstance: %s' % (
+                user,
+                target,
+                instance
+            ))
             if instance:
                 is_asker   = 1
                 show_votes = 1
-
-            # Has User clicked on an instance for the URL?
-            else:
-
-                # Grab this user's SIBTClickActions
-                actions = get_sibt_click_actions_by_user_for_url( user, target )
-                logging.info("%s %r" % (actions, actions))
-
-                if actions.count() != 0:
+            elif actions.count() != 0:
                     show_votes = 1
                     instance   = actions[0].sibt_instance
+
+            for action in actions:
+                inst = action.sibt_instance
+                another_instance = {}
+                another_instance['code'] = inst.link.willt_url_code
+                another_instance['user_name'] = inst.asker.get_full_name()
+                another_instance['user_pic'] = inst.asker.get_attr('pic')
+                other_instances.append(another_instance)
             
         template_values = {
                 'URL' : URL,
@@ -246,6 +261,7 @@ class DynamicLoader(webapp.RequestHandler):
                 
                 'app' : app,
                 'instance' : instance,
+                'other_instances': other_instances,
                 
                 'user': user,
                 'store_id' : self.request.get('store_id')
@@ -255,3 +271,4 @@ class DynamicLoader(webapp.RequestHandler):
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.out.write(template.render(path, template_values))
         return
+
