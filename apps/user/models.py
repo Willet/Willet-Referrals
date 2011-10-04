@@ -28,6 +28,7 @@ import apps.oauth.models
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models import Email
 
+from util.consts import FACEBOOK_QUERY_URL
 from util.model         import Model
 from util.helpers         import *
 from util import oauth2 as oauth
@@ -120,40 +121,57 @@ class User( db.Expando ):
         #    create_email_model( self, kwargs['email'] )
        
         super(User, self).__init__(*args, **kwargs)
-    
+
+    def get_first_name(self):
+        fname = None
+        if hasattr(self, 'fb_first_name'):
+            fname = self.fb_first_name
+        elif hasattr(self, 'first_name'):
+            fname = self.first_name
+        elif hasattr(self, 'linkedin_first_name'):
+            fname = self.linkedin_first_name
+        elif hasattr(self, 'fb_username'):
+            fname = self.fb_username
+        else:
+            fname = 'a user'
+        return fname
+
     def get_full_name(self, service=None):
         """attempts to get the users full name, with preference to the
             service supplied"""
         fname = None
         if hasattr(self, 't_handle') and service == 'twitter':
             fname = self.twitter_handle
-
         elif hasattr(self, 'linkedin_first_name') and service == 'linkedin':
             fname = '%s %s' % (
                 self.linkedin_first_name, 
                 str(self.get_attr('linkedin_last_name'))
             )
-
         elif hasattr(self, 'fb_first_name') and service == 'facebook':
             fname = '%s %s' % (
                 self.fb_first_name,
                 str(self.get_attr('fb_last_name'))
             )
-
         elif hasattr(self, 'fb_name') and service == 'facebook':
             fname = self.fb_name
-
         elif hasattr(self, 'full_name'):
             fname = self.full_name
-        
         elif hasattr(self, 'first_name'):
             fname = self.first_name
-        
+        elif hasattr(self, 'fb_first_name'):
+            fname = '%s %s' % (
+                self.fb_first_name,
+                str(self.get_attr('fb_last_name'))
+            )
+        elif hasattr(self, 'fb_name'):
+            fname = self.fb_name
+        elif hasattr(self, 't_handle'):
+            fname = self.t_handle
         else:
             fname = self.get_attr('email')
         
         if fname == None or fname == '':
-            fname = "an awesome %s user" % (NAME)
+            fname = "a %s user" % (NAME)
 
         return fname
 
@@ -264,7 +282,7 @@ class User( db.Expando ):
             pics.append(getattr(self, 'linkedin_picture_url'))
         
         return pics 
-    
+
     def get_attr( self, attr_name ):
         if attr_name == 'email':
             return self.emails[0].address if self.emails.count() > 0 else ''
@@ -276,6 +294,11 @@ class User( db.Expando ):
                 return getattr(self, 'twitter_profile_pic')
             elif hasattr(self, 'linkedin_picture_url'):
                 return getattr(self, 'linkedin_picture_url')
+            elif hasattr(self, 'fb_username'):
+                return '%s%s/picture' % (
+                    FACEBOOK_QUERY_URL,        
+                    getattr(self, 'fb_identity')
+                ) 
             else:
                 return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
 

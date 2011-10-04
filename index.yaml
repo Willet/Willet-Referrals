@@ -35,3 +35,10 @@ indexes:
   - name: user
   - name: period_start
 
+- kind: Action
+  properties:
+  - name: class
+  - name: url
+  - name: user
+  - name: sibt_instance
+

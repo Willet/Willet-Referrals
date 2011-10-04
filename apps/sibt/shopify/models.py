@@ -11,6 +11,7 @@ import hashlib, logging, datetime
 from django.utils         import simplejson as json
 from google.appengine.ext import db
 
+from apps.app.shopify.models import AppShopify
 from apps.sibt.models     import SIBT 
 from apps.email.models    import Email
 from util                 import httplib2
@@ -20,13 +21,13 @@ from util.helpers         import generate_uuid
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
-class SIBTShopify( SIBT ):
+class SIBTShopify(SIBT, AppShopify):
     
     # Shopify's ID for this store
-    store_id    = db.StringProperty( indexed = True )
+    #store_id    = db.StringProperty( indexed = True )
 
     # Shopify's token for this store
-    store_token = db.StringProperty( indexed = True )
+    #store_token = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -66,8 +67,14 @@ def get_sibt_shopify_app_by_uuid(id):
     logging.info("Shopify: Looking for %s" % id)
     return SIBTShopify.all().filter( 'uuid =', id ).get()
 
+def get_sibt_shopify_app_by_store_url(url):
+    """ Fetch a Shopify obj from the DB via the store's url"""
+    logging.info("Shopify: Looking for %s" % url)
+    return SIBTShopify.all().filter('store_url =', url).get()
+
 def get_sibt_shopify_app_by_store_id(id):
     """ Fetch a Shopify obj from the DB via the store's id"""
+    # TODO: DEPRECATE THIS METHOD
     logging.info("Shopify: Looking for %s" % id)
     return SIBTShopify.all().filter( 'store_id =', id ).get()
 

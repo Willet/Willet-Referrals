@@ -14,6 +14,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 
 from apps.action.models   import create_sibt_click_action
+from apps.email.models    import Email
 from apps.app.models      import App
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
@@ -32,7 +33,7 @@ class SIBT( App ):
     emailed_at_10 = db.BooleanProperty( default = False )
    
     store_name    = db.StringProperty( indexed = True )
-    store_url     = db.LinkProperty( indexed = False, default = None, required = False )
+    #store_url     = db.LinkProperty( indexed = False, default = None, required = False )
 
     # Div IDs or class names
     buy_btn_id    = db.StringProperty( indexed = True )
@@ -69,6 +70,7 @@ class SIBT( App ):
                                  url          = link.target_url )
         instance.put()
         
+        Email.emailBarbara( 'SIBT INSTANCE: %s %s %s' % (uuid, asker.key(), url) )
         return instance
 
 # Accessors --------------------------------------------------------------------
@@ -81,7 +83,7 @@ class SIBTInstance( Model ):
     uuid            = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty( auto_now_add=True )
+    created         = db.DateTimeProperty(auto_now_add=True)
     
     # The User who asked SIBT to their friends?
     asker           = db.ReferenceProperty( db.Model, collection_name='sibt_instances' )
@@ -99,7 +101,7 @@ class SIBTInstance( Model ):
     product_img     = db.LinkProperty  ( indexed = False )
     
     # Datetime when this instance should shut down and email asker 
-    end_datetime    = db.DateTimeProperty( )
+    end_datetime    = db.DateTimeProperty()
 
     # True iff end_datetime < now. False, otherwise.
     is_live         = db.BooleanProperty( default = True )
@@ -169,13 +171,20 @@ class SIBTInstance( Model ):
 
 # Accessor ---------------------------------------------------------------------
 def get_sibt_instance_by_asker_for_url( user, url ):
-    return SIBTInstance.all().filter( 'asker = ', user ).filter( 'url = ', url ).get()
+    return SIBTInstance.all()\
+            .filter('is_live =', True)\
+            .filter('asker =', user)\
+            .filter('url =', url)\
+            .get()
 
 def get_sibt_instance_by_link( link ):
-    return SIBTInstance.all().filter( 'link =', link ).get()
+    return SIBTInstance.all()\
+            .filter('is_live =', True)\
+            .filter('link =', link)\
+            .get()
 
 def get_sibt_instance_by_uuid( uuid ):
-    return SIBTInstance.all().filter( 'uuid =', uuid ).get()
+    return SIBTInstance.all().filter('uuid =', uuid).get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------

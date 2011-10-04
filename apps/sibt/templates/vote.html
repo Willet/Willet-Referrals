@@ -28,8 +28,20 @@
             var vote, share, reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
                 shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, 
                 voteComplete, next;
-            
+            var yesses = {{yesses}};
+            var noes = {{noes}};
+
+            var percent_el;
+
+            var calculatePercent = function() {
+                var total = yesses + noes; 
+                return Math.round(parseFloat(yesses/total)*100);
+            };
+
             $(document).ready(function() {
+                percent_el = $('#result').find('span');
+                percent_el.text(calculatePercent());
+
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
                 shareArea = document.getElementById('share-area'),
@@ -49,47 +61,60 @@
                 }
         
                 vote = function( which ) {
-                    $.ajax({url: "/s/doVote",
-                            type: 'post',
-                            data: { instance_uuid : "{{instance.uuid}}",
-                                    which : which
-                                  },
-                            success: function (tr) {
-                                if (tr === 'ok') {
-                                    voteComplete(('{{is_asker}}' == 'True'));
-                                } else {
-                                    console.log("Facebook post failure");
-                                }
+                    //var count = $('#' + which + 'Count span');
+                    //var val = parseInt(count.text()) + 1;
+                    //count.text(val);
+                    if (which == 'yes') {
+                        yesses++;
+                    } else {
+                        noes++;
+                    }
+                    percent_el.text(calculatePercent());
+                    $.ajax({
+                        url: "/s/doVote",
+                        type: 'post',
+                        data: {
+                            instance_uuid : "{{instance.uuid}}",
+                            which : which
+                        },
+                        success: function (tr) {
+                            if (tr === 'ok') {
+                                // pass
+                            } else {
+                                console.log("Facebook post failure");
                             }
-                        });
+                        }
+                    });
+                    $("#BAR span." + which).show();
+                    voteComplete(('{{is_asker}}' == 'True'));
                 };
 
-                voteComplete = function( is_asker ) {
+                voteComplete = function(is_asker) {
                     var c   = document.getElementById( 'FOO' );
                     var b   = document.getElementById( 'BAR' );
-                    var yes = document.getElementById( 'yesBtn' );
-                    var no  = document.getElementById( 'noBtn' );
+                    //var yes = document.getElementById( 'yesBtn' );
+                    //var no  = document.getElementById( 'noBtn' );
                     
                     var yesCount = document.getElementById( 'yesCount' );
                     var noCount  = document.getElementById( 'noCount' );
                     var title    = document.getElementById( 'title' );
 
                     // Turn things Off
-                    yes.style.display = "none";
-                    no.style.display  = "none";
+                    //yes.style.display = "none";
+                    //no.style.display  = "none";
 
                     // Turn things On
                     c.style.display         = "inline";
                     b.style.display         = "inline";
-                    yesCount.style.display  = "inline";
-                    noCount.style.display   = "inline";
+                    //yesCount.style.display  = "inline";
+                    //noCount.style.display   = "inline";
+                    $('#voting').hide(); 
+                    $('#result').fadeIn(300);
 
                     if( !is_asker ) {
-                        title.innerHTML = "Thanks for voting!";
-                        title.innerText = "Thanks for voting!";
+                        $(title).html("Thanks for voting!");
                     } else {
-                        title.innerHTML = "{{asker_name}}, here's what your friends think!";
-                        title.innerText = "{{asker_name}}, here's what your friends think!";
+                        $(title).html("Here's what your friends think");
                     }
                 };
 
@@ -175,7 +200,8 @@
                 };
 
                 // If this is the Asker, show the results.
-                {% if is_asker %}
+                // {{ has_voted }}
+                {% if is_asker or has_voted %}
                     voteComplete(('{{is_asker}}' == 'True'));
                 {% endif %}
             });
@@ -187,26 +213,51 @@
     <body>
 
     <div id="wrapper">
-        <h1 id="title"> Should {{asker_name}} Buy This? </h1>
-
         <div id="top-div">
             <div id="img-div">
                 <img src="{{product_img}}" />
             </div>
-            <div id="voting">
-                <div id="left-content">
-                    <button id="yesBtn" class="button-link" onClick="vote('yes');">Yes</button>
-                    <h1 id="yesCount" class="hidden">Yes: <br \> {{yesses}} </h1>
+            <div id="top-right">
+                <div id="asker_title">
+                    {% if asker_pic %}
+                        <img align="left" src="{{ asker_pic }}"  />
+                    {% endif %}
+                    <div>
+                        <span>{{asker_name}}</span>   
+                        <p id="title">
+                            Should I Buy This?
+                        </p>
+                    </div>
                 </div>
-                <div id="right-content">
-                    <button id="noBtn" class="button-link" onClick="vote('no');">No</button>
-                    <h1 id="noCount" class="hidden">No: <br \> {{nos}} </h1>
+                
+                <div id="voting">
+                    <div id="left-content">
+                        <button id="yesBtn" class="button-link yes" onClick="vote('yes');">
+                                Buy it
+                        </button>
+                    </div>
+                    <div id="right-content">
+                        <button id="noBtn" class="button-link no" onClick="vote('no');">
+                                Skip it
+                        </button>
+                    </div>
+                </div>  
+                <div id="result" style="display: none">
+                    <h1><span></span>%</h1>
+                    say buy it!
                 </div>
-            </div>  
+            </div>
         </div>
 
         <div id="comments-div">
-            <h2 id="BAR" class="hidden">Tell {{asker_name}} Why Your Voted!</h2>
+            <h2 id="BAR" class="hidden">
+                <span class="yes">
+                    Tell {{asker_name}} why you voted YES. 
+                </span>
+                <span class="no">
+                    Tell {{asker_name}} why you voted NO. 
+                </span>
+            </h2>
             <script>(function(d, s, id) {
               var js, fjs = d.getElementsByTagName(s)[0];
               if (d.getElementById(id)) {return;}
@@ -217,6 +268,11 @@
                 
             <div id="fb-root"></div>
             <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="575"></div>
+        </div>
+        <div id="share_again">
+            <p>
+                Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
+            </p>
         </div>
 
     </div>
