@@ -223,6 +223,7 @@ def get_product_imgs(store_url, store_token, app_type):
     url      = '%s/admin/products.json' % (store_url)
     
     # eventually this will be:
+    # TODO: THIS V
     #SHOPIFY_APPS[app]['api_key']
     if app_type == "referral":
         username = REFERRAL_SHOPIFY_API_KEY

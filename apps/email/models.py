@@ -85,6 +85,33 @@ class Email():
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
+    @staticmethod
+    def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):
+        if name == "":
+            name = "Savvy Shopper"
+        subject = '%s the votes are in!' % name
+
+        buy_it_percentage = int((yesses / (yesses + noes)) * 100)
+
+        if yesses > noes:
+            buy_it = True
+        else:
+            buy_it = False
+
+        body = template.render(
+            Email.template_path('sibt_voteCompletion.html'), {
+                'name': name,
+                'product_url': url,
+                'product_img': product_img,
+                'yesses': yesses,
+                'noes': noes,
+                'buy_it': buy_it,
+                'buy_it_percentage': buy_it_percentage
+        })
+
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+
     @staticmethod 
     def template_path(path):
         return os.path.join('apps/email/templates/', path)

@@ -38,13 +38,15 @@
                 shareText = document.getElementById('share-text'),
                 charsLeft = document.getElementById('chars-left');
 
-                if ( FB ) {
+                if (FB) {
                     FB.init({ appId: '{{FACEBOOK_APP_ID}}',
                         status: true,
                         cookie: true,
                         xfbml: true,
                         oauth: true
                     });
+                } else {
+                    console.log("Facebook not ready!");    
                 }
         
                 // clear the share text
@@ -52,19 +54,23 @@
                     console.log("Sharing complete!");
                     toggleThanks();
 
-                    $.ajax({url: "/s/startInstance",
-                            type: 'post',
-                            data: { app_uuid    : "{{app.uuid}}",
-                                    willt_code  : "{{willt_code}}",
-                                    product_img : "{{productImg}}" },
-                            success: function (tr) {
-                            }
+                    $.ajax({
+                        url: "/s/startInstance",
+                        type: 'post',
+                        data: {
+                            app_uuid: "{{app.uuid}}",
+                            willt_code: "{{willt_code}}",
+                            product_img : "{{productImg}}" },
+                        success: function (tr) {
+                            // pass
+                            console.log(tr);
+                        }
                     });
 
                     return true;
                 };
             
-                clearText = function( elem ) {
+                clearText = function(elem) {
                     elem.value = "";
                 };
  
@@ -88,26 +94,24 @@
                                     }
                                 }
                         });
-                    },
-                    uid = uid || '';
+                    };
+                    var uid = uid || '';
                     var message = shareText.value.substring(0,141);
                     if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
                         // initiate facebook login event if requested
                         if (medium === 'fb') {
-                            var fbData = { msg: message, 
-                                           wcode: '{{willt_code}}', 
-                                           img: '{{productImg}}', 
-                                           name: '{{productName}}',
-                                           desc: '{{productDesc}}' };
+                            var fbData = {
+                                msg: message, 
+                                wcode: '{{willt_code}}', 
+                                img: '{{productImg}}', 
+                                name: '{{productName}}',
+                                desc: '{{productDesc}}'
+                            };
                             // first attempt server-provided token
                             if (userFound) {
                                 fb_share_handler(fbData)
                                 return;
                             } else {
-                                if (!FB) {
-                                    alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
-                                    return;
-                                }
                                 FB.login(function(lr) {
                                         console.log(lr);
                                         if (!lr.authResponse) {

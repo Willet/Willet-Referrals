@@ -78,20 +78,30 @@ class ClickAction( Action ):
         Currently used for 'Referral' and 'SIBT' Apps """
     
     def __init__(self, *args, **kwargs):
+        super(ClickAction, self).__init__(*args, **kwargs)
 
         # Tell Mixplanel that we got a click
         try:
-            taskqueue.add( queue_name = 'mixpanel', 
-                       url        = '/mixpanel', 
-                       params     = {'event'    : 'Clicks', 
-                                     'app_uuid' : kwargs['app_'].uuid } )
+            taskqueue.add(
+                queue_name = 'mixpanel', 
+                url        = '/mixpanel/action', 
+                params     = {
+                    'event': self.class_name(), 
+                    'app' : self.app_.uuid,
+                    'target_url': self.link.target_url,
+                    'user': self.user.get_name_or_handle(),
+                    'user_uuid': self.user.uuid
+                }
+            )
         except:
-            # who tf cares about mixpanel anyways
             pass
-        super(ClickAction, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return 'CLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'CLICK: %s(%s) %s' % (
+                self.user.get_full_name(),
+                self.user.uuid,
+                self.app_.uuid
+        )
 
 def create_click_action( user, app, link ):
     # Make the action
@@ -123,23 +133,29 @@ class SIBTClickAction( ClickAction ):
 def create_sibt_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
-    act  = SIBTClickAction( key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = app,
-                            link     = link,
-                            url      = link.target_url,
-                            sibt_instance = link.sibt_instance.get() )
+    act  = SIBTClickAction(
+        key_name = uuid,
+        uuid = uuid,
+        user = user,
+        app_ = app,
+        link = link,
+        url = link.target_url,
+        sibt_instance = link.sibt_instance.get()
+    )
     act.put()
 
     return act
 
 ## Accessors -------------------------------------------------------------------
 def get_sibt_click_actions_by_user_for_url( user, url ):
-    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
+    return SIBTClickAction.all()\
+            .filter('user =', user)\
+            .filter('url =', url)
 
 def get_sibt_click_actions_by_user_and_link( user, url ):
-    return SIBTClickAction.all().filter( 'user =', user ).filter( 'url =', url )
+    return SIBTClickAction.all()\
+            .filter('user =', user)\
+            .filter('url =', url)
 
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
@@ -150,19 +166,22 @@ class VoteAction( Action ):
     
     def __init__(self, *args, **kwargs):
         # Tell Mixplanel that we got a vote
+        super(VoteAction, self).__init__(*args, **kwargs)
         try:
             taskqueue.add(
                 queue_name = 'mixpanel', 
-                url        = '/mixpanel', 
+                url        = '/mixpanel/action', 
                 params     = {
-                    'event'    : 'Votes', 
-                    'app_uuid' : kwargs['app_'].uuid
+                    'event': self.class_name(), 
+                    'app' : self.app_.uuid,
+                    'target_url': self.link.target_url,
+                    'user': self.user.get_name_or_handle(),
+                    'user_uuid': self.user.uuid
                 }
             )
         except:
             pass
 
-        super(VoteAction, self).__init__(*args, **kwargs)
     
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
@@ -189,7 +208,7 @@ class SIBTVoteAction( VoteAction ):
     sibt_instance = db.ReferenceProperty( db.Model, collection_name="vote_actions" )
 
     # URL that was voted on
-    url           = db.LinkProperty( indexed = True )
+    url = db.LinkProperty( indexed = True )
 
     def __str__(self):
         return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)

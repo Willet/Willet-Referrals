@@ -28,7 +28,7 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 # SIBT Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class SIBT( App ):
+class SIBT(App):
     """Model storing the data for a client's 'Should I Buy This?' app"""
     emailed_at_10 = db.BooleanProperty( default = False )
    
@@ -55,7 +55,7 @@ class SIBT( App ):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance( self, user, end, link, img ):
+    def create_instance(self, user, end, link, img):
         # Make the properties
         uuid = generate_uuid( 16 )
 
@@ -170,21 +170,24 @@ class SIBTInstance( Model ):
         memcache.incr(self.uuid+"VoteCounter_nos")
 
 # Accessor ---------------------------------------------------------------------
-def get_sibt_instance_by_asker_for_url( user, url ):
+def get_sibt_instance_by_asker_for_url(user, url, only_live=True):
     return SIBTInstance.all()\
-            .filter('is_live =', True)\
+            .filter('is_live =', only_live)\
             .filter('asker =', user)\
             .filter('url =', url)\
             .get()
 
-def get_sibt_instance_by_link( link ):
+def get_sibt_instance_by_link(link, only_live=True):
     return SIBTInstance.all()\
-            .filter('is_live =', True)\
+            .filter('is_live =', only_live)\
             .filter('link =', link)\
             .get()
 
-def get_sibt_instance_by_uuid( uuid ):
-    return SIBTInstance.all().filter('uuid =', uuid).get()
+def get_sibt_instance_by_uuid(uuid, only_live=True):
+    return SIBTInstance.all()\
+            .filter('is_live =', only_live)\
+            .filter('uuid =', uuid)\
+            .get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------

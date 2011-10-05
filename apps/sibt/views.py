@@ -8,6 +8,7 @@ import re, urllib
 from django.utils               import simplejson as json
 from google.appengine.api       import urlfetch
 from google.appengine.api       import memcache
+from google.appengine.api       import taskqueue 
 from google.appengine.ext       import webapp
 from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -85,6 +86,18 @@ class AskDynamicLoader(webapp.RequestHandler):
                 'user_found': str(user_found).lower(),
         }
 
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event'    : 'ShowingAskIframe', 
+                'app' : app.uuid,
+                'user': user.get_name_or_handle(),
+                'taret_url': target,
+                'user_uuid': user.uuid
+            }
+        )
+
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
         self.response.out.write(template.render(path, template_values))
@@ -93,7 +106,6 @@ class AskDynamicLoader(webapp.RequestHandler):
 class VoteDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-    
     def get(self):
         template_values = {}
         page_url = urlparse(self.request.get('url'))
@@ -139,43 +151,67 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
         logging.info("Did we get an instance? %s" % instance)
 
-        name = instance.asker.get_full_name()
-        is_asker = (instance.asker.key() == user.key())
-        vote_action = SIBTVoteAction.all()\
-                .filter('app_ =', app)\
-                .filter('sibt_instance =', instance)\
-                .filter('user =', user)\
-                .get()
-        logging.info('got vote action: %s' % vote_action)
-        has_voted = (vote_action != None)
+        if instance.is_live:
+            name = instance.asker.get_full_name()
+            is_asker = (instance.asker.key() == user.key())
+            vote_action = SIBTVoteAction.all()\
+                    .filter('app_ =', app)\
+                    .filter('sibt_instance =', instance)\
+                    .filter('user =', user)\
+                    .get()
+            logging.info('got vote action: %s' % vote_action)
+            has_voted = (vote_action != None)
 
-        link = instance.link
-        share_url = '%s/%s' % (
-            URL,
-            link.willt_url_code
+            link = instance.link
+            share_url = '%s/%s' % (
+                URL,
+                link.willt_url_code
+            )
+
+            template_values = {
+                    'product_img' : self.request.get( 'photo' ),
+                    'app' : app,
+                    'URL': URL,
+                    
+                    'user': user,
+                    'asker_name' : name if name != '' else "your friend",
+                    'asker_pic' : instance.asker.get_attr('pic'),
+                    'fb_comments_url' : '%s/%s' % (target, instance.uuid),
+
+                    'share_url': share_url,
+                    'is_asker' : is_asker,
+                    'instance' : instance,
+                    'has_voted': has_voted,
+
+                    'yesses': instance.get_yesses_count(),
+                    'noes': instance.get_nos_count()
+            }
+
+            # Finally, render the HTML!
+            path = os.path.join('apps/sibt/templates/', 'vote.html')
+        else:
+            template_values = {
+                'output': 'Vote is over'        
+            }
+            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
+
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event': 'ShowingVoteIframe', 
+                'app': app.uuid,
+                'user': user.get_name_or_handle(),
+                'taret_url': target,
+                'user_uuid': user.uuid,
+                'extra': 'What are we showing? %s\nIs this the asker? %s\nHave they voted? %s' % (
+                    path,
+                    is_asker,
+                    has_voted,
+                )
+            }
         )
 
-        template_values = {
-                'product_img' : self.request.get( 'photo' ),
-                'app' : app,
-                'URL': URL,
-                
-                'user': user,
-                'asker_name' : name if name != '' else "your friend",
-                'asker_pic' : instance.asker.get_attr('pic'),
-                'fb_comments_url' : '%s/%s' % (target, instance.uuid),
-
-                'share_url': share_url,
-                'is_asker' : is_asker,
-                'instance' : instance,
-                'has_voted': has_voted,
-
-                'yesses': instance.get_yesses_count(),
-                'noes': instance.get_nos_count()
-        }
-
-        # Finally, render the HTML!
-        path = os.path.join('apps/sibt/templates/', 'vote.html')
         self.response.out.write(template.render(path, template_values))
         return
 

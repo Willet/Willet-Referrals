@@ -184,8 +184,8 @@ var _willet_run_scripts = function() {
         button.innerText = 'See what your friends said';
         button.innerHTML = 'See what your friends said';
     } else {
-        button.innerText = 'Not Sure?<br />Ask your friends';
-        button.innerHTML = 'Not Sure?<br />Ask your friends'; 
+        button.innerText = 'Not Sure?&nbsp;Ask your friends!';
+        button.innerHTML = 'Not Sure?&nbsp;Ask your friends!'; 
     }
    
     button.setAttribute('class', 'button');
