@@ -92,7 +92,15 @@ class AppShopify(Model):
                 headers = header
             )
             logging.info('%r %r' % (resp, content)) 
-
+            if int(resp.status) == 401:
+                Email.emailBarbara(
+                    '%s WEBHOOK INSTALL FAILED\n%s\n%s' % (
+                        self.class_name(),
+                        resp,
+                        content
+                    )        
+                )
+        logging.info('installed %d webhooks' % len(webhooks))
         
     def install_script_tags(self, script_tags=None):
         """ Install our script tags onto the Shopify store """
@@ -128,4 +136,13 @@ class AppShopify(Model):
                 headers = header
             )
             logging.info('%r %r' % (resp, content))
+            if int(resp.status) == 401:
+                Email.emailBarbara(
+                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
+                        self.class_name(),
+                        resp,
+                        content
+                    )        
+                )
+        logging.info('installed %d script_tags' % len(script_tags))
 
