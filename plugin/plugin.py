@@ -163,7 +163,6 @@ class DynamicSocialLoader(webapp.RequestHandler):
     
 
 class TwitterOAuthHandler(webapp.RequestHandler):
-    
     def get(self, action=''):
         
         service = 'twitter' # hardcoded because we aded the linkedin handler
@@ -226,12 +225,11 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
             # share and update user model from linkedin
             linkedin_share_url, res = user.linkedin_share(rq_vars['m'])
 
-            # If we are on a shopify store, add a gift to the order
-            if link.app_.__class__.__name__.lower() == 'referralapp':
-                add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
-
             link = get_link_by_willt_code(rq_vars['wcode'])
             if link:
+                # If we are on a shopify store, add a gift to the order
+                if link.app_.__class__.__name__.lower() == 'referralapp':
+                    add_referrer_gift_to_shopify_order( rq_vars['order_id'] )
                 create_testimonial(user, rq_vars['m'], link) 
                 link.user = user
                 self.response.headers.add_header("Content-type", 'text/javascript')
@@ -297,7 +295,7 @@ class SendEmailInvites(webapp.RequestHandler):
                 link.app_.increment_shares()
                 
         # Save this Testimonial
-        create_testimonial(
+        create_testimonial (
                 user=user, 
                 message=msg,
                 link=link
@@ -338,12 +336,13 @@ class FacebookCallback( webapp.RequestHandler ):
 =======
         # If we are on a shopify store, add a gift to the order
         if link.app_.__class__.__name__.lower() == 'referralshopify':
-            add_referrer_gift_to_shopify_order( order_id )
+            add_referrer_gift_to_shopify_order(order_id)
 
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app_)
 >>>>>>> c9d88c8134abbba968b9741a76b22d40f224862c
+
 
 class FacebookShare(webapp.RequestHandler):
     """This handler attempts to share a status message for a given user
