@@ -36,7 +36,7 @@
             var calculatePercent = function() {
                 var total = yesses + noes; 
                 var value = Math.round(parseFloat(yesses/total)*100);
-                if (value === NaN) {
+                if (isNaN(value)) {
                     value = 0;
                 }
                 return value;
