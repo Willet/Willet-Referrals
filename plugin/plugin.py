@@ -293,60 +293,23 @@ class SendEmailInvites(webapp.RequestHandler):
             
             for i in range(0, to_addrs.count(',')):
                 link.app_.increment_shares()
-        # TODO: fix this
-        # throws a syntax error.
-        # too tired and busy to fix
-        """        
+                
         # Save this Testimonial
         try:
             create_testimonial(user=user, message=msg, link=link)
         except Exception:
             logging.error('wtf', exc_info=True)
 
-<<<<<<< HEAD
-class FacebookCallback( webapp.RequestHandler ):
-    
-    def post( self ):
-        rq_vars = get_request_variables(['fb_id', 'fb_token', 'wcode'], self);
-        
-        # check to see if this user has a referral cookie set
-        referrer_code = self.request.cookies.get('referral', None)
-        referrer = None
-        logging.info(referrer_code)
-        if referrer_code:
-            referral_link = get_link_by_willt_code(referrer_code)
-            if referral_link and referral_link.user:
-                referrer = referral_link.user
-        
-        # Grab the User!
-        user = get_or_create_user_by_facebook(rq_vars['fb_id'], 
-                                              token=rq_vars['fb_token'],
-                                              request_handler=self)
-        
-        # Grab the Link & update it!
-        link = get_link_by_willt_code(rq_vars['wcode'])
-        if link:
-            link.user = user
-            link.facebook_share_id = rq_vars['share_id']
-            link.save()
-            
-            link.campaign.increment_shares()
-            
-            # Save this Testimonial
-            create_testimonial(user=user, message=rq_vars['msg'], link=link)
-
-=======
         # If we are on a shopify store, add a gift to the order
         try:
             if link.app_.class_name().lower() == 'referralshopify':
                 add_referrer_gift_to_shopify_order(order_id)
         except:
             logging.error('fuck thsi shit', exc_info=True)
-        """
+
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
             Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app_)
->>>>>>> c9d88c8134abbba968b9741a76b22d40f224862c
 
 
 class FacebookShare(webapp.RequestHandler):
