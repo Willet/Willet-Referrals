@@ -262,9 +262,8 @@ class LinkedInOAuthHandler(webapp.RequestHandler):
                 self.response.out.write(client.login())
     
 
-class SendEmailInvites( webapp.RequestHandler ):
-    
-    def post( self ):
+class SendEmailInvites(webapp.RequestHandler):
+    def post(self):
         from_addr = self.request.get( 'from_addr' )
         to_addrs  = self.request.get( 'to_addrs' )
         msg       = self.request.get( 'msg' )
@@ -298,7 +297,11 @@ class SendEmailInvites( webapp.RequestHandler ):
                 link.app_.increment_shares()
                 
         # Save this Testimonial
-        create_testimonial(user=user, message=msg, link=link)
+        create_testimonial(
+                user=user, 
+                message=msg,
+                link=link
+        )
 
         # If we are on a shopify store, add a gift to the order
         if link.app_.__class__.__name__.lower() == 'referralshopify':
@@ -375,7 +378,6 @@ class FacebookShare(webapp.RequestHandler):
         else: # no user found
             logging.error('user facebook info not found')
             self.response.out.write('notfound')
-
 
 def main():
     application = webapp.WSGIApplication([
