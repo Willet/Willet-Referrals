@@ -295,11 +295,10 @@ class SendEmailInvites(webapp.RequestHandler):
                 link.app_.increment_shares()
                 
         # Save this Testimonial
-        create_testimonial (
-                user=user, 
-                message=msg,
-                link=link
-        )
+        try:
+            create_testimonial(user=user, message=msg, link=link)
+        except Exception:
+            logging.error('wtf', exc_info=True)
 
         # If we are on a shopify store, add a gift to the order
         if link.app_.__class__.__name__.lower() == 'referralshopify':
