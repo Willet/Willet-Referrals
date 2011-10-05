@@ -129,6 +129,21 @@ class RenameFacebookData(webapp.RequestHandler):
             logging.info(user)
             logging.info(user.uuid)
 
+class ImportPlugin(URIHandler):
+    def get(self):
+        
+        try: 
+            from plugin.plugin import * 
+            logging.error('plugin')
+            logging.error(LinkedInOAuthHandler)
+        except:
+            logging.error('err', exc_info=True)
+        self.response.out.write(self.render_page(
+                'routes.html',
+                {},
+            )
+        )
+
 class ShowRoutes(URIHandler):
     def format_route(self, route):
         url = route[0]
