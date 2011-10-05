@@ -22,7 +22,7 @@ KEYS                = os.environ['HTTP_HOST']
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID  = '28e530db44bf45e5'
 LANDING_CAMPAIGN_STORE = '962072'
-FACEBOOK_QUERY_URL='https://graph.facebook.com/'
+FACEBOOK_QUERY_URL = 'https://graph.facebook.com/'
 TWITTER_SEARCH_URL = 'http://search.twitter.com/search.json?'
 
 # Twitter Stuff
