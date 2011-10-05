@@ -301,8 +301,11 @@ class SendEmailInvites(webapp.RequestHandler):
             logging.error('wtf', exc_info=True)
 
         # If we are on a shopify store, add a gift to the order
-        if link.app_.class_name().lower() == 'referralshopify':
-            add_referrer_gift_to_shopify_order(order_id)
+        try:
+            if link.app_.class_name().lower() == 'referralshopify':
+                add_referrer_gift_to_shopify_order(order_id)
+        except:
+            logging.error('fuck thsi shit', exc_info=True)
 
         # Send off the email if they don't want to use a webmail client
         if via_willet and to_addrs != '':
