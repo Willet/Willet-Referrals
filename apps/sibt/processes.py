@@ -6,8 +6,8 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 from datetime import datetime 
 from datetime import timedelta
 
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import template, db, webapp
+from google.appengine.ext import webapp, db
+from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import taskqueue
 
@@ -101,9 +101,9 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             instance.put()
             return instance
         
-        rq = get_request_variables(['instance_uuid'], self) 
+        instance_uuid = self.request.get('instance_uuid')
         instance = SIBTInstance.all()\
-                .filter('uuid =', rq['instance_uuid'])\
+                .filter('uuid =', instance_uuid)\
                 .get()
         if instance != None:
             result_instance = db.run_in_transaction(txn, instance)
@@ -118,9 +118,9 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
                     result_instance.get_nos_count()
                 )
         else:
-            logging.error(
+            logging.error (
                     "could not get instance for uuid %" % 
-                    rq['instance_uuid']
+                    instance_uuid
             )
         logging.info('done expiring')
 

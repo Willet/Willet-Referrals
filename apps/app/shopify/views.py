@@ -45,7 +45,7 @@ class ShopifyRedirect( URIHandler ):
             if 'http' not in shopify_url:
                 shopify_url = 'http://%s' % shopify_url
             
-            logging.info('asd')
+            #logging.info('asd')
             # Get the store or create a new one
             client = get_or_create_shopify_store(shopify_url, store_token, self, app)
             
@@ -63,9 +63,12 @@ class ShopifyRedirect( URIHandler ):
             # Cache the client!
             self.db_client = client
 
-        # @todo write a smart importer here so we don't have to hardcode these
+        # TODO write a smart importer here so we don't have to hardcode these
         # self.redirect(reverse(app+'Welcome'))
-        if app == 'referral':
+        redirect_url = url('%sWelcome' % app)
+        if url != None:
+            self.redirect('%s?%s' % (redirect_url, self.request.query_string))
+        elif app == 'referral':
             logging.info("GOING TO EDIT")
             self.redirect('/r/shopify?%s' % self.request.query_string)
         elif app == 'sibt':

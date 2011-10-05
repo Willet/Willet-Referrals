@@ -13,59 +13,118 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from util.consts import *
 
-class SendToMixpanel( webapp.RequestHandler ):
-    
-    def post( self ):
-        event          = self.request.get( 'event' )
-        campaign_uuid  = self.request.get( 'campaign_uuid' )
-        twitter_handle = self.request.get( 'twitter_handle' )
-        user_id        = self.request.get( 'supplied_user_id' )
-        num            = self.request.get( 'num' )
+class SendActionToMixpanel(webapp.RequestHandler):
+    def post(self):
+        event = self.request.get('event')
+        app = self.request.get('app')
+        user = self.request.get('user')
+        target_url = self.request.get('target_url')
+        user_uuid = self.request.get('user_uuid')
+        extra = self.request.get('extra')
+
+        data = {
+            'token': MIXPANEL_TOKEN,
+            'user': user,
+            'app': app,
+            'target_url': target_url,
+            'distinct_id': user_uuid,
+            'extra': extra
+        }
+
+        params = {
+            "event": "%s_%s_%s" % (
+                event,
+                app,
+                user),
+            "properties": data
+        }
+        payload = base64.b64encode(json.dumps(params))
+
+        # Save the campaign data in a bucket
+        result = urlfetch.fetch(
+            url = '%sdata=%s' % (MIXPANEL_API_URL, payload),
+            method  = urlfetch.GET,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        return
+
+class SendToMixpanel(webapp.RequestHandler):
+    def post(self):
+        event          = self.request.get('event')
+        campaign_uuid  = self.request.get('campaign_uuid')
+        twitter_handle = self.request.get('twitter_handle')
+        user_id        = self.request.get('supplied_user_id')
+        num            = self.request.get('num' )
 
         user = twitter_handle if twitter_handle != '' else user_id
 
         # ----------------------------------------------------------------------
         # Store the Per-User Data
-        data = { 'token'    : MIXPANEL_TOKEN,
-                 'user'     : user,
-                 'campaign' : campaign_uuid,
-                 'bucket'   : campaign_uuid }
+        data = {
+            'token': MIXPANEL_TOKEN,
+            'user': user,
+            'campaign': campaign_uuid,
+            'bucket': campaign_uuid
+        }
 
-        params = {"event": "%s_%s_%s" % (event, campaign_uuid, user), "properties": data}
+        params = {
+            "event": "%s_%s_%s" % (
+                event,
+                campaign_uuid,
+                user),
+            "properties": data
+        }
         payload = base64.b64encode(json.dumps(params))
 
         # Save the campaign data in a bucket
-        result = urlfetch.fetch( url     = '%sdata=%s' % (MIXPANEL_API_URL, payload),
-                                 method  = urlfetch.GET,
-                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
+        result = urlfetch.fetch(
+            url = '%sdata=%s' % (MIXPANEL_API_URL, payload),
+            method  = urlfetch.GET,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
         
         # ----------------------------------------------------------------------
         # Store the Per-Campaign data
-        data = { 'token'    : MIXPANEL_TOKEN,
-                 'user'     : user,
-                 'campaign' : campaign_uuid,
-                 'bucket'   : campaign_uuid }
+        data = {
+            'token': MIXPANEL_TOKEN,
+            'user': user,
+            'campaign': campaign_uuid,
+            'bucket': campaign_uuid
+        }
 
-        params = {"event": "%s_%s" % (event,campaign_uuid), "properties": data}
+        params = {
+            "event": "%s_%s" % (
+                event,
+                campaign_uuid), 
+            "properties": data
+        }
         payload = base64.b64encode(json.dumps(params))
 
         # Save the campaign data in a bucket
-        result = urlfetch.fetch( url     = '%sdata=%s' % (MIXPANEL_API_URL, payload),
-                                 method  = urlfetch.GET,
-                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
+        result = urlfetch.fetch(
+            url = '%sdata=%s' % (
+                MIXPANEL_API_URL,
+                payload),
+            method  = urlfetch.GET,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
 
         # ----------------------------------------------------------------------
         # Now, save the data for us to see
-        data = { 'token'    : MIXPANEL_TOKEN,
-                 'user'     : user,
-                 'campaign' : campaign_uuid }
+        data = {
+            'token': MIXPANEL_TOKEN,
+            'user': user,
+            'campaign': campaign_uuid
+        }
 
         params = {"event": "%s" % (event), "properties": data}
         payload = base64.b64encode(json.dumps(params))
 
-        result = urlfetch.fetch( url     = '%sdata=%s' % (MIXPANEL_API_URL, payload),
-                                 method  = urlfetch.GET,
-                                 headers = {'Content-Type': 'application/x-www-form-urlencoded'} )
-
-
+        result = urlfetch.fetch(
+            url = '%sdata=%s' % (
+                MIXPANEL_API_URL,
+                payload),
+            method = urlfetch.GET,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
 

@@ -2,8 +2,7 @@
 from apps.sibt.shopify.views     import *
 
 urlpatterns = [
-
-    (r'/s/shopify',             ShowWelcomePage),
+    (r'/s/shopify',             SIBTShopifyWelcome),
     (r'/s/shopify/beta',        ShowBetaPage),
     (r'/s/shopify/code',        ShowCodePage),
     (r'/s/shopify/edit',        ShowEditPage),

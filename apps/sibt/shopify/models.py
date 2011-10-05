@@ -32,9 +32,34 @@ class SIBTShopify(SIBT, AppShopify):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
+    
+    def do_install(self):
+        """Installs this instance"""
+        data = [{
+            "script_tag": {
+                "src": "%s/s/shopify/sibt.js?store_id=%s&store_url=%s" % (
+                    URL,
+                    self.store_id,
+                    self.store_url
+                ),
+                "event": "onload"
+            }
+        }]
+        # Install yourself in the Shopify store
+        self.install_webhooks()
+        self.install_script_tags(script_tags=data)
+
+        # Email Barbara
+        Email.emailBarbara(
+            'SIBT Install: %s %s %s' % (
+                self.uuid, 
+                self.client.name, 
+                self.store_url 
+            )
+        )
 
 # Constructor ------------------------------------------------------------------
-def create_sibt_shopify_app( client ):
+def create_sibt_shopify_app(client):
 
     uuid = generate_uuid( 16 )
     app = SIBTShopify( key_name    = uuid,
@@ -46,55 +71,54 @@ def create_sibt_shopify_app( client ):
                        store_token = client.token )
     app.put()
     
-    data = {
-        "script_tag": {
-            "src": "%s/s/shopify/sibt.js?store_id=%s" % (
-                URL,
-                app.store_id
-            ),
-            "event": "onload"
-        }
-    }      
-    # Install yourself in the Shopify store
-    app.install_webhooks()
-    app.install_script_tags(script_tags=data)
-
-    # Email Barbara
-    Email.emailBarbara('SIBT Install: %s %s %s' % (uuid, client.name, client.url))
-    
+    app.do_install()
+     
     return app
 
 # Accessors --------------------------------------------------------------------
-def get_or_create_sibt_shopify_app(client, only_live=True):
+def get_or_create_sibt_shopify_app(client, token=None):
     #app = get_sibt_shopify_app_by_store_id( client.id )
-    app = get_sibt_shopify_app_by_store_url(client.url, only_live=only_live)
+    app = get_sibt_shopify_app_by_store_url(client.url)
     if app is None:
         app = create_sibt_shopify_app( client )
+    elif token != None and token != '':
+        if app.store_token != token:
+            # TOKEN mis match, this might be a re-install
+            logging.warn(
+                'We are going to reinstall this app because the stored token \
+                does not match the request token\n%s vs %s' % (
+                    app.store_token,
+                    token
+                )
+            ) 
+            try:
+                app.store_token = token
+                app.put()
+                app.do_install()
+            except:
+                logging.error('encountered error with reinstall', exc_info=True)
     return app
 
-def get_sibt_shopify_app_by_uuid(id, only_live=True):
+def get_sibt_shopify_app_by_uuid(id):
     """ Fetch a Shopify obj from the DB via the uuid"""
     logging.info("Shopify: Looking for %s" % id)
     return SIBTShopify.all()\
-            .filter('is_live =', only_live)\
             .filter('uuid =', id)\
             .get()
 
-def get_sibt_shopify_app_by_store_url(url, only_live=True):
+def get_sibt_shopify_app_by_store_url(url):
     """ Fetch a Shopify obj from the DB via the store's url"""
     logging.info("Shopify: Looking for %s" % url)
     return SIBTShopify.all()\
-            .filter('is_live =', only_live)\
             .filter('store_url =', url)\
             .get()
 
-def get_sibt_shopify_app_by_store_id(id, only_live=True):
+def get_sibt_shopify_app_by_store_id(id):
     """ Fetch a Shopify obj from the DB via the store's id"""
     # TODO: DEPRECATE THIS METHOD
     logging.info("Shopify: Looking for %s" % id)
     return SIBTShopify.all()\
-            .filter('is_live =', only_live)\
-            .filter( 'store_id =', id )\
+            .filter('store_id =', id)\
             .get()
 
 # Shopify API Calls ------------------------------------------------------------

@@ -18,6 +18,7 @@ from google.appengine.ext import db
 #from google.appengine.ext.db import polymodel
 
 from apps.app.models import App
+from apps.email.models import Email
 
 from util.consts          import *
 from util                 import httplib2

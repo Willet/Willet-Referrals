@@ -33,12 +33,13 @@ class ShowBetaPage(URIHandler):
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
-class ShowWelcomePage(URIHandler):
+class SIBTShopifyWelcome(URIHandler):
     def get( self ):
         client = self.get_client() # May be None
        
         # TODO: put this somewhere smarter
-        app = get_or_create_sibt_shopify_app(client)
+        token = self.request.get('t') # token
+        app = get_or_create_sibt_shopify_app(client, token=token)
         
         shop_owner = 'Shopify Merchant'
         if client != None:
@@ -246,15 +247,31 @@ class DynamicLoader(webapp.RequestHandler):
                 instance   = actions[0].sibt_instance
                 if instance.is_live:
                     show_votes = 1
-
-            for action in actions:
-                inst = action.sibt_instance
-                another_instance = {}
-                another_instance['code'] = inst.link.willt_url_code
-                another_instance['user_name'] = inst.asker.get_full_name()
-                another_instance['user_pic'] = inst.asker.get_attr('pic')
-                other_instances.append(another_instance)
             
+            #for action in actions:
+            #    inst = action.sibt_instance
+            #    another_instance = {}
+            #    another_instance['code'] = inst.link.willt_url_code
+            #    another_instance['user_name'] = inst.asker.get_full_name()
+            #    another_instance['user_pic'] = inst.asker.get_attr('pic')
+            #    other_instances.append(another_instance)
+            
+            taskqueue.add(
+                queue_name = 'mixpanel', 
+                url = '/mixpanel/action', 
+                params = {
+                    'event': 'ShowingSIBTButton', 
+                    'app': app.uuid,
+                    'user': user.get_name_or_handle(),
+                    'taret_url': target,
+                    'user_uuid': user.uuid,
+                    'extra': 'Is this the asker? %s\nAre we auto-showing? %s' % (
+                        is_asker,
+                        show_votes,
+                    )
+                }
+            )
+
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,

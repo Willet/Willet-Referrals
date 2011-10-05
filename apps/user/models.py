@@ -121,6 +121,12 @@ class User( db.Expando ):
         #    create_email_model( self, kwargs['email'] )
        
         super(User, self).__init__(*args, **kwargs)
+    
+    def get_name_or_handle(self):
+        name = self.get_handle()
+        if name == None:
+            name = self.get_full_name()
+        return name
 
     def get_first_name(self):
         fname = None
@@ -188,6 +194,9 @@ class User( db.Expando ):
         elif hasattr(self, 'fb_name') and\
             (service == 'facebook' or service == None):
             handle = self.fb_name
+        elif hasattr(self, 'fb_username') and\
+            (service == 'facebook' or service == None):
+                handle = self.fb_username
         else:
             handle = self.get_attr('email')
 

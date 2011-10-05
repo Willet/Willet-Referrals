@@ -4,6 +4,7 @@ from apps.mixpanel.processes import *
 
 urlpatterns = [
     # processes
+    (r'/mixpanel/action', SendActionToMixpanel),    
     (r'/mixpanel', SendToMixpanel),    
 ]
 

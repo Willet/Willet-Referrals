@@ -8,6 +8,7 @@ import re, urllib
 from django.utils               import simplejson as json
 from google.appengine.api       import urlfetch
 from google.appengine.api       import memcache
+from google.appengine.api       import taskqueue 
 from google.appengine.ext       import webapp
 from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -85,6 +86,18 @@ class AskDynamicLoader(webapp.RequestHandler):
                 'user_found': str(user_found).lower(),
         }
 
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event'    : 'ShowingAskIframe', 
+                'app' : app.uuid,
+                'user': user.get_name_or_handle(),
+                'taret_url': target,
+                'user_uuid': user.uuid
+            }
+        )
+
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
         self.response.out.write(template.render(path, template_values))
@@ -93,7 +106,6 @@ class AskDynamicLoader(webapp.RequestHandler):
 class VoteDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-    
     def get(self):
         template_values = {}
         page_url = urlparse(self.request.get('url'))
@@ -182,6 +194,24 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 'output': 'Vote is over'        
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
+
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event': 'ShowingVoteIframe', 
+                'app': app.uuid,
+                'user': user.get_name_or_handle(),
+                'taret_url': target,
+                'user_uuid': user.uuid,
+                'extra': 'What are we showing? %s\nIs this the asker? %s\nHave they voted? %s' % (
+                    path,
+                    is_asker,
+                    has_voted,
+                )
+            }
+        )
+
         self.response.out.write(template.render(path, template_values))
         return
 
