@@ -29,7 +29,8 @@ img {
 }
 #img-div {
     float: left;
-    margin-right: 30px;
+    width: 290px;
+    margin-right: 10px;
 }
 
 #img-div img {
@@ -71,6 +72,10 @@ img {
     padding-top: 10px;
     clear: both;
 }
+#top-right {
+    float: left;
+    width: 300px;
+}
 #asker_title {
     padding-bottom: 30px;
 }
@@ -86,7 +91,7 @@ img {
 #asker_title p {
     text-align: left;
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
 }
 #result h1 {
     font-size: 50pt;

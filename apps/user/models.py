@@ -247,7 +247,7 @@ class User( db.Expando ):
                 else: 
                     self.ips = [ kwargs['ip'] ]
 
-            elif kwargs[k] != '' and kwargs[k] != None:
+            elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
                 #logging.info("Adding %s %s" % (k, kwargs[k]))
                 setattr( self, k, kwargs[k] )
         self.put()
@@ -1065,7 +1065,10 @@ def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None
     logging.info('get_or_create_user: %s' % linkedin_id)
     return user
 
-def get_or_create_user_by_facebook(fb_id, first_name='', last_name='', name='', email='', referrer=None, verified=None, gender='', token='', would_be=False, friends=[], request_handler=None):
+def get_or_create_user_by_facebook(
+        fb_id, first_name='', last_name='', name='', email='', referrer=None, 
+        verified=None, gender='', token='', would_be=False, friends=[], 
+        request_handler=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
      
