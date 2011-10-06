@@ -293,7 +293,7 @@ class SendEmailInvites(webapp.RequestHandler):
             
             for i in range(0, to_addrs.count(',')):
                 link.app_.increment_shares()
-                
+
         # Save this Testimonial
         try:
             create_testimonial(user=user, message=msg, link=link)

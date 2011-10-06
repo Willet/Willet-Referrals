@@ -35,7 +35,11 @@
 
             var calculatePercent = function() {
                 var total = yesses + noes; 
-                return Math.round(parseFloat(yesses/total)*100);
+                var value = Math.round(parseFloat(yesses/total)*100);
+                if (isNaN(value)) {
+                    value = 0;
+                }
+                return value;
             };
 
             $(document).ready(function() {
