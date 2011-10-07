@@ -66,7 +66,8 @@ class ShopifyRedirect( URIHandler ):
         # TODO write a smart importer here so we don't have to hardcode these
         # self.redirect(reverse(app+'Welcome'))
         redirect_url = url('%sWelcome' % app)
-        if url != None:
+        if redirect_url != None:
+            logging.info("redirecting to %s" % redirect_url)
             self.redirect('%s?%s' % (redirect_url, self.request.query_string))
         elif app == 'referral':
             logging.info("GOING TO EDIT")

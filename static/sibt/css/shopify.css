@@ -36,7 +36,8 @@ body {
 }
 #product-img img {
     margin: 15px 0px 15px 10px;
-    height: 130px;
+    /**height: 130px;*/
+    max-width: 130px;
 }
 #text-div {
     float: right;
