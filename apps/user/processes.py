@@ -311,7 +311,6 @@ class UpdateTwitterGraph(webapp.RequestHandler):
                 
         self.response.out.write("ok")
 
-
 def unpacker(obj, user):
     r = []
     logging.info('v:%r'% obj)

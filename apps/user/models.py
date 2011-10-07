@@ -809,8 +809,12 @@ class User( db.Expando ):
             fb_results = simplejson.loads(fb_response.content)
             if fb_results.has_key('id'):
                 fb_share_id, plugin_response = fb_results['id'], 'ok'
-                taskqueue.add(url = '/fetchFB',
-                              params = {'fb_id': self.fb_identity})
+                taskqueue.add(
+                    url = url('FetchFacebookData'),
+                    params = {
+                        'fb_id': self.fb_identity
+                    }
+                )
             else:
                 fb_share_id, plugin_response = None, 'fail'
                 logging.info(fb_results)

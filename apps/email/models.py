@@ -90,8 +90,11 @@ class Email():
         if name == "":
             name = "Savvy Shopper"
         subject = '%s the votes are in!' % name
-
-        buy_it_percentage = int((yesses / (yesses + noes)) * 100)
+        total = (yesses + noes)
+        if total == 0:
+            buy_it_percentage = 0
+        else:
+            buy_it_percentage = int((yesses / (yesses + noes)) * 100)
 
         if yesses > noes:
             buy_it = True
@@ -101,7 +104,7 @@ class Email():
         body = template.render(
             Email.template_path('sibt_voteCompletion.html'), {
                 'name': name,
-                'product_url': url,
+                'product_url': product_url,
                 'product_img': product_img,
                 'yesses': yesses,
                 'noes': noes,
