@@ -63,21 +63,21 @@ class ShopifyRedirect( URIHandler ):
             # Cache the client!
             self.db_client = client
 
-        # TODO write a smart importer here so we don't have to hardcode these
-        # self.redirect(reverse(app+'Welcome'))
+        # TODO: apps on shopify have to direct properly
+        # the app name has to corespond to appnameWelcome view
         redirect_url = url('%sWelcome' % app)
-        if url != None:
-            self.redirect('%s?%s' % (redirect_url, self.request.query_string))
+        if redirect_url != None:
+            redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
         elif app == 'referral':
-            logging.info("GOING TO EDIT")
-            self.redirect('/r/shopify?%s' % self.request.query_string)
+            redirect_url = '/r/shopify?%s' % self.request.query_string
         elif app == 'sibt':
-            self.redirect('/s/shopify?%s' % self.request.query_string)
+            redirect_url = '/s/shopify?%s' % self.request.query_string
         elif app == 'buttons':
-            self.redirect('/b/shopify/?%s' % self.request.query_string)
+            redirect_url = '/b/shopify/?%s' % self.request.query_string
         else:
-            logging.info("GOING HOME %s" % app)
-            self.redirect( '/' )
+            redirect_url = '/'
+        logging.info("redirecting app %s to %s" % (app, redirect_url))
+        self.redirect(redirect_url)
 
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp( URIHandler ):

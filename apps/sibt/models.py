@@ -70,7 +70,7 @@ class SIBT(App):
                                  url          = link.target_url )
         instance.put()
         
-        Email.emailBarbara( 'SIBT INSTANCE: %s %s %s' % (uuid, asker.key(), url) )
+        Email.emailBarbara( 'SIBT INSTANCE: %s %s %s' % (uuid, user.key(), url) )
         return instance
 
 # Accessors --------------------------------------------------------------------

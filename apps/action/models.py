@@ -90,7 +90,8 @@ class ClickAction( Action ):
                     'app' : self.app_.uuid,
                     'target_url': self.link.target_url,
                     'user': self.user.get_name_or_handle(),
-                    'user_uuid': self.user.uuid
+                    'user_uuid': self.user.uuid,
+                    'client': self.app_.client.email
                 }
             )
         except:
@@ -147,12 +148,12 @@ def create_sibt_click_action( user, app, link ):
     return act
 
 ## Accessors -------------------------------------------------------------------
-def get_sibt_click_actions_by_user_for_url( user, url ):
+def get_sibt_click_actions_by_user_for_url(user, url):
     return SIBTClickAction.all()\
             .filter('user =', user)\
             .filter('url =', url)
 
-def get_sibt_click_actions_by_user_and_link( user, url ):
+def get_sibt_click_actions_by_user_and_link(user, url):
     return SIBTClickAction.all()\
             .filter('user =', user)\
             .filter('url =', url)
@@ -176,7 +177,8 @@ class VoteAction( Action ):
                     'app' : self.app_.uuid,
                     'target_url': self.link.target_url,
                     'user': self.user.get_name_or_handle(),
-                    'user_uuid': self.user.uuid
+                    'user_uuid': self.user.uuid,
+                    'client': self.app_.client.email
                 }
             )
         except:

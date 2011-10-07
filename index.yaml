@@ -42,3 +42,8 @@ indexes:
   - name: user
   - name: sibt_instance
 
+- kind: SIBTInstance
+  properties:
+  - name: is_live
+  - name: end_datetime
+

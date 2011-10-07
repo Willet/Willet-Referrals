@@ -784,7 +784,7 @@ class User( db.Expando ):
                 'link' : link.get_willt_url(),
                 'description' : desc if desc != "" else name,
                 'name' : name,
-                'caption' : link.app_.client.url
+                'caption' : link.app_.store_url
             })
         else:
             params = urllib.urlencode({

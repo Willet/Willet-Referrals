@@ -90,11 +90,13 @@ class AskDynamicLoader(webapp.RequestHandler):
             queue_name = 'mixpanel', 
             url = '/mixpanel/action', 
             params = {
-                'event'    : 'ShowingAskIframe', 
+                'event'    : 'SIBTShowingAskIframe', 
                 'app' : app.uuid,
                 'user': user.get_name_or_handle(),
                 'taret_url': target,
-                'user_uuid': user.uuid
+                'user_uuid': user.uuid,
+                'user': user.get_name_or_handle(),
+                'client': app.client.email
             }
         )
 
@@ -144,12 +146,29 @@ class VoteDynamicLoader(webapp.RequestHandler):
             page_url = self.request.headers['REFERER']
             instance = asker_instance
             logging.info('got instance for asker')
-        elif actions.count() > 0:
-            action = actions.filter('sibt_instance !=', '').get()
-            instance = action.sibt_instance
-            logging.info('no link, got action %s and instance %s' % (action, instance))
+        else:
+            unfiltered_count = actions.count()
+            instances = SIBTInstance.all()\
+                .filter('url =', target)\
+                .filter('is_live =', True)
+            key_list = [instance.key() for instance in instances]
+            actions = actions\
+                    .filter('sibt_instance !=', '')\
+                    .filter('sibt_instance IN', key_list)
+            logging.info('got %d/%d actions after filtered by keys %s' % (
+                actions.count(),
+                unfiltered_count,
+                key_list
+            ))
+            if actions.count() > 0:
+                action = actions.get()
+                instance = action.sibt_instance
+                logging.info('no link, got action %s and instance %s' % (action, instance))
 
         logging.info("Did we get an instance? %s" % instance)
+        
+        # default event
+        event = 'SIBTShowingVoteIframe'
 
         if instance.is_live:
             name = instance.asker.get_full_name()
@@ -162,6 +181,11 @@ class VoteDynamicLoader(webapp.RequestHandler):
             logging.info('got vote action: %s' % vote_action)
             has_voted = (vote_action != None)
 
+            if is_asker:
+                event = 'SIBTShowingResultsToAsker'
+            elif has_voted:
+                event = 'SIBTShowingResultsToFriend'
+            
             link = instance.link
             share_url = '%s/%s' % (
                 URL,
@@ -190,6 +214,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             # Finally, render the HTML!
             path = os.path.join('apps/sibt/templates/', 'vote.html')
         else:
+            event = 'SIBTEventOverClosingIframe'
             template_values = {
                 'output': 'Vote is over'        
             }
@@ -199,16 +224,12 @@ class VoteDynamicLoader(webapp.RequestHandler):
             queue_name = 'mixpanel', 
             url = '/mixpanel/action', 
             params = {
-                'event': 'ShowingVoteIframe', 
+                'event': event, 
                 'app': app.uuid,
                 'user': user.get_name_or_handle(),
-                'taret_url': target,
                 'user_uuid': user.uuid,
-                'extra': 'What are we showing? %s\nIs this the asker? %s\nHave they voted? %s' % (
-                    path,
-                    is_asker,
-                    has_voted,
-                )
+                'taret_url': target,
+                'client': app.client.email
             }
         )
 

@@ -21,21 +21,21 @@ class SendActionToMixpanel(webapp.RequestHandler):
         target_url = self.request.get('target_url')
         user_uuid = self.request.get('user_uuid')
         extra = self.request.get('extra')
+        client = self.request.get('client')
 
         data = {
             'token': MIXPANEL_TOKEN,
             'user': user,
+            'user_uuid': user_uuid,
             'app': app,
             'target_url': target_url,
             'distinct_id': user_uuid,
-            'extra': extra
+            'extra': extra,
+            'client': client
         }
 
         params = {
-            "event": "%s_%s_%s" % (
-                event,
-                app,
-                user),
+            "event": event,
             "properties": data
         }
         payload = base64.b64encode(json.dumps(params))

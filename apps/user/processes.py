@@ -48,10 +48,14 @@ class FetchFacebookData(webapp.RequestHandler):
                 for td in target_data:
                     if fb_response.has_key(td):
                         collected_data['fb_'+str(td)] = str(fb_response[td])
-                collected_data['facebook_profile_pic'] = '%s%s/picture' % (
+                try:
+                    collected_data['facebook_profile_pic'] = '%s%s/picture' % (
                         FACEBOOK_QUERY_URL,
                         collected_data['fb_username']
-                )
+                    )
+                except:
+                    logging.error('user does not have a facebook username')
+
                 user.update(**collected_data)
             else:
                 pass

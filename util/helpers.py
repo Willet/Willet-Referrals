@@ -180,19 +180,23 @@ def url(view, *args, **kwargs):
         example: url('ShowProfilePage', '1252', '2151', qs={'format':'json'})
             - /user/1252/2151/?format=json
     """
-    app = webapp.WSGIApplication.active_instance
-    handler = app.get_registered_handler_by_name(view)
+    url = None
+    try:
+        app = webapp.WSGIApplication.active_instance
+        handler = app.get_registered_handler_by_name(view)
 
-    logging.error('handler: %s' % handler)
+        logging.info('handler: %s' % handler)
 
-    url = handler.get_url(*args)
+        url = handler.get_url(*args)
 
-    qs = kwargs.get('qs', ())
-    if qs:
-        url += '?%s' % urllib.urlencode(qs)
+        qs = kwargs.get('qs', ())
+        if qs:
+            url += '?%s' % urllib.urlencode(qs)
 
-    logging.error(qs)
-    logging.error('got url: %s' % url)
+        logging.info(qs)
+        logging.info('got url: %s' % url)
+    except:
+        logging.warn('could not reverse url %s' % view)
 
     return url  
 
