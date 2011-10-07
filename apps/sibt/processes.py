@@ -44,6 +44,19 @@ class StartInstance( URIHandler ):
                     'fb_id': self.fb_identity
                 }
             )
+        
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event': 'SIBTInstanceCreated', 
+                'app': app.uuid,
+                'user': user.get_name_or_handle(),
+                'taret_url': instance.url,
+                'user_uuid': user.uuid,
+                'client': app.client.email
+            }
+        )
 
         self.response.out.write( instance.uuid ) # give back to script.
 
@@ -78,7 +91,7 @@ class DoVote( URIHandler ):
         self.response.out.write('ok')
 
 class GetExpiredSIBTInstances(URIHandler):
-    def post(self):
+    def get(self):
         """Gets a list of SIBT instances to be expired and emails to be sent"""
         right_now = datetime.now()
         expired_instances = SIBTInstance.all()\
@@ -94,7 +107,7 @@ class GetExpiredSIBTInstances(URIHandler):
             )
 
 class RemoveExpiredSIBTInstance(webapp.RequestHandler):
-    def post(self):
+    def get(self):
         """Updates the SIBT instance in a transaction and then emails the user"""
         def txn(instance):
             instance.is_live = False

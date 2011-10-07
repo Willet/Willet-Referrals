@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, urllib
 
 from django.utils import simplejson as json
+from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch, memcache
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -216,6 +217,7 @@ class DynamicLoader(webapp.RequestHandler):
         is_asker = show_votes = 0
         instance = None
         other_instances = []
+        asker_name = None
         
         page_url = urlparse(self.request.remote_addr)
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
@@ -230,7 +232,7 @@ class DynamicLoader(webapp.RequestHandler):
 
         #app  = get_sibt_shopify_app_by_store_url(shop_url)
         app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
-
+        event = 'SIBTShowingButton'
         if app:
             # Is User an asker for this URL?
             actions = get_sibt_click_actions_by_user_for_url(user, target)
@@ -240,35 +242,43 @@ class DynamicLoader(webapp.RequestHandler):
                 target,
                 instance
             ))
-            if instance and instance.is_live:
-                is_asker   = 1
-                show_votes = 1
-            elif actions.count() != 0:
-                instance   = actions[0].sibt_instance
+            if instance:
                 if instance.is_live:
+                    is_asker   = 1
                     show_votes = 1
-            
-            #for action in actions:
-            #    inst = action.sibt_instance
-            #    another_instance = {}
-            #    another_instance['code'] = inst.link.willt_url_code
-            #    another_instance['user_name'] = inst.asker.get_full_name()
-            #    another_instance['user_pic'] = inst.asker.get_attr('pic')
-            #    other_instances.append(another_instance)
-            
+                    event = 'SIBTShowingResults'
+                    asker_name = instance.asker.get_name_or_handle()
+            else:
+                # filter actions for instances that are active
+                unfiltered_count = actions.count()
+                instances = SIBTInstance.all()\
+                    .filter('url =', target)\
+                    .filter('is_live =', True)
+                key_list = [instance.key() for instance in instances]
+                actions = actions.filter('sibt_instance IN', key_list)
+                logging.info('got %d/%d actions after filtered by keys %s' % (
+                    actions.count(),
+                    unfiltered_count,
+                    key_list
+                ))
+                if actions.count() != 0:
+                    instance   = actions[0].sibt_instance
+                    # assume this now because of filter
+                    # if instance.is_live:
+                    show_votes = 1
+                    event = 'SIBTShowingVote'
+                    asker_name = instance.asker.get_name_or_handle()
+
             taskqueue.add(
                 queue_name = 'mixpanel', 
                 url = '/mixpanel/action', 
                 params = {
-                    'event': 'ShowingSIBTButton', 
+                    'event': event, 
                     'app': app.uuid,
                     'user': user.get_name_or_handle(),
                     'taret_url': target,
                     'user_uuid': user.uuid,
-                    'extra': 'Is this the asker? %s\nAre we auto-showing? %s' % (
-                        is_asker,
-                        show_votes,
-                    )
+                    'client': app.client.email
                 }
             )
 
@@ -279,6 +289,7 @@ class DynamicLoader(webapp.RequestHandler):
                 
                 'app' : app,
                 'instance' : instance,
+                'asker_name': asker_name, 
                 'other_instances': other_instances,
                 
                 'user': user,

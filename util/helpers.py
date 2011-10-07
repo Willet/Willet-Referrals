@@ -185,7 +185,7 @@ def url(view, *args, **kwargs):
         app = webapp.WSGIApplication.active_instance
         handler = app.get_registered_handler_by_name(view)
 
-        logging.error('handler: %s' % handler)
+        logging.info('handler: %s' % handler)
 
         url = handler.get_url(*args)
 
@@ -193,13 +193,14 @@ def url(view, *args, **kwargs):
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.error(qs)
-        logging.error('got url: %s' % url)
+        logging.info(qs)
+        logging.info('got url: %s' % url)
     except:
-        logging.error('could not reverse url')
+        logging.warn('could not reverse url %s' % view)
 
     return url  
 
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
     return p.sub('', data)
+
