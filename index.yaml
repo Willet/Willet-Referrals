@@ -47,3 +47,11 @@ indexes:
   - name: is_live
   - name: end_datetime
 
+- kind: Action
+  properties:
+  - name: class
+  - name: sibt_instance
+  - name: url
+  - name: user
+  - name: sibt_instance
+
