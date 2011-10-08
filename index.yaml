@@ -1,10 +1,10 @@
 indexes:
 
-- kind: Link
-  properties:
-  - name: creation_time
-  - name: tweet_id
-  - name: campaign
+#- kind: Link
+#  properties:
+#  - name: creation_time
+#  - name: tweet_id
+#  - name: campaign
 
 - kind: App
   properties:

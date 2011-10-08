@@ -227,7 +227,8 @@ var _willet_run_scripts = function() {
     button.setAttribute( 'id', '_willet_button' );
     
     // Put button on the page.
-    var purchase_cta = document.getElementById( '{{buy_btn_id}}' );
+    var purchase_cta = document.getElementById( '_willet_shouldIBuyThisButton');
+    /*
     if ( !purchase_cta ) {
         purchase_cta = document.getElementById( 'purchase' );
     }
@@ -243,9 +244,10 @@ var _willet_run_scripts = function() {
     if ( !purchase_cta ) {
         purchase_cta = document.getElementById( 'price' );
     }
-
-    if ( purchase_cta ) {
-        purchase_cta.parentNode.appendChild( button );
+    */
+    if (purchase_cta) {
+        $(purchase_cta).append(button);
+        //purchase_cta.parentNode.appendChild( button );
         $("#_willet_button").fadeIn(250).css('display', 'inline-block');
         var el;
         {% for inst in other_instances %}
