@@ -1,0 +1,7 @@
+<META xmlns="http://www.w3.org/2001/09/P3Pv1">
+    <POLICY-REFERENCES>
+        <POLICY-REF about="/w3c/policy.xml">
+            <INCLUDE>/*</INCLUDE>
+        </POLICY-REF>
+    </POLICY-REFERENCES>
+</META>
