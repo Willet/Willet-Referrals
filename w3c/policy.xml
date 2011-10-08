@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?> 
-<POLICY discuri="{{URL}}/user/privacy" name="policy">
+<POLICY discuri="http://social-referral.appspot.com/about" name="policy">
   <ENTITY>
     <DATA-GROUP>
        <DATA
         ref="#business.contact-info.online.email">barbara@getwillet.com
        </DATA>
        <DATA 
-        ref="#business.contact-info.online.uri">http://www.getwillet.com
+        ref="#business.contact-info.online.uri">http:/www.rf.rs/
        </DATA>
        <DATA ref="#business.name">Willet</DATA>
     </DATA-GROUP>
