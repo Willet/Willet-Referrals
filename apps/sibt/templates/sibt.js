@@ -85,6 +85,7 @@ var _willet_button_onclick = function(url) {
             initialHeight: 0, 
             innerWidth: 420,
             innerHeight: 232, 
+            fixed: true,
             href: url,
             onClosed: _willet_ask_callback
         });
@@ -105,6 +106,7 @@ var _willet_show_vote = function(willt_code, photo_url) {
         iframe: true,
         width: '700px',
         height: '90%',
+        fixed: true,
         initialWidth: 0, 
         initialHeight: 0,
         href: url,
