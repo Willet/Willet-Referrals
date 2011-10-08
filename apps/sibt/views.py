@@ -103,7 +103,7 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
-        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
+        self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
         self.response.out.write(template.render(path, template_values))
         return
 
@@ -236,7 +236,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 'client': app.client.email
             }
         )
-        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
+        self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
         self.response.out.write(template.render(path, template_values))
         return
 
