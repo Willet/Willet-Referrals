@@ -251,18 +251,18 @@ var _willet_run_scripts = function() {
         $("#_willet_button").fadeIn(250).css('display', 'inline-block');
         
         // watch for message
-        $(window).live('message', function(e) {
-            console.log('message received', e.data);
+        // Create IE + others compatible event handler
+        var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+        var eventer = window[eventMethod];
+        var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+        // Listen to message from child window
+        eventer(messageEvent,function(e) {
+            console.log('parent received message!:  ',e.data);
             if (e.data == 'shared') {
-               _willet_ask_success = true;
+                _willet_ask_success = true;
             }
-        });
-        $(document).live('message', function(e) {
-            console.log('document message received', e.data);
-            if (e.data == 'shared') {
-               _willet_ask_success = true;
-            }
-        });
+        }, false);
     }
 };
 

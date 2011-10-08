@@ -121,18 +121,18 @@
 
                 var shareComplete = function(medium) {
                     // Sharing is complete (either twitter or facebook)
+                    $("#invite").hide();
                     if (medium == 'twitter') {
                         // ask for their email
-                        $("#invite").toggle();
                         $("#thanks").fadeIn(300);
                     } else {
                         // we will have the facebook email
                         // so dont ask for it
-                        $("invite").toggle();
                         $('#thanks_facebook').fadeIn(300);
                     }
-                    
-                    parent.postMessage(
+
+                    var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                    target.postMessage(
                         'shared',
                         '*'
                     );
