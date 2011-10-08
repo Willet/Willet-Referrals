@@ -10,7 +10,8 @@ urlpatterns = [
 
     # Processes
     (r'/s/doVote',        DoVote),
-    (r'/s/startInstance', StartInstance),
+    (r'/s/instance/share/facebook', ShareSIBTInstanceOnFacebook),
+    (r'/s/instance/start', StartSIBTInstance),
     (r'/s/getExpired',    GetExpiredSIBTInstances),
     (r'/s/removeExpired', RemoveExpiredSIBTInstance)
 ]

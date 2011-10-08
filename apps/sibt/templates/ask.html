@@ -29,7 +29,16 @@
             var share, reset, countChars, willet_conversion, sendGmail, 
                 fbToken, next, highlight, sendEmailiframeBody, updateEmailAddress,
                 shareArea, shareFrame, shareText, charsLeft, clear, shareComplete; 
-            
+            var fbData = {
+                msg: '', 
+                img: '{{productImg}}', 
+                name: '{{productName}}',
+                desc: '{{productDesc}}',
+                app_uuid: '{{app.uuid}}',
+                willt_code: '{{willt_code}}',
+                product_img: '{{productImg}}'
+            };
+        
             $(document).ready(function() {
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
@@ -48,111 +57,108 @@
                 } else {
                     console.log("Facebook not ready!");    
                 }
-        
-                // clear the share text
-                shareComplete = function() {
-                    console.log("Sharing complete!");
-                    toggleThanks();
-
+                
+                var twitterCallback = function() {
+                    /**
+                     * called after successful share on twitter
+                     */
                     $.ajax({
-                        url: "/s/startInstance",
+                        url: "{% url StartSIBTInstance %}",
                         type: 'post',
+                        dataType: 'json',
                         data: {
                             app_uuid: "{{app.uuid}}",
                             willt_code: "{{willt_code}}",
                             product_img : "{{productImg}}" },
                         success: function (tr) {
-                            // pass
+                            shareComplete();
                             console.log(tr);
                         }
+                    }); 
+                };
+
+                var fb_share_handler = function(payload) {
+                    console.log(payload);
+                    $.ajax({
+                        url: '{% url ShareSIBTInstanceOnFacebook %}',
+                        type: 'post',
+                        dataType: 'json',
+                        data: payload,
+                        success: function (response) {
+                            if (response.success) {
+                                shareComplete();
+                            } else {
+                                if (userFound) {
+                                    // we tried to use an existing user
+                                    // but the share failed!
+                                    userFound = false; // dont do this twice
+                                    fb_login_and_share();
+                                }
+                                console.log("Facebook post failure", response);
+                            }
+                        }
                     });
+                };
+
+                var fb_login_and_share = function() {
+                    // tries to auth with facebook 
+                    FB.login(function(lr) {
+                            console.log(lr);
+                            if (!lr.authResponse) {
+                                // we weren't given permission
+                                window.close();
+                            } else { 
+                                // TODO: need to support new authresponse
+                                fbData.fb_token = lr.authResponse.accessToken;
+                                fbData.fb_id = lr.authResponse.userID;
+                                fb_share_handler(fbData);
+                                //mixpanelTrack('Facebook');
+                                //mixpanelTrack('Share');
+                            }
+                        }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                    );
+                };
+
+                shareComplete = function() {
+                    // Sharing is complete (either twitter or facebook)
+                    console.log("Sharing complete!");
+                    toggleThanks();
 
                     return true;
                 };
             
-                clearText = function(elem) {
-                    elem.value = "";
-                };
  
                 toggleThanks = function () {
                     $("#invite").toggle();
                     $("#thanks").fadeIn(300);
                     parent._willet_ask_success = true;
                 };
-    
+                
                 // use the selected medium to share about your purchase
                 share = function(medium, uid) {
-                    var fb_share_handler = function(payload) {
-                        console.log(payload)
-                        $.ajax({url: "/fbShare",
-                                type: 'post',
-                                data: payload,
-                                success: function (tr) {
-                                    if (tr === 'ok') {
-                                        shareComplete();
-                                    } else {
-                                        console.log("Facebook post failure");
-                                    }
-                                }
-                        });
-                    };
+                    
                     var uid = uid || '';
                     var message = shareText.value.substring(0,141);
-                    if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
-                        // initiate facebook login event if requested
-                        if (medium === 'fb') {
-                            var fbData = {
-                                msg: message, 
-                                wcode: '{{willt_code}}', 
-                                img: '{{productImg}}', 
-                                name: '{{productName}}',
-                                desc: '{{productDesc}}'
-                            };
-                            // first attempt server-provided token
-                            if (userFound) {
-                                fb_share_handler(fbData)
-                                return;
-                            } else {
-                                FB.login(function(lr) {
-                                        console.log(lr);
-                                        if (!lr.authResponse) {
-                                            // we weren't given permission
-                                            window.close();
-                                        } else { 
-                                            fbData.fb_token = lr.authResponse.accessToken;
-                                            fbData.fb_id = lr.authResponse.userID;
-                                            fb_share_handler(fbData);
-                                            mixpanelTrack( 'Facebook' );
-                                            mixpanelTrack( 'Share' );
-                                        }
-                                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-                                );
-                    
-                            } // if (userFound u
-                        } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid=' +
-                                            '&m=' + message + 
-                                            '&wcode={{willt_code}}' + 
-                                            '&img={{productImg}}' + 
-                                            '&name={{productName}}' + 
-                                            '&desc={{productDesc}}',
-                                            AuthWindow = window.open(OAuthURL, '_blank');
-                        } else if (medium === 'linkedin') {
-                            console.log('linkedin share', message);
-                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid=' +
-                                            '&m=' + message + 
-                                            '&wcode={{willt_code}}' + 
-                                            '&img={{productImg}}' + 
-                                            '&name={{productName}}' + 
-                                            '&desc={{productDesc}}',
-                                            AuthWindow = window.open(OAuthURL, '_blank');       
+                    // initiate facebook login event if requested
+                    if (medium === 'fb') {
+                        fbData.msg = message; 
+                        if (userFound) {
+                            fb_share_handler(fbData)
+                            return;
                         } else {
-                            // style shareArea according to different social loader
-                        }
-                        shareArea.style.visibility = 'visible';
-                    } else {
-                        // social media provider not found
-                    }
+                            fb_login_and_share();
+                            return;
+                        } // if (userFound u
+                    } else if (medium === 'twitter'){
+                        var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid=' +
+                                        '&m=' + message + 
+                                        '&wcode={{willt_code}}' + 
+                                        '&img={{productImg}}' + 
+                                        '&name={{productName}}' + 
+                                        '&desc={{productDesc}}';
+                        var AuthWindow = window.open(OAuthURL, '_blank');
+                    } 
+                    shareArea.style.visibility = 'visible';
                 };
             
                 countChars = function() {
@@ -172,14 +178,15 @@
                 updateEmailAddress = function() {
                     var addr = document.getElementById( 'email-field' ).value;
                         
-                    $.ajax({url: "/updateEmailAddress",
-                            type: 'post',
-                            data: { email : addr },
-                            success: function (tr) {
-                                document.getElementById('email-field').style.display = 'none';
-                                document.getElementById('email-btn').style.display = 'none';
-                                document.getElementById('email-conf').style.display = 'inline';
-                            }
+                    $.ajax({
+                        url: "/updateEmailAddress",
+                        type: 'post',
+                        data: { email : addr },
+                        success: function (tr) {
+                            document.getElementById('email-field').style.display = 'none';
+                            document.getElementById('email-btn').style.display = 'none';
+                            document.getElementById('email-conf').style.display = 'inline';
+                        }
                     });
 
                 };
@@ -275,7 +282,7 @@
             </div>
         </div>
 
-        <div id="tweet-complete" onclick="shareComplete();"></div>
+        <div id="tweet-complete" onclick="twitterCallback();"></div>
         <div id="share-area">
             <iframe id="willt-frame" class="hidden"></iframe>
         </div>

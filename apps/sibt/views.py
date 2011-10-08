@@ -76,7 +76,8 @@ class AskDynamicLoader(webapp.RequestHandler):
                 'productName' : data['title'],
                 'productDesc' : remove_html_tags( data['body_html'].strip() ),
 
-                'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+                #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+                'FACEBOOK_APP_ID' : app.settings['facebook']['app_id'],
                 'app' : app,
                 'willt_url' : link.get_willt_url(),
                 'willt_code' : link.willt_url_code,
@@ -120,6 +121,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
         # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
         app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
        
+        instance = None
+
         # Grab the link
         link = get_link_by_willt_code(self.request.get('willt_code'))
         

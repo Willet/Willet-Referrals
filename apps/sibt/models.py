@@ -6,7 +6,9 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib, logging, datetime
+import hashlib, logging
+from datetime import datetime
+from datetime import timedelta
 import random
 
 from django.utils         import simplejson as json
@@ -58,7 +60,13 @@ class SIBT(App):
     def create_instance(self, user, end, link, img):
         # Make the properties
         uuid = generate_uuid( 16 )
-
+        
+        # set end if None
+        if end == None:
+            now = datetime.now()
+            six_hours = timedelta(hours=6)
+            end = now + six_hours
+        
         # Now, make the object
         instance = SIBTInstance( key_name     = uuid,
                                  uuid         = uuid,
@@ -70,7 +78,11 @@ class SIBT(App):
                                  url          = link.target_url )
         instance.put()
         
-        Email.emailBarbara( 'SIBT INSTANCE: %s %s %s' % (uuid, user.key(), url) )
+        Email.emailBarbara('SIBT INSTANCE: %s %s %s' % (
+            uuid, 
+            user.key(), 
+            link.target_url)
+        )
         return instance
 
 # Accessors --------------------------------------------------------------------
