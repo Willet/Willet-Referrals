@@ -65,6 +65,7 @@ class URIHandler( webapp.RequestHandler ):
             path = os.path.join(app_path, path)
 
         logging.info("Rendering %s" % path )
+        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
         return render(path, merged_values)
         #return template.render(path, merged_values)
 
