@@ -249,18 +249,13 @@ var _willet_run_scripts = function() {
         $(purchase_cta).append(button);
         //purchase_cta.parentNode.appendChild( button );
         $("#_willet_button").fadeIn(250).css('display', 'inline-block');
-        var el;
-        {% for inst in other_instances %}
-            el = document.createElement('img');
-            el = $(el);
-            el.attr('src', '{{ isnt.src }}');
-            el.attr('title', 'Should {{ inst.user_name }} buy this?');
-            el.attr('data-item', '{{ inst.code }}');
-            el.click(function() {
-                _willet_show_vote('{{ isnt.code }}', photo_src);
-            }); 
-            $("_willet_button").after(el);
-        {% endfor %}
+        
+        // watch for message
+        $(window).live('message', function(e) {
+            if (e.data == 'shared') {
+               _willet_ask_success = true;
+            }
+        });
     }
 };
 
