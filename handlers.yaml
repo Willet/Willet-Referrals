@@ -17,6 +17,9 @@ handlers:
 - url: /(StartRefCheck|CheckRef)
   script: util/db_queues.py
 
+- url: /w3c
+  static_dir: w3c/
+
 - url: /static
   static_dir: static
 
