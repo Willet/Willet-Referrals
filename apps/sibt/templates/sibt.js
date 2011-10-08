@@ -252,6 +252,13 @@ var _willet_run_scripts = function() {
         
         // watch for message
         $(window).live('message', function(e) {
+            console.log('message received', e.data);
+            if (e.data == 'shared') {
+               _willet_ask_success = true;
+            }
+        });
+        $(document).live('message', function(e) {
+            console.log('document message received', e.data);
             if (e.data == 'shared') {
                _willet_ask_success = true;
             }
