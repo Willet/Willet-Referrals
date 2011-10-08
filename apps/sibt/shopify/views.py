@@ -301,6 +301,7 @@ class DynamicLoader(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
+        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
         self.response.out.write(template.render(path, template_values))
         return
 
