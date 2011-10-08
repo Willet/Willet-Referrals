@@ -42,12 +42,15 @@ class SIBTShopifyWelcome(URIHandler):
         token = self.request.get('t') # token
         app = get_or_create_sibt_shopify_app(client, token=token)
         
+        client_email = None
         shop_owner = 'Shopify Merchant'
         if client != None:
+            client_email = client.email
             shop_owner = client.merchant.get_attr('full_name')
         template_values = {
             'app': app,
-            'shop_owner': shop_owner 
+            'shop_owner': shop_owner,
+            'client_email': client_email
         }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
