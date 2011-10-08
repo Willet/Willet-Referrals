@@ -126,6 +126,6 @@ INSTALLED_APPS = [
 try:
     from local_consts import *
 except:
-    logging.error('no local_consts.py')
+    logging.info('no local_consts.py')
     pass
 
