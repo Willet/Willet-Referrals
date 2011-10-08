@@ -71,7 +71,7 @@
                             willt_code: "{{willt_code}}",
                             product_img : "{{productImg}}" },
                         success: function (tr) {
-                            shareComplete();
+                            shareComplete('twitter');
                             console.log(tr);
                         }
                     }); 
@@ -86,7 +86,7 @@
                         data: payload,
                         success: function (response) {
                             if (response.success) {
-                                shareComplete();
+                                shareComplete('facebook');
                             } else {
                                 if (userFound) {
                                     // we tried to use an existing user
@@ -119,10 +119,24 @@
                     );
                 };
 
-                shareComplete = function() {
+                shareComplete = function(medium) {
                     // Sharing is complete (either twitter or facebook)
+                    if (medium == 'twitter') {
+                        // ask for their email
+                        $("#invite").toggle();
+                        $("#thanks").fadeIn(300);
+                    } else {
+                        // we will have the facebook email
+                        // so dont ask for it
+                        $("invite").toggle();
+                        $('#thanks_facebook').fadeIn(300);
+                    }
+                    
+                    parent.postMessage(
+                        'shared',
+                        '*'
+                    );
                     console.log("Sharing complete!");
-                    toggleThanks();
 
                     return true;
                 };
@@ -136,7 +150,6 @@
                 
                 // use the selected medium to share about your purchase
                 share = function(medium, uid) {
-                    
                     var uid = uid || '';
                     var message = shareText.value.substring(0,141);
                     // initiate facebook login event if requested
@@ -279,6 +292,14 @@
                 <input id="email-field" type="text"> </input>
                 <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
                 <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+            </div>
+        </div>
+
+        <div id="thanks_facebook" class="willt hidden">
+            <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
+            <p>
+                We will contact you as soon as your friends vote!
+            </p>
             </div>
         </div>
 
