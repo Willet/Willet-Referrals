@@ -225,7 +225,7 @@ class DynamicLoader(webapp.RequestHandler):
         page_url = urlparse(self.request.remote_addr)
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
 
-        target = self.request.headers['REFERER']
+        #target = self.request.headers['REFERER']
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -234,7 +234,7 @@ class DynamicLoader(webapp.RequestHandler):
             shop_url = 'http://%s' % shop_url 
 
         #app  = get_sibt_shopify_app_by_store_url(shop_url)
-        app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
         event = 'SIBTShowingButton'
         if app:
             # Is User an asker for this URL?
@@ -279,7 +279,7 @@ class DynamicLoader(webapp.RequestHandler):
                     'event': event, 
                     'app': app.uuid,
                     'user': user.get_name_or_handle(),
-                    'taret_url': target,
+                    'target_url': target,
                     'user_uuid': user.uuid,
                     'client': app.client.email
                 }

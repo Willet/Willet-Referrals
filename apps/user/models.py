@@ -26,12 +26,12 @@ from google.appengine.ext import db
 
 import apps.oauth.models
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
-from apps.email.models import Email
+from apps.email.models    import Email
 
-from util.consts import FACEBOOK_QUERY_URL
-from util.model         import Model
+from util.consts          import FACEBOOK_QUERY_URL
+from util.model           import Model
 from util.helpers         import *
-from util import oauth2 as oauth
+from util                 import oauth2 as oauth
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------

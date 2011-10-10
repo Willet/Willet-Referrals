@@ -195,6 +195,8 @@ var _willet_check_scripts = function() {
  */
 var _willet_run_scripts = function() {
     console.log('running');
+    var ask_iframe  = document.createElement( 'iframe' );
+    var vote_iframe = document.createElement( 'iframe' );
     var button      = document.createElement('a');
     var hash        = window.location.hash;
     var hash_search = '#code=';
@@ -230,23 +232,6 @@ var _willet_run_scripts = function() {
     
     // Put button on the page.
     var purchase_cta = document.getElementById( '_willet_shouldIBuyThisButton');
-    /*
-    if ( !purchase_cta ) {
-        purchase_cta = document.getElementById( 'purchase' );
-    }
-    if ( !purchase_cta ) {
-        purchase_cta = document.getElementById( 'add' );
-    }
-    if ( !purchase_cta ) {
-        purchase_cta = document.getElementById( 'add-to-cart' );
-    }
-    if ( !purchase_cta ) {
-        purchase_cta = document.getElementById( 'buy' );
-    }
-    if ( !purchase_cta ) {
-        purchase_cta = document.getElementById( 'price' );
-    }
-    */
     if (purchase_cta) {
         $(purchase_cta).append(button);
         //purchase_cta.parentNode.appendChild( button );
