@@ -70,11 +70,13 @@ class AskDynamicLoader(webapp.RequestHandler):
         # User stats
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
-
+        productDesc = remove_html_tags(data['body_html'].strip())
+        productDesc = productDesc.replace('\r\n', '<br />')
+        productDesc = productDesc.replace('\n', '<br />')
         template_values = {
                 'productImg'  : data['images'][0]['src'],
                 'productName' : data['title'],
-                'productDesc' : remove_html_tags( data['body_html'].strip() ),
+                'productDesc' : productDesc,
 
                 #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
                 'FACEBOOK_APP_ID' : app.settings['facebook']['app_id'],
