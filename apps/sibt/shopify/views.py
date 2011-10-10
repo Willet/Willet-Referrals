@@ -279,7 +279,7 @@ class DynamicLoader(webapp.RequestHandler):
                     'event': event, 
                     'app': app.uuid,
                     'user': user.get_name_or_handle(),
-                    'taret_url': target,
+                    'target_url': target,
                     'user_uuid': user.uuid,
                     'client': app.client.email
                 }

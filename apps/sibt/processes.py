@@ -82,7 +82,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                         'event': 'SIBTInstanceCreated', 
                         'app': app.uuid,
                         'user': user.get_name_or_handle(),
-                        'taret_url': instance.url,
+                        'target_url': instance.url,
                         'user_uuid': user.uuid,
                         'client': app.client.email
                     }
@@ -110,7 +110,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                         'event': 'SIBTInstanceSharedOnFacebook', 
                         'app': app.uuid,
                         'user': user.get_name_or_handle(),
-                        'taret_url': link.target_url,
+                        'target_url': link.target_url,
                         'user_uuid': user.uuid,
                         'client': app.client.email
                     }
@@ -149,7 +149,7 @@ class StartSIBTInstance(URIHandler):
                     'event': 'SIBTInstanceCreated', 
                     'app': app.uuid,
                     'user': user.get_name_or_handle(),
-                    'taret_url': instance.url,
+                    'target_url': instance.url,
                     'user_uuid': user.uuid,
                     'client': app.client.email
                 }

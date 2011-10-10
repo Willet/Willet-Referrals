@@ -94,7 +94,7 @@ class AskDynamicLoader(webapp.RequestHandler):
                 'event'    : 'SIBTShowingAskIframe', 
                 'app' : app.uuid,
                 'user': user.get_name_or_handle(),
-                'taret_url': target,
+                'target_url': target,
                 'user_uuid': user.uuid,
                 'user': user.get_name_or_handle(),
                 'client': app.client.email
@@ -232,7 +232,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 'app': app.uuid,
                 'user': user.get_name_or_handle(),
                 'user_uuid': user.uuid,
-                'taret_url': target,
+                'target_url': target,
                 'client': app.client.email
             }
         )
