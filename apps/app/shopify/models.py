@@ -28,7 +28,7 @@ NUM_SHARE_SHARDS = 15
 
 class AppShopify(Model):
     # Shopify's ID for this store
-    store_id    = db.StringProperty(indexed = True)
+    store_id  = db.StringProperty(indexed = True)
     
     store_url = db.StringProperty(indexed = True)
 
