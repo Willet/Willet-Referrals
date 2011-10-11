@@ -181,7 +181,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         # default event
         event = 'SIBTShowingVoteIframe'
 
-        if instance.is_live:
+        if instance:
             name = instance.asker.get_full_name()
             is_asker = (instance.asker.key() == user.key())
             vote_action = SIBTVoteAction.all()\
@@ -191,6 +191,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     .get()
             logging.info('got vote action: %s' % vote_action)
             has_voted = (vote_action != None)
+            if not instance.is_live:
+                has_voted = True
 
             if is_asker:
                 event = 'SIBTShowingResultsToAsker'
@@ -213,7 +215,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'user': user,
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
-                    'fb_comments_url' : '%s/%s' % (target, instance.uuid),
+                    'fb_comments_url' : '%s?%s' % (target, instance.uuid),
 
                     'share_url': share_url,
                     'is_asker' : is_asker,
