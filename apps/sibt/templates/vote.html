@@ -25,9 +25,9 @@
         <script src="http://connect.facebook.net/en_US/all.js#xfbml=1" type="text/javascript"></script> 
 
         <script type="text/javascript">
-            var vote, share, reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
-                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, 
-                voteComplete, next;
+            var reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
+                shareArea, shareFrame, shareText, charsLeft, clear, fbToken, 
+                next;
             var yesses = {{yesses}};
             var noes = {{noes}};
 
@@ -40,6 +40,144 @@
                     value = 0;
                 }
                 return value;
+            };
+            var vote = function( which ) {
+                //var count = $('#' + which + 'Count span');
+                //var val = parseInt(count.text()) + 1;
+                //count.text(val);
+                if (which == 'yes') {
+                    yesses++;
+                } else {
+                    noes++;
+                }
+                percent_el.text(calculatePercent());
+                $.ajax({
+                    url: "/s/doVote",
+                    type: 'post',
+                    data: {
+                        instance_uuid : "{{instance.uuid}}",
+                        which : which
+                    },
+                    success: function (tr) {
+                        if (tr === 'ok') {
+                            // pass
+                        } else {
+                            console.log("Facebook post failure");
+                        }
+                    }
+                });
+                $("#BAR span." + which).show();
+                voteComplete(('{{is_asker}}' == 'True'));
+            };
+
+            var voteComplete = function(is_asker) {
+                var c   = document.getElementById( 'FOO' );
+                var b   = document.getElementById( 'BAR' );
+                //var yes = document.getElementById( 'yesBtn' );
+                //var no  = document.getElementById( 'noBtn' );
+                
+                var yesCount = document.getElementById( 'yesCount' );
+                var noCount  = document.getElementById( 'noCount' );
+                var title    = document.getElementById( 'title' );
+
+                // Turn things Off
+                //yes.style.display = "none";
+                //no.style.display  = "none";
+
+                // Turn things On
+                c.style.display         = "inline";
+                b.style.display         = "inline";
+                //yesCount.style.display  = "inline";
+                //noCount.style.display   = "inline";
+                $('#voting').hide(); 
+                $('#result').fadeIn(300);
+
+                if( !is_asker ) {
+                    $(title).html("Thanks for voting!");
+                } else {
+                    $(title).html("Here's what your friends think");
+                }
+            };
+
+            var shareComplete = function() {
+                // clear the share text
+                toggleThanks();
+                console.log("Sharing complete!");
+                return true;
+            };
+        
+            var toggleThanks = function () {
+                $("#invite").toggle();
+                $("#thanks").fadeIn(300);
+            };
+
+            var fb_share_handler = function(payload) {
+                console.log(payload)
+                $.ajax({url: "/fbShare",
+                    type: 'post',
+                    data: payload,
+                    success: function (tr) {
+                        if (tr === 'ok') {
+                            shareComplete();
+                        } else {
+                            console.log("Facebook post failure");
+                        }
+                    }
+                });
+            };
+
+            // use the selected medium to share about your purchase
+            var share = function(medium, uid) {
+                var uid = uid || '';
+                var message = shareText.value.substring(0,141);
+                if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
+                    // initiate facebook login event if requested
+                    if (medium === 'fb') {
+                        var fbData = {
+                            msg: message, 
+                            wcode: '{{willt_code}}', 
+                            img: '{{product_img|first}}'};
+                        // first attempt server-provided token
+                        if (userFound) {
+                            fb_share_handler(fbData)
+                            return;
+                        } else {
+                            if (typeof FB == 'undefined') {
+                                alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
+                                return;
+                            }
+                            FB.login(function(lr) {
+                                    console.log(lr);
+                                    if (!lr.authResponse) {
+                                        // we weren't given permission
+                                        window.close();
+                                    } else { 
+                                        fbData.fb_token = lr.authResponse.accessToken;
+                                        fbData.fb_id = lr.authResponse.userID;
+                                        fb_share_handler(fbData);
+                                        mixpanelTrack( 'Facebook' );
+                                        mixpanelTrack( 'Share' );
+                                    }
+                                }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                            );
+                
+                        } // if (userFound u
+                    } else if (medium === 'twitter'){
+                        var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
+                                        + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
+                                        AuthWindow = window.open(OAuthURL, '_blank');
+                    } else if (medium === 'linkedin') {
+                        console.log('linkedin share', message);
+                        var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
+                                        + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
+                                        AuthWindow = window.open(OAuthURL, '_blank');       
+                    } else {
+                        // style shareArea according to different social loader
+                    }
+                    shareArea.style.visibility = 'visible';
+                } else {
+                    // social media provider not found
+                }
             };
 
             $(document).ready(function() {
@@ -66,147 +204,7 @@
                 }
                 */
         
-                vote = function( which ) {
-                    //var count = $('#' + which + 'Count span');
-                    //var val = parseInt(count.text()) + 1;
-                    //count.text(val);
-                    if (which == 'yes') {
-                        yesses++;
-                    } else {
-                        noes++;
-                    }
-                    percent_el.text(calculatePercent());
-                    $.ajax({
-                        url: "/s/doVote",
-                        type: 'post',
-                        data: {
-                            instance_uuid : "{{instance.uuid}}",
-                            which : which
-                        },
-                        success: function (tr) {
-                            if (tr === 'ok') {
-                                // pass
-                            } else {
-                                console.log("Facebook post failure");
-                            }
-                        }
-                    });
-                    $("#BAR span." + which).show();
-                    voteComplete(('{{is_asker}}' == 'True'));
-                };
-
-                voteComplete = function(is_asker) {
-                    var c   = document.getElementById( 'FOO' );
-                    var b   = document.getElementById( 'BAR' );
-                    //var yes = document.getElementById( 'yesBtn' );
-                    //var no  = document.getElementById( 'noBtn' );
-                    
-                    var yesCount = document.getElementById( 'yesCount' );
-                    var noCount  = document.getElementById( 'noCount' );
-                    var title    = document.getElementById( 'title' );
-
-                    // Turn things Off
-                    //yes.style.display = "none";
-                    //no.style.display  = "none";
-
-                    // Turn things On
-                    c.style.display         = "inline";
-                    b.style.display         = "inline";
-                    //yesCount.style.display  = "inline";
-                    //noCount.style.display   = "inline";
-                    $('#voting').hide(); 
-                    $('#result').fadeIn(300);
-
-                    if( !is_asker ) {
-                        $(title).html("Thanks for voting!");
-                    } else {
-                        $(title).html("Here's what your friends think");
-                    }
-                };
-
-                // clear the share text
-                shareComplete = function() {
-                    toggleThanks();
-                    console.log("Sharing complete!");
-                    return true;
-                };
-            
-                clearText = function( elem ) {
-                    elem.value = "";
-                };
- 
-                toggleThanks = function () {
-                    $("#invite").toggle();
-                    $("#thanks").fadeIn(300);
-                };
-    
-                // use the selected medium to share about your purchase
-                share = function(medium, uid) {
-                    var fb_share_handler = function(payload) {
-                        console.log(payload)
-                        $.ajax({url: "/fbShare",
-                                type: 'post',
-                                data: payload,
-                                success: function (tr) {
-                                    if (tr === 'ok') {
-                                        shareComplete();
-                                    } else {
-                                        console.log("Facebook post failure");
-                                    }
-                                }
-                        });
-                    },
-                    uid = uid || '';
-                    var message = shareText.value.substring(0,141);
-                    if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
-                        // initiate facebook login event if requested
-                        if (medium === 'fb') {
-                            var fbData = {
-                                msg: message, 
-                                wcode: '{{willt_code}}', 
-                                img: '{{product_img|first}}'};
-                            // first attempt server-provided token
-                            if (userFound) {
-                                fb_share_handler(fbData)
-                                return;
-                            } else {
-                                if (typeof FB == 'undefined') {
-                                    alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
-                                    return;
-                                }
-                                FB.login(function(lr) {
-                                        console.log(lr);
-                                        if (!lr.authResponse) {
-                                            // we weren't given permission
-                                            window.close();
-                                        } else { 
-                                            fbData.fb_token = lr.authResponse.accessToken;
-                                            fbData.fb_id = lr.authResponse.userID;
-                                            fb_share_handler(fbData);
-                                            mixpanelTrack( 'Facebook' );
-                                            mixpanelTrack( 'Share' );
-                                        }
-                                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-                                );
-                    
-                            } // if (userFound u
-                        } else if (medium === 'twitter'){
-                            var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
-                                            AuthWindow = window.open(OAuthURL, '_blank');
-                        } else if (medium === 'linkedin') {
-                            console.log('linkedin share', message);
-                            var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
-                                            + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
-                                            AuthWindow = window.open(OAuthURL, '_blank');       
-                        } else {
-                            // style shareArea according to different social loader
-                        }
-                        shareArea.style.visibility = 'visible';
-                    } else {
-                        // social media provider not found
-                    }
-                };
+                
 
                 // If this is the Asker, show the results.
                 // {{ has_voted }}
@@ -269,6 +267,8 @@
             </h2>
             <script>
                 window.fbAsyncInit = function() {
+                    // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+                    FB._https = true;
                     FB.init({
                         appId: '{{FACEBOOK_APP_ID}}', // App ID
                         //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
