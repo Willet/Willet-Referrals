@@ -28,14 +28,15 @@
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
                 charsLeft, clear; 
+            var productDesc = "{{ productDesc|striptags }}";
             var fbData = {
                 msg: '', 
-                img: '{{productImg}}', 
-                name: '{{productName}}',
-                desc: '{{productDesc|escape}}',
-                app_uuid: '{{app.uuid}}',
-                willt_code: '{{willt_code}}',
-                product_img: '{{productImg}}'
+                img: '{{ productImg|first }}', 
+                name: '{{ productName }}',
+                desc: productDesc,
+                app_uuid: '{{ app.uuid }}',
+                willt_code: '{{ willt_code }}',
+                product_img: '{{ productImg|first }}'
             };
             var _willet_check_scripts = function() {
                 if (typeof FB != 'undefined') {
@@ -64,9 +65,9 @@
                     var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid=' +
                                     '&m=' + message + 
                                     '&wcode={{willt_code}}' + 
-                                    '&img={{productImg}}' + 
+                                    '&img={{productImg|first}}' + 
                                     '&name={{productName}}' + 
-                                    '&desc={{productDesc}}';
+                                    '&desc={{productDesc|striptags}}';
                     var AuthWindow = window.open(OAuthURL, '_blank');
                 } 
                 shareArea.style.visibility = 'visible';
@@ -106,7 +107,7 @@
                     data: {
                         app_uuid: "{{app.uuid}}",
                         willt_code: "{{willt_code}}",
-                        product_img : "{{productImg}}" },
+                        product_img : "{{productImg|first}}" },
                     success: function (tr) {
                         shareComplete('twitter');
                         console.log(tr);
@@ -272,7 +273,7 @@
             
             <div id="top-div" width="100%">
                 <div id="product-img">
-                    <img src="{{productImg}}" />
+                    <img src="{{productImg|first}}" />
                 </div>
 
                 <div id="text-div">

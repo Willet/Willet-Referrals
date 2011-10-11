@@ -18,6 +18,7 @@ from urlparse                   import urlparse
 from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
+from apps.product.shopify.models import get_or_fetch_shopify_product 
 from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
@@ -46,10 +47,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
-        page_url = urlparse( self.request.get('url') )
+        page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"
+        
+        logging.debug('target: %s' % target)
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -58,11 +61,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        result = urlfetch.fetch(
-            url = '%s.json' % self.request.get('url'),
-            method = urlfetch.GET
-        )
-        data = json.loads( result.content )['product']
+        #result = urlfetch.fetch(
+        #    url = '%s.json' % self.request.get('url'),
+        #    method = urlfetch.GET
+        #)
+        #data = json.loads( result.content )['product']
+        product = get_or_fetch_shopify_product(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
@@ -70,23 +74,21 @@ class AskDynamicLoader(webapp.RequestHandler):
         # User stats
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
-        productDesc = remove_html_tags(data['body_html'].strip())
-        productDesc = productDesc.replace('\r\n', '<br />')
-        productDesc = productDesc.replace('\n', '<br />')
         template_values = {
-                'productImg'  : data['images'][0]['src'],
-                'productName' : data['title'],
-                'productDesc' : productDesc,
+            #'productImg'  : data['images'][0]['src'],
+            'productImg': product.images, 
+            'productName': product.title, 
+            'productDesc': product.description,
 
-                #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
-                'FACEBOOK_APP_ID' : app.settings['facebook']['app_id'],
-                'app' : app,
-                'willt_url' : link.get_willt_url(),
-                'willt_code' : link.willt_url_code,
-                
-                'user': user,
-                'user_email': user_email,
-                'user_found': str(user_found).lower(),
+            #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'app': app,
+            'willt_url': link.get_willt_url(),
+            'willt_code': link.willt_url_code,
+            
+            'user': user,
+            'user_email': user_email,
+            'user_found': str(user_found).lower(),
         }
 
         taskqueue.add(
@@ -114,11 +116,14 @@ class VoteDynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
         template_values = {}
+
         page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"
-
+        
+        logging.debug('target: %s' % target)
+        
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
@@ -149,10 +154,10 @@ class VoteDynamicLoader(webapp.RequestHandler):
             instance = link.sibt_instance.get()
             logging.info('got instance from link')
         elif asker_instance != None:
-            page_url = self.request.headers['REFERER']
+            #page_url = self.request.headers['REFERER']
             instance = asker_instance
             logging.info('got instance for asker')
-        else:
+        elif actions.count() > 0:
             unfiltered_count = actions.count()
             instances = SIBTInstance.all()\
                 .filter('url =', target)\
@@ -200,8 +205,10 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 link.willt_url_code
             )
 
+            product = get_or_fetch_shopify_product(target, app.client)
+
             template_values = {
-                    'product_img' : self.request.get( 'photo' ),
+                    'product_img': product.images,
                     'app' : app,
                     'URL': URL,
                     
