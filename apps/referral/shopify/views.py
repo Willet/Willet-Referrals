@@ -87,7 +87,7 @@ class ShowEditPage(URIHandler):
         if shopify_sig != '' and shopify_url != '':
             # Verify Shopify varZ
             s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
-            d = hashlib.md5( REFERRAL_SHOPIFY_API_SHARED_SECRET + s).hexdigest()
+            d = hashlib.md5(SHOPIFY_APPS['ReferralShopify']['api_secret'] + s).hexdigest()
             logging.info('S: %s D: %s' % (shopify_sig, d))
             
             # TODO(Barbara): What the heck happened here? Shopify stopped working.

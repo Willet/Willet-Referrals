@@ -30,7 +30,9 @@ from util.consts              import *
 
 class ShowBetaPage(URIHandler):
     def get(self):
-        template_values = { "SIBT_SHOPIFY_API_KEY" : SIBT_SHOPIFY_API_KEY }
+        logging.info(SHOPIFY_APPS)
+        logging.info(SHOPIFY_APPS['SIBTShopify'] )
+        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -47,10 +49,12 @@ class SIBTShopifyWelcome(URIHandler):
         if client != None:
             client_email = client.email
             shop_owner = client.merchant.get_attr('full_name')
+
+
         template_values = {
             'app': app,
             'shop_owner': shop_owner,
-            'client_email': client_email
+            'client_email': client_email,
         }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
