@@ -70,6 +70,11 @@ def install_webhooks( store_url, store_token ):
     logging.info("TOKEN %s" % store_token )
 
     url      = '%s/admin/webhooks.json' % ( store_url )
+
+    # TODO: replace this.
+    #username = SHOPIFY_APPS['ReferralShopify']['api_key'] 
+    #password = hashlib.md5(SHOPIFY_APPS['ReferralShopify']['api_secret'] + self.store_token).hexdigest()
+
     username = REFERRAL_SHOPIFY_API_KEY
     password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
     header   = {'content-type':'application/json'}
