@@ -208,3 +208,20 @@ class CleanBadLinks( webapp.RequestHandler ):
 
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
+
+class IncrementCodeCounter(webapp.RequestHandler):
+    """ This was getting called every time a willet code was being
+        created, usually taking ~100ms. Moved to a task to speed up
+        page load times"""
+    def post(self):
+        def txn(cc):
+            cc.count += cc.total_counter_nums
+            cc.put()
+            return cc
+        
+        count = self.request.get('count')
+        cc = CodeCounter.all().filter('count =', int(count)).get()
+        if cc != None:
+            returned_cc = db.run_in_transaction(txn, cc) 
+            logging.info('incremented code counter %s' % returned_cc)
+

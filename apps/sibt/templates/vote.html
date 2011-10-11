@@ -22,7 +22,6 @@
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
-        <script src="http://connect.facebook.net/en_US/all.js#xfbml=1" type="text/javascript"></script> 
 
         <script type="text/javascript">
             var reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
@@ -268,7 +267,7 @@
             <script>
                 window.fbAsyncInit = function() {
                     // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
-                    FB._https = true;
+                    //FB._https = true;
                     FB.init({
                         appId: '{{FACEBOOK_APP_ID}}', // App ID
                         //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
@@ -285,7 +284,7 @@
                     js = d.createElement(s);
                     js.id = id;
                     js.async = true;
-                    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+                    js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
                     fjs.parentNode.insertBefore(js, fjs);
                 }(document, 'script', 'facebook-jssdk'));
             </script>
