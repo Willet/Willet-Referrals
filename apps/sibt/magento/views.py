@@ -221,18 +221,17 @@ class DynamicLoader(webapp.RequestHandler):
         instance = None
         other_instances = []
         asker_name = None
-
-        page_url = urlparse(self.request.headers.get('REFERER'))
+        
+        page_url = urlparse(self.request.remote_addr)
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
 
-        logging.info('remote addr: %s to %s' % (self.request.remote_addr, target))
+        #target = self.request.headers['REFERER']
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         shop_url = self.request.get('shop')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
-        
 
         #app  = get_sibt_shopify_app_by_store_url(shop_url)
         app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
@@ -252,7 +251,7 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = 1
                     event = 'SIBTShowingResults'
                     asker_name = instance.asker.get_name_or_handle()
-            elif actions.count() > 0:
+            else:
                 # filter actions for instances that are active
                 unfiltered_count = actions.count()
                 instances = SIBTInstance.all()\
@@ -272,15 +271,7 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = 1
                     event = 'SIBTShowingVote'
                     asker_name = instance.asker.get_name_or_handle()
-            
-            # precache this pages product
-            taskqueue.add(
-                url = url('FetchProductShopify'), 
-                params = {
-                    'url': target,
-                    'client': app.client.uuid
-                    }
-            )
+
             taskqueue.add(
                 queue_name = 'mixpanel', 
                 url = '/mixpanel/action', 

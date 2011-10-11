@@ -20,6 +20,11 @@ var _willet_load_remote_script = function(script) {
 };
 
 var _willet_add_other_instance = function(instance) {
+    /**
+     * this method will be used if a user has multiple
+     * "sibt" instances for a given product page.
+     * Currently this functionality is not implemented in the backend
+     */
     var el = document.createElement('img');
     el = $(el);
     el.attr('src', instance.src);
@@ -34,10 +39,11 @@ var _willet_add_other_instance = function(instance) {
     return el;
 };
 
-/**
- * Called when the vote iframe is closed
- */
+
 var _willet_vote_callback = function () {
+    /**
+     * Called when the vote iframe is closed
+     */
     var button = $('#_willet_button');
     var original_shadow = button.css('box-shadow');
     var glow_timeout = 400;
@@ -114,6 +120,8 @@ var _willet_show_vote = function(willt_code, photo_url) {
     });
 };
 
+
+var scripts = [
 /**
  * Scripts to load into the dom
  *   name - name of the script
@@ -123,7 +131,6 @@ var _willet_show_vote = function(willt_code, photo_url) {
  *   test - method to test if it has been loaded
  *   callback - callback after test is success
  */
-var scripts = [
     {
         'name': 'jQuery',
         'url': 'http://rf.rs/static/js/jquery.min.js',
@@ -147,13 +154,13 @@ var scripts = [
     }
 ];
 
-/**
- * checkScripts checks the scripts var and uses
- * the defined `test` and `callack` methods to tell
- * when a script has been loaded and is ready to be
- * used
- */
 var _willet_check_scripts = function() {
+    /**
+     * checkScripts checks the scripts var and uses
+     * the defined `test` and `callack` methods to tell
+     * when a script has been loaded and is ready to be
+     * used
+     */    
     var all_loaded = true;
 
     for (i = 0; i < scripts.length; i++) {
@@ -248,6 +255,10 @@ var _willet_run_scripts = function() {
             console.log('parent received message!:  ',e.data);
             if (e.data == 'shared') {
                 _willet_ask_success = true;
+            } else if (e.data == 'close') {
+                // the iframe wants to be closed
+                // ... maybe it's emo
+                $.colorbox.close();
             }
         }, false);
     }

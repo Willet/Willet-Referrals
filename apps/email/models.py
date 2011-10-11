@@ -121,12 +121,16 @@ class Email():
 
     @staticmethod
     def send_email(from_address, to_address, subject, body):
-        e = EmailMessage(
-            sender=from_address, 
-            to=to_address, 
-            subject=subject, 
-            html=body
-        )
-        e.send()
+        try:
+            e = EmailMessage(
+                    sender=from_address, 
+                    to=to_address, 
+                    subject=subject, 
+                    html=body
+                    )
+            e.send()
+        except Exception,e:
+            logging.error('error sending email: %s', e)
+
 # end class
 

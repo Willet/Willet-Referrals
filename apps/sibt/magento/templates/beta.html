@@ -24,13 +24,6 @@
                 site_input.val(input_default.val());
             }
             var update = function() {
-                var val = site_input.val();
-                var pos = val.search('.myshopify.com');
-                if (pos != -1) {
-                    // user entered storename.myshopify.com into the input
-                    var temp = val.substr(0, pos); 
-                    site_input.val(temp)
-                }
                 site.html(site_input.val());
                 install_link.attr('href', install_link.text());
             }
