@@ -61,7 +61,7 @@
                         if (tr === 'ok') {
                             // pass
                         } else {
-                            console.log("Facebook post failure");
+                            //console.log("Facebook post failure");
                         }
                     }
                 });
@@ -101,7 +101,7 @@
             var shareComplete = function() {
                 // clear the share text
                 toggleThanks();
-                console.log("Sharing complete!");
+                //console.log("Sharing complete!");
                 return true;
             };
         
@@ -111,7 +111,7 @@
             };
 
             var fb_share_handler = function(payload) {
-                console.log(payload)
+                //console.log(payload)
                 $.ajax({url: "/fbShare",
                     type: 'post',
                     data: payload,
@@ -119,7 +119,7 @@
                         if (tr === 'ok') {
                             shareComplete();
                         } else {
-                            console.log("Facebook post failure");
+                            //console.log("Facebook post failure");
                         }
                     }
                 });
@@ -146,7 +146,7 @@
                                 return;
                             }
                             FB.login(function(lr) {
-                                    console.log(lr);
+                                    //console.log(lr);
                                     if (!lr.authResponse) {
                                         // we weren't given permission
                                         window.close();
@@ -166,7 +166,7 @@
                                         + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
                                         AuthWindow = window.open(OAuthURL, '_blank');
                     } else if (medium === 'linkedin') {
-                        console.log('linkedin share', message);
+                        //console.log('linkedin share', message);
                         var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
                                         + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
                                         AuthWindow = window.open(OAuthURL, '_blank');       
@@ -199,7 +199,7 @@
                         oauth: true
                     });
                 } else {
-                    console.log('FB not defined');
+                    //console.log('FB not defined');
                 }
                 */
         

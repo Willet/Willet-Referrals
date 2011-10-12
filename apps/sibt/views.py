@@ -189,10 +189,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 event = 'SIBTShowingResultsToFriend'
             
             link = instance.link
-            share_url = '%s/%s' % (
-                URL,
-                link.willt_url_code
-            )
+            share_url = link.get_willt_url
 
             product = get_or_fetch_shopify_product(target, app.client)
 
