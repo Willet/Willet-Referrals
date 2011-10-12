@@ -4,11 +4,13 @@ import logging, datetime, random
 from decimal import *
 
 from google.appengine.api import urlfetch, memcache
+from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from util.model import Model
 
 from util.helpers import encode_base62
+from util.helpers import url
 
 NUM_SHARDS = 25
 
@@ -110,7 +112,9 @@ class Link(Model):
 def create_link(targetURL, app, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
 
+    logging.debug('called create_link')
     code = encode_base62(get_a_willt_code())
+    logging.debug('got code %s' %  code)
     link = Link(key_name         = code,
                 target_url       = targetURL,
                 willt_url_code   = code,
@@ -118,6 +122,7 @@ def create_link(targetURL, app, domain, user=None, usr=""):
                 app_             = app,
                 user             = user,
                 origin_domain    = domain)
+    logging.debug('putting link')
     link.put()
     logging.info("Successful put of Link %s" % code)
     return link
@@ -207,10 +212,17 @@ class CodeCounter(Model):
                                             default=20)
     
     def get_next(self):
-        c = self.count
-        self.count += self.total_counter_nums
-        self.put()
-        return c
+        #c = self.count
+        #self.count += self.total_counter_nums
+        #self.put()
+        #return c
+        taskqueue.add(
+            url = url('IncrementCodeCounter'),
+            params = {
+                'count': self.count 
+            }
+        )
+        return self.count
 
     def __init__(self, *args, **kwargs):
        self._memcache_key = kwargs['count'] if 'count' in kwargs else None 

@@ -4,10 +4,9 @@
 
 var _willet_css = {% include "css/colorbox.css" %}
 
-var _willet_is_asker    = false;
-var _willet_show_votes  = false;
 var _willet_ask_success = false;
-
+var _willet_is_asker = (parseInt('{{ is_asker }}') == 1); // did they ask?
+var _willet_show_votes = (parseInt('{{ show_votes }}') == 1);
 /**
  * quick helper function to add scripts to dom
  */
@@ -201,8 +200,7 @@ var _willet_run_scripts = function() {
     var hash_index  = hash.indexOf(hash_search);
     var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
     
-    _willet_is_asker = (parseInt('{{ is_asker }}') == 1); // did they ask?
-    _willet_show_votes = (parseInt('{{ show_votes }}') == 1);
+    
 
 
     

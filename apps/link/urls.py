@@ -7,6 +7,7 @@ urlpatterns = [
     (r'/link/cleanBadLinks', CleanBadLinks),
     (r'/link/getTweets', getUncheckedTweets),
     (r'/link/init', InitCodes),
+    (r'/link/incrementCodeCounter', IncrementCodeCounter),
 
     (r'/(.*)', TrackWilltURL),
 ]
