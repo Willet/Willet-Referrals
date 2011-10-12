@@ -1,13 +1,26 @@
 from __future__ import absolute_import
 
-from google.appengine.api import users
-
+from apps.user.models import get_user_by_cookie, get_emails_by_user
 
 # CUSTOMIZE can_see_experiments however you want to specify
 # whether or not the currently-logged-in user has access
 # to the experiment dashboard.
-def can_control_experiments():
-    return users.is_current_user_admin()
+def can_control_experiments( request_handler=None ):
+    # Admin whitelist
+    whitelist = [ 'barbara@getwillet.com', 'barbara@getwillet.ca', 'barbaraemac@gmail.com',
+                  'foo@bar.com', 'asd@asd.com', 'z4beth@gmail.com', 'harrismch@gmail.com',
+                  'fraser.harris@gmail.com' ]
+
+    if request_handler:
+        user = get_user_by_cookie( request_handler )
+
+        emails = get_emails_by_user( user )
+        for e in emails:
+            if e.address in whitelist:
+                return True
+
+    # TODO: Make this false .. true only for testing
+    return True
 
 # CUSTOMIZE current_logged_in_identity to make your a/b sessions
 # stickier and more persistent per user.
@@ -30,11 +43,5 @@ def can_control_experiments():
 #   from google.appengine.api import users
 #   return users.get_current_user().user_id() if users.get_current_user() else None
 def current_logged_in_identity():
-    #from apps.gae_bingo.models import UserData
-    #return UserData.current(bust_cache=True)
-    
-    # @todo REMOVE THIS HACK
-    # this is a hack until further notice
-    from google.appengine.api import users
-    return users.get_current_user().user_id() if users.get_current_user() else None
- 
+    return None # TODO
+    #return users.get_current_user().user_id() if users.get_current_user() else None

@@ -16,13 +16,14 @@ from urlparse import urlparse
 
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
+from apps.client.models       import *
+from apps.gae_bingo.gae_bingo import ab_test, bingo
+from apps.link.models         import Link, get_link_by_willt_code, create_link
+from apps.order.models        import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
-from apps.link.models         import Link, get_link_by_willt_code, create_link
-from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.models       import *
-from apps.order.models        import *
 from apps.stats.models        import Stats
+from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
 
 from util.helpers             import *
 from util.urihandler          import URIHandler
@@ -306,12 +307,14 @@ class DynamicLoader(webapp.RequestHandler):
                 'show_votes' : show_votes,
                 
                 'app' : app,
-                'instance' : instance,
-                'asker_name': asker_name, 
+                'instance'       : instance,
+                'asker_name'     : asker_name, 
                 'other_instances': other_instances,
                 
                 'user': user,
-                'store_id' : self.request.get('store_id')
+                'store_id' : self.request.get('store_id'),
+
+                'a_b_showFBLogo' : ab_test('sibt_showFBLogoOnCTA')
         }
 
         # Finally, render the JS!

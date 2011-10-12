@@ -3,7 +3,6 @@
 # Google App Engine Bingo
 # modified to work with willet structure
 
-
 from apps.gae_bingo import cache
 from apps.gae_bingo import dashboard
 

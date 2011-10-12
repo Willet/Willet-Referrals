@@ -18,19 +18,20 @@ from urlparse                   import urlparse
 from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
+from apps.client.models         import *
+from apps.gae_bingo.gae_bingo   import bingo
+from apps.link.models           import Link
+from apps.link.models           import create_link
+from apps.link.models           import get_link_by_willt_code
+from apps.order.models          import *
 from apps.product.shopify.models import get_or_fetch_shopify_product 
 from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
-from apps.link.models           import Link
-from apps.link.models           import create_link
-from apps.link.models           import get_link_by_willt_code
+from apps.stats.models          import Stats
 from apps.user.models           import User
 from apps.user.models           import get_or_create_user_by_cookie
 from apps.user.models           import get_user_by_cookie
-from apps.client.models         import *
-from apps.order.models          import *
-from apps.stats.models          import Stats
 
 from util.consts                import *
 from util.helpers               import *
@@ -90,6 +91,9 @@ class AskDynamicLoader(webapp.RequestHandler):
             'user_email': user_email,
             'user_found': str(user_found).lower(),
         }
+
+        # GAY BINGO
+        bingo( 'sibt_showFBLogoOnCTA' )
 
         taskqueue.add(
             queue_name = 'mixpanel', 

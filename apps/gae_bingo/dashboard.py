@@ -12,7 +12,7 @@ class Dashboard(RequestHandler):
 
     def get(self):
 
-        if not can_control_experiments():
+        if not can_control_experiments( self ):
             self.redirect("/")
             return
 
@@ -46,7 +46,7 @@ class ControlExperiment(RequestHandler):
 
     def post(self):
 
-        if not can_control_experiments():
+        if not can_control_experiments( self ):
             return
 
         action = self.request.get("action")

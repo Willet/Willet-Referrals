@@ -200,10 +200,6 @@ var _willet_run_scripts = function() {
     var hash_index  = hash.indexOf(hash_search);
     var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
     
-    
-
-
-    
     // Construct button.
     if (_willet_is_asker) {
         $(button).html('See what your friends said');
@@ -211,7 +207,12 @@ var _willet_run_scripts = function() {
         // not the asker but we are showing votes
         $(button).html('Help {{ asker_name }} by voting!');
     } else {
-        $(button).html('Not sure?&nbsp;Ask your friends!');
+        if ( '{{a_b_showFBLogo}}' == 'True' ) {
+            var imgTag = "<img src='{{URL}}/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />";
+            $(button).html(imgTag + 'Ask your friends!');
+        } else {
+            $(button).html('Ask your friends!');
+        }
     }
    
     button.setAttribute('class', 'button');
