@@ -213,10 +213,10 @@
                 // fb is loaded, run our scripts
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
-                shareArea = document.getElementById('share-area'),
-                userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
-                shareText = document.getElementById('share-text'),
-                charsLeft = document.getElementById('chars-left');
+                shareArea  = document.getElementById('share-area'),
+                userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+                shareText  = document.getElementById('share-text'),
+                charsLeft  = document.getElementById('chars-left');
 
                 if (FB != 'undefined') {
                     FB.init({ appId: '{{FACEBOOK_APP_ID}}',

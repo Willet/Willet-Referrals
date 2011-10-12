@@ -4,8 +4,8 @@
 
 var _willet_css = {% include "css/colorbox.css" %}
 
-var _willet_is_asker = false;
-var _willet_show_votes = false;
+var _willet_is_asker    = false;
+var _willet_show_votes  = false;
 var _willet_ask_success = false;
 
 /**
@@ -33,12 +33,11 @@ var _willet_add_other_instance = function(instance) {
     el.click(function() {
         var code = $(this).attr('data-item');
         var photo_src = $('#image img').attr('src'); 
-        _willet_show_vote(code, photo_src);
+        _willet_show_vote();
     });
     
     return el;
 };
-
 
 var _willet_vote_callback = function () {
     /**
@@ -51,7 +50,7 @@ var _willet_vote_callback = function () {
     var resetGlow = function() {
         button.css('box-shadow', original_shadow);
     };
-    if (_willet_show_vote && !_willet_is_asker) {
+    if (_willet_show_votes && !_willet_is_asker) {
         // closing box but not the asker!
         var button = $('#_willet_button');
         button.css('box-shadow', '0px 0px 15px red');
@@ -73,49 +72,38 @@ var _willet_ask_callback = function() {
 /**
  * Onclick event handler for the 'sibt' button
  */
-var _willet_button_onclick = function(url) {
+var _willet_button_onclick = function() {
     if (_willet_is_asker || _willet_show_votes) {
         // instead of showing vote again, let's show the results
-        var hash        = window.location.hash;
-        var hash_search = '#code=';
-        var hash_index = hash.indexOf(hash_search);
-        var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
-        var photo_src = $('#image img').attr('src'); 
-        _willet_show_vote(willt_code, photo_src);
+        _willet_show_vote();
     } else {
         $.colorbox({
+            inline: true,
+            href: "#_willet_askIframe",
             transition: 'fade',
             scrolling: false,
-            iframe: true, 
             initialWidth: 0, 
             initialHeight: 0, 
-            innerWidth: 420,
-            innerHeight: 232, 
+            innerWidth: '420px',
+            innerHeight: '232px', 
             fixed: true,
-            href: url,
             onClosed: _willet_ask_callback
         });
     }
 };
 
-var _willet_show_vote = function(willt_code, photo_url) {
-    var url = "{{URL}}/s/vote.html?willt_code=" + 
-        willt_code + 
-        "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
-        photo_url + 
-        "&url=" + window.location.href;
-    console.log('showing colorbox for url, image', willt_code, photo_url, url);
+var _willet_show_vote = function() {
     //$.colorbox.init();
     $.colorbox({
+        inline: true,
+        href: "#_willet_voteIframe",
         transition: 'fade',
         scrolling: true, 
-        iframe: true,
-        width: '700px',
-        height: '90%',
-        fixed: true,
         initialWidth: 0, 
         initialHeight: 0,
-        href: url,
+        innerWidth: '635px',
+        innerHeight: '90%',
+        fixed: true,
         onClosed: _willet_vote_callback
     });
 };
@@ -133,7 +121,7 @@ var scripts = [
  */
     {
         'name': 'jQuery',
-        'url': 'http://rf.rs/static/js/jquery.min.js',
+        'url': 'https://social-referral.appspot.com/static/js/jquery.min.js',
         'dom_el': null,
         'loaded': false,
         'test': function() {
@@ -143,7 +131,7 @@ var scripts = [
         }
     }, {
         'name': 'jQuery Colorbox',
-        'url': 'http://rf.rs/static/js/jquery.colorbox-min.js',
+        'url': 'https://social-referral.appspot.com/static/js/jquery.colorbox-min.js',
         'dom_el': null,
         'loaded': false,
         'test': function() {
@@ -202,25 +190,23 @@ var _willet_check_scripts = function() {
  */
 var _willet_run_scripts = function() {
     console.log('running');
+    var ask_div     = document.createElement( 'div' );
+    var vote_div    = document.createElement( 'div' );
     var ask_iframe  = document.createElement( 'iframe' );
     var vote_iframe = document.createElement( 'iframe' );
     var button      = document.createElement('a');
+    var photo_src = $('#image img').attr('src'); 
     var hash        = window.location.hash;
     var hash_search = '#code=';
-    var photo_src = $('#image img').attr('src'); 
+    var hash_index  = hash.indexOf(hash_search);
+    var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
     
     _willet_is_asker = (parseInt('{{ is_asker }}') == 1); // did they ask?
     _willet_show_votes = (parseInt('{{ show_votes }}') == 1);
 
-    var hash_index = hash.indexOf(hash_search);
-    if (_willet_show_votes || hash_index != -1) {
-        var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
-        _willet_show_vote(willt_code, photo_src);
-    }
+
     
     // Construct button.
-    var url = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
-
     if (_willet_is_asker) {
         $(button).html('See what your friends said');
     } else if (_willet_show_votes) {
@@ -234,11 +220,11 @@ var _willet_run_scripts = function() {
     button.setAttribute('style', 'display: none'); 
     button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
     button.setAttribute( 'value', '' );
-    button.setAttribute( 'onClick', '_willet_button_onclick("'+url+'"); return false;');
+    button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
     button.setAttribute( 'id', '_willet_button' );
     
     // Put button on the page.
-    var purchase_cta = document.getElementById( '_willet_shouldIBuyThisButton');
+    var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
     if (purchase_cta) {
         $(purchase_cta).append(button);
         //purchase_cta.parentNode.appendChild( button );
@@ -261,6 +247,33 @@ var _willet_run_scripts = function() {
                 $.colorbox.close();
             }
         }, false);
+    }
+
+    // Construct iframes and hide them in the page (ie. cache)
+    ask_div.style.display  = "none";
+    vote_div.style.display = "none";
+
+    ask_iframe.setAttribute( 'id', '_willet_askIframe' );
+    ask_iframe.setAttribute( 'width', '420px' );
+    ask_iframe.setAttribute( 'height', '232px' );
+    
+    vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
+    vote_iframe.setAttribute( 'width', '635px' );
+    vote_iframe.setAttribute( 'height', '90%' );
+
+    ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
+    vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
+                       "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
+                       photo_src + "&url=" + window.location.href;
+    // Attach to page
+    ask_div.appendChild( ask_iframe );
+    vote_div.appendChild( vote_iframe );
+
+    document.body.appendChild( ask_div );
+    document.body.appendChild( vote_div );
+
+    if (_willet_show_votes || hash_index != -1) {
+        _willet_show_vote();
     }
 };
 

@@ -230,6 +230,8 @@ class DynamicLoader(webapp.RequestHandler):
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
 
         logging.info('remote addr: %s to %s' % (self.request.remote_addr, target))
+        #TODO( MAATTTTT ): Why did you add this line of code?
+        #target = self.request.headers['REFERER']
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
