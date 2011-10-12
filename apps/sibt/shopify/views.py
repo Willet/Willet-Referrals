@@ -17,7 +17,7 @@ from urlparse import urlparse
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
 from apps.client.models       import *
-from apps.gae_bingo.gae_bingo import ab_test, bingo
+from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.order.models        import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
@@ -240,7 +240,6 @@ class DynamicLoader(webapp.RequestHandler):
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
-
         #app  = get_sibt_shopify_app_by_store_url(shop_url)
         app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
         event = 'SIBTShowingButton'
