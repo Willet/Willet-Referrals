@@ -279,34 +279,34 @@ var _willet_run_scripts = function() {
                 $.colorbox.close();
             }
         }, false);
-    }
 
-    // Construct iframes and hide them in the page (ie. cache)
-    ask_div.style.display  = "none";
-    vote_div.style.display = "none";
+        // Construct iframes and hide them in the page (ie. cache)
+        ask_div.style.display  = "none";
+        vote_div.style.display = "none";
 
-    ask_iframe.setAttribute( 'id', '_willet_askIframe' );
-    ask_iframe.setAttribute( 'width', '420px' );
-    ask_iframe.setAttribute( 'height', '232px' );
-    
-    vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
-    vote_iframe.setAttribute( 'width', '635px' );
-    vote_iframe.setAttribute( 'height', '90%' );
+        ask_iframe.setAttribute( 'id', '_willet_askIframe' );
+        ask_iframe.setAttribute( 'width', '420px' );
+        ask_iframe.setAttribute( 'height', '232px' );
 
-    ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
-    vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
-                       "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
-                       photo_src + "&url=" + window.location.href;
-    // Attach to page
-    ask_div.appendChild( ask_iframe );
-    vote_div.appendChild( vote_iframe );
+        vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
+        vote_iframe.setAttribute( 'width', '635px' );
+        vote_iframe.setAttribute( 'height', '90%' );
 
-    document.body.appendChild( ask_div );
-    document.body.appendChild( vote_div );
+        ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
+        vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
+            "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
+            photo_src + "&url=" + window.location.href;
+        // Attach to page
+        ask_div.appendChild( ask_iframe );
+        vote_div.appendChild( vote_iframe );
 
-    if (_willet_show_votes || hash_index != -1) {
-        _willet_show_vote();
-    }
+        document.body.appendChild( ask_div );
+        document.body.appendChild( vote_div );
+
+        if (_willet_show_votes || hash_index != -1) {
+            _willet_show_vote();
+        }
+    } // if there is a button
 };
 
 /**
