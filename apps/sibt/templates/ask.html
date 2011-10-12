@@ -74,7 +74,7 @@
             };
 
             var fb_share_handler = function(payload) {
-                console.log(payload);
+                //console.log(payload);
                 $.ajax({
                     url: '{% url ShareSIBTInstanceOnFacebook %}',
                     type: 'post',
@@ -90,7 +90,7 @@
                                 userFound = false; // dont do this twice
                                 fb_login_and_share();
                             }
-                            console.log("Facebook post failure", response);
+                            //console.log("Facebook post failure", response);
                         }
                     }
                 });
@@ -110,7 +110,7 @@
                         product_img : "{{productImg|first}}" },
                     success: function (tr) {
                         shareComplete('twitter');
-                        console.log(tr);
+                        //console.log(tr);
                     }
                 }); 
             };
@@ -118,7 +118,7 @@
             var fb_login_and_share = function() {
                 // tries to auth with facebook 
                 FB.login(function(lr) {
-                        console.log(lr);
+                        //console.log(lr);
                         if (!lr.authResponse) {
                             // we weren't given permission
                             window.close();
@@ -151,7 +151,7 @@
                     'shared',
                     '*'
                 );
-                console.log("Sharing complete!");
+                //console.log("Sharing complete!");
 
                 return true;
             };
@@ -226,7 +226,7 @@
                         oauth: true
                     });
                 } else {
-                    console.log("Facebook not ready!");    
+                    //console.log("Facebook not ready!");    
                 }
             
                 // Controls default values of input & textarea elements
