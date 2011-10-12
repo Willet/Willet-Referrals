@@ -49,7 +49,11 @@ class Action( Model, polymodel.PolyModel ):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return Action.all().filter('uuid =', uuid).get()
- 
+
+    def validateSelf( self ):
+        if self.user.is_admin():
+            return True # Anything except None
+
     def __unicode__(self):
         return self.__str__()
 
@@ -81,22 +85,8 @@ class ClickAction( Action ):
         super(ClickAction, self).__init__(*args, **kwargs)
 
         # Tell Mixplanel that we got a click
-        try:
-            taskqueue.add(
-                queue_name = 'mixpanel', 
-                url        = '/mixpanel/action', 
-                params     = {
-                    'event': self.class_name(), 
-                    'app' : self.app_.uuid,
-                    'target_url': self.link.target_url,
-                    'user': self.user.get_name_or_handle(),
-                    'user_uuid': self.user.uuid,
-                    'client': self.app_.client.email
-                }
-            )
-        except:
-            pass
-
+        self.app_.storeAnalyticsDatum( self.class_name(), self.user, self.link.target_url )
+           
     def __str__(self):
         return 'CLICK: %s(%s) %s' % (
                 self.user.get_full_name(),
@@ -113,8 +103,6 @@ def create_click_action( user, app, link ):
                         app_     = app,
                         link     = link )
     act.put()
-
-    return act
    
 ## -----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ----------------------------------------------------
@@ -134,18 +122,15 @@ class SIBTClickAction( ClickAction ):
 def create_sibt_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
-    act  = SIBTClickAction(
-        key_name = uuid,
-        uuid = uuid,
-        user = user,
-        app_ = app,
-        link = link,
-        url = link.target_url,
-        sibt_instance = link.sibt_instance.get()
-    )
+    act  = SIBTClickAction( key_name = uuid,
+                            uuid = uuid,
+                            user = user,
+                            app_ = app,
+                            link = link,
+                            url = link.target_url,
+                            sibt_instance = link.sibt_instance.get() )
     act.put()
 
-    return act
 
 ## Accessors -------------------------------------------------------------------
 def get_sibt_click_actions_by_user_for_url(user, url):
@@ -166,24 +151,10 @@ class VoteAction( Action ):
         Primarily used for 'SIBT' App """
     
     def __init__(self, *args, **kwargs):
-        # Tell Mixplanel that we got a vote
         super(VoteAction, self).__init__(*args, **kwargs)
-        try:
-            taskqueue.add(
-                queue_name = 'mixpanel', 
-                url        = '/mixpanel/action', 
-                params     = {
-                    'event': self.class_name(), 
-                    'app' : self.app_.uuid,
-                    'target_url': self.link.target_url,
-                    'user': self.user.get_name_or_handle(),
-                    'user_uuid': self.user.uuid,
-                    'client': self.app_.client.email
-                }
-            )
-        except:
-            pass
-
+        
+        # Tell Mixplanel that we got a vote
+        self.app_.storeAnalyticsDatum( self.class_name(), self.user, self.link.target_url )
     
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
@@ -197,8 +168,6 @@ def create_vote_action( user, app, link ):
                        app_     = app,
                        link     = link )
     act.put() 
-
-    return act
 
 ## -----------------------------------------------------------------------------
 ## SIBTVoteAction Subclass ----------------------------------------------------
@@ -226,5 +195,3 @@ def create_sibt_vote_action( user, instance ):
                             url      = instance.link.target_url,
                             sibt_instance = instance )
     act.put()
-
-    return act

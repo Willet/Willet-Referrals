@@ -279,7 +279,7 @@ class DynamicLoader(webapp.RequestHandler):
                     event = 'SIBTShowingVote'
                     asker_name = instance.asker.get_name_or_handle()
             
-            # precache this pages product
+            # precache this page's product
             taskqueue.add(
                 url = url('FetchProductShopify'), 
                 params = {
@@ -287,18 +287,8 @@ class DynamicLoader(webapp.RequestHandler):
                     'client': app.client.uuid
                     }
             )
-            taskqueue.add(
-                queue_name = 'mixpanel', 
-                url = '/mixpanel/action', 
-                params = {
-                    'event': event, 
-                    'app': app.uuid,
-                    'user': user.get_name_or_handle(),
-                    'target_url': target,
-                    'user_uuid': user.uuid,
-                    'client': app.client.email
-                }
-            )
+
+            app.storeAnalyticsDatum( event, user, target )
 
         template_values = {
                 'URL' : URL,
@@ -321,4 +311,3 @@ class DynamicLoader(webapp.RequestHandler):
         self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
         self.response.out.write(template.render(path, template_values))
         return
-

@@ -22,9 +22,9 @@ from apps.order.models    import Order
 from apps.user.models     import User
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats
 
-
 from util.consts          import *
 from util.helpers         import generate_uuid
+from util.helpers         import url 
 from util.model           import Model
 
 NUM_SHARE_SHARDS = 15
@@ -71,6 +71,25 @@ class App(Model, polymodel.PolyModel):
         self.client     = None
         self.put()
     
+    def storeAnalyticsDatum( self, event, user, target ):
+        if not user.is_admin():
+            logging.info("Queuing up task to store '%s' to Mixpanel." % event )
+
+            taskqueue.add(
+                queue_name = 'mixpanel',
+                url = url('SendActionToMixpanel'), 
+                params = {
+                    'event'     : event, 
+                    'target_url': target,
+                    
+                    'app'       : self.uuid,
+                    'client'    : self.client.email,
+                    
+                    'user'      : user.get_name_or_handle(),
+                    'user_uuid' : user.uuid,
+                }
+            )
+
     def compute_analytics(self, scope):
         """Update the AppAnalytics model for this uuid 
             with latest available data""" 
