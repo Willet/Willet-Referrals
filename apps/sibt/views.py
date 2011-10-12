@@ -106,6 +106,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         template_values = {}
 
         page_url = urlparse(self.request.get('url'))
+        instance_uuid = self.request.get('instance_uuid')
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"

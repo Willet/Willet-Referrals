@@ -2,6 +2,10 @@
   * Copyright 2011, Willet, Inc.
  **/
 
+/**
+ * TODO
+ * add comments for wtf this is
+ */
 var _willet_css = {% include "css/colorbox.css" %}
 
 var _willet_ask_success = false;
@@ -295,7 +299,8 @@ var _willet_run_scripts = function() {
         ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
         vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
             "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
-            photo_src + "&url=" + window.location.href;
+            photo_src + "&url=" + window.location.href +
+            "&instance_uuid={{instance.uuid}}";
         // Attach to page
         ask_div.appendChild( ask_iframe );
         vote_div.appendChild( vote_iframe );
