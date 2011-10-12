@@ -85,8 +85,8 @@ var _willet_button_onclick = function() {
             href: "#_willet_askIframe",
             transition: 'fade',
             scrolling: false,
-            initialWidth: 0, 
-            initialHeight: 0, 
+            initialWidth: '420px', 
+            initialHeight: '232px', 
             innerWidth: '420px',
             innerHeight: '232px', 
             fixed: true,
@@ -133,8 +133,8 @@ var _willet_show_vote = function() {
         href: "#_willet_voteIframe",
         transition: 'fade',
         scrolling: true, 
-        initialWidth: 0, 
-        initialHeight: 0,
+        initialWidth: '635px', 
+        initialHeight: '90%',
         innerWidth: '635px',
         innerHeight: '90%',
         fixed: true,
@@ -240,7 +240,7 @@ var _willet_run_scripts = function() {
     // Construct button.
     if (_willet_is_asker) {
         $(button).html('See what your friends said');
-    } else if (_willet_show_votes) {
+    } else if (_willet_show_votes || hash_index != -1) {
         // not the asker but we are showing votes
         $(button).html('Help {{ asker_name }} by voting!');
     } else {
