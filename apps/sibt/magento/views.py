@@ -16,14 +16,13 @@ from urlparse import urlparse
 
 from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
-from apps.client.models       import *
-from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models         import Link, get_link_by_willt_code, create_link
-from apps.order.models        import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
-from apps.stats.models        import Stats
+from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
+from apps.client.models       import *
+from apps.order.models        import *
+from apps.stats.models        import Stats
 
 from util.helpers             import *
 from util.urihandler          import URIHandler
@@ -31,9 +30,7 @@ from util.consts              import *
 
 class ShowBetaPage(URIHandler):
     def get(self):
-        logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['SIBTShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
+        template_values = { "SIBT_SHOPIFY_API_KEY" : SIBT_SHOPIFY_API_KEY }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -50,12 +47,10 @@ class SIBTShopifyWelcome(URIHandler):
         if client != None:
             client_email = client.email
             shop_owner = client.merchant.get_attr('full_name')
-
-
         template_values = {
             'app': app,
             'shop_owner': shop_owner,
-            'client_email': client_email,
+            'client_email': client_email
         }
 
         self.response.out.write( self.render_page( 'welcome.html', template_values)) 
@@ -226,12 +221,10 @@ class DynamicLoader(webapp.RequestHandler):
         instance = None
         other_instances = []
         asker_name = None
-
-        page_url = urlparse(self.request.headers.get('REFERER'))
+        
+        page_url = urlparse(self.request.remote_addr)
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
 
-        logging.info('remote addr: %s to %s' % (self.request.remote_addr, target))
-        #TODO( MAATTTTT ): Why did you add this line of code?
         #target = self.request.headers['REFERER']
 
         # Grab a User and App
@@ -239,7 +232,7 @@ class DynamicLoader(webapp.RequestHandler):
         shop_url = self.request.get('shop')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
-        
+
         #app  = get_sibt_shopify_app_by_store_url(shop_url)
         app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
         event = 'SIBTShowingButton'
@@ -258,7 +251,7 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = 1
                     event = 'SIBTShowingResults'
                     asker_name = instance.asker.get_name_or_handle()
-            elif actions.count() > 0:
+            else:
                 # filter actions for instances that are active
                 unfiltered_count = actions.count()
                 instances = SIBTInstance.all()\
@@ -278,15 +271,7 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = 1
                     event = 'SIBTShowingVote'
                     asker_name = instance.asker.get_name_or_handle()
-            
-            # precache this pages product
-            taskqueue.add(
-                url = url('FetchProductShopify'), 
-                params = {
-                    'url': target,
-                    'client': app.client.uuid
-                    }
-            )
+
             taskqueue.add(
                 queue_name = 'mixpanel', 
                 url = '/mixpanel/action', 
@@ -306,14 +291,12 @@ class DynamicLoader(webapp.RequestHandler):
                 'show_votes' : show_votes,
                 
                 'app' : app,
-                'instance'       : instance,
-                'asker_name'     : asker_name, 
+                'instance' : instance,
+                'asker_name': asker_name, 
                 'other_instances': other_instances,
                 
                 'user': user,
-                'store_id' : self.request.get('store_id'),
-
-                'a_b_showFBLogo' : ab_test('sibt_showFBLogoOnCTA')
+                'store_id' : self.request.get('store_id')
         }
 
         # Finally, render the JS!

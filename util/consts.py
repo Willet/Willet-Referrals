@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'user_analytics',
     'email',
     'feedback',
+    'product.shopify',
     'gae_bingo',
     'gae_bingo.tests',
     # LINK MUST ALWAYS BE LAST

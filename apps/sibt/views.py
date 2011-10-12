@@ -18,18 +18,19 @@ from urlparse                   import urlparse
 from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
-from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
-from apps.sibt.shopify.models   import SIBTShopify
-from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
+from apps.client.models         import *
 from apps.link.models           import Link
 from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
+from apps.order.models          import *
+from apps.product.shopify.models import get_or_fetch_shopify_product 
+from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
+from apps.sibt.shopify.models   import SIBTShopify
+from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
+from apps.stats.models          import Stats
 from apps.user.models           import User
 from apps.user.models           import get_or_create_user_by_cookie
 from apps.user.models           import get_user_by_cookie
-from apps.client.models         import *
-from apps.order.models          import *
-from apps.stats.models          import Stats
 
 from util.consts                import *
 from util.helpers               import *
@@ -46,10 +47,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
-        page_url = urlparse( self.request.get('url') )
+        page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"
+        
+        logging.debug('target: %s' % target)
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -58,11 +61,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        result = urlfetch.fetch(
-            url = '%s.json' % self.request.get('url'),
-            method = urlfetch.GET
-        )
-        data = json.loads( result.content )['product']
+        #result = urlfetch.fetch(
+        #    url = '%s.json' % self.request.get('url'),
+        #    method = urlfetch.GET
+        #)
+        #data = json.loads( result.content )['product']
+        product = get_or_fetch_shopify_product(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
@@ -70,38 +74,24 @@ class AskDynamicLoader(webapp.RequestHandler):
         # User stats
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
-        productDesc = remove_html_tags(data['body_html'].strip())
-        productDesc = productDesc.replace('\r\n', '<br />')
-        productDesc = productDesc.replace('\n', '<br />')
         template_values = {
-                'productImg'  : data['images'][0]['src'],
-                'productName' : data['title'],
-                'productDesc' : productDesc,
+            #'productImg'  : data['images'][0]['src'],
+            'productImg': product.images, 
+            'productName': product.title, 
+            'productDesc': product.description,
 
-                #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
-                'FACEBOOK_APP_ID' : app.settings['facebook']['app_id'],
-                'app' : app,
-                'willt_url' : link.get_willt_url(),
-                'willt_code' : link.willt_url_code,
-                
-                'user': user,
-                'user_email': user_email,
-                'user_found': str(user_found).lower(),
+            #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'app': app,
+            'willt_url': link.get_willt_url(),
+            'willt_code': link.willt_url_code,
+
+            'target_url' : target,
+            
+            'user': user,
+            'user_email': user_email,
+            'user_found': str(user_found).lower(),
         }
-
-        taskqueue.add(
-            queue_name = 'mixpanel', 
-            url = '/mixpanel/action', 
-            params = {
-                'event'    : 'SIBTShowingAskIframe', 
-                'app' : app.uuid,
-                'user': user.get_name_or_handle(),
-                'target_url': target,
-                'user_uuid': user.uuid,
-                'user': user.get_name_or_handle(),
-                'client': app.client.email
-            }
-        )
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
@@ -114,11 +104,15 @@ class VoteDynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
         template_values = {}
+
         page_url = urlparse(self.request.get('url'))
+        instance_uuid = self.request.get('instance_uuid')
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"
-
+        
+        logging.debug('target: %s' % target)
+        
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
@@ -149,10 +143,10 @@ class VoteDynamicLoader(webapp.RequestHandler):
             instance = link.sibt_instance.get()
             logging.info('got instance from link')
         elif asker_instance != None:
-            page_url = self.request.headers['REFERER']
+            #page_url = self.request.headers['REFERER']
             instance = asker_instance
             logging.info('got instance for asker')
-        else:
+        elif actions.count() > 0:
             unfiltered_count = actions.count()
             instances = SIBTInstance.all()\
                 .filter('url =', target)\
@@ -176,7 +170,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         # default event
         event = 'SIBTShowingVoteIframe'
 
-        if instance.is_live:
+        if instance:
             name = instance.asker.get_full_name()
             is_asker = (instance.asker.key() == user.key())
             vote_action = SIBTVoteAction.all()\
@@ -186,6 +180,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     .get()
             logging.info('got vote action: %s' % vote_action)
             has_voted = (vote_action != None)
+            if not instance.is_live:
+                has_voted = True
 
             if is_asker:
                 event = 'SIBTShowingResultsToAsker'
@@ -198,15 +194,20 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 link.willt_url_code
             )
 
+            product = get_or_fetch_shopify_product(target, app.client)
+
             template_values = {
-                    'product_img' : self.request.get( 'photo' ),
+                    'evnt' : event,
+
+                    'product_img': product.images,
                     'app' : app,
                     'URL': URL,
                     
                     'user': user,
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
-                    'fb_comments_url' : '%s/%s' % (target, instance.uuid),
+                    'target_url' : target,
+                    'fb_comments_url' : '%s?%s' % (target, instance.uuid),
 
                     'share_url': share_url,
                     'is_asker' : is_asker,
@@ -226,18 +227,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
-        taskqueue.add(
-            queue_name = 'mixpanel', 
-            url = '/mixpanel/action', 
-            params = {
-                'event': event, 
-                'app': app.uuid,
-                'user': user.get_name_or_handle(),
-                'user_uuid': user.uuid,
-                'target_url': target,
-                'client': app.client.email
-            }
-        )
         self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
         self.response.out.write(template.render(path, template_values))
         return

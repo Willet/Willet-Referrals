@@ -178,17 +178,21 @@ def create_shopify_store( url, token, request_handler, app_type ):
 # Shopify API Calls  -----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):
 
+    # Constuct the API URL
     url      = '%s/admin/shop.json' % ( store_url )
+    
+    # Fix inputs ( legacy )
     if app_type == "referral":
-        username = REFERRAL_SHOPIFY_API_KEY
-        password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-    elif app_type == 'buttons':
-        username = BUTTONS_SHOPIFY_API_KEY
-        password = hashlib.md5(BUTTONS_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-    else:   
-        username = SIBT_SHOPIFY_API_KEY
-        password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+        app_type = 'ReferralShopify'
+    elif app_type == "sibt": 
+        app_type = 'SIBTShopify'
+    
+    # Grab Shopify API settings
+    settings = SHOPIFY_APPS[app_type]
 
+    username = settings['api_key'] 
+    password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
+    
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
     # because we have put None at the start it will always
@@ -220,20 +224,20 @@ def get_store_info(store_url, store_token, app_type):
 def get_product_imgs(store_url, store_token, app_type):
     """ Fetch images for all the products in this store """
 
+    # Construct the API URL
     url      = '%s/admin/products.json' % (store_url)
     
-    # eventually this will be:
-    # TODO: THIS V
-    #SHOPIFY_APPS[app]['api_key']
+    # Fix inputs ( legacy )
     if app_type == "referral":
-        username = REFERRAL_SHOPIFY_API_KEY
-        password = hashlib.md5(REFERRAL_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-    elif app_type == 'buttons':
-        username = BUTTONS_SHOPIFY_API_KEY
-        password = hashlib.md5(BUTTONS_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
-    else:   
-        username = SIBT_SHOPIFY_API_KEY
-        password = hashlib.md5(SIBT_SHOPIFY_API_SHARED_SECRET + store_token).hexdigest()
+        app_type = 'ReferralShopify'
+    elif app_type == "sibt": 
+        app_type = 'SIBTShopify'
+    
+    # Grab Shopify API settings
+    settings = SHOPIFY_APPS[app_type]
+
+    username = settings['api_key'] 
+    password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()

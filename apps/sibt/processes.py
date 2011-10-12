@@ -7,23 +7,24 @@ from datetime import datetime
 from datetime import timedelta
 
 from django.utils import simplejson as json
+from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.api import taskqueue
 
 from apps.action.models       import create_sibt_vote_action
 from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
+from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models         import get_link_by_willt_code
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
 from apps.sibt.models         import SIBTInstance
-from apps.testimonial.models import create_testimonial
+from apps.testimonial.models  import create_testimonial
 from apps.user.models         import User, get_or_create_user_by_cookie
 
-from util.urihandler          import URIHandler
 from util.consts              import *
-from util.helpers import url 
+from util.helpers             import url 
+from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
@@ -247,3 +248,28 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             )
         logging.info('done expiring')
 
+class StoreAnalytics(webapp.RequestHandler):
+    def get(self):
+        logging.info('FOOasdfasdfasdf')
+        event = self.request.get('evnt')
+
+        if 'Ask' in event:
+            # GAY BINGO
+            bingo( 'sibt_showFBLogoOnCTA' )
+
+        # Now, tell Mixpanel
+        taskqueue.add(
+            queue_name = 'mixpanel', 
+            url = '/mixpanel/action', 
+            params = {
+                'event'     : event,
+                
+                'app'       : self.request.get('app_uuid'),
+                'target_url': self.request.get('target_url'),
+                
+                'user'      : self.request.get('user'),
+                'user_uuid' : self.request.get('user_uuid'),
+                
+                'client'    : self.request.get('client')
+            }
+        )

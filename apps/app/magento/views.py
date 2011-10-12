@@ -66,8 +66,6 @@ class ShopifyRedirect( URIHandler ):
         # TODO: apps on shopify have to direct properly
         # the app name has to corespond to appnameWelcome view
         redirect_url = url('%sWelcome' % app)
-
-        # TODO(Barbara): Remove these catches. Our code should just work.
         if redirect_url != None:
             redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
         elif app == 'referral':

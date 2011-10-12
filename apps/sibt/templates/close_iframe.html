@@ -4,16 +4,15 @@
         <script type="text/javascript">
             $(document).ready(function() {
                 // close the iframe
-                var colorbox = parent.document.getElementById('colorbox');
-                var cboxOverlay = parent.document.getElementById('cboxOverlay');
-                var cboxWrapper = parent.document.getElementById('cboxWrapper');
-                $(colorbox).hide();
-                $(cboxOverlay).hide();
-                $(cboxWrapper).hide();
+                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                target.postMessage(
+                    'close',
+                    '*'
+                );
             });            
         </script>
     </head>
-    <body>
-
+    <body style="center">
+        <p>This vote is now over.</p>
     </body>
 </html>
