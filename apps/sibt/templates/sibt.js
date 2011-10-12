@@ -88,7 +88,38 @@ var _willet_button_onclick = function() {
             fixed: true,
             onClosed: _willet_ask_callback
         });
+
+        _willet_tell_server( 'SIBTShowingAskIframe' );
     }
+};
+
+var _willet_tell_server = function( evnt ) {
+    var div = document.createElement( 'div' );
+    var fake_iframe = document.createElement( 'iframe' );
+
+    fake_iframe.src = '{{URL}}/s/storeAnalytics?evnt=' + evnt + 
+                 '&app={{app.uuid}}&target_url={{target_url}}&user_uuid=' + 
+                 '{{user.uuid}}&client={{client}}';
+
+    div.style.display = "none";
+    div.appendChild( fake_iframe );
+
+    document.body.appendChild( div );
+    /*
+    $.ajax({
+        url: "/s/storeAnalytics",
+        type: 'post',
+        data: { 
+                evnt        : evnt,
+                app         : '{{app.uuid}}',
+                target_url  : '{{target_url}}',
+                user_uuid   : '{{user.uuid}}',
+                client      : '{{client}}'
+            },
+        success: function (tr) {
+        }
+    });
+    */
 };
 
 var _willet_show_vote = function() {
@@ -105,6 +136,8 @@ var _willet_show_vote = function() {
         fixed: true,
         onClosed: _willet_vote_callback
     });
+    
+    _willet_tell_server( '{{evnt}}' );
 };
 
 

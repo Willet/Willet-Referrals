@@ -19,7 +19,6 @@ from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
 from apps.client.models         import *
-from apps.gae_bingo.gae_bingo   import bingo
 from apps.link.models           import Link
 from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
@@ -86,28 +85,13 @@ class AskDynamicLoader(webapp.RequestHandler):
             'app': app,
             'willt_url': link.get_willt_url(),
             'willt_code': link.willt_url_code,
+
+            'target_url' : target,
             
             'user': user,
             'user_email': user_email,
             'user_found': str(user_found).lower(),
         }
-
-        # GAY BINGO
-        bingo( 'sibt_showFBLogoOnCTA' )
-
-        taskqueue.add(
-            queue_name = 'mixpanel', 
-            url = '/mixpanel/action', 
-            params = {
-                'event'    : 'SIBTShowingAskIframe', 
-                'app' : app.uuid,
-                'user': user.get_name_or_handle(),
-                'target_url': target,
-                'user_uuid': user.uuid,
-                'user': user.get_name_or_handle(),
-                'client': app.client.email
-            }
-        )
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
@@ -212,6 +196,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
             product = get_or_fetch_shopify_product(target, app.client)
 
             template_values = {
+                    'evnt' : event,
+
                     'product_img': product.images,
                     'app' : app,
                     'URL': URL,
@@ -219,6 +205,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'user': user,
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
+                    'target_url' : target,
                     'fb_comments_url' : '%s?%s' % (target, instance.uuid),
 
                     'share_url': share_url,
@@ -239,18 +226,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
-        taskqueue.add(
-            queue_name = 'mixpanel', 
-            url = '/mixpanel/action', 
-            params = {
-                'event': event, 
-                'app': app.uuid,
-                'user': user.get_name_or_handle(),
-                'user_uuid': user.uuid,
-                'target_url': target,
-                'client': app.client.email
-            }
-        )
         self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
         self.response.out.write(template.render(path, template_values))
         return
