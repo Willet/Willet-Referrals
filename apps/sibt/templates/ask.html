@@ -28,7 +28,7 @@
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
                 charsLeft, clear; 
-            var productDesc = "{{ productDesc|striptags }}";
+            var productDesc = "{{ productDesc|striptags|escape }}";
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
@@ -67,7 +67,7 @@
                                     '&wcode={{willt_code}}' + 
                                     '&img={{productImg|first}}' + 
                                     '&name={{productName}}' + 
-                                    '&desc={{productDesc|striptags}}';
+                                    '&desc={{productDesc|striptags|escape}}';
                     var AuthWindow = window.open(OAuthURL, '_blank');
                 } 
                 shareArea.style.visibility = 'visible';
