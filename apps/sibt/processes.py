@@ -20,7 +20,7 @@ from apps.link.models         import get_link_by_willt_code
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
-from apps.user.models         import User, get_or_create_user_by_cookie
+from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie
 
 from util.consts              import *
 from util.helpers             import url 
@@ -76,19 +76,6 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 # Make the Instance!
                 instance = app.create_instance(user, None, link, img)
         
-                taskqueue.add(
-                    queue_name = 'mixpanel', 
-                    url = url('SendActionToMixpanel'), 
-                    params = {
-                        'event': 'SIBTInstanceCreated', 
-                        'app': app.uuid,
-                        'user': user.get_name_or_handle(),
-                        'target_url': instance.url,
-                        'user_uuid': user.uuid,
-                        'client': app.client.email
-                    }
-                )
-
                 # increment link stuff
                 link.app_.increment_shares()
                 link.add_user(user)
@@ -97,6 +84,10 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 # add testimonial
                 create_testimonial(user=user, message=message, link=link)
 
+                # Send data to Mixpanel
+                app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
+                app.storeAnalyticsDatum( 'SIBTInstanceSharedOnFacebook', user, link.target_url )
+                
                 taskqueue.add(
                     url = url('FetchFacebookData'),
                     params = {
@@ -104,18 +95,6 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                     }
                 )
 
-                taskqueue.add(
-                    queue_name = 'mixpanel', 
-                    url = url('SendActionToMixpanel'), 
-                    params = {
-                        'event': 'SIBTInstanceSharedOnFacebook', 
-                        'app': app.uuid,
-                        'user': user.get_name_or_handle(),
-                        'target_url': link.target_url,
-                        'user_uuid': user.uuid,
-                        'client': app.client.email
-                    }
-                )
                 response['success'] = True
         except Exception,e:
             response['data']['message'] = str(e)
@@ -143,19 +122,9 @@ class StartSIBTInstance(URIHandler):
             # Make the Instance!
             instance = app.create_instance(user, None, link, img)
         
-            taskqueue.add(
-                queue_name = 'mixpanel', 
-                url = url('SendActionToMixpanel'), 
-                params = {
-                    'event': 'SIBTInstanceCreated', 
-                    'app': app.uuid,
-                    'user': user.get_name_or_handle(),
-                    'target_url': instance.url,
-                    'user_uuid': user.uuid,
-                    'client': app.client.email
-                }
-            )
-
+            # Store analytics datapoint
+            app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
+            
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
@@ -248,28 +217,28 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             )
         logging.info('done expiring')
 
-class StoreAnalytics(webapp.RequestHandler):
+class StoreAnalytics( URIHandler ):
+    # TODO(Barbara): In the future, we might pull this out and 
+    # have a generic class for all Apps to ping
     def get(self):
-        logging.info('FOOasdfasdfasdf')
-        event = self.request.get('evnt')
 
+        # Don't store anything about Admin!
+        user = get_user_by_cookie( self )
+        if user.is_admin():
+            return
+
+        event  = self.request.get( 'evnt' )
+        target = self.request.get( 'target_url' )
+        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
+
+        # GAY BINGO
         if 'Ask' in event:
-            # GAY BINGO
             bingo( 'sibt_showFBLogoOnCTA' )
 
         # Now, tell Mixpanel
-        taskqueue.add(
-            queue_name = 'mixpanel', 
-            url = '/mixpanel/action', 
-            params = {
-                'event'     : event,
-                
-                'app'       : self.request.get('app_uuid'),
-                'target_url': self.request.get('target_url'),
-                
-                'user'      : self.request.get('user'),
-                'user_uuid' : self.request.get('user_uuid'),
-                
-                'client'    : self.request.get('client')
-            }
-        )
+        app.storeAnalyticsDatum( event, user, target )
+
+        # Some error checking that Barbara suspects will fail at some point ..
+        user2 = get_user_by_uuid( self.request.get('user_uuid') )
+        if user.key() != user2.key():
+            logging.error("THE HECK IS GOING ON _ SOMETHIGN IS MAJORLY BROKEN" )

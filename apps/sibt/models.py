@@ -78,11 +78,12 @@ class SIBT(App):
                                  url          = link.target_url )
         instance.put()
         
-        Email.emailBarbara('SIBT INSTANCE: %s %s %s' % (
-            uuid, 
-            user.key(), 
-            link.target_url)
-        )
+        if not user.is_admin():
+            Email.emailBarbara('SIBT INSTANCE: %s %s %s' % (
+                uuid, 
+                user.key(), 
+                link.target_url)
+            )
         return instance
 
 # Accessors --------------------------------------------------------------------

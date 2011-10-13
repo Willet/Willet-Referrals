@@ -22,7 +22,7 @@ from_addr = 'z4beth@gmail.com' # must be registered with app engine account
 barbara   = 'barbara@getwillet.com'
 fraser    = 'fraser.harris@gmail.com'
 matt      = 'harrismc@gmail.com'
-dev_team  = '%s, %s' % (barbara, matt)
+dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
 
 #####################

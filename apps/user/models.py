@@ -28,7 +28,7 @@ import apps.oauth.models
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
 
-from util.consts          import FACEBOOK_QUERY_URL
+from util.consts          import FACEBOOK_QUERY_URL, ADMIN_EMAILS, ADMIN_IPS
 from util.model           import Model
 from util.helpers         import *
 from util                 import oauth2 as oauth
@@ -68,7 +68,6 @@ def create_email_model( user, email ):
         
         em.put()
     
-
 # Accessors --------------------------------------------------------------------
 def get_emails_by_user( user ):
     return EmailModel.all().filter( 'user =', user )
@@ -126,6 +125,20 @@ class User( db.Expando ):
        
         super(User, self).__init__(*args, **kwargs)
     
+    def is_admin( self ):
+        emails = get_emails_by_user( self )
+        # Filter by user email
+        for e in emails:
+            if e.address in ADMIN_EMAILS:
+                return True
+
+        # Filter by IP
+        for i in self.ips:
+            if i in ADMIN_IPS:
+                return True
+
+        return False
+
     def get_name_or_handle(self):
         name = self.get_handle()
         if name == None:

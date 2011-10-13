@@ -6,9 +6,6 @@ from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
 
-
-
-
 class Model(db.Model):
     """A generic extension of db.Model"""
     
@@ -33,9 +30,13 @@ class Model(db.Model):
         return True
 
     def hardPut( self ):
-        logging.debug("PUTTING %s" % self.__class__.__name__)
-        self.validateSelf( )
-        db.put( self )
+        # By default, Python fcns return None
+        # If you want to prevent an object from being saved to the db, have 
+        # validateSelf return anyhting except None
+        if self.validateSelf( ) == None:
+            
+            logging.debug("PUTTING %s" % self.__class__.__name__)
+            db.put( self )
         
     def validateSelf( self ):
         pass # Fill in in sub class!!

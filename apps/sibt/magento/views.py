@@ -272,18 +272,7 @@ class DynamicLoader(webapp.RequestHandler):
                     event = 'SIBTShowingVote'
                     asker_name = instance.asker.get_name_or_handle()
 
-            taskqueue.add(
-                queue_name = 'mixpanel', 
-                url = '/mixpanel/action', 
-                params = {
-                    'event': event, 
-                    'app': app.uuid,
-                    'user': user.get_name_or_handle(),
-                    'target_url': target,
-                    'user_uuid': user.uuid,
-                    'client': app.client.email
-                }
-            )
+            app.storeAnalyticsDatum( event, user, target )
 
         template_values = {
                 'URL' : URL,
