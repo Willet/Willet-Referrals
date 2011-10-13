@@ -1,23 +1,14 @@
 from __future__ import absolute_import
 
-from apps.user.models import get_user_by_cookie, get_emails_by_user
+from apps.user.models import get_user_by_cookie
 
 # CUSTOMIZE can_see_experiments however you want to specify
 # whether or not the currently-logged-in user has access
 # to the experiment dashboard.
 def can_control_experiments( request_handler=None ):
-    # Admin whitelist
-    whitelist = [ 'barbara@getwillet.com', 'barbara@getwillet.ca', 'barbaraemac@gmail.com',
-                  'foo@bar.com', 'asd@asd.com', 'z4beth@gmail.com', 'harrismch@gmail.com',
-                  'fraser.harris@gmail.com' ]
-
     if request_handler:
         user = get_user_by_cookie( request_handler )
-
-        emails = get_emails_by_user( user )
-        for e in emails:
-            if e.address in whitelist:
-                return True
+        return user.is_admin()
 
     # TODO: Make this false .. true only for testing
     return True
