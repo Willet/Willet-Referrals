@@ -105,65 +105,79 @@ class VoteDynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
 
-        page_url = urlparse(self.request.get('url'))
         instance_uuid = self.request.get('instance_uuid')
+        page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
             target = "http://www.social-referral.appspot.com"
         
-        logging.debug('target: %s' % target)
-        
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
-        # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
-        app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
        
-        instance = None
+        instance = SIBTInstance.all().filter('uuid =', instance_uuid).get() 
+        link = None
+        app = None
 
-        # Grab the link
-        link = get_link_by_willt_code(self.request.get('willt_code'))
-        
-        if link == None:
-            # no willt code, asker probably came back to page with
-            # no hash code
-            link = Link.all()\
-                    .filter('user =', user)\
-                    .filter('target_url =', target)\
-                    .filter('app_ =', app)\
-                    .get()
-            logging.info('got link by page_url %s: %s' % (target, link))
-        
         # Make sure User has a click action for this code
-        actions = get_sibt_click_actions_by_user_and_link(user, target)
-        asker_instance = get_sibt_instance_by_asker_for_url(user, target)
-        # TODO: If no actions, this User didn't click on a link - THEY FAKED IT.
-        logging.info('got action: %s' % actions)
+        #actions = get_sibt_click_actions_by_user_and_link(user, target)
+        #asker_instance = get_sibt_instance_by_asker_for_url(user, target)
+            
+        try:
+            # get instance by instance_uuid
+            assert(instance != None)
+        except:
+            try:
+                # get instance by link
+                # Grab the link
 
-        if link != None and link.sibt_instance.get() != None:
-            instance = link.sibt_instance.get()
-            logging.info('got instance from link')
-        elif asker_instance != None:
-            #page_url = self.request.headers['REFERER']
-            instance = asker_instance
-            logging.info('got instance for asker')
-        elif actions.count() > 0:
-            unfiltered_count = actions.count()
-            instances = SIBTInstance.all()\
-                .filter('url =', target)\
-                .filter('is_live =', True)
-            key_list = [instance.key() for instance in instances]
-            actions = actions\
-                    .filter('sibt_instance !=', '')\
-                    .filter('sibt_instance IN', key_list)
-            logging.info('got %d/%d actions after filtered by keys %s' % (
-                actions.count(),
-                unfiltered_count,
-                key_list
-            ))
-            if actions.count() > 0:
-                action = actions.get()
-                instance = action.sibt_instance
-                logging.info('no link, got action %s and instance %s' % (action, instance))
+                # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
+                app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+                link = get_link_by_willt_code(self.request.get('willt_code'))
+                
+                if link == None:
+                    # no willt code, asker probably came back to page with
+                    # no hash code
+                    link = Link.all()\
+                            .filter('user =', user)\
+                            .filter('target_url =', target)\
+                            .filter('app_ =', app)\
+                            .get()
+                    logging.info('got link by page_url %s: %s' % (target, link))
+                instance = link.sibt_instance.get()
+                assert(instance != None)
+            except:
+                try:
+                    # get instance by asker
+                    instance = get_sibt_instance_by_asker_for_url(user, target)
+                    assert(instance != None)
+                except:
+                    try:
+                        # ugh, get the instance by actions ...
+                        actions = get_sibt_click_actions_by_user_and_link(
+                                user,
+                                target
+                        )
+                        if actions.count() > 0:
+                            unfiltered_count = actions.count()
+                            instances = SIBTInstance.all()\
+                                .filter('url =', target)\
+                                .filter('is_live =', True)
+                            key_list = [instance.key() for instance in instances]
+                            actions = actions\
+                                    .filter('sibt_instance !=', '')\
+                                    .filter('sibt_instance IN', key_list)
+                            logging.info('got %d/%d actions after filtered by keys %s' % (
+                                actions.count(),
+                                unfiltered_count,
+                                key_list
+                            ))
+                            if actions.count() > 0:
+                                action = actions.get()
+                                instance = action.sibt_instance
+                                logging.info('no link, got action %s and instance %s' % (action, instance))
+                            assert(instance != None)
+                    except:
+                        logging.error('failed to get instance', exc_info=True)
 
         logging.info("Did we get an instance? %s" % instance)
         
@@ -171,6 +185,9 @@ class VoteDynamicLoader(webapp.RequestHandler):
         event = 'SIBTShowingVoteIframe'
 
         if instance:
+            if app == None:
+                app = instance.app_
+
             name = instance.asker.get_full_name()
             is_asker = (instance.asker.key() == user.key())
             vote_action = SIBTVoteAction.all()\
@@ -187,9 +204,10 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 event = 'SIBTShowingResultsToAsker'
             elif has_voted:
                 event = 'SIBTShowingResultsToFriend'
-            
-            link = instance.link
-            share_url = link.get_willt_url
+
+            if link == None: 
+                link = instance.link
+            share_url = link.get_willt_url()
 
             product = get_or_fetch_shopify_product(target, app.client)
 

@@ -44,7 +44,12 @@ class ProductShopify(Product):
             self.put()
             response = True
         except:
-            logging.error('error updating from json', exc_info=True)
+            logging.error('error updating from json\n%s\n%s' % (
+                    self.json_response,
+                    self.resource_url
+                ),
+                exc_info=True
+            )
         return response
 
     def refetch(self):

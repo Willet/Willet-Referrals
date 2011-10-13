@@ -226,13 +226,16 @@ class DynamicLoader(webapp.RequestHandler):
         instance = None
         other_instances = []
         asker_name = None
+        willet_code = None
 
         page_url = urlparse(self.request.headers.get('REFERER'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-
-        logging.info('remote addr: %s to %s' % (self.request.remote_addr, target))
-        #TODO( MAATTTTT ): Why did you add this line of code?
-        #target = self.request.headers['REFERER']
+        fragment = page_url.fragment
+        if fragment != '':
+            parts = fragment.split('=')
+            if len(parts) > 1:
+                # code a willt code!
+                willet_code = parts[1]
 
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -258,6 +261,12 @@ class DynamicLoader(webapp.RequestHandler):
                     show_votes = 1
                     event = 'SIBTShowingResults'
                     asker_name = instance.asker.get_name_or_handle()
+            elif willet_code != None:
+                link = get_link_by_willt_code(willet_code)
+                instance = link.sibt_instance.get()
+                show_votes = 1
+                event = 'SIBTShowingResults'
+                asker_name = instance.asker.get_name_or_handle()
             elif actions.count() > 0:
                 # filter actions for instances that are active
                 unfiltered_count = actions.count()

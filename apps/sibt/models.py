@@ -123,7 +123,11 @@ class SIBTInstance( Model ):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
-    
+
+    @staticmethod 
+    def _get_from_datastore(uuid):
+        return db.Query(SIBTInstance).filter('uuid =', uuid).get()
+
     def get_yesses_count(self):
         """Count this instance's yes count"""
         
