@@ -6,7 +6,6 @@
  * TODO
  * add comments for wtf this is
  */
-var _willet_css = {% include "css/colorbox.css" %}
 
 var _willet_ask_success = false;
 var _willet_is_asker = (parseInt('{{ is_asker }}') == 1); // did they ask?
@@ -85,10 +84,10 @@ var _willet_button_onclick = function() {
             href: "#_willet_askIframe",
             transition: 'fade',
             scrolling: false,
-            initialWidth: '420px', 
-            initialHeight: '232px', 
-            innerWidth: '420px',
-            innerHeight: '232px', 
+            initialWidth: '450px', 
+            initialHeight: '240px', 
+            innerWidth: '450px',
+            innerHeight: '240px', 
             fixed: true,
             onClosed: _willet_ask_callback
         });
@@ -129,13 +128,13 @@ var _willet_tell_server = function( evnt ) {
 var _willet_show_vote = function() {
     //$.colorbox.init();
     $.colorbox({
-        inline: true,
         href: "#_willet_voteIframe",
+        inline: true,
         transition: 'fade',
         scrolling: true, 
-        initialWidth: '635px', 
+        initialWidth: '660px', 
         initialHeight: '90%',
-        innerWidth: '635px',
+        innerWidth: '660px',
         innerHeight: '90%',
         fixed: true,
         onClosed: _willet_vote_callback
@@ -193,19 +192,19 @@ var _willet_check_scripts = function() {
             // insert the script into the dom
             if (row.test()) {
                 // script is already loaded!
-                console.log('script already loaded', row.name);
+                //console.log('script already loaded', row.name);
                 row.callback();
                 row.loaded = true;
                 row.dom_el = true;
             } else {
-                console.log('loading remote script', row.name);
+                //console.log('loading remote script', row.name);
                 row.dom_el = _willet_load_remote_script(row.url);
             }
         }
         if (row.loaded == false) {
             if (row.test()) {
                 // script is now loaded!
-                console.log('script has been loaded', row.name);
+                //console.log('script has been loaded', row.name);
                 row.callback();
                 row.loaded = true;
             } else {
@@ -225,7 +224,7 @@ var _willet_check_scripts = function() {
  * Main script to run
  */
 var _willet_run_scripts = function() {
-    console.log('running');
+    //console.log('running');
     var ask_div     = document.createElement( 'div' );
     var vote_div    = document.createElement( 'div' );
     var ask_iframe  = document.createElement( 'iframe' );
@@ -240,7 +239,7 @@ var _willet_run_scripts = function() {
     // Construct button.
     if (_willet_is_asker) {
         $(button).html('See what your friends said');
-    } else if (_willet_show_votes || hash_index != -1) {
+    } else if (_willet_show_votes) {
         // not the asker but we are showing votes
         $(button).html('Help {{ asker_name }} by voting!');
     } else {
@@ -274,7 +273,7 @@ var _willet_run_scripts = function() {
 
         // Listen to message from child window
         eventer(messageEvent,function(e) {
-            console.log('parent received message!:  ',e.data);
+            //console.log('parent received message!:  ',e.data);
             if (e.data == 'shared') {
                 _willet_ask_success = true;
             } else if (e.data == 'close') {
@@ -289,12 +288,18 @@ var _willet_run_scripts = function() {
         vote_div.style.display = "none";
 
         ask_iframe.setAttribute( 'id', '_willet_askIframe' );
-        ask_iframe.setAttribute( 'width', '420px' );
-        ask_iframe.setAttribute( 'height', '232px' );
+        ask_iframe.setAttribute( 'width', '430px' );
+        ask_iframe.setAttribute( 'height', '245px' );
+        ask_iframe.setAttribute( 'frameBorder', '0' );
+        ask_iframe.setAttribute( 'marginheight', '0' );
+        ask_iframe.setAttribute( 'marginwidth', '0' );
 
         vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
-        vote_iframe.setAttribute( 'width', '635px' );
+        vote_iframe.setAttribute( 'width', '640px' );
         vote_iframe.setAttribute( 'height', '90%' );
+        vote_iframe.setAttribute( 'frameBorder', '0' );
+        vote_iframe.setAttribute( 'marginheight', '0' );
+        vote_iframe.setAttribute( 'marginwidth', '0' );
 
         ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
         vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
@@ -317,11 +322,18 @@ var _willet_run_scripts = function() {
 /**
  * Insert style and get the ball rolling
  */
-var _willet_style = document.createElement('style');
-var _willet_head  = document.getElementsByTagName('head')[0];
-_willet_style.textContent = _willet_css;
-_willet_head.appendChild(_willet_style);
+try {
+    var _willet_style = document.createElement('link');
+    var _willet_head  = document.getElementsByTagName('head')[0];
+    _willet_style.setAttribute('rel', 'stylesheet');
+    _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/colorbox.css');
+    _willet_style.setAttribute('type', 'text/css');
+    _willet_style.setAttribute('media', 'all');
+    _willet_head.appendChild(_willet_style);
+    
+    // run our scripts
+    _willet_check_scripts();
+} catch (err) {
+    // there was an error
 
-// run our scripts
-_willet_check_scripts();
-
+}

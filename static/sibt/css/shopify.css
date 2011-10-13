@@ -32,6 +32,7 @@ body {
 }
 #product-img {
     float: left;
+    max-width: 140px;
     height: 100%;
 }
 #product-img img {
