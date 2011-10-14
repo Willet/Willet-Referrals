@@ -62,7 +62,7 @@ class ProductShopify(Product):
             )
             
             self.last_fetch = datetime.now()
-            self.json_response = result.content
+            self.json_response = unicode(result.content, 'utf-8', errors='ignore')
             self.update_from_json()
             response = True
         except:
@@ -111,7 +111,7 @@ def get_or_fetch_shopify_product(url, client):
                 last_fetch = datetime.now(),
                 resource_url = url,
                 client = client,
-                json_response = result.content 
+                json_response = unicode(result.content, 'utf-8', errors='ignore') 
             )
             product.update_from_json()
         except:
