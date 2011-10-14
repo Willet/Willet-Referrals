@@ -72,6 +72,9 @@ class App(Model, polymodel.PolyModel):
         self.put()
     
     def storeAnalyticsDatum( self, event, user, target ):
+        if 'social-referral.appspot.com' not in URL:
+            return
+
         if not user.is_admin():
             logging.info("Queuing up task to store '%s' to Mixpanel." % event )
 
