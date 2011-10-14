@@ -58,6 +58,7 @@ class SIBT(App):
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
     def create_instance(self, user, end, link, img):
+        logging.info("MAKING A SIBT INSTANCE")
         # Make the properties
         uuid = generate_uuid( 16 )
         

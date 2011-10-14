@@ -122,6 +122,8 @@ class StartSIBTInstance(URIHandler):
         app  = get_app_by_id(self.request.get('app_uuid'))
         link = get_link_by_willt_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
+        
+        logging.info("Starting SIBT instance for %s" % link.target_url )
 
         # defaults
         response = {
