@@ -37,14 +37,20 @@ class TrackCallbackError(webapp.RequestHandler):
 class TrackRemoteError(webapp.RequestHandler):
     def get(self):
         referer = self.request.headers.get('referer')
+        ua = self.request.headers.get('user-agent')
+        remote_ip = self.request.headers.get('remote_addr')
         error = self.request.get('error')
+        stack_trace = self.request.get('st')
         mail.send_mail(
             sender = 'rf.rs error reporting <Barbara@rf.rs>',
             to = 'barbara@getwillet.com',
             subject = 'Javascript callback error',
-            body = 'We encountered an error on page %s:\n%s' % (
+            body = 'We encountered an error on page %s:\n%s\n%s\n%s\n%s' % (
                 referer,
-                error
+                ua,
+                remote_ip,
+                error,
+                stack_trace
             )
         )
         self.redirect('%s/static/imgs/noimage.png' % URL)
