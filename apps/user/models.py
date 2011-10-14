@@ -133,12 +133,10 @@ class User( db.Expando ):
                 return True
 
         # Filter by IP
-        try:
+        if hasattr(self, 'ips'):
             for i in self.ips:
                 if i in ADMIN_IPS:
                     return True
-        except Exception, e:
-            logging.error('error probably no ips: %s' % e, exc_info=True)
 
         return False
 

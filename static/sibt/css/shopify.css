@@ -1,11 +1,13 @@
 body {
+    text-align: center;
+    overflow: auto;
     background-color: white;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 #wrapper {
     text-align: center;
     font-size: 80%; 
-    float: none;
+    margin: 0 auto;
     min-height: 215px;
     max-height: 215px;
     height: 215px;
@@ -16,8 +18,8 @@ body {
     border: 1px solid #DDD;
     /*margin: 20px 0;*/
     border-radius: 3px;
-    height: 215px;
-    width: 400px;
+    height: 100%;
+    width: 100%;
 }
 #invite {
     width: 100%;
@@ -144,3 +146,7 @@ textarea {
     margin-top: 1px;
 }
 
+
+#share-text {
+    overflow: auto;
+}
