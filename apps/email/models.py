@@ -94,7 +94,7 @@ class Email():
         if total == 0:
             buy_it_percentage = 0
         else:
-            buy_it_percentage = int((yesses / (yesses + noes)) * 100)
+            buy_it_percentage = int(float( float(yesses) / float(total)) * 100)
 
         if yesses > noes:
             buy_it = True
