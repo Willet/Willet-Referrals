@@ -10,5 +10,6 @@ urlpatterns = [
     (r'/admin/renameinit', InitRenameFacebookData),
     (r'/admin/trackErr', TrackCallbackError),
     (r'/admin/manageApps', ManageApps),
+    (r'/admin/ithinkiateacookie', TrackRemoteError),
 ]
 

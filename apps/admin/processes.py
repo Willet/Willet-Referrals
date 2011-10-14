@@ -34,4 +34,18 @@ class TrackCallbackError(webapp.RequestHandler):
         
         self.response.out.write("Error emailed")
 
+class TrackRemoteError(webapp.RequestHandler):
+    def get(self):
+        referer = self.request.headers('referer')
+        error = self.request.get('error')
+        mail.send_mail(
+            sender = 'rf.rs error reporting <barbara@wil.lot>',
+            to = 'barbara@getwillet.com',
+            subject = 'Javascript callback error',
+            body = 'We encountered an error on page %s:\n%s' % (
+                referer,
+                error
+            )
+        )
+        self.redirect('%s/static/imgs/noimage.png' % URL)
 
