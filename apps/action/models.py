@@ -51,8 +51,9 @@ class Action( Model, polymodel.PolyModel ):
         return Action.all().filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        if self.user.is_admin():
-            return True # Anything except None
+        #if self.user.is_admin():
+        #    return True # Anything except None
+        return None
 
     def __unicode__(self):
         return self.__str__()
