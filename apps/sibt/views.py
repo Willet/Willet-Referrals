@@ -18,6 +18,7 @@ from urlparse                   import urlparse
 from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
+from apps.gae_bingo.gae_bingo import bingo
 from apps.client.models         import *
 from apps.link.models           import Link
 from apps.link.models           import create_link
@@ -50,7 +51,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
-            target = "http://www.social-referral.appspot.com"
+            target = URL
         
         logging.debug('target: %s' % target)
 
@@ -71,6 +72,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
         
+        # GAY BINGO
+        bingo( 'sibt_showFBLogoOnCTA' )
+
+        # Now, tell Mixpanel
+        app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+
         # User stats
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
@@ -109,7 +116,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         if target == "://":
-            target = "http://www.social-referral.appspot.com"
+            target = URL
         
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
@@ -208,6 +215,9 @@ class VoteDynamicLoader(webapp.RequestHandler):
             if link == None: 
                 link = instance.link
             share_url = link.get_willt_url()
+
+            # Now, tell Mixpanel
+            app.storeAnalyticsDatum( event, user, target )
 
             product = get_or_fetch_shopify_product(target, app.client)
 

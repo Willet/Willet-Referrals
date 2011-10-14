@@ -15,7 +15,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.action.models       import create_sibt_vote_action
 from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
-from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models         import get_link_by_willt_code
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
 from apps.sibt.models         import SIBTInstance
@@ -231,29 +230,3 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
                     instance_uuid
             )
         logging.info('done expiring')
-
-class StoreAnalytics( URIHandler ):
-    # TODO(Barbara): In the future, we might pull this out and 
-    # have a generic class for all Apps to ping
-    def get(self):
-
-        # Don't store anything about Admin!
-        user = get_user_by_cookie( self )
-        if user.is_admin():
-            return
-
-        event  = self.request.get( 'evnt' )
-        target = self.request.get( 'target_url' )
-        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
-
-        # GAY BINGO
-        if 'Ask' in event:
-            bingo( 'sibt_showFBLogoOnCTA' )
-
-        # Now, tell Mixpanel
-        app.storeAnalyticsDatum( event, user, target )
-
-        # Some error checking that Barbara suspects will fail at some point ..
-        user2 = get_user_by_uuid( self.request.get('user_uuid') )
-        if user.key() != user2.key():
-            logging.error("THE HECK IS GOING ON _ SOMETHIGN IS MAJORLY BROKEN" )
