@@ -800,7 +800,7 @@ class User( db.Expando ):
             if isinstance(caption, str):
                 caption = unicode(caption, 'utf-8', errors='ignore')
             else:
-                caption = caption.decode('utf-8', errors='ignore') 
+                caption = caption.decode('utf-8', 'ignore') 
 
             temp = desc if desc != "" else name
             if isinstance(temp, str):
