@@ -795,36 +795,54 @@ class User( db.Expando ):
         logging.info("LINK %s" % link )
         facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
         if img != "":
+            msg = msg.encode( 'ascii', 'ignore' )
+            if isinstance(msg, str):
+                logging.info("CONVERTING MSG")
+                msg = unicode(msg, 'utf-8', errors='ignore')
 
             caption = link.app_.store_url
-            try:
-                #caption = unicode(caption, 'utf-8', errors='ignore')
-                caption = caption.encode('utf-8', 'ignore')
-            except:
-                logging.warn('cant unicode caption', exc_info=True)
-            try:
-                caption = caption.encode('ascii', 'ignore') 
-            except:
-                logging.warn('cant encode caption')
+            caption = caption.encode( 'ascii', 'ignore' )
+            if isinstance(caption, str):
+                logging.info("CONVERTING")
+                caption = unicode(caption, 'utf-8', errors='ignore')
+            
+            name = name.encode( 'ascii', 'ignore' )
+            if isinstance(name, str):
+                logging.info("CONVERTING name" )
+                name = unicode(name, 'utf-8', errors='ignore')
+            
+            if desc == '':
+                desc = name
+            desc = desc.encode('ascii', 'ignore') 
+            if isinstance(desc, str):
+                desc = unicode(desc, 'utf-8', errors='ignore')
 
-            temp = desc if desc != "" else name
-            if isinstance(temp, str):
-                temp = unicode(temp, 'utf-8', errors='ignore')
+            """
+            logging.info("%s" % msg )
+            logging.info("%s" % img )
+            logging.info("%s" % link.get_willt_url() )
+            logging.info("%s" % desc )
+            logging.info("%s" % name )
+            logging.info("%s" % caption )
+            """
 
             params = urllib.urlencode({
                 'access_token': self.fb_access_token,
                 'message': msg,
                 'picture' : img,
                 'link' : link.get_willt_url(),
-                'description' : temp,
+                'description' : desc,
                 'name' : name,
-                'caption' : caption 
+                'caption' : caption
             })
         else:
+            if isinstance(msg, str):
+                logging.info("CONVERTING MSG")
+                msg = unicode(msg, 'utf-8', errors='ignore')
+
             params = urllib.urlencode({
                 'access_token': self.fb_access_token,
-                'message': unicode(msg, errors='ignore')
-            })
+                'message'     : msg   })
 
         fb_response, plugin_response, fb_share_id = None, None, None
         try:
