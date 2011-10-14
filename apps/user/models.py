@@ -798,7 +798,9 @@ class User( db.Expando ):
 
             caption = link.app_.store_url
             if isinstance(caption, str):
-                caption = unicode(link.app_.store_url, 'utf-8', errors='ignore')
+                caption = unicode(caption, 'utf-8', errors='ignore')
+            else:
+                caption = caption.decode('utf-8', errors='ignore') 
 
             temp = desc if desc != "" else name
             if isinstance(temp, str):
