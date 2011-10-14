@@ -39,7 +39,7 @@ class TrackRemoteError(webapp.RequestHandler):
         referer = self.request.headers.get('referer')
         error = self.request.get('error')
         mail.send_mail(
-            sender = 'rf.rs error reporting <barbara@wil.lot>',
+            sender = 'rf.rs error reporting <Barbara@rf.rs>',
             to = 'barbara@getwillet.com',
             subject = 'Javascript callback error',
             body = 'We encountered an error on page %s:\n%s' % (
