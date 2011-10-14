@@ -222,17 +222,12 @@ var _willet_run_scripts = function() {
     button.setAttribute( 'id', '_willet_button' );
     // Construct button.
     if (_willet_is_asker) {
-        $(button).html('See what your friends said');
+        $(button).html('See what your friends said!');
     } else if (_willet_show_votes) {
         // not the asker but we are showing votes
         $(button).html('Help {{ asker_name }} by voting!');
     } else {
-        if ( '{{a_b_showFBLogo}}' == 'True' ) {
-            var imgTag = "<img src='{{URL}}/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />";
-            $(button).html(imgTag + 'Ask your friends!');
-        } else {
-            $(button).html('Ask your friends!');
-        }
+        $(button).html( "{{AB_CTA_text}}" );
     }
     $(purchase_cta).append(button);
     $("#_willet_button").fadeIn(250).css('display', 'inline-block');

@@ -73,7 +73,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         link = create_link(target, app, origin_domain, user)
         
         # GAY BINGO
-        bingo( 'sibt_showFBLogoOnCTA' )
+        bingo( 'sibt_button_text' )
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
