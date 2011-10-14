@@ -79,70 +79,47 @@ var _willet_button_onclick = function() {
         // instead of showing vote again, let's show the results
         _willet_show_vote();
     } else {
+        var url =  "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
+
         $.colorbox({
-            inline: true,
-            href: "#_willet_askIframe",
             transition: 'fade',
             scrolling: false,
-            initialWidth: '450px', 
-            initialHeight: '240px', 
+            iframe: true, 
+            initialWidth: 0, 
+            initialHeight: 0, 
             innerWidth: '450px',
             innerHeight: '240px', 
             fixed: true,
+            href: url,
             onClosed: _willet_ask_callback
         });
-
-        _willet_tell_server( 'SIBTShowingAskIframe' );
     }
 };
 
-var _willet_tell_server = function( evnt ) {
-    var div = document.createElement( 'div' );
-    var fake_iframe = document.createElement( 'iframe' );
-
-    fake_iframe.src = '{{URL}}/s/storeAnalytics?evnt=' + evnt + 
-                 '&app={{app.uuid}}&target_url={{target_url}}&user_uuid=' + 
-                 '{{user.uuid}}&client={{client}}';
-
-    div.style.display = "none";
-    div.appendChild( fake_iframe );
-
-    document.body.appendChild( div );
-    /*
-    $.ajax({
-        url: "/s/storeAnalytics",
-        type: 'post',
-        data: { 
-                evnt        : evnt,
-                app         : '{{app.uuid}}',
-                target_url  : '{{target_url}}',
-                user_uuid   : '{{user.uuid}}',
-                client      : '{{client}}'
-            },
-        success: function (tr) {
-        }
-    });
-    */
-};
-
 var _willet_show_vote = function() {
-    //$.colorbox.init();
+    var photo_src = $('#image img').attr('src'); 
+    var hash        = window.location.hash;
+    var hash_search = '#code=';
+    var hash_index  = hash.indexOf(hash_search);
+    var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+        
+    var url = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
+            "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
+            photo_src + "&url=" + window.location.href + "&instance_uuid={{instance.uuid}}";
+
     $.colorbox({
-        href: "#_willet_voteIframe",
-        inline: true,
         transition: 'fade',
         scrolling: true, 
-        initialWidth: '660px', 
-        initialHeight: '90%',
+        iframe: true,
+        fixed: true,
+        initialWidth: 0, 
+        initialHeight: 0,
         innerWidth: '660px',
         innerHeight: '90%',
-        fixed: true,
+        href: url,
         onClosed: _willet_vote_callback
     });
-    
-    _willet_tell_server( '{{evnt}}' );
 };
-
 
 var scripts = [
 /**
@@ -225,17 +202,24 @@ var _willet_check_scripts = function() {
  */
 var _willet_run_scripts = function() {
     //console.log('running');
-    var ask_div     = document.createElement( 'div' );
-    var vote_div    = document.createElement( 'div' );
-    var ask_iframe  = document.createElement( 'iframe' );
-    var vote_iframe = document.createElement( 'iframe' );
-    var button      = document.createElement('a');
-    var photo_src = $('#image img').attr('src'); 
     var hash        = window.location.hash;
     var hash_search = '#code=';
     var hash_index  = hash.indexOf(hash_search);
-    var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+
+    // Show the vote fast
+    if (_willet_show_votes || hash_index != -1) {
+        _willet_show_vote();
+    }
+
+    var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
+    var button       = document.createElement('a');
     
+    button.setAttribute('class', 'button');
+    button.setAttribute('style', 'display: none'); 
+    button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
+    button.setAttribute( 'value', '' );
+    button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
+    button.setAttribute( 'id', '_willet_button' );
     // Construct button.
     if (_willet_is_asker) {
         $(button).html('See what your friends said');
@@ -250,94 +234,47 @@ var _willet_run_scripts = function() {
             $(button).html('Ask your friends!');
         }
     }
-   
-    button.setAttribute('class', 'button');
-    button.setAttribute('style', 'display: none'); 
-    button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
-    button.setAttribute( 'value', '' );
-    button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
-    button.setAttribute( 'id', '_willet_button' );
+    $(purchase_cta).append(button);
+    $("#_willet_button").fadeIn(250).css('display', 'inline-block');
     
-    // Put button on the page.
-    var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-    if (purchase_cta) {
-        $(purchase_cta).append(button);
-        //purchase_cta.parentNode.appendChild( button );
-        $("#_willet_button").fadeIn(250).css('display', 'inline-block');
-        
-        // watch for message
-        // Create IE + others compatible event handler
-        var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-        var eventer = window[eventMethod];
-        var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+    // watch for message
+    // Create IE + others compatible event handler
+    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+    var eventer = window[eventMethod];
+    var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
-        // Listen to message from child window
-        eventer(messageEvent,function(e) {
-            //console.log('parent received message!:  ',e.data);
-            if (e.data == 'shared') {
-                _willet_ask_success = true;
-            } else if (e.data == 'close') {
-                // the iframe wants to be closed
-                // ... maybe it's emo
-                $.colorbox.close();
-            }
-        }, false);
-
-        // Construct iframes and hide them in the page (ie. cache)
-        ask_div.style.display  = "none";
-        vote_div.style.display = "none";
-        ask_div.setAttribute( 'style', 'text-align: center' );
-        vote_div.setAttribute( 'style', 'text-align: center' );
-
-        ask_iframe.setAttribute( 'id', '_willet_askIframe' );
-        ask_iframe.setAttribute( 'width', '430px' );
-        ask_iframe.setAttribute( 'height', '245px' );
-        ask_iframe.setAttribute( 'frameBorder', '0' );
-        ask_iframe.setAttribute( 'marginheight', '0' );
-        ask_iframe.setAttribute( 'marginwidth', '0' );
-        ask_iframe.setAttribute( 'style', 'margin:0 auto;' );
-
-        vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
-        vote_iframe.setAttribute( 'width', '640px' );
-        vote_iframe.setAttribute( 'height', '90%' );
-        vote_iframe.setAttribute( 'frameBorder', '0' );
-        vote_iframe.setAttribute( 'marginheight', '0' );
-        vote_iframe.setAttribute( 'marginwidth', '0' );
-        vote_iframe.setAttribute( 'style', 'margin:0 auto;' );
-
-        ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
-        vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
-            "&is_asker={{is_asker}}&store_id={{store_id}}&photo=" + 
-            photo_src + "&url=" + window.location.href +
-            "&instance_uuid={{instance.uuid}}";
-        // Attach to page
-        ask_div.appendChild( ask_iframe );
-        vote_div.appendChild( vote_iframe );
-
-        document.body.appendChild( ask_div );
-        document.body.appendChild( vote_div );
-
-        if (_willet_show_votes || hash_index != -1) {
-            _willet_show_vote();
+    // Listen to message from child window
+    eventer(messageEvent,function(e) {
+        //console.log('parent received message!:  ',e.data);
+        if (e.data == 'shared') {
+            _willet_ask_success = true;
+        } else if (e.data == 'close') {
+            // the iframe wants to be closed
+            // ... maybe it's emo
+            $.colorbox.close();
         }
-    } // if there is a button
+    }, false);
 };
 
 /**
  * Insert style and get the ball rolling
  */
 try {
-    var _willet_style = document.createElement('link');
-    var _willet_head  = document.getElementsByTagName('head')[0];
-    _willet_style.setAttribute('rel', 'stylesheet');
-    _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/colorbox.css');
-    _willet_style.setAttribute('type', 'text/css');
-    _willet_style.setAttribute('media', 'all');
-    _willet_head.appendChild(_willet_style);
+    var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
     
-    // run our scripts
-    _willet_check_scripts();
+    if ( purchase_cta ) {
+        var _willet_style = document.createElement('link');
+        var _willet_head  = document.getElementsByTagName('head')[0];
+        _willet_style.setAttribute('rel', 'stylesheet');
+        _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/colorbox.css');
+        _willet_style.setAttribute('type', 'text/css');
+        _willet_style.setAttribute('media', 'all');
+        _willet_head.appendChild(_willet_style);
+        
+        // run our scripts
+        _willet_check_scripts();
+    }
+
 } catch (err) {
     // there was an error
-
 }

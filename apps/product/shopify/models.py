@@ -44,7 +44,7 @@ class ProductShopify(Product):
             self.put()
             response = True
         except:
-            logging.error('error updating from json\n%s\n%s' % (
+            logging.warn('error updating from json\n%s\n%s' % (
                     self.json_response,
                     self.resource_url
                 ),
