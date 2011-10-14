@@ -24,6 +24,9 @@ class FetchProductShopify(webapp.RequestHandler):
         url = self.request.get('url')
         client_uuid = self.request.get('client')
         client = Client.all().filter('uuid =', client_uuid).get()
+
+        logging.info('getting url: %s' % url)
+
         product = get_or_fetch_shopify_product(url, client)
         
         logging.info("done updating %s" % product)
