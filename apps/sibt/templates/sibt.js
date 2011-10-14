@@ -277,4 +277,8 @@ try {
 
 } catch (err) {
     // there was an error
+    var el = document.createElement('img');
+    var _body = document.getElementsByTagName('body')[0];
+    src.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + err);
+    _body.appendChild(el);
 }
