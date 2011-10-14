@@ -798,7 +798,8 @@ class User( db.Expando ):
 
             caption = link.app_.store_url
             try:
-                caption = unicode(caption, 'utf-8', errors='ignore')
+                #caption = unicode(caption, 'utf-8', errors='ignore')
+                caption = caption.encode('utf-8', 'ignore')
             except:
                 logging.warn('cant unicode caption', exc_info=True)
             try:
