@@ -227,16 +227,25 @@ class DynamicLoader(webapp.RequestHandler):
         other_instances = []
         asker_name = None
         willet_code = None
+        target = ''
 
-        page_url = urlparse(self.request.headers.get('REFERER'))
-        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        fragment = page_url.fragment
-        if fragment != '':
-            parts = fragment.split('=')
-            if len(parts) > 1:
-                # code a willt code!
-                willet_code = parts[1]
-
+        try:
+            page_url = urlparse(self.request.headers.get('REFERER'))
+            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+            fragment = page_url.fragment
+            if fragment != '':
+                parts = fragment.split('=')
+                if len(parts) > 1:
+                    # code a willt code!
+                    willet_code = parts[1]
+        except Exception, e:
+            logging.error('error parsing referer %s: %s' % (
+                    self.request.headers.get('referer'),
+                    e
+                ),
+                exc_info=True
+            )
+        
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         shop_url = self.request.get('shop')
