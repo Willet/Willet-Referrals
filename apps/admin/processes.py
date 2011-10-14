@@ -36,7 +36,7 @@ class TrackCallbackError(webapp.RequestHandler):
 
 class TrackRemoteError(webapp.RequestHandler):
     def get(self):
-        referer = self.request.headers('referer')
+        referer = self.request.headers.get('referer')
         error = self.request.get('error')
         mail.send_mail(
             sender = 'rf.rs error reporting <barbara@wil.lot>',
