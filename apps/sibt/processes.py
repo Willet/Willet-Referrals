@@ -38,6 +38,14 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         fb_token = self.request.get('fb_token')
         fb_id = self.request.get('fb_id')
         message = self.request.get('msg')
+        
+        try:
+            message = unicode(message, errors='ignore')
+            img = unicode(img, errors='ignore')
+            product_name = unicode(product_name, errors='ignore')
+            product_desc = unicode(product_desc, errors='ignore')
+        except:
+            logging.error('error transcoding to unicode', exc_info=True)
 
         # defaults
         response = {
