@@ -133,9 +133,10 @@ class User( db.Expando ):
                 return True
 
         # Filter by IP
-        for i in self.ips:
-            if i in ADMIN_IPS:
-                return True
+        if hasattr(self, 'ips'):
+            for i in self.ips:
+                if i in ADMIN_IPS:
+                    return True
 
         return False
 

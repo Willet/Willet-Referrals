@@ -286,6 +286,8 @@ var _willet_run_scripts = function() {
         // Construct iframes and hide them in the page (ie. cache)
         ask_div.style.display  = "none";
         vote_div.style.display = "none";
+        ask_div.setAttribute( 'style', 'text-align: center' );
+        vote_div.setAttribute( 'style', 'text-align: center' );
 
         ask_iframe.setAttribute( 'id', '_willet_askIframe' );
         ask_iframe.setAttribute( 'width', '430px' );
@@ -293,6 +295,7 @@ var _willet_run_scripts = function() {
         ask_iframe.setAttribute( 'frameBorder', '0' );
         ask_iframe.setAttribute( 'marginheight', '0' );
         ask_iframe.setAttribute( 'marginwidth', '0' );
+        ask_iframe.setAttribute( 'style', 'margin:0 auto;' );
 
         vote_iframe.setAttribute( 'id', '_willet_voteIframe' );
         vote_iframe.setAttribute( 'width', '640px' );
@@ -300,6 +303,7 @@ var _willet_run_scripts = function() {
         vote_iframe.setAttribute( 'frameBorder', '0' );
         vote_iframe.setAttribute( 'marginheight', '0' );
         vote_iframe.setAttribute( 'marginwidth', '0' );
+        vote_iframe.setAttribute( 'style', 'margin:0 auto;' );
 
         ask_iframe.src  = "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
         vote_iframe.src = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
