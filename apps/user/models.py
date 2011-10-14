@@ -797,10 +797,14 @@ class User( db.Expando ):
         if img != "":
 
             caption = link.app_.store_url
-            if isinstance(caption, str):
+            try:
                 caption = unicode(caption, 'utf-8', errors='ignore')
-            else:
-                caption = caption.decode('utf-8', 'ignore') 
+            except:
+                logging.warn('cant unicode caption')
+            try:
+                caption = caption.encode('utf-8', 'ignore') 
+            except:
+                logging.warn('cant encode caption')
 
             temp = desc if desc != "" else name
             if isinstance(temp, str):
