@@ -802,7 +802,7 @@ class User( db.Expando ):
             except:
                 logging.warn('cant unicode caption')
             try:
-                caption = caption.encode('utf-8', 'ignore') 
+                caption = caption.encode('ascii', 'ignore') 
             except:
                 logging.warn('cant encode caption')
 
