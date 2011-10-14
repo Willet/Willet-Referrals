@@ -795,19 +795,21 @@ class User( db.Expando ):
         logging.info("LINK %s" % link )
         facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
         if img != "":
+            temp = desc if desc != "" else name
+            temp = unicode(temp, errors='ignore')
             params = urllib.urlencode({
                 'access_token': self.fb_access_token,
-                'message': msg,
+                'message': unicode(msg, errors='ignore'),
                 'picture' : img,
                 'link' : link.get_willt_url(),
-                'description' : desc if desc != "" else name,
-                'name' : name,
-                'caption' : link.app_.store_url
+                'description' : temp,
+                'name' : unicode(name, errors='ignore'),
+                'caption' : unicode(link.app_.store_url, errors='ignore')
             })
         else:
             params = urllib.urlencode({
                 'access_token': self.fb_access_token,
-                'message': msg
+                'message': unicode(msg, errors='ignore')
             })
 
         fb_response, plugin_response, fb_share_id = None, None, None
