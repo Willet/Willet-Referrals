@@ -331,9 +331,11 @@ class User( db.Expando ):
                 ) 
             else:
                 return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
-
+        
         if hasattr( self, attr_name ):
             return getattr( self, attr_name )
+        else:
+            return None
     
     def update_twitter_info(self, **kwargs):
         fields = ['twitter_handle', 'twitter_profile_pic', 'twitter_followers_count', 'twitter_name', 'twitter_access_token']
