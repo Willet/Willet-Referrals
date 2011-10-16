@@ -88,13 +88,23 @@ class SIBT(App):
         bingo( 'sibt_instance_started' )
 
         if not user.is_admin() and "social-referral" in URL:
-            Email.emailBarbara('SIBT INSTANCE: \n uuid=%s \n user.key=%s \n page=%s \n name=%s \n fb_uuid=%s \n fb_access_token=%s' % (
-                uuid,
-                user.key(), 
-                link.target_url,
-                user.get_full_name(),
-                user.get_attr('fb_identity'),
-                user.get_attr('fb_access_token')
+            Email.emailBarbara("""
+                SIBT INSTANCE: \n 
+                uuid=%s \n 
+                user.key=%s \n 
+                rf.rs code = %s \n
+                page=%s \n 
+                name=%s \n 
+                fb_uuid=%s \n 
+                fb_access_token=%s""" % (
+                    uuid,
+                    user.key(), 
+                    link.target_url,
+                    link.willt_url_code,
+                    user.get_full_name(),
+                    user.get_attr('fb_identity'),
+                    user.get_attr('fb_access_token')
+                )
             )
         return instance
 
