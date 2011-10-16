@@ -18,7 +18,8 @@ from urlparse                   import urlparse
 from apps.action.models         import SIBTClickAction, SIBTVoteAction
 from apps.action.models         import get_sibt_click_actions_by_user_and_link
 from apps.app.models            import *
-from apps.gae_bingo.gae_bingo import bingo
+from apps.gae_bingo.gae_bingo   import ab_test
+from apps.gae_bingo.gae_bingo   import bingo
 from apps.client.models         import *
 from apps.link.models           import Link
 from apps.link.models           import create_link
@@ -62,18 +63,27 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        #result = urlfetch.fetch(
-        #    url = '%s.json' % self.request.get('url'),
-        #    method = urlfetch.GET
-        #)
-        #data = json.loads( result.content )['product']
         product = get_or_fetch_shopify_product(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
         
         # GAY BINGO
-        bingo( 'sibt_showFBLogoOnCTA' )
+        bingo( 'sibt_button_text' )
+
+        ab_share_options = [ 
+            "I'm not sure if I should buy this. Help me out by voting here:",
+            "Tell me if I should buy this! Vote here:",
+           
+            "Should I buy this? Please let me know!",
+            "I'm not sure if I should buy this. What do you think?",
+            "Would you buy this? I'm contemplating it!",
+            
+            "Help me decide if I should buy this! More details here:",
+            
+            "I need some shopping advice. Should I buy this? Would you? More details here:",
+            "Desperately in need of some shopping advice. Should I buy this? Would you? Tell me here:",
+        ]
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
@@ -82,8 +92,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
         template_values = {
-            #'productImg'  : data['images'][0]['src'],
-            'productImg': product.images, 
+            'productImg' : product.images, 
             'productName': product.title, 
             'productDesc': product.description,
 
@@ -98,6 +107,9 @@ class AskDynamicLoader(webapp.RequestHandler):
             'user': user,
             'user_email': user_email,
             'user_found': str(user_found).lower(),
+            'AB_share_text' : ab_test('sibt_share_text',
+                                       ab_share_options,
+                                       conversion_name=["sibt_instance_started"])
         }
 
         # Finally, render the HTML!

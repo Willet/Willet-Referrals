@@ -6,18 +6,20 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib, logging
+import hashlib
+import logging
+import random
 from datetime import datetime
 from datetime import timedelta
-import random
 
 from django.utils         import simplejson as json
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
 from apps.action.models   import create_sibt_click_action
-from apps.email.models    import Email
 from apps.app.models      import App
+from apps.email.models    import Email
+from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
 
@@ -53,6 +55,9 @@ class SIBT(App):
         # Create a ClickAction
         act = create_sibt_click_action( user, self, link )
 
+        # GAY BINGO!
+        bingo( 'sibt_instance_clicked' )
+
         # Go to where the link points
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
@@ -79,11 +84,17 @@ class SIBT(App):
                                  url          = link.target_url )
         instance.put()
         
-        if not user.is_admin():
-            Email.emailBarbara('SIBT INSTANCE: %s %s %s' % (
-                uuid, 
+        # GAY BINGO
+        bingo( 'sibt_instance_started' )
+
+        if not user.is_admin() and "social-referral" in URL:
+            Email.emailBarbara('SIBT INSTANCE: \n uuid=%s \n user.key=%s \n page=%s \n name=%s \n fb_uuid=%s \n fb_access_token=%s' % (
+                uuid,
                 user.key(), 
-                link.target_url)
+                link.target_url,
+                user.get_full_name(),
+                user.get_attr('fb_identity'),
+                user.get_attr('fb_access_token')
             )
         return instance
 
