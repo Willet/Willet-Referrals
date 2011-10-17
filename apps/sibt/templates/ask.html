@@ -59,7 +59,8 @@
             };
 
             var share = function(medium, uid) {
-                storeAnalytics( 'SIBT_ClickedOnShare' )
+                storeAnalytics( 'SIBT_ClickedOnShare' );
+
                 // use the selected medium to share about your purchase
                 var uid = uid || '';
                 var message = shareText.value.substring(0,141);
