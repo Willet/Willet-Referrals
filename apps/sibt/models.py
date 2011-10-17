@@ -108,7 +108,7 @@ class SIBT(App):
                         user.get_attr('fb_access_token')
                     )
                 )
-           except Exception, e:
+            except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
            
         return instance

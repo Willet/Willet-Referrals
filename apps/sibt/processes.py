@@ -34,7 +34,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         link = get_link_by_willt_code(willt_code)
         img = self.request.get('product_img')
         product_name = self.request.get('name')
-        #product_desc = self.request.get('desc')
+        product_desc = None 
         product_id = self.request.get('product_id')
         fb_token = self.request.get('fb_token')
         fb_id = self.request.get('fb_id')
@@ -42,7 +42,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
         product = None
         try:
-            product = Product.get_by_id(product_id)
+            product = Product.get_by_id(int(product_id))
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
             try:

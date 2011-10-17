@@ -23,14 +23,14 @@
     z-index:50000000;
     ^z-index: initial;
 }
-    #cboxTopLeft{width:25px; height:25px; background:url(/static/colorbox/example4/images/border1.png) no-repeat 0 0;}
-    #cboxTopCenter{height:25px; background:url(/static/colorbox/example4/images/border1.png) repeat-x 0 -50px;}
-    #cboxTopRight{width:25px; height:25px; background:url(/static/colorbox/example4/images/border1.png) no-repeat -25px 0;}
-    #cboxBottomLeft{width:25px; height:25px; background:url(/static/colorbox/example4/images/border1.png) no-repeat 0 -25px;}
-    #cboxBottomCenter{height:25px; background:url(/static/colorbox/example4/images/border1.png) repeat-x 0 -75px;}
-    #cboxBottomRight{width:25px; height:25px; background:url(/static/colorbox/example4/images/border1.png) no-repeat -25px -25px;}
-    #cboxMiddleLeft{width:25px; background:url(/static/colorbox/example4/images/border2.png) repeat-y 0 0;}
-    #cboxMiddleRight{width:25px; background:url(/static/colorbox/example4/images/border2.png) repeat-y -25px 0;}
+    #cboxTopLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 0;}
+    #cboxTopCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -50px;}
+    #cboxTopRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px 0;}
+    #cboxBottomLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 -25px;}
+    #cboxBottomCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -75px;}
+    #cboxBottomRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px -25px;}
+    #cboxMiddleLeft{width:25px; background:url({{URL}}/static/colorbox/example4/images/border2.png) repeat-y 0 0;}
+    #cboxMiddleRight{width:25px; background:url({{URL}}/static/colorbox/example4/images/border2.png) repeat-y -25px 0;}
     #cboxContent{background:#fff; overflow:hidden;}
         #cboxError{padding:50px; border:1px solid #ccc;}
         #cboxLoadedContent{margin-bottom:20px;}
@@ -60,14 +60,14 @@
 /*
   The following provides PNG transparency support for IE6
 */
-.cboxIE6 #cboxTopLeft{background:url(/static/colorbox/example4/images/ie6/borderTopLeft.png);}
-.cboxIE6 #cboxTopCenter{background:url(/static/colorbox/example4/images/ie6/borderTopCenter.png);}
-.cboxIE6 #cboxTopRight{background:url(/static/colorbox/example4/images/ie6/borderTopRight.png);}
-.cboxIE6 #cboxBottomLeft{background:url(/static/colorbox/example4/images/ie6/borderBottomLeft.png);}
-.cboxIE6 #cboxBottomCenter{background:url(/static/colorbox/example4/images/ie6/borderBottomCenter.png);}
-.cboxIE6 #cboxBottomRight{background:url(/static/colorbox/example4/images/ie6/borderBottomRight.png);}
-.cboxIE6 #cboxMiddleLeft{background:url(/static/colorbox/example4/images/ie6/borderMiddleLeft.png);}
-.cboxIE6 #cboxMiddleRight{background:url(/static/colorbox/example4/images/ie6/borderMiddleRight.png);}
+.cboxIE6 #cboxTopLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopLeft.png);}
+.cboxIE6 #cboxTopCenter{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopCenter.png);}
+.cboxIE6 #cboxTopRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopRight.png);}
+.cboxIE6 #cboxBottomLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomLeft.png);}
+.cboxIE6 #cboxBottomCenter{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomCenter.png);}
+.cboxIE6 #cboxBottomRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomRight.png);}
+.cboxIE6 #cboxMiddleLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderMiddleLeft.png);}
+.cboxIE6 #cboxMiddleRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderMiddleRight.png);}
 
 .cboxIE6 #cboxTopLeft,
 .cboxIE6 #cboxTopCenter,
@@ -77,10 +77,8 @@
 .cboxIE6 #cboxBottomRight,
 .cboxIE6 #cboxMiddleLeft,
 .cboxIE6 #cboxMiddleRight {
-    _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split('"')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod='scale')");
+    _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split(\'"\')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod=\'scale\')");
 }
-
-/* FB style button */
 #_willet_button {
     clear: both;
     display: inline-block;
@@ -91,10 +89,10 @@
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
-    background: url(../imgs/fb_ask.png) 2px 4px no-repeat, #ECEEF5;
+    background: url({{URL}}/static/sibt/imgs/fb_ask.png) 2px 4px no-repeat, #ECEEF5;
     border: 1px solid #CAD4E7;
     margin: 0.5em;
-    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
     font-size: 11px;
     font-weight: normal;
     text-decoration: none;
@@ -115,6 +113,10 @@
 #_willet_button.used,
 #_willet_button:active {
     color: #AAA;
+<<<<<<< HEAD:static/sibt/css/facebook_style.css
     background: url(http://social-referrral.appspot.com/static/imgs/fb_ask_gr.png) 2px 4px no-repeat, #EEE;
+=======
+    background: url({{URL}}/static/sibt/imgs/fb_ask_gr.png) 2px 4px no-repeat, #EEE;
+>>>>>>> 3dc90ee1371cbae8830e122879aa48cd403af2c7:apps/sibt/templates/css/facebook_style.css-full
     border: 1px solid #DDD; 
 }

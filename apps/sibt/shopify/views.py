@@ -227,7 +227,7 @@ class DynamicLoader(webapp.RequestHandler):
         other_instances = []
         asker_name = None
         willet_code = None
-        stylesheet = 'colorbox.css'
+        stylesheet = 'css/colorbox.css'
         target = ''
 
         try:
@@ -314,7 +314,7 @@ class DynamicLoader(webapp.RequestHandler):
             try:
                 if app.client.email == 'contact@bentoandco.com':
                     logging.info('We are on bentoandco so we are using facebook_style.css')
-                    stylesheet = 'facebook_style.css'
+                    stylesheet = 'css/facebook_style.css'
             except Exception, e:
                 logging.error('error trying to set stylesheet: %s' % e, exc_info=True)
 
