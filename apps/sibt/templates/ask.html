@@ -27,7 +27,7 @@
         <script type="text/javascript">
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
-                charsLeft, clear; 
+                charsLeft, clear, storeAnalytics; 
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
@@ -37,6 +37,18 @@
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}'
             };
+            var storeAnalytics = function( evnt ) {
+                $.ajax({
+                    url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
+                         "&target_url={{target_url}}&app_uuid={{app.uuid}}" +
+                         "&user_uuid={{user.uuid}}";
+                    type: 'get',
+                    success: function (response) {
+                        return;
+                    }
+                });
+            };
+
             var _willet_check_scripts = function() {
                 if (typeof FB != 'undefined') {
                     // facebook is loaded
@@ -47,6 +59,7 @@
             };
 
             var share = function(medium, uid) {
+                storeAnalytics( 'SIBT_ClickedOnShare' )
                 // use the selected medium to share about your purchase
                 var uid = uid || '';
                 var message = shareText.value.substring(0,141);
@@ -119,6 +132,7 @@
                 FB.login(function(lr) {
                         //console.log(lr);
                         if (!lr.authResponse) {
+                            storeAnalytics( 'SIBT_FBConnectCancelled' );
                             // we weren't given permission
                             window.close();
                         } else { 

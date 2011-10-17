@@ -307,7 +307,7 @@ class DynamicLoader(webapp.RequestHandler):
                     }
             )
 
-            app.storeAnalyticsDatum( event, user, target )
+            #app.storeAnalyticsDatum( event, user, target )
 
             # change the css if we are on bentobox
             # hack hack hack!
@@ -320,43 +320,16 @@ class DynamicLoader(webapp.RequestHandler):
 
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
-            "Get advice from your friends!",
             "Ask a friend before you buy!",
             "Need to ask someone before you buy?",
-            "Get feedback from your friends!",
-            "What do your friends think?",
-            "Ask your friends!",
             "Ask your friends if you should buy!",
             
-            "Not sure? Ask your friends!",
             "Unsure? Ask your friends!",
-            
-            "Not sure? Get advice!",
-            "Unsure? Get advice!",
-            
-            "Not sure? Get feedback!",
-            "Unsure? Get feedback!",
-
-            "Not sure? Get advice from friends!",
             "Unsure? Get advice from friends!",
-            
-            "Not sure? <br /> Get feedback from friends!",
-            "Unsure? Get feedback from friends!",
-
-            "Not sure? Get advice from your friends!",
             "Unsure? Get advice from your friends!",
-            
-            "Not sure? Get feedback from your friends!",
-            "Unsure? Get feedback from your friends!",
         ]
-        ab_test_logo_options = []
-        img_tag = "<img src='%s/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />" % URL;
-        for opt in ab_test_options:
-            ab_test_logo_options.append( img_tag + opt )
 
-        ab_test_options.extend( ab_test_logo_options )
-
-        cta_button_text = ab_test( 'sibt_button_text', ab_test_options )
+        cta_button_text = ab_test( 'sibt_button_text2', ab_test_options )
 
         template_values = {
                 'URL' : URL,
@@ -372,7 +345,9 @@ class DynamicLoader(webapp.RequestHandler):
                 'store_id' : self.request.get('store_id'),
                 'stylesheet': stylesheet,
 
-                'AB_CTA_text' : cta_button_text
+                'AB_CTA_text' : cta_button_text,
+
+                'evnt' : event
         }
 
         # Finally, render the JS!

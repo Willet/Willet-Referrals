@@ -69,7 +69,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         link = create_link(target, app, origin_domain, user)
         
         # GAY BINGO
-        bingo( 'sibt_button_text' )
+        bingo( 'sibt_button_text2' )
 
         ab_share_options = [ 
             "I'm not sure if I should buy this. Help me out by voting here:",

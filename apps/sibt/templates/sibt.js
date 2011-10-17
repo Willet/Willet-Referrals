@@ -41,6 +41,18 @@ var _willet_add_other_instance = function(instance) {
     return el;
 };
 
+var _willet_store_analytics = function () {
+    var iframe = document.createElement( 'iframe' );
+
+    iframe.style.display = none;
+    iframe.src = "{{URL}}/s/storeAnalytics?evnt={{evnt}}" + 
+                 "&target_url=" + window.location.href +
+                 "&app_uuid={{app.uuid}}" +
+                 "&user_uuid={{user.uuid}}";
+
+    document.body.appendChild( iframe );
+};
+
 var _willet_vote_callback = function () {
     /**
      * Called when the vote iframe is closed
@@ -234,8 +246,8 @@ var _willet_run_scripts = function() {
     
     // watch for message
     // Create IE + others compatible event handler
-    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-    var eventer = window[eventMethod];
+    var eventMethod  = window.addEventListener ? "addEventListener" : "attachEvent";
+    var eventer      = window[eventMethod];
     var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
     // Listen to message from child window
@@ -268,6 +280,8 @@ try {
         
         // run our scripts
         _willet_check_scripts();
+
+        _willet_store_analytics();
     }
 
 } catch (err) {

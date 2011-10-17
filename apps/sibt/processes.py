@@ -248,3 +248,22 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
                     instance_uuid
             )
         logging.info('done expiring')
+
+class StoreAnalytics( URIHandler ):
+    def get( self ):
+        # Don't store anything about Admin!
+        user = get_user_by_cookie( self )
+        if user.is_admin():
+            return
+
+        event  = self.request.get( 'evnt' )
+        target = self.request.get( 'target_url' )
+        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
+
+        # Now, tell Mixpanel
+        app.storeAnalyticsDatum( event, user, target )
+
+        # Some error checking that Barbara suspects will fail at some point ..
+        user2 = get_user_by_uuid( self.request.get('user_uuid') )
+        if user.key() != user2.key():
+            logging.error("THE HECK IS GOING ON - SOMETHIGN IS MAJORLY BROKEN" )
