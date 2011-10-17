@@ -95,6 +95,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             'productImg' : product.images, 
             'productName': product.title, 
             'productDesc': product.description,
+            'product_id': product.key().id_or_name(),
 
             #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],

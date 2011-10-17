@@ -28,12 +28,11 @@
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
                 charsLeft, clear; 
-            var productDesc = "{{ productDesc|striptags|escape }}";
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
                 name: '{{ productName }}',
-                desc: productDesc,
+                product_id: '{{ product_id }}',
                 app_uuid: '{{ app.uuid }}',
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}'
