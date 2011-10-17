@@ -121,7 +121,10 @@
         $(this).css('width', $(this).parent().css('width'));
         $(this).fadeIn('fast');
     };
-
+    
+    /**
+     * This would be called to show the link to this vote
+     */
     var _willet_getlink = function() {
 
     };
@@ -130,6 +133,10 @@
     * Refreshes the results window
     */
     var _willet_refresh_results = function() {
+        // TODO:
+        // THIS CODE DOES NOT WORK IN SAFARI
+        // FUCK SAFARI SOMETHING PAINFUL
+        // DO NOT USE
         var iframe_div = _willet_topbar.children('div.iframe');//$('#_willet_sibt_bar div.iframe');
         var iframe = iframe_div.children('iframe');//$('#_willet_sibt_bar div.iframe iframe');
         var src_backup = iframe.attr('src'); 
