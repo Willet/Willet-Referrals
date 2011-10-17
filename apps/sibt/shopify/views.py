@@ -320,17 +320,27 @@ class DynamicLoader(webapp.RequestHandler):
 
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
+
+            "Not sure? Poll your friends!",
+    
+            "Ask your friends what they think",
+            
+            "Need advice? Ask your friends!",
+            
+            "Unsure? Get advice from friends!",
+
+            """
             "Ask a friend before you buy!",
             "Need to ask someone before you buy?",
             "Ask your friends if you should buy!",
             
             "Unsure? Ask your friends!",
-            "Unsure? Get advice from friends!",
             "Unsure? Get advice from your friends!",
+            """
         ]
 
         if not user.is_admin():
-            cta_button_text = ab_test( 'sibt_button_text2', ab_test_options )
+            cta_button_text = ab_test( 'sibt_button_text3', ab_test_options )
         else:
             cta_button_text = "Unsure? Ask your friends!"
         

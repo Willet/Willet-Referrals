@@ -70,20 +70,23 @@ class AskDynamicLoader(webapp.RequestHandler):
         
         # GAY BINGO
         if not user.is_admin():
-            bingo( 'sibt_button_text2' )
+            bingo( 'sibt_button_text3' )
 
         ab_share_options = [ 
-            "Should I buy this? Please let me know!",
             "I'm not sure if I should buy this. What do you think?",
-            "Would you buy this? I'm contemplating it! Tell me here:",
+            
+            "Would you buy this? I need help making a decision! Vote here:",
+            
             "I need some shopping advice. Should I buy this? Would you? More details here:",
+            
             "Desperately in need of some shopping advice! Should I buy this? Would you? Tell me here:",
         ]
         
         if not user.is_admin():
-            ab_opt = ab_test('sibt_share_text',
+            ab_opt = ab_test('sibt_share_text1',
                               ab_share_options,
-                              conversion_name=["sibt_instance_started"])
+                              conversion_name=["sibt_instance_started1",
+                                               "sibt_instance_clicked1"])
         else:
             ab_opt = "Should I buy this? Please let me know!"
 
