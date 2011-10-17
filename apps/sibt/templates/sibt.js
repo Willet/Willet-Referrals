@@ -261,7 +261,7 @@ try {
         var _willet_style = document.createElement('link');
         var _willet_head  = document.getElementsByTagName('head')[0];
         _willet_style.setAttribute('rel', 'stylesheet');
-        _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/colorbox.css');
+        _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/{{ stylesheet }}.css');
         _willet_style.setAttribute('type', 'text/css');
         _willet_style.setAttribute('media', 'all');
         _willet_head.appendChild(_willet_style);
