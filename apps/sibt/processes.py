@@ -152,7 +152,7 @@ class StartSIBTInstance(URIHandler):
 
 class DoVote( URIHandler ):
     def post(self):
-        user = get_or_create_user_by_cookie( self )
+        #user = get_or_create_user_by_cookie( self )
         
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
