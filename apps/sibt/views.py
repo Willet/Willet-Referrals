@@ -69,21 +69,23 @@ class AskDynamicLoader(webapp.RequestHandler):
         link = create_link(target, app, origin_domain, user)
         
         # GAY BINGO
-        bingo( 'sibt_button_text2' )
+        if not user.is_admin():
+            bingo( 'sibt_button_text2' )
 
         ab_share_options = [ 
-            "I'm not sure if I should buy this. Help me out by voting here:",
-            "Tell me if I should buy this! Vote here:",
-           
             "Should I buy this? Please let me know!",
             "I'm not sure if I should buy this. What do you think?",
-            "Would you buy this? I'm contemplating it!",
-            
-            "Help me decide if I should buy this! More details here:",
-            
+            "Would you buy this? I'm contemplating it! Tell me here:",
             "I need some shopping advice. Should I buy this? Would you? More details here:",
-            "Desperately in need of some shopping advice. Should I buy this? Would you? Tell me here:",
+            "Desperately in need of some shopping advice! Should I buy this? Would you? Tell me here:",
         ]
+        
+        if not user.is_admin():
+            ab_opt = ab_test('sibt_share_text',
+                              ab_share_options,
+                              conversion_name=["sibt_instance_started"])
+        else:
+            ab_opt = "Should I buy this? Please let me know!"
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
@@ -108,9 +110,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             'user': user,
             'user_email': user_email,
             'user_found': str(user_found).lower(),
-            'AB_share_text' : ab_test('sibt_share_text',
-                                       ab_share_options,
-                                       conversion_name=["sibt_instance_started"])
+            'AB_share_text' : ab_opt
         }
 
         # Finally, render the HTML!

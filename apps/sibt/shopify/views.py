@@ -329,8 +329,11 @@ class DynamicLoader(webapp.RequestHandler):
             "Unsure? Get advice from your friends!",
         ]
 
-        cta_button_text = ab_test( 'sibt_button_text2', ab_test_options )
-
+        if not user.is_admin():
+            cta_button_text = ab_test( 'sibt_button_text2', ab_test_options )
+        else:
+            cta_button_text = "Unsure? Ask your friends!"
+        
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,

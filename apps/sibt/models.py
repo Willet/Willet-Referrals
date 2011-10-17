@@ -56,7 +56,8 @@ class SIBT(App):
         act = create_sibt_click_action( user, self, link )
 
         # GAY BINGO!
-        bingo( 'sibt_instance_clicked' )
+        if not user.is_admin():
+            bingo( 'sibt_instance_clicked' )
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -85,7 +86,8 @@ class SIBT(App):
         instance.put()
         
         # GAY BINGO
-        bingo( 'sibt_instance_started' )
+        if not user.is_admin():
+            bingo( 'sibt_instance_started' )
 
         if not user.is_admin() and "social-referral" in URL:
             try:
