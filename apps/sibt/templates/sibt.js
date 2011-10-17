@@ -7,6 +7,8 @@
  * add comments for wtf this is
  */
 
+var _willet_css = {% include stylesheet %}
+
 var _willet_ask_success = false;
 var _willet_is_asker = (parseInt('{{ is_asker }}') == 1); // did they ask?
 var _willet_show_votes = (parseInt('{{ show_votes }}') == 1);
@@ -258,12 +260,15 @@ try {
     var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
     
     if ( purchase_cta ) {
-        var _willet_style = document.createElement('link');
+        var _willet_style = document.createElement('style');
         var _willet_head  = document.getElementsByTagName('head')[0];
-        _willet_style.setAttribute('rel', 'stylesheet');
-        _willet_style.setAttribute('href', '{{URL}}/static/sibt/css/{{ stylesheet }}.css');
-        _willet_style.setAttribute('type', 'text/css');
-        _willet_style.setAttribute('media', 'all');
+        _willet_style.type = 'text/css';
+        if (_willet_style.styleSheet) {
+            _willet_style.styleSheet.cssText = _willet_css;
+        } else {
+            var rules = document.createTextNode(_willet_css);
+            _willet_style.appendChild(rules);
+        }
         _willet_head.appendChild(_willet_style);
         
         // run our scripts
