@@ -327,6 +327,9 @@
         border: 1px solid #133783;
         margin-top:5px;
     }
+        #_willet_sibt_bar div.iframe iframe {
+            overflow-x: hidden;
+        }
         #_willet_sibt_bar div.iframe div.loading {
             text-align: center;
             margin: 0 auto;

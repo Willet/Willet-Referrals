@@ -109,6 +109,18 @@
             onClosed: _willet_vote_callback
         });
     };
+    
+    /**
+     * called when the results iframe is refreshed
+     */
+    var _willet_iframe_loaded = function() {
+        //$('#_willet_sibt_bar div.loading').hide();
+        _willet_topbar.children('div.iframe').children('div.loading').hide();
+        //$('#_willet_sibt_bar').children('div.iframe').children('div.loading').hide();
+        //$('#_willet_sibt_bar').children('div.iframe').children('div.loading').hide();
+        $(this).css('width', $(this).parent().css('width'));
+        $(this).fadeIn('fast');
+    };
 
     var _willet_getlink = function() {
 
@@ -118,17 +130,21 @@
     * Refreshes the results window
     */
     var _willet_refresh_results = function() {
-        var iframe_div = _willet_topbar.find('div.iframe');//$('#_willet_sibt_bar div.iframe');
-        var iframe = _willet_topbar.find('div.iframe iframe');//$('#_willet_sibt_bar div.iframe iframe');
-        
+        var iframe_div = _willet_topbar.children('div.iframe');//$('#_willet_sibt_bar div.iframe');
+        var iframe = iframe_div.children('iframe');//$('#_willet_sibt_bar div.iframe iframe');
+        var src_backup = iframe.attr('src'); 
         // hide iframe
         iframe.hide();
 
+        iframe_div.children('div.loading').fadeIn();
+
         // reset iframe source
-        iframe.attr('src', iframe.attr('src'));
+        iframe.attr('src', '');
+        iframe.attr('src', src_backup);
+
+        iframe.load(_willet_iframe_loaded);
 
         // show loading
-        _willet_topbar.find('div.loading').fadeIn();
 
         // iframe.load should already be set, iframe will show itself when ready
     };
@@ -205,15 +221,14 @@
         }
 
         // start loading the iframe
+        iframe.attr('src', ''); 
         iframe.attr('src', results_src); 
 
         // once the iframe has loaded, switch out the loading gif
         // and display the iframe with its content
-        iframe.load(function() {
-            //$('#_willet_sibt_bar div.loading').hide();
-            _willet_topbar.find('div.loading').hide();
-            $(this).fadeIn('fast');
-        });
+        console.log('binding function to', $('#_willet_results'));
+        //$('#_willet_results').load(_willet_iframe_loaded);
+        iframe.load(_willet_iframe_loaded);
 
         // show the iframe div!
         _willet_toggle_results();
@@ -261,7 +276,7 @@
             "      Hide <img src='{{URL}}/static/imgs/arrow-up.gif' /> "+
             "   </span> "+
             "</div>"+
-            "<div id='_willet_refresh_results' class='button last' style='display: none'> "+
+            "<div id='_willet_refresh_results' class='last' style='display: none'> "+
             "    <span class='refresh'>" +
             "      &nbsp;<img alt='Refresh voting' title='Refresh voting' src='{{URL}}/static/imgs/refresh.gif' />&nbsp;"+
             "   </span> "+
@@ -276,8 +291,8 @@
             "</div> "+
             "<div class='clear'></div> "+
             "<div class='iframe' style='display: none'> "+
-            "    <div class='loading'><img src='http://mch-social-referral.appspot.com/static/imgs/ajax-loader.gif' /></div>"+
-            "    <iframe height='280' width='100%' frameBorder='0' style='display: none'></iframe> "+ 
+            "    <div class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
+            "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' style='display: none'></iframe> "+ 
             "</div>";
         _willet_topbar.html(bar_html);
         body.prepend(padding);
@@ -294,11 +309,11 @@
             _willet_topbar.find('div.vote').show();
         } else if (_willet_has_voted && !_willet_is_asker) {
             _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
-            _willet_topbar.find('div.button').fadeIn();
+            _willet_topbar.children('div.button').fadeIn();
         } else if (_willet_is_asker) {
             // showing top bar to asker!
             _willet_topbar.find('div.message').html('See what your friends say').fadeIn();
-            _willet_topbar.find('div.button').fadeIn();
+            _willet_topbar.children('div.button').fadeIn();
         }
         padding.show(); 
         _willet_topbar.slideDown('slow');
@@ -393,51 +408,54 @@
         if (_willet_show_votes || hash_index != -1) {
             //_willet_show_vote();
             _willet_show_topbar();
-        }
-
-        var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-        var button       = document.createElement('a');
-        
-        button.setAttribute('class', 'button');
-        button.setAttribute('style', 'display: none'); 
-        button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
-        button.setAttribute( 'value', '' );
-        button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
-        button.setAttribute( 'id', '_willet_button' );
-        // Construct button.
-        if (_willet_is_asker) {
-            $(button).html('See what your friends said');
-        } else if (_willet_show_votes) {
-            // not the asker but we are showing votes
-            $(button).html('Help {{ asker_name }} by voting!');
         } else {
-            if ( '{{a_b_showFBLogo}}' == 'True' ) {
-                var imgTag = "<img src='{{URL}}/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />";
-                $(button).html(imgTag + 'Ask your friends!');
+            // ONLY SHOW THE BUTTON IF WE ARE NOT SHOWING THE BAR!!!
+            var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
+            var button       = document.createElement('a');
+            
+            button.setAttribute('class', 'button');
+            button.setAttribute('style', 'display: none'); 
+            button.setAttribute( 'title', 'Ask your friends if you should buy this!' );
+            button.setAttribute( 'value', '' );
+            //button.setAttribute( 'onClick', '_willet_button_onclick(); return false;');
+            button.setAttribute( 'id', '_willet_button' );
+            
+            // Construct button.
+            if (_willet_is_asker) {
+                $(button).html('See what your friends said');
+            } else if (_willet_show_votes) {
+                // not the asker but we are showing votes
+                $(button).html('Help {{ asker_name }} by voting!');
             } else {
-                $(button).html('Ask your friends!');
+                if ( '{{a_b_showFBLogo}}' == 'True' ) {
+                    var imgTag = "<img src='{{URL}}/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />";
+                    $(button).html(imgTag + 'Ask your friends!');
+                } else {
+                    $(button).html('Ask your friends!');
+                }
             }
-        }
-        $(purchase_cta).append(button);
-        $("#_willet_button").fadeIn(250).css('display', 'inline-block');
-        
-        // watch for message
-        // Create IE + others compatible event handler
-        var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-        var eventer = window[eventMethod];
-        var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+            $(purchase_cta).append(button);
+            $(button).click(_willet_button_onclick);
+            $(button).fadeIn(250).css('display', 'inline-block');
+            
+            // watch for message
+            // Create IE + others compatible event handler
+            var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+            var eventer = window[eventMethod];
+            var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 
-        // Listen to message from child window
-        eventer(messageEvent,function(e) {
-            //console.log('parent received message!:  ',e.data);
-            if (e.data == 'shared') {
-                _willet_ask_success = true;
-            } else if (e.data == 'close') {
-                // the iframe wants to be closed
-                // ... maybe it's emo
-                $.colorbox.close();
-            }
-        }, false);
+            // Listen to message from child window
+            eventer(messageEvent,function(e) {
+                //console.log('parent received message!:  ',e.data);
+                if (e.data == 'shared') {
+                    _willet_ask_success = true;
+                } else if (e.data == 'close') {
+                    // the iframe wants to be closed
+                    // ... maybe it's emo
+                    $.colorbox.close();
+                }
+            }, false);
+        } // else
     };
 
     /**

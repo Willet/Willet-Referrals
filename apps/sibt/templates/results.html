@@ -33,33 +33,48 @@
                 } else {
                     title.html("Here's what your friends think");
                 }
+
+                $('iframe').live('load', function() {
+                    $(this).css('width', '100%'); 
+                });
             });
         </script>
         <style type="text/css">
-            #wrapper div {
+            #wrapper {
                 display: inline-block;
-                float: left;
-                font-family: Helvetica, Arial, sans-serif;
+                width: 100%;
             }
-                #wrapper #result {
-                    color: #333333;
-                    background-color: #ECEFF5;
-                    padding: 10px;
-                    margin-right: 5%;
-                    width:25%;
-                    text-align: center;
+                #wrapper div {
+                    display: inline-block;
+                    float: left;
+                    font-family: Helvetica, Arial, sans-serif;
                 }
-                    #wrapper #result div {
-                        margin-top: 1em;
-                        width: 100%;
-                        margin-bottom: 1em;
+                    #wrapper #result {
+                        color: #333333;
+                        background-color: #ECEFF5;
+                        padding: 10px;
+                        margin-right: 5%;
+                        width:25%;
+                        max-width:100px;
+                        text-align: center;
                     }
-                        #wrapper #result div h1 {
-                            margin: auto;
+                        #wrapper #result div {
+                            margin-top: 1em;
+                            width: 100%;
+                            margin-bottom: 1em;
                         }
-                #wrapper #comments-div {
-                    width: 45%;
-                }
+                            #wrapper #result div h1 {
+                                margin: auto;
+                            }
+                    #wrapper #comments-div {
+                        width: 75%;
+                    }
+                        #wrapper #comments-div #fb-comments {
+                            width: 100%;
+                        }
+                            iframe {
+                                width: 100% !important;
+                            }
         </style>
     </head>
     <body>
@@ -102,7 +117,7 @@
                 </script>
                     
                 <div id="fb-root"></div>
-                <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="575"></div>
+                <div id="fb-comments" class="fb-comments hidden" data-width="100%" data-href="{{fb_comments_url}}" data-num-posts="5"></div>
             </div>
         <!--
         <div id="share_again">

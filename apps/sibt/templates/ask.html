@@ -49,6 +49,9 @@
 
             var share = function(medium, uid) {
                 // use the selected medium to share about your purchase
+                $("#invite").hide();
+                $("#loading").fadeIn();
+
                 var uid = uid || '';
                 var message = shareText.value.substring(0,141);
                 // initiate facebook login event if requested
@@ -137,6 +140,7 @@
             var shareComplete = function(medium) {
                 // Sharing is complete (either twitter or facebook)
                 $("#invite").hide();
+                $("#loading").hide();
                 if (medium == 'twitter') {
                     // ask for their email
                     $("#thanks").fadeIn(300);
@@ -270,7 +274,6 @@
     <div id="fb-root"></div>
     <div id="wrapper">
         <div id="invite" class="willt">
-            
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
                     <img src="{{productImg|first}}" />
@@ -296,7 +299,10 @@
                 -->
             </div>
         </div>
-
+        <div id="loading" class="willt hidden">
+            <h1>Working ...</h1>
+            <img src="/static/imgs/ajax-loader.gif" />
+        </div>
         <div id="thanks" class="willt hidden">
             <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
 
