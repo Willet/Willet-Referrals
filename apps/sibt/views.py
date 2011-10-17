@@ -276,6 +276,7 @@ class ShowResults(webapp.RequestHandler):
         instance = SIBTInstance.all().filter('uuid =', instance_uuid).get() 
         link = None
         app = None
+        has_voted = False
 
         try:
             # get instance by instance_uuid
@@ -351,24 +352,11 @@ class ShowResults(webapp.RequestHandler):
             # because we cannot be sure how quickly the taskqueue will finish
             yesses = instance.get_yesses_count()
             noes = instance.get_nos_count()
-            if doing_vote:
-                # the user wanted to vote too
-                if vote_result:
-                    vote_result = 'yes'
-                    yesses += 1
-                else:
-                    vote_result = 'no'
-                    noes += 1
+            
+            name = instance.asker.get_full_name()
+            is_asker = (instance.asker.key() == user.key())
 
-                taskqueue.add(
-                    url = url('DoVote'),
-                    params = {
-                        'which': vote_result,
-                        'user_uuid': user.uuid
-                    }
-                )
-                has_voted = True
-            else:
+            if not is_asker:
                 vote_action = SIBTVoteAction.all()\
                     .filter('app_ =', app)\
                     .filter('sibt_instance =', instance)\
@@ -376,9 +364,26 @@ class ShowResults(webapp.RequestHandler):
                     .get()
                 logging.info('got vote action: %s' % vote_action)
                 has_voted = (vote_action != None)
+                if not has_voted:
+                    if doing_vote:
+                        # the user wanted to vote too
+                        if vote_result:
+                            vote_result = 'yes'
+                            yesses += 1
+                        else:
+                            vote_result = 'no'
+                            noes += 1
 
-            name = instance.asker.get_full_name()
-            is_asker = (instance.asker.key() == user.key())
+                        taskqueue.add(
+                            url = url('DoVote'),
+                            params = {
+                                'which': vote_result,
+                                'user_uuid': user.uuid,
+                                'instance_uuid': instance.uuid
+                            }
+                        )
+                        has_voted = True
+
             
             if not instance.is_live:
                 has_voted = True

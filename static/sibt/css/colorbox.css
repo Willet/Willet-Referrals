@@ -167,29 +167,34 @@
     position: fixed;
     z-index: 999;
 }
+    #_willet_sibt_bar div.last {
+        margin-right: 0px;
+    }
     #_willet_sibt_bar div {
         display: inline-block;
         float: left;
         margin-right: 5%;
     }
-    #_willet_sibt_bar div.toggle_results {
-        float: right;
+    #_willet_sibt_bar div.button {
         line-height: 40px;
         cursor: pointer;
         padding-left: 5px;
         padding-right: 5px;
         border-radius: 1px;
-        width: 58px;
         text-align: right;
+        float: right;
     }
-    #_willet_sibt_bar div.toggle_results:hover {
+    #_willet_sibt_bar div.toggle_results {
+        width: 58px;
+    }
+    #_willet_sibt_bar div.button:hover {
         background-color: #4B67A1;
         color: #FFFFFF;
     }
-        #_willet_sibt_bar div.toggle_results span {
+        #_willet_sibt_bar div.button span {
             line-height: inherit; 
         }
-            #_willet_sibt_bar div.toggle_results span img {
+            #_willet_sibt_bar div.button span img {
                 position: relative;
                 top: 2px;
             }
@@ -329,5 +334,5 @@
             height: 280px;
             padding: 0px;
             padding-top: 100px;
-            width: 600px;
+            width: 100%;
         }

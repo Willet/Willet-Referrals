@@ -222,9 +222,12 @@ class DynamicLoader(webapp.RequestHandler):
     def get(self):
         is_live = is_asker = show_votes = has_voted = False
         instance = None
+        link = None
         asker_name = None
         asker_pic = None
         willet_code = None
+        share_url = None
+        vote_count = 0
         target = ''
 
         try:
@@ -300,14 +303,21 @@ class DynamicLoader(webapp.RequestHandler):
 
             is_asker = (instance.asker.key() == user.key()) 
 
+            vote_action = SIBTVoteAction.all()\
+                .filter('app_ =', app)\
+                .filter('sibt_instance =', instance)
+            vote_count = vote_action.count()
+
             if not is_asker:
-                vote_action = SIBTVoteAction.all()\
-                    .filter('app_ =', app)\
-                    .filter('sibt_instance =', instance)\
-                    .filter('user =', user)\
-                    .get()
-                logging.info('got vote action: %s' % vote_action)
+                vote_action = vote_action.filter('user =', user).get()
                 has_voted = (vote_action != None)
+
+            try:
+                if link == None: 
+                    link = instance.link
+                share_url = link.get_willt_url()
+            except Exception,e:
+                logging.error("wtf: %s" % e, exc_info=True)
 
             # precache this page's product
             taskqueue.add(
@@ -324,7 +334,9 @@ class DynamicLoader(webapp.RequestHandler):
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
                 'has_voted': has_voted,
+                'vote_count': vote_count,
                 'is_live': is_live,
+                'share_url': share_url,
                 
                 'app' : app,
                 'instance'       : instance,
@@ -343,3 +355,4 @@ class DynamicLoader(webapp.RequestHandler):
         self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
         self.response.out.write(template.render(path, template_values))
         return
+
