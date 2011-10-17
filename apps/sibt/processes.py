@@ -16,6 +16,7 @@ from apps.action.models       import create_sibt_vote_action
 from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
+from apps.product.models import Product
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
@@ -33,10 +34,25 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         link = get_link_by_willt_code(willt_code)
         img = self.request.get('product_img')
         product_name = self.request.get('name')
-        product_desc = self.request.get('desc')
+        #product_desc = self.request.get('desc')
+        product_id = self.request.get('product_id')
         fb_token = self.request.get('fb_token')
         fb_id = self.request.get('fb_id')
         message = self.request.get('msg')
+
+        product = None
+        try:
+            product = Product.get_by_id(product_id)
+        except:
+            logging.info('Could not get product by id %s' % product_id, exc_info=True)
+            try:
+                product = Product.get_by_key_name(product_id)
+            except:
+                logging.error('Could not get product by name %s' % product_id, exc_info=True)
+        try:
+            product_desc = product.description
+        except:
+            logging.info('could not get product description')
         
         try:
             if isinstance(message, str):

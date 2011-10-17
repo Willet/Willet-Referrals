@@ -86,20 +86,17 @@
     display: inline-block;
     /*display: none;*/
     margin-top: 5px;
-    padding: 4px 5px 4px 5px;
+    padding: 4px 5px 4px 22px;
     line-height: 14px;
     cursor: pointer;
     text-decoration: none;
-    -webkit-transition:all 400ms ease;
-    -moz-transition:all 400ms ease;
-    -o-transition:all 400ms ease;
-    transition:all 400ms ease;
     white-space: nowrap;
-    background-color: #ECEEF5;
+    background: url(../imgs/fb_ask.png) 2px 4px no-repeat, #ECEEF5;
     border: 1px solid #CAD4E7;
     margin: 0.5em;
     font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
     font-size: 11px;
+    font-weight: normal;
     text-decoration: none;
     color: #3B5998;
     -moz-border-radius: 3px;
@@ -115,66 +112,9 @@
     background-color: #ECEEF5;
     border: 1px solid #CAD4E7;
 }
-#_willet_button:active {        
-    background-color: #ECEEF5;
-    border: 1px solid #CAD4E7; 
+#_willet_button.used,
+#_willet_button:active {
+    color: #AAA;
+    background: url(../imgs/fb_ask_gr.png) 2px 4px no-repeat, #EEE;
+    border: 1px solid #DDD; 
 }
-/* GREY BUTTON ****
-#_willet_button {
-    clear: both; 
-    display: none;
-    margin-top: 5px;
-    padding: 5px;
-    cursor: pointer;
-    text-decoration: none;
-    -webkit-transition:all 400ms ease;
-    -moz-transition:all 400ms ease;
-    -o-transition:all 400ms ease;
-    transition:all 400ms ease;
-
-    white-space: nowrap;
-    background-color: #ccc;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ccc));
-    background-image: -webkit-linear-gradient(top, #eee, #ccc);
-    background-image: -moz-linear-gradient(top, #eee, #ccc);
-    background-image: -ms-linear-gradient(top, #eee, #ccc);
-    background-image: -o-linear-gradient(top, #eee, #ccc);
-    background-image: linear-gradient(top, #eee, #ccc);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#eeeeee", EndColorStr="#cccccc");
-    border: 1px solid #777;
-    padding: 0 1.5em;
-    margin: 0.5em;
-    font: bold 13px/2em Arial, Helvetica;
-    text-decoration: none;
-    color: #333;
-    text-shadow: 0 1px 0 rgba(255,255,255,.8);
-    -moz-border-radius: .2em;
-    -webkit-border-radius: .2em;
-    border-radius: .2em;
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    margin-left: 0px;
-}
-#_willet_button:hover {
-    background-color: #ddd;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
-    background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
-    background-image: -moz-linear-gradient(top, #fafafa, #ddd);
-    background-image: -ms-linear-gradient(top, #fafafa, #ddd);
-    background-image: -o-linear-gradient(top, #fafafa, #ddd);
-    background-image: linear-gradient(top, #fafafa, #ddd);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#fafafa", EndColorStr="#dddddd");
-}
-#_willet_button:focus {
-    outline: 0;
-    background: #fafafa;
-}
-#_willet_button:active {        
-    -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
-    -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
-    box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
-    position: relative;
-    top: 1px;    
-}*/
-
