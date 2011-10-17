@@ -154,10 +154,12 @@ class User( db.Expando ):
             fname = self.first_name
         elif hasattr(self, 'linkedin_first_name'):
             fname = self.linkedin_first_name
+        elif hasattr(self, 'fb_name'):
+            fname = self.fb_name
         elif hasattr(self, 'fb_username'):
             fname = self.fb_username
         else:
-            fname = 'a user'
+            fname = self.get_handle() 
         return fname
 
     def get_full_name(self, service=None):
@@ -326,9 +328,14 @@ class User( db.Expando ):
                 return getattr(self, 'linkedin_picture_url')
             elif hasattr(self, 'fb_username'):
                 return '%s%s/picture' % (
-                    FACEBOOK_QUERY_URL,        
-                    getattr(self, 'fb_identity')
-                ) 
+                        FACEBOOK_QUERY_URL,        
+                        getattr(self, 'fb_identity')
+                    ) 
+            elif hasattr(self, 'fb_identity'):
+                return '%s%s/picture' % (
+                        FACEBOOK_QUERY_URL,        
+                        getattr(self, 'fb_identity')
+                    )
             else:
                 return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
 

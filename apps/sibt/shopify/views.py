@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.action.models       import SIBTVoteAction, SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -220,12 +220,10 @@ class DynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        template_values = {}
-            
-        is_asker = show_votes = 0
+        is_live = is_asker = show_votes = has_voted = False
         instance = None
-        other_instances = []
         asker_name = None
+        asker_pic = None
         willet_code = None
         target = ''
 
@@ -252,74 +250,90 @@ class DynamicLoader(webapp.RequestHandler):
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
-        #app  = get_sibt_shopify_app_by_store_url(shop_url)
-        app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        app  = get_sibt_shopify_app_by_store_url(shop_url)
+        #app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
         event = 'SIBTShowingButton'
-        if app:
-            # Is User an asker for this URL?
-            actions = get_sibt_click_actions_by_user_for_url(user, target)
-            instance = get_sibt_instance_by_asker_for_url(user, target)
-            logging.info('trying to get instance for\nuser: %s\ntarget: %s\ninstance: %s' % (
-                user,
-                target,
-                instance
-            ))
-            if instance:
-                if instance.is_live:
-                    is_asker   = 1
-                    show_votes = 1
-                    event = 'SIBTShowingResults'
-                    asker_name = instance.asker.get_name_or_handle()
-            elif willet_code != None:
-                link = get_link_by_willt_code(willet_code)
-                instance = link.sibt_instance.get()
-                show_votes = 1
+
+        try:
+            assert(app != None)
+            try:
+                # Is User an asker for this URL?
+                actions = get_sibt_click_actions_by_user_for_url(user, target)
+                instance = get_sibt_instance_by_asker_for_url(user, target)
+                assert(instance != None)
                 event = 'SIBTShowingResults'
-                asker_name = instance.asker.get_name_or_handle()
-            elif actions.count() > 0:
-                # filter actions for instances that are active
-                unfiltered_count = actions.count()
-                instances = SIBTInstance.all()\
-                    .filter('url =', target)\
-                    .filter('is_live =', True)
-                key_list = [instance.key() for instance in instances]
-                actions = actions.filter('sibt_instance IN', key_list)
-                logging.info('got %d/%d actions after filtered by keys %s' % (
-                    actions.count(),
-                    unfiltered_count,
-                    key_list
-                ))
-                if actions.count() != 0:
-                    instance   = actions[0].sibt_instance
-                    # assume this now because of filter
-                    # if instance.is_live:
-                    show_votes = 1
-                    event = 'SIBTShowingVote'
-                    asker_name = instance.asker.get_name_or_handle()
-            
+            except:
+                try:
+                    link = get_link_by_willt_code(willet_code)
+                    instance = link.sibt_instance.get()
+                    assert(instance != None)
+                    event = 'SIBTShowingResults'
+                except:
+                    try:
+                        if actions.count() > 0:
+                            # filter actions for instances that are active
+                            unfiltered_count = actions.count()
+                            instances = SIBTInstance.all()\
+                                .filter('url =', target)\
+                                .filter('is_live =', True)
+                            key_list = [instance.key() for instance in instances]
+                            actions = actions.filter('sibt_instance IN', key_list)
+                            logging.info('got %d/%d actions after filtered by keys %s' % (
+                                actions.count(),
+                                unfiltered_count,
+                                key_list
+                            ))
+                            if actions.count() != 0:
+                                instance   = actions[0].sibt_instance
+                                assert(instance != None)
+                                event = 'SIBTShowingVote'
+                    except:
+                        logging.info('no instance available')
+        except:
+            logging.info('no app')
+
+        if instance != None:
+            is_live = instance.is_live
+            asker_name = instance.asker.get_first_name()
+            asker_pic = instance.asker.get_attr('pic')
+            show_votes = True
+
+            is_asker = (instance.asker.key() == user.key()) 
+
+            if not is_asker:
+                vote_action = SIBTVoteAction.all()\
+                    .filter('app_ =', app)\
+                    .filter('sibt_instance =', instance)\
+                    .filter('user =', user)\
+                    .get()
+                logging.info('got vote action: %s' % vote_action)
+                has_voted = (vote_action != None)
+
             # precache this page's product
             taskqueue.add(
                 url = url('FetchProductShopify'), 
                 params = {
                     'url': target,
                     'client': app.client.uuid
-                    }
+                }
             )
-
-            app.storeAnalyticsDatum( event, user, target )
+            app.storeAnalyticsDatum(event, user, target)
 
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
+                'has_voted': has_voted,
+                'is_live': is_live,
                 
                 'app' : app,
                 'instance'       : instance,
                 'asker_name'     : asker_name, 
-                'other_instances': other_instances,
+                'asker_pic': asker_pic,
                 
                 'user': user,
                 'store_id' : self.request.get('store_id'),
+                'store_url' : shop_url,
 
                 'a_b_showFBLogo' : ab_test('sibt_showFBLogoOnCTA')
         }
