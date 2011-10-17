@@ -1,5 +1,5 @@
 application: social-referral
-version: 6-6
+version: 6-7
 runtime: python
 api_version: 1
 
