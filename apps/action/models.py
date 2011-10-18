@@ -38,9 +38,6 @@ class Action( Model, polymodel.PolyModel ):
     # The Action that this Action is for
     app_            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
     
-    # Link that caused the action ...
-    link            = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
-    
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Action, self).__init__(*args, **kwargs)
@@ -70,10 +67,10 @@ def get_actions_by_user( user ):
     return Action.all().filter( 'user =', user ).get()
 
 def get_actions_by_app( app ):
-    return Action.all().filter( 'app =', app ).get()
+    return Action.all().filter( 'app_ =', app ).get()
 
 def get_actions_by_user_for_app( user, app ):
-    return Action.all().filter( 'user =', user).filter( 'app =', app ).get()
+    return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
@@ -81,6 +78,9 @@ def get_actions_by_user_for_app( user, app ):
 class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
         Currently used for 'Referral' and 'SIBT' Apps """
+    
+    # Link that caused the click action ...
+    link = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
     
     def __init__(self, *args, **kwargs):
         super(ClickAction, self).__init__(*args, **kwargs)
@@ -95,6 +95,7 @@ class ClickAction( Action ):
                 self.app_.uuid
         )
 
+## Constructor -----------------------------------------------------------------
 def create_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -120,6 +121,7 @@ class SIBTClickAction( ClickAction ):
     def __str__(self):
         return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_sibt_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -151,6 +153,9 @@ class VoteAction( Action ):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
     
+    # Link that caused the vote action ...
+    link = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
+    
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
         
@@ -160,6 +165,7 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_vote_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -185,6 +191,7 @@ class SIBTVoteAction( VoteAction ):
     def __str__(self):
         return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_sibt_vote_action( user, instance ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -195,4 +202,56 @@ def create_sibt_vote_action( user, instance ):
                             link     = instance.link,
                             url      = instance.link.target_url,
                             sibt_instance = instance )
+    act.put()
+
+
+## -----------------------------------------------------------------------------
+## PageView Subclass -----------------------------------------------------------
+## -----------------------------------------------------------------------------
+class PageView( Action ):
+    """ Designates a 'page view' for a User. """
+
+    url = db.LinkProperty( indexed = True )
+
+    def __str__(self):
+        return 'PageView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+
+## Constructor -----------------------------------------------------------------
+def create_pageview( user, app, url ):
+    uuid = generate_uuid( 16 )
+    act  = PageView( key_name = uuid,
+                     uuid     = uuid,
+                     user     = user,
+                     app_     = app,
+                     url      = url )
+    act.put()
+
+## Accessors -------------------------------------------------------------------
+def get_pageviews_by_url( url ):
+    return PageView.all().filter( 'url =', url )
+
+def get_pageviews_by_user_and_url( user, url ):
+    return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
+
+## -----------------------------------------------------------------------------
+## ProductView Subclass --------------------------------------------------------
+## -----------------------------------------------------------------------------
+class ProductView( PageView ):
+    """ Designates a User viewing a product page. """
+
+    product = db.ReferenceProperty(db.Model, collection_name='product_views')
+
+    def __str__(self):
+        return 'ProductView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.product.title)
+    
+## Constructor -----------------------------------------------------------------
+def create_product_view( user, app, url, product ):
+    # Make the action
+    uuid = generate_uuid( 16 )
+    act  = ProductView( key_name = uuid,
+                        uuid     = uuid,
+                        user     = user,
+                        app_     = app,
+                        url      = url,
+                        product  = product )
     act.put()
