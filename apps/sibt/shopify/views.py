@@ -227,7 +227,6 @@ class DynamicLoader(webapp.RequestHandler):
         other_instances = []
         asker_name = None
         willet_code = None
-        stylesheet = 'css/colorbox.css'
         target = ''
 
         try:
@@ -309,15 +308,6 @@ class DynamicLoader(webapp.RequestHandler):
 
             #app.storeAnalyticsDatum( event, user, target )
 
-            # change the css if we are on bentobox
-            # hack hack hack!
-            try:
-                if app.client.email == 'contact@bentoandco.com':
-                    logging.info('We are on bentoandco so we are using facebook_style.css')
-                    stylesheet = 'css/facebook_style.css'
-            except Exception, e:
-                logging.error('error trying to set stylesheet: %s' % e, exc_info=True)
-
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
 
@@ -341,8 +331,12 @@ class DynamicLoader(webapp.RequestHandler):
 
         if not user.is_admin():
             cta_button_text = ab_test( 'sibt_button_text3', ab_test_options )
+            
+            stylesheet = ab_test('sibt_facebook_style', 
+                                 ['css/facebook_style.css', 'css/colorbox.css'])
         else:
             cta_button_text = "Unsure? Ask your friends!"
+            stylesheet      = 'css/colorbox.css'
         
         template_values = {
                 'URL' : URL,
