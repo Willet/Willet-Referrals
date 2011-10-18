@@ -301,6 +301,11 @@ class DynamicLoader(webapp.RequestHandler):
             asker_pic = instance.asker.get_attr('pic')
             show_votes = True
 
+            try:
+                asker_name = asker_name.split(' ')[0]
+            except:
+                logging.warn('error splitting the asker name')
+
             is_asker = (instance.asker.key() == user.key()) 
 
             vote_action = SIBTVoteAction.all()\
@@ -352,7 +357,7 @@ class DynamicLoader(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
-        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
+        self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.out.write(template.render(path, template_values))
         return
 

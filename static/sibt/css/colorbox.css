@@ -239,6 +239,7 @@
     }
     #_willet_sibt_bar div.vote {
         padding: 0px;
+        padding-right: 5px;
     }
         #_willet_sibt_bar button, 
         #_willet_sibt_bar button:disabled {

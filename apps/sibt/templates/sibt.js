@@ -46,7 +46,7 @@
     var _willet_ask_callback = function() {
         if (_willet_ask_success) {
             _willet_is_asker = true;
-            $('#_willet_button').html('See if your friends have voted');
+            $('#_willet_button').html('Refresh the page to see your results!');
         }
     };
 
@@ -55,7 +55,8 @@
     */
     var _willet_button_onclick = function() {
         if (_willet_is_asker || _willet_show_votes) {
-            _willet_show_vote();
+            //_willet_show_vote();
+            window.location.reload(true);
         } else {
             _willet_show_ask();        
         }
@@ -215,8 +216,8 @@
             "&is_asker={{is_asker}}" +
             "&store_id={{store_id}}" +
             "&store_url={{store_url}}" +
-            "&url=" + window.location.href + 
-            "&instance_uuid={{instance.uuid}}"; 
+            "&instance_uuid={{instance.uuid}}" + 
+            "&url=" + window.location.href; 
     
         // show/hide stuff
         _willet_topbar.find('div.vote').hide();
@@ -224,7 +225,7 @@
         if (doing_vote || _willet_has_voted) {
             _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
         } else if (_willet_is_asker) {
-            _willet_topbar.find('div.message').html('Here\'s what your friends say').fadeIn();
+            _willet_topbar.find('div.message').html('Here\'s what your friends say:').fadeIn();
         }
 
         // start loading the iframe
@@ -235,7 +236,9 @@
         // and display the iframe with its content
         console.log('binding function to', $('#_willet_results'));
         //$('#_willet_results').load(_willet_iframe_loaded);
-        iframe.load(_willet_iframe_loaded);
+        //iframe.load(_willet_iframe_loaded);
+        iframe.css('width', iframe.parent().css('width'));
+        iframe.fadeIn('fast');
 
         // show the iframe div!
         _willet_toggle_results();
@@ -263,7 +266,7 @@
                 "<img src='{{ asker_pic }}' />" +
                 "</div>" +
                 "<div class='name'>" +
-                "    &#147;I'm not sure if I should buy this&#148;" +
+                "    &#147;I'm not sure if I should buy this.&#148;" +
                 "</div>" +
             "</div>" +
             "<div class='message'>Should <em>{{ asker_name }}</em> Buy This?</div>" +
@@ -298,15 +301,15 @@
             "</div> "+
             "<div class='clear'></div> "+
             "<div class='iframe' style='display: none'> "+
-            "    <div class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
-            "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' style='display: none'></iframe> "+ 
+            "    <div style='display: none' class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
+            "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' ></iframe> "+ 
             "</div>";
         _willet_topbar.html(bar_html);
         body.prepend(padding);
         body.prepend(_willet_topbar);
 
         // bind event handlers
-        $('#_willet_refresh_results').click(_willet_refresh_results);
+        //$('#_willet_refresh_results').click(_willet_refresh_results);
         $('#_willet_toggle_results').click(_willet_toggle_results);
         $('#yesBtn').click(_willet_do_vote_yes);
         $('#noBtn').click(_willet_do_vote_no);
@@ -319,7 +322,11 @@
             _willet_topbar.children('div.button').fadeIn();
         } else if (_willet_is_asker) {
             // showing top bar to asker!
-            _willet_topbar.find('div.message').html('See what your friends say').fadeIn();
+            _willet_topbar.find('div.message')
+                .html('See what your friends say!')
+                .css('cursor', 'pointer')
+                .click(_willet_toggle_results)
+                .fadeIn();
             _willet_topbar.children('div.button').fadeIn();
         }
         padding.show(); 

@@ -28,10 +28,8 @@
             var title;
             $(document).ready(function() {
                 title = $('#title'); 
-                if(!is_asker) {
-                    title.html("Thanks for voting!");
-                } else {
-                    title.html("Here's what your friends think");
+                if(is_asker) {
+                    title.html("");
                 }
 
                 $('iframe').live('load', function() {
@@ -90,7 +88,7 @@
                 </div>
             </div>
             <div id="comments-div">
-                <h3>Tell {{ asker_name }} why!</h3>
+                <h3 id="title">Tell {{ asker_name }} why!</h3>
                 <script>
                     window.fbAsyncInit = function() {
                         // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http

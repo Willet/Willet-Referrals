@@ -102,7 +102,7 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Finally, render the HTML!
         path = os.path.join('apps/sibt/templates/', 'ask.html')
-        self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
+        self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.out.write(template.render(path, template_values))
         return
 
@@ -410,24 +410,24 @@ class ShowResults(webapp.RequestHandler):
             product = get_or_fetch_shopify_product(target, app.client)
 
             template_values = {
-                    'evnt' : event,
+                'evnt' : event,
 
-                    'product_img': product.images,
-                    'app' : app,
-                    'URL': URL,
-                    
-                    'user': user,
-                    'asker_name' : name if name != '' else "your friend",
-                    'asker_pic' : instance.asker.get_attr('pic'),
-                    'target_url' : target,
-                    'fb_comments_url' : '%s?%s' % (target, instance.uuid),
+                'product_img': product.images,
+                'app' : app,
+                'URL': URL,
+                
+                'user': user,
+                'asker_name' : name if name != '' else "your friend",
+                'asker_pic' : instance.asker.get_attr('pic'),
+                'target_url' : target,
+                'fb_comments_url' : '%s?%s' % (target, instance.uuid),
 
-                    'share_url': share_url,
-                    'is_asker' : is_asker,
-                    'instance' : instance,
-                    'has_voted': has_voted,
+                'share_url': share_url,
+                'is_asker' : is_asker,
+                'instance' : instance,
+                'has_voted': has_voted,
 
-                    'vote_percentage': vote_percentage
+                'vote_percentage': vote_percentage
             }
 
             # Finally, render the HTML!
@@ -439,7 +439,7 @@ class ShowResults(webapp.RequestHandler):
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
-        self.response.headers.add_header('P3P', 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"')
+        self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.out.write(template.render(path, template_values))
         return
 
