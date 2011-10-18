@@ -257,7 +257,7 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
 class StoreAnalytics( URIHandler ):
     def get( self ):
         # Don't store anything about Admin!
-        user = get_user_by_cookie( self )
+        user = get_or_create_user_by_cookie( self )
         if user.is_admin():
             return
 
