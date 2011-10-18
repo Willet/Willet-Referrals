@@ -243,6 +243,7 @@
     #_willet_sibt_bar div.vote {
         padding: 0px;
         padding-right: 5px;
+        float:right;
     }
         #_willet_sibt_bar button, 
         #_willet_sibt_bar button:disabled {
@@ -313,11 +314,11 @@
             pointer-events: none;
         }
         #_willet_sibt_bar .yes:before {
-            content: "\2764";
+            content: "\u2764";
             color: #EE2C2C;
         }
         #_willet_sibt_bar .no:before {
-            content: "\2718";
+            content: "\u2718";
         }
     #_willet_sibt_bar div.iframe {
         text-align: center;
