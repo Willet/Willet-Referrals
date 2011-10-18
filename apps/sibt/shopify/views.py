@@ -317,7 +317,9 @@ class DynamicLoader(webapp.RequestHandler):
             vote_count = vote_action.count()
 
             if not is_asker:
+                logging.info('not admin, check for vote ...')
                 vote_action = vote_action.filter('user =', user).get()
+                logging.info('got a vote action? %s' % vote_action)
                 has_voted = (vote_action != None)
 
             try:

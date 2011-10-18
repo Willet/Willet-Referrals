@@ -236,7 +236,7 @@
             background-image: -ms-linear-gradient(top, #eee, #ccc);
             background-image: -o-linear-gradient(top, #eee, #ccc);
             background-image: linear-gradient(top, #eee, #ccc);
-            filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#eeeeee', EndColorStr='#cccccc');
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorStr=\'#eeeeee\', EndColorStr=\'#cccccc\');
             border: 1px solid #777;
             padding: 0 1.5em;
             font: bold 1.25em/2em Helvetica, Arial, sans-serif;
@@ -260,7 +260,7 @@
             background-image: -ms-linear-gradient(top, #fafafa, #ddd);
             background-image: -o-linear-gradient(top, #fafafa, #ddd);
             background-image: linear-gradient(top, #fafafa, #ddd);
-            filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#fafafa', EndColorStr='#dddddd');
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorStr=\'#fafafa\', EndColorStr=\'#dddddd\');
         }
 
         #_willet_sibt_bar button:active {
