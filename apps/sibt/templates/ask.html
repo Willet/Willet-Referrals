@@ -41,7 +41,7 @@
                 $.ajax({
                     url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
                          "&target_url={{target_url}}&app_uuid={{app.uuid}}" +
-                         "&user_uuid={{user.uuid}}";
+                         "&user_uuid={{user.uuid}}",
                     type: 'get',
                     success: function (response) {
                         return;
