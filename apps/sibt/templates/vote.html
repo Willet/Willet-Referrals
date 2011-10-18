@@ -110,74 +110,6 @@
                 $("#thanks").fadeIn(300);
             };
 
-            var fb_share_handler = function(payload) {
-                //console.log(payload)
-                $.ajax({url: "/fbShare",
-                    type: 'post',
-                    data: payload,
-                    success: function (tr) {
-                        if (tr === 'ok') {
-                            shareComplete();
-                        } else {
-                            //console.log("Facebook post failure");
-                        }
-                    }
-                });
-            };
-
-            // use the selected medium to share about your purchase
-            var share = function(medium, uid) {
-                var uid = uid || '';
-                var message = shareText.value.substring(0,141);
-                if (['linkedin', 'twitter', 'fb'].indexOf(medium) !== -1) {
-                    // initiate facebook login event if requested
-                    if (medium === 'fb') {
-                        var fbData = {
-                            msg: message, 
-                            wcode: '{{willt_code}}', 
-                            img: '{{product_img|first}}'};
-                        // first attempt server-provided token
-                        if (userFound) {
-                            fb_share_handler(fbData)
-                            return;
-                        } else {
-                            if (typeof FB == 'undefined') {
-                                alert("Sorry Facebook appears to be down for the moment. Please try again in a bit.");
-                                return;
-                            }
-                            FB.login(function(lr) {
-                                    //console.log(lr);
-                                    if (!lr.authResponse) {
-                                        // we weren't given permission
-                                        window.close();
-                                    } else { 
-                                        fbData.fb_token = lr.authResponse.accessToken;
-                                        fbData.fb_id = lr.authResponse.userID;
-                                        fb_share_handler(fbData);
-                                        mixpanelTrack( 'Facebook' );
-                                        mixpanelTrack( 'Share' );
-                                    }
-                                }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-                            );
-                
-                        } // if (userFound u
-                    } else if (medium === 'twitter'){
-                        var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid='
-                                        + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
-                                        AuthWindow = window.open(OAuthURL, '_blank');
-                    } else if (medium === 'linkedin') {
-                        //console.log('linkedin share', message);
-                        var OAuthURL = '{{BASE_URL}}/oauth/linkedin/login?wuid='
-                                        + '&m=' + message + '&wcode={{willt_code}}&img={{product_img|first}}',
-                                        AuthWindow = window.open(OAuthURL, '_blank');       
-                    } else {
-                        // style shareArea according to different social loader
-                    }
-                    shareArea.style.visibility = 'visible';
-                } else {
-                    // social media provider not found
-                }
-            };
 
             $(document).ready(function() {
                 percent_el = $('#result').find('span');
@@ -190,23 +122,6 @@
                 shareText = document.getElementById('share-text'),
                 charsLeft = document.getElementById('chars-left');
                 
-                /*
-                if (typeof FB != "undefined") {
-                    FB.init({ appId: '{{FACEBOOK_APP_ID}}',
-                        status: true,
-                        cookie: true,
-                        xfbml: true,
-                        oauth: true
-                    });
-                } else {
-                    //console.log('FB not defined');
-                }
-                */
-        
-                
-
-                // If this is the Asker, show the results.
-                // {{ has_voted }}
                 {% if is_asker or has_voted %}
                     voteComplete(('{{is_asker}}' == 'True'));
                 {% endif %}
@@ -214,7 +129,6 @@
         </script>
         
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
-
     </head>
     <body>
 
@@ -236,18 +150,6 @@
                     </div>
                 </div>
                 
-                <div id="voting">
-                    <div id="left-content">
-                        <button id="yesBtn" class="button-link yes" onClick="vote('yes');">
-                            Buy it
-                        </button>
-                    </div>
-                    <div id="right-content">
-                        <button id="noBtn" class="button-link no" onClick="vote('no');">
-                            Skip it
-                        </button>
-                    </div>
-                </div>  
                 <div id="result" style="display: none">
                     <h1><span></span>%</h1>
                     say buy it!

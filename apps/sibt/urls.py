@@ -7,6 +7,7 @@ urlpatterns = [
     # Views
     (r'/s/ask.html',      AskDynamicLoader),
     (r'/s/vote.html',     VoteDynamicLoader),
+    (r'/s/results.html',     ShowResults),
 
     # Processes
     (r'/s/doVote',        DoVote),
