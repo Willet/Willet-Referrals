@@ -99,13 +99,16 @@ class SIBT(App):
                     link= http://rf.rs/%s<br />
                     name= %s<br />
                     fb_uuid= %s<br />
-                    fb_access_token= %s"""
+                    fb_access_token= %s <br \>
+                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>"""
                     % (
                         uuid,
                         user.key(), 
                         link.target_url,
                         link.willt_url_code,
                         user.get_full_name(),
+                        user.get_attr('fb_identity'),
+                        user.get_attr('fb_access_token'),
                         user.get_attr('fb_identity'),
                         user.get_attr('fb_access_token')
                     )
