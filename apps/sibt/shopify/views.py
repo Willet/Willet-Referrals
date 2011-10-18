@@ -344,19 +344,19 @@ class DynamicLoader(webapp.RequestHandler):
             "Need advice? Ask your friends!",
             
             "Unsure? Get advice from friends!",
-
-            """
-            "Ask a friend before you buy!",
-            "Need to ask someone before you buy?",
-            "Ask your friends if you should buy!",
-            
-            "Unsure? Ask your friends!",
-            "Unsure? Get advice from your friends!",
-            """
         ]
 
+        """
+        "Ask a friend before you buy!",
+        "Need to ask someone before you buy?",
+        "Ask your friends if you should buy!",
+        
+        "Unsure? Ask your friends!",
+        "Unsure? Get advice from your friends!",
+        """
+
         if not user.is_admin():
-            cta_button_text = ab_test( 'sibt_button_text3', ab_test_options )
+            cta_button_text = ab_test( 'sibt_button_text4', ab_test_options )
             
             stylesheet = ab_test('sibt_facebook_style', 
                                  ['css/facebook_style.css', 'css/colorbox.css'])
