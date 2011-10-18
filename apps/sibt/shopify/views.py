@@ -265,20 +265,22 @@ class DynamicLoader(webapp.RequestHandler):
                 instance = get_sibt_instance_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
+                logging.info('got instance by user/target: %s' % instance.uuid)
             except:
                 try:
                     link = get_link_by_willt_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'
+                    logging.info('got instance by willet_code: %s' % instance.uuid)
                 except:
                     try:
                         if actions.count() > 0:
                             # filter actions for instances that are active
                             unfiltered_count = actions.count()
                             instances = SIBTInstance.all()\
-                                .filter('url =', target)\
-                                .filter('is_live =', True)
+                                .filter('url =', target)
+                                #.filter('is_live =', True)
                             key_list = [instance.key() for instance in instances]
                             actions = actions.filter('sibt_instance IN', key_list)
                             logging.info('got %d/%d actions after filtered by keys %s' % (
@@ -289,6 +291,7 @@ class DynamicLoader(webapp.RequestHandler):
                             if actions.count() != 0:
                                 instance   = actions[0].sibt_instance
                                 assert(instance != None)
+                                logging.info('got instance by action: %s' % instance.uuid)
                                 event = 'SIBTShowingVote'
                     except:
                         logging.info('no instance available')
@@ -333,6 +336,8 @@ class DynamicLoader(webapp.RequestHandler):
                 }
             )
             #app.storeAnalyticsDatum( event, user, target )
+        else:
+            logging.info('could not get an instance')
 
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
