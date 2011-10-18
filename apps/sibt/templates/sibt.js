@@ -490,6 +490,8 @@
             var _willet_style = document.createElement('style');
             var _willet_head  = document.getElementsByTagName('head')[0];
             _willet_style.type = 'text/css';
+            _willet_style.setAttribute('charset','utf-8');
+            _willet_style.setAttribute('media','all');
             if (_willet_style.styleSheet) {
                 _willet_style.styleSheet.cssText = _willet_css;
             } else {
