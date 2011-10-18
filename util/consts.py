@@ -99,7 +99,9 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
                  'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
-ADMIN_IPS = [ '70.83.160.171' ]
+ADMIN_IPS = [ '70.83.160.171',      # Notman House
+              '173.177.235.110'     # Montreal apartment
+            ]
 
 # the apps we are using
 INSTALLED_APPS = [
