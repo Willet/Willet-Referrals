@@ -21,7 +21,7 @@ from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instanc
 from apps.user.models import User
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
-from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie
+from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie, get_user_by_uuid
 
 from util.consts              import *
 from util.helpers             import url 

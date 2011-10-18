@@ -23,7 +23,7 @@ class SendActionToMixpanel(webapp.RequestHandler):
         extra      = self.request.get('extra')
         client     = self.request.get('client')
 
-        logging.info("Posting %s for %s at %s to Mixpanel" % (event, user.uuid, target_url))
+        logging.info("Posting %s for %s at %s to Mixpanel" % (event, user_uuid, target_url))
 
         data = {
             'token': MIXPANEL_TOKEN,
