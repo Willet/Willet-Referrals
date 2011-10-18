@@ -52,10 +52,10 @@ class FetchFacebookData(webapp.RequestHandler):
                 try:
                     collected_data['facebook_profile_pic'] = '%s%s/picture' % (
                         FACEBOOK_QUERY_URL,
-                        collected_data['fb_username']
+                        rq_vars['fb_id']
                     )
                 except:
-                    logging.error('user does not have a facebook username')
+                    logging.info('user does not have a facebook username')
 
                 user.update(**collected_data)
             else:
