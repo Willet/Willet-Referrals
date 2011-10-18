@@ -279,8 +279,8 @@ class DynamicLoader(webapp.RequestHandler):
                             # filter actions for instances that are active
                             unfiltered_count = actions.count()
                             instances = SIBTInstance.all()\
-                                .filter('url =', target)
-                                #.filter('is_live =', True)
+                                .filter('url =', target)\
+                                .filter('is_live =', True)
                             key_list = [instance.key() for instance in instances]
                             actions = actions.filter('sibt_instance IN', key_list)
                             logging.info('got %d/%d actions after filtered by keys %s' % (
