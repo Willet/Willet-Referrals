@@ -7,9 +7,11 @@ urlpatterns = [
     # Views
     (r'/s/ask.html',      AskDynamicLoader),
     (r'/s/vote.html',     VoteDynamicLoader),
+    (r'/s/results.html',     ShowResults),
 
     # Processes
     (r'/s/doVote',        DoVote),
+    (r'/s/storeAnalytics', StoreAnalytics),
     (r'/s/instance/share/facebook', ShareSIBTInstanceOnFacebook),
     (r'/s/instance/start', StartSIBTInstance),
     (r'/s/getExpired',    GetExpiredSIBTInstances),

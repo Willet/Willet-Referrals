@@ -19,6 +19,9 @@ DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAI
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
+# Our BS P3P Header
+P3P_HEADER = 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"'
+
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID  = '28e530db44bf45e5'
 LANDING_CAMPAIGN_STORE = '962072'
@@ -97,8 +100,11 @@ TEMPLATE_DIRS = (
 # Admin whitelist
 ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
-                 'harrismch@gmail.com', 'fraser.harris@gmail.com' ]
-ADMIN_IPS = [ '70.83.160.171' ]
+                 'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
+                 'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
+ADMIN_IPS = [ '70.83.160.171',      # Notman House
+              '173.177.235.110'     # Montreal apartment
+            ]
 
 # the apps we are using
 INSTALLED_APPS = [

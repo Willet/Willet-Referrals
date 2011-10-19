@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.action.models       import SIBTVoteAction, SIBTClickAction, get_sibt_click_actions_by_user_for_url
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -215,30 +215,25 @@ class ShowCodePage( URIHandler ):
     def get(self):
        pass
 
-class DynamicLoader(webapp.RequestHandler):
+class SIBTShopifyServeScript(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        template_values = {}
-            
-        is_asker = show_votes = 0
+        is_live = is_asker = show_votes = has_voted = False
         instance = None
-        other_instances = []
+        link = None
         asker_name = None
         willet_code = None
-        stylesheet = 'colorbox'
+        asker_pic = None
+        willet_code = self.request.get('willt_code') 
+        share_url = None
+        vote_count = 0
         target = ''
 
         try:
             page_url = urlparse(self.request.headers.get('REFERER'))
             target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-            fragment = page_url.fragment
-            if fragment != '':
-                parts = fragment.split('=')
-                if len(parts) > 1:
-                    # code a willt code!
-                    willet_code = parts[1]
         except Exception, e:
             logging.error('error parsing referer %s: %s' % (
                     self.request.headers.get('referer'),
@@ -249,134 +244,171 @@ class DynamicLoader(webapp.RequestHandler):
         
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
-        shop_url = self.request.get('shop')
+        shop_url = self.request.get('store_url')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
-        #app  = get_sibt_shopify_app_by_store_url(shop_url)
-        app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        app  = get_sibt_shopify_app_by_store_url(shop_url)
+        #app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
         event = 'SIBTShowingButton'
-        if app:
-            # Is User an asker for this URL?
-            actions = get_sibt_click_actions_by_user_for_url(user, target)
-            instance = get_sibt_instance_by_asker_for_url(user, target)
-            logging.info('trying to get instance for\nuser: %s\ntarget: %s\ninstance: %s' % (
-                user,
-                target,
-                instance
-            ))
-            if instance:
-                if instance.is_live:
-                    is_asker   = 1
-                    show_votes = 1
-                    event = 'SIBTShowingResults'
-                    asker_name = instance.asker.get_name_or_handle()
-            elif willet_code != None:
-                link = get_link_by_willt_code(willet_code)
-                instance = link.sibt_instance.get()
-                show_votes = 1
+
+        try:
+            assert(app != None)
+            try:
+                # Is User an asker for this URL?
+                actions = get_sibt_click_actions_by_user_for_url(user, target)
+                instance = get_sibt_instance_by_asker_for_url(user, target)
+                assert(instance != None)
                 event = 'SIBTShowingResults'
-                asker_name = instance.asker.get_name_or_handle()
-            elif actions.count() > 0:
-                # filter actions for instances that are active
-                unfiltered_count = actions.count()
-                instances = SIBTInstance.all()\
-                    .filter('url =', target)\
-                    .filter('is_live =', True)
-                key_list = [instance.key() for instance in instances]
-                actions = actions.filter('sibt_instance IN', key_list)
-                logging.info('got %d/%d actions after filtered by keys %s' % (
-                    actions.count(),
-                    unfiltered_count,
-                    key_list
-                ))
-                if actions.count() != 0:
-                    instance   = actions[0].sibt_instance
-                    # assume this now because of filter
-                    # if instance.is_live:
-                    show_votes = 1
-                    event = 'SIBTShowingVote'
-                    asker_name = instance.asker.get_name_or_handle()
-            
+                logging.info('got instance by user/target: %s' % instance.uuid)
+            except:
+                try:
+                    link = get_link_by_willt_code(willet_code)
+                    instance = link.sibt_instance.get()
+                    assert(instance != None)
+                    event = 'SIBTShowingResults'
+                    logging.info('got instance by willet_code: %s' % instance.uuid)
+                except:
+                    try:
+                        if actions.count() > 0:
+                            # filter actions for instances that are active
+                            unfiltered_count = actions.count()
+                            instances = SIBTInstance.all()\
+                                .filter('url =', target)\
+                                .filter('is_live =', True)
+                            key_list = [instance.key() for instance in instances]
+                            actions = actions.filter('sibt_instance IN', key_list)
+                            logging.info('got %d/%d actions after filtered by keys %s' % (
+                                actions.count(),
+                                unfiltered_count,
+                                key_list
+                            ))
+                            if actions.count() != 0:
+                                instance   = actions[0].sibt_instance
+                                assert(instance != None)
+                                logging.info('got instance by action: %s' % instance.uuid)
+                                event = 'SIBTShowingVote'
+                    except:
+                        logging.info('no instance available')
+        except:
+            logging.info('no app')
+
+        if instance != None:
+            is_live = instance.is_live
+            asker_name = instance.asker.get_first_name()
+            asker_pic = instance.asker.get_attr('pic')
+            show_votes = True
+
+            try:
+                asker_name = asker_name.split(' ')[0]
+            except:
+                logging.warn('error splitting the asker name')
+
+            is_asker = (instance.asker.key() == user.key()) 
+
+            vote_action = SIBTVoteAction.all()\
+                .filter('app_ =', app)\
+                .filter('sibt_instance =', instance)
+            vote_count = vote_action.count()
+
+            if not is_asker:
+                logging.info('not asker, check for vote ...')
+                vote_action = vote_action.filter('user =', user).get()
+                logging.info('got a vote action? %s' % vote_action)
+                has_voted = (vote_action != None)
+
+            try:
+                if link == None: 
+                    link = instance.link
+                share_url = link.get_willt_url()
+            except Exception,e:
+                logging.error("wtf: %s" % e, exc_info=True)
+
             # precache this page's product
             taskqueue.add(
                 url = url('FetchProductShopify'), 
                 params = {
                     'url': target,
                     'client': app.client.uuid
-                    }
+                }
             )
-
-            app.storeAnalyticsDatum( event, user, target )
-
-            # change the css if we are on bentobox
-            # hack hack hack!
-            try:
-                if app.client.email == 'barbara@getwillet.com':
-                    logging.info('We are on bentoandco so we are using facebook_style.css')
-                    stylesheet = 'facebook_style'
-            except Exception, e:
-                logging.error('error trying to set stylesheet: %s' % e, exc_info=True)
+            #app.storeAnalyticsDatum( event, user, target )
+        else:
+            logging.info('could not get an instance')
 
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
-            "Get advice from your friends!",
-            "Ask a friend before you buy!",
-            "Need to ask someone before you buy?",
-            "Get feedback from your friends!",
-            "What do your friends think?",
-            "Ask your friends!",
-            "Ask your friends if you should buy!",
-            
-            "Not sure? Ask your friends!",
-            "Unsure? Ask your friends!",
-            
-            "Not sure? Get advice!",
-            "Unsure? Get advice!",
-            
-            "Not sure? Get feedback!",
-            "Unsure? Get feedback!",
 
-            "Not sure? Get advice from friends!",
+            "Not sure? Poll your friends!",
+    
+            "Ask your friends what they think",
+            
+            "Need advice? Ask your friends!",
+            
             "Unsure? Get advice from friends!",
-            
-            "Not sure? <br /> Get feedback from friends!",
-            "Unsure? Get feedback from friends!",
-
-            "Not sure? Get advice from your friends!",
-            "Unsure? Get advice from your friends!",
-            
-            "Not sure? Get feedback from your friends!",
-            "Unsure? Get feedback from your friends!",
         ]
-        ab_test_logo_options = []
-        img_tag = "<img src='%s/static/imgs/fb-logo.png' style='margin:3px 5px -5px 0px' />" % URL;
-        for opt in ab_test_options:
-            ab_test_logo_options.append( img_tag + opt )
 
-        ab_test_options.extend( ab_test_logo_options )
+        """
+        "Ask a friend before you buy!",
+        "Need to ask someone before you buy?",
+        "Ask your friends if you should buy!",
+        
+        "Unsure? Ask your friends!",
+        "Unsure? Get advice from your friends!",
+        """
 
-        cta_button_text = ab_test( 'sibt_button_text', ab_test_options )
-
+        if not user.is_admin():
+            cta_button_text = ab_test( 'sibt_button_text4', ab_test_options )
+            
+            stylesheet = ab_test('sibt_facebook_style', 
+                                 ['css/facebook_style.css', 'css/colorbox.css'])
+        else:
+            cta_button_text = "Unsure? Ask your friends!"
+            stylesheet      = 'css/colorbox.css'
+        
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,
                 'show_votes' : show_votes,
+                'has_voted': has_voted,
+                'vote_count': vote_count,
+                'is_live': is_live,
+                'share_url': share_url,
                 
                 'app' : app,
                 'instance'       : instance,
                 'asker_name'     : asker_name, 
-                'other_instances': other_instances,
+                'asker_pic': asker_pic,
                 
                 'user': user,
                 'store_id' : self.request.get('store_id'),
                 'stylesheet': stylesheet,
 
-                'AB_CTA_text' : cta_button_text
+                'AB_CTA_text' : cta_button_text,
+                'store_url' : shop_url,
+
+                'evnt' : event
         }
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
-        self.response.headers.add_header('P3P', 'CP="NOI ADM DEV PSAi COM NAV OUR OTR STP IND DEM"')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
+
+class SIBTShopifyProductDetection(webapp.RequestHandler):
+    def get(self):
+        store_url = self.request.get('store_url')
+
+        template_values = {
+            'URL' : URL,
+            'store_url': store_url,
+            'sibt_button_id': '_willet_shouldIBuyThisButton',
+        }
+        path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        self.response.out.write(template.render(path, template_values))
+        return
+

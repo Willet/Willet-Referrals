@@ -15,13 +15,15 @@ from util.consts import *
 
 class SendActionToMixpanel(webapp.RequestHandler):
     def post(self):
-        event = self.request.get('event')
-        app = self.request.get('app')
-        user = self.request.get('user')
+        event      = self.request.get('event')
+        app        = self.request.get('app')
+        user       = self.request.get('user')
         target_url = self.request.get('target_url')
-        user_uuid = self.request.get('user_uuid')
-        extra = self.request.get('extra')
-        client = self.request.get('client')
+        user_uuid  = self.request.get('user_uuid')
+        extra      = self.request.get('extra')
+        client     = self.request.get('client')
+
+        logging.info("Posting %s for %s at %s to Mixpanel" % (event, user_uuid, target_url))
 
         data = {
             'token': MIXPANEL_TOKEN,
@@ -58,6 +60,8 @@ class SendToMixpanel(webapp.RequestHandler):
 
         user = twitter_handle if twitter_handle != '' else user_id
 
+        logging.info("Posting(2) %s for %s to Mixpanel" % (event, user))
+        
         # ----------------------------------------------------------------------
         # Store the Per-User Data
         data = {

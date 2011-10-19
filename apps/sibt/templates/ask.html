@@ -27,7 +27,7 @@
         <script type="text/javascript">
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
-                charsLeft, clear; 
+                charsLeft, clear, storeAnalytics; 
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
@@ -37,6 +37,18 @@
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}'
             };
+            var storeAnalytics = function( evnt ) {
+                $.ajax({
+                    url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
+                         "&target_url={{target_url}}&app_uuid={{app.uuid}}" +
+                         "&user_uuid={{user.uuid}}",
+                    type: 'get',
+                    success: function (response) {
+                        return;
+                    }
+                });
+            };
+
             var _willet_check_scripts = function() {
                 if (typeof FB != 'undefined') {
                     // facebook is loaded
@@ -47,7 +59,12 @@
             };
 
             var share = function(medium, uid) {
+                storeAnalytics( 'SIBT_ClickedOnShare' );
+
                 // use the selected medium to share about your purchase
+                $("#invite").hide();
+                $("#loading").fadeIn();
+
                 var uid = uid || '';
                 var message = shareText.value.substring(0,141);
                 // initiate facebook login event if requested
@@ -119,6 +136,7 @@
                 FB.login(function(lr) {
                         //console.log(lr);
                         if (!lr.authResponse) {
+                            storeAnalytics( 'SIBT_FBConnectCancelled' );
                             // we weren't given permission
                             window.close();
                         } else { 
@@ -136,6 +154,7 @@
             var shareComplete = function(medium) {
                 // Sharing is complete (either twitter or facebook)
                 $("#invite").hide();
+                $("#loading").hide();
                 if (medium == 'twitter') {
                     // ask for their email
                     $("#thanks").fadeIn(300);
@@ -269,7 +288,6 @@
     <div id="fb-root"></div>
     <div id="wrapper">
         <div id="invite" class="willt">
-            
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
                     <img src="{{productImg|first}}" />
@@ -295,7 +313,10 @@
                 -->
             </div>
         </div>
-
+        <div id="loading" class="willt hidden">
+            <h1 style="margin-top: 70px">Working ...</h1>
+            <img src="/static/imgs/ajax-loader.gif" />
+        </div>
         <div id="thanks" class="willt hidden">
             <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
 

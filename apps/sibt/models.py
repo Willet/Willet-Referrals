@@ -56,7 +56,8 @@ class SIBT(App):
         act = create_sibt_click_action( user, self, link )
 
         # GAY BINGO!
-        bingo( 'sibt_instance_clicked' )
+        if not user.is_admin():
+            bingo( 'sibt_share_text2' )
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -85,7 +86,8 @@ class SIBT(App):
         instance.put()
         
         # GAY BINGO
-        bingo( 'sibt_instance_started' )
+        if not user.is_admin():
+            bingo( 'sibt_share_text2' )
 
         if not user.is_admin() and "social-referral" in URL:
             try:
@@ -97,17 +99,21 @@ class SIBT(App):
                     link= http://rf.rs/%s<br />
                     name= %s<br />
                     fb_uuid= %s<br />
-                    fb_access_token= %s""" % (
+                    fb_access_token= %s <br \>
+                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
+                    """ % (
                         uuid,
                         user.key(), 
                         link.target_url,
                         link.willt_url_code,
                         user.get_full_name(),
                         user.get_attr('fb_identity'),
+                        user.get_attr('fb_access_token'),
+                        user.get_attr('fb_identity'),
                         user.get_attr('fb_access_token')
                     )
                 )
-            except Exception,e:
+            except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
 

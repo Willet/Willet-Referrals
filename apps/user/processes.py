@@ -15,6 +15,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.user.models import *
+from apps.user.models import create_email_model
 from apps.app.models import App, ShareCounter, get_app_by_id
 from apps.link.models import *
 from apps.email.models import Email
@@ -51,10 +52,10 @@ class FetchFacebookData(webapp.RequestHandler):
                 try:
                     collected_data['facebook_profile_pic'] = '%s%s/picture' % (
                         FACEBOOK_QUERY_URL,
-                        collected_data['fb_username']
+                        rq_vars['fb_id']
                     )
                 except:
-                    logging.error('user does not have a facebook username')
+                    logging.info('user does not have a facebook username')
 
                 user.update(**collected_data)
             else:
@@ -64,6 +65,21 @@ class FetchFacebookData(webapp.RequestHandler):
         logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
         user = User.all().filter('fb_identity =', rq_vars['fb_id']).get()
         result_user = db.run_in_transaction(txn, user)
+
+        # HACK to fix email. 
+        # We cannot run queries in this transaction on EmailModel class.
+        # If we want to setup the email correctly, we have to fix it here.
+        logging.info("ASDHKASHDKLASDLASD")
+        logging.info(result_user.get_attr('fb_email') )
+
+        if hasattr( result_user, 'fb_email' ):
+            logging.info("DOING EMAIL STUFF" )
+            email = result_user.fb_email
+            create_email_model( result_user, email )
+
+            delattr( result_user, 'fb_email' )
+            result_user.put()
+            
         logging.info("done updating")
 
 class FetchFacebookFriends(webapp.RequestHandler):

@@ -11,5 +11,6 @@ urlpatterns = [
     (r'/admin/trackErr', TrackCallbackError),
     (r'/admin/manageApps', ManageApps),
     (r'/admin/ithinkiateacookie', TrackRemoteError),
+    (r'/admin/sibt', SIBTInstanceStats),
 ]
 
