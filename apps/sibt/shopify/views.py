@@ -220,16 +220,18 @@ class DynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live = is_asker = show_votes = has_voted = False
-        instance = None
-        link = None
-        asker_name = None
-        asker_pic = None
+        is_live     = is_asker = show_votes = has_voted = False
+        instance    = None
+        link        = None
+        asker_name  = None
+        asker_pic   = None
         willet_code = None
-        share_url = None
-        vote_count = 0
-        target = ''
+        share_url   = None
+        vote_count  = 0
+        target      = ''
 
+        # TODO: put this as a helper fcn.
+        # Build a url for this page.
         try:
             page_url = urlparse(self.request.headers.get('REFERER'))
             target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
@@ -248,20 +250,20 @@ class DynamicLoader(webapp.RequestHandler):
             )
         
         # Grab a User and App
-        user = get_or_create_user_by_cookie(self)
+        user     = get_or_create_user_by_cookie(self)
         shop_url = self.request.get('shop')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
-        app  = get_sibt_shopify_app_by_store_url(shop_url)
-        #app   = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        app   = get_sibt_shopify_app_by_store_url(shop_url)
         event = 'SIBTShowingButton'
 
+        # Try to find an instance for this { url, user }
         try:
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions = get_sibt_click_actions_by_user_for_url(user, target)
+                actions  = get_sibt_click_actions_by_user_for_url(user, target)
                 instance = get_sibt_instance_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
@@ -289,7 +291,7 @@ class DynamicLoader(webapp.RequestHandler):
                                 key_list
                             ))
                             if actions.count() != 0:
-                                instance   = actions[0].sibt_instance
+                                instance = actions[0].sibt_instance
                                 assert(instance != None)
                                 logging.info('got instance by action: %s' % instance.uuid)
                                 event = 'SIBTShowingVote'
@@ -298,10 +300,13 @@ class DynamicLoader(webapp.RequestHandler):
         except:
             logging.info('no app')
 
+        # If we have an instance, figure out if 
+        # a) Is User asker?
+        # b) Has this User voted?
         if instance != None:
-            is_live = instance.is_live
+            is_live    = instance.is_live
             asker_name = instance.asker.get_first_name()
-            asker_pic = instance.asker.get_attr('pic')
+            asker_pic  = instance.asker.get_attr('pic')
             show_votes = True
 
             try:
@@ -310,16 +315,18 @@ class DynamicLoader(webapp.RequestHandler):
                 logging.warn('error splitting the asker name')
 
             is_asker = (instance.asker.key() == user.key()) 
-
-            vote_action = SIBTVoteAction.all()\
-                .filter('app_ =', app)\
-                .filter('sibt_instance =', instance)
-            vote_count = vote_action.count()
-
             if not is_asker:
-                logging.info('not admin, check for vote ...')
+                logging.info('not asker, check for vote ...')
+                
+                vote_action = SIBTVoteAction.all()\
+                    .filter('app_ =', app)\
+                    .filter('sibt_instance =', instance)
+                vote_count = vote_action.count()
+                
                 vote_action = vote_action.filter('user =', user).get()
+                
                 logging.info('got a vote action? %s' % vote_action)
+                
                 has_voted = (vote_action != None)
 
             try:
@@ -337,32 +344,15 @@ class DynamicLoader(webapp.RequestHandler):
                     'client': app.client.uuid
                 }
             )
-            #app.storeAnalyticsDatum( event, user, target )
         else:
             logging.info('could not get an instance')
 
-        # TODO(Barbara): put this somewhere better
-        ab_test_options = [
-
-            "Not sure? Poll your friends!",
-    
-            "Ask your friends what they think",
-            
-            "Need advice? Ask your friends!",
-            
-            "Unsure? Get advice from friends!",
-        ]
-
-        """
-        "Ask a friend before you buy!",
-        "Need to ask someone before you buy?",
-        "Ask your friends if you should buy!",
-        
-        "Unsure? Ask your friends!",
-        "Unsure? Get advice from your friends!",
-        """
-
+        # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
+            ab_test_options = [ "Not sure? Poll your friends!",
+                                "Ask your friends what they think",
+                                "Need advice? Ask your friends!",
+                                "Unsure? Get advice from friends!" ]
             cta_button_text = ab_test( 'sibt_button_text4', ab_test_options )
             
             stylesheet = ab_test('sibt_facebook_style', 
@@ -371,6 +361,7 @@ class DynamicLoader(webapp.RequestHandler):
             cta_button_text = "Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
         
+        # Grab all template values
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,
@@ -397,8 +388,9 @@ class DynamicLoader(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
+        
         self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
+        
         return
-

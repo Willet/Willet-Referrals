@@ -124,7 +124,7 @@ class SIBT(App):
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTInstance( Model ):
-    # Unique identifier for ndlmemcache and DB key
+    # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
