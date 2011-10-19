@@ -215,7 +215,7 @@ class ShowCodePage( URIHandler ):
     def get(self):
        pass
 
-class DynamicLoader(webapp.RequestHandler):
+class SIBTShopifyServeScript(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -225,7 +225,7 @@ class DynamicLoader(webapp.RequestHandler):
         link = None
         asker_name = None
         asker_pic = None
-        willet_code = None
+        willet_code = self.request.get('willt_code') 
         share_url = None
         vote_count = 0
         target = ''
@@ -233,12 +233,6 @@ class DynamicLoader(webapp.RequestHandler):
         try:
             page_url = urlparse(self.request.headers.get('REFERER'))
             target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-            fragment = page_url.fragment
-            if fragment != '':
-                parts = fragment.split('=')
-                if len(parts) > 1:
-                    # code a willt code!
-                    willet_code = parts[1]
         except Exception, e:
             logging.error('error parsing referer %s: %s' % (
                     self.request.headers.get('referer'),
@@ -249,7 +243,7 @@ class DynamicLoader(webapp.RequestHandler):
         
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
-        shop_url = self.request.get('shop')
+        shop_url = self.request.get('store_url')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
@@ -317,7 +311,7 @@ class DynamicLoader(webapp.RequestHandler):
             vote_count = vote_action.count()
 
             if not is_asker:
-                logging.info('not admin, check for vote ...')
+                logging.info('not asker, check for vote ...')
                 vote_action = vote_action.filter('user =', user).get()
                 logging.info('got a vote action? %s' % vote_action)
                 has_voted = (vote_action != None)
@@ -397,7 +391,22 @@ class DynamicLoader(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
-        self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        self.response.out.write(template.render(path, template_values))
+        return
+
+class SIBTShopifyProductDetection(webapp.RequestHandler):
+    def get(self):
+        store_url = self.request.get('store_url')
+
+        template_values = {
+            'URL' : URL,
+            'store_url': store_url,
+            'sibt_button_id': '_willet_shouldIBuyThisButton',
+        }
+        path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
