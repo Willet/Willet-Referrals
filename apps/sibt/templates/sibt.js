@@ -490,6 +490,7 @@
 
     /**
     * Insert style and get the ball rolling
+    * !!! We are asuming we are good to insert
     */
     try {
         var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
