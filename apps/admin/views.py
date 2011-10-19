@@ -322,7 +322,10 @@ class SIBTInstanceStats( URIHandler ):
             else:
                 str += "'%s'" % u.get_full_name()
 
-            str += " IPs: %s Admin? %s</td> </tr>" % (u.ips, u.is_admin())
+            if hasattr( u, 'ips' ):
+                str += " IPs: %s " % u.ips
+            
+                str += " Admin? %s</td> </tr>" % u.is_admin()
 
         str += "</table> <h2> Instance Comments </h2>"
 
