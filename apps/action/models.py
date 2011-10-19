@@ -38,9 +38,6 @@ class Action( Model, polymodel.PolyModel ):
     # The Action that this Action is for
     app_            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
     
-    # Link that caused the action ...
-    link            = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
-    
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Action, self).__init__(*args, **kwargs)
