@@ -239,24 +239,33 @@ def get_pageviews_by_user_and_url( user, url ):
     return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
 
 ## -----------------------------------------------------------------------------
-## ProductView Subclass --------------------------------------------------------
+## GaeBingoAlt Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class ProductView( PageView ):
-    """ Designates a User viewing a product page. """
-
-    product = db.ReferenceProperty(db.Model, collection_name='product_views')
+class GaeBingoAlt( Action ):
+    """ Stores the variation that a given User sees"""
+    conversion_name = db.StringProperty( indexed = True )
+    alt             = db.StringProperty( indexed = False )
 
     def __str__(self):
-        return 'ProductView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.product.title)
-    
+        return 'GaeBingoAlt: %s(%s) %s: %s' % ( self.user.get_full_name(), 
+                                                self.user.uuid, 
+                                                self.conversion_name,
+                                                self.alt )
+
 ## Constructor -----------------------------------------------------------------
-def create_product_view( user, app, url, product ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = ProductView( key_name = uuid,
-                        uuid     = uuid,
-                        user     = user,
-                        app_     = app,
-                        url      = url,
-                        product  = product )
-    act.put()
+def create_gaebingo_alt( user, app, conversion_name, alt ):
+    act = get_gaebingo_alt_for_user_and_conversion( user, conversion_name )
+
+    if act.count() == 0:
+        uuid = generate_uuid( 16 )
+        act  = GaeBingoAlt( key_name = uuid,
+                            uuid     = uuid,
+                            user     = user,
+                            app_     = app,
+                            conversion_name = conversion_name,
+                            alt      = alt )
+        act.put()
+
+## Accessors  -----------------------------------------------------------------
+def get_gaebingo_alt_for_user_and_conversion( user, conversion ):
+    return GaeBingoAlt.all().filter( 'user =', user ).filter( 'conversion_name =', conversion )
