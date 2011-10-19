@@ -6,11 +6,13 @@ import time
 
 from google.appengine.api import memcache
 
+from apps.action.models import create_gaebingo_alt
+
 from .cache import BingoCache, bingo_and_identity_cache
 from .models import create_experiment_and_alternatives
 from .identity import identity
 
-def ab_test(canonical_name, alternative_params = None, conversion_name = None):
+def ab_test(canonical_name, alternative_params = None, conversion_name = None, user = None, app = None):
 
     bingo_cache, bingo_identity_cache = bingo_and_identity_cache()
 
@@ -97,6 +99,11 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None):
             # It shouldn't matter which experiment's alternative content we send back --
             # alternative N should be the same across all experiments w/ same canonical name.
             returned_content = alternative.content
+
+
+    # Barbara's Code
+    if user:
+        create_gaebingo_alt( user, app, canonical_name, returned_content )
 
     return returned_content
 
