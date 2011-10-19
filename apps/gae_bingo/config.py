@@ -11,7 +11,7 @@ def can_control_experiments( request_handler=None ):
         return user.is_admin()
 
     # TODO: Make this false .. true only for testing
-    return True
+    return False #True
 
 # CUSTOMIZE current_logged_in_identity to make your a/b sessions
 # stickier and more persistent per user.
