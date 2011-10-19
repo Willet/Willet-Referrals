@@ -14,11 +14,13 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import App
+from apps.action.models import Action, get_sibt_click_actions_by_instance, get_sibt_vote_actions_by_instance
 from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
 from apps.client.models import Client, ClientShopify
-from apps.link.models import *
+from apps.link.models import get_link_by_willt_code
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
+from apps.sibt.models import SIBTInstance
 
 from util.consts import *
 from util.helpers import *
@@ -253,3 +255,76 @@ class ManageApps(URIHandler):
             )
         ) 
 
+
+
+class SIBTInstanceStats( URIHandler ):
+    def get( self ):
+        willt_code = self.request.get( 'w' )
+
+        if willt_code == '':
+            str = "<h1> Live Instances </h1>"
+            live_instances = SIBTInstance.all().filter( 'is_live =', True )
+            for l in live_instances:
+                try:
+                    if not l.asker.is_admin():
+                        str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code )
+                except:
+                    pass
+            
+            str += "<br /><br /><h1> Dead Instances </h1>"
+            dead_instances = SIBTInstance.all().filter( 'is_live =', False )
+            for l in dead_instances:
+                try:
+                    if not l.asker.is_admin():
+                        str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code )
+                except:
+                    pass
+
+            self.response.out.write(str)
+            return
+
+        link = get_link_by_willt_code( willt_code )
+
+        instance = link.sibt_instance.get()
+        asker    = instance.asker
+
+        # Get all actions
+        actions = Action.all().filter( 'sibt_instance =', instance )
+        clicks  = get_sibt_click_actions_by_instance( instance )
+        votes   = get_sibt_vote_actions_by_instance( instance )
+        
+        # Init the page
+        str = "<h1>SIBT Instance: "
+        str +="<a href='%s'>Link to Vote</a> </h1> " % (link.get_willt_url())
+        
+        str += "Started: %s" % instance.created.strftime('%H:%M:%S %A %B %d, %Y')
+
+        str += "<h2># Actions: %d " % actions.count() if actions else 0
+        str += "# Clicks: %d " % clicks.count() if clicks else 0
+        str += "# Votes: %d</h2>" % votes.count() if votes else 0
+
+        str += "<p>Product: <a href='%s'>%s</a></p>" % (link.target_url, link.target_url)
+        str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token )
+        
+        str += "<br /><br />"
+        str += "<table width='100%'><tr><td width='15%'> Time </td> <td width='15%'> Action </td> <td width='50%'> User </td></tr>"
+        
+        # Actions
+        so = sorted( actions, key=lambda x: x.created, reverse=True )
+        for a in so:
+            logging.info("actions %s" % a.user )
+            u = a.user
+
+            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__ )         
+            
+            if hasattr( u, 'fb_access_token' ):
+                str += "<a href='https://graph.facebook.com/%s?access_token=%s'>%s</a>" % (u.fb_identity, u.fb_access_token, u.get_full_name())
+            else:
+                str += "'%s'" % u.get_full_name()
+
+            str += " IPs: %s Admin? %s</td> </tr>" % (u.ips, u.is_admin())
+
+        str += "</table>"
+
+        self.response.out.write( str )
+        return
