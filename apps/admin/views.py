@@ -324,7 +324,11 @@ class SIBTInstanceStats( URIHandler ):
 
             str += " IPs: %s Admin? %s</td> </tr>" % (u.ips, u.is_admin())
 
-        str += "</table>"
+        str += "</table> <h2> Instance Comments </h2>"
 
+        str += '<div id="fb-root"></div> <script>(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) {return;} js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=181838945216160"; fjs.parentNode.insertBefore(js, fjs); }(document, "script", "facebook-jssdk"));</script>'
+
+        str += '<div class="fb-comments" data-href="%s?%s" data-num-posts="5" data-width="500"></div>' % (instance.url, instance.uuid)
+        
         self.response.out.write( str )
         return
