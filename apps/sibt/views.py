@@ -201,7 +201,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     except:
                         logging.error('failed to get instance', exc_info=True)
 
-        logging.info("Did we get an instance? %s" % instance)
+        logging.info("Did we get an instance? %s" % instance.uuid)
         
         # default event
         event = 'SIBTShowingVoteIframe'
