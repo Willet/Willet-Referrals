@@ -82,6 +82,9 @@ class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
         Currently used for 'Referral' and 'SIBT' Apps """
     
+    # Link that caused the click action ...
+    link = db.ReferenceProperty( db.Model, collection_name = "link_clicks" )
+    
     def __init__(self, *args, **kwargs):
         super(ClickAction, self).__init__(*args, **kwargs)
 
@@ -144,12 +147,18 @@ def get_sibt_click_actions_by_user_and_link(user, url):
             .filter('user =', user)\
             .filter('url =', url)
 
+def get_sibt_click_actions_by_instance( instance ):
+    return SIBTClickAction.all().filter( 'sibt_instance =', instance )
+
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class VoteAction( Action ):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
+    
+    # Link that caused the vote action ...
+    link = db.ReferenceProperty( db.Model, collection_name = "link_votes" )
     
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
@@ -196,3 +205,35 @@ def create_sibt_vote_action( user, instance ):
                             url      = instance.link.target_url,
                             sibt_instance = instance )
     act.put()
+
+def get_sibt_vote_actions_by_instance( instance ):
+    return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
+
+
+## -----------------------------------------------------------------------------
+## PageView Subclass -----------------------------------------------------------
+## -----------------------------------------------------------------------------
+class PageView( Action ):
+    """ Designates a 'page view' for a User. """
+
+    url = db.LinkProperty( indexed = True )
+
+    def __str__(self):
+        return 'PageView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+
+## Constructor -----------------------------------------------------------------
+def create_pageview( user, app, url ):
+    uuid = generate_uuid( 16 )
+    act  = PageView( key_name = uuid,
+                     uuid     = uuid,
+                     user     = user,
+                     app_     = app,
+                     url      = url )
+    act.put()
+
+## Accessors -------------------------------------------------------------------
+def get_pageviews_by_url( url ):
+    return PageView.all().filter( 'url =', url )
+
+def get_pageviews_by_user_and_url( user, url ):
+    return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
