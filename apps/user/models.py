@@ -25,6 +25,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 import apps.oauth.models
+from apps.gae_bingo.models import GAEBingoIdentityModel
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
 
@@ -75,7 +76,7 @@ def get_emails_by_user( user ):
 # ------------------------------------------------------------------------------
 # User Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class User( db.Expando ):
+class User( db.Expando, GAEBingoIdentityModel ):
     # General Junk
     uuid            = db.StringProperty(indexed = True)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
