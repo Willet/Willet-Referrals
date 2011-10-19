@@ -28,7 +28,7 @@ from apps.order.models          import *
 from apps.product.shopify.models import get_or_fetch_shopify_product 
 from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
-from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id
+from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
 from apps.user.models           import User
 from apps.user.models           import get_or_create_user_by_cookie
@@ -59,7 +59,8 @@ class AskDynamicLoader(webapp.RequestHandler):
         # Grab a User and App
         user = get_or_create_user_by_cookie(self)
         # TODO: stop using store_id, use store_url
-        app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        #app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+        app  = get_sibt_shopify_app_by_store_url(self.request.get('store_url'))
         logging.info("APP: %r" % app)
 
         # Grab the product info
@@ -362,7 +363,7 @@ class ShowResults(webapp.RequestHandler):
         if instance:
             if app == None:
                 app = instance.app_
-           
+            
             # we get these values before we submit the results
             # because we cannot be sure how quickly the taskqueue will finish
             yesses = instance.get_yesses_count()
@@ -441,6 +442,7 @@ class ShowResults(webapp.RequestHandler):
                 'is_asker' : is_asker,
                 'instance' : instance,
                 'has_voted': has_voted,
+                'is_live': instance.is_live,
 
                 'vote_percentage': vote_percentage
             }
