@@ -80,7 +80,7 @@ class ClickAction( Action ):
         Currently used for 'Referral' and 'SIBT' Apps """
     
     # Link that caused the click action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
+    link = db.ReferenceProperty( db.Model, collection_name = "link_clicks" )
     
     def __init__(self, *args, **kwargs):
         super(ClickAction, self).__init__(*args, **kwargs)
@@ -146,6 +146,9 @@ def get_sibt_click_actions_by_user_and_link(user, url):
             .filter('user =', user)\
             .filter('url =', url)
 
+def get_sibt_click_actions_by_instance( instance ):
+    return SIBTClickAction.all().filter( 'sibt_instance =', instance )
+
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -154,7 +157,7 @@ class VoteAction( Action ):
         Primarily used for 'SIBT' App """
     
     # Link that caused the vote action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_actions" )
+    link = db.ReferenceProperty( db.Model, collection_name = "link_votes" )
     
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
@@ -204,6 +207,8 @@ def create_sibt_vote_action( user, instance ):
                             sibt_instance = instance )
     act.put()
 
+def get_sibt_vote_actions_by_instance( instance ):
+    return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
 
 ## -----------------------------------------------------------------------------
 ## PageView Subclass -----------------------------------------------------------
