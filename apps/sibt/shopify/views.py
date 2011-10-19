@@ -353,10 +353,15 @@ class DynamicLoader(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text4', ab_test_options )
+            cta_button_text = ab_test( 'sibt_button_text4', 
+                                        ab_test_options, 
+                                        user = user,
+                                        app  = app )
             
-            stylesheet = ab_test('sibt_facebook_style', 
-                                 ['css/facebook_style.css', 'css/colorbox.css'])
+            stylesheet = ab_test( 'sibt_facebook_style', 
+                                  ['css/facebook_style.css', 'css/colorbox.css'],
+                                  user = user,
+                                  app  = app )
         else:
             cta_button_text = "Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
