@@ -18,9 +18,10 @@ from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
 from apps.product.models import Product
 from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
+from apps.user.models import User
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
-from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie
+from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie, get_user_by_uuid
 
 from util.consts              import *
 from util.helpers             import url 
@@ -166,8 +167,12 @@ class StartSIBTInstance(URIHandler):
         self.response.out.write(json.dumps(response))
 
 class DoVote( URIHandler ):
-    def post( self ):
-        user = get_or_create_user_by_cookie( self )
+    def post(self):
+        #user = get_or_create_user_by_cookie( self )
+        
+        user_uuid = self.request.get('user_uuid')
+        if user_uuid != None:
+            user = User.all().filter('uuid =', user_uuid).get() 
 
         which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
@@ -252,7 +257,7 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
 class StoreAnalytics( URIHandler ):
     def get( self ):
         # Don't store anything about Admin!
-        user = get_user_by_cookie( self )
+        user = get_or_create_user_by_cookie( self )
         if user.is_admin():
             return
 

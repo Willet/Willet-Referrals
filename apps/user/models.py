@@ -62,7 +62,7 @@ def create_email_model( user, email ):
         
         # TODO: We might need to merge Users here
         if em.user.uuid != user.uuid:
-            Email.emailBarbara( "CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid) )
+            Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
             logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
             em.user = user
         
@@ -126,16 +126,20 @@ class User( db.Expando ):
         super(User, self).__init__(*args, **kwargs)
     
     def is_admin( self ):
+        logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
+
         emails = get_emails_by_user( self )
         # Filter by user email
         for e in emails:
             if e.address in ADMIN_EMAILS:
+                logging.info("%s is an ADMIN (via email check)" % (self.uuid))
                 return True
 
         # Filter by IP
         if hasattr(self, 'ips'):
             for i in self.ips:
                 if i in ADMIN_IPS:
+                    logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
                     return True
 
         return False
@@ -154,10 +158,12 @@ class User( db.Expando ):
             fname = self.first_name
         elif hasattr(self, 'linkedin_first_name'):
             fname = self.linkedin_first_name
+        elif hasattr(self, 'fb_name'):
+            fname = self.fb_name
         elif hasattr(self, 'fb_username'):
             fname = self.fb_username
         else:
-            fname = 'a user'
+            fname = self.get_handle() 
         return fname
 
     def get_full_name(self, service=None):
@@ -195,7 +201,7 @@ class User( db.Expando ):
             fname = self.get_attr('email')
         
         if fname == None or fname == '':
-            fname = "a %s user" % (NAME)
+            fname = "A %s User!" % (NAME)
 
         return fname
 
@@ -312,10 +318,7 @@ class User( db.Expando ):
 
     def get_attr( self, attr_name ):
         if attr_name == 'email':
-            if hasattr(self, 'fb_email'):
-                return self.fb_email
-            else:
-                return self.emails[0].address if self.emails.count() > 0 else ''
+            return self.emails[0].address if self.emails.count() > 0 else ''
         
         if attr_name == 'pic':
             if hasattr(self, 'facebook_profile_pic'):
@@ -326,9 +329,14 @@ class User( db.Expando ):
                 return getattr(self, 'linkedin_picture_url')
             elif hasattr(self, 'fb_username'):
                 return '%s%s/picture' % (
-                    FACEBOOK_QUERY_URL,        
-                    getattr(self, 'fb_identity')
-                ) 
+                        FACEBOOK_QUERY_URL,        
+                        getattr(self, 'fb_identity')
+                    ) 
+            elif hasattr(self, 'fb_identity'):
+                return '%s%s/picture' % (
+                        FACEBOOK_QUERY_URL,        
+                        getattr(self, 'fb_identity')
+                    )
             else:
                 return 'https://si0.twimg.com/sticky/default_profile_images/default_profile_3_normal.png'
         
@@ -1154,7 +1162,7 @@ def get_or_create_user_by_facebook(
         fb_first_name=first_name, 
         fb_last_name=last_name,
         fb_name=name,
-        fb_email=email,
+        email=email,
         referrer=referrer,
         fb_gender=gender,
         fb_verified=verified,
@@ -1211,6 +1219,14 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
     user= get_user_by_cookie( request_handler )
     if user is None:
         user = create_user( referrer )
+        
+        # Now, store the IP address for this new User
+        ip = request_handler.request.remote_addr
+        if hasattr(user, 'ips') and ip not in user.ips:
+            user.ips.append(ip)
+        else: 
+            user.ips = [ip]
+        user.save()
 
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)
