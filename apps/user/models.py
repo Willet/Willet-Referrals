@@ -25,6 +25,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 import apps.oauth.models
+from apps.order.shopify.models import OrderShopify
 from apps.gae_bingo.models import GAEBingoIdentityModel
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
@@ -144,6 +145,21 @@ class User( db.Expando, GAEBingoIdentityModel ):
                     return True
 
         return False
+    
+    def merge( self, u ):
+        """ Merge u into self. Deletes u. """
+        if self.key() == u.key():
+            return
+
+        props = u.dynamic_properties()
+        for p in props:
+            setattr( self, p, getattr( u, p ) )
+
+        self.put()
+        # TODO: uncomment once we know it works.
+        # u.delete()
+
+        # TODO: Walk all DB objs and point old refs to new user
 
     def get_name_or_handle(self):
         name = self.get_handle()
