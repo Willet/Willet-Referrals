@@ -20,7 +20,8 @@ URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', ''))
 KEYS                = os.environ['HTTP_HOST']
 
 # Our BS P3P Header
-P3P_HEADER = 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"'
+#P3P_HEADER = 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"'
+P3P_HEADER = 'CP="NON DSP ADM DEV PSD IVDo OUR IND STP PHY PRE NAV UNI"'
 
 # Campaign Stuff
 LANDING_CAMPAIGN_UUID  = '28e530db44bf45e5'
