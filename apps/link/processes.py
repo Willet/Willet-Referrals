@@ -26,6 +26,7 @@ class TrackWilltURL( webapp.RequestHandler ):
        incremental click-throughs are unique"""
 
     def get( self, code ):
+        self.response.headers.add_header('P3P', P3P_HEADER)
         logging.info("PATH %s" % self.request.url )
         if APP_DOMAIN not in self.request.url:
             self.redirect( '%s/%s' % (URL, code) )

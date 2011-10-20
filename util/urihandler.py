@@ -18,6 +18,7 @@ class URIHandler( webapp.RequestHandler ):
 
     def __init__(self):
         # For simple caching purposes. Do not directly access this. Use self.get_client() instead.
+        self.response.headers.add_header('P3P', P3P_HEADER)
         self.db_client = None
 
     # Return None if not authenticated.
