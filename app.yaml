@@ -3,6 +3,9 @@ version: 6-11
 runtime: python
 api_version: 1
 
+builtins:
+- deferred: on
+
 includes:
 - handlers.yaml
 
