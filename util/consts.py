@@ -14,9 +14,11 @@ NAME = 'Willet Inc.'
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'barbara-willet.appspot.com'
+SECURE_PROTOCOL     = 'https'
+APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
+SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
 # Campaign Stuff
@@ -113,6 +115,7 @@ INSTALLED_APPS = [
     'mixpanel',
     'oauth',
     'order',
+    'order.shopify',
     'referral',
     'referral.shopify',
     'sibt',

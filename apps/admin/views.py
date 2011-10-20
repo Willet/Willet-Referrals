@@ -14,6 +14,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import App
+from apps.app.shopify.models import AppShopify
 from apps.action.models import Action, get_sibt_click_actions_by_instance, get_sibt_vote_actions_by_instance
 from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
@@ -22,6 +23,7 @@ from apps.link.models import get_link_by_willt_code
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from apps.sibt.models import SIBTInstance
 
+from util                 import httplib2
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
@@ -332,3 +334,87 @@ class SIBTInstanceStats( URIHandler ):
         
         self.response.out.write( str )
         return
+
+
+class InstallShopifyJunk( URIHandler ):
+    def get( self ):
+        """ Install the webhooks into the Shopify store """
+        webhooks = []
+            
+        store_url = 'http://monahan-braun4718.myshopify.com'
+
+        client = ClientShopify.all().filter( 'url =', store_url ).get()
+        client.token = 'fadcee62216c1ab0a2438eb922d7fa27'
+        logging.info("TOKEN %s" % client.token )
+
+        url      = '%s/admin/webhooks.json' % client._url
+        username = 'b153f0ccc9298a8636f92247e0bc53dd'
+        password = hashlib.md5('735be9bc6b3e39b352aa5c287f4eead5' + client.token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
+        # Install the "App Uninstall" webhook
+        data = {
+            "webhook": {
+                "address": "%s/o/shopify/webhook/create/" % ( URL ),
+                "format" : "json",
+                "topic"  : "orders/create"
+            }
+        }
+
+        webhooks.append(data)
+
+        for webhook in webhooks:
+            logging.info('Installing extra hook %s' % webhook)
+            logging.info("POSTING to %s %r " % (url, data))
+            resp, content = h.request(
+                url,
+                "POST",
+                body = json.dumps(webhook),
+                headers = header
+            )
+            logging.info('%r %r' % (resp, content)) 
+            if int(resp.status) == 401:
+                logging.info('install failed %d webhooks' % len(webhooks))
+
+        logging.info('installed %d webhooks' % len(webhooks))
+
+
+        """ Install our script tags onto the Shopify store """
+        script_tags = []
+
+        url      = '%s/admin/script_tags.json' % client.url
+        username = 'b153f0ccc9298a8636f92247e0bc53dd'
+        password = hashlib.md5('735be9bc6b3e39b352aa5c287f4eead5' + client.token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        h.add_credentials(username, password)
+        
+        # Install the SIBT script
+        data = {
+            "script_tag": {
+                "src": "%s/o/shopify/order.js?store=%s" % (
+                    SECURE_URL,
+                    client.url 
+                ),
+                "event": "onload"
+            }
+        }      
+        script_tags.append(data)
+        
+        for script_tag in script_tags:
+            logging.info("POSTING to %s %r " % (url, script_tag) )
+            resp, content = h.request(
+                url,
+                "POST",
+                body = json.dumps(script_tag),
+                headers = header
+            )
+            logging.info('%r %r' % (resp, content))
+            if int(resp.status) == 401:
+                logging.info('install failed %d script_tags' % len(script_tags))
+        logging.info('installed %d script_tags' % len(script_tags))
