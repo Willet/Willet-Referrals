@@ -148,7 +148,7 @@
     font-weight: bold;
 	font-size: 14px;
     position: fixed;
-    z-index: 999;
+    z-index:50000000;
 }
     #_willet_sibt_bar div.last {
         margin-right: 0px;

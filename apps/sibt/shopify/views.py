@@ -324,6 +324,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("wtf: %s" % e, exc_info=True)
 
+            #product = get_or_fetch_shopify_product(target, app.client)
+
             # precache this page's product
             taskqueue.add(
                 url = url('FetchProductShopify'), 
