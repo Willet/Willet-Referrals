@@ -39,8 +39,8 @@
                     title.html("");
                 }
 
-                $('iframe').live('load', function() {
-                    $(this).css('width', '100%'); 
+                $('iframe').load(function() {
+                    $(this).css('width', $('#comments-div').width()); 
                 });
                 $('abbr.timeago').timeago();
             });
