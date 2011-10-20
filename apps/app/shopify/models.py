@@ -17,12 +17,12 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 #from google.appengine.ext.db import polymodel
 
-from apps.app.models import App
-from apps.email.models import Email
+from apps.app.models    import App
+from apps.email.models  import Email
 
-from util.consts          import *
-from util                 import httplib2
-from util.model import Model
+from util.consts        import *
+from util               import httplib2
+from util.model         import Model
 
 NUM_SHARE_SHARDS = 15
 
@@ -80,7 +80,16 @@ class AppShopify(Model):
                 "topic": "app/uninstalled"
             }
         }
-
+        webhooks.append(data)
+        
+        # Install the "Order Creation" webhook
+        data = {
+            "webhook": {
+                "address": "%s/o/shopify/webhook/create" % ( URL ),
+                "format" : "json",
+                "topic"  : "orders/create"
+            }
+        }
         webhooks.append(data)
 
         for webhook in webhooks:
@@ -116,17 +125,17 @@ class AppShopify(Model):
         
         h.add_credentials(username, password)
         
-        # Install the SIBT script
-        #data = {
-        #    "script_tag": {
-        #        "src": "%s/b/shopify/buttons.js?store_url=%s" % (
-        #            URL,
-        #            self.store_url 
-        #        ),
-        #        "event": "onload"
-        #    }
-        #}      
-        #script_tags.append(data)
+        # Install the 'Order Confirmation Screen' script
+        data = {
+            "script_tag": {
+                "src": "%s/o/shopify/order.js?store=%s" % (
+                    SECURE_URL,
+                    self.store_url 
+                ),
+                "event": "onload"
+            }
+        }      
+        script_tags.append(data)
         
         for script_tag in script_tags:
             logging.info("POSTING to %s %r " % (url, script_tag) )
