@@ -229,6 +229,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
             width: 150px;
+            line-height: 17px;
         }
     #_willet_sibt_bar div.message {
         display: inline-block;
