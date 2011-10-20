@@ -40,7 +40,7 @@
                 }
 
                 $('iframe').load(function() {
-                    $(this).css('width', $('#comments-div').width()); 
+                    $(this).css('width', '100%'); 
                 });
                 $('abbr.timeago').timeago();
             });
@@ -79,7 +79,7 @@
                             width: 100%;
                         }
                             iframe {
-                                width: 500px !important;
+                                width: 100% !important;
                             }
         </style>
     </head>
@@ -127,7 +127,7 @@
                 </script>
                     
                 <div id="fb-root"></div>
-                <div id="fb-comments" class="fb-comments hidden" data-width="500px" data-href="{{fb_comments_url}}" data-num-posts="5"></div>
+                <div id="fb-comments" class="fb-comments hidden" data-width="100%" data-href="{{fb_comments_url}}" data-num-posts="5"></div>
             </div>
         <!--
         <div id="share_again">
