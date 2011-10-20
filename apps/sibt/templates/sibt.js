@@ -249,15 +249,18 @@
 
         // once the iframe has loaded, switch out the loading gif
         // and display the iframe with its content
-        console.log('binding function to', $('#_willet_results'));
+        //console.log('binding function to', $('#_willet_results'));
         //$('#_willet_results').load(_willet_iframe_loaded);
         //iframe.load(_willet_iframe_loaded);
-        console.log('setting width to', iframe.parent().width());
-        iframe.css('width', iframe.parent().width());
+        console.log('setting width to', iframe_div.width());
+        iframe.css('width', iframe_div.width());
         iframe.fadeIn('fast');
 
         // show the iframe div!
         _willet_toggle_results();
+        
+        console.log('setting width to', iframe_div.width());
+        iframe.css('width', iframe_div.width());
     };
 
     /**
