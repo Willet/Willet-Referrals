@@ -356,6 +356,15 @@
             .click(function() {
                 // user has clicked on the ask their friends top bar
                 // text!
+
+                // the top bar embedded ask is disabled
+                // instead let's just show the normal colorbox popup
+                // ... BORING!
+                // let's hide the top bar as well
+                $('#_willet_padding').hide();
+                _willet_topbar.fadeOut('fast');
+                _willet_button_onclick();
+                /*
                 if (iframe_div.css('display') == 'none') {
                     if (iframe.attr('src') == undefined) {
                         var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}" +
@@ -375,6 +384,7 @@
                     iframe_div.fadeOut('fast');
                     _willet_topbar.animate({height: '40'}, 500); 
                 }
+                */
             }
         );
         

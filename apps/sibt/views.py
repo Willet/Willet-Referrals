@@ -259,7 +259,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
-                    'fb_comments_url' : '%s?%s' % (target, instance.uuid),
+                    #'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                    'fb_comments_url' : '%s' % (link.get_willt_url()),
 
                     'share_url': share_url,
                     'is_asker' : is_asker,
@@ -447,7 +448,8 @@ class ShowResults(webapp.RequestHandler):
                 'asker_name' : name if name != '' else "your friend",
                 'asker_pic' : instance.asker.get_attr('pic'),
                 'target_url' : target,
-                'fb_comments_url' : '%s?%s' % (target, instance.uuid),
+                'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                
 
                 'share_url': share_url,
                 'is_asker' : is_asker,
