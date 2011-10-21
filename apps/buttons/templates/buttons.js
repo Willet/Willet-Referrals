@@ -64,14 +64,7 @@ var _willet_run_scripts = function() {
             $(tmp).attr( 'type', 'text/javascript' );
             $(tmp).attr( 'src', 'http://platform.tumblr.com/v1/share.js' );
             head.appendChild( tmp );
-            
-            /*
-            tmp = document.createElement( 'script' );
-            $(tmp).attr( 'type', 'text/javascript' );
-            $(tmp).attr( 'src', 'http://svpply.com/api/all.js#xsvml=1s' );
-            head.appendChild( tmp );
-            */
-            
+
             /**
              * INSERT IFRAME WITH DATA
              */
@@ -86,35 +79,14 @@ var _willet_run_scripts = function() {
                 fb_iframe.setAttribute('allowtransparency', 'true');
                 fb_iframe.setAttribute('frameborder', '0');
                 fb_iframe.setAttribute('scrolling', 'no');
-                fb_iframe.setAttribute('style', 'margin-top: 3px; margin-right: 5px; width:80px; height:18px; float: left; border: 1px solid #3B5998; border-radius: 3px;');
+                fb_iframe.setAttribute('style', 'margin-top: 3px; margin-right: 5px; width:80px; height:18px; float: left; border: 1px solid #cad4e7; border-radius: 2px;');
                 fb_iframe.setAttribute('src', '{{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
 
                 button_div.appendChild( fb_iframe );
                 console.log('fb_iframe inserted');
         
-                /*
-                // Svpply
-                a = document.createElement( 'sv:product-button' );
-                $(a).attr( 'type', 'boxed' );
-                $(a).attr( 'style', 'height: 25px; width: 60px; float: left;' );
-                button_div.appendChild( a );
-                */
-                
-                // Pinterest
-                var a = document.createElement( 'a' );
-                var u = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + window.location.href + 
-                        "&media=" + data.product.images[0].src + 
-                        "&description=" + data.product.body_html;
-                $(a).attr( 'href', u );
-                $(a).attr( 'class', 'pin-it-button' );
-                $(a).attr( 'style', 'float: right; margin-left: 5px; width: 50px !important;' );
-                $(a).attr( 'count-layout', "horizontal" );
-                $(a).html = "Pin It";
-                button_div.appendChild( a );
-
                 // Tumblr
-                a = document.createElement( 'a' );
+                var a = document.createElement( 'a' );
                 var style = "display:inline-block; text-indent:-9999px; " +
                             "overflow:hidden; width:63px; height:20px; " + 
                             "background:url('http://platform.tumblr.com/v1/" + 
@@ -125,6 +97,28 @@ var _willet_run_scripts = function() {
                 $(a).html = "Share on Tumblr";
                 button_div.appendChild( a );
 
+                // Pinterest
+                var photo = '';
+                if ( data.product.images[0] != null ) {
+                    photo = data.product.images[0].src;
+                }
+
+                var d = document.createElement( 'div' );
+                $(d).attr('style', 'float: left; width: 50px !important;' );
+
+                a = document.createElement( 'a' );
+                var u = "http://pinterest.com/pin/create/button/?" +
+                        "url=" + window.location.href + 
+                        "&media=" + photo + 
+                        "&description=" + data.product.body_html;
+                $(a).attr( 'href', u );
+                $(a).attr( 'class', 'pin-it-button' );
+                $(a).attr( 'count-layout', "horizontal" );
+                $(a).html = "Pin It";
+                d.appendChild( a );
+                button_div.appendChild( d );
+
+               
                 
             }
         }

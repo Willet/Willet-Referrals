@@ -245,7 +245,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         
         # Grab a User and App
         user     = get_or_create_user_by_cookie(self)
-        shop_url = self.request.get('shop')
+        shop_url = self.request.get('store_url')
         if shop_url[:7] != 'http://':
             shop_url = 'http://%s' % shop_url 
         
@@ -405,7 +405,6 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         }
         path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
->>>>>>> stable
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         

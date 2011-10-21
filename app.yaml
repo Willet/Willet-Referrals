@@ -1,5 +1,5 @@
-application: social-referral
-version: 6-11
+application: barbara-willet
+version: 2
 runtime: python
 api_version: 1
 
