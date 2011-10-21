@@ -15,7 +15,7 @@ from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
 from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions 
-from apps.client.models   import ClientShopify
+from apps.client.shopify.models   import ShopifyClient
 from apps.email.models    import Email
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
