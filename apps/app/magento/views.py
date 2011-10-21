@@ -15,7 +15,7 @@ from time import time
 from apps.app.models import * 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.models import Client, get_or_create_shopify_store
+from apps.client.models import Client
 from apps.order.models import *
 from apps.stats.models import Stats
 
@@ -28,6 +28,10 @@ from util.consts      import *
 class ShopifyRedirect( URIHandler ):
     # Renders a app page
     def get(self):
+        # TODO: REMAKE FOR MAGENTO
+        pass
+
+        """
         # Request varZ from us
         app          = self.request.get( 'app' )
         
@@ -78,6 +82,7 @@ class ShopifyRedirect( URIHandler ):
             redirect_url = '/'
         logging.info("redirecting app %s to %s" % (app, redirect_url))
         self.redirect(redirect_url)
+        """
 
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp( URIHandler ):

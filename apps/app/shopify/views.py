@@ -15,7 +15,8 @@ from time import time
 from apps.app.models import * 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.models import Client, get_or_create_shopify_store
+from apps.client.shopify.models import ShopifyClient
+
 from apps.order.models import *
 from apps.stats.models import Stats
 
@@ -37,34 +38,25 @@ class ShopifyRedirect( URIHandler ):
         store_token  = self.request.get( 't' )
         shopify_timestamp = self.request.get( 'timestamp' )
 
-        # Try to get the Client if they are logged in
-        client = self.get_client() 
-        if client is None:
+        # Get the store or create a new one
+        client = ShopifyClient.get_or_create(shopify_url, store_token, self, app)
+        
+        # initialize session
+        session = get_current_session()
+        session.regenerate_id()
+        
+        # remember form values
+        session['correctEmail'] = client.email
+        session['email']        = client.email
+        session['reg-errors']   = []
+        
+        logging.info("CLIENT: %s" % client.email)
 
-            # Ensure the 'http' is in the URL
-            if 'http' not in shopify_url:
-                shopify_url = 'http://%s' % shopify_url
-            
-            #logging.info('asd')
-            # Get the store or create a new one
-            client = get_or_create_shopify_store(shopify_url, store_token, self, app)
-            
-            # initialize session
-            session = get_current_session()
-            session.regenerate_id()
-            
-            # remember form values
-            session['correctEmail'] = client.email
-            session['email']        = client.email
-            session['reg-errors']   = []
-            
-            logging.info("CLIENT: %s" % client.email)
-
-            # Cache the client!
-            self.db_client = client
+        # Cache the client!
+        self.db_client = client
 
         # TODO: apps on shopify have to direct properly
-        # the app name has to corespond to appnameWelcome view
+        # the app name has to corespond to AppnameWelcome view
         redirect_url = url('%sWelcome' % app)
 
         # TODO(Barbara): Remove these catches. Our code should just work.
