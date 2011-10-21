@@ -12,7 +12,7 @@ from apps.buttons.shopify.models import *
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
 from apps.user.models   import get_or_create_user_by_cookie
-from apps.client.models import ShopifyClient
+from apps.client.shopify.models import ShopifyClient
 from apps.link.models   import create_link
 from apps.link.models   import get_link_by_url
 from apps.link.models   import get_link_by_willt_code
