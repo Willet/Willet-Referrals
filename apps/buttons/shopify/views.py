@@ -113,6 +113,9 @@ class ButtonsShopifyJS(webapp.RequestHandler):
         if input_path.find('.js') != -1:
             self.response.headers['Content-Type'] = 'javascript'
         else:
+            # If the 'Want' button is shown, store a PageView
+            PageView.create( user, app, target )
+
             self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write(template.render(path, template_values))
         return

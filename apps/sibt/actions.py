@@ -8,12 +8,13 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 import datetime
 import logging
 
-from google.appengine.api    import memcache
+from google.appengine.api   import memcache
+from google.appengine.ext   import db
 
-from apps.actions.models import ClickAction
-from apps.actions.models import VoteAction
+from apps.action.models     import ClickAction
+from apps.action.models     import VoteAction
 
-from util.helpers        import generate_uuid
+from util.helpers           import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ----------------------------------------------------
