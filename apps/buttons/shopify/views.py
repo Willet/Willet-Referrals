@@ -31,19 +31,20 @@ class ButtonsShopifyBeta(URIHandler):
 
 class ButtonsShopifyWelcome(URIHandler):
     def get( self ):
-        client = self.get_client() # May be None
-       
         # TODO: put this somewhere smarter
-        app_token = self.request.get( 't' )
-        app = get_or_create_buttons_shopify_app(client, app_token)
-        
-        shop_owner = 'a Shopify store'
-        if client:
-            shop_owner = client.merchant.get_attr('full_name')
+        shop   = self.request.get( 'shop' )
+        token  = self.request.get( 't' )
 
+        # Fetch the client
+        client = ShopifyClient.get_by_url( shop )
+        
+        # Fetch or create the app
+        app    = get_or_create_buttons_shopify_app(client, token)
+        
+        # Render the page
         template_values = {
             'app'        : app,
-            'shop_owner' : shop_owner 
+            'shop_owner' : client.merchant.get_attr('full_name') 
         }
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
