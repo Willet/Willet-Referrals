@@ -222,7 +222,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-<<<<<<< HEAD
         is_live = is_asker = show_votes = has_voted = show_top_bar_ask = False
         instance = None
         link = None
@@ -234,17 +233,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         target = ''
         product_title = ''
         product_images = ''
-=======
-        is_live     = is_asker = show_votes = has_voted = False
-        instance    = None
-        link        = None
-        asker_name  = None
-        asker_pic   = None
-        willet_code = self.request.get('willt_code') 
-        share_url   = None
-        vote_count  = 0
-        target      = ''
->>>>>>> 360412923bd40b52df86bcd1c8e6c8771eeb5f39
 
         # TODO: put this as a helper fcn.
         # Build a url for this page.
