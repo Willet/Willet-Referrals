@@ -5,6 +5,4 @@ from apps.stats.processes import UpdateCounts, UpdateClicks, UpdateTweets
 
 urlpatterns = [
     (r'/stats/updateCounts',  UpdateCounts),
-    (r'/stats/updateClicks',  UpdateClicks),
-    (r'/stats/updateTweets',  UpdateTweets), 
 ]

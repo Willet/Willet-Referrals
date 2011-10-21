@@ -8,12 +8,10 @@ from util.model import Model
 
 class Stats(Model):
     uuid            = db.StringProperty()
-    total_tweets    = db.IntegerProperty( default = 0 )
+    total_instances = db.IntegerProperty( default = 0 )
     total_clicks    = db.IntegerProperty( default = 0 )
-    total_links     = db.IntegerProperty( default = 0 )
-    total_apps      = db.IntegerProperty( default = 0 )
-    total_clients   = db.IntegerProperty( default = 0 )
-    total_users     = db.IntegerProperty( default = 0 )
+    total_votes     = db.IntegerProperty( default = 0 )
+    total_wants     = db.IntegerProperty( default = 0 )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 

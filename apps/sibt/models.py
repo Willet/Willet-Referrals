@@ -100,8 +100,8 @@ class SIBT(App):
                     name= %s<br />
                     fb_uuid= %s<br />
                     fb_access_token= %s <br \>
-                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>"""
-                    % (
+                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
+                    """ % (
                         uuid,
                         user.key(), 
                         link.target_url,
@@ -115,7 +115,6 @@ class SIBT(App):
                 )
             except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
-           
         return instance
 
 # Accessors --------------------------------------------------------------------
@@ -124,7 +123,7 @@ class SIBT(App):
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTInstance( Model ):
-    # Unique identifier for ndlmemcache and DB key
+    # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB

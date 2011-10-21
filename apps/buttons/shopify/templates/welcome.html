@@ -5,9 +5,23 @@
         $(document).ready(function() {
             $('#go_to_shopify').click(function() {
                 window.location = "{{app.store_url}}/admin";
+
             });
+            SnapABug.setUserEmail('{{ client_email }}');
+            SnapABug.startChat('Hi, can we help you with the installation?');
         });
     </script>
+
+    <style>
+        p {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 5px;
+        }
+    </style>
 {% endblock head %}
 
 {% block right_head %}
@@ -17,26 +31,65 @@
 {% endblock right_head %}
 
 {% block content %}
-        <h2 class="span-24 last lower-100 center">Thanks!</h2>
-        <div class="prepend-top span-24 last center">
-            <p>
-                Thanks for installing "Facebook Buttons"! 
-
+        <h1 class="span-24 last lower-100 center">Thanks!</h1>
+        <div class="span-24 last">
+            <p class="center"> 
+                Thanks for installing "Social Sharing Buttons"!  
+                There are only 3 additional steps to complete the installation!
                 <br /><br />
-                The entire app has now been installed! Right now, your users can "want" any product on your site!
-
-                <br /><br />
-
-                To view our app in action, visit any product page on your website. You'll see the Facebook Want button!
+                We simply need to add some product meta data and determine
+                where the buttons will be placed on your product pages.
             </p>
 
-            <button class='blue' id='go_to_shopify'>
-                <img src="/static/imgs/shopify-bag-36.png" />
-                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                    Return to your Store 
-                </span>
-            </button>
+            <h2> First Step </h2>
+            <p>
+                Navigate to the <em>Template Editor</em> for your <a href="{{app.store_url}}/admin/themes">store's Theme</a>.
+                Under the <em>Layouts</em> section, click on <em>theme.liquid</em>.
+            </p><p>
+                At the top, you should see HTML that resembles:
+                <p class="code">&lt;head&gt; <br />&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</p>
+            </p><p>
+                <strong>1. Replace</strong> <span class="code">&lt;head&gt; </span> with 
+                <input style='font-size:13px; max-width: 680px; width: 680px;' type='text' readonly='readonly' value='<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#"> ' /> 
+            </p><p>
+                <strong>2. After</strong> <span class="code">&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</span>, add:
+            
+                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value=' <meta property="og:type" content="shopify_buttons:product">
+<meta property="fb:app_id" content="166070566811816">
+<meta property="og:description" content="&#123;&#123; product.description &#124; strip_html | strip_newlines &#125;&#125;">
+<meta property="og:title" content="&#123;&#123; product.title &#124; escape &#125;&#125;">
+<meta property="og:image" content="&#123;&#123; product.images[0] &#124; product_img_url: "large" &#125;&#125;"> ' />
+            </p>
 
+            <h2> Second Step </h2>
+
+            <p>
+                Under the <em>Snippets</em> section, click on <em>product.liquid</em>.
+            </p><p>
+                <strong>1. Look </strong>for where you would like the sharing buttons to be placed on your product pages.
+            </p><p>
+                <strong>2. Once </strong>you've picked a spot, add this code:
+                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app" style="height:28px; width: 285px;"> <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> <sv:product-button type="boxed"></sv:product-button> </div> </div>' />           
+            </p>
+
+            <h2> Third Step </h2>
+
+            <p>
+                Click <em>save</em> near the top of the screen! That's it!
+            </p>
+
+            <br /><br /><br />
+            <h3 class="center">If you have any other questions, please e-mail Barbara at: barbara@getwillet.com </h3>
+            <br />
+
+            <div class="center">
+                <button class='blue' id='go_to_shopify'>
+                    <img src="/static/imgs/shopify-bag-36.png" />
+                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                        Return to your Store 
+                    </span>
+                </button>
+            </div>
         </div>
 {% endblock content %}
 

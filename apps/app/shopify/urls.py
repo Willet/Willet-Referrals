@@ -7,7 +7,6 @@ urlpatterns = [
     (r'/a/shopify/deleteApp', DoDeleteApp),
     
     # processes
-    #(r'/a/shopify/webhook/order',    DoProcessOrder),
     (r'/a/shopify/webhook/uninstalled/(.*)/', DoUninstalledApp),
 ]
 

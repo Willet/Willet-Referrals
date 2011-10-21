@@ -25,6 +25,8 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 import apps.oauth.models
+from apps.order.shopify.models import OrderShopify
+from apps.gae_bingo.models import GAEBingoIdentityModel
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
 
@@ -75,7 +77,7 @@ def get_emails_by_user( user ):
 # ------------------------------------------------------------------------------
 # User Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class User( db.Expando ):
+class User( db.Expando, GAEBingoIdentityModel ):
     # General Junk
     uuid            = db.StringProperty(indexed = True)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
@@ -143,6 +145,21 @@ class User( db.Expando ):
                     return True
 
         return False
+    
+    def merge( self, u ):
+        """ Merge u into self. Deletes u. """
+        if self.key() == u.key():
+            return
+
+        props = u.dynamic_properties()
+        for p in props:
+            setattr( self, p, getattr( u, p ) )
+
+        self.put()
+        # TODO: uncomment once we know it works.
+        # u.delete()
+
+        # TODO: Walk all DB objs and point old refs to new user
 
     def get_name_or_handle(self):
         name = self.get_handle()
@@ -889,11 +906,12 @@ class User( db.Expando ):
 
     def facebook_action(self, action, obj, obj_link):
         """Does an ACTION on OBJECT on users timeline"""
+        logging.info("FB Action %s %s %s" % (action, obj, obj_link))
             
         url = "https://graph.facebook.com/me/shopify_buttons:%s?" % action 
         params = urllib.urlencode({
-            'access_token': self.fb_access_token,
-            obj: obj_link
+            'access_token' : self.fb_access_token,
+            obj            : obj_link
         })
 
         fb_response, plugin_response, fb_share_id = None, False, None
@@ -924,7 +942,8 @@ class User( db.Expando ):
             except Exception, e:
                 fb_share_id = None
                 plugin_response = False
-                logging.error('Error posting action: %s' % fb_response)
+                logging.error('Error posting action: %r' % fb_response)
+                logging.error("%s %s" % (fb_response.status_code, fb_response.content))
             
         return fb_share_id, plugin_response 
 

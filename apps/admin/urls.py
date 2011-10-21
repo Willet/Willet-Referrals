@@ -12,5 +12,6 @@ urlpatterns = [
     (r'/admin/manageApps', ManageApps),
     (r'/admin/ithinkiateacookie', TrackRemoteError),
     (r'/admin/sibt', SIBTInstanceStats),
+    (r'/admin/install', InstallShopifyJunk),
 ]
 

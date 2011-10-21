@@ -67,10 +67,10 @@ def get_actions_by_user( user ):
     return Action.all().filter( 'user =', user ).get()
 
 def get_actions_by_app( app ):
-    return Action.all().filter( 'app =', app ).get()
+    return Action.all().filter( 'app_ =', app ).get()
 
 def get_actions_by_user_for_app( user, app ):
-    return Action.all().filter( 'user =', user).filter( 'app =', app ).get()
+    return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
@@ -95,6 +95,7 @@ class ClickAction( Action ):
                 self.app_.uuid
         )
 
+## Constructor -----------------------------------------------------------------
 def create_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -120,6 +121,7 @@ class SIBTClickAction( ClickAction ):
     def __str__(self):
         return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_sibt_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -166,6 +168,7 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_vote_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -191,6 +194,7 @@ class SIBTVoteAction( VoteAction ):
     def __str__(self):
         return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+## Constructor -----------------------------------------------------------------
 def create_sibt_vote_action( user, instance ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -205,7 +209,6 @@ def create_sibt_vote_action( user, instance ):
 
 def get_sibt_vote_actions_by_instance( instance ):
     return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
-
 
 ## -----------------------------------------------------------------------------
 ## PageView Subclass -----------------------------------------------------------
@@ -234,3 +237,63 @@ def get_pageviews_by_url( url ):
 
 def get_pageviews_by_user_and_url( user, url ):
     return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
+
+## -----------------------------------------------------------------------------
+## GaeBingoAlt Subclass --------------------------------------------------------
+## -----------------------------------------------------------------------------
+class GaeBingoAlt( Action ):
+    """ Stores the variation that a given User sees"""
+    conversion_name = db.StringProperty( indexed = True )
+    alt             = db.StringProperty( indexed = False )
+
+    def __str__(self):
+        return 'GaeBingoAlt: %s(%s) %s: %s' % ( self.user.get_full_name(), 
+                                                self.user.uuid, 
+                                                self.conversion_name,
+                                                self.alt )
+
+## Constructor -----------------------------------------------------------------
+def create_gaebingo_alt( user, app, conversion_name, alt ):
+    act = get_gaebingo_alt_for_user_and_conversion( user, conversion_name )
+
+    if act.count() == 0:
+        uuid = generate_uuid( 16 )
+        act  = GaeBingoAlt( key_name = uuid,
+                            uuid     = uuid,
+                            user     = user,
+                            app_     = app,
+                            conversion_name = conversion_name,
+                            alt      = alt )
+        act.put()
+
+## Accessors  -----------------------------------------------------------------
+def get_gaebingo_alt_for_user_and_conversion( user, conversion ):
+    return GaeBingoAlt.all().filter( 'user =', user ).filter( 'conversion_name =', conversion )
+
+
+## -----------------------------------------------------------------------------
+## WantAction Subclass --------------------------------------------------------
+## -----------------------------------------------------------------------------
+class WantAction( Action ):
+    """ Stored if a User wants an item. """
+    
+    # Link that caused the want action ...
+    link = db.ReferenceProperty( db.Model, collection_name = "link_wants" )
+    
+    def __str__(self):
+        return 'Want: %s(%s) %s' % (
+                self.user.get_full_name(),
+                self.user.uuid,
+                self.app_.uuid
+        )
+
+## Constructor -----------------------------------------------------------------
+def create_want_action( user, app, link ):
+    # Make the action
+    uuid = generate_uuid( 16 )
+    act  = WantAction( key_name = uuid,
+                       uuid     = uuid,
+                       user     = user,
+                       app_     = app,
+                       link     = link )
+    act.put()

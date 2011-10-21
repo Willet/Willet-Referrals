@@ -19,7 +19,7 @@ from google.appengine.ext.db import polymodel
 
 from apps.link.models       import Link 
 from apps.user.models       import User, get_or_create_user_by_email
-from apps.order.models      import OrderShopify
+from apps.order.shopify.models import OrderShopify
 from util                   import httplib2
 from util.consts            import *
 from util.model             import Model
@@ -96,6 +96,10 @@ def authenticate(email, passphrase):
 
     return [status, client, errMsg]
 
+
+# Accessors
+def get_client_by_uuid( uuid ):
+    return Client.all().filter( 'uuid =', uuid ).get()
 
 # ------------------------------------------------------------------------------
 # ClientShopify Class Definition -----------------------------------------------
@@ -174,6 +178,10 @@ def create_shopify_store( url, token, request_handler, app_type ):
                      email      = data['email'], 
                      client     = store )
     return store
+
+# Accessors
+def get_shopify_client_by_url( url ):
+    return ClientShopify.all().filter( 'url =', url ).get()
 
 # Shopify API Calls  -----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):

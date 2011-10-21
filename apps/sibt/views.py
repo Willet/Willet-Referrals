@@ -90,7 +90,9 @@ class AskDynamicLoader(webapp.RequestHandler):
         
         if not user.is_admin():
             ab_opt = ab_test('sibt_share_text2',
-                              ab_share_options )
+                              ab_share_options,
+                              user = user,
+                              app  = app )
         else:
             ab_opt = "Should I buy this? Please let me know!"
 

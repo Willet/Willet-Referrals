@@ -16,27 +16,6 @@ from util.model              import Model, ObjectListProperty
 from util.helpers            import generate_uuid
 
 # ------------------------------------------------------------------------------
-# Product Class Definition -----------------------------------------------------
-# ------------------------------------------------------------------------------
-class Product():
-    """ A simple Product class to store some data about products
-        that can be purchased """
-
-    def __init__( self, name, price, product_id ):
-        self.name       = name
-        self.price      = price
-        self.product_id = product_id 
-
-    def serialize( self ):
-        ret = '%s@%s@%s' % (self.name, self.price, self.product_id)
-        return ret
-
-    @classmethod
-    def deserialize(cls, value):
-        [name, price, product_id] = value.split( '@', 2 )
-        return cls( name = name, price = float(price), product_id = product_id )
-
-# ------------------------------------------------------------------------------
 # Order Class Definition -------------------------------------------------------
 # ------------------------------------------------------------------------------
 class Order( Model, polymodel.PolyModel ):
@@ -57,7 +36,7 @@ class Order( Model, polymodel.PolyModel ):
     subtotal_price = db.FloatProperty( indexed = False ) # no taxes
     
     # Products that were purchased in this order
-    products       = ObjectListProperty( Product, indexed=False )
+    products       = db.ListProperty( db.Key, indexed=False )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""
@@ -70,62 +49,6 @@ class Order( Model, polymodel.PolyModel ):
         """Datastore retrieval using memcache_key"""
         return Order.all().filter('uuid =', uuid).get()
 
-    def add_product( self, product_name, product_price, product_id ):
-        """ Add a Product to the Order"""
-        i = Product( name=product_name, price=product_price, product_id=product_id )
-        self.products.append( i )
-
-        self.put()
-
 # Accessors --------------------------------------------------------------------
 def get_order_by_uuid( uuid ):
     return Order.all().filter( 'uuid =', uuid ).get()
-
-
-# ------------------------------------------------------------------------------
-# OrderShopify Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
-class OrderShopify( Order ):
-    """Model storing shopify_order data"""
-    order_token    = db.StringProperty( indexed = True )
-    order_id       = db.StringProperty( indexed = True )
-    order_number   = db.StringProperty( indexed = False )
-    
-    store_name     = db.StringProperty( indexed = False )
-    store_url      = db.StringProperty( indexed = False, required=False, default=None )
-    
-    referring_site = db.StringProperty( indexed = False, required=False, default=None ) # might be useful
-
-    def __init__(self, *args, **kwargs):
-        """ Initialize this object"""
-        super(OrderShopify, self).__init__(*args, **kwargs)
-
-# Constructor ------------------------------------------------------------------
-def create_shopify_order( app, order_token, order_id, order_num,
-                          subtotal, referrer, user ):
-    """ Create an Order for a Shopify store """
-    
-    logging.info(referrer)
-    logging.info(app.target_url)
-
-    uuid = generate_uuid( 16 )
-
-    o = OrderShopify( key_name     = uuid,
-                      uuid         = uuid,
-                      order_token  = order_token,
-                      order_id     = str(order_id),
-                      client       = app.client,
-                      store_name   = app.product_name,
-                      store_url    = app.target_url,
-                      order_number = str(order_num),
-                      subtotal_price = float(subtotal), 
-                      referring_site = referrer,
-                      user         = user )
-    o.put()
-
-    return o # return incase the caller wants it
-
-# Accessors --------------------------------------------------------------------
-def get_shopify_order_by_token( order_token ):
-    return OrderShopify.all().filter( 'order_token =', order_token ).get()
-

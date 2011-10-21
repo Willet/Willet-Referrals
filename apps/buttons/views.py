@@ -3,6 +3,8 @@
 import logging
 from django.utils import simplejson 
 
+
+from apps.action.models  import create_want_action
 from apps.buttons.models import *
 from apps.link.models import get_link_by_willt_code
 from apps.user.models import get_or_create_user_by_facebook
@@ -20,6 +22,7 @@ class ButtonsAction(URIHandler):
         passed to us. Ripped from plugin/plugin.py
         """
         logging.info("We are posting to facebook")
+        logging.info("%s %s %s" % (self.request.get('wcode'), self.request.get('fb_token'), self.request.get('fb_id')))
         rq_vars = get_request_variables([
                 'wcode',
                 'fb_token',
@@ -47,7 +50,7 @@ class ButtonsAction(URIHandler):
         else:
             # got an existing user but doesn't have facebook info
             user.update(
-                fb_identity = rq_vars['fb_id'],
+                fb_identity     = rq_vars['fb_id'],
                 fb_access_token = rq_vars['fb_token']
             )
 
@@ -55,61 +58,35 @@ class ButtonsAction(URIHandler):
 
         link = get_link_by_willt_code(rq_vars['wcode'])
 
+        # Send the action to FB
         facebook_share_id, plugin_response = user.facebook_action(
             action,
             obj,
             link.target_url
         )
         
-        if link:
-            link = get_link_by_willt_code(rq_vars['wcode'])
-            link.app_.increment_shares()
-            # add the user to the link now as we may not get a respone
-            link.add_user(user)
+        # If the 'want' is successful:
+        if plugin_response == True:
+            if link:
+                # Store the want action
+                create_want_action( user, link.app_, link )
+                
+                link.app_.increment_shares()
+                
+                # add the user to the link now as we may not get a respone
+                link.add_user(user)
 
-            # Save the Testimonial
-            create_testimonial(user=user, message='I %s this %s' % (action, obj), link=link)
-        else:
-            logging.error('could not get link')
+                # Save the Testimonial
+                create_testimonial(user=user, message='I %s this %s' % (action, obj), link=link)
+            else:
+                logging.error('could not get link')
+        
+        # Tell the JS what happened!
         logging.info('sending response %s' % plugin_response)
         response_json = {
-            'status': plugin_response,
+            'status': str(plugin_response),
             'data': {
                 'id': facebook_share_id    
             }
         }
         self.response.out.write(simplejson.dumps(response_json))
-
-
-class ButtonsJS(URIHandler):
-    def get(self):
-        # dyncamic loader for buttons
-        # this will return js
-        pass
-
-class EditButtonAjax(URIHandler):
-    def post(self, button_id):
-        # handle posting from the edit form
-        pass
-
-class EditButton(URIHandler):
-    def get(self, button_id):
-        # show the edit form
-        pass
-
-class ListButtons(URIHandler):
-    def get(self):
-        # show the buttons enabled for this site
-        client = self.get_client()
-        if client:
-            shop_owner = client.merchant.get_attr('full_name')
-        else:
-            shop_owner = 'Awesomer Bob'
-
-        template_values = {
-            'query_string': self.request.query_string,
-            'shop_owner': shop_owner 
-        }
-        
-        self.response.out.write(self.render_page('list.html', template_values))
-

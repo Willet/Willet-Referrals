@@ -117,4 +117,3 @@ def get_or_fetch_shopify_product(url, client):
         except:
             logging.error("error fetching and storing product for url %s" % url, exc_info=True)
     return product
-

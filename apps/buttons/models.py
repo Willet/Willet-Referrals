@@ -26,30 +26,51 @@ NUM_VOTE_SHARDS = 15
 #       each button has a buttonFBAction type
 
 # ------------------------------------------------------------------------------
-# Button Class Definition --------------------------------------------------------
+# Button Class Definition ------------------------------------------------------
 # ------------------------------------------------------------------------------
 class Buttons(App):
-    """Clients install the buttons App"""    
+    """Clients install the buttons App"""  
+
+    title_selector       = db.StringProperty()
+    description_selector = db.StringProperty()
+    image_selector       = db.StringProperty()
+    button_selector      = db.StringProperty()
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(Buttons, self).__init__(*args, **kwargs)
 
+# Accessors --------------------------------------------------------------------
+def get_buttons_app_by_uuid(id):
+    """ Fetch a obj from the DB via the uuid"""
+    return Buttons.all().filter( 'uuid =', id ).get()
+
+def get_buttons_app_by_client( client ):
+    """ Fetch a obj from the DB via the client"""
+    return Buttons.all().filter( 'client =', client ).get()
+
+######### TODO TODO: NONE OF THESE ARE CURRENTLY IN USE. vvvvvvv
+
+# ------------------------------------------------------------------------------
+# ButtonActions Definition -----------------------------------------------------
+# ------------------------------------------------------------------------------
 class ButtonsFBActions(Model):
     """We have various different FB actions (want, own)"""
     name = db.StringProperty()
-    default_css = db.StringProperty()    
     
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ButtonsFBActions, self).__init__(*args, **kwargs)
  
+# ------------------------------------------------------------------------------
+# ClientsButtons Definition ----------------------------------------------------
+# ------------------------------------------------------------------------------
 class ClientsButtons(Model):
     """Clients can add multiple buttons (want, own)""" 
-    app_ = db.ReferenceProperty(Buttons, collection_name="buttons")
-    action = db.ReferenceProperty(ButtonsFBActions, collection_name="_buttons")
+    app_      = db.ReferenceProperty(Buttons, collection_name="buttons")
+    action    = db.ReferenceProperty(ButtonsFBActions, collection_name="_buttons")
     
     css_class = db.StringProperty()
     
     def __init__(self, *args, **kwargs):
         super(ClientsButtons, self).__init__(*args, **kwargs)
-
