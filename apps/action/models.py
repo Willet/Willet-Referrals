@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env/python
 
 # The Action Model
 # A parent class for all User actions 
@@ -63,18 +63,39 @@ class Action( Model, polymodel.PolyModel ):
         # Subclasses should override this
         pass
 
-## Accessors -------------------------------------------------------------------
-def get_action_by_uuid( uuid ):
-    return Action.all().filter( 'uuid =', uuid ).get()
+    ## Accessors 
+    @staticmethod
+    def count( admins_too = False ):
+        if admins_too:
+            return Action.all().count()
+        else:
+            return Action.all().filter( 'is_admin =', False ).count()
 
-def get_actions_by_user( user ):
-    return Action.all().filter( 'user =', user ).get()
+    @staticmethod
+    def get_all( admins_too = False ):
+        if admins_too:
+            return Action.all()
+        else:
+            return Action.all().filter( 'is_admin =', False )
 
-def get_actions_by_app( app ):
-    return Action.all().filter( 'app_ =', app ).get()
+    @staticmethod
+    def get_by_uuid( uuid ):
+        return Action.all().filter( 'uuid =', uuid ).get()
 
-def get_actions_by_user_for_app( user, app ):
-    return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
+    @staticmethod
+    def get_by_user( user ):
+        return Action.all().filter( 'user =', user ).get()
+
+    @staticmethod
+    def get_by_app( app, admins_too = False ):
+        if admins_too:
+            return Action.all().filter( 'app_ =', app ).get()
+        else:
+            return Action.all().filter( 'app_ =', app ).filter('is_admin =', False).get()
+
+    @staticmethod
+    def get_by_user_and_app( user, app ):
+        return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
@@ -110,8 +131,6 @@ def create_click_action( user, app, link ):
                         link     = link )
     act.put()
    
-
-
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -176,13 +195,13 @@ class PageView( Action ):
     ## Constructor 
     @staticmethod
     def create( user, app, url ):
-    uuid = generate_uuid( 16 )
-    act  = PageView( key_name = uuid,
-                     uuid     = uuid,
-                     user     = user,
-                     app_     = app,
-                     url      = url )
-    act.put()
+        uuid = generate_uuid( 16 )
+        act  = PageView( key_name = uuid,
+                         uuid     = uuid,
+                         user     = user,
+                         app_     = app,
+                         url      = url )
+        act.put()
 
 ## Accessors -------------------------------------------------------------------
 def get_pageviews_by_url( url ):
@@ -190,63 +209,3 @@ def get_pageviews_by_url( url ):
 
 def get_pageviews_by_user_and_url( user, url ):
     return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
-
-## -----------------------------------------------------------------------------
-## GaeBingoAlt Subclass --------------------------------------------------------
-## -----------------------------------------------------------------------------
-class GaeBingoAlt( Action ):
-    """ Stores the variation that a given User sees"""
-    conversion_name = db.StringProperty( indexed = True )
-    alt             = db.StringProperty( indexed = False )
-
-    def __str__(self):
-        return 'GaeBingoAlt: %s(%s) %s: %s' % ( self.user.get_full_name(), 
-                                                self.user.uuid, 
-                                                self.conversion_name,
-                                                self.alt )
-
-## Constructor -----------------------------------------------------------------
-def create_gaebingo_alt( user, app, conversion_name, alt ):
-    act = get_gaebingo_alt_for_user_and_conversion( user, conversion_name )
-
-    if act.count() == 0:
-        uuid = generate_uuid( 16 )
-        act  = GaeBingoAlt( key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = app,
-                            conversion_name = conversion_name,
-                            alt      = alt )
-        act.put()
-
-## Accessors  -----------------------------------------------------------------
-def get_gaebingo_alt_for_user_and_conversion( user, conversion ):
-    return GaeBingoAlt.all().filter( 'user =', user ).filter( 'conversion_name =', conversion )
-
-
-## -----------------------------------------------------------------------------
-## WantAction Subclass --------------------------------------------------------
-## -----------------------------------------------------------------------------
-class WantAction( Action ):
-    """ Stored if a User wants an item. """
-    
-    # Link that caused the want action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_wants" )
-    
-    def __str__(self):
-        return 'Want: %s(%s) %s' % (
-                self.user.get_full_name(),
-                self.user.uuid,
-                self.app_.uuid
-        )
-
-## Constructor -----------------------------------------------------------------
-def create_want_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = WantAction( key_name = uuid,
-                       uuid     = uuid,
-                       user     = user,
-                       app_     = app,
-                       link     = link )
-    act.put()

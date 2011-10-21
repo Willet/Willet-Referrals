@@ -15,14 +15,16 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
-from apps.action.models import Action, get_sibt_click_actions_by_instance, get_sibt_vote_actions_by_instance
+from apps.action.models import Action
+from apps.client.models import Client, ClientShopify
 from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
-from apps.client.models import Client, ClientShopify
 from apps.link.models import get_link_by_willt_code
-from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
+from apps.sibt.actions   import SIBTClickAction
+from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
+from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 
 from util                 import httplib2
 from util.consts import *
@@ -305,8 +307,8 @@ class SIBTInstanceStats( URIHandler ):
 
         # Get all actions
         actions = Action.all().filter( 'sibt_instance =', instance )
-        clicks  = get_sibt_click_actions_by_instance( instance )
-        votes   = get_sibt_vote_actions_by_instance( instance )
+        clicks  = SIBTClickAction.get_by_instance( instance )
+        votes   = SIBTVoteAction.get_by_instance( instance )
         
         # Init the page
         str = "<h1>SIBT Instance: "

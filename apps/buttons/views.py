@@ -3,16 +3,15 @@
 import logging
 from django.utils import simplejson 
 
-
-from apps.action.models  import create_want_action
-from apps.buttons.models import *
-from apps.link.models import get_link_by_willt_code
-from apps.user.models import get_or_create_user_by_facebook
-from apps.user.models import get_user_by_cookie
+from apps.buttons.actions   import WantAction
+from apps.buttons.models    import *
+from apps.link.models       import get_link_by_willt_code
 from apps.testimonial.models import create_testimonial
+from apps.user.models       import get_or_create_user_by_facebook
+from apps.user.models       import get_user_by_cookie
 
-from util.urihandler import URIHandler
-from util.helpers import get_request_variables
+from util.helpers           import get_request_variables
+from util.urihandler        import URIHandler
 
 class ButtonsAction(URIHandler):
     def post(self, action, obj):
@@ -69,7 +68,7 @@ class ButtonsAction(URIHandler):
         if plugin_response == True:
             if link:
                 # Store the want action
-                create_want_action( user, link.app_, link )
+                WantAction.create( user, link.app_, link )
                 
                 link.app_.increment_shares()
                 

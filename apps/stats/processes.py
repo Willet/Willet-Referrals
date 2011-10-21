@@ -16,7 +16,7 @@ from google.appengine.api import memcache, taskqueue, urlfetch
 from apps.stats.models import *
 from apps.action.models import ClickAction
 from apps.action.models import VoteAction
-from apps.action.models import WantAction
+from apps.buttons.actions import WantAction
 from apps.sibt.models import SIBTInstance
 
 from util.consts import *
