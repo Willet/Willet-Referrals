@@ -33,16 +33,20 @@ class Action( Model, polymodel.PolyModel ):
     created         = db.DateTimeProperty( auto_now_add=True )
     
     # Person who did the action
-    user            = db.ReferenceProperty( db.Model, collection_name = 'actions' )
+    user            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
     
     # True iff this Action's User is an admin
     is_admin        = db.BooleanProperty( default = False )
     
     # The Action that this Action is for
-    app_            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
+    app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+
+        if kwargs['user'].is_admin():
+            kwargs['is_admin'] = True
+
         super(Action, self).__init__(*args, **kwargs)
     
     @staticmethod
@@ -51,10 +55,7 @@ class Action( Model, polymodel.PolyModel ):
         return Action.all().filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        #if self.user.is_admin():
-        #    return True # Anything except None
-        return None
-
+        pass
     def __unicode__(self):
         return self.__str__()
 
