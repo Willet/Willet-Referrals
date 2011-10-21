@@ -15,7 +15,7 @@ NAME = 'Willet Inc.'
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
 PROTOCOL            = 'http' 
 SECURE_PROTOCOL     = 'https'
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
+APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'barbara-willet.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
 SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
@@ -62,8 +62,8 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 
 SHOPIFY_APPS = {
     'SIBTShopify': {
-        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
-        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'api_key': '84f33c9064db16f082ab61c0743d0ec9',
+        'api_secret': 'bdea271cfb791b5eae1b793baa8a0461',
         'class_name': 'SIBTShopify',
         'facebook': {
             'app_id': '132803916820614',
@@ -74,8 +74,8 @@ SHOPIFY_APPS = {
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
         'class_name': 'ReferralShopify'        
     }, 'ButtonsShopify': {
-        'api_key': '5fe8fa18137ddfc5912de35428f738a1',
-        'api_secret': '9aca00dc207a002e499694355cd71882',
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', #'5fe8fa18137ddfc5912de35428f738a1',
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', #'9aca00dc207a002e499694355cd71882',
         'class_name': 'ButtonsShopify'       
     }
 }
@@ -102,7 +102,8 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
-              '173.177.235.110'     # Montreal apartment
+              '173.177.235.110',    # Montreal apartment
+              '70.31.244.131'       # Montreal apartment x2
             ]
 
 # the apps we are using

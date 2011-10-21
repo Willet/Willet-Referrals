@@ -20,15 +20,16 @@
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
         <title>Social Referral</title>
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-        
+                    
+        <script type="text/javascript" src="http://platform.tumblr.com/v1/share.js"></script>
+        <script type="text/javascript" src="http://assets.pinterest.com/js/pinit.js"></script>
+        <script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
         <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script> 
         
         <script type="text/javascript">
-            
-            var share, reset, countChars, willet_conversion, sendGmail, highlight, sendEmailiframeBody,
-                shareArea, shareFrame, shareText, charsLeft, clear, shareComplete, fbToken, next;
-            var _willet_fb_interval;
+            var userFound;
 
             var _wait_for_fb = function() {
                 if (typeof window.FB == 'object') {
@@ -44,21 +45,29 @@
                 }
             };
             var fb_share_handler = function(payload) {
-                var action = '{% firstof app.action "want" %}';
-                var obj = '{% firstof app.obj "product" %}';
                 console.log(payload)
+                var btn = document.getElementById( '_willet_want' );
+                btn.value = "Wanting ...";
                 $.ajax({
                 url: "/b/action/want/product/",
                     type: 'post',
                     data: payload,
+                    dataType : 'json',
                     success: function (response) {
-                        if (response && response.status) {
+                        if (response && response.status == "True" ) {
                             shareComplete();
                         } else {
-                            console.log("Facebook post failure");
+                            shareComplete();
                         }
                     }
                 });
+            };
+
+            var shareComplete = function() {
+                var btn = document.getElementById( '_willet_want' );
+                btn.value = "Wanted!";
+                $(btn).attr( 'disabled', "disabled" );
+                btn.style.cursor = "default";
             };
     
             // use the selected medium to share about your purchase
@@ -86,30 +95,19 @@
                 } 
             }; 
             $(document).ready(function() {
-                //_willet_fb_interval = setInterval("_wait_for_fb()", 100);
                 _wait_for_fb();
 
-                iframeBody = document.getElementById('willt');
-                shareFrame = document.getElementById('willt-frame');
-                shareArea = document.getElementById('share-area'),
-                userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+                userFound = {% if user_found %}true{% else %}false{% endif %};
 
                 $('#_willet_want').click(share);
             });
         </script>
-            
-        <!-- Blueprint CSS -->
-        <link rel="stylesheet" href="/static/css/blueprint/screen.css" type="text/css" media="screen, projection" />
-        <link rel="stylesheet" href="/static/css/blueprint/print.css" type="text/css" media="print" />
-        <!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
-
-        <link rel="stylesheet" href="/static/referral/css/{{style}}.css" type="text/css" />
-
+        <link rel="stylesheet" href="/static/buttons/css/{{style}}.css" type="text/css" />
     </head>
     <body>
+    
+    <input type="button" id="_willet_want" value='{{ want_text }}' />
+    
     <div id="fb-root"></div>
-    <div id="wrapper" height="315px">
-        <input type="button" id="_willet_want" value='{% firstof want_text "I want this" %}' />
-    </div>
   </body>
 </html>

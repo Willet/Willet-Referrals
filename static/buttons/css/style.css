@@ -1,0 +1,42 @@
+body {
+    overflow: auto;
+    width: 90px;
+    height: 30px;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    background-clip: border-box;
+    background-color: #eceef5;
+    background-image: url(http://static.ak.fbcdn.net/rsrc.php/v1/y7/r/ql9vukDCc4R.png);
+    background-position: -0px -46px;
+}
+
+#_willet_want {
+    -webkit-border-horizontal-spacing: 0px;
+    -webkit-border-vertical-spacing: 0px;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #eceef5;
+    background-origin: padding-box;
+    border: 0px;
+    color: #3B5998;
+    cursor: pointer;
+    direction: ltr;
+    display: block;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 11px;
+    height: 16px;
+    line-height: 15px;
+    margin-bottom: 1px;
+    margin-left: 17px;
+    margin-right: 0px;
+    margin-top: 1px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    text-align: left;
+    text-decoration: none;
+    unicode-bidi: normal;
+    white-space: nowrap;
+    width: 90px;
+}

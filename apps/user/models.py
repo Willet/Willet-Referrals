@@ -906,11 +906,12 @@ class User( db.Expando, GAEBingoIdentityModel ):
 
     def facebook_action(self, action, obj, obj_link):
         """Does an ACTION on OBJECT on users timeline"""
+        logging.info("FB Action %s %s %s" % (action, obj, obj_link))
             
         url = "https://graph.facebook.com/me/shopify_buttons:%s?" % action 
         params = urllib.urlencode({
-            'access_token': self.fb_access_token,
-            obj: obj_link
+            'access_token' : self.fb_access_token,
+            obj            : obj_link
         })
 
         fb_response, plugin_response, fb_share_id = None, False, None
@@ -941,7 +942,8 @@ class User( db.Expando, GAEBingoIdentityModel ):
             except Exception, e:
                 fb_share_id = None
                 plugin_response = False
-                logging.error('Error posting action: %s' % fb_response)
+                logging.error('Error posting action: %r' % fb_response)
+                logging.error("%s %s" % (fb_response.status_code, fb_response.content))
             
         return fb_share_id, plugin_response 
 
