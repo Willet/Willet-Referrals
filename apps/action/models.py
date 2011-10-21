@@ -9,7 +9,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime, logging
 
-from google.appengine.api    import memcache, taskqueue
+from google.appengine.api    import memcache
 from google.appengine.ext    import db
 from google.appengine.ext.db import polymodel
 
@@ -34,6 +34,9 @@ class Action( Model, polymodel.PolyModel ):
     
     # Person who did the action
     user            = db.ReferenceProperty( db.Model, collection_name = 'actions' )
+    
+    # True iff this Action's User is an admin
+    is_admin        = db.BooleanProperty( default = False )
     
     # The Action that this Action is for
     app_            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
@@ -106,48 +109,7 @@ def create_click_action( user, app, link ):
                         link     = link )
     act.put()
    
-## -----------------------------------------------------------------------------
-## SIBTClickAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
-class SIBTClickAction( ClickAction ):
-    """ Designates a 'click' action for a User on a SIBT instance. 
-        Currently used for 'Referral' and 'SIBT' Apps """
 
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="click_actions" )
-
-    # URL that was clicked on
-    url           = db.LinkProperty( indexed = True )
-
-    def __str__(self):
-        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-## Constructor -----------------------------------------------------------------
-def create_sibt_click_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = SIBTClickAction( key_name = uuid,
-                            uuid = uuid,
-                            user = user,
-                            app_ = app,
-                            link = link,
-                            url = link.target_url,
-                            sibt_instance = link.sibt_instance.get() )
-    act.put()
-
-
-## Accessors -------------------------------------------------------------------
-def get_sibt_click_actions_by_user_for_url(user, url):
-    return SIBTClickAction.all()\
-            .filter('user =', user)\
-            .filter('url =', url)
-
-def get_sibt_click_actions_by_user_and_link(user, url):
-    return SIBTClickAction.all()\
-            .filter('user =', user)\
-            .filter('url =', url)
-
-def get_sibt_click_actions_by_instance( instance ):
-    return SIBTClickAction.all().filter( 'sibt_instance =', instance )
 
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
@@ -158,6 +120,9 @@ class VoteAction( Action ):
     
     # Link that caused the vote action ...
     link = db.ReferenceProperty( db.Model, collection_name = "link_votes" )
+
+    # Either 'yes' or 'no'
+    vote = db.StringProperty( indexed = True )
     
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
@@ -168,47 +133,33 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+    def validateSelf( self ):
+        if not ( self.vote == 'yes' or self.vote == 'no' ):
+            raise Exception("Vote type needs to be yes or no")
+
+    @staticmethod
+    def get_by_vote( vote ):
+        return VoteAction.all().filter( 'vote =', vote )
+
+    @staticmethod
+    def get_all_yesses( ):
+        return VoteAction.all().filter( 'vote =', 'yes' )
+
+    @staticmethod
+    def get_all_nos( ):
+        return VoteAction.all().filter( 'vote =', 'no' )
+
 ## Constructor -----------------------------------------------------------------
-def create_vote_action( user, app, link ):
+def create_vote_action( user, app, link, vote ):
     # Make the action
     uuid = generate_uuid( 16 )
     act  = VoteAction( key_name = uuid,
                        uuid     = uuid,
                        user     = user,
                        app_     = app,
-                       link     = link )
+                       link     = link,
+                       vote     = vote )
     act.put() 
-
-## -----------------------------------------------------------------------------
-## SIBTVoteAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
-class SIBTVoteAction( VoteAction ):
-    """ Designates a 'vote' action for a User on a SIBT instance. 
-        Currently used for 'SIBT' App """
-
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="vote_actions" )
-
-    # URL that was voted on
-    url = db.LinkProperty( indexed = True )
-
-    def __str__(self):
-        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-## Constructor -----------------------------------------------------------------
-def create_sibt_vote_action( user, instance ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = SIBTVoteAction(  key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = instance.app_,
-                            link     = instance.link,
-                            url      = instance.link.target_url,
-                            sibt_instance = instance )
-    act.put()
-
-def get_sibt_vote_actions_by_instance( instance ):
-    return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
 
 ## -----------------------------------------------------------------------------
 ## PageView Subclass -----------------------------------------------------------
@@ -221,8 +172,9 @@ class PageView( Action ):
     def __str__(self):
         return 'PageView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-## Constructor -----------------------------------------------------------------
-def create_pageview( user, app, url ):
+    ## Constructor 
+    @staticmethod
+    def create( user, app, url ):
     uuid = generate_uuid( 16 )
     act  = PageView( key_name = uuid,
                      uuid     = uuid,

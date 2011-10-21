@@ -14,7 +14,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTVoteAction, SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.actions        import SIBTClickAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -257,7 +258,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions  = get_sibt_click_actions_by_user_for_url(user, target)
+                actions  = SIBTClickAction.get_by_user_for_url(user, target)
                 instance = get_sibt_instance_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
@@ -312,9 +313,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             if not is_asker:
                 logging.info('not asker, check for vote ...')
                 
-                vote_action = SIBTVoteAction.all()\
-                    .filter('app_ =', app)\
-                    .filter('sibt_instance =', instance)
+                vote_action = SIBTVoteAction.get_by_app_and_instance(app, instance)
                 vote_count = vote_action.count()
                 
                 vote_action = vote_action.filter('user =', user).get()
