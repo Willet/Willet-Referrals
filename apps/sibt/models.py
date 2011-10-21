@@ -100,8 +100,8 @@ class SIBT(App):
                     name= %s<br />
                     fb_uuid= %s<br />
                     fb_access_token= %s <br \>
-                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>"""
-                    % (
+                    <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
+                    """ % (
                         uuid,
                         user.key(), 
                         link.target_url,
@@ -115,7 +115,6 @@ class SIBT(App):
                 )
             except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
-           
         return instance
 
 # Accessors --------------------------------------------------------------------

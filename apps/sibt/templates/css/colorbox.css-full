@@ -147,7 +147,7 @@
 }
 #_willet_sibt_bar {
     border-bottom: 1px solid #133783;
-    box-shadow: 0 0 2px rgba(0, 0, 0, 0.52);
+    box-shadow: 0 0 3px 1px rgba(0,0,0,0.75);
     background-color: #3B5998;
     display: block;
 
@@ -168,7 +168,7 @@
     font-weight: bold;
 	font-size: 14px;
     position: fixed;
-    z-index: 999;
+    z-index:50000000;
 }
     #_willet_sibt_bar div.last {
         margin-right: 0px;
@@ -229,6 +229,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
             width: 150px;
+            line-height: 17px;
         }
     #_willet_sibt_bar div.message {
         display: inline-block;
