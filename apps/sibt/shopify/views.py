@@ -15,10 +15,12 @@ from time import time
 from urlparse import urlparse
 
 from apps.action.models       import SIBTVoteAction, SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.action.models import PageView
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link, get_link_by_willt_code, create_link
+from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
@@ -220,7 +222,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live = is_asker = show_votes = has_voted = False
+        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = False
         instance = None
         link = None
         asker_name = None
@@ -229,6 +231,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         share_url = None
         vote_count = 0
         target = ''
+        product_title = ''
+        product_images = ''
 
         try:
             page_url = urlparse(self.request.headers.get('REFERER'))
@@ -335,7 +339,21 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             )
             #app.storeAnalyticsDatum( event, user, target )
         else:
-            logging.info('could not get an instance')
+            logging.info('could not get an instance, check page views')
+
+            # check for two page views
+            view_actions = PageView.all()\
+                    .filter('user =', user)\
+                    .filter('url =', target)\
+                    .count()
+            if view_actions > 1 or user.is_admin():
+                # user has viewed page more than once
+                # show top-bar-ask
+                show_top_bar_ask = True 
+                product = get_or_fetch_shopify_product(target, app.client)
+                product_images = product.images
+                product_title = product.title
+
 
         # TODO(Barbara): put this somewhere better
         ab_test_options = [
@@ -375,11 +393,14 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 'vote_count': vote_count,
                 'is_live': is_live,
                 'share_url': share_url,
+                'show_top_bar_ask': show_top_bar_ask,
                 
                 'app' : app,
                 'instance'       : instance,
                 'asker_name'     : asker_name, 
                 'asker_pic': asker_pic,
+                'product_title': product_title,
+                'product_images': product_images,
                 
                 'user': user,
                 'store_id' : self.request.get('store_id'),
@@ -400,6 +421,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
+        """Serves up some high quality javascript that detects if our special
+        div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
 
         template_values = {
