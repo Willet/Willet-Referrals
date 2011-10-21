@@ -249,10 +249,7 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
                     result_instance.get_nos_count()
                 )
         else:
-            logging.error (
-                    "could not get instance for uuid %" % 
-                    instance_uuid
-            )
+            logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
 
 class StoreAnalytics( URIHandler ):

@@ -8,6 +8,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from urlparse                   import urlparse
 
+from apps.action.models import PageView
 from apps.buttons.shopify.models import * 
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
