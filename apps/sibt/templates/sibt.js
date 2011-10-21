@@ -8,6 +8,7 @@
     var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
     var _willet_has_voted = ('{{ has_voted }}' == 'True');
+    var is_live = ('{{ is_live }}' == 'True');
     var _willet_topbar = null;
 
     /**
@@ -79,7 +80,7 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function () {
-        var url =  "{{URL}}/s/ask.html?store_id={{ store_id }}&url=" + window.location.href;
+        var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}&url=" + window.location.href;
 
         $.colorbox({
             transition: 'fade',
@@ -248,14 +249,18 @@
 
         // once the iframe has loaded, switch out the loading gif
         // and display the iframe with its content
-        console.log('binding function to', $('#_willet_results'));
+        //console.log('binding function to', $('#_willet_results'));
         //$('#_willet_results').load(_willet_iframe_loaded);
         //iframe.load(_willet_iframe_loaded);
-        iframe.css('width', iframe.parent().css('width'));
+        console.log('setting width to', iframe_div.width());
+        iframe.css('width', iframe_div.width());
         iframe.fadeIn('fast');
 
         // show the iframe div!
         _willet_toggle_results();
+        
+        console.log('setting width to', iframe_div.width());
+        iframe.css('width', iframe_div.width());
     };
 
     /**
@@ -327,8 +332,14 @@
         $('#_willet_toggle_results').click(_willet_toggle_results);
         $('#yesBtn').click(_willet_do_vote_yes);
         $('#noBtn').click(_willet_do_vote_no);
-    
-        if (_willet_show_votes && !_willet_has_voted && !_willet_is_asker) {
+        
+        if (!is_live) {
+            // voting is over folks!
+            _willet_topbar.find('div.message')
+                .html('Voting is over, click to see results!')
+                .css('cursor', 'pointer')
+                .click(_willet_toggle_results);
+        } else if (_willet_show_votes && !_willet_has_voted && !_willet_is_asker) {
             // show voting!
             _willet_topbar.find('div.vote').show();
         } else if (_willet_has_voted && !_willet_is_asker) {
@@ -483,6 +494,7 @@
 
     /**
     * Insert style and get the ball rolling
+    * !!! We are asuming we are good to insert
     */
     try {
         var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');

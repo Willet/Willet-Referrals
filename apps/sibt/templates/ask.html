@@ -82,7 +82,8 @@
                                     '&m=' + message + 
                                     '&wcode={{willt_code}}' + 
                                     '&img={{productImg|first}}' + 
-                                    '&name={{productName}}'; 
+                                    '&name={{productName}}' + 
+                                    '&product_id={{product_id}}';
                     var AuthWindow = window.open(OAuthURL, '_blank');
                 } 
                 shareArea.style.visibility = 'visible';
@@ -313,7 +314,7 @@
             </div>
         </div>
         <div id="loading" class="willt hidden">
-            <h1 style="margin-top: 1.5em">Working ...</h1>
+            <h1 style="margin-top: 70px">Working ...</h1>
             <img src="/static/imgs/ajax-loader.gif" />
         </div>
         <div id="thanks" class="willt hidden">
