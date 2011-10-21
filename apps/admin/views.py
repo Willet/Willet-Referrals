@@ -22,6 +22,7 @@ from apps.client.models import Client, ClientShopify
 from apps.link.models import get_link_by_willt_code
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from apps.sibt.models import SIBTInstance
+from apps.stats.models import Stats
 
 from util                 import httplib2
 from util.consts import *
@@ -260,29 +261,41 @@ class ManageApps(URIHandler):
 
 
 class SIBTInstanceStats( URIHandler ):
+    def no_code( self ):
+        stats = Stats.get_stats()
+        str = "<h1>Stats</h1>"
+        str += "<p># Instances: %d </p>" % stats.total_instances
+        str += "<p># Clickthroughs: %d </p>" % stats.total_clicks
+        str += "<p># Votes: %d </p>" % stats.total_votes
+
+        str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
+        str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
+
+        str += "<h1> Live Instances </h1>"
+        live_instances = SIBTInstance.all().filter( 'is_live =', True )
+        for l in live_instances:
+            try:
+                if not l.asker.is_admin():
+                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code )
+            except:
+                pass
+        
+        str += "<br /><br /><h1> Dead Instances </h1>"
+        dead_instances = SIBTInstance.all().filter( 'is_live =', False )
+        for l in dead_instances:
+            try:
+                if not l.asker.is_admin():
+                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code )
+            except:
+                pass
+        return str
+
+
     def get( self ):
         willt_code = self.request.get( 'w' )
 
         if willt_code == '':
-            str = "<h1> Live Instances </h1>"
-            live_instances = SIBTInstance.all().filter( 'is_live =', True )
-            for l in live_instances:
-                try:
-                    if not l.asker.is_admin():
-                        str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code )
-                except:
-                    pass
-            
-            str += "<br /><br /><h1> Dead Instances </h1>"
-            dead_instances = SIBTInstance.all().filter( 'is_live =', False )
-            for l in dead_instances:
-                try:
-                    if not l.asker.is_admin():
-                        str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code )
-                except:
-                    pass
-
-            self.response.out.write(str)
+            self.response.out.write( no_code( self ) )
             return
 
         link = get_link_by_willt_code( willt_code )

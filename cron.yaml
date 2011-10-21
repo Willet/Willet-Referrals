@@ -15,23 +15,11 @@ cron:
   schedule: every 2 hours
 
 # Admin Statistics
-- description: Updating login page stats (counts)
+- description: Updating stats (counts)
   url: /stats/updateCounts
   schedule: every 6 hours
 
-- description: Updating login page stats (tweets)
-  url: /stats/updateTweets
-  schedule: every 6 hours
-
-- description: Updating login page stats (clicks)
-  url: /stats/updateClicks
-  schedule: every 6 hours
-
 # Link Crons
-- description: check recently tweeted urls to see if they were actually tweeted
-  url: /link/getTweets
-  schedule: every 5 minutes
-
 - description: Clean bad links
   url: /link/cleanBadLinks
   schedule: every 30 minutes
