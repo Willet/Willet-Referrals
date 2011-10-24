@@ -26,7 +26,7 @@ from util.urihandler import URIHandler
 class UpdateCounts(URIHandler):
     def get( self ): 
         stats = Stats.get_stats()
-        stats.total_clients    = SIBTInstance.all().count()
+        stats.total_instances  = SIBTInstance.all().count()
         stats.total_clicks     = ClickAction.all().count()
         stats.total_votes      = VoteAction.all().count()
         stats.total_wants      = WantAction.all().count()
