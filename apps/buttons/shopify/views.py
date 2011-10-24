@@ -101,7 +101,9 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         
         template_values = {
             'app'            : app,
+            'URL'            : URL,
             'willt_code'     : link.willt_url_code,
+            'willt_url'      : link.get_willt_url(),
             'want_text'      : 'I want this!',
             'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
             'style'          : style,
@@ -119,7 +121,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
             self.response.headers['Content-Type'] = 'javascript'
         else:
             # If the 'Want' button is shown, store a ButtonLoad action
-            ButtonLoadAction.create( user, app, target )
+            ButtonLoadAction.create( user, app, link.target_url )
 
             self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         
