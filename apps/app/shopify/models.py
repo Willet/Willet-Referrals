@@ -94,7 +94,7 @@ class AppShopify(Model):
 
         for webhook in webhooks:
             logging.info('Installing extra hook %s' % webhook)
-            logging.info("POSTING to %s %r " % (url, data))
+            logging.info("POSTING to %s %r " % (url, webhook))
             resp, content = h.request(
                 url,
                 "POST",
