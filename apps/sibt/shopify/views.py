@@ -14,6 +14,7 @@ from time import time
 from urlparse import urlparse
 
 from apps.action.models       import ScriptLoadAction
+from apps.action.models import ButtonLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -338,7 +339,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                     link = instance.link
                 share_url = link.get_willt_url()
             except Exception,e:
-                logging.error("wtf: %s" % e, exc_info=True)
+                logging.error("could not get share_url: %s" % e, exc_info=True)
 
             #product = get_or_fetch_shopify_product(target, app.client)
 
@@ -354,7 +355,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             logging.info('could not get an instance, check page views')
 
             # check for two page views
-            view_actions = PageView.all()\
+            view_actions = ButtonLoadAction.all()\
                     .filter('user =', user)\
                     .filter('url =', target)\
                     .count()
@@ -388,30 +389,30 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         
         # Grab all template values
         template_values = {
-                'URL' : URL,
-                'is_asker' : is_asker,
-                'show_votes' : show_votes,
-                'has_voted': has_voted,
-                'vote_count': vote_count,
-                'is_live': is_live,
-                'share_url': share_url,
-                'show_top_bar_ask': show_top_bar_ask,
-                
-                'app' : app,
-                'instance'       : instance,
-                'asker_name'     : asker_name, 
-                'asker_pic': asker_pic,
-                'product_title': product_title,
-                'product_images': product_images,
-                
-                'user': user,
-                'store_id' : self.request.get('store_id'),
-                'stylesheet': stylesheet,
+            'URL' : URL,
+            'is_asker' : is_asker,
+            'show_votes' : show_votes,
+            'has_voted': has_voted,
+            'vote_count': vote_count,
+            'is_live': is_live,
+            'share_url': share_url,
+            'show_top_bar_ask': show_top_bar_ask,
+            
+            'app' : app,
+            'instance'       : instance,
+            'asker_name'     : asker_name, 
+            'asker_pic': asker_pic,
+            'product_title': product_title,
+            'product_images': product_images,
+            
+            'user': user,
+            'store_id' : self.request.get('store_id'),
+            'stylesheet': stylesheet,
 
-                'AB_CTA_text' : cta_button_text,
-                'store_url' : shop_url,
+            'AB_CTA_text' : cta_button_text,
+            'store_url' : shop_url,
 
-                'evnt' : event
+            'evnt' : event
         }
 
         # Store a script load action.
@@ -429,6 +430,20 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
+        user = get_or_create_user_by_cookie(self)
+        app = get_sibt_shopify_app_by_store_url(store_url)
+        target = ''
+
+        try:
+            page_url = urlparse(self.request.headers.get('REFERER'))
+            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        except Exception, e:
+            logging.error('error parsing referer %s: %s' % (
+                    self.request.headers.get('referer'),
+                    e
+                ),
+                exc_info=True
+            )
 
         # Store a script load action.
         ScriptLoadAction.create( user, app, target )
@@ -444,3 +459,4 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         
         return
+

@@ -234,7 +234,7 @@
     var build_top_bar_html = function (is_ask_bar) {
         var is_ask_bar = is_ask_bar || false;
         var image_src = '{{ asker_pic }}';
-        var asker_text = "&#147;I'm not sure if I should buy this.&#148;";
+        var asker_text = "&#147;I'm not sure if I should buy this {{ instance.motivation }}.&#148;";
         var message = 'Should <em>{{ asker_name }}</em> Buy This?';
 
         if (is_ask_bar) {

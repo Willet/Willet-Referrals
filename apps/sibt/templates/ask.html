@@ -34,7 +34,8 @@
                 product_id: '{{ product_id }}',
                 app_uuid: '{{ app.uuid }}',
                 willt_code: '{{ willt_code }}',
-                product_img: '{{ productImg|first }}'
+                product_img: '{{ productImg|first }}',
+                motivation: ''
             };
 
             var storeAnalytics = function( evnt ) {
@@ -61,6 +62,7 @@
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
                     fbData.msg = message; 
+                    fbData.motivation = $('#motivation-text').val();
                     if (userFound) {
                         fb_share_handler(fbData)
                         return;
@@ -211,13 +213,25 @@
                     var value = el.siblings('.defaultValue').val();
                     el.addClass('default');
                     el.val(value);
-                    console.log('setting default value', value);
+                    //console.log('setting default value', value);
                 } else {
                     el.removeClass('default');
                     el.val('');
-                    console.log('removing default, clearing val');
+                    //console.log('removing default, clearing val');
                 }
             }; // end function
+
+            var done_motivation = function () {
+                // go to next!
+                $('#motivation').hide();
+                //$('#invite').fadeIn('fast');
+                share('fb');
+            };
+            
+            var done_fb_message = function() {
+                $('#invite').hide();
+                $('#motivation').fadeIn('fast');
+            };
 
             $(document).ready(function() {
                 // fb is loaded, run our scripts
@@ -227,6 +241,21 @@
                 userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
                 shareText  = document.getElementById('share-text'),
                 charsLeft  = document.getElementById('chars-left');
+
+                // the share on facebook buttonn
+                $('#buttons').click(done_fb_message);
+
+                // done entering motivation
+                $('#save-motivation').click(done_motivation);
+
+                // random default values
+                var default_values = [
+                    'ex: for prom',
+                    'ex: for work',
+                    'ex: as a gift'
+                ];
+                var randomnumber = Math.floor(Math.random() * default_values.length);
+                $('#text-div input.defaultValue').val(default_values[randomnumber]);
 
                 // Controls default values of input & textarea elements
                 $('.defaultValue').siblings('input, textarea').focus(function () {
@@ -256,24 +285,28 @@
     </head>
     <body>
     <div id="wrapper">
-        <div id="motivation" class="willt">
+        <div id="motivation" class="willt hidden">
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
                     <img src="{{productImg|first}}" />
                 </div>
                 <div id="text-div">
-                    <h3>Should I Buy This ...</h3>
-                    <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
-                    <input type="text" id="motivation-text" width="100" />
+                    <h3>&ldquo;Should I buy<br />this 
+                        <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
+                        <input type="text" id="motivation-text" width="100" />
+                        ?&rdquo;
+                    </h3>
+                    <em>Tell your friends why you want this!</em>
                 </div>
             </div>
 
             <div width="100%" id="save-motivation">
-                <div class="prepend-top button-link" title="Save your question" onclick="save_motivation();">
-                    Share on Facebook
+                <div class="prepend-top button-link" title="Save your question" onclick="done_motivation();">
+                    Ask your friends
                 </div>
             </div>
         </div>
+
         <div id="invite" class="willt">
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
@@ -288,7 +321,7 @@
             </div>
 
             <div width="100%" id="buttons">
-                <div class="prepend-top button-link" title="Share on Facebook" onclick="share('fb');" style="width:90%">
+                <div class="prepend-top button-link" title="Share on Facebook">
                     <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
                     Share on Facebook
                 </div>

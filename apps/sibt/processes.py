@@ -37,6 +37,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         product_name = self.request.get('name')
         product_desc = None 
         product_id = self.request.get('product_id')
+        motivation = self.request.get('motivation')
         fb_token = self.request.get('fb_token')
         fb_id = self.request.get('fb_id')
         message = self.request.get('msg')
@@ -105,7 +106,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             else:
                 # create the instance!
                 # Make the Instance!
-                instance = app.create_instance(user, None, link, img)
+                instance = app.create_instance(user, 
+                        None, link, img, motivation=motivation)
         
                 # increment link stuff
                 link.app_.increment_shares()
