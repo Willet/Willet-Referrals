@@ -24,7 +24,7 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 class UpdateCounts(URIHandler):
-    def get( self ): 
+    def post( self ): 
         stats = Stats.get_stats()
         stats.total_instances  = SIBTInstance.all().count()
         stats.total_clicks     = ClickAction.all().count()
