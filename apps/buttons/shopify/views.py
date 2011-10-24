@@ -41,7 +41,7 @@ class ButtonsShopifyWelcome(URIHandler):
         client = ShopifyClient.get_by_url( shop )
         
         # Fetch or create the app
-        app    = get_or_create_buttons_shopify_app(client, token)
+        app    = get_or_create_buttons_shopify_app(client, token=token)
         
         # Render the page
         template_values = {
