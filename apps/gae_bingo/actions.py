@@ -27,7 +27,7 @@ class GaeBingoAlt( Action ):
     ## Constructor 
     @staticmethod
     def create( user, app, conversion_name, alt ):
-        act = GAEBingoAlt.get_by_user_and_conversion( user, conversion_name )
+        act = GaeBingoAlt.get_by_user_and_conversion( user, conversion_name )
 
         if act.count() == 0:
             uuid = generate_uuid( 16 )
