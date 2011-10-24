@@ -358,7 +358,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                     .filter('user =', user)\
                     .filter('url =', target)\
                     .count()
-            if view_actions > 1 or user.is_admin():
+            if view_actions > 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
