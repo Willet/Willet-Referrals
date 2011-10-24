@@ -90,8 +90,10 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
 
         # Get the link
         willt_code = self.request.get('willt_code')
+        logging.info("Willt_code %s" % willt_code )
         if willt_code != "":
             link = get_link_by_willt_code( willt_code )
+            logging.info("Link %s" % (link.target_url ))
         else:
             logging.info("Making a link for %s" % target)
             link = get_link_by_url(target)
@@ -120,6 +122,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
 
             self.response.headers['Content-Type'] = 'javascript'
         else:
+            logging.info("Storing button: %s %s" % (link.willt_url_code, link.target_url))
             # If the 'Want' button is shown, store a ButtonLoad action
             ButtonLoadAction.create( user, app, link.target_url )
 
