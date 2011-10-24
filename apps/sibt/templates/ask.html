@@ -22,7 +22,6 @@
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
-        <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script> 
 
         <script type="text/javascript">
             var willet_conversion, fbToken, next, highlight, 
@@ -37,6 +36,7 @@
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}'
             };
+
             var storeAnalytics = function( evnt ) {
                 $.ajax({
                     url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
@@ -47,15 +47,6 @@
                         return;
                     }
                 });
-            };
-
-            var _willet_check_scripts = function() {
-                if (typeof FB != 'undefined') {
-                    // facebook is loaded
-                    _willet_run();
-                } else {
-                    window.setTimeout(_willet_check_scripts, 100);
-                }
             };
 
             var share = function(medium, uid) {
@@ -215,19 +206,20 @@
                 shareFrame.src = '';
             };
     
-            var toggleDefaultValue = function(el, onoff) {
-                if (onoff) {
-                    var defaultvalue = el.siblings('.defaultValue').html();
-                    el.css('color', '#777').val(defaultvalue);
+            var toggleDefaultValue = function(el, set_default) {
+                if (set_default) {
+                    var value = el.siblings('.defaultValue').val();
+                    el.addClass('default');
+                    el.val(value);
+                    console.log('setting default value', value);
                 } else {
-                    el.css('color', '#444').val('');
+                    el.removeClass('default');
+                    el.val('');
+                    console.log('removing default, clearing val');
                 }
             }; // end function
-            
-            /**
-             * ACTUAL PAGE LOGIC
-             */
-            var _willet_run = function() {
+
+            $(document).ready(function() {
                 // fb is loaded, run our scripts
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
@@ -236,47 +228,26 @@
                 shareText  = document.getElementById('share-text'),
                 charsLeft  = document.getElementById('chars-left');
 
-                if (FB != 'undefined') {
-                    FB.init({ appId: '{{FACEBOOK_APP_ID}}',
-                        status: true,
-                        cookie: true,
-                        xfbml: true,
-                        oauth: true
-                    });
-                } else {
-                    //console.log("Facebook not ready!");    
-                }
-            
                 // Controls default values of input & textarea elements
-                $('.defaultValue').siblings('input, textarea').focus(
-                    function () {
-                        var el = $(this),
-                            defaultValue = el.siblings('.defaultValue').html();
-                        if (el.val() === defaultValue) {
-                            toggleDefaultValue(el, false);
-                        }
+                $('.defaultValue').siblings('input, textarea').focus(function () {
+                    var el = $(this),
+                        defaultValue = el.siblings('.defaultValue').val();
+                    if (el.val() === defaultValue) {
+                        toggleDefaultValue(el, false);
                     }
-                ).blur(
-                    function () { 
-                        var el = $(this);
-                        if (el.val() === '' ) {
-                            toggleDefaultValue(el, true);
-                        }
+                }).blur(function () { 
+                    var el = $(this);
+                    if (el.val() === '' ) {
+                        toggleDefaultValue(el, true);
                     }
-                ).each(
-                    function () { 
-                        var el = $(this);
-                        if (el.val() === '') {
-                            toggleDefaultValue(el, true); 
-                        }
+                }).each(function () { 
+                    var el = $(this);
+                    if (el.val() === '') {
+                        toggleDefaultValue(el, true); 
                     }
-                );
-            
+                });
+                
                 countChars();
-            };
-
-            $(document).ready(function() {
-                _willet_check_scripts();
             });
         </script>
         
@@ -284,9 +255,25 @@
 
     </head>
     <body>
-
-    <div id="fb-root"></div>
     <div id="wrapper">
+        <div id="motivation" class="willt">
+            <div id="top-div" width="100%">
+                <div id="product-img" style="margin-top: 1.3em">
+                    <img src="{{productImg|first}}" />
+                </div>
+                <div id="text-div">
+                    <h3>Should I Buy This ...</h3>
+                    <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
+                    <input type="text" id="motivation-text" width="100" />
+                </div>
+            </div>
+
+            <div width="100%" id="save-motivation">
+                <div class="prepend-top button-link" title="Save your question" onclick="save_motivation();">
+                    Share on Facebook
+                </div>
+            </div>
+        </div>
         <div id="invite" class="willt">
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
@@ -343,5 +330,31 @@
             <iframe id="willt-frame" class="hidden"></iframe>
         </div>
     </div>
-    </body>
+
+    <div id="fb-root"></div>
+    <script>
+        window.fbAsyncInit = function() {
+            // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+            //FB._https = true;
+            FB.init({
+                appId: '{{FACEBOOK_APP_ID}}', // App ID
+                //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                oauth: true, // enable OAuth 2.0
+                xfbml: true  // parse XFBML
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s);
+            js.id = id;
+            js.async = true;
+            js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+</body>
 </html>

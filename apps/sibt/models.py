@@ -126,6 +126,9 @@ class SIBTInstance( Model ):
     # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
 
+    # the users motivation for sharing
+    motivation = db.StringProperty(default="")
+
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty(auto_now_add=True)
     
