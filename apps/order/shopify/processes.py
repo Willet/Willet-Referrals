@@ -7,9 +7,8 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import logging
 from django.utils import simplejson as json
 
-from apps.client.models          import ClientShopify
 from apps.client.models          import get_client_by_uuid
-from apps.client.models          import get_shopify_client_by_url
+from apps.client.shopify.models  import ShopifyClient
 from apps.order.models           import *
 from apps.order.shopify.models   import get_shopify_order_by_id
 from apps.order.shopify.models   import create_shopify_order
@@ -67,7 +66,7 @@ class OrderWebhookNotification(URIHandler):
 
         store_url = "http://%s" % self.request.headers['X-Shopify-Shop-Domain']
         logging.info("store: %s " % store_url)
-        client = get_shopify_client_by_url( store_url ) 
+        client = ShopifyClient.get_by_url( store_url ) 
 
         # Grab the data about the order from Shopify
         order = json.loads(self.request.body) 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env/python
 
 # The Action Model
 # A parent class for all User actions 
@@ -9,7 +9,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime, logging
 
-from google.appengine.api    import memcache, taskqueue
+from google.appengine.api    import memcache
 from google.appengine.ext    import db
 from google.appengine.ext.db import polymodel
 
@@ -33,13 +33,20 @@ class Action( Model, polymodel.PolyModel ):
     created         = db.DateTimeProperty( auto_now_add=True )
     
     # Person who did the action
-    user            = db.ReferenceProperty( db.Model, collection_name = 'actions' )
+    user            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
+    
+    # True iff this Action's User is an admin
+    is_admin        = db.BooleanProperty( default = False )
     
     # The Action that this Action is for
-    app_            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
+    app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+
+        if kwargs['user'].is_admin():
+            kwargs['is_admin'] = True
+
         super(Action, self).__init__(*args, **kwargs)
     
     @staticmethod
@@ -48,10 +55,7 @@ class Action( Model, polymodel.PolyModel ):
         return Action.all().filter('uuid =', uuid).get()
 
     def validateSelf( self ):
-        #if self.user.is_admin():
-        #    return True # Anything except None
-        return None
-
+        pass
     def __unicode__(self):
         return self.__str__()
 
@@ -59,18 +63,39 @@ class Action( Model, polymodel.PolyModel ):
         # Subclasses should override this
         pass
 
-## Accessors -------------------------------------------------------------------
-def get_action_by_uuid( uuid ):
-    return Action.all().filter( 'uuid =', uuid ).get()
+    ## Accessors 
+    @staticmethod
+    def count( admins_too = False ):
+        if admins_too:
+            return Action.all().count()
+        else:
+            return Action.all().filter( 'is_admin =', False ).count()
 
-def get_actions_by_user( user ):
-    return Action.all().filter( 'user =', user ).get()
+    @staticmethod
+    def get_all( admins_too = False ):
+        if admins_too:
+            return Action.all()
+        else:
+            return Action.all().filter( 'is_admin =', False )
 
-def get_actions_by_app( app ):
-    return Action.all().filter( 'app_ =', app ).get()
+    @staticmethod
+    def get_by_uuid( uuid ):
+        return Action.all().filter( 'uuid =', uuid ).get()
 
-def get_actions_by_user_for_app( user, app ):
-    return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
+    @staticmethod
+    def get_by_user( user ):
+        return Action.all().filter( 'user =', user ).get()
+
+    @staticmethod
+    def get_by_app( app, admins_too = False ):
+        if admins_too:
+            return Action.all().filter( 'app_ =', app ).get()
+        else:
+            return Action.all().filter( 'app_ =', app ).filter('is_admin =', False).get()
+
+    @staticmethod
+    def get_by_user_and_app( user, app ):
+        return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
@@ -107,49 +132,6 @@ def create_click_action( user, app, link ):
     act.put()
    
 ## -----------------------------------------------------------------------------
-## SIBTClickAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
-class SIBTClickAction( ClickAction ):
-    """ Designates a 'click' action for a User on a SIBT instance. 
-        Currently used for 'Referral' and 'SIBT' Apps """
-
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="click_actions" )
-
-    # URL that was clicked on
-    url           = db.LinkProperty( indexed = True )
-
-    def __str__(self):
-        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-## Constructor -----------------------------------------------------------------
-def create_sibt_click_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = SIBTClickAction( key_name = uuid,
-                            uuid = uuid,
-                            user = user,
-                            app_ = app,
-                            link = link,
-                            url = link.target_url,
-                            sibt_instance = link.sibt_instance.get() )
-    act.put()
-
-
-## Accessors -------------------------------------------------------------------
-def get_sibt_click_actions_by_user_for_url(user, url):
-    return SIBTClickAction.all()\
-            .filter('user =', user)\
-            .filter('url =', url)
-
-def get_sibt_click_actions_by_user_and_link(user, url):
-    return SIBTClickAction.all()\
-            .filter('user =', user)\
-            .filter('url =', url)
-
-def get_sibt_click_actions_by_instance( instance ):
-    return SIBTClickAction.all().filter( 'sibt_instance =', instance )
-
-## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class VoteAction( Action ):
@@ -158,6 +140,9 @@ class VoteAction( Action ):
     
     # Link that caused the vote action ...
     link = db.ReferenceProperty( db.Model, collection_name = "link_votes" )
+
+    # Either 'yes' or 'no'
+    vote = db.StringProperty( indexed = True )
     
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
@@ -168,132 +153,99 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
+    def validateSelf( self ):
+        if not ( self.vote == 'yes' or self.vote == 'no' ):
+            raise Exception("Vote type needs to be yes or no")
+
+    @staticmethod
+    def get_by_vote( vote ):
+        return VoteAction.all().filter( 'vote =', vote )
+
+    @staticmethod
+    def get_all_yesses( ):
+        return VoteAction.all().filter( 'vote =', 'yes' )
+
+    @staticmethod
+    def get_all_nos( ):
+        return VoteAction.all().filter( 'vote =', 'no' )
+
 ## Constructor -----------------------------------------------------------------
-def create_vote_action( user, app, link ):
+def create_vote_action( user, app, link, vote ):
     # Make the action
     uuid = generate_uuid( 16 )
     act  = VoteAction( key_name = uuid,
                        uuid     = uuid,
                        user     = user,
                        app_     = app,
-                       link     = link )
+                       link     = link,
+                       vote     = vote )
     act.put() 
 
 ## -----------------------------------------------------------------------------
-## SIBTVoteAction Subclass ----------------------------------------------------
+## LoadAction Subclass ---------------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class SIBTVoteAction( VoteAction ):
-    """ Designates a 'vote' action for a User on a SIBT instance. 
-        Currently used for 'SIBT' App """
-
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="vote_actions" )
-
-    # URL that was voted on
-    url = db.LinkProperty( indexed = True )
-
-    def __str__(self):
-        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-## Constructor -----------------------------------------------------------------
-def create_sibt_vote_action( user, instance ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = SIBTVoteAction(  key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = instance.app_,
-                            link     = instance.link,
-                            url      = instance.link.target_url,
-                            sibt_instance = instance )
-    act.put()
-
-def get_sibt_vote_actions_by_instance( instance ):
-    return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
-
-## -----------------------------------------------------------------------------
-## PageView Subclass -----------------------------------------------------------
-## -----------------------------------------------------------------------------
-class PageView( Action ):
-    """ Designates a 'page view' for a User. """
+class LoadAction( Action ):
+    """ Parent class for Load actions.
+        ie. ScriptLoad, ButtonLoad """
 
     url = db.LinkProperty( indexed = True )
 
     def __str__(self):
-        return 'PageView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-## Constructor -----------------------------------------------------------------
-def create_pageview( user, app, url ):
-    uuid = generate_uuid( 16 )
-    act  = PageView( key_name = uuid,
-                     uuid     = uuid,
-                     user     = user,
-                     app_     = app,
-                     url      = url )
-    act.put()
+        return 'LoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
 ## Accessors -------------------------------------------------------------------
-def get_pageviews_by_url( url ):
-    return PageView.all().filter( 'url =', url )
+def get_loads_by_url( url ):
+    return LoadAction.all().filter( 'url =', url )
 
-def get_pageviews_by_user_and_url( user, url ):
-    return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
+def get_loads_by_user_and_url( user, url ):
+    return LoadAction.all().filter( 'user = ', user ).filter( 'url =', url )
 
 ## -----------------------------------------------------------------------------
-## GaeBingoAlt Subclass --------------------------------------------------------
+## ScriptLoadAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class GaeBingoAlt( Action ):
-    """ Stores the variation that a given User sees"""
-    conversion_name = db.StringProperty( indexed = True )
-    alt             = db.StringProperty( indexed = False )
-
+class ScriptLoadAction( LoadAction ):
     def __str__(self):
-        return 'GaeBingoAlt: %s(%s) %s: %s' % ( self.user.get_full_name(), 
-                                                self.user.uuid, 
-                                                self.conversion_name,
-                                                self.alt )
+        return 'ScriptLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-## Constructor -----------------------------------------------------------------
-def create_gaebingo_alt( user, app, conversion_name, alt ):
-    act = get_gaebingo_alt_for_user_and_conversion( user, conversion_name )
-
-    if act.count() == 0:
+    ## Constructor 
+    @staticmethod
+    def create( user, app, url ):
         uuid = generate_uuid( 16 )
-        act  = GaeBingoAlt( key_name = uuid,
-                            uuid     = uuid,
-                            user     = user,
-                            app_     = app,
-                            conversion_name = conversion_name,
-                            alt      = alt )
+        act  = ScriptLoadAction( key_name = uuid,
+                                 uuid     = uuid,
+                                 user     = user,
+                                 app_     = app,
+                                 url      = url )
         act.put()
 
-## Accessors  -----------------------------------------------------------------
-def get_gaebingo_alt_for_user_and_conversion( user, conversion ):
-    return GaeBingoAlt.all().filter( 'user =', user ).filter( 'conversion_name =', conversion )
-
+## Accessors -------------------------------------------------------------------
+def get_scriptloads_by_app( app ):
+    return ScriptLoadAction.all().filter( 'app_ =', app_ )
 
 ## -----------------------------------------------------------------------------
-## WantAction Subclass --------------------------------------------------------
+## ButtonLoadAction Subclass ---------------------------------------------------
 ## -----------------------------------------------------------------------------
-class WantAction( Action ):
-    """ Stored if a User wants an item. """
-    
-    # Link that caused the want action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_wants" )
-    
+class ButtonLoadAction( Action ):
+    """ Created when a button is loaded.
+        ie. "SIBT?" button or Want FB button. """
+
     def __str__(self):
-        return 'Want: %s(%s) %s' % (
-                self.user.get_full_name(),
-                self.user.uuid,
-                self.app_.uuid
-        )
+        return 'ButtonLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-## Constructor -----------------------------------------------------------------
-def create_want_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = WantAction( key_name = uuid,
-                       uuid     = uuid,
-                       user     = user,
-                       app_     = app,
-                       link     = link )
-    act.put()
+    ## Constructor 
+    @staticmethod
+    def create( user, app, url ):
+        uuid = generate_uuid( 16 )
+        act  = ButtonLoadAction( key_name = uuid,
+                                 uuid     = uuid,
+                                 user     = user,
+                                 app_     = app,
+                                 url      = url )
+        act.put()
+
+## Accessors -------------------------------------------------------------------
+def get_buttonloads_by_app( app ):
+    return ButtonLoadAction.all().filter( 'app_ =', app )
+
+def get_buttonloads_by_user_and_url( user, url ):
+    return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)

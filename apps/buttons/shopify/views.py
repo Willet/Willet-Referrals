@@ -8,15 +8,16 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from urlparse                   import urlparse
 
-from apps.buttons.shopify.models import * 
+from apps.action.models import ScriptLoadAction
+from apps.action.models import ButtonLoadAction
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
-from apps.user.models   import get_or_create_user_by_cookie
-from apps.client.models import ClientShopify
-from apps.client.models import get_shopify_client_by_url
+from apps.buttons.shopify.models import * 
+from apps.client.shopify.models  import ShopifyClient
 from apps.link.models   import create_link
 from apps.link.models   import get_link_by_url
 from apps.link.models   import get_link_by_willt_code
+from apps.user.models   import get_or_create_user_by_cookie
 
 from util.consts        import *
 from util.helpers       import get_request_variables
@@ -32,30 +33,32 @@ class ButtonsShopifyBeta(URIHandler):
 
 class ButtonsShopifyWelcome(URIHandler):
     def get( self ):
-        client = self.get_client() # May be None
-       
         # TODO: put this somewhere smarter
-        app_token = self.request.get( 't' )
-        app = get_or_create_buttons_shopify_app(client, app_token)
-        
-        shop_owner = 'a Shopify store'
-        if client:
-            shop_owner = client.merchant.get_attr('full_name')
+        shop   = self.request.get( 'shop' )
+        token  = self.request.get( 't' )
 
+        # Fetch the client
+        client = ShopifyClient.get_by_url( shop )
+        
+        # Fetch or create the app
+        app    = get_or_create_buttons_shopify_app(client, token)
+        
+        # Render the page
         template_values = {
             'app'        : app,
-            'shop_owner' : shop_owner 
+            'shop_owner' : client.merchant.get_attr('full_name') 
         }
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
 
-class ButtonsShopifyJS(webapp.RequestHandler):
+class LoadButtonsIframe(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self, input_path):
+        """
+        {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
+        """
         template_values = {}
-        rq_vars = get_request_variables(['store_url'], self)
-
         user = get_or_create_user_by_cookie( self )
     
         # TODO: put this as a helper fcn.
@@ -85,35 +88,33 @@ class ButtonsShopifyJS(webapp.RequestHandler):
         # Fetch the App
         app = get_app_by_id( self.request.get( 'app_uuid' ) )
 
-        # Make a new Link
+        # Get the link
         willt_code = self.request.get('willt_code')
         if willt_code != "":
             link = get_link_by_willt_code( willt_code )
-        else:
-            logging.info("Making a link for %s" % target)
-            link = get_link_by_url(target)
-            if link == None:
-                # link does not exist yet
-                link = create_link(target, app, self.request.url, user)
 
         template_values = {
-            'app'            : app,
-            'willt_url'      : link.get_willt_url(),
             'willt_code'     : link.willt_url_code,
             'want_text'      : 'I want this!',
-            'URL'            : URL, 
             'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
             'style'          : style,
             'user_found'     : True if hasattr(user, 'fb_access_token') else False,
         }
         
-        # Finally, render the plugin!
+        # Finally, render the iframe
         path = os.path.join('apps/buttons/templates/', input_path)
+        self.response.headers.add_header('P3P', P3P_HEADER)
         
         if input_path.find('.js') != -1:
+            # If the 'buttons.js" script is loaded, store a ScriptLoadAction
+            ScriptLoadAction.create( user, app, target )
+
             self.response.headers['Content-Type'] = 'javascript'
         else:
-            self.response.headers['Content-Type'] = 'text/html'
+            # If the 'Want' button is shown, store a ButtonLoad action
+            ButtonLoadAction.create( user, app, target )
+
+            self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        
         self.response.out.write(template.render(path, template_values))
         return
-

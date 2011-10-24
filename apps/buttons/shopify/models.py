@@ -15,7 +15,7 @@ from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
 from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions 
-from apps.client.models   import ClientShopify
+from apps.client.shopify.models   import ShopifyClient
 from apps.email.models    import Email
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
@@ -80,7 +80,7 @@ def create_shopify_buttons_app(client, app_token):
     return app
 
 # Accessors --------------------------------------------------------------------
-def get_or_create_buttons_shopify_app(client, app_token):
+def get_or_create_buttons_shopify_app( client, app_token ):
     app = get_shopify_buttons_by_url( client.url )
     
     if app is None:
@@ -88,7 +88,10 @@ def get_or_create_buttons_shopify_app(client, app_token):
     
     return app
 
-def get_shopify_buttons_by_url( url ):
+def get_shopify_buttons_by_url( store_url ):
     """ Fetch a Shopify obj from the DB via the store's url"""
-    logging.info("Shopify: Looking for %s" % url)
-    return ButtonsShopify.all().filter( 'store_url =', url ).get()
+    if 'http' not in store_url:
+        store_url = 'http://%s' % store_url
+
+    logging.info("Shopify: Looking for %s" % store_url)
+    return ButtonsShopify.all().filter( 'store_url =', store_url ).get()

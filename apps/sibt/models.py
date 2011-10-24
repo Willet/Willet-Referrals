@@ -16,7 +16,7 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
-from apps.action.models   import create_sibt_click_action
+from apps.sibt.actions          import SIBTClickAction
 from apps.app.models      import App
 from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
@@ -53,7 +53,7 @@ class SIBT(App):
         user = get_or_create_user_by_cookie( urihandler )
 
         # Create a ClickAction
-        act = create_sibt_click_action( user, self, link )
+        act = SIBTClickAction.create( user, self, link )
 
         # GAY BINGO!
         if not user.is_admin():

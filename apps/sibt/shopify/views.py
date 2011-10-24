@@ -3,29 +3,37 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
-
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
-from google.appengine.api import urlfetch, memcache
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTVoteAction, SIBTClickAction, get_sibt_click_actions_by_user_for_url
-from apps.action.models import PageView
+from apps.action.models       import ScriptLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models         import Link, get_link_by_willt_code, create_link
+from apps.link.models         import Link
+from apps.link.models         import get_link_by_willt_code
+from apps.link.models         import create_link
 from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
+from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.actions        import SIBTClickAction
+from apps.sibt.models         import get_sibt_instance_by_asker_for_url
+from apps.sibt.models import SIBTInstance
+from apps.sibt.shopify.models import SIBTShopify
+from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
+from apps.sibt.shopify.models import get_or_create_sibt_shopify_app
+from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_url
 from apps.stats.models        import Stats
-from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
+from apps.user.models         import get_user_by_cookie
+from apps.user.models         import User
+from apps.user.models         import get_or_create_user_by_cookie
 
 from util.helpers             import *
 from util.urihandler          import URIHandler
@@ -261,7 +269,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions  = get_sibt_click_actions_by_user_for_url(user, target)
+                actions  = SIBTClickAction.get_by_user_for_url(user, target)
                 instance = get_sibt_instance_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
@@ -316,9 +324,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             if not is_asker:
                 logging.info('not asker, check for vote ...')
                 
-                vote_action = SIBTVoteAction.all()\
-                    .filter('app_ =', app)\
-                    .filter('sibt_instance =', instance)
+                vote_action = SIBTVoteAction.get_by_app_and_instance(app, instance)
                 vote_count = vote_action.count()
                 
                 vote_action = vote_action.filter('user =', user).get()
@@ -408,6 +414,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 'evnt' : event
         }
 
+        # Store a script load action.
+        ButtonLoadAction.create( user, app, target )
+
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -420,6 +429,9 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
+
+        # Store a script load action.
+        ScriptLoadAction.create( user, app, target )
 
         template_values = {
             'URL' : URL,

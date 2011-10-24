@@ -12,7 +12,7 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.action.models       import create_sibt_vote_action, create_pageview
+from apps.sibt.actions        import SIBTVoteAction
 from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
@@ -179,7 +179,7 @@ class DoVote( URIHandler ):
         instance = get_sibt_instance_by_uuid( instance_uuid )
 
         # Make a Vote action for this User
-        action = create_sibt_vote_action( user, instance )
+        action = SIBTVoteAction.create( user, instance, which )
 
         # Count the vote.
         if which.lower() == "yes":
@@ -248,10 +248,7 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
                     result_instance.get_nos_count()
                 )
         else:
-            logging.error (
-                    "could not get instance for uuid %" % 
-                    instance_uuid
-            )
+            logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
 
 class StoreAnalytics( URIHandler ):
@@ -267,10 +264,6 @@ class StoreAnalytics( URIHandler ):
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( event, user, target )
-
-        # HACCKK
-        if event == "SIBTShowingButton":
-            create_pageview( user, app, target )
 
         # Some error checking that Barbara suspects will fail at some point ..
         user2 = get_user_by_cookie( self )

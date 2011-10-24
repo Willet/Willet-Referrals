@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import SIBTClickAction, get_sibt_click_actions_by_user_for_url
+from apps.sibt.actionss       import SIBTClickAction
 from apps.app.models          import *
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
@@ -238,7 +238,7 @@ class DynamicLoader(webapp.RequestHandler):
         event = 'SIBTShowingButton'
         if app:
             # Is User an asker for this URL?
-            actions = get_sibt_click_actions_by_user_for_url(user, target)
+            actions = SIBTClickAction.get_by_user_for_url(user, target)
             instance = get_sibt_instance_by_asker_for_url(user, target)
             logging.info('trying to get instance for\nuser: %s\ntarget: %s\ninstance: %s' % (
                 user,
