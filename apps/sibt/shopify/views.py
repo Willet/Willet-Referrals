@@ -400,7 +400,21 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
         store_url = self.request.get('store_url')
-        user = get_or_create_user_by_cookie( self )
+        user      = get_or_create_user_by_cookie( self )
+        app       = get_sibt_shopify_app_by_store_url( store_url )
+
+        # TODO: put this as a helper fcn.
+        # Build a url for this page.
+        try:
+            page_url = urlparse(self.request.headers.get('REFERER'))
+            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        except Exception, e:
+            logging.error('error parsing referer %s: %s' % (
+                    self.request.headers.get('referer'),
+                    e
+                ),
+                exc_info=True
+            )
 
         # Store a script load action.
         ScriptLoadAction.create( user, app, target )
