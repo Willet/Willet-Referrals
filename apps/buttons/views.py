@@ -46,6 +46,12 @@ class ButtonsAction(URIHandler):
                 logging.error('existing users facebook information did not\
                     match new data. overwriting old data!')
                 logging.error('user: %s' % user)
+
+                # got an existing user but doesn't have facebook info
+                user.update(
+                    fb_identity     = rq_vars['fb_id'],
+                    fb_access_token = rq_vars['fb_token']
+                )
         else:
             # got an existing user but doesn't have facebook info
             user.update(

@@ -33,10 +33,7 @@ var _willet_run_scripts = function() {
                 }, {
                     'property': "og:title",
                     'content': data.product.title, 
-                }, {
-                    'property': "og:image",
-                    'content': data.product.images[0].src, 
-                }, {
+                },  {
                     'property': "og:description",
                     'content': data.product.body_html, 
                 }, 
@@ -45,6 +42,12 @@ var _willet_run_scripts = function() {
                     'content': "{{URL}}/{{ willt_code }}"
                 }
             ];
+            
+            if  (data.product.images[0] != null ) {
+                meta_tags.push({'property': "og:image", 'content': data.product.images[0].src});
+            } else {
+                meta_tags.push({'property': "og:image", 'content': '{{URL}}/static/imgs/ShopConnectionLogo.png'});
+            }
 
             var head = document.getElementsByTagName('head')[0];
             // add all those meta tags
