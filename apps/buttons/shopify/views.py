@@ -8,6 +8,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from urlparse                   import urlparse
 
+from apps.action.models import PageView
 from apps.buttons.shopify.models import * 
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
@@ -101,6 +102,15 @@ class LoadButtonsIframe(webapp.RequestHandler):
         
         # Finally, render the iframe
         path = os.path.join('apps/buttons/templates/', input_path)
-        self.response.headers['Content-Type'] = 'text/html'
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        
+        if input_path.find('.js') != -1:
+            self.response.headers['Content-Type'] = 'javascript'
+        else:
+            # If the 'Want' button is shown, store a PageView
+            PageView.create( user, app, target )
+
+            self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        
         self.response.out.write(template.render(path, template_values))
         return

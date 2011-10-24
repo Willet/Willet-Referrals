@@ -15,8 +15,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time                       import time
 from urlparse                   import urlparse
 
-from apps.action.models         import SIBTClickAction, SIBTVoteAction
-from apps.action.models         import get_sibt_click_actions_by_user_and_link
+from apps.sibt.actions          import SIBTClickAction
+from apps.sibt.actions          import SIBTVoteAction
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
@@ -143,10 +143,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
         link = None
         app = None
 
-        # Make sure User has a click action for this code
-        #actions = get_sibt_click_actions_by_user_and_link(user, target)
-        #asker_instance = get_sibt_instance_by_asker_for_url(user, target)
-            
         try:
             # get instance by instance_uuid
             assert(instance != None)
@@ -178,10 +174,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 except:
                     try:
                         # ugh, get the instance by actions ...
-                        actions = get_sibt_click_actions_by_user_and_link(
-                                user,
-                                target
-                        )
+                        actions = SIBTClickAction.get_by_user_and_url(user,target)
                         if actions.count() > 0:
                             unfiltered_count = actions.count()
                             instances = SIBTInstance.all()\
@@ -215,11 +208,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
             name = instance.asker.get_full_name()
             is_asker = (instance.asker.key() == user.key())
-            vote_action = SIBTVoteAction.all()\
-                    .filter('app_ =', app)\
-                    .filter('sibt_instance =', instance)\
-                    .filter('user =', user)\
-                    .get()
+            vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
+            
             logging.info('got vote action: %s' % vote_action)
             has_voted = (vote_action != None)
             if not instance.is_live:
@@ -331,10 +321,7 @@ class ShowResults(webapp.RequestHandler):
                     try:
                         # ugh, get the instance by actions ...
                         logging.info('failed to get instance for asker by url')
-                        actions = get_sibt_click_actions_by_user_and_link(
-                                user,
-                                target
-                        )
+                        actions = SIBTClickAction.get_by_user_and_url(user,target)
                         if actions.count() > 0:
                             unfiltered_count = actions.count()
                             instances = SIBTInstance.all()\
@@ -375,11 +362,8 @@ class ShowResults(webapp.RequestHandler):
             is_asker = (instance.asker.key() == user.key())
 
             if not is_asker:
-                vote_action = SIBTVoteAction.all()\
-                    .filter('app_ =', app)\
-                    .filter('sibt_instance =', instance)\
-                    .filter('user =', user)\
-                    .get()
+                vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
+                
                 logging.info('got vote action: %s' % vote_action)
                 has_voted = (vote_action != None)
                 if not has_voted:

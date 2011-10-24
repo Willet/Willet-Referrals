@@ -6,7 +6,7 @@ import time
 
 from google.appengine.api import memcache
 
-from apps.action.models import create_gaebingo_alt
+from apps.gae_bingo.actions import GaeBingoAlt
 
 from .cache import BingoCache, bingo_and_identity_cache
 from .models import create_experiment_and_alternatives
@@ -103,7 +103,7 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, u
 
     # Barbara's Code
     if user:
-        create_gaebingo_alt( user, app, canonical_name, returned_content )
+        GaeBingoAlt.create( user, app, canonical_name, returned_content )
 
     return returned_content
 
