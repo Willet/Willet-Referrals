@@ -70,6 +70,8 @@ var _willet_run_scripts = function() {
              */
             var button_div = document.getElementById('{{ app.button_selector }}');
 
+            alert( button_div );
+            alert( window.iframe_loaded );
             if (button_div &&  window.iframe_loaded == undefined) {
                 button_div.style = "float: left; height:30px; width: 205px;";
 
