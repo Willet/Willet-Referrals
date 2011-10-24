@@ -70,6 +70,12 @@
     * Onclick event handler for the 'sibt' button
     */
     var _willet_button_onclick = function() {
+        try {
+            $('#_willet_padding').hide();
+            _willet_topbar.fadeOut('fast');
+        } catch (err) {
+            // pass!
+        }
         if (_willet_is_asker || _willet_show_votes) {
             //_willet_show_vote();
             window.location.reload(true);
@@ -361,8 +367,7 @@
                 // instead let's just show the normal colorbox popup
                 // ... BORING!
                 // let's hide the top bar as well
-                $('#_willet_padding').hide();
-                _willet_topbar.fadeOut('fast');
+                
                 _willet_button_onclick();
                 /*
                 if (iframe_div.css('display') == 'none') {
