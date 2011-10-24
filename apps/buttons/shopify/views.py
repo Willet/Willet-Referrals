@@ -8,15 +8,16 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from urlparse                   import urlparse
 
-from apps.action.models import PageView
-from apps.buttons.shopify.models import * 
+from apps.action.models import ScriptLoadAction
+from apps.action.models import ButtonLoadAction
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
-from apps.user.models   import get_or_create_user_by_cookie
-from apps.client.shopify.models import ShopifyClient
+from apps.buttons.shopify.models import * 
+from apps.client.shopify.models  import ShopifyClient
 from apps.link.models   import create_link
 from apps.link.models   import get_link_by_url
 from apps.link.models   import get_link_by_willt_code
+from apps.user.models   import get_or_create_user_by_cookie
 
 from util.consts        import *
 from util.helpers       import get_request_variables
@@ -105,10 +106,13 @@ class LoadButtonsIframe(webapp.RequestHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         
         if input_path.find('.js') != -1:
+            # If the 'buttons.js" script is loaded, store a ScriptLoadAction
+            ScriptLoadAction.create( user, app, target )
+
             self.response.headers['Content-Type'] = 'javascript'
         else:
-            # If the 'Want' button is shown, store a PageView
-            PageView.create( user, app, target )
+            # If the 'Want' button is shown, store a ButtonLoad action
+            ButtonLoadAction.create( user, app, target )
 
             self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         

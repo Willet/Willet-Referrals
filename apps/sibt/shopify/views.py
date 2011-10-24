@@ -14,13 +14,15 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.sibt.actions        import SIBTVoteAction
-from apps.sibt.actions        import SIBTClickAction
+from apps.action.models       import ScriptLoadAction
+from apps.action.models       import ButtonLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.order.models        import *
+from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.actions        import SIBTClickAction
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
 from apps.stats.models        import Stats
@@ -386,6 +388,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 'evnt' : event
         }
 
+        # Store a script load action.
+        ButtonLoadAction.create( user, app, target )
+
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -396,6 +401,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
         store_url = self.request.get('store_url')
+
+        # Store a script load action.
+        ScriptLoadAction.create( user, app, target )
 
         template_values = {
             'URL' : URL,

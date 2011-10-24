@@ -182,30 +182,70 @@ def create_vote_action( user, app, link, vote ):
     act.put() 
 
 ## -----------------------------------------------------------------------------
-## PageView Subclass -----------------------------------------------------------
+## LoadAction Subclass ---------------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class PageView( Action ):
-    """ Designates a 'page view' for a User. """
+class LoadAction( Action ):
+    """ Parent class for Load actions.
+        ie. ScriptLoad, ButtonLoad """
 
     url = db.LinkProperty( indexed = True )
 
     def __str__(self):
-        return 'PageView: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'LoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+
+## Accessors -------------------------------------------------------------------
+def get_loads_by_url( url ):
+    return LoadAction.all().filter( 'url =', url )
+
+def get_loads_by_user_and_url( user, url ):
+    return LoadAction.all().filter( 'user = ', user ).filter( 'url =', url )
+
+## -----------------------------------------------------------------------------
+## ScriptLoadAction Subclass ---------------------------------------------------------
+## -----------------------------------------------------------------------------
+class ScriptLoadAction( LoadAction ):
+    def __str__(self):
+        return 'ScriptLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
     ## Constructor 
     @staticmethod
     def create( user, app, url ):
         uuid = generate_uuid( 16 )
-        act  = PageView( key_name = uuid,
-                         uuid     = uuid,
-                         user     = user,
-                         app_     = app,
-                         url      = url )
+        act  = ScriptLoadAction( key_name = uuid,
+                                 uuid     = uuid,
+                                 user     = user,
+                                 app_     = app,
+                                 url      = url )
         act.put()
 
 ## Accessors -------------------------------------------------------------------
-def get_pageviews_by_url( url ):
-    return PageView.all().filter( 'url =', url )
+def get_scriptloads_by_app( app ):
+    return ScriptLoadAction.all().filter( 'app_ =', app_ )
 
-def get_pageviews_by_user_and_url( user, url ):
-    return PageView.all().filter( 'user = ', user ).filter( 'url =', url )
+## -----------------------------------------------------------------------------
+## ButtonLoadAction Subclass ---------------------------------------------------
+## -----------------------------------------------------------------------------
+class ButtonLoadAction( Action ):
+    """ Created when a button is loaded.
+        ie. "SIBT?" button or Want FB button. """
+
+    def __str__(self):
+        return 'ButtonLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+
+    ## Constructor 
+    @staticmethod
+    def create( user, app, url ):
+        uuid = generate_uuid( 16 )
+        act  = ButtonLoadAction( key_name = uuid,
+                                 uuid     = uuid,
+                                 user     = user,
+                                 app_     = app,
+                                 url      = url )
+        act.put()
+
+## Accessors -------------------------------------------------------------------
+def get_buttonloads_by_app( app ):
+    return ButtonLoadAction.all().filter( 'app_ =', app )
+
+def get_buttonloads_by_user_and_url( user, url ):
+    return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)

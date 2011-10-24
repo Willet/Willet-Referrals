@@ -12,7 +12,6 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.action.models       import PageView
 from apps.sibt.actions        import SIBTVoteAction
 from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
@@ -265,10 +264,6 @@ class StoreAnalytics( URIHandler ):
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( event, user, target )
-
-        # HACCKK
-        if event == "SIBTShowingButton":
-            PageView.create( user, app, target )
 
         # Some error checking that Barbara suspects will fail at some point ..
         user2 = get_user_by_cookie( self )
