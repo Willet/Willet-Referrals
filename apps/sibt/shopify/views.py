@@ -52,7 +52,6 @@ class SIBTShopifyWelcome(URIHandler):
     def get( self ):
         client = self.get_client() # May be None
        
-        # TODO: put this somewhere smarter
         token = self.request.get('t') # token
         app = get_or_create_sibt_shopify_app(client, token=token)
         

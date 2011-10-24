@@ -59,7 +59,7 @@ class SIBTShopify(SIBT, AppShopify):
         )
 
 # Constructor ------------------------------------------------------------------
-def create_sibt_shopify_app(client):
+def create_sibt_shopify_app(client, token):
 
     uuid = generate_uuid( 16 )
     app = SIBTShopify( key_name    = uuid,
@@ -68,7 +68,7 @@ def create_sibt_shopify_app(client):
                        store_name  = client.name, # Store name
                        store_url   = client.url, # Store url
                        store_id    = client.id, # Store id
-                       store_token = client.token )
+                       store_token = token )
     app.put()
     
     app.do_install()

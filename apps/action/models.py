@@ -225,7 +225,7 @@ def get_scriptloads_by_app( app ):
 ## -----------------------------------------------------------------------------
 ## ButtonLoadAction Subclass ---------------------------------------------------
 ## -----------------------------------------------------------------------------
-class ButtonLoadAction( Action ):
+class ButtonLoadAction( LoadAction ):
     """ Created when a button is loaded.
         ie. "SIBT?" button or Want FB button. """
 

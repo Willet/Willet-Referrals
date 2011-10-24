@@ -13,7 +13,7 @@ var _willet_run_scripts = function() {
         here,
         function(data) {
             // callback function
-            /**
+            
             // Used to add meta tags to head
             var addEl = function(head, el, property, content) {
                 var dom_el = document.createElement(el);
@@ -39,22 +39,21 @@ var _willet_run_scripts = function() {
                 }, {
                     'property': "og:description",
                     'content': data.product.body_html, 
-                }, {
+                }, 
+                {
                     'property': "og:url",
-                    'content': "{{ willt_url }}"
+                    'content': "{{URL}}/{{ willt_code }}"
                 }
             ];
 
+            var head = document.getElementsByTagName('head')[0];
             // add all those meta tags
             for (i = 0; i < meta_tags.length; i++) {
                 addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
             }
             head.setAttribute('prefix', "og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#" );
             console.log('got meta tags', meta_tags); 
-            */
             
-            var head = document.getElementsByTagName('head')[0];
-
             var tmp = document.createElement( 'script' );
             $(tmp).attr( 'type', 'text/javascript' );
             $(tmp).attr( 'src', 'http://assets.pinterest.com/js/pinit.js' );
@@ -70,8 +69,6 @@ var _willet_run_scripts = function() {
              */
             var button_div = document.getElementById('{{ app.button_selector }}');
 
-            alert( button_div );
-            alert( window.iframe_loaded );
             if (button_div &&  window.iframe_loaded == undefined) {
                 button_div.style = "float: left; height:30px; width: 205px;";
 

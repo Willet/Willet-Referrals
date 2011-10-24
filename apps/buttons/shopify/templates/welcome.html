@@ -21,6 +21,9 @@
             padding: 0px 0px 0px 0px;
             margin-bottom: 5px;
         }
+        input[type="text"] {
+            margin-bottom: 0px;
+        }
     </style>
 {% endblock head %}
 
@@ -32,13 +35,10 @@
 
 {% block content %}
         <h1 class="span-24 last lower-100 center">Thanks!</h1>
-        <div class="span-24 last">
+        <div class="span-24 last" style="background-color: white; border-radius: 20px; padding: 10px;" >
             <p class="center"> 
                 Thanks for installing "Social Sharing Buttons"!  
-                There are only 3 additional steps to complete the installation!
-                <br /><br />
-                We simply need to add some product meta data and determine
-                where the buttons will be placed on your product pages.
+                There are only 2 additional steps to complete the installation!
             </p>
 
             <h2> First Step </h2>
@@ -46,19 +46,10 @@
                 Navigate to the <em>Template Editor</em> for your <a href="{{app.store_url}}/admin/themes">store's Theme</a>.
                 Under the <em>Layouts</em> section, click on <em>theme.liquid</em>.
             </p><p>
-                At the top, you should see HTML that resembles:
-                <p class="code">&lt;head&gt; <br />&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</p>
+                <strong>1. Add </strong>the following code immediately after the <span class="code">&lt;head&gt;</span> line:
+                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value='<script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>' />
             </p><p>
-                <strong>1. Replace</strong> <span class="code">&lt;head&gt; </span> with 
-                <input style='font-size:13px; max-width: 680px; width: 680px;' type='text' readonly='readonly' value='<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#"> ' /> 
-            </p><p>
-                <strong>2. After</strong> <span class="code">&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</span>, add:
-            
-                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value=' <meta property="og:type" content="shopify_buttons:product">
-<meta property="fb:app_id" content="166070566811816">
-<meta property="og:description" content="&#123;&#123; product.description &#124; strip_html | strip_newlines &#125;&#125;">
-<meta property="og:title" content="&#123;&#123; product.title &#124; escape &#125;&#125;">
-<meta property="og:image" content="&#123;&#123; product.images[0] &#124; product_img_url: "large" &#125;&#125;"> ' />
+                <strong>2. Click</strong> <em>save</em> near the top!
             </p>
 
             <h2> Second Step </h2>
@@ -67,19 +58,17 @@
                 Under the <em>Snippets</em> section, click on <em>product.liquid</em>.
             </p><p>
                 <strong>1. Look </strong>for where you would like the sharing buttons to be placed on your product pages.
+                <br />
+                A really good spot is immediately beside your <em>Buy</em> or <em>Add to Cart</em> button.
             </p><p>
                 <strong>2. Once </strong>you've picked a spot, add this code:
                 <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app" style="height:28px; width: 285px;"> <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> <sv:product-button type="boxed"></sv:product-button> </div> </div>' />           
-            </p>
-
-            <h2> Third Step </h2>
-
-            <p>
-                Click <em>save</em> near the top of the screen! That's it!
+            </p><p>
+                <strong>2. Click</strong> <em>save</em> near the top!
             </p>
 
             <br /><br /><br />
-            <h3 class="center">If you have any other questions, please e-mail Barbara at: barbara@getwillet.com </h3>
+            <h3 class="center">If you have any other questions, please chat with us right now!</h3>
             <br />
 
             <div class="center">

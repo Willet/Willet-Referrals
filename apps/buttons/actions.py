@@ -16,6 +16,8 @@ from util.helpers       import generate_uuid
 class WantAction( Action ):
     """ Stored if a User wants an item. """
     
+    url = db.LinkProperty( indexed = True )
+
     # Link that caused the want action ...
     link = db.ReferenceProperty( db.Model, collection_name = "link_wants" )
     
@@ -35,7 +37,8 @@ class WantAction( Action ):
                            uuid     = uuid,
                            user     = user,
                            app_     = app,
-                           link     = link )
+                           link     = link,
+                           url      = link.target_url )
         act.put()
 
     # Accessors

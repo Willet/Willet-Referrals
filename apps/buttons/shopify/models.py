@@ -80,11 +80,11 @@ def create_shopify_buttons_app(client, app_token):
     return app
 
 # Accessors --------------------------------------------------------------------
-def get_or_create_buttons_shopify_app( client, app_token ):
+def get_or_create_buttons_shopify_app( client, token ):
     app = get_shopify_buttons_by_url( client.url )
     
     if app is None:
-        app = create_shopify_buttons_app(client, app_token)
+        app = create_shopify_buttons_app(client, token)
     
     return app
 
