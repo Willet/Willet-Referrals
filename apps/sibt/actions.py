@@ -43,6 +43,8 @@ class SIBTClickAction( ClickAction ):
                                 link = link,
                                 url = link.target_url,
                                 sibt_instance = link.sibt_instance.get() )
+        super(SIBTClickAction, self).create()
+
         act.put()
 
     ## Accessors 
@@ -81,6 +83,7 @@ class SIBTVoteAction( VoteAction ):
                                 url      = instance.link.target_url,
                                 sibt_instance = instance,
                                 vote     = vote )
+        super(SIBTVoteAction, self).create()
         act.put()
     
     def __str__(self):

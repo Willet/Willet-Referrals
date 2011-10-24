@@ -44,9 +44,6 @@ class Action( Model, polymodel.PolyModel ):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
 
-        if kwargs['user'].is_admin():
-            kwargs['is_admin'] = True
-
         super(Action, self).__init__(*args, **kwargs)
     
     @staticmethod
@@ -62,7 +59,11 @@ class Action( Model, polymodel.PolyModel ):
     def __str__(self):
         # Subclasses should override this
         pass
-
+    
+    def create( self ):
+        if self.user.is_admin():
+            self.is_admin = True
+            
     ## Accessors 
     @staticmethod
     def count( admins_too = False ):
