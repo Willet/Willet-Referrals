@@ -41,7 +41,7 @@ var _willet_run_scripts = function() {
                     'content': data.product.body_html, 
                 }, {
                     'property': "og:url",
-                    'content': "{{URL}}/{{ willt_code }}"
+                    'content': "{{ willt_url }}"
                 }
             ];
 
@@ -117,9 +117,6 @@ var _willet_run_scripts = function() {
                 $(a).html = "Pin It";
                 d.appendChild( a );
                 button_div.appendChild( d );
-
-               
-                
             }
         }
     );

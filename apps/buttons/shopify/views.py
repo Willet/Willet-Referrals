@@ -49,13 +49,14 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
 
-class ButtonsShopifyJS(webapp.RequestHandler):
+class LoadButtonsIframe(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self, input_path):
+        """
+        {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
+        """
         template_values = {}
-        rq_vars = get_request_variables(['store_url'], self)
-
         user = get_or_create_user_by_cookie( self )
     
         # TODO: put this as a helper fcn.
@@ -85,35 +86,21 @@ class ButtonsShopifyJS(webapp.RequestHandler):
         # Fetch the App
         app = get_app_by_id( self.request.get( 'app_uuid' ) )
 
-        # Make a new Link
+        # Get the link
         willt_code = self.request.get('willt_code')
         if willt_code != "":
             link = get_link_by_willt_code( willt_code )
-        else:
-            logging.info("Making a link for %s" % target)
-            link = get_link_by_url(target)
-            if link == None:
-                # link does not exist yet
-                link = create_link(target, app, self.request.url, user)
 
         template_values = {
-            'app'            : app,
-            'willt_url'      : link.get_willt_url(),
             'willt_code'     : link.willt_url_code,
             'want_text'      : 'I want this!',
-            'URL'            : URL, 
             'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
             'style'          : style,
             'user_found'     : True if hasattr(user, 'fb_access_token') else False,
         }
         
-        # Finally, render the plugin!
+        # Finally, render the iframe
         path = os.path.join('apps/buttons/templates/', input_path)
-        
-        if input_path.find('.js') != -1:
-            self.response.headers['Content-Type'] = 'javascript'
-        else:
-            self.response.headers['Content-Type'] = 'text/html'
+        self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write(template.render(path, template_values))
         return
-
