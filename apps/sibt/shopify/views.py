@@ -325,9 +325,10 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 logging.info('not asker, check for vote ...')
                 
                 vote_action = SIBTVoteAction.get_by_app_and_instance(app, instance)
-                vote_count = vote_action.count()
-                
-                vote_action = vote_action.filter('user =', user).get()
+                if vote_action:
+                    vote_count = vote_action.count()
+                    
+                    vote_action = vote_action.filter('user =', user).get()
                 
                 logging.info('got a vote action? %s' % vote_action)
                 

@@ -49,9 +49,9 @@
 
         iframe.style.display = 'none';
         iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
-                    "&target_url=" + window.location.href +
                     "&app_uuid={{app.uuid}}" +
-                    "&user_uuid={{user.uuid}}";
+                    "&user_uuid={{user.uuid}}" +
+                    "&target_url=" + window.location.href;
 
         document.body.appendChild( iframe );
     };

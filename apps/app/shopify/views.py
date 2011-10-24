@@ -15,7 +15,7 @@ from time import time
 from apps.app.models import * 
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 
 from apps.order.models import *
 from apps.stats.models import Stats
@@ -39,7 +39,7 @@ class ShopifyRedirect( URIHandler ):
         shopify_timestamp = self.request.get( 'timestamp' )
 
         # Get the store or create a new one
-        client = ShopifyClient.get_or_create(shopify_url, store_token, self, app)
+        client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
         
         # initialize session
         session = get_current_session()

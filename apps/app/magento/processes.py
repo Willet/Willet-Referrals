@@ -14,7 +14,7 @@ from google.appengine.api.datastore_errors import BadValueError
 from time import time
 
 from apps.app.models import *
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 from apps.order.models import *
 from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
@@ -149,7 +149,7 @@ class DoUninstalledApp( URIHandler ):
         logging.info("store: %s " % store_url)
         app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
 
-        client = ShopifyClient.get_by_url( store_url )
+        client = ClientShopify.get_by_url( store_url )
 
         Email.emailBarbara("UNinstall app: %s\n%r %s" % (
                 app_class_name,

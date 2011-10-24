@@ -18,7 +18,7 @@ from apps.referral.shopify.api_wrapper import add_referree_gift_to_shopify_order
 from apps.referral.shopify.models import ReferralShopify, get_shopify_app_by_uuid, create_referral_shopify_app
 from apps.link.models import Link, get_link_by_willt_code, create_link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 from apps.order.models import *
 from apps.stats.models import Stats
 
@@ -307,7 +307,7 @@ class DynamicLoader(webapp.RequestHandler):
             # cant get the app, so get the client first
         
         if client == None:
-            client = ShopifyClient.get_by_id( rq_vars['store_id'] )
+            client = ClientShopify.get_by_id( rq_vars['store_id'] )
         
         # If they give a bogus app id, show the landing page app!
         logging.info(client)

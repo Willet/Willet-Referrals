@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 from apps.user.models   import get_user_by_cookie
 
 from util.consts import SECURE_URL
@@ -32,7 +32,7 @@ class OrderJSLoader(webapp.RequestHandler):
             shop_url = 'http://%s' % shop_url 
 
         # Grab Shopify Store
-        client = ShopifyClient.get_by_url( shop_url )
+        client = ClientShopify.get_by_url( shop_url )
 
         # Grab all template values
         template_values = {

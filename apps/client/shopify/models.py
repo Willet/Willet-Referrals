@@ -25,9 +25,9 @@ from util.consts            import *
 from util.helpers           import generate_uuid
 
 # ------------------------------------------------------------------------------
-# ShopifyClient Class Definition -----------------------------------------------
+# ClientShopify Class Definition -----------------------------------------------
 # ------------------------------------------------------------------------------
-class ShopifyClient( Client ):
+class ClientShopify( Client ):
     
     # User
     merchant = db.ReferenceProperty(db.Model, collection_name = "shopify_stores")
@@ -43,7 +43,7 @@ class ShopifyClient( Client ):
     
     def __init__(self, *args, **kwargs):
         """ Initialize this obj """
-        super(ShopifyClient, self).__init__(*args, **kwargs)
+        super(ClientShopify, self).__init__(*args, **kwargs)
     
     def validateSelf( self ):
         if 'http' not in self.url:
@@ -62,7 +62,7 @@ class ShopifyClient( Client ):
 
         # Now, make the store
         uuid  = generate_uuid( 16 )
-        store = ShopifyClient( key_name = uuid,
+        store = ClientShopify( key_name = uuid,
                                uuid     = uuid,
                                email    = data['email'],
                                passphrase = '',
@@ -95,22 +95,22 @@ class ShopifyClient( Client ):
         if 'http' not in store_url:
             store_url = 'http://%s' % store_url
 
-        store = ShopifyClient.all().filter( 'url =', store_url ).get()
+        store = ClientShopify.all().filter( 'url =', store_url ).get()
         return store
 
     @staticmethod
     def get_by_id( id ):
-        return ShopifyClient.all().filter( 'id =', id ).get()
+        return ClientShopify.all().filter( 'id =', id ).get()
 
     @staticmethod
     def get_or_create( store_url, store_token='', request_handler=None, app_type="" ):
-        store = ShopifyClient.get_by_url(store_url)
+        store = ClientShopify.get_by_url(store_url)
 
         if store == None:
             if 'http' not in store_url:
                 store_url = 'http://%s' % store_url
             
-            store = ShopifyClient.create( store_url, 
+            store = ClientShopify.create( store_url, 
                                           store_token, 
                                           request_handler,
                                           app_type )

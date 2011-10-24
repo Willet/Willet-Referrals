@@ -6,7 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import logging, re, hashlib, urllib
 
 from apps.app.models        import *
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 from apps.email.models      import Email
 
 from util.helpers           import *
@@ -20,7 +20,7 @@ class DoUninstalledApp( URIHandler ):
         logging.info("store: %s " % store_url)
         app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
 
-        client = ShopifyClient.get_by_url( store_url )
+        client = ClientShopify.get_by_url( store_url )
 
         Email.emailBarbara("UNinstall app: %s\n%r %s" % (
                 app_class_name,

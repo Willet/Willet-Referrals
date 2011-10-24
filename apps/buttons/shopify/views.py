@@ -13,7 +13,7 @@ from apps.action.models import ButtonLoadAction
 from apps.app.models    import App
 from apps.app.models    import get_app_by_id
 from apps.buttons.shopify.models import * 
-from apps.client.shopify.models  import ShopifyClient
+from apps.client.shopify.models  import ClientShopify
 from apps.link.models   import create_link
 from apps.link.models   import get_link_by_url
 from apps.link.models   import get_link_by_willt_code
@@ -38,7 +38,7 @@ class ButtonsShopifyWelcome(URIHandler):
         token  = self.request.get( 't' )
 
         # Fetch the client
-        client = ShopifyClient.get_by_url( shop )
+        client = ClientShopify.get_by_url( shop )
         
         # Fetch or create the app
         app    = get_or_create_buttons_shopify_app(client, token=token)

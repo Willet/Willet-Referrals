@@ -18,7 +18,7 @@ from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
-from apps.client.shopify.models import ShopifyClient
+from apps.client.shopify.models import ClientShopify
 from apps.link.models import get_link_by_willt_code
 from apps.sibt.actions   import SIBTClickAction
 from apps.sibt.actions   import SIBTVoteAction
@@ -361,7 +361,7 @@ class InstallShopifyJunk( URIHandler ):
             
         store_url = 'http://monahan-braun4718.myshopify.com'
 
-        client = ShopifyClient.all().filter( 'url =', store_url ).get()
+        client = ClientShopify.all().filter( 'url =', store_url ).get()
         client.token = 'fadcee62216c1ab0a2438eb922d7fa27'
         logging.info("TOKEN %s" % client.token )
 

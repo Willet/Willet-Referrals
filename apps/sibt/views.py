@@ -20,7 +20,7 @@ from apps.sibt.actions          import SIBTVoteAction
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
-from apps.client.models         import *
+from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
