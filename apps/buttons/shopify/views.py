@@ -51,7 +51,7 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
 
-class LoadButtonsIframe(webapp.RequestHandler):
+class LoadButtonsScriptAndIframe(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self, input_path):
@@ -92,8 +92,15 @@ class LoadButtonsIframe(webapp.RequestHandler):
         willt_code = self.request.get('willt_code')
         if willt_code != "":
             link = get_link_by_willt_code( willt_code )
-
+        else:
+            logging.info("Making a link for %s" % target)
+            link = get_link_by_url(target)
+            if link == None:
+                # link does not exist yet
+                link = create_link(target, app, self.request.url, user)
+        
         template_values = {
+            'app'            : app,
             'willt_code'     : link.willt_url_code,
             'want_text'      : 'I want this!',
             'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
