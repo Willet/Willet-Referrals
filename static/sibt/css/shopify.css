@@ -150,3 +150,26 @@ textarea {
 #share-text {
     overflow: auto;
 }
+#motivation {}
+    #motivation #text-div h3 {
+        /*
+        font-style: italic;
+        font-variant: small-caps;
+        font-weight: lighter; 
+        */
+    }
+    #motivation #text-div input {
+        color: #444;
+        border: 1px solid #969696;
+        box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1) inset;
+        font-size: 100%;
+        padding: 5px;
+        width: 100px;
+    }
+    #motivation #text-div input.default {
+        color: #777;
+        border: 1px solid #C8C8C8;
+    }
+    #motivation #save-motivation {}
+
+

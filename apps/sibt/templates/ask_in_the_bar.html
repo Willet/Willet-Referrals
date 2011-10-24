@@ -39,8 +39,9 @@
             var storeAnalytics = function( evnt ) {
                 $.ajax({
                     url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
-                         "&target_url={{target_url}}&app_uuid={{app.uuid}}" +
-                         "&user_uuid={{user.uuid}}",
+                        "&target_url={{target_url}}" +
+                        "&app_uuid={{app.uuid}}" +
+                        "&user_uuid={{user.uuid}}",
                     type: 'get',
                     success: function (response) {
                         return;
@@ -56,7 +57,7 @@
                 $("#loading").fadeIn();
 
                 var uid = uid || '';
-                var message = shareText.value.substring(0,141);
+                var message = shareText.val();
                 if (medium === 'fb') {
                     fbData.msg = message; 
                     if (userFound) {
@@ -111,16 +112,17 @@
                 $("#loading").hide();
                 $("#thanks").fadeIn(300);
 
-                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : (window.postMessage ? window : undefined));
                 target.postMessage(
-                    'shared',
+                    'top_bar_shared',
                     '*'
                 );
                 return true;
             };
 
             $(document).ready(function() {
-                _willet_check_scripts();
+                shareText = $('#share-text');
+                return;
             });
 
         </script>
@@ -133,6 +135,7 @@
                     display: inline-block;
                     float: left;
                     font-family: Helvetica, Arial, sans-serif;
+                    width: 100%;
                 }
                 #wrapper div.hidden {
                     display: none; 
@@ -142,10 +145,16 @@
                     background-color: #ECEFF5;
                     padding: 10px;
                     margin-right: 5%;
-                    width:25%;
-                    max-width:100px;
+                    width:30%;
                     text-align: center;
                 }
+                #wrapper div.padded {
+                    margin-top: 1.5em;
+                    margin-bottom: 1.5em;
+                }
+                    #wrapper div.left ol li {
+                        text-align: left;
+                    }
                     #wrapper div.left div {
                         margin-top: 1em;
                         width: 100%;
@@ -155,7 +164,14 @@
                             margin: auto;
                         }
                 #wrapper div.right {
-                    width: 75%;
+                    width: 40%;
+                    padding: 10px;
+                    padding-right:18px;
+                    background-color: whiteSmoke;
+                }
+                #share-text {
+                    width: 400px;
+                    max-width: 400px;
                 }
         </style>
     </head>
@@ -166,37 +182,33 @@
                 <h3>Here's how it works:</h3>
                 <ol>
                     <li>Customize the message on the right</li>
-                    <li>Share it on your Facebook wall</li>
+                    <li>Share it on Facebook</li>
                     <li>Your friends can vote if you should buy it</li>
-                    <li>When the time's up we'll send you the resuls!</li>
+                    <li>When the time's up we'll send you the results!</li>
                 </ol>
-                <h3>What are you waiting for? Ask your friends!</h3>
+                <h3>What are you waiting for?<br />Ask your friends!</h3>
             </div>
             <div class='right'>
                 <div id="invite" class="">
-                    <div id="text-div">
-                        <textarea wrap="soft" id="share-text">{{AB_share_text}} {{willt_url}}</textarea>
-                    </div>
-
-                    <div width="100%" id="buttons">
-                        <div class="prepend-top button-link" title="Share on Facebook" onclick="share('fb');" style="width:90%">
-                            <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                            Share on Facebook
-                        </div>
+                    <textarea wrap="soft" id="share-text">{{AB_share_text}}</textarea>
+                    <br /><br />
+                    <div class="button-link" title="Share on Facebook" onclick="share('fb');" style="width:200px">
+                        <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                        Share on Facebook
                     </div>
                 </div>
 
-                <div id="loading" class="hidden">
-                    <h1 style="margin-top: 70px">Working ...</h1>
+                <div id="loading" class="hidden padded">
+                    <h1>Working ...</h1>
                     <img src="/static/imgs/ajax-loader.gif" />
                 </div>
 
-                <div id="thanks" class="hidden">
-                    <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
+                <div id="thanks" class="hidden padded">
+                    <h1>Asking your friends ...</h1>
                 </div>
 
-                <div id="thanks_facebook" class="hidden">
-                    <h1 style="margin-top: 2.5em">Asking your friends...</h1>
+                <div id="thanks_facebook" class="hidden padded">
+                    <h1>Asking your friends...</h1>
                     <p>
                         We will contact you as soon as your friends vote!
                     </p>

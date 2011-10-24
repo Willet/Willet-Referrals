@@ -3,11 +3,10 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
-
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
-from google.appengine.api import urlfetch, memcache
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -15,18 +14,27 @@ from time import time
 from urlparse import urlparse
 
 from apps.action.models       import ScriptLoadAction
-from apps.action.models       import ButtonLoadAction
+from apps.action.models import ButtonLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models         import Link, get_link_by_willt_code, create_link
+from apps.link.models         import Link
+from apps.link.models         import get_link_by_willt_code
+from apps.link.models         import create_link
+from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions        import SIBTClickAction
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
-from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
+from apps.sibt.models         import get_sibt_instance_by_asker_for_url
+from apps.sibt.models import SIBTInstance
+from apps.sibt.shopify.models import SIBTShopify
+from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
+from apps.sibt.shopify.models import get_or_create_sibt_shopify_app
+from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_url
 from apps.stats.models        import Stats
-from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
+from apps.user.models         import get_user_by_cookie
+from apps.user.models         import User
+from apps.user.models         import get_or_create_user_by_cookie
 
 from util.helpers             import *
 from util.urihandler          import URIHandler
@@ -222,15 +230,17 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live     = is_asker = show_votes = has_voted = False
-        instance    = None
-        link        = None
-        asker_name  = None
-        asker_pic   = None
+        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = False
+        instance = None
+        link = None
+        asker_name = None
+        asker_pic = None
         willet_code = self.request.get('willt_code') 
-        share_url   = None
-        vote_count  = 0
-        target      = ''
+        share_url = None
+        vote_count = 0
+        target = ''
+        product_title = ''
+        product_images = ''
 
         # TODO: put this as a helper fcn.
         # Build a url for this page.
@@ -328,7 +338,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                     link = instance.link
                 share_url = link.get_willt_url()
             except Exception,e:
-                logging.error("wtf: %s" % e, exc_info=True)
+                logging.error("could not get share_url: %s" % e, exc_info=True)
 
             #product = get_or_fetch_shopify_product(target, app.client)
 
@@ -341,7 +351,21 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 }
             )
         else:
-            logging.info('could not get an instance')
+            logging.info('could not get an instance, check page views')
+
+            # check for two page views
+            view_actions = ButtonLoadAction.all()\
+                    .filter('user =', user)\
+                    .filter('url =', target)\
+                    .count()
+            if view_actions > 1 or user.is_admin():
+                # user has viewed page more than once
+                # show top-bar-ask
+                show_top_bar_ask = True 
+                product = get_or_fetch_shopify_product(target, app.client)
+                product_images = product.images
+                product_title = product.title
+
 
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
@@ -364,27 +388,30 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         
         # Grab all template values
         template_values = {
-                'URL' : URL,
-                'is_asker' : is_asker,
-                'show_votes' : show_votes,
-                'has_voted': has_voted,
-                'vote_count': vote_count,
-                'is_live': is_live,
-                'share_url': share_url,
-                
-                'app' : app,
-                'instance'       : instance,
-                'asker_name'     : asker_name, 
-                'asker_pic': asker_pic,
-                
-                'user': user,
-                'store_id' : self.request.get('store_id'),
-                'stylesheet': stylesheet,
+            'URL' : URL,
+            'is_asker' : is_asker,
+            'show_votes' : show_votes,
+            'has_voted': has_voted,
+            'vote_count': vote_count,
+            'is_live': is_live,
+            'share_url': share_url,
+            'show_top_bar_ask': show_top_bar_ask,
+            
+            'app' : app,
+            'instance'       : instance,
+            'asker_name'     : asker_name, 
+            'asker_pic': asker_pic,
+            'product_title': product_title,
+            'product_images': product_images,
+            
+            'user': user,
+            'store_id' : self.request.get('store_id'),
+            'stylesheet': stylesheet,
 
-                'AB_CTA_text' : cta_button_text,
-                'store_url' : shop_url,
+            'AB_CTA_text' : cta_button_text,
+            'store_url' : shop_url,
 
-                'evnt' : event
+            'evnt' : event
         }
 
         # Store a script load action.
@@ -399,12 +426,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
+        """Serves up some high quality javascript that detects if our special
+        div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        user      = get_or_create_user_by_cookie( self )
-        app       = get_sibt_shopify_app_by_store_url( store_url )
+        user = get_or_create_user_by_cookie(self)
+        app = get_sibt_shopify_app_by_store_url(store_url)
+        target = ''
 
-        # TODO: put this as a helper fcn.
-        # Build a url for this page.
         try:
             page_url = urlparse(self.request.headers.get('REFERER'))
             target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
@@ -430,3 +458,4 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         
         return
+

@@ -230,6 +230,7 @@
             overflow: hidden;
             width: 150px;
             line-height: 17px;
+            font-size: 12px;
         }
     #_willet_sibt_bar div.message {
         display: inline-block;
@@ -321,6 +322,9 @@
         #_willet_sibt_bar .no:before {
             content: "\u2718";
         }
+        #_willet_sibt_bar .question:before {
+            content: "?";
+        }
     #_willet_sibt_bar div.iframe {
         text-align: center;
         align: center;
@@ -345,3 +349,7 @@
             padding-top: 100px;
             width: 100%;
         }
+    #askBtn {
+        font-size: 16px !important;
+        margin-left: 20px; 
+    }

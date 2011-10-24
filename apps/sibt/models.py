@@ -63,7 +63,7 @@ class SIBT(App):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance(self, user, end, link, img):
+    def create_instance(self, user, end, link, img, motivation=None):
         logging.info("MAKING A SIBT INSTANCE")
         # Make the properties
         uuid = generate_uuid( 16 )
@@ -82,6 +82,7 @@ class SIBT(App):
                                  end_datetime = end,
                                  link         = link,
                                  product_img  = img,
+                                 motivation   = motivation,
                                  url          = link.target_url )
         instance.put()
         
@@ -125,6 +126,9 @@ class SIBT(App):
 class SIBTInstance( Model ):
     # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
+
+    # the users motivation for sharing
+    motivation = db.StringProperty(default="")
 
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty(auto_now_add=True)

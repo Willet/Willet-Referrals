@@ -46,6 +46,10 @@ class AskDynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
             
+        # if this is a topbar ask
+        is_topbar_ask = self.request.get('is_topbar_ask')
+        is_topbar_ask = (is_topbar_ask != '') 
+
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
@@ -93,7 +97,10 @@ class AskDynamicLoader(webapp.RequestHandler):
             ab_opt = "Should I buy this? Please let me know!"
 
         # Now, tell Mixpanel
-        app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+        if is_topbar_ask:
+            app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+        else:
+            app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
 
         # User stats
         user_email = user.get_attr('email') if user else ""
@@ -119,7 +126,11 @@ class AskDynamicLoader(webapp.RequestHandler):
         }
 
         # Finally, render the HTML!
-        path = os.path.join('apps/sibt/templates/', 'ask.html')
+        if is_topbar_ask:
+            path = os.path.join('apps/sibt/templates/', 'ask_in_the_bar.html')
+        else:
+            path = os.path.join('apps/sibt/templates/', 'ask.html')
+
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
@@ -240,7 +251,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
-                    'fb_comments_url' : '%s?%s' % (target, instance.uuid),
+                    #'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                    'fb_comments_url' : '%s' % (link.get_willt_url()),
 
                     'share_url': share_url,
                     'is_asker' : is_asker,
@@ -422,7 +434,8 @@ class ShowResults(webapp.RequestHandler):
                 'asker_name' : name if name != '' else "your friend",
                 'asker_pic' : instance.asker.get_attr('pic'),
                 'target_url' : target,
-                'fb_comments_url' : '%s?%s' % (target, instance.uuid),
+                'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                
 
                 'share_url': share_url,
                 'is_asker' : is_asker,
