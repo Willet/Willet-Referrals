@@ -269,5 +269,13 @@ class StoreAnalytics( URIHandler ):
 
         # Some error checking that Barbara suspects will fail at some point ..
         user2 = get_user_by_cookie( self )
-        if user.key() != user2.key():
-            logging.error("THE HECK IS GOING ON - SOMETHIGN IS MAJORLY BROKEN" )
+        try:
+            if user.key() != user2.key():
+                logging.warn("""The user we are storing analytics for does not
+                    match the user we are getting by the request cookie.
+                    
+                    This error is also known as:
+                    THE HECK IS GOING ON - SOMETHIGN IS MAJORLY BROKEN""")
+        except:
+            logging.info('one of the users is probably None', exc_info=True)
+
