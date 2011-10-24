@@ -237,7 +237,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         asker_pic = None
         willet_code = self.request.get('willt_code') 
         share_url = None
-        vote_count = 0
         target = ''
         product_title = ''
         product_images = ''
@@ -324,11 +323,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             if not is_asker:
                 logging.info('not asker, check for vote ...')
                 
-                vote_action = SIBTVoteAction.get_by_app_and_instance(app, instance)
-                if vote_action:
-                    vote_count = vote_action.count()
-                    
-                    vote_action = vote_action.filter('user =', user).get()
+                vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
                 
                 logging.info('got a vote action? %s' % vote_action)
                 
@@ -393,7 +388,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'is_asker' : is_asker,
             'show_votes' : show_votes,
             'has_voted': has_voted,
-            'vote_count': vote_count,
             'is_live': is_live,
             'share_url': share_url,
             'show_top_bar_ask': show_top_bar_ask,
