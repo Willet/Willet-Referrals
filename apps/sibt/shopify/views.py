@@ -400,6 +400,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
         store_url = self.request.get('store_url')
+        user = get_or_create_user_by_cookie( self )
 
         # Store a script load action.
         ScriptLoadAction.create( user, app, target )
