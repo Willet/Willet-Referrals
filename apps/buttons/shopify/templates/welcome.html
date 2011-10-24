@@ -46,19 +46,9 @@
                 Navigate to the <em>Template Editor</em> for your <a href="{{app.store_url}}/admin/themes">store's Theme</a>.
                 Under the <em>Layouts</em> section, click on <em>theme.liquid</em>.
             </p><p>
-                At the top, you should see HTML that resembles:
-                <p class="code">&lt;head&gt; <br />&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</p>
-            </p><p>
-                <strong>1. Replace</strong> <span class="code">&lt;head&gt; </span> with 
-                <input style='font-size:13px; max-width: 680px; width: 680px;' type='text' readonly='readonly' value='<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#"> ' /> 
-            </p><p>
-                <strong>2. After</strong> <span class="code">&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</span>, add:
-            
-                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value=' <meta property="og:type" content="shopify_buttons:product">
-<meta property="fb:app_id" content="166070566811816">
-<meta property="og:description" content="&#123;&#123; product.description &#124; strip_html | strip_newlines &#125;&#125;">
-<meta property="og:title" content="&#123;&#123; product.title &#124; escape &#125;&#125;">
-<meta property="og:image" content="&#123;&#123; product.images[0] &#124; product_img_url: "large" &#125;&#125;"> ' />
+                <strong>1. Add the following code immediately after the </strong> <span class="code">&lt;head&gt; </span> line:
+                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value='<script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>`
+' />
             </p>
 
             <h2> Second Step </h2>
