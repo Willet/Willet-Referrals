@@ -43,7 +43,7 @@ class SIBTClickAction( ClickAction ):
                                 link = link,
                                 url = link.target_url,
                                 sibt_instance = link.sibt_instance.get() )
-        super(SIBTClickAction, self).create()
+        super(SIBTClickAction, act).create()
 
         act.put()
 
@@ -72,7 +72,8 @@ class SIBTVoteAction( VoteAction ):
     url           = db.LinkProperty( indexed = True )
 
     ## Constructor
-    def create( user, instance, vote ):
+    @staticmethod
+    def create(user, instance, vote):
         # Make the action
         uuid = generate_uuid( 16 )
         act  = SIBTVoteAction(  key_name = uuid,
@@ -83,7 +84,7 @@ class SIBTVoteAction( VoteAction ):
                                 url      = instance.link.target_url,
                                 sibt_instance = instance,
                                 vote     = vote )
-        super(SIBTVoteAction, self).create()
+        super(SIBTVoteAction, act).create()
         act.put()
     
     def __str__(self):
@@ -105,3 +106,4 @@ class SIBTVoteAction( VoteAction ):
     def get_by_app_and_instance( a, i ):
         return SIBTVoteAction.all().filter('app_ =', a)\
                                    .filter('sibt_instance =', i).get()
+
