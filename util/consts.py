@@ -142,3 +142,11 @@ INSTALLED_APPS = [
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
+
+# Overide settings with local_consts
+try:
+    from local_consts import *
+except:
+    logging.info('no local_consts.py')
+    pass
+
