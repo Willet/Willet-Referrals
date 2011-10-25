@@ -270,8 +270,9 @@ class SIBTInstanceStats( URIHandler ):
         str += "<p># Clickthroughs: %d </p>" % stats.total_clicks
         str += "<p># Votes: %d </p>" % stats.total_votes
 
-        str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
-        str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
+        if stats.total_instances != 0:
+            str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
+            str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
 
         str += "<h1> Live Instances </h1>"
         live_instances = SIBTInstance.all().filter( 'is_live =', True )
@@ -297,7 +298,7 @@ class SIBTInstanceStats( URIHandler ):
         willt_code = self.request.get( 'w' )
 
         if willt_code == '':
-            self.response.out.write( no_code( self ) )
+            self.response.out.write( self.no_code( ) )
             return
 
         link = get_link_by_willt_code( willt_code )
