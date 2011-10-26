@@ -143,8 +143,10 @@ INSTALLED_APPS = [
     'link',
 ]
 
+# Overide settings with local_consts
 try:
-    from util.local_consts import *
+    from local_consts import *
 except:
+    logging.info('no local_consts.py')
     pass
 
