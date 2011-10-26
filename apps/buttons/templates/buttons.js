@@ -14,6 +14,7 @@ var _willet_run_scripts = function() {
         function(data) {
             // callback function
             
+            /*
             // Used to add meta tags to head
             var addEl = function(head, el, property, content) {
                 var dom_el = document.createElement(el);
@@ -49,7 +50,6 @@ var _willet_run_scripts = function() {
                 meta_tags.push({'property': "og:image", 'content': '{{URL}}/static/imgs/ShopConnectionLogo.png'});
             }
 
-            var head = document.getElementsByTagName('head')[0];
             // add all those meta tags
             for (i = 0; i < meta_tags.length; i++) {
                 addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
@@ -57,6 +57,9 @@ var _willet_run_scripts = function() {
             head.setAttribute('prefix', "og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#" );
             console.log('got meta tags', meta_tags); 
             
+            */
+
+            var head = document.getElementsByTagName('head')[0];
             var tmp = document.createElement( 'script' );
             $(tmp).attr( 'type', 'text/javascript' );
             $(tmp).attr( 'src', 'http://assets.pinterest.com/js/pinit.js' );
@@ -76,6 +79,7 @@ var _willet_run_scripts = function() {
                 button_div.style = "float: left; height:30px; width: 205px;";
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
+                /*
                 console.log('loading fb_iframe');
                 var fb_iframe      = document.createElement('iframe');
                 fb_iframe.setAttribute('allowtransparency', 'true');
@@ -86,6 +90,7 @@ var _willet_run_scripts = function() {
 
                 button_div.appendChild( fb_iframe );
                 console.log('fb_iframe inserted');
+                */
         
                 // Tumblr
                 var a = document.createElement( 'a' );
