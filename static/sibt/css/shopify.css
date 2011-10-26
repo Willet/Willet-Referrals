@@ -34,13 +34,13 @@ body {
 }
 #product-img {
     float: left;
-    max-width: 140px;
+    max-width: 90px;
     height: 100%;
 }
 #product-img img {
     margin: 15px 0px 15px 10px;
     /**height: 130px;*/
-    max-width: 130px;
+    max-width: 90px;
 }
 #text-div {
     float: right;
@@ -151,25 +151,31 @@ textarea {
     overflow: auto;
 }
 #motivation {}
-    #motivation #text-div h3 {
-        /*
-        font-style: italic;
-        font-variant: small-caps;
-        font-weight: lighter; 
-        */
+    #motivation #share-text input {
+        border: 0px;
+        padding: 0px;
+        margin: 0px;
+        display: inline;
     }
-    #motivation #text-div input {
-        color: #444;
-        border: 1px solid #969696;
-        box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1) inset;
-        font-size: 100%;
-        padding: 5px;
-        width: 100px;
+    #motivation #text-div {
+        background-color: white;
     }
-    #motivation #text-div input.default {
-        color: #777;
-        border: 1px solid #C8C8C8;
-    }
+        #motivation #text-div h3 {
+            color: #3B5998;
+            margin: 0;
+        }
+        #motivation #text-div input {
+            color: #444;
+            border: 1px solid #969696;
+            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1) inset;
+            font-size: 100%;
+            padding: 5px;
+            width: 100px;
+        }
+        #motivation #text-div input.default {
+            color: #777;
+            border: 1px solid #C8C8C8;
+        }
     #motivation #save-motivation {}
 
 

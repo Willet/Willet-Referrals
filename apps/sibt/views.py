@@ -79,13 +79,13 @@ class AskDynamicLoader(webapp.RequestHandler):
             bingo( 'sibt_facebook_style' )
 
         ab_share_options = [ 
-            "I'm not sure if I should buy this. What do you think?",
+            "I'm not sure if I should buy this <input id='m_text' />. What do you think?",
             
-            "Would you buy this? I need help making a decision! Vote here:",
+            "Would you buy this <input id='m_text' />? I need help making a decision! Vote here:",
             
-            "I need some shopping advice. Should I buy this? Would you? More details here:",
+            "I need some shopping advice. Should I buy this <input id='m_text' />? Would you? More details here:",
             
-            "Desperately in need of some shopping advice! Should I buy this? Would you? Tell me here:",
+            "Desperately in need of some shopping advice! Should I buy this <input id='m_text' />? Would you? Tell me here:",
         ]
         
         if not user.is_admin():
@@ -94,7 +94,7 @@ class AskDynamicLoader(webapp.RequestHandler):
                               user = user,
                               app  = app )
         else:
-            ab_opt = "Should I buy this? Please let me know!"
+            ab_opt = "Should I buy this <input id='m_text' />? Please let me know!"
 
         # Now, tell Mixpanel
         if is_topbar_ask:

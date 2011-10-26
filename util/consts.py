@@ -142,3 +142,9 @@ INSTALLED_APPS = [
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
+
+try:
+    from util.local_consts import *
+except:
+    pass
+

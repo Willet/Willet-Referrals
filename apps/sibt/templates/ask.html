@@ -285,29 +285,31 @@
     </head>
     <body>
     <div id="wrapper">
-        <div id="motivation" class="willt hidden">
+        <div id="motivation" class="">
             <div id="top-div" width="100%">
+                <div id='share-text'>
+                    {{ AB_share_text }}
+                    Should I buy<br />this 
+                        <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
+                </div>
                 <div id="product-img" style="margin-top: 1.3em">
                     <img src="{{productImg|first}}" />
                 </div>
                 <div id="text-div">
-                    <h3>&ldquo;Should I buy<br />this 
-                        <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
-                        <input type="text" id="motivation-text" width="100" />
-                        ?&rdquo;
-                    </h3>
-                    <em>Tell your friends why you want this!</em>
+                    <h3>{{ productName }}</h3>
+                    {{ productDesc }}
                 </div>
             </div>
-
             <div width="100%" id="save-motivation">
-                <div class="prepend-top button-link" title="Save your question" onclick="done_motivation();">
-                    Ask your friends
+                <div class="prepend-top button-link" title="Share on Facebook" style="width:90%">
+                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
+                    Post to Facebook
                 </div>
+
             </div>
         </div>
 
-        <div id="invite" class="willt">
+        <div id="invite" class="willt hidden">
             <div id="top-div" width="100%">
                 <div id="product-img" style="margin-top: 1.3em">
                     <img src="{{productImg|first}}" />
