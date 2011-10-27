@@ -144,7 +144,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         link   = None
         app    = None
 
-        instance = get_sibt_instance_by_uuid(self.request.get('instance_uuid'))
+        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
         try:
             # get instance by instance_uuid
             assert(instance != None)
@@ -281,7 +281,7 @@ class ShowResults(webapp.RequestHandler):
         app       = None
         has_voted = False
 
-        instance = get_sibt_instance_by_uuid(self.request.get('instance_uuid'))
+        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
         try:
             # get instance by instance_uuid
             assert(instance != None)
