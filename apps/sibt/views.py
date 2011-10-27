@@ -26,7 +26,7 @@ from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import get_or_fetch_shopify_product 
-from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
+from apps.sibt.models           import SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
@@ -185,7 +185,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             except:
                 try:
                     # get instance by asker
-                    instance = get_sibt_instance_by_asker_for_url(user, target)
+                    instance = SIBTInstance.get_by_asker_for_url(user, target)
                     assert(instance != None)
                 except:
                     try:
@@ -332,7 +332,7 @@ class ShowResults(webapp.RequestHandler):
                 try:
                     logging.info('failed to get instance by link')
                     # get instance by asker
-                    instance = get_sibt_instance_by_asker_for_url(user, target)
+                    instance = SIBTInstance.get_by_asker_for_url(user, target)
                     assert(instance != None)
                 except:
                     try:

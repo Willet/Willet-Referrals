@@ -163,9 +163,31 @@ class SIBTInstance( Model ):
     def _get_from_datastore(uuid):
         return db.Query(SIBTInstance).filter('uuid =', uuid).get()
 
+    # Accessor ---------------------------------------------------------------------
+    @staticmethod
+    def get_by_asker_for_url(user, url, only_live=True):
+        return SIBTInstance.all()\
+                .filter('is_live =', only_live)\
+                .filter('asker =', user)\
+                .filter('url =', db.Link(url))\
+                .get()
+
+    @staticmethod
+    def get_by_link(link, only_live=True):
+        return SIBTInstance.all()\
+                .filter('is_live =', only_live)\
+                .filter('link =', link)\
+                .get()
+
+    @staticmethod
+    def get_by_uuid(uuid, only_live=True):
+        return SIBTInstance.all()\
+                .filter('is_live =', only_live)\
+                .filter('uuid =', uuid)\
+                .get()
+
     def get_yesses_count(self):
         """Count this instance's yes count"""
-        
         total = memcache.get(self.uuid+"VoteCounter_yesses")
         if total is None:
             total = 0
@@ -178,7 +200,6 @@ class SIBTInstance( Model ):
 
     def get_nos_count(self):
         """Count this instance's no count"""
-        
         total = memcache.get(self.uuid+"VoteCounter_nos")
         if total is None:
             total = 0
@@ -191,7 +212,6 @@ class SIBTInstance( Model ):
     
     def increment_yesses(self):
         """Increment this instance's votes (yes) counter"""
-
         def txn():
             index = random.randint(0, NUM_VOTE_SHARDS-1)
             shard_name = self.uuid + str(index)
@@ -207,7 +227,6 @@ class SIBTInstance( Model ):
     
     def increment_nos(self):
         """Increment this instance's votes (no) counter"""
-
         def txn():
             index = random.randint(0, NUM_VOTE_SHARDS-1)
             shard_name = self.uuid + str(index)
@@ -221,25 +240,7 @@ class SIBTInstance( Model ):
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
 
-# Accessor ---------------------------------------------------------------------
-def get_sibt_instance_by_asker_for_url(user, url, only_live=True):
-    return SIBTInstance.all()\
-            .filter('is_live =', only_live)\
-            .filter('asker =', user)\
-            .filter('url =', url)\
-            .get()
 
-def get_sibt_instance_by_link(link, only_live=True):
-    return SIBTInstance.all()\
-            .filter('is_live =', only_live)\
-            .filter('link =', link)\
-            .get()
-
-def get_sibt_instance_by_uuid(uuid, only_live=True):
-    return SIBTInstance.all()\
-            .filter('is_live =', only_live)\
-            .filter('uuid =', uuid)\
-            .get()
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------

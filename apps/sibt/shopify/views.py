@@ -8,6 +8,7 @@ from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from google.appengine.ext import webapp
+from google.appengine.ext import db 
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
@@ -25,7 +26,6 @@ from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions        import SIBTClickAction
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url
 from apps.sibt.models import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
@@ -75,8 +75,8 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf', exc_info=True)
 
 class ShowEditPage(URIHandler):
-    # Renders a app page
     def get(self):
+        # Renders a app page
         """
         client = self.get_client() # May be None
         # Request varZ from us
@@ -272,20 +272,23 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions  = SIBTClickAction.get_by_user_for_url(user, target)
-                instance = get_sibt_instance_by_asker_for_url(user, target)
+                logging.info('trying to get instance for url: %s' % target)
+                actions  = SIBTClickAction.get_by_user_and_url(user, target)
+                instance = SIBTInstance.get_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
                 logging.info('got instance by user/target: %s' % instance.uuid)
-            except:
+            except Exception, e:
                 try:
+                    logging.info('trying willet_code: %s' % e)
                     link = get_link_by_willt_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'
                     logging.info('got instance by willet_code: %s' % instance.uuid)
-                except:
+                except Exception, e:
                     try:
+                        logging.info('trying actions: %s' % e)
                         if actions.count() > 0:
                             # filter actions for instances that are active
                             unfiltered_count = actions.count()
@@ -304,8 +307,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 assert(instance != None)
                                 logging.info('got instance by action: %s' % instance.uuid)
                                 event = 'SIBTShowingVote'
-                    except:
-                        logging.info('no instance available')
+                    except Exception, e:
+                        logging.info('no instance available: %s' % e)
         except:
             logging.info('no app')
 

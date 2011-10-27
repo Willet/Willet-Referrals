@@ -26,7 +26,9 @@
         <script type="text/javascript">
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
-                charsLeft, clear, storeAnalytics, message; 
+                charsLeft, clear, storeAnalytics;
+            var message,
+                motivation_text; 
             var userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
             var fbData = {
                 msg: '', 
@@ -61,7 +63,7 @@
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
                     fbData.msg = message; 
-                    fbData.motivation = $('#motivation-text').val();
+                    fbData.motivation = motivation_text;
                     if (userFound) {
                         fb_share_handler(fbData)
                         return;
@@ -225,10 +227,12 @@
                 var el = $('#share-text')[0];
                 if (el.tagName != "TEXTAREA") {
                     var mtext = $('#m_text');
-                    mtext.replaceWith(mtext.val());
+                    motivation_text = mtext.val();
+                    mtext.replaceWith(motivation_text);
                     message = $(el).text();
+                } else {
+                    message = $(el).val();
                 }
-                message = $(el).text();
 
                 share('fb');
             };
@@ -254,7 +258,8 @@
                 $('#edit-motivation').click(function() {
                     $('#hide-me-after').hide();
                     var mtext = $('#m_text');
-                    mtext.replaceWith(mtext.val());
+                    motivation_text = mtext.val();
+                    mtext.replaceWith(motivation_text);
                     var sharetext = $('#share-text');
                     var text = sharetext.text();
                     var textarea = $('<textarea/>');

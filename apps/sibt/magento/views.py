@@ -16,7 +16,7 @@ from urlparse import urlparse
 
 from apps.sibt.actionss       import SIBTClickAction
 from apps.app.models          import *
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url, SIBTInstance
+from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify, get_sibt_shopify_app_by_store_id, get_or_create_sibt_shopify_app, get_sibt_shopify_app_by_store_url
 from apps.link.models         import Link, get_link_by_willt_code, create_link
 from apps.user.models         import get_user_by_cookie, User, get_or_create_user_by_cookie
@@ -239,7 +239,7 @@ class DynamicLoader(webapp.RequestHandler):
         if app:
             # Is User an asker for this URL?
             actions = SIBTClickAction.get_by_user_for_url(user, target)
-            instance = get_sibt_instance_by_asker_for_url(user, target)
+            instance = SIBTInstance.get_by_asker_for_url(user, target)
             logging.info('trying to get instance for\nuser: %s\ntarget: %s\ninstance: %s' % (
                 user,
                 target,
