@@ -36,6 +36,7 @@ from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 
+from util.shopify_helpers import get_shopify_url
 from util.helpers             import *
 from util.urihandler          import URIHandler
 from util.consts              import *

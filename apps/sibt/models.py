@@ -181,10 +181,11 @@ class SIBTInstance( Model ):
 
     @staticmethod
     def get_by_uuid(uuid, only_live=True):
-        return SIBTInstance.all()\
-                .filter('is_live =', only_live)\
-                .filter('uuid =', uuid)\
-                .get()
+        #return SIBTInstance.all()\
+        #        .filter('is_live =', only_live)\
+        #        .filter('uuid =', uuid)\
+        #        .get()
+        return SIBTInstance.get(uuid)
 
     def get_yesses_count(self):
         """Count this instance's yes count"""
