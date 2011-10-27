@@ -13,8 +13,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
+from apps.action.models       import ButtonLoadAction
 from apps.action.models       import ScriptLoadAction
-from apps.action.models import ButtonLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -23,10 +23,10 @@ from apps.link.models         import get_link_by_willt_code
 from apps.link.models         import create_link
 from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
-from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions        import SIBTClickAction
+from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.models import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
 from apps.sibt.shopify.models import get_or_create_sibt_shopify_app
