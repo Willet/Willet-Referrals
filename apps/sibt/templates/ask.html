@@ -89,6 +89,7 @@
                     dataType: 'json',
                     data: payload,
                     success: function (response) {
+                        console.log(response);
                         if (response.success) {
                             shareComplete('facebook');
                         } else {
