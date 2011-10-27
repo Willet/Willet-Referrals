@@ -80,7 +80,9 @@ def get_or_create_sibt_shopify_app(client, token=None):
     #app = get_sibt_shopify_app_by_store_id( client.id )
     app = get_sibt_shopify_app_by_store_url(client.url)
     if app is None:
+
         app = create_sibt_shopify_app( client, token )
+    
     elif token != None and token != '':
         if app.store_token != token:
             # TOKEN mis match, this might be a re-install
