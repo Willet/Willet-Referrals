@@ -305,16 +305,16 @@ class ShowResults(webapp.RequestHandler):
                     logging.info('got link by page_url %s: %s' % (target, link))
                 instance = link.sibt_instance.get()
                 assert(instance != None)
-            except:
+            except Exception,e:
                 try:
-                    logging.info('failed to get instance by link')
+                    logging.info('failed to get instance by link: %s' % e)
                     # get instance by asker
                     instance = SIBTInstance.get_by_asker_for_url(user, target)
                     assert(instance != None)
-                except:
+                except Exception,e:
                     try:
                         # ugh, get the instance by actions ...
-                        logging.info('failed to get instance for asker by url')
+                        logging.info('failed to get instance for asker by url: %s' % e)
                         actions = SIBTClickAction.get_by_user_and_url(user,target)
                         if actions.count() > 0:
                             unfiltered_count = actions.count()
@@ -335,8 +335,8 @@ class ShowResults(webapp.RequestHandler):
                                 instance = action.sibt_instance
                                 logging.info('no link, got action %s and instance %s' % (action, instance))
                             assert(instance != None)
-                    except:
-                        logging.error('failed to get instance', exc_info=True)
+                    except Exception, e:
+                        logging.error('failed to get instance: %s' % e, exc_info=True)
 
         logging.info("Did we get an instance? %s" % instance)
         
