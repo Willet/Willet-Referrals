@@ -88,7 +88,9 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function () {
-        var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}&url=" + window.location.href;
+        var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
+                                     "&store_url={{ store_url }}" +
+                                     "&url=" + window.location.href;
 
         $.colorbox({
             transition: 'fade',
@@ -115,6 +117,7 @@
         var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
             
         var url = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
+                "&user_uuid={{user.uuid}}" + 
                 "&is_asker={{is_asker}}&store_id={{store_id}}" + 
                 "&photo=" + photo_src + 
                 "&instance_uuid={{instance.uuid}}" +
@@ -200,6 +203,7 @@
         var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
         var results_src = "{{ URL }}/s/results.html?" +
             "willt_code=" + willt_code + 
+            "&user_uuid={{user.uuid}}" + 
             "&doing_vote=" + doing_vote + 
             "&vote_result=" + vote_result + 
             "&is_asker={{is_asker}}" +
@@ -373,6 +377,7 @@
                 if (iframe_div.css('display') == 'none') {
                     if (iframe.attr('src') == undefined) {
                         var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}" +
+                            "&user_uuid={{user.uuid}} + 
                             "&is_topbar_ask=yourmomma" + 
                             "&url=" + window.location.href;
                         iframe.attr('src', url)

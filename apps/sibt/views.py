@@ -27,12 +27,12 @@ from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import get_or_fetch_shopify_product 
 from apps.sibt.models           import get_sibt_instance_by_asker_for_url, SIBTInstance
+from apps.sibt.models           import get_sibt_instance_by_uuid
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
 from apps.user.models           import User
-from apps.user.models           import get_or_create_user_by_cookie
-from apps.user.models           import get_user_by_cookie
+from apps.user.models           import get_user_by_uuid
 
 from util.consts                import *
 from util.helpers               import *
@@ -46,26 +46,18 @@ class AskDynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
             
+        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        app    = get_sibt_shopify_app_by_store_url( self.request.get('store_url') )
+        target = get_target_url( self.request.get('url') )
+        logging.debug('target: %s' % target)
+        logging.info("APP: %r" % app)
+        
         # if this is a topbar ask
         is_topbar_ask = self.request.get('is_topbar_ask')
         is_topbar_ask = (is_topbar_ask != '') 
 
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
-        page_url = urlparse(self.request.get('url'))
-        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        if target == "://":
-            target = URL
-        
-        logging.debug('target: %s' % target)
-
-        # Grab a User and App
-        user = get_or_create_user_by_cookie(self)
-        # TODO: stop using store_id, use store_url
-        #app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
-        app  = get_sibt_shopify_app_by_store_url(self.request.get('store_url'))
-        logging.info("APP: %r" % app)
 
         # Grab the product info
         product = get_or_fetch_shopify_product(target, app.client)
@@ -140,20 +132,12 @@ class VoteDynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
         template_values = {}
+        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        target = get_target_url( self.request.get('url') )
+        link   = None
+        app    = None
 
-        instance_uuid = self.request.get('instance_uuid')
-        page_url = urlparse(self.request.get('url'))
-        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        if target == "://":
-            target = URL
-        
-        # Grab a User and App
-        user = get_or_create_user_by_cookie(self)
-       
-        instance = SIBTInstance.all().filter('uuid =', instance_uuid).get() 
-        link = None
-        app = None
-
+        instance = get_sibt_instance_by_uuid(self.request.get('instance_uuid'))
         try:
             # get instance by instance_uuid
             assert(instance != None)
@@ -280,24 +264,17 @@ class ShowResults(webapp.RequestHandler):
     """Shows the results of a 'should I buy this'"""
     def get(self):
         template_values = {}
+        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        target = get_target_url( self.request.get('url') )
 
-        doing_vote = (self.request.get('doing_vote') == 'true')
+        doing_vote  = (self.request.get('doing_vote')  == 'true')
         vote_result = (self.request.get('vote_result') == 'true')
         
-        instance_uuid = self.request.get('instance_uuid')
-        page_url = urlparse(self.request.get('url'))
-        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        if target == "://":
-            target = URL
-        
-        # Grab a User and App
-        user = get_or_create_user_by_cookie(self)
-       
-        instance = SIBTInstance.all().filter('uuid =', instance_uuid).get() 
-        link = None
-        app = None
+        link      = None
+        app       = None
         has_voted = False
 
+        instance = get_sibt_instance_by_uuid(self.request.get('instance_uuid'))
         try:
             # get instance by instance_uuid
             assert(instance != None)
@@ -307,8 +284,6 @@ class ShowResults(webapp.RequestHandler):
                 # get instance by link
                 # Grab the link
 
-                # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
-                #app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
                 app  = get_sibt_shopify_app_by_store_url(self.request.get('store_url'))
                 link = get_link_by_willt_code(self.request.get('willt_code'))
                 
@@ -458,4 +433,3 @@ class ShowResults(webapp.RequestHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
-

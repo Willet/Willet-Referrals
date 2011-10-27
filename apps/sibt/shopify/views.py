@@ -230,30 +230,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = False
-        instance = None
-        link = None
-        asker_name = None
-        asker_pic = None
+        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = False
+        instance = link     = asker_name = asker_pic = share_url        = None
+        product_title       = product_images = ''
         willet_code = self.request.get('willt_code') 
-        share_url = None
-        target = ''
-        product_title = ''
-        product_images = ''
+        target      = get_target_url( self.request.headers.get('REFERER') )
 
-        # TODO: put this as a helper fcn.
-        # Build a url for this page.
-        try:
-            page_url = urlparse(self.request.headers.get('REFERER'))
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        except Exception, e:
-            logging.error('error parsing referer %s: %s' % (
-                    self.request.headers.get('referer'),
-                    e
-                ),
-                exc_info=True
-            )
-        
         # Grab a User and App
         user     = get_or_create_user_by_cookie(self)
         shop_url = self.request.get('store_url')
@@ -424,20 +406,9 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        user = get_or_create_user_by_cookie(self)
-        app = get_sibt_shopify_app_by_store_url(store_url)
-        target = ''
-
-        try:
-            page_url = urlparse(self.request.headers.get('REFERER'))
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        except Exception, e:
-            logging.error('error parsing referer %s: %s' % (
-                    self.request.headers.get('referer'),
-                    e
-                ),
-                exc_info=True
-            )
+        user      = get_or_create_user_by_cookie(self)
+        app       = get_sibt_shopify_app_by_store_url(store_url)
+        target    = get_target_url( self.request.headers.get('REFERER') )
 
         # Store a script load action.
         ScriptLoadAction.create( user, app, target )
