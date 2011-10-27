@@ -27,6 +27,7 @@
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
                 charsLeft, clear, storeAnalytics; 
+            var userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
@@ -90,6 +91,7 @@
                     dataType: 'json',
                     data: payload,
                     success: function (response) {
+                        console.log('got response', response);
                         if (response.success) {
                             shareComplete('facebook');
                         } else {
@@ -238,7 +240,6 @@
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
                 shareArea  = document.getElementById('share-area'),
-                userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
                 shareText  = document.getElementById('share-text'),
                 charsLeft  = document.getElementById('chars-left');
 
@@ -301,7 +302,7 @@
             </div>
 
             <div width="100%" id="save-motivation">
-                <div class="prepend-top button-link" title="Save your question" onclick="done_motivation();">
+                <div class="prepend-top button-link" title="Save your question">
                     Ask your friends
                 </div>
             </div>
