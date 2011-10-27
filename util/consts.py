@@ -67,8 +67,8 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 
 SHOPIFY_APPS = {
     'SIBTShopify': {
-        'api_key': '84f33c9064db16f082ab61c0743d0ec9',
-        'api_secret': 'bdea271cfb791b5eae1b793baa8a0461',
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd', #'84f33c9064db16f082ab61c0743d0ec9',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5', #'bdea271cfb791b5eae1b793baa8a0461',
         'class_name': 'SIBTShopify',
         'facebook': {
             'app_id': '132803916820614',
