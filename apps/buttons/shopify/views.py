@@ -21,6 +21,7 @@ from apps.user.models   import get_or_create_user_by_cookie
 
 from util.consts        import *
 from util.helpers       import get_request_variables
+from util.helpers       import get_target_url
 from util.urihandler    import URIHandler
 
 class ButtonsShopifyBeta(URIHandler):
@@ -59,34 +60,14 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
         """
         template_values = {}
-        user = get_or_create_user_by_cookie( self )
-    
-        # TODO: put this as a helper fcn.
-        # Build a url for this page.
-        try:
-            page_url = urlparse(self.request.headers.get('REFERER'))
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-            fragment = page_url.fragment
-            if fragment != '':
-                parts = fragment.split('=')
-                if len(parts) > 1:
-                    # code a willt code!
-                    willet_code = parts[1]
-        except Exception, e:
-            logging.error('error parsing referer %s: %s' % (
-                    self.request.headers.get('referer'),
-                    e
-                ),
-                exc_info=True
-            )
+        user   = get_or_create_user_by_cookie( self )
+        target = get_target_url( self.request.headers.get('REFERER') )
+        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
 
         # set the stylesheet we are going to use
         style = self.request.get('style')
         if style == '':
             style = 'style'
-
-        # Fetch the App
-        app = get_app_by_id( self.request.get( 'app_uuid' ) )
 
         # Get the link
         willt_code = self.request.get('willt_code')

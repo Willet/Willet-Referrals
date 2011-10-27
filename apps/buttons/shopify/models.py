@@ -22,6 +22,7 @@ from apps.user.models     import get_or_create_user_by_cookie
 
 from util.consts          import *
 from util.helpers         import generate_uuid
+from util.shopify_helpers import get_shopify_url
 
 NUM_VOTE_SHARDS = 15
 
@@ -90,8 +91,7 @@ def get_or_create_buttons_shopify_app( client, token ):
 
 def get_shopify_buttons_by_url( store_url ):
     """ Fetch a Shopify obj from the DB via the store's url"""
-    if 'http' not in store_url:
-        store_url = 'http://%s' % store_url
+    store_url = get_shopify_url( store_url )
 
     logging.info("Shopify: Looking for %s" % store_url)
     return ButtonsShopify.all().filter( 'store_url =', store_url ).get()

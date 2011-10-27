@@ -230,38 +230,15 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = False
-        instance = None
-        link = None
-        asker_name = None
-        asker_pic = None
+        is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
+        instance = share_url = link       = asker_name = asker_pic        = None
+        target   = product_title = product_images = ''
         willet_code = self.request.get('willt_code') 
-        share_url = None
-        target = ''
-        product_title = ''
-        product_images = ''
-
-        # TODO: put this as a helper fcn.
-        # Build a url for this page.
-        try:
-            page_url = urlparse(self.request.headers.get('REFERER'))
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        except Exception, e:
-            logging.error('error parsing referer %s: %s' % (
-                    self.request.headers.get('referer'),
-                    e
-                ),
-                exc_info=True
-            )
-        
-        # Grab a User and App
-        user     = get_or_create_user_by_cookie(self)
-        shop_url = self.request.get('store_url')
-        if shop_url[:7] != 'http://':
-            shop_url = 'http://%s' % shop_url 
-        
-        app   = get_sibt_shopify_app_by_store_url(shop_url)
-        event = 'SIBTShowingButton'
+        target      = get_target_url( self.request.headers.get('REFERER') )
+        user        = get_or_create_user_by_cookie(self)
+        shop_url    = get_shopify_url( self.request.get('store_url') )
+        app         = get_sibt_shopify_app_by_store_url(shop_url)
+        event       = 'SIBTShowingButton'
 
         # Try to find an instance for this { url, user }
         try:
