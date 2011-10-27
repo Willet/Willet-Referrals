@@ -25,6 +25,7 @@ from apps.user.models         import User, get_or_create_user_by_cookie, get_use
 
 from util.consts              import *
 from util.helpers             import url 
+from util.helpers             import remove_html_tags
 from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
@@ -52,7 +53,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             except:
                 logging.error('Could not get product by name %s' % product_id, exc_info=True)
         try:
-            product_desc = product.description
+            product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+            product_desc = remove_html_tags(product_desc)
         except:
             logging.info('could not get product description')
         
@@ -80,7 +82,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         # first do sharing on facebook
         if not hasattr(user, 'fb_access_token') or \
             not hasattr(user, 'fb_identity'):
-            logging.info('Settin) users facebook info')    
+            logging.info('Setting users facebook info')    
             user.update(
                 fb_identity = fb_id,
                 fb_access_token = fb_token
@@ -133,6 +135,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             response['data']['message'] = str(e)
             logging.error('we had an error sharing on facebook', exc_info=True)
 
+        logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
 class StartSIBTInstance(URIHandler):
@@ -178,7 +181,7 @@ class DoVote( URIHandler ):
 
         which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
-        instance = get_sibt_instance_by_uuid( instance_uuid )
+        instance = SIBTInstance.get_by_uuid( instance_uuid )
 
         # Make a Vote action for this User
         action = SIBTVoteAction.create( user, instance, which )

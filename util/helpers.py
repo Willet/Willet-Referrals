@@ -2,11 +2,25 @@
 
 import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
 import sys
+from urlparse import urlparse
 
 from google.appengine.ext        import webapp
 
 from util.consts  import *
 from util.cookies import LilCookies
+
+def get_target_url( referrer ):
+    try:
+        page_url = urlparse( referrer )
+        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+    except Exception, e:
+        logging.error('error parsing referer %s: %s' % (
+                'referrer',
+                e
+            ),
+            exc_info=True
+        )
+    return target
 
 def isGoodURL(url):
     if len(url) < 11:

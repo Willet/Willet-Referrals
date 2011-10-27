@@ -88,10 +88,13 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function () {
-        var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}&url=" + window.location.href;
+        var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
+                                     "&store_url={{ store_url }}" +
+                                     "&url=" + window.location.href;
 
         $.colorbox({
             transition: 'fade',
+            close: '',
             scrolling: false,
             iframe: true, 
             initialWidth: 0, 
@@ -115,6 +118,7 @@
         var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
             
         var url = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
+                "&user_uuid={{user.uuid}}" + 
                 "&is_asker={{is_asker}}&store_id={{store_id}}" + 
                 "&photo=" + photo_src + 
                 "&instance_uuid={{instance.uuid}}" +
@@ -200,6 +204,7 @@
         var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
         var results_src = "{{ URL }}/s/results.html?" +
             "willt_code=" + willt_code + 
+            "&user_uuid={{user.uuid}}" + 
             "&doing_vote=" + doing_vote + 
             "&vote_result=" + vote_result + 
             "&is_asker={{is_asker}}" +
@@ -240,20 +245,23 @@
     var build_top_bar_html = function (is_ask_bar) {
         var is_ask_bar = is_ask_bar || false;
         var image_src = '{{ asker_pic }}';
-        var asker_text = "&#147;I'm not sure if I should buy this {{ instance.motivation }}.&#148;";
+        var asker_text = '';
+        //var asker_text = "<div class='name'>" +
+        //    "&#147;I'm not sure if I should buy this {{ instance.motivation }}.&#148;" +
+        //    "</div>";
         var message = 'Should <em>{{ asker_name }}</em> Buy This?';
 
         if (is_ask_bar) {
             image_src = '{{ product_images|first }}';
-            asker_text = '{{ product_title }}';
-            message = "Not sure if you should get this?" +
-                "<button id='askBtn' class='question'>Ask your friends</button>";
+            asker_text = '';
+            message = "Not sure if you should buy this?" +
+                "<button id='askBtn' class=''>Ask Your Friends For Advice</button>";
         } 
 
-        var bar_html = " " +
+        var bar_html = "<div class='wrapper'> " +
             "<div class='asker'>" +
                 "<div class='pic'><img src='" + image_src + "' /></div>" +
-                "<div class='name'>" + asker_text +"</div>" +
+                 asker_text  +
             "</div>" +
             "<div class='message'>" + message + "</div>" +
             "<div class='vote last' style='display: none'>" +
@@ -280,7 +288,7 @@
             "<div class='iframe' style='display: none'> "+
             "    <div style='display: none' class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
             "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' ></iframe> "+ 
-            "</div>";
+            "</div></div>";
         return bar_html;
     };
 
@@ -321,7 +329,7 @@
         } else if (_willet_has_voted && !_willet_is_asker) {
             // someone has voted && not the asker!
             _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
-            _willet_topbar.children('div.button').fadeIn();
+            $('#_willet_toggle_results').fadeIn();
         } else if (_willet_is_asker) {
             // showing top bar to asker!
             _willet_topbar.find('div.message')
@@ -329,7 +337,7 @@
                 .css('cursor', 'pointer')
                 .click(_willet_toggle_results)
                 .fadeIn();
-            _willet_topbar.children('div.button').fadeIn();
+            $('#_willet_toggle_results').fadeIn();
         }
         padding.show(); 
         _willet_topbar.slideDown('slow');
@@ -373,6 +381,7 @@
                 if (iframe_div.css('display') == 'none') {
                     if (iframe.attr('src') == undefined) {
                         var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}" +
+                            "&user_uuid={{user.uuid}} + 
                             "&is_topbar_ask=yourmomma" + 
                             "&url=" + window.location.href;
                         iframe.attr('src', url)

@@ -26,7 +26,10 @@
         <script type="text/javascript">
             var willet_conversion, fbToken, next, highlight, 
                 sendEmailiframeBody, shareArea, shareFrame, shareText, 
-                charsLeft, clear, storeAnalytics; 
+                charsLeft, clear, storeAnalytics;
+            var message,
+                motivation_text; 
+            var userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
@@ -54,15 +57,13 @@
                 storeAnalytics( 'SIBT_ClickedOnShare' );
 
                 // use the selected medium to share about your purchase
-                $("#invite").hide();
-                $("#loading").fadeIn();
 
                 var uid = uid || '';
-                var message = shareText.value.substring(0,141);
+                //var message = shareText.value.substring(0,141);
                 // initiate facebook login event if requested
                 if (medium === 'fb') {
                     fbData.msg = message; 
-                    fbData.motivation = $('#motivation-text').val();
+                    fbData.motivation = motivation_text;
                     if (userFound) {
                         fb_share_handler(fbData)
                         return;
@@ -90,6 +91,7 @@
                     dataType: 'json',
                     data: payload,
                     success: function (response) {
+                        console.log('got response', response);
                         if (response.success) {
                             shareComplete('facebook');
                         } else {
@@ -156,35 +158,24 @@
                     // so dont ask for it
                     $('#thanks_facebook').fadeIn(300);
                 }
-
-                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
-                target.postMessage(
-                    'shared',
-                    '*'
-                );
+                doPostMessage('shared');
                 //console.log("Sharing complete!");
 
                 return true;
+            };
+            
+            var doPostMessage = function(message) {
+                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                target.postMessage(
+                    message,
+                    '*'
+                );
             };
 
             var toggleThanks = function () {
                 $("#invite").toggle();
                 $("#thanks").fadeIn(300);
                 parent._willet_ask_success = true;
-            };
-
-            var countChars = function() {
-                var count = 140 - shareText.value.length;
-                charsLeft.innerHTML = count + " characters left";
-                if (count < 0){
-                    $('#twitter_button')
-                    .addClass('disabled')
-                    .attr('onclick', '');
-                } else {
-                    $('#twitter_button')
-                    .removeClass('disabled')
-                    .attr('onclick', 'share("twitter");');
-                }
             };
 
             var updateEmailAddress = function() {
@@ -229,8 +220,21 @@
             };
             
             var done_fb_message = function() {
-                $('#invite').hide();
-                $('#motivation').fadeIn('fast');
+                $('#motivation').hide();
+                $("#invite").hide();
+                $("#loading").fadeIn();
+
+                var el = $('#share-text')[0];
+                if (el.tagName != "TEXTAREA") {
+                    var mtext = $('#m_text');
+                    motivation_text = mtext.val();
+                    mtext.replaceWith(motivation_text);
+                    message = $(el).text();
+                } else {
+                    message = $(el).val();
+                }
+
+                share('fb');
             };
 
             $(document).ready(function() {
@@ -238,15 +242,31 @@
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');
                 shareArea  = document.getElementById('share-area'),
-                userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
                 shareText  = document.getElementById('share-text'),
                 charsLeft  = document.getElementById('chars-left');
 
                 // the share on facebook buttonn
-                $('#buttons').click(done_fb_message);
+                $('#share-button').click(done_fb_message);
 
-                // done entering motivation
-                $('#save-motivation').click(done_motivation);
+                $('#cancel-button').click(function() {
+                    doPostMessage('close');
+                });
+                $('#close-button').click(function() {
+                    doPostMessage('close');
+                });
+
+                $('#edit-motivation').click(function() {
+                    $('#hide-me-after').hide();
+                    var mtext = $('#m_text');
+                    motivation_text = mtext.val();
+                    mtext.replaceWith(motivation_text);
+                    var sharetext = $('#share-text');
+                    var text = sharetext.text();
+                    var textarea = $('<textarea/>');
+                    sharetext.replaceWith(textarea);
+                    textarea.attr('id', 'share-text');
+                    textarea.val($.trim(text));
+                });
 
                 // random default values
                 var default_values = [
@@ -255,7 +275,7 @@
                     'ex: as a gift'
                 ];
                 var randomnumber = Math.floor(Math.random() * default_values.length);
-                $('#text-div input.defaultValue').val(default_values[randomnumber]);
+                $('#share-text input.defaultValue').val(default_values[randomnumber]);
 
                 // Controls default values of input & textarea elements
                 $('.defaultValue').siblings('input, textarea').focus(function () {
@@ -275,8 +295,6 @@
                         toggleDefaultValue(el, true); 
                     }
                 });
-                
-                countChars();
             });
         </script>
         
@@ -285,52 +303,31 @@
     </head>
     <body>
     <div id="wrapper">
-        <div id="motivation" class="willt hidden">
+        <div id="motivation" class="">
             <div id="top-div" width="100%">
-                <div id="product-img" style="margin-top: 1.3em">
-                    <img src="{{productImg|first}}" />
-                </div>
-                <div id="text-div">
-                    <h3>&ldquo;Should I buy<br />this 
+                <div id="top-text">
+                    <div id='share-text'>
+                        {{ AB_share_text }}
                         <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
-                        <input type="text" id="motivation-text" width="100" />
-                        ?&rdquo;
-                    </h3>
-                    <em>Tell your friends why you want this!</em>
+                    </div>
+                    <div id="hide-me-after">
+                        <span id="edit-motivation"><img alt="Edit Message" title="Edit Message" src="{{ URL }}/static/imgs/edit-12.gif" /></span> 
+                    </div>
                 </div>
-            </div>
-
-            <div width="100%" id="save-motivation">
-                <div class="prepend-top button-link" title="Save your question" onclick="done_motivation();">
-                    Ask your friends
-                </div>
-            </div>
-        </div>
-
-        <div id="invite" class="willt">
-            <div id="top-div" width="100%">
-                <div id="product-img" style="margin-top: 1.3em">
+                <div id="product-img">
                     <img src="{{productImg|first}}" />
                 </div>
-
                 <div id="text-div">
-                    <div class="" id="chars-left">140 characters left</div>
-
-                    <textarea wrap="soft" id="share-text" onupdate="countChars();" onkeydown="countChars();" onkeyup="countChars();">{{AB_share_text}}</textarea>
+                    <h3>{{ productName }}</h3>
+                    <span class='grey'>{{ productURL }}</span>
+                    {{ productDesc|striptags }}
                 </div>
             </div>
-
-            <div width="100%" id="buttons">
-                <div class="prepend-top button-link" title="Share on Facebook" style="width:90%">
-                    <img src="/static/imgs/fb-logo.png" width="20px" height="20px" />
-                    Share on Facebook
+            <div id="buttons">
+                <div style="float: right; padding-right: 8px">
+                    <input class="post" type="button" id="share-button" value="Ask for Advice" />
+                    <input class="close" type="button" id="cancel-button" value="Cancel" />
                 </div>
-                <!--
-                <div id="twitter_button" class='button-link' title="Tweet on Twitter" onclick="share('twitter');">
-                    <img src="/static/imgs/twitter-logo.png" width="20px" height="20px" />
-                    Tweet on Twitter
-                </div>
-                -->
             </div>
         </div>
         <div id="loading" class="willt hidden">
@@ -355,6 +352,8 @@
             <h1 style="margin-top: 2.5em">Asking your friends...</h1>
             <p>
                 We will contact you as soon as your friends vote!
+                <br />
+                <input class="close" type="button" id="close-button" value="Close" />
             </p>
         </div>
 

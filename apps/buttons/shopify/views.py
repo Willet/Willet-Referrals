@@ -77,10 +77,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
             logging.info("Link %s" % (link.target_url ))
         else:
             logging.info("Making a link for %s" % target)
-            link = get_link_by_url(target)
-            if link == None:
-                # link does not exist yet
-                link = create_link(target, app, self.request.url, user)
+            link = create_link(target, app, self.request.url, user)
         
         template_values = {
             'app'            : app,

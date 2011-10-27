@@ -35,15 +35,20 @@ def main():
 
     #logging.info('running application with patterns: %s' % combined_uris)
 
-    application = webapp.WSGIApplication(
-        combined_uris,
-        debug=USING_DEV_SERVER
-    )
- 
-    # insert GAEBingo middlewhere
-    application = GAEBingoWSGIMiddleware(application)
+    try:
+        application = webapp.WSGIApplication(
+            combined_uris,
+            debug=USING_DEV_SERVER
+        )
+    
+        # insert GAEBingo middlewhere
+        application = GAEBingoWSGIMiddleware(application)
 
-    run_wsgi_app(application)
+        run_wsgi_app(application)
+
+    except:
+        logging.error('There was an error running the application', exc_info=True)
+        raise Exception('we need to fix something')
 
 if __name__ == '__main__':
     main()

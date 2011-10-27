@@ -8,13 +8,14 @@ from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from google.appengine.ext import webapp
+from google.appengine.ext import db 
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
+from apps.action.models       import ButtonLoadAction
 from apps.action.models       import ScriptLoadAction
-from apps.action.models import ButtonLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
@@ -23,10 +24,9 @@ from apps.link.models         import get_link_by_willt_code
 from apps.link.models         import create_link
 from apps.product.shopify.models import get_or_fetch_shopify_product
 from apps.order.models        import *
-from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions        import SIBTClickAction
-from apps.sibt.models         import get_sibt_instance_by_asker_for_url
-from apps.sibt.models import SIBTInstance
+from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
 from apps.sibt.shopify.models import get_or_create_sibt_shopify_app
@@ -49,30 +49,34 @@ class ShowBetaPage(URIHandler):
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class SIBTShopifyWelcome(URIHandler):
-    def get( self ):
-        client = self.get_client() # May be None
-       
-        token = self.request.get('t') # token
-        app = get_or_create_sibt_shopify_app(client, token=token)
+    def get(self):
+        logging.info('trying to create app')
+        try:
+            client = self.get_client() # May be None
         
-        client_email = None
-        shop_owner = 'Shopify Merchant'
-        if client != None:
-            client_email = client.email
-            shop_owner = client.merchant.get_attr('full_name')
+            token = self.request.get('t') # token
+            app = get_or_create_sibt_shopify_app(client, token=token)
+            
+            client_email = None
+            shop_owner = 'Shopify Merchant'
+            if client != None:
+                client_email = client.email
+                shop_owner = client.merchant.get_attr('full_name')
 
 
-        template_values = {
-            'app': app,
-            'shop_owner': shop_owner,
-            'client_email': client_email,
-        }
+            template_values = {
+                'app': app,
+                'shop_owner': shop_owner,
+                'client_email': client_email,
+            }
 
-        self.response.out.write( self.render_page( 'welcome.html', template_values)) 
+            self.response.out.write( self.render_page( 'welcome.html', template_values)) 
+        except:
+            logging.error('wtf', exc_info=True)
 
 class ShowEditPage(URIHandler):
-    # Renders a app page
     def get(self):
+        # Renders a app page
         """
         client = self.get_client() # May be None
         # Request varZ from us
@@ -245,20 +249,23 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions  = SIBTClickAction.get_by_user_for_url(user, target)
-                instance = get_sibt_instance_by_asker_for_url(user, target)
+                logging.info('trying to get instance for url: %s' % target)
+                actions  = SIBTClickAction.get_by_user_and_url(user, target)
+                instance = SIBTInstance.get_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
                 logging.info('got instance by user/target: %s' % instance.uuid)
-            except:
+            except Exception, e:
                 try:
+                    logging.info('trying willet_code: %s' % e)
                     link = get_link_by_willt_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'
                     logging.info('got instance by willet_code: %s' % instance.uuid)
-                except:
+                except Exception, e:
                     try:
+                        logging.info('trying actions: %s' % e)
                         if actions.count() > 0:
                             # filter actions for instances that are active
                             unfiltered_count = actions.count()
@@ -277,8 +284,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 assert(instance != None)
                                 logging.info('got instance by action: %s' % instance.uuid)
                                 event = 'SIBTShowingVote'
-                    except:
-                        logging.info('no instance available')
+                    except Exception, e:
+                        logging.info('no instance available: %s' % e)
         except:
             logging.info('no app')
 
@@ -331,7 +338,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                     .filter('user =', user)\
                     .filter('url =', target)\
                     .count()
-            if view_actions > 1:# or user.is_admin():
+            if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
@@ -401,20 +408,9 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        user = get_or_create_user_by_cookie(self)
-        app = get_sibt_shopify_app_by_store_url(store_url)
-        target = ''
-
-        try:
-            page_url = urlparse(self.request.headers.get('REFERER'))
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        except Exception, e:
-            logging.error('error parsing referer %s: %s' % (
-                    self.request.headers.get('referer'),
-                    e
-                ),
-                exc_info=True
-            )
+        user      = get_or_create_user_by_cookie(self)
+        app       = get_sibt_shopify_app_by_store_url(store_url)
+        target    = get_target_url( self.request.headers.get('REFERER') )
 
         # Store a script load action.
         ScriptLoadAction.create( user, app, target )

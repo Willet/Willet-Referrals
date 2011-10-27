@@ -87,6 +87,22 @@ def get_or_create_buttons_shopify_app( client, token ):
     if app is None:
         app = create_shopify_buttons_app(client, token)
     
+    elif token != None and token != '':
+        if app.store_token != token:
+            # TOKEN mis match, this might be a re-install
+            logging.warn(
+                'We are going to reinstall this app because the stored token \
+                does not match the request token\n%s vs %s' % (
+                    app.store_token,
+                    token
+                )
+            ) 
+            try:
+                app.store_token = token
+                app.put()
+                app.do_install()
+            except:
+                logging.error('encountered error with reinstall', exc_info=True)
     return app
 
 def get_shopify_buttons_by_url( store_url ):

@@ -37,8 +37,7 @@
                 Thanks for installing "ShopConnection"!  
                 There are only 2 additional steps to complete the installation!
                 <br /><br />
-                We simply need to add some product meta data and determine
-                where the buttons will be placed on your product pages.
+                We simply need to determine where the buttons will be placed on your product pages.
             </p>
 
             <h2> First Step </h2>
@@ -46,17 +45,11 @@
                 Navigate to the <em>Template Editor</em> for your <a href="{{app.store_url}}/admin/themes">store's Theme</a>.
                 Under the <em>Layouts</em> section, click on <em>theme.liquid</em>.
             </p><p>
-                At the top, you should see HTML that resembles:
-                <p class="code">&lt;head&gt; <br />&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</p>
-            </p><p>
-                <strong>1. Replace</strong> <span class="code">&lt;head&gt; </span> with 
-                <input style='font-size:13px; max-width: 680px; width: 680px;' type='text' readonly='readonly' value='<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#"> ' /> 
-            </p><p>
-                <strong>2. After</strong> <span class="code">&lt;title&gt;&#123;&#123; shop.name &#124; escape &#125;&#125;&lt;/title&gt;</span>, add:
+                <strong>1. After</strong><span class="code">&lt;head&gt;</span> at the top, add:
             
-                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value='<meta property="fb:app_id" content="166070566811816" /><meta property="og:locale" content="en_US" /><meta property="og:url" content="&#123;&#123;shop.url&#125;&#125;&#123;&#123;product.url&#125;&#125;" /><meta property="og:type" content="shopify_buttons:product" /><meta property="og:description" content="&#123;&#123; product.description &#124; strip_html &#124; strip_newlines &#125;&#125;" /><meta property="og:title" content="&#123;&#123; product.title &#124; escape &#125;&#125;" /><meta property="og:image" content="&#123;&#123; product.images[0] &#124; product_img_url: "large" &#125;&#125;" /><script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>' />
+                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value='<script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>' />
             </p><p>
-                <strong> 3. Click</strong> <em>save</em> near the top of the screen.
+                <strong>2. Click</strong> <em>save</em> near the top of the screen.
             </p>
 
             <h2> Second Step </h2>
@@ -67,7 +60,7 @@
                 <strong>1. Look </strong>for where you would like the sharing buttons to be placed on your product pages.
             </p><p>
                 <strong>2. Once </strong>you've picked a spot, add this code:
-                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app" style="height:28px; width: 285px;"> <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> <sv:product-button type="boxed"></sv:product-button> </div> </div>' />           
+                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app" style="padding-top:10px; padding-bottom: 10px; height:28px; width: 285px;"> <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> <sv:product-button type="boxed"></sv:product-button> </div> </div>' />           
             </p><p>
                 <strong> 3. Click</strong> <em>save</em> near the top of the screen.
             </p>
