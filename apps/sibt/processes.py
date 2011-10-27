@@ -133,6 +133,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             response['data']['message'] = str(e)
             logging.error('we had an error sharing on facebook', exc_info=True)
 
+        logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
 class StartSIBTInstance(URIHandler):
