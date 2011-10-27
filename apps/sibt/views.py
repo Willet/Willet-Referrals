@@ -55,6 +55,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         
         page_url = urlparse(self.request.get('url'))
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        productURL = "%s://%s" % (page_url.scheme, page_url.netloc)
         if target == "://":
             target = URL
         
@@ -105,11 +106,15 @@ class AskDynamicLoader(webapp.RequestHandler):
         # User stats
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
+
+        productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+
         template_values = {
             'productImg' : product.images, 
             'productName': product.title, 
-            'productDesc': product.description,
+            'productDesc': productDesc,
             'product_id': product.key().id_or_name(),
+            'productURL': productURL,
 
             #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
