@@ -122,6 +122,8 @@ class ClickAction( Action ):
         )
 
 ## Constructor -----------------------------------------------------------------
+"""
+# Never call this directly
 def create_click_action( user, app, link ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -130,7 +132,10 @@ def create_click_action( user, app, link ):
                         user     = user,
                         app_     = app,
                         link     = link )
+    super(ClickAction, act).create()
+
     act.put()
+"""
    
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
@@ -171,6 +176,8 @@ class VoteAction( Action ):
         return VoteAction.all().filter( 'vote =', 'no' )
 
 ## Constructor -----------------------------------------------------------------
+"""
+# Never call this directly
 def create_vote_action( user, app, link, vote ):
     # Make the action
     uuid = generate_uuid( 16 )
@@ -180,7 +187,10 @@ def create_vote_action( user, app, link, vote ):
                        app_     = app,
                        link     = link,
                        vote     = vote )
+    super(VoteAction, act).create()
+
     act.put() 
+"""
 
 ## -----------------------------------------------------------------------------
 ## LoadAction Subclass ---------------------------------------------------------------
@@ -217,6 +227,9 @@ class ScriptLoadAction( LoadAction ):
                                  user     = user,
                                  app_     = app,
                                  url      = url )
+
+        super(ScriptLoadAction, act).create()
+        
         act.put()
 
 ## Accessors -------------------------------------------------------------------
@@ -242,6 +255,9 @@ class ButtonLoadAction( LoadAction ):
                                  user     = user,
                                  app_     = app,
                                  url      = url )
+        
+        super(ButtonLoadAction, act).create()
+        
         act.put()
 
 ## Accessors -------------------------------------------------------------------

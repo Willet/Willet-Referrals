@@ -252,6 +252,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 logging.info('trying to get instance for url: %s' % target)
                 actions  = SIBTClickAction.get_by_user_and_url(user, target)
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
+                logging.info("INSTANCE %r" % instance )
                 assert(instance != None)
                 event = 'SIBTShowingResults'
                 logging.info('got instance by user/target: %s' % instance.uuid)

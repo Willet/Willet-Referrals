@@ -8,6 +8,7 @@ from google.appengine.api       import urlfetch
 from google.appengine.ext import db
 
 from apps.product.models import Product
+from util.helpers import generate_uuid
 
 class ProductShopify(Product):
     
@@ -78,7 +79,8 @@ def get_shopify_product_by_id(id):
 def get_or_create_shopify_product_by_id(id, **kwargs):
     product = get_shopify_product_by_id(id) 
     if product == None:
-        product = ProductShopify(
+        uuid = generate_uuid( 16 )
+        product = ProductShopify( key_name = uuid, uuid = uuid,
             shopify_id = id,
             **kwargs
         )
@@ -89,7 +91,9 @@ def get_or_create_shopify_product_by_id(id, **kwargs):
 def get_or_create_shopify_product_by_url(url, **kwargs):
     product = get_shopify_product_by_url(url) 
     if product == None:
-        product = ProductShopify(
+        uuid = generate_uuid( 16 )
+        product = ProductShopify(key_name = uuid,
+            uuid = uuid,
             resource_url = url,
             **kwargs
         )
@@ -107,7 +111,9 @@ def get_or_fetch_shopify_product(url, client):
             )
                         
             # create product
-            product = ProductShopify(
+            uuid = generate_uuid( 16 )
+            product = ProductShopify( key_name = uuid,
+                uuid = uuid,
                 last_fetch = datetime.now(),
                 resource_url = url,
                 client = client,
