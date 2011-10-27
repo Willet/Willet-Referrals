@@ -26,7 +26,6 @@ from google.appengine.ext import db
 
 import apps.oauth.models
 from apps.order.shopify.models import OrderShopify
-from apps.gae_bingo.models import GAEBingoIdentityModel
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
 
@@ -77,7 +76,7 @@ def get_emails_by_user( user ):
 # ------------------------------------------------------------------------------
 # User Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class User( db.Expando, GAEBingoIdentityModel ):
+class User( db.Expando ):
     # General Junk
     uuid            = db.StringProperty(indexed = True)
     creation_time   = db.DateTimeProperty(auto_now_add = True)
@@ -1076,8 +1075,11 @@ def create_user_by_facebook(fb_id, first_name, last_name, name, email, referrer,
 def create_user_by_email(email, referrer):
     """Create a new User object with the given attributes"""
     user = User(key_name=email, uuid=generate_uuid(16), 
-                email=email, referrer=referrer)
+                referrer=referrer)
     user.put()
+
+    # Make an email model
+    create_email_model( user, email )
     
     return user
 
