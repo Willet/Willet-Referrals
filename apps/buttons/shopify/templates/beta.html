@@ -1,12 +1,6 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <meta property="fb:app_id" content="166070566811816" />
-    <meta property="og:type" content="shopify_buttons:product" />
-    <meta property="og:title" content="POSTER" />
-    <meta property="og:description" content="This is a desc for the POSTER" />
-    <meta property="og:url" content="http://social-referral.appspot.com/IA" />
-    <meta property="og:image" content="http://static.shopify.com/s/files/1/0104/0742/products/pixel_poster_halloween_full.jpg?85" />
     <script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>
     
     <script src="http://platform.tumblr.com/v1/share.js" type="text/javascript"></script>
@@ -69,23 +63,12 @@
 
             button_div.style = "float: left; height:30px; width: 205px;";
 
-            console.log('loading fb_iframe');
-            var fb_iframe      = document.createElement('iframe');
-            fb_iframe.setAttribute('allowtransparency', 'true');
-            fb_iframe.setAttribute('frameborder', '0');
-            fb_iframe.setAttribute('scrolling', 'no');
-            fb_iframe.setAttribute('style', 'margin-top: 3px; margin-right: 5px; width:80px; height:18px; float: left; border: 1px solid #cad4e7; border-radius: 2px;');
-            fb_iframe.setAttribute('src', 'http://social-referral.appspot.com/b/shopify/load/iframe.html?app_uuid=e62e3f6471dc4d1c&willt_code=IA');
-
-            button_div.appendChild( fb_iframe );
-            console.log('fb_iframe inserted');
-    
             // Tumblr
             var a = document.createElement( 'a' );
             var style = "display:inline-block; text-indent:-9999px; " +
                         "overflow:hidden; width:63px; height:20px; " + 
                         "background:url('http://platform.tumblr.com/v1/" + 
-                        "share_2.png') top left no-repeat transparent; float: left; margin-right: 5px; margin-top: 3px;" 
+                        "share_2.png') top left no-repeat transparent; float: left; margin-top: 3px;" 
             $(a).attr( 'href', 'http://www.tumblr.com/share' );
             $(a).attr( 'title', "Share on Tumblr" );
             $(a).attr( 'style', style);
@@ -95,34 +78,34 @@
     </script>
 {% endblock head %}
 
-{% block left_content %}
-    <h2 class="lower-75 center">Need Help?</h2>
-    
-    <div class="center">
-        <p><button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us Now</button></p>
-        <p> OR </p>
-        <h4>Email Barbara at</h4>
-        <p><a href="mailto:barbara@getwillet.com">barbara@getwillet.com</a></p>
+{% block content %}
+
+    <h1 class="span-24 last lower-100 center">ShopConnection</h1>
+
+    <div class="prepend-4 span-6">
+        <img src="/static/imgs/ShopConnectionLogo.png" width="250px" />
     </div>
-{% endblock left_content %}
+    <div class="prepend-1 span-11 last">
+        <p class="span-11 last">Get these terrific product sharing tools for your store!
 
-{% block right_head %}
-    <p><a href="/">Home</a></p>
-{% endblock right_head %}
+            <div id="_willet_buttons_app" style="background-color: white; border-radius: 10px; margin-left: 110px; padding: 5px;height:28px; width: 195px;"> 
+                <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> 
+                    <sv:product-button type="boxed"></sv:product-button> 
+                </div> 
+                <div style="float: left; margin-right: 5px; width: 50px !important;">
+                    <a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2Fmonahan-braun4718.myshopify.com%2Fproducts%2Fposter&media=http%3A%2F%2Fstatic.shopify.com%2Fs%2Ffiles%2F1%2F0104%2F0742%2Fproducts%2Fpixel_poster_halloween_full_large.jpg%3F85&description=A%20really%20swanky%20poster!" class="pin-it-button" count-layout="horizontal">Pin It</a>
+                    <script type="text/javascript" src="http://assets.pinterest.com/js/pinit.js"></script>
 
-{% block right_content %}
-    <h1 class="span-15 last lower-75 center">ShopConnection</h1>
-    <p class="span-15 last center"><strong>Get these terrific product sharing tools for your store!</strong></p>
-
-    <div id="_willet_buttons_app" style="background-color: white; border-radius: 10px; padding: 5px; margin-left: 140px; height:28px; width: 285px;"> 
-        <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> 
-            <sv:product-button type="boxed"></sv:product-button> 
-        </div> 
-        <div style="float: right; width: 50px !important;">
-            <a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2Fmonahan-braun4718.myshopify.com%2Fproducts%2Fposter&media=http%3A%2F%2Fstatic.shopify.com%2Fs%2Ffiles%2F1%2F0104%2F0742%2Fproducts%2Fpixel_poster_halloween_full_large.jpg%3F85&description=A%20really%20swanky%20poster!" class="pin-it-button" count-layout="horizontal">Pin It</a>
-            <script type="text/javascript" src="http://assets.pinterest.com/js/pinit.js"></script>
-
-        </div>
+                </div>
+            </div>
+        </p>
+        <p class="span-11 append-bottom last">
+            Try out the buttons for yourself!
+            <br /><br />
+            Buttons can be placed anywhere on your product page. 
+            <br /><br />
+            Installation takes two minutes and we're here to support you at every step!
+        </p>
     </div>
     <p class="span-15 last center">
         The buttons can be placed anywhere on your product page. 
@@ -130,21 +113,18 @@
         Installation takes two minutes and we're here to support you at every step!
     </p>
 
-    <div class="about prepend-top append-bottom span-15 last">
-        <p>
-            Please enter your <strong>myshopify.com</strong> store name:
-        </p>
+    <div class="about prepend-top append-bottom span-24 last center">
         <div>
-            <input type="hidden" id="input_default" value="your site" />
-            <input type="text" id="site_input" value="your site" />
+            <input type="hidden" id="input_default" value="your store name" />
+            Enter <input type="text" id="site_input" value="Your store name" />.myshopify.com
             <button id="do_install">Install Now</button>
         </div>
     </div>
     
-    <div class="about prepend-top append-bottom span-15 last">
+    <div class="about prepend-top append-bottom span-24 last center">
         or copy your install url manually:<br />
         <div id="install_url">
             <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SHOPIFY_API_KEY}}</a>
         </div>
     </div>
-{% endblock right_content %}
+{% endblock content %}

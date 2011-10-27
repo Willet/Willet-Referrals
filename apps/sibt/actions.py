@@ -73,7 +73,7 @@ class SIBTVoteAction( VoteAction ):
 
     ## Constructor
     @staticmethod
-    def create( user, instance, vote ):
+    def create(user, instance, vote):
         # Make the action
         uuid = generate_uuid( 16 )
         act  = SIBTVoteAction(  key_name = uuid,
