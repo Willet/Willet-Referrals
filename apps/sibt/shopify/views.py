@@ -250,8 +250,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                actions  = SIBTClickAction.get_by_user_for_url(user, target)
+                logging.info("LOoking for user %s and target %s" % (user.uuid, target))
+                actions  = SIBTClickAction.get_by_user_and_url(user, target)
+                logging.info("Actions? %r" % actions)
                 instance = get_sibt_instance_by_asker_for_url(user, target)
+                logging.info("INSTANCE %r" % instance )
                 assert(instance != None)
                 event = 'SIBTShowingResults'
                 logging.info('got instance by user/target: %s' % instance.uuid)
