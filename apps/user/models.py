@@ -823,21 +823,22 @@ class User( db.Expando ):
         if img != "":
             try:
                 """ We try to build the params, utf8 encode them"""
+                caption = link.app_.client.domain
                 params = {
                     'access_token': self.fb_access_token,
-                    'message': msg,
+                    'message': msg.encode('utf8'),
                     'picture' : img,
                     'link' : link.get_willt_url(),
-                    'description' : desc,
-                    'name' : name,
-                    'caption' : caption
+                    'description' : desc.encode('utf8'),
+                    'name' : name.encode('utf8'),
+                    'caption' : caption.encode('utf8')
                 }
                 #for param in params:
                 #    params[param] = params[param].encode('utf8')
-                params = dict([(key, value.encode('utf8')) for key,value in params.iteritems()])
+                #params = dict([(key, value.encode('utf8')) for key,value in params.iteritems()])
                 params = urllib.urlencode(params)
             except Exception, e:
-                logging.warn('there was an error encoding, do it the old way' % e, esc_info = True)
+                logging.warn('there was an error encoding, do it the old way %s' % e, exc_info = True)
 
                 msg = msg.encode( 'ascii', 'ignore' )
                 if isinstance(msg, str):
