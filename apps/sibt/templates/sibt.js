@@ -11,6 +11,7 @@
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
+    var $ = jQuery;
 
     /**
     * quick helper function to add scripts to dom
