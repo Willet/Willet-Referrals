@@ -10,11 +10,12 @@ from util.consts  import *
 from util.cookies import LilCookies
 
 def get_target_url( referrer ):
+    target = None
     try:
         page_url = urlparse( referrer )
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
     except Exception, e:
-        logging.error('error parsing referer %s: %s' % (
+        logging.warn('error parsing referer %s: %s' % (
                 'referrer',
                 e
             ),
