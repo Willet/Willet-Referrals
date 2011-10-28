@@ -19,10 +19,12 @@ from google.appengine.ext.db import polymodel
 
 from apps.client.models     import Client
 from apps.link.models       import Link 
+from apps.product.shopify.models import ProductShopify
 from apps.user.models       import User, get_or_create_user_by_email
 
 from util.consts            import *
 from util.helpers           import generate_uuid
+from util.shopify_helpers   import get_shopify_url
 
 # ------------------------------------------------------------------------------
 # ClientShopify Class Definition -----------------------------------------------
@@ -46,17 +48,18 @@ class ClientShopify( Client ):
         super(ClientShopify, self).__init__(*args, **kwargs)
     
     def validateSelf( self ):
-        if 'http' not in self.url:
-            self.url = 'http://%s' % self.url
+        self.url = get_shopify_url( self.url )
 
     # Constructor
     @staticmethod
     def create( url, token, request_handler, app_type ):
         """ Create a Shopify Store as a Client"""
 
+        url = get_shopify_url( url )
+        
         # Query the Shopify API to learn more about this store
         data = get_store_info( url, token, app_type )
-
+        
         # Make the Merchant
         merchant = get_or_create_user_by_email( email=data['email'], referrer=None, request_handler=request_handler )
 
@@ -71,10 +74,10 @@ class ClientShopify( Client ):
                                token    = token,
                                id       = str(data['id']),
                                merchant = merchant  )
-
-        # moved this here so we could pass the app_type
-        store.product_imgs = get_product_imgs(url, token, app_type)
         store.put()
+
+        # Query the Shopify API to dl all Products
+        get_products( store, app_type )
 
         # Update the merchant with data from Shopify
         merchant.update( full_name  = data['shop_owner'], 
@@ -92,8 +95,7 @@ class ClientShopify( Client ):
     # Accessors 
     @staticmethod
     def get_by_url(store_url):
-        if 'http' not in store_url:
-            store_url = 'http://%s' % store_url
+        store_url = get_shopify_url( store_url )
 
         store = ClientShopify.all().filter( 'url =', store_url ).get()
         return store
@@ -107,9 +109,6 @@ class ClientShopify( Client ):
         store = ClientShopify.get_by_url(store_url)
 
         if store == None:
-            if 'http' not in store_url:
-                store_url = 'http://%s' % store_url
-            
             store = ClientShopify.create( store_url, 
                                           store_token, 
                                           request_handler,
@@ -118,9 +117,8 @@ class ClientShopify( Client ):
 
 # Shopify API Calls  -----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):
-
     # Constuct the API URL
-    url      = '%s/admin/shop.json' % ( store_url )
+    url = '%s/admin/shop.json' % ( store_url )
     
     # Fix inputs ( legacy )
     if app_type == "referral":
@@ -162,11 +160,11 @@ def get_store_info(store_url, store_token, app_type):
     
     return shop
 
-def get_product_imgs(store_url, store_token, app_type):
+def get_products( client, app_type ):
     """ Fetch images for all the products in this store """
 
     # Construct the API URL
-    url      = '%s/admin/products.json' % (store_url)
+    url      = '%s/admin/products.json' % (client.url)
     
     # Fix inputs ( legacy )
     if app_type == "referral":
@@ -178,7 +176,7 @@ def get_product_imgs(store_url, store_token, app_type):
     settings = SHOPIFY_APPS[app_type]
 
     username = settings['api_key'] 
-    password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
+    password = hashlib.md5(settings['api_secret'] + client.token).hexdigest()
 
     # this creates a password manager
     passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -203,15 +201,8 @@ def get_product_imgs(store_url, store_token, app_type):
     result = urllib2.urlopen(url)
 
     # Grab the data about the order from Shopify
-    details  = json.loads( result.read() ) #['orders'] # Fetch the order
+    details  = json.loads( result.read() ) 
     products = details['products']
 
-    ret = []
     for p in products:
-        for k, v in p.iteritems():
-            if 'images' in k:
-                if len(v) != 0:
-                    img = v[0]['src'].split('?')[0]
-                    ret.append( img )   
-    return ret
-
+        ProductShopify.create_from_json( client, p ) 

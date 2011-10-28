@@ -17,7 +17,6 @@ from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
 from apps.product.models      import Product
-from apps.sibt.models         import get_sibt_instance_by_uuid, get_sibt_instance_by_asker_for_url
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
