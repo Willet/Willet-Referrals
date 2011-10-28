@@ -13,5 +13,6 @@ urlpatterns = [
     (r'/admin/ithinkiateacookie', TrackRemoteError),
     (r'/admin/sibt', SIBTInstanceStats),
     (r'/admin/install', InstallShopifyJunk),
+    (r'/admin/barbara', Barbara),
 ]
 
