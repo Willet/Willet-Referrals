@@ -101,7 +101,11 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
 
-        productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+        try:
+            productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+        except Exception,e:
+            productDesc = ''
+            logging.warn('Probably no product description: %s' % e, exc_info=True)
 
         template_values = {
             'productImg' : product.images, 
