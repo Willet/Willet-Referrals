@@ -26,6 +26,7 @@ from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import get_or_fetch_shopify_product 
+from apps.product.shopify.models import get_shopify_product_by_id 
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
@@ -63,7 +64,10 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        product = get_or_fetch_shopify_product(target, app.client)
+        if app.client.uuid == 'e54825444acb4f2e': # ie. if doggie seat belt
+            product = get_shopify_product_by_id( '48647062' )
+        else:
+            product = get_or_fetch_shopify_product(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
