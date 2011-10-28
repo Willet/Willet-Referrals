@@ -462,6 +462,8 @@
             'test': function() {
                 return (typeof jQuery == 'function' && typeof jQuery.colorbox == 'function');
             }, 'callback': function() {
+                // HACKETY HACK HACK
+                $.colorbox = jQuery.colorbox;
                 jQuery.colorbox.init();
             }
         }
