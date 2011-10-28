@@ -216,8 +216,7 @@
 
         // show/hide stuff
         _willet_topbar.find('div.vote').hide();
-        $('#_willet_toggle_results').show();
-        $('#_willet_toggle_results').click(_willet_toggle_results);        
+        $('#_willet_toggle_results').show().unbind().bind('click', _willet_toggle_results);
         if (doing_vote || _willet_has_voted) {
             _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
         } else if (_willet_is_asker) {
@@ -314,7 +313,7 @@
         body.prepend(_willet_topbar);
 
         // bind event handlers
-        $('#_willet_toggle_results').click(_willet_toggle_results);
+        $('#_willet_toggle_results').unbind().bind('click', _willet_toggle_results);
         $('#yesBtn').click(_willet_do_vote_yes);
         $('#noBtn').click(_willet_do_vote_no);
         
