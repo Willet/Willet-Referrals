@@ -43,6 +43,7 @@ body {
     /*margin: 15px 0px 15px 10px;*/
     /**height: 130px;*/
     max-width: 90px;
+    max-height: 130px;
 }
 #text-div {
     float: left;
