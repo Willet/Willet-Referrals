@@ -22,7 +22,7 @@ from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
 from apps.link.models         import get_link_by_willt_code
 from apps.link.models         import create_link
-from apps.product.shopify.models import get_or_fetch_shopify_product
+from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTClickAction
 from apps.sibt.actions        import SIBTVoteAction
@@ -325,8 +325,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-            #product = get_or_fetch_shopify_product(target, app.client)
-
             # precache this page's product
             taskqueue.add(
                 url = url('FetchProductShopify'), 
@@ -347,7 +345,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
-                product = get_or_fetch_shopify_product(target, app.client)
+                product = ProductShopify.get_or_fetch(target, app.client)
                 product_images = product.images
                 product_title = product.title
 
