@@ -821,46 +821,67 @@ class User( db.Expando ):
         logging.info("LINK %s" % link )
         facebook_share_url = "https://graph.facebook.com/%s/feed" % self.fb_identity
         if img != "":
-            msg = msg.encode( 'ascii', 'ignore' )
-            if isinstance(msg, str):
-                logging.info("CONVERTING MSG")
-                msg = unicode(msg, 'utf-8', errors='ignore')
+            try:
+                """ We try to build the params, utf8 encode them"""
+                caption = link.app_.client.domain
+                if not caption:
+                    caption = ''
+                params = {
+                    'access_token': self.fb_access_token,
+                    'message': msg.encode('utf8'),
+                    'picture' : img,
+                    'link' : link.get_willt_url(),
+                    'description' : desc.encode('utf8'),
+                    'name' : name.encode('utf8'),
+                    'caption' : caption.encode('utf8')
+                }
+                #for param in params:
+                #    params[param] = params[param].encode('utf8')
+                #params = dict([(key, value.encode('utf8')) for key,value in params.iteritems()])
+                params = urllib.urlencode(params)
+            except Exception, e:
+                logging.warn('there was an error encoding, do it the old way %s' % e, exc_info = True)
 
-            caption = link.app_.store_url
-            caption = caption.encode( 'ascii', 'ignore' )
-            if isinstance(caption, str):
-                logging.info("CONVERTING")
-                caption = unicode(caption, 'utf-8', errors='ignore')
-            
-            name = name.encode( 'ascii', 'ignore' )
-            if isinstance(name, str):
-                logging.info("CONVERTING name" )
-                name = unicode(name, 'utf-8', errors='ignore')
-            
-            if desc == '':
-                desc = name
-            desc = desc.encode('ascii', 'ignore') 
-            if isinstance(desc, str):
-                desc = unicode(desc, 'utf-8', errors='ignore')
+                msg = msg.encode( 'ascii', 'ignore' )
+                if isinstance(msg, str):
+                    logging.info("CONVERTING MSG")
+                    msg = unicode(msg, 'utf-8', errors='ignore')
 
-            """
-            logging.info("%s" % msg )
-            logging.info("%s" % img )
-            logging.info("%s" % link.get_willt_url() )
-            logging.info("%s" % desc )
-            logging.info("%s" % name )
-            logging.info("%s" % caption )
-            """
+                caption = link.app_.client.domain
+                caption = caption.encode( 'ascii', 'ignore' )
+                if isinstance(caption, str):
+                    logging.info("CONVERTING")
+                    caption = unicode(caption, 'utf-8', errors='ignore')
+                
+                name = name.encode( 'ascii', 'ignore' )
+                if isinstance(name, str):
+                    logging.info("CONVERTING name" )
+                    name = unicode(name, 'utf-8', errors='ignore')
+                
+                if desc == '':
+                    desc = name
+                desc = desc.encode('ascii', 'ignore') 
+                if isinstance(desc, str):
+                    desc = unicode(desc, 'utf-8', errors='ignore')
 
-            params = urllib.urlencode({
-                'access_token': self.fb_access_token,
-                'message': msg,
-                'picture' : img,
-                'link' : link.get_willt_url(),
-                'description' : desc,
-                'name' : name,
-                'caption' : caption
-            })
+                """
+                logging.info("%s" % msg )
+                logging.info("%s" % img )
+                logging.info("%s" % link.get_willt_url() )
+                logging.info("%s" % desc )
+                logging.info("%s" % name )
+                logging.info("%s" % caption )
+                """
+
+                params = urllib.urlencode({
+                    'access_token': self.fb_access_token,
+                    'message': msg,
+                    'picture' : img,
+                    'link' : link.get_willt_url(),
+                    'description' : desc,
+                    'name' : name,
+                    'caption' : caption
+                })
         else:
             if isinstance(msg, str):
                 logging.info("CONVERTING MSG")

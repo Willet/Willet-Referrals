@@ -63,7 +63,10 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        product = ProductShopify.get_or_fetch(target, app.client)
+        if app.client.uuid == 'e54825444acb4f2e': # ie. if doggie seat belt
+            product = ProductShopify.get_by_id('48647062')
+        else:
+            product = ProductShopify.get_or_fetch(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
@@ -101,14 +104,26 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_email = user.get_attr('email') if user else ""
         user_found = True if hasattr(user, 'fb_access_token') else False
 
-        productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+        store_domain = ''
+        try:
+            page_url = urlparse(self.request.headers.get('referer'))
+            store_domain   = "%s://%s" % (page_url.scheme, page_url.netloc)
+        except Exception, e:
+            logging.error('error parsing referer %s' % e)
+            store_domain = self.request.get('store_url')
+
+        try:
+            productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+        except Exception,e:
+            productDesc = ''
+            logging.warn('Probably no product description: %s' % e, exc_info=True)
 
         template_values = {
             'productImg' : product.images, 
             'productName': product.title, 
             'productDesc': productDesc,
             'product_id': product.key().id_or_name(),
-            'productURL': self.request.get('store_url'),
+            'productURL': store_domain,
 
             #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],

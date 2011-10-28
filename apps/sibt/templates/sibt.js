@@ -11,6 +11,7 @@
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
+    var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
     * quick helper function to add scripts to dom
@@ -215,8 +216,7 @@
 
         // show/hide stuff
         _willet_topbar.find('div.vote').hide();
-        $('#_willet_toggle_results').show();
-        $('#_willet_toggle_results').click(_willet_toggle_results);        
+        $('#_willet_toggle_results').show().unbind().bind('click', _willet_toggle_results);
         if (doing_vote || _willet_has_voted) {
             _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
         } else if (_willet_is_asker) {
@@ -258,7 +258,7 @@
                 "<button id='askBtn' class=''>Ask Your Friends For Advice</button>";
         } 
 
-        var bar_html = "<div class='wrapper'> " +
+        var bar_html = "<div class='_willet_wrapper'> " +
             "<div class='asker'>" +
                 "<div class='pic'><img src='" + image_src + "' /></div>" +
                  asker_text  +
@@ -268,7 +268,7 @@
             "    <button id='yesBtn' class='yes'>Buy it</button> "+
             "    <button id='noBtn' class='no'>Skip it</button> "+
             "</div> "+
-            "<div id='_willet_toggle_results' class='button toggle_results last' style='display: none'> "+
+            "<div id='_willet_toggle_results' class='_willet_button toggle_results last' style='display: none'> "+
             "    <span class='down'>" +
             "      Show <img src='{{URL}}/static/imgs/arrow-down.gif' /> "+
             "   </span> "+
@@ -313,7 +313,7 @@
         body.prepend(_willet_topbar);
 
         // bind event handlers
-        $('#_willet_toggle_results').click(_willet_toggle_results);
+        $('#_willet_toggle_results').unbind().bind('click', _willet_toggle_results);
         $('#yesBtn').click(_willet_do_vote_yes);
         $('#noBtn').click(_willet_do_vote_no);
         
@@ -452,6 +452,7 @@
             'test': function() {
                 return (typeof jQuery == 'function');
             }, 'callback': function() {
+                $ = jQuery;
                 return;
             }
         }, {
@@ -462,6 +463,8 @@
             'test': function() {
                 return (typeof jQuery == 'function' && typeof jQuery.colorbox == 'function');
             }, 'callback': function() {
+                // HACKETY HACK HACK
+                $.colorbox = jQuery.colorbox;
                 jQuery.colorbox.init();
             }
         }

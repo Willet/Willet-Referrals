@@ -119,3 +119,4 @@ class ProductShopify(Product):
             Just add it here """
         self.resource_url = url
         self.put()
+
