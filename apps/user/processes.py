@@ -61,9 +61,13 @@ class FetchFacebookData(webapp.RequestHandler):
             else:
                 pass
             return user
-        rq_vars = get_request_variables(['fb_id'], self)
-        logging.info("Grabbing user data for id: %s" % rq_vars['fb_id'])
-        user = User.all().filter('fb_identity =', rq_vars['fb_id']).get()
+        rq_vars = get_request_variables(['fb_id', 'user_uuid'], self)
+        logging.info("Grabbing user data for id: %s %s" % (
+            rq_vars['fb_id'],
+            rq_vars['user_uuid']
+        ))
+        user = User.all().filter('uuid =', rq_vars['user_uuid']).get()
+        #user = User.all().filter('fb_identity =', rq_vars['fb_id']).get()
         result_user = db.run_in_transaction(txn, user)
 
         # HACK to fix email. 

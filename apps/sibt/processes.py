@@ -122,13 +122,6 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
                 app.storeAnalyticsDatum( 'SIBTInstanceSharedOnFacebook', user, link.target_url )
                 
-                taskqueue.add(
-                    url = url('FetchFacebookData'),
-                    params = {
-                        'fb_id': user.fb_identity
-                    }
-                )
-
                 response['success'] = True
         except Exception,e:
             response['data']['message'] = str(e)
