@@ -41,6 +41,9 @@ class Model(db.Model):
     def validateSelf( self ):
         pass # Fill in in sub class!!
 
+    def get_key(self):
+        return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+
     @classmethod
     def get(cls, memcache_key):
         """Checks memcache for model before hitting database

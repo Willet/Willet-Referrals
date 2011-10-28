@@ -10,6 +10,8 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 import datetime, logging
 
 from google.appengine.api    import memcache
+from google.appengine.api    import datastore_errors 
+from google.appengine.ext import deferred
 from google.appengine.ext    import db
 from google.appengine.ext.db import polymodel
 
@@ -20,7 +22,7 @@ from util.model              import Model
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class Action( Model, polymodel.PolyModel ):
+class Action(Model, polymodel.PolyModel):
     """ Whenever a 'User' completes a Willet Action,
         an 'Action' obj will be stored for them.
         This 'Action' class will be subclassed for specific actions
@@ -46,6 +48,41 @@ class Action( Model, polymodel.PolyModel ):
 
         super(Action, self).__init__(*args, **kwargs)
     
+    def put(self):
+        """Override util.model.put with some custom shizzbang"""
+        key = self.get_key()
+        memcache.set(key, db.model_to_protobuf(self).Encode())
+
+        NUM_BUCKETS = 50
+        bucket = random.randint(0, NUM_BUCKETS)
+        bucket_key = "_willet_actions_bucket:%s" % bucket
+
+        list_identities = memcache.get(bucket_key) or []
+        list_identities.append(ident)
+
+        if len(list_identities) > NUM_BUCKETS:
+            deferred.defer(Action.persist_actions, list_identities)
+
+    @staticmethod
+    def persist_actions(list_keys):
+        action_dict = memcache.get_muilt([key for key in list_keys]) 
+        timeout_ms = 100
+
+        for key in list_keys:
+            data = action_dict.get(key)
+            action = db.model_from_protobuf(entity_pb.EntityProto(data))
+
+            if action:
+                while True:
+                    logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+                    try:
+                        self.hardPut() # Will validate the instance.
+                    except datastore_errors.Timeout:
+                        thread.sleep(timeout_ms)
+                        timeout_ms *= 2
+                    else:
+                        break
+
     @staticmethod
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
@@ -53,6 +90,7 @@ class Action( Model, polymodel.PolyModel ):
 
     def validateSelf( self ):
         pass
+
     def __unicode__(self):
         return self.__str__()
 
@@ -81,7 +119,7 @@ class Action( Model, polymodel.PolyModel ):
 
     @staticmethod
     def get_by_uuid( uuid ):
-        return Action.all().filter( 'uuid =', uuid ).get()
+        return Action.get(uuid)
 
     @staticmethod
     def get_by_user( user ):
@@ -159,20 +197,20 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-    def validateSelf( self ):
-        if not ( self.vote == 'yes' or self.vote == 'no' ):
+    def validateSelf(self):
+        if not (self.vote == 'yes' or self.vote == 'no'):
             raise Exception("Vote type needs to be yes or no")
 
     @staticmethod
-    def get_by_vote( vote ):
+    def get_by_vote(vote):
         return VoteAction.all().filter( 'vote =', vote )
 
     @staticmethod
-    def get_all_yesses( ):
+    def get_all_yesses():
         return VoteAction.all().filter( 'vote =', 'yes' )
 
     @staticmethod
-    def get_all_nos( ):
+    def get_all_nos():
         return VoteAction.all().filter( 'vote =', 'no' )
 
 ## Constructor -----------------------------------------------------------------
@@ -266,3 +304,4 @@ def get_buttonloads_by_app( app ):
 
 def get_buttonloads_by_user_and_url( user, url ):
     return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)
+
