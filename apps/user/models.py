@@ -890,6 +890,7 @@ class User( db.Expando ):
                 taskqueue.add(
                     url = url('FetchFacebookData'),
                     params = {
+                        'user_uuid': self.uuid,
                         'fb_id': self.fb_identity
                     }
                 )
