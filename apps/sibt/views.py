@@ -110,7 +110,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             page_url = urlparse(self.request.headers.get('referer'))
             store_domain   = "%s://%s" % (page_url.scheme, page_url.netloc)
         except Exception, e:
-            logging.error('error parsing referer %s: %s' % e, exc_info=True)
+            logging.error('error parsing referer %s' % e)
             store_domain = self.request.get('store_url')
 
         try:
