@@ -180,7 +180,7 @@ class DoVote( URIHandler ):
 
         which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
-        instance = SIBTInstance.get_by_uuid( instance_uuid )
+        instance = SIBTInstance.get( instance_uuid )
 
         # Make a Vote action for this User
         action = SIBTVoteAction.create( user, instance, which )
@@ -236,9 +236,7 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             return instance
         
         instance_uuid = self.request.get('instance_uuid')
-        instance = SIBTInstance.all()\
-                .filter('uuid =', instance_uuid)\
-                .get()
+        instance = SIBTInstance.get(instance_uuid)
         if instance != None:
             result_instance = db.run_in_transaction(txn, instance)
             email = instance.asker.get_attr('email')
