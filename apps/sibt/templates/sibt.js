@@ -258,7 +258,7 @@
                 "<button id='askBtn' class=''>Ask Your Friends For Advice</button>";
         } 
 
-        var bar_html = "<div class='wrapper'> " +
+        var bar_html = "<div class='_willet_wrapper'> " +
             "<div class='asker'>" +
                 "<div class='pic'><img src='" + image_src + "' /></div>" +
                  asker_text  +

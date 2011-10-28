@@ -165,7 +165,7 @@
     top:0;
     left:0;
 }
-    #_willet_sibt_bar .wrapper {
+    #_willet_sibt_bar ._willet_wrapper {
         margin: auto;
         width: 50%;
         display: block;

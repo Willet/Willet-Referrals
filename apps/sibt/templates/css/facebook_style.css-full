@@ -145,7 +145,7 @@
     position: fixed;
     z-index:50000000;
 }
-    #_willet_sibt_bar .wrapper {
+    #_willet_sibt_bar ._willet_wrapper {
         margin: auto;
         width: 50%;
         display: block;
