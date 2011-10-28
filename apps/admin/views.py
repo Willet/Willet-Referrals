@@ -447,3 +447,12 @@ class Barbara(URIHandler):
 
         product.description = "The Snug, Safe, and Secure Seatbelt Specially Made for Small Dogs."
         product.put()
+
+
+        c = ClientShopify.all()
+        for q in c:
+            q.put()
+
+        for q in c:
+            q.domain = q.url
+            q.put()
