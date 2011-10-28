@@ -824,6 +824,8 @@ class User( db.Expando ):
             try:
                 """ We try to build the params, utf8 encode them"""
                 caption = link.app_.client.domain
+                if not caption:
+                    caption = ''
                 params = {
                     'access_token': self.fb_access_token,
                     'message': msg.encode('utf8'),
