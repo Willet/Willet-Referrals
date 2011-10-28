@@ -126,6 +126,8 @@
     height: 50px;
 }
 #_willet_sibt_bar {
+    top: 0;
+    left: 0;
     border-bottom: 1px solid #133783;
     box-shadow: 0 0 3px 1px rgba(0,0,0,0.75);
     background-color: #3B5998;

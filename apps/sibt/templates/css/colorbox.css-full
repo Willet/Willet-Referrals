@@ -162,6 +162,8 @@
 	font-size: 14px;
     position: fixed;
     z-index:50000000;
+    top:0;
+    left:0;
 }
     #_willet_sibt_bar .wrapper {
         margin: auto;
