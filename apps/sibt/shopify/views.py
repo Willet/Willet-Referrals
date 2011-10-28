@@ -301,9 +301,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             show_votes = True
 
             try:
+                logging.info('got name %s' % asker_name)
                 asker_name = asker_name.split(' ')[0]
+                logging.info('got name %s' % asker_name)
             except:
                 logging.warn('error splitting the asker name')
+            logging.info('got name %s' % asker_name)
 
             is_asker = (instance.asker.key() == user.key()) 
             if not is_asker:
