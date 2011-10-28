@@ -25,6 +25,8 @@ from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
+from apps.product.shopify.models import ProductShopify
+from apps.product.shopify.models import get_shopify_product_by_id
 
 from util                 import httplib2
 from util.consts import *
@@ -437,3 +439,11 @@ class InstallShopifyJunk( URIHandler ):
             if int(resp.status) == 401:
                 logging.info('install failed %d script_tags' % len(script_tags))
         logging.info('installed %d script_tags' % len(script_tags))
+
+
+class Barbara(URIHandler):
+    def get( self ):
+        product = get_shopify_product_by_id( '48647062' )
+
+        product.description = "The Snug, Safe, and Secure Seatbelt Specially Made for Small Dogs."
+        product.put()
