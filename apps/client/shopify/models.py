@@ -23,6 +23,7 @@ from apps.user.models       import User, get_or_create_user_by_email
 
 from util.consts            import *
 from util.helpers           import generate_uuid
+from util.shopify_helpers   import get_shopify_url
 
 # ------------------------------------------------------------------------------
 # ClientShopify Class Definition -----------------------------------------------
@@ -35,6 +36,7 @@ class ClientShopify( Client ):
     # Store properties
     name    = db.StringProperty( indexed = False )
     url     = db.LinkProperty  ( indexed = True )
+    domain  = db.LinkProperty  ( indexed = True )
     token   = db.StringProperty( default = '' )
     id      = db.StringProperty( indexed = True )
 
@@ -62,12 +64,17 @@ class ClientShopify( Client ):
 
         # Now, make the store
         uuid  = generate_uuid( 16 )
+        domain = get_shopify_url( data['domain'] )
+        if domain == '':
+            domain = url
+
         store = ClientShopify( key_name = uuid,
                                uuid     = uuid,
                                email    = data['email'],
                                passphrase = '',
                                name     = data['name'],
                                url      = url,
+                               domain   = domain,
                                token    = token,
                                id       = str(data['id']),
                                merchant = merchant  )
