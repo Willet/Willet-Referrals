@@ -61,7 +61,7 @@ def create_shopify_buttons_app(client, app_token):
                 URL,
                 uuid
             ),
-            "event": "onshopready"
+            "event": "onload"
         }
     }]
 
