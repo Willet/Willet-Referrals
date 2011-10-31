@@ -40,7 +40,7 @@ class OrderIframeNotification(webapp.RequestHandler):
         # Try to fetch order.
         # Have we been webhook-pinged by Shopify yet?
         # A bit of a race condition here ..
-        o = get_shopify_order_by_token( token )
+        order = get_shopify_order_by_token( token )
         if order:
             if order.user:
                 # Merge Users
