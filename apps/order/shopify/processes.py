@@ -10,7 +10,7 @@ from django.utils import simplejson as json
 from apps.client.models          import get_client_by_uuid
 from apps.client.shopify.models  import ClientShopify
 from apps.order.models           import *
-from apps.order.shopify.models   import get_shopify_order_by_id
+from apps.order.shopify.models   import get_shopify_order_by_token
 from apps.order.shopify.models   import create_shopify_order
 from apps.product.shopify.models import get_shopify_product_by_id
 from apps.user.models            import User
