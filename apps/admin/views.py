@@ -27,6 +27,8 @@ from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from apps.product.shopify.models import ProductShopify
 from apps.product.shopify.models import get_shopify_product_by_id
+from apps.order.shopify.models import OrderShopify
+from apps.link.models import Link
 
 from util                 import httplib2
 from util.consts import *
@@ -362,11 +364,9 @@ class InstallShopifyJunk( URIHandler ):
         """ Install the webhooks into the Shopify store """
         webhooks = []
             
-        store_url = 'http://monahan-braun4718.myshopify.com'
+        store_url = 'http://skuuzi.myshopify.com'
 
         client = ClientShopify.all().filter( 'url =', store_url ).get()
-        client.token = 'fadcee62216c1ab0a2438eb922d7fa27'
-        logging.info("TOKEN %s" % client.token )
 
         url      = '%s/admin/webhooks.json' % client._url
         username = 'b153f0ccc9298a8636f92247e0bc53dd'
@@ -443,16 +443,13 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        product = get_shopify_product_by_id( '48647062' )
+        count = 0
+        links = Link.all()
+        for l in links:
+            try:
+                user = l.user
+            except:
+                l.delete()
+                count += 1
 
-        product.description = "The Snug, Safe, and Secure Seatbelt Specially Made for Small Dogs."
-        product.put()
-
-
-        c = ClientShopify.all()
-        for q in c:
-            q.put()
-
-        for q in c:
-            q.domain = q.url
-            q.put()
+        self.response.out.write( count)
