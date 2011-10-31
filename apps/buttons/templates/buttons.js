@@ -59,17 +59,6 @@ var _willet_run_scripts = function() {
             
             */
 
-            var head = document.getElementsByTagName('head')[0];
-            var tmp = document.createElement( 'script' );
-            $(tmp).attr( 'type', 'text/javascript' );
-            $(tmp).attr( 'src', 'http://assets.pinterest.com/js/pinit.js' );
-            head.appendChild( tmp );
-            
-            tmp = document.createElement( 'script' );
-            $(tmp).attr( 'type', 'text/javascript' );
-            $(tmp).attr( 'src', 'http://platform.tumblr.com/v1/share.js' );
-            head.appendChild( tmp );
-
             /**
              * INSERT IFRAME WITH DATA
              */
@@ -91,9 +80,19 @@ var _willet_run_scripts = function() {
                 button_div.appendChild( fb_iframe );
                 console.log('fb_iframe inserted');
                 */
-        
+                
+                // Svpply
+                var d = document.createElement( 'div' );
+                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;' );
+                
+                var a = document.createElement( 'sv:product' );
+                $(a).attr( 'type', 'boxed' );
+                $(a).html = "Share on Svpply";
+                d.appendChild( a );
+                button_div.appendChild( d );
+
                 // Tumblr
-                var a = document.createElement( 'a' );
+                a = document.createElement( 'a' );
                 var style = "display:inline-block; text-indent:-9999px; " +
                             "overflow:hidden; width:63px; height:20px; " + 
                             "background:url('http://platform.tumblr.com/v1/" + 
@@ -124,6 +123,23 @@ var _willet_run_scripts = function() {
                 $(a).html = "Pin It";
                 d.appendChild( a );
                 button_div.appendChild( d );
+
+                // Now, insert the scripts
+                var head = document.getElementsByTagName('head')[0];
+                var tmp = document.createElement( 'script' );
+                $(tmp).attr( 'type', 'text/javascript' );
+                $(tmp).attr( 'src', 'http://assets.pinterest.com/js/pinit.js' );
+                head.appendChild( tmp );
+                
+                tmp = document.createElement( 'script' );
+                $(tmp).attr( 'type', 'text/javascript' );
+                $(tmp).attr( 'src', 'http://platform.tumblr.com/v1/share.js' );
+                head.appendChild( tmp );
+
+                tmp = document.createElement( 'script' );
+                $(tmp).attr( 'type', 'text/javascript' );
+                $(tmp).attr( 'src', 'http://svpply.com/api/all.js#xsvml=1' );
+                head.appendChild( tmp );
             }
         }
     );
