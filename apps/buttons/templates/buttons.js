@@ -8,8 +8,9 @@
 var _willet_run_scripts = function() {
     // get the button where we are going to insert
     var here = window.location + '.json';
+    var $ = jQuery;
 
-    $.getJSON (
+    jQuery.getJSON (
         here,
         function(data) {
             // callback function
