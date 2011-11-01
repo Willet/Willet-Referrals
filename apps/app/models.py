@@ -77,7 +77,7 @@ class App(Model, polymodel.PolyModel):
 
         if not user.is_admin():
             logging.info("Queuing up task to store '%s' to Mixpanel." % event )
-
+            
             taskqueue.add(
                 queue_name = 'mixpanel',
                 url = url('SendActionToMixpanel'), 

@@ -13,6 +13,8 @@ from google.appengine.ext   import db
 
 from apps.action.models     import ClickAction
 from apps.action.models     import VoteAction
+from apps.action.models     import ShowAction 
+from apps.action.models     import UserAction 
 
 from util.helpers           import generate_uuid
 
@@ -58,11 +60,10 @@ class SIBTClickAction( ClickAction ):
     def get_by_instance( instance ):
         return SIBTClickAction.all().filter( 'sibt_instance =', instance )
 
-
 ## -----------------------------------------------------------------------------
 ## SIBTVoteAction Subclass ----------------------------------------------------
 ## -----------------------------------------------------------------------------
-class SIBTVoteAction( VoteAction ):
+class SIBTVoteAction(VoteAction):
     """ Designates a 'vote' action for a User on a SIBT instance. 
         Currently used for 'SIBT' App """
 
@@ -106,4 +107,248 @@ class SIBTVoteAction( VoteAction ):
     def get_by_app_and_instance( a, i ):
         return SIBTVoteAction.all().filter('app_ =', a)\
                                    .filter('sibt_instance =', i).get()
+
+class SIBTShowAction(ShowAction):
+    sibt_instance = db.ReferenceProperty( db.Model, collection_name="show_actions" )
+
+    ## Constructor
+    @staticmethod
+    def create(user, instance, what):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = SIBTShowAction(  key_name = uuid,
+                                uuid     = uuid,
+                                user     = user,
+                                app_     = instance.app_,
+                                link     = instance.link,
+                                url      = instance.link.target_url,
+                                what = what,
+                                sibt_instance = instance)
+        super(SIBTShowAction, act).create()
+        act.put()
+    
+    def __str__(self):
+        return 'Showing %s to %s(%s) for sibt instance %s on site %s' % (
+                self.what,
+                self.user.get_full_name(), 
+                self.user.uuid,
+                self.sibt_instance.uuid,
+                self.sibt_instance.app_.client.domain
+        )
+
+    ## Accessors 
+    @staticmethod
+    def get_by_instance( instance ):
+        return SIBTShowAction.all().filter('sibt_instance =', instance)
+
+    @staticmethod
+    def get_by_app_and_instance_and_user(app, instance, user):
+        return SIBTVoteAction.all().filter('app_ =', app)\
+                                   .filter('sibt_instance =', instance)\
+                                   .filter('user =', user)\
+                                   .get()
+
+    @staticmethod
+    def get_by_app_and_instance(app, instance):
+        return SIBTVoteAction.all().filter('app_ =', app)\
+                                   .filter('sibt_instance =', instance).get()
+
+class SIBTShowingResults(SIBTShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTResults'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        instance = None
+        try:
+            instance = kwargs['instance']
+        except Exception, e:
+            logging.error('error getting instance: %s' % e, exc_info=True)
+
+        action = SIBTShowingResults(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = instance.app_,
+                link     = instance.link,
+                url      = instance.link.target_url,
+                what = what,
+                sibt_instance = instance
+        )
+        super(SIBTShowingResults, action).create()
+        action.put()
+        return action
+
+class SIBTShowingResultsToAsker(SIBTShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTResultsToAsker'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        instance = None
+        try:
+            instance = kwargs['instance']
+        except Exception, e:
+            logging.error('error getting instance: %s' % e, exc_info=True)
+
+        action = SIBTShowingResultsToAsker(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = instance.app_,
+                link     = instance.link,
+                url      = instance.link.target_url,
+                what = what,
+                sibt_instance = instance
+        )
+        super(SIBTShowingResultsToAsker, action).create()
+        action.put()
+        return action
+
+class SIBTShowingVote(SIBTShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTVote'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        instance = None
+        try:
+            instance = kwargs['instance']
+        except Exception, e:
+            logging.error('error getting instance: %s' % e, exc_info=True)
+        
+        action = SIBTShowingVote(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = instance.app_,
+                link     = instance.link,
+                url      = instance.link.target_url,
+                what = what,
+                sibt_instance = instance
+        )
+        super(SIBTShowingVote, action).create()
+        action.put()
+        return action
+
+class SIBTInstanceAction(UserAction):
+    sibt_instance = db.ReferenceProperty(db.Model, collection_name="inst_actions")
+
+    ## Constructor
+    @staticmethod
+    def create(user, instance, what):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        action = SIBTVoteAction(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = instance.app_,
+                link     = instance.link,
+                url      = instance.link.target_url,
+                sibt_instance = instance,
+                what = what
+        )
+        super(SIBTVoteAction, action).create()
+        action.put()
+
+        return action
+    
+    def __str__(self):
+        return 'SIBTInstanceAction: User %s (%s) did %s to %s on %s' % (
+                self.user.get_full_name(), 
+                self.user.uuid,
+                self.what,
+                self.sibt_instance.uuid,
+                self.app_.client.domain
+        )
+
+class SIBTInstanceCreated(SIBTInstanceAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTInstanceCreated'
+        medium = None
+    
+        # make sure we get an instance
+        instance = None
+        try:
+            instance = kwargs['instance']
+            medium = kwargs['medium']
+        except Exception, e:
+            logging.error('error getting instance: %s' % e, exc_info=True)
+        
+        uuid = generate_uuid(16)
+        action = SIBTInstanceCreated(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = instance.app_,
+                link     = instance.link,
+                url      = instance.link.target_url,
+                what = what,
+                sibt_instance = instance
+        )
+        super(SIBTInstanceCreated, action).create()
+        action.put()
+        return action
+
+##
+## SIBT Show event with NO INSTANCE
+##
+class SIBTShowingAskIframe(ShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTAskIframe'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        url = None
+        app = None
+        try:
+            url = kwargs['url']
+            app = kwargs['app']
+        except Exception, e:
+            logging.error('error getting url: %s' % e, exc_info=True)
+        
+        action = SIBTShowingAskIframe(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                url = url,
+                app_ = app,
+                what = what
+        )
+        super(SIBTShowingAskIframe, action).create()
+        action.put()
+        return action
+
+class SIBTShowingAskTopBarIframe(ShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTAskTopBarIframe'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        url = None
+        app = None
+        try:
+            url = kwargs['url']
+            app = kwargs['app']
+        except Exception, e:
+            logging.error('error getting url: %s' % e, exc_info=True)
+        
+        action = SIBTShowingAskTopBarIframe(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                url = url,
+                app_ = app,
+                what = what
+        )
+        super(SIBTShowingAskTopBarIframe, action).create()
+        action.put()
+        return action
 

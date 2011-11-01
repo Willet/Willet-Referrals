@@ -49,9 +49,11 @@
         var iframe = document.createElement( 'iframe' );
 
         iframe.style.display = 'none';
-        iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
+        //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
+        iframe.src = "{% url TrackSIBTShowAction %}?evnt=" + message + 
                     "&app_uuid={{app.uuid}}" +
                     "&user_uuid={{user.uuid}}" +
+                    "&instance_uuid={{instance.uuid}}" +
                     "&target_url=" + window.location.href;
 
         document.body.appendChild( iframe );

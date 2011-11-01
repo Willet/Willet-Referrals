@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="span-24 prepend-top">
+        <h1 class="prepend-top center">Actions</h1>
+        {% for action in actions %}
+            <div class="prepend-3 span-6">
+                {{ action }}
+            </div>
+            <div class="span-6">
+                {{ action.user }}
+            </div>
+            <div class="span-6 append-3 last">
+                {{ action.app_ }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+

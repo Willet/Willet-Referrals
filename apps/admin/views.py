@@ -26,7 +26,6 @@ from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
 from apps.product.shopify.models import ProductShopify
-from apps.product.shopify.models import get_shopify_product_by_id
 
 from util                 import httplib2
 from util.consts import *
@@ -34,7 +33,6 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 class Admin( URIHandler ):
-    
     @admin_required
     def get(self, admin):
         """
@@ -99,7 +97,6 @@ class Admin( URIHandler ):
 
         self.response.out.write( str )
 
-
 class InitRenameFacebookData(webapp.RequestHandler):
     """Ensure all user models have their facebook properties prefixed exactly
        'fb_' and not 'facebook_' """
@@ -140,18 +137,7 @@ class RenameFacebookData(webapp.RequestHandler):
 
 class ImportPlugin(URIHandler):
     def get(self):
-        
-        try: 
-            from plugin.plugin import * 
-            logging.error('plugin')
-            logging.error(LinkedInOAuthHandler)
-        except:
-            logging.error('err', exc_info=True)
-        self.response.out.write(self.render_page(
-                'routes.html',
-                {},
-            )
-        )
+        pass
 
 class ShowRoutes(URIHandler):
     def format_route(self, route):
@@ -262,8 +248,6 @@ class ManageApps(URIHandler):
             )
         ) 
 
-
-
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
         stats = Stats.get_stats()
@@ -356,7 +340,6 @@ class SIBTInstanceStats( URIHandler ):
         self.response.out.write( str )
         return
 
-
 class InstallShopifyJunk( URIHandler ):
     def get( self ):
         """ Install the webhooks into the Shopify store """
@@ -440,10 +423,9 @@ class InstallShopifyJunk( URIHandler ):
                 logging.info('install failed %d script_tags' % len(script_tags))
         logging.info('installed %d script_tags' % len(script_tags))
 
-
 class Barbara(URIHandler):
     def get( self ):
-        product = get_shopify_product_by_id( '48647062' )
+        product = ProductShopify.get_by_id( '48647062' )
 
         product.description = "The Snug, Safe, and Secure Seatbelt Specially Made for Small Dogs."
         product.put()
@@ -456,3 +438,30 @@ class Barbara(URIHandler):
         for q in c:
             q.domain = q.url
             q.put()
+
+class ShowActions(URIHandler):
+    @admin_required
+    def get(self):
+        try:
+            actions = Action.all().order('created').filter('created >=', since).fetch(limit=10)
+            template_values = {
+                'routes': actions 
+            }
+
+            self.response.out.write(self.render_page(
+                    'actions.html',
+                    template_values,
+                )
+            )
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+class GetActionsSince(URIHandler):
+    def get(self, since):
+        """This is going to fetch actions since a datetime"""
+        try:
+            actions = Action.all().order('created').filter('created >=', since).fetch(limit=10)
+            self.response.out.write(json.dumps(actions))
+        except Exception, e:
+            logging.error(e, exc_info=True)
+

@@ -96,9 +96,11 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Now, tell Mixpanel
         if is_topbar_ask:
-            app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+            #app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+            SIBTShowingAskTopBarIframe.create(user, url=target, app=app)
         else:
-            app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+            #app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+            SIBTShowingAskIframe.create(user, url=target, app=app)
 
         # User stats
         user_email = user.get_attr('email') if user else ""
@@ -216,9 +218,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
         logging.info("Did we get an instance? %s" % instance.uuid)
         
-        # default event
-        event = 'SIBTShowingVoteIframe'
-
         if instance:
             if app == None:
                 app = instance.app_
@@ -232,17 +231,23 @@ class VoteDynamicLoader(webapp.RequestHandler):
             if not instance.is_live:
                 has_voted = True
 
-            if is_asker:
-                event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                event = 'SIBTShowingResultsToFriend'
-
             if link == None: 
                 link = instance.link
             share_url = link.get_willt_url()
 
+            if is_asker:
+                SIBTShowingResultsToAsker.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToAsker'
+            elif has_voted:
+                SIBTShowingResults.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToFriend'
+            else:
+                SIBTShowingVote.create(user=user, instance=instance)
+
+
             # Now, tell Mixpanel
-            app.storeAnalyticsDatum( event, user, target )
+            # ... NOPE, I don't wanna!
+            #app.storeAnalyticsDatum( event, user, target )
 
             product = ProductShopify.get_or_fetch(target, app.client)
 
@@ -355,9 +360,6 @@ class ShowResults(webapp.RequestHandler):
 
         logging.info("Did we get an instance? %s" % instance)
         
-        # default event
-        event = 'SIBTShowingVoteIframe'
-
         if instance:
             if app == None:
                 app = instance.app_
@@ -395,14 +397,17 @@ class ShowResults(webapp.RequestHandler):
                         )
                         has_voted = True
 
-            
             if not instance.is_live:
                 has_voted = True
 
             if is_asker:
+                SIBTShowingResultsToAsker.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToAsker'
             elif has_voted:
+                SIBTShowingResults.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToFriend'
+            else:
+                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None: 
                 link = instance.link
@@ -416,7 +421,7 @@ class ShowResults(webapp.RequestHandler):
                 vote_percentage = str(int(float(float(yesses)/float(total))*100))
 
             # Now, tell Mixpanel
-            app.storeAnalyticsDatum(event, user, target)
+            #app.storeAnalyticsDatum(event, user, target)
 
             product = ProductShopify.get_or_fetch(target, app.client)
 
@@ -455,3 +460,4 @@ class ShowResults(webapp.RequestHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
