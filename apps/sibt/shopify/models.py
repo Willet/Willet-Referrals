@@ -58,6 +58,12 @@ class SIBTShopify(SIBT, AppShopify):
             )
         )
 
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient( "Should I Buy This", 
+                             self.client.merchant.get_attr('email'), 
+                             self.client.merchant.get_full_name(), 
+                             self.client.name )
+
 # Constructor ------------------------------------------------------------------
 def create_sibt_shopify_app(client, token):
 
