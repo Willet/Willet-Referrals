@@ -77,6 +77,12 @@ def create_shopify_buttons_app(client, app_token):
             client.url
         )
     )
+
+    # Fire off "personal" email from Fraser
+    Email.welcomeClient( "ShopConnection", 
+                         client.merchant.get_attr('email'), 
+                         client.merchant.get_full_name(), 
+                         client.name )
     
     return app
 
