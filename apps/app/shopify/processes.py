@@ -28,3 +28,10 @@ class DoUninstalledApp( URIHandler ):
                 self.request.headers
             )
         )
+
+        # "Delete" the Apps
+        apps = client.apps
+        for a in apps:
+            a.old_client = client
+            a.client     = None
+            a.put()

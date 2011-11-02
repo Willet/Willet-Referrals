@@ -155,4 +155,3 @@ class AppShopify(Model):
                     )        
                 )
         logging.info('installed %d script_tags' % len(script_tags))
-
