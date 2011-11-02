@@ -17,13 +17,14 @@ from util.consts import *
 #### Addresses ####
 ###################
 
-from_addr = 'z4beth@gmail.com' # must be registered with app engine account
 
 barbara   = 'barbara@getwillet.com'
 fraser    = 'fraser.harris@gmail.com'
 matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
+
+from_addr = barbara
 
 #####################
 #### Email Class ####
@@ -66,6 +67,16 @@ class Email():
         
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
+
+    @staticmethod
+    def welcomeClient( app_name, to_addr, name, store_name ):
+        to_addr = to_addr
+        subject = 'Thanks for Installing "%s"' % (app_name)
+        body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com<br /> Cell 519-580-9876<br /> @fjharris</p> """ % (name, app_name, store_name)
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(fraser, to_addr, subject, body)
+
 
     @staticmethod
     def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img ):
