@@ -29,9 +29,10 @@ class DoUninstalledApp( URIHandler ):
             )
         )
 
-        # "Delete" the Apps
+        # "Delete" the App
         apps = client.apps
         for a in apps:
-            a.old_client = client
-            a.client     = None
-            a.put()
+            if a.class_name() == app_class_name:
+                a.old_client = client
+                a.client     = None
+                a.put()
