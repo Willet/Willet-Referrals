@@ -15,8 +15,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time                       import time
 from urlparse                   import urlparse
 
-from apps.sibt.actions          import SIBTClickAction
-from apps.sibt.actions          import SIBTVoteAction
+from apps.sibt.actions import *
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
@@ -359,6 +358,7 @@ class ShowResults(webapp.RequestHandler):
                         logging.error('failed to get instance: %s' % e, exc_info=True)
 
         logging.info("Did we get an instance? %s" % instance)
+        event = 'SIBTShowingButton'
         
         if instance:
             if app == None:

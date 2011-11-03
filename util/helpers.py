@@ -4,10 +4,44 @@ import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
 import sys
 from urlparse import urlparse
 
+from google.appengine.ext import db
 from google.appengine.ext        import webapp
 
 from util.consts  import *
 from util.cookies import LilCookies
+
+
+
+def to_dict(something, recursion=0):
+    import datetime
+    import time
+    output = {}
+
+    SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
+    if recursion > 3:
+        return str(something)
+
+    for key, prop in something.properties().iteritems():
+        value = getattr(something, key)
+
+        try:
+            if value is None or isinstance(value, SIMPLE_TYPES):
+                output[key] = value
+            elif isinstance(value, datetime.date):
+                # Convert date/datetime to ms-since-epoch ("new Date()").
+                ms = time.mktime(value.utctimetuple()) * 1000
+                ms += getattr(value, 'microseconds', 0) / 1000
+                output[key] = int(ms)
+            elif isinstance(value, db.GeoPt):
+                output[key] = {'lat': value.lat, 'lon': value.lon}
+            elif isinstance(value, db.Model):
+                output[key] = to_dict(value, recursion=recursion+1)
+            else:
+                output[key] = str(value)
+                #raise ValueError('cannot encode ' + repr(prop))
+        except Exception, e:
+            logging.error(e, exc_info=True)
+    return output
 
 def get_target_url( referrer ):
     target = None

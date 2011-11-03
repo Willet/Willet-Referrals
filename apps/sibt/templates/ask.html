@@ -44,7 +44,7 @@
             var storeAnalytics = function( evnt ) {
                 $.ajax({
                     //url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
-                    url: "{% TrackSIBTUserAction %}",
+                    url: "{{ URL }}{% url TrackSIBTUserAction %}",
                     data: {
                         what: evnt,
                         instance_uuid: '',
@@ -59,7 +59,7 @@
             };
 
             var share = function(medium, uid) {
-                storeAnalytics('SIBTClickedOnShare');
+                storeAnalytics('SIBTShowingAskIframe');
 
                 // use the selected medium to share about your purchase
 

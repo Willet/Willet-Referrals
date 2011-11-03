@@ -50,7 +50,7 @@
 
         iframe.style.display = 'none';
         //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
-        iframe.src = "{% url TrackSIBTShowAction %}?evnt=" + message + 
+        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
                     "&app_uuid={{app.uuid}}" +
                     "&user_uuid={{user.uuid}}" +
                     "&instance_uuid={{instance.uuid}}" +
@@ -72,7 +72,13 @@
     /**
     * Onclick event handler for the 'sibt' button
     */
-    var _willet_button_onclick = function() {
+    var _willet_topbar_onclick = function(e) {
+        _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
+
+    };
+
+    var _willet_button_onclick = function(e, message) {
+        var message = message || 'SIBTUserClickedButtonAsk';
         try {
             $('#_willet_padding').hide();
             _willet_topbar.fadeOut('fast');
@@ -83,6 +89,7 @@
             //_willet_show_vote();
             window.location.reload(true);
         } else {
+            _willet_store_analytics(message);
             _willet_show_ask();        
         }
     };
@@ -378,7 +385,8 @@
                 // ... BORING!
                 // let's hide the top bar as well
                 
-                _willet_button_onclick();
+                _willet_topbar_onclick();
+                //_willet_button_onclick();
                 /*
                 if (iframe_div.css('display') == 'none') {
                     if (iframe.attr('src') == undefined) {
@@ -529,6 +537,7 @@
 
             // check if we are showing top bar ask too
             if (show_top_bar_ask) {
+                _willet_store_analytics('SIBTShowingTopBarAsk');
                 _willet_show_topbar_ask();
             }
 

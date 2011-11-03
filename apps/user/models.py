@@ -22,7 +22,9 @@ from traceback import print_tb
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
+from google.appengine.api import datastore_errors
 from google.appengine.ext import db
+from google.appengine.datastore import entity_pb
 
 import apps.oauth.models
 from apps.order.shopify.models import OrderShopify
@@ -117,6 +119,7 @@ class User( db.Expando ):
 
     # ReferenceProperty
     #emails = db.EmailProperty(indexed=True)
+
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -126,6 +129,65 @@ class User( db.Expando ):
        
         super(User, self).__init__(*args, **kwargs)
     
+    # USER MEMCACHE METHODS
+    @staticmethod
+    def _get_from_datastore(uuid):
+        """Datastore retrieval using memcache_key"""
+        return User.all().filter('uuid =', uuid).get()
+    
+    def put(self):
+        """Stores model instance in memcache and database"""
+        key = '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+        logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
+        timeout_ms = 100
+        while True:
+            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            try:
+                self.hardPut() # Will validate the instance.
+            except datastore_errors.Timeout:
+                thread.sleep(timeout_ms)
+                timeout_ms *= 2
+            else:
+                break
+        # Memcache *after* model is given datastore key
+        if self.key():
+            memcache.set(key, db.model_to_protobuf(self).Encode())
+            
+        return True
+
+    def hardPut( self ):
+        # By default, Python fcns return None
+        # If you want to prevent an object from being saved to the db, have 
+        # validateSelf return anyhting except None
+        if self.validateSelf( ) == None:
+            
+            logging.debug("PUTTING %s" % self.__class__.__name__)
+            db.put( self )
+        
+    def get_key(self):
+        return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+
+    @classmethod
+    def get(cls, memcache_key):
+        """Checks memcache for model before hitting database
+        Each class must have a staticmethod get_from_datastore
+        TODO(barbara): Enforce the above statement!!!
+        Also, should it be: get_from_datastore OR _get_from_datastore?
+        """
+        key = '%s-%s' % (cls.__name__.lower(), memcache_key)
+        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        data = memcache.get(key)
+        if not data:
+            logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
+            entity = cls._get_from_datastore(memcache_key)
+            # Throw everything in the memcache when you pull it - it may never be saved
+            if entity:
+                memcache.set(key, db.model_to_protobuf(entity).Encode())
+            return entity
+        else:
+            logging.debug('Model::get(): %s found in memcache!' % key)
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
     def is_admin( self ):
         logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
 
@@ -220,6 +282,7 @@ class User( db.Expando ):
             fname = "A %s User!" % (NAME)
 
         return fname
+    name = property(get_full_name)
 
     def get_handle(self, service=None):
         """returns the name of this user, depends on what service

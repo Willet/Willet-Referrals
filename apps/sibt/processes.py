@@ -12,8 +12,7 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.sibt.actions        import SIBTVoteAction
-from apps.sibt.actions import SIBTInstanceCreated
+from apps.sibt.actions        import *
 from apps.app.models          import App
 from apps.app.models import get_app_by_id
 from apps.email.models        import Email
@@ -273,7 +272,7 @@ class TrackSIBTShowAction(URIHandler):
         instance = SIBTInstance.get(self.request.get('instance_uuid')) 
         app = App.get(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
-        what = self.request.get('what')
+        what = self.request.get('evnt')
         url = self.request.get('target_url')
         action = None
         try:
@@ -296,7 +295,7 @@ class TrackSIBTShowAction(URIHandler):
             logging.info('tracked action: %s' % action)
             success = True
 
-        self.response.out.write(json.dumps({'success': success}))
+        self.response.out.write('')
 
 class TrackSIBTUserAction(URIHandler):
     def get(self):
@@ -332,5 +331,5 @@ class TrackSIBTUserAction(URIHandler):
             logging.info('tracked action: %s' % action)
             success = True
 
-        self.response.out.write(json.dumps({'success': success}))
+        self.response.out.write('')
 

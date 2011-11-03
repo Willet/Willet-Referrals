@@ -325,13 +325,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
             # precache this page's product
-            taskqueue.add(
-                url = url('FetchProductShopify'), 
-                params = {
-                    'url': target,
-                    'client': app.client.uuid
-                }
-            )
+            #taskqueue.add(
+            #    url = url('FetchProductShopify'), 
+            #    params = {
+            #        'url': target,
+            #        'client': app.client.uuid
+            #    }
+            #)
         else:
             logging.info('could not get an instance, check page views')
 

@@ -45,7 +45,7 @@ class SIBTClickAction( ClickAction ):
                                 link = link,
                                 url = link.target_url,
                                 sibt_instance = link.sibt_instance.get() )
-        super(SIBTClickAction, act).create()
+        #super(SIBTClickAction, act).create()
 
         act.put()
 
@@ -85,7 +85,7 @@ class SIBTVoteAction(VoteAction):
                                 url      = instance.link.target_url,
                                 sibt_instance = instance,
                                 vote     = vote )
-        super(SIBTVoteAction, act).create()
+        #super(SIBTVoteAction, act).create()
         act.put()
     
     def __str__(self):
@@ -124,7 +124,7 @@ class SIBTShowAction(ShowAction):
                                 url      = instance.link.target_url,
                                 what = what,
                                 sibt_instance = instance)
-        super(SIBTShowAction, act).create()
+        #super(SIBTShowAction, act).create()
         act.put()
     
     def __str__(self):
@@ -153,6 +153,30 @@ class SIBTShowAction(ShowAction):
         return SIBTVoteAction.all().filter('app_ =', app)\
                                    .filter('sibt_instance =', instance).get()
 
+class SIBTShowingButton(ShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        app = None
+        url = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception, e:
+            logging.error('invalid parameters: %s' % e, exc_info=True)
+
+        what = 'SIBTShowingButton'
+        uuid = generate_uuid( 16 )
+        action = ShowAction(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                what = what,
+                url = url
+        )
+        action.put()
+        return action
+
 class SIBTShowingResults(SIBTShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -176,7 +200,7 @@ class SIBTShowingResults(SIBTShowAction):
                 what = what,
                 sibt_instance = instance
         )
-        super(SIBTShowingResults, action).create()
+        #super(SIBTShowingResults, action).create()
         action.put()
         return action
 
@@ -203,7 +227,7 @@ class SIBTShowingResultsToAsker(SIBTShowAction):
                 what = what,
                 sibt_instance = instance
         )
-        super(SIBTShowingResultsToAsker, action).create()
+        #super(SIBTShowingResultsToAsker, action).create()
         action.put()
         return action
 
@@ -230,7 +254,7 @@ class SIBTShowingVote(SIBTShowAction):
                 what = what,
                 sibt_instance = instance
         )
-        super(SIBTShowingVote, action).create()
+        #super(SIBTShowingVote, action).create()
         action.put()
         return action
 
@@ -252,17 +276,15 @@ class SIBTInstanceAction(UserAction):
                 sibt_instance = instance,
                 what = what
         )
-        super(SIBTVoteAction, action).create()
+        #super(SIBTVoteAction, action).create()
         action.put()
 
         return action
     
     def __str__(self):
-        return 'SIBTInstanceAction: User %s (%s) did %s to %s on %s' % (
+        return 'SIBTInstanceAction: User %s did %s on %s' % (
                 self.user.get_full_name(), 
-                self.user.uuid,
                 self.what,
-                self.sibt_instance.uuid,
                 self.app_.client.domain
         )
 
@@ -291,7 +313,7 @@ class SIBTInstanceCreated(SIBTInstanceAction):
                 what = what,
                 sibt_instance = instance
         )
-        super(SIBTInstanceCreated, action).create()
+        #super(SIBTInstanceCreated, action).create()
         action.put()
         return action
 
@@ -321,10 +343,37 @@ class SIBTShowingAskIframe(ShowAction):
                 app_ = app,
                 what = what
         )
-        super(SIBTShowingAskIframe, action).create()
+        #super(SIBTShowingAskIframe, action).create()
         action.put()
         return action
 
+class SIBTShowingTopBarAsk(ShowAction):
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTTopBarAsk'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        url = None
+        app = None
+        try:
+            url = kwargs['url']
+            app = kwargs['app']
+        except Exception, e:
+            logging.error('error getting url: %s' % e, exc_info=True)
+        
+        action = SIBTShowingTopBarAsk(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                url = url,
+                app_ = app,
+                what = what
+        )
+        #super(SIBTShowingAskIframe, action).create()
+        action.put()
+        return action
+        
 class SIBTShowingAskTopBarIframe(ShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -348,7 +397,58 @@ class SIBTShowingAskTopBarIframe(ShowAction):
                 app_ = app,
                 what = what
         )
-        super(SIBTShowingAskTopBarIframe, action).create()
+        #super(SIBTShowingAskTopBarIframe, action).create()
         action.put()
         return action
 
+class SIBTUserClickedTopBarAsk(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTUserClickedTopBarAsk'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedTopBarAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+        return action
+
+class SIBTUserClickedButtonAsk(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTUserClickedButtonAsk'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedButtonAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+        return action

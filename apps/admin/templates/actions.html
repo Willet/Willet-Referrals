@@ -1,19 +1,404 @@
 {% extends "base.html" %}
+{% block head %}
+<script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+    <style type="text/css">
+        .filters input {
+            padding: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.1);
+            width: 150px;
+            color: grey;
+            font-size: 12px;
+            height: inherit;
+            margin-bottom: 0px;
+        }
+        .filters input:focus,
+        .filters input:active {
+            color: black;
+            border: 1px solid rgba(0,0,0,0.5);
+            box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.1);
+        }
+        .loading {
+            display: none;
+        }
+        button {
+            font-size: 12px;
+            padding: 2px 4px;
+        }
+        #actions_list div {
+            display: inline-block;
+        }
+        ul.ac_dropdown {
+            z-index: 999;
+            background: white;
+            box-shadow: 0px 1px 1px 1px rgba(0,0,0,0.1);
+            position: absolute;
+            overflow-y: scroll;
+            display: none;
+            height: 100px; 
+            padding: 3px;
+        }
+            ul.ac_dropdown li {
+                margin: 0px;
+                padding: 0px;
+                font-size: 10px;
+                cursor: pointer;
+            }
+            ul.ac_dropdown li:hover,
+            ul.ac_dropdown li.selected {
+                text-decoration: underline;
+                color: grey;
+                background: rgba(0,0,0,0.1);
+            }
+            ul.ac_dropdown li.active {
+                text-decoration: none;
+                color: orange;
+            }
+    </style>
+    <script type="text/javascript">
+        var actions = [];
+        var since = '';
+        var before = '';
+        var do_pull_timer = true;
+        var filter_action = null;
+        var filter_client = null;
+        var filter_user = null;
+        var actions_template = {
+            'el': null,
+            'create': function() {
+                var action_name = this.action._class[this.action._class.length-1];
+                var url = '';
+                if (this.action.url != null) {
+                    url = '<span rel="tooltip" title="'+this.action.url+'">url</span>'; 
+                }
+                this.el = $(document.createElement('div'));
+                this.el.attr('id', this.action.uuid);
+                this.el.css('display', 'none');
+                var html = "" +
+                    "<div class='span-4'>" +
+                        this.action.created_format + 
+                    "</div>" +
+                    "<div class='span-5'>" +
+                        action_name + 
+                    "</div>" +
+                    "<div class='span-4'>" +
+                        this.user.name +
+                    "</div>" +
+                    "<div class='span-6'>" +
+                        this.client.domain +
+                    "</div>" +
+                    "<div class='span-5 last'>" +
+                        url +
+                    "</div>";
+                this.el.html(html);
+                return this.el;
+            }, 'id': function() {
+                return this.action.uuid;
+            }, 'is_visible': function() {
+                return (this.el.css('display') != 'none');
+            }, 'filter': function() {
+                var match = true;
+                var action = this;
+                $.each(filters, function(i){
+                    if (match)
+                        match = filters[i].test(action); 
+                });
+                return match;
+            }, 'prepend': function() {
+                var created = false;
+                if (this.el == null) {
+                    this.create();
+                    created = true;
+                }
+                this.el.remove();
+                $('#actions_list').prepend(this.el);
+                if (created) {
+                    this.el.effect("highlight", {}, 3000); 
+                }
+            }, 'append': function() {
+                var created = false;
+                if (this.el == null) {
+                    this.create();
+                    created = true;
+                }
+                this.el.remove();
+                $('#actions_list').append(this.el);
+                if (created) {
+                    this.el.effect("highlight", {}, 3000); 
+                }
+            }
+        };
+        var filters = {
+            'filter_action': {
+                'name': 'action',
+                'id': '#filter_action',
+                'autocomplete': {},
+                'test': function(action) {
+                    var match = true;
+                    var el = $(this.id);
+                    var matching_class = false;
+                    for (i = 0; i < action.action._class.length; i++) {
+                        var class_name = action.action._class[i];
+                        this.autocomplete[class_name] = {
+                            'key': class_name,
+                            'value': class_name
+                        };
+                        if (el.val() != '') {
+                            if (class_name.indexOf(el.val()) != -1) {
+                                matching_class = true;
+                                break
+                            }
+                        } else {
+                            matching_class = true;
+                        }
+                    }
+                    match = matching_class;
+                    return match;
+                }
+            }, 'filter_user': {
+                'name': 'user',
+                'id': '#filter_user',
+                'autocomplete': {},
+                'test': function(action) {
+                    var match = true;
+                    var el = $(this.id);
+                    this.autocomplete[action.user.uuid] = {
+                        'key': action.user.uuid,
+                        'value': action.user.name 
+                    };
+                    if (el.val() != '') {
+                        if (action.user.uuid.indexOf(el.val()) == -1) {
+                            match = false; 
+                        }
+                    }
+                    return match;
+                }
+            }, 'filter_client': {
+                'name': 'client',
+                'id': '#filter_client',
+                'autocomplete': {},
+                'test': function(action) {
+                    var match = true;
+                    var el = $(this.id);
+                    this.autocomplete[action.client.uuid] = {
+                        'key': action.client.uuid,
+                        'value': action.client.domain || action.client.name
+                    }; 
+                    if (el.val() != '') {
+                        if (action.client.uuid.indexOf(el.val()) == -1) {
+                            match = false; 
+                        }
+                    }
+                    return match;
+                }
+            }
+        };
+
+        var pull_actions = function(forced) {
+            forced = forced || false;
+            if (do_pull_timer || forced) {
+                $('#force_pull').hide().next('.loading').show();
+                $.getJSON('{% url GetActionsSince %}', {
+                        'since': since
+                    }, function(data) {
+                        $.each(data, function(index){
+                            $.extend(data[index], actions_template);
+                            data[index].prepend();
+                            if (data[index].filter()) {
+                                data[index].el.show();
+                            }
+                        });
+                        actions = data.concat(actions);
+                        //actions = actions.sort(sort_actions);
+                        update_since_before();
+                        $('#force_pull').show().next('.loading').hide();
+                        if (!forced)
+                            pull_timer = setTimeout(pull_actions, 10000);
+                    }
+                );
+            } else {
+                pull_timer = setTimeout(pull_actions, 10000);
+            }
+        };
+
+        var pull_older_actions = function() {
+            $('#get_older').hide().next('.loading').show();
+            $.getJSON('{% url GetActionsSince %}', {
+                    'before': before 
+                }, function(data) {
+                    $.each(data, function(index){
+                        $.extend(data[index], actions_template);
+                        data[index].append();
+                        if (data[index].filter()) {
+                            data[index].el.show();
+                        }
+                    });
+                    actions = actions.concat(data);
+                    update_since_before();
+                    $('#get_older').show().next('.loading').hide();
+            }); 
+        };
+        var update_since_before = function() {
+            since = $('#actions_list').children().first().attr('id');
+            before = $('#actions_list').children().last().attr('id');
+        };
+
+        var filter_actions = function() {
+            $.each(actions, function(index){
+                var action = actions[index];
+                if (action.filter()) {
+                    action.el.show();
+                } else {
+                    action.el.hide(); 
+                }
+            });
+        };
+        
+        var sort_actions = function(a, b) {
+            return b.action.created - a.action.created
+        };
+
+        var filter_autocomplete = function(e) {
+            var el = $(this);
+            var ac_dd = $('#' + el.attr('id') + '_dd');
+            var ac = filters[el.attr('id')].autocomplete;
+            var key = e.keyCode || e.charCode;
+            if (key == 13) {
+                // enter key!
+                var selected = ac_dd.children('.selected:visible');
+                if (selected.length != 0) {
+                    selected.removeClass('selected');
+                    el.val(selected.text());
+                }
+                el.blur();
+            } else if (key == 40) {
+                // down arrow
+                var selected = ac_dd.children('.selected:visible');
+                if (selected.length == 0){
+                    selected = ac_dd.children(':visible').first();
+                    selected.addClass('selected');
+                } else {
+                    selected = (selected.next('li:visible').length != 0 ? selected.next('li:visible') : selected);
+                    selected.prev('li:visible').removeClass('selected');
+                    selected.addClass('selected');
+                    var t = selected.position().top; 
+                    if (t < 0 || t > ac_dd.height())
+                        ac_dd.scrollTop(t);
+                }
+            } else if (key == 38) {
+                // up arrow
+                var selected = ac_dd.children('.selected:visible');
+                if (selected.length == 0){
+                    selected = ac_dd.children(':visible').last();
+                    selected.addClass('selected');
+                } else {
+                    selected = (selected.prev('li:visible').length != 0 ? selected.prev('li:visible') : selected);
+                    selected.next('li:visible').removeClass('selected');
+                    selected.addClass('selected');
+                    var t = selected.position().top; 
+                    if (t < 0 || t > ac_dd.height())
+                        ac_dd.scrollTop(t);
+                }
+            } else if (key == 27) {
+                el.blur();
+            }
+
+            if (ac_dd.css('display') == 'none') {
+                // we are showing the dropdown
+                ac_dd.slideDown('fast');
+            }
+            $.each(ac, function(i){
+                var o = ac[i];
+                var dd_el = ac_dd.children('#' + ac_dd.attr('id') + '_' + o.key);
+                if (dd_el.length == 0) {
+                    // create the drop down element
+                    dd_el = $(document.createElement('li'));
+                    dd_el.attr('id', ac_dd.attr('id') + '_' + o.key )
+                    dd_el.html(o.value);
+                    dd_el.css('display', 'none');
+                    dd_el.addClass('ac_dd_el');
+                    dd_el.css('width', el.width());
+                    dd_el.css('left', el.offset().left + $('#main').offset().left);
+                    dd_el.css('top', el.offset().top + el.height());
+                    ac_dd.append(dd_el);
+                }
+                if (o.value.indexOf(el.val()) != -1) {
+                    // we have a match
+                    if (dd_el.css('display') == 'none') {
+                        dd_el.slideDown('fast');
+                    }
+                } else {
+                    if (dd_el.css('display') != 'none') {
+                        dd_el.slideUp('fast');
+                    }
+                }
+            });
+        };
+
+        $(document).ready(function() {
+            // poll for new actions        
+            $('input.filter').live('keyup', filter_autocomplete)
+                .blur(function(){
+                    $('#' + $(this).attr('id') + '_dd').slideUp('fast');         
+                    $(this).next('ul').children('.selected').removeClass('selected');
+                }).focus(filter_autocomplete);
+            $('#toggle_do_pull_timer').change(function() {
+                do_pull_timer = !do_pull_timer; 
+            });
+            $('#force_pull').click(function() {
+                pull_actions(true); //force
+            });
+            $('ul.ac_dropdown li').live('click', function(e) {
+                var input = $(this).parent().prev('input');
+                var this_text = $(this).text();
+                input.val(this_text);
+                input.blur(); 
+            });
+            $('#get_older').click(pull_older_actions);
+            $('#apply_filters').click(filter_actions);
+            pull_actions();
+        });
+
+    </script>
+{% endblock %}
 
 {% block content %}
     <div class="span-24 prepend-top">
         <h1 class="prepend-top center">Actions</h1>
-        {% for action in actions %}
-            <div class="prepend-3 span-6">
-                {{ action }}
+        <h3>Filters</h3>
+        <div class="filters">
+            <div class='prepend-4 span-5'>
+                Action
+                <br />
+                <input type="text" id="filter_action" class="filter" />
+                <ul id="filter_action_dd" class='ac_dropdown'></ul>
             </div>
-            <div class="span-6">
-                {{ action.user }}
+            <div class='span-4'>
+                User
+                <br />
+                <input type="text" id="filter_user" class="filter" />
+                <ul id="filter_user_dd" class='ac_dropdown'></ul>
             </div>
-            <div class="span-6 append-3 last">
-                {{ action.app_ }}
+            <div class='span-6'>
+                Client
+                <br />
+                <input type="text" id="filter_client" class="filter" />
+                <ul id="filter_client_dd" class='ac_dropdown'></ul>
             </div>
-        {% endfor %}
+            <div class='span-5 last'>
+                <input id='toggle_do_pull_timer' type='checkbox' checked='checked' /> 
+                <button id='apply_filters'>Filter</button>
+                <button id='force_pull'>Refresh</button>
+                <img src='{{ URL }}/static/imgs/loading.gif' class='loading' />
+            </div>
+        </div>
+        <div id="actions_list">
+        
+        </div>
+        <div class='span-24 prepend-top'>
+            <a href='javascript:;' id='get_older'>Older</a>
+            <img src='{{ URL }}/static/imgs/loading.gif' class='loading' />
+        </div>
     </div>
 {% endblock content %}
 

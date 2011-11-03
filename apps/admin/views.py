@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re, urllib, sys
 from inspect import getmodule
+from datetime import datetime
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -440,28 +441,66 @@ class Barbara(URIHandler):
             q.put()
 
 class ShowActions(URIHandler):
-    @admin_required
     def get(self):
-        try:
-            actions = Action.all().order('created').filter('created >=', since).fetch(limit=10)
-            template_values = {
-                'routes': actions 
-            }
-
-            self.response.out.write(self.render_page(
-                    'actions.html',
-                    template_values,
-                )
+        template_values = {}
+            
+        self.response.out.write(self.render_page(
+                'actions.html',
+                template_values,
             )
-        except Exception,e:
-            logging.error(e, exc_info=True)
+        )
 
 class GetActionsSince(URIHandler):
-    def get(self, since):
+    def get(self):
         """This is going to fetch actions since a datetime"""
+        since = self.request.get('since')
+        before = self.request.get('before')
         try:
-            actions = Action.all().order('created').filter('created >=', since).fetch(limit=10)
-            self.response.out.write(json.dumps(actions))
+            actions = Action.all()
+            actions = actions.order('-created')
+            if since:
+                logging.info('filtering by since %s' % since) 
+                last_pull = Action.get(str(since))
+                actions = actions.filter('created >', last_pull.created)
+                actions = sorted(actions, key=lambda action: action.created)
+            elif before:
+                logging.info('filtering actions before %s' % before)
+                before_pull = Action.get(str(before))
+                actions = actions.filter('created <', before_pull.created)
+                actions = actions.fetch(limit=10)
+                #actions = sorted(actions, key=lambda action: action.created)
+            else:
+                actions = actions.order('created').fetch(limit=10)
+                logging.info('%s' % actions)
+                actions = sorted(actions, key=lambda action: action.created)
+                logging.info('%s' % actions)
+
+            actions_json = []
+            for action in actions:
+                # add some extra shit
+                user = to_dict(action.user)
+                user['name'] = action.user.name
+
+                client = action.app_.client
+                client = to_dict(client)
+
+                created_format = '%s' % action.created
+                action = to_dict(action)
+                action['created_format'] = created_format
+
+
+                actions_json.append({
+                    'action': action,
+                    'user': user,
+                    'client': client
+                })
+            #actions_json = ''
+            #actions_json = [to_dict(action) for action in actions]
+            actions_json = json.dumps(actions_json)
+            #a_str = 'Got %s from %s' % (actions_json, actions)
+            self.response.out.write(actions_json)
+            #self.response.out.write(a_str)
         except Exception, e:
             logging.error(e, exc_info=True)
+            self.response.out.write(e)
 
