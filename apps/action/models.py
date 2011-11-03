@@ -83,8 +83,7 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode())
 
-        NUM_BUCKETS = 10 
-        bucket = random.randint(0, NUM_BUCKETS)
+        bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
         bucket_key = "_willet_actions_bucket:%s" % bucket
         logging.warn('bucket key: %s' % bucket_key)
 
@@ -93,7 +92,7 @@ class Action(Model, polymodel.PolyModel):
         memcache.set(bucket_key, list_identities)
 
         logging.warn('bucket length: %d' % len(list_identities))
-        if len(list_identities) > NUM_BUCKETS:
+        if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
             memcache.set(bucket_key, [])
             logging.warn('bucket overfilling, persisting!')
             deferred.defer(persist_actions, list_identities)

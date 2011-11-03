@@ -10,7 +10,7 @@ from django.utils import simplejson as json
 from apps.client.models          import get_client_by_uuid
 from apps.client.shopify.models  import ClientShopify
 from apps.order.models           import *
-from apps.order.shopify.models   import get_shopify_order_by_id
+from apps.order.shopify.models   import get_shopify_order_by_token
 from apps.order.shopify.models   import create_shopify_order
 from apps.product.shopify.models import ProductShopify
 from apps.user.models            import User
@@ -40,7 +40,7 @@ class OrderIframeNotification(webapp.RequestHandler):
         # Try to fetch order.
         # Have we been webhook-pinged by Shopify yet?
         # A bit of a race condition here ..
-        o = get_shopify_order_by_token( token )
+        order = get_shopify_order_by_token( token )
         if order:
             if order.user:
                 # Merge Users

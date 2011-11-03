@@ -28,3 +28,12 @@ class DoUninstalledApp( URIHandler ):
                 self.request.headers
             )
         )
+
+        # "Delete" the App
+        apps = client.apps
+        for a in apps:
+            logging.info('%s %s' % (a.class_name(), app_class_name))
+            if a.class_name() == app_class_name:
+                a.old_client = client
+                a.client     = None
+                a.put()

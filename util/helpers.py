@@ -48,6 +48,7 @@ def get_target_url( referrer ):
     try:
         page_url = urlparse( referrer )
         target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+        return target
     except Exception, e:
         logging.warn('error parsing referer %s: %s' % (
                 'referrer',
@@ -55,7 +56,7 @@ def get_target_url( referrer ):
             ),
             exc_info=True
         )
-    return target
+        return ""
 
 def isGoodURL(url):
     if len(url) < 11:

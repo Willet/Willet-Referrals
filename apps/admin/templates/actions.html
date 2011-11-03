@@ -18,6 +18,10 @@
             border: 1px solid rgba(0,0,0,0.5);
             box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.1);
         }
+        .filters input[type="checkbox"] {
+            width: initial;
+
+        }
         .loading {
             display: none;
         }
@@ -167,7 +171,7 @@
                         'value': action.user.name 
                     };
                     if (el.val() != '') {
-                        if (action.user.uuid.indexOf(el.val()) == -1) {
+                        if (action.user.name.indexOf(el.val()) == -1) {
                             match = false; 
                         }
                     }
@@ -386,9 +390,9 @@
                 <ul id="filter_client_dd" class='ac_dropdown'></ul>
             </div>
             <div class='span-5 last'>
-                <input id='toggle_do_pull_timer' type='checkbox' checked='checked' /> 
                 <button id='apply_filters'>Filter</button>
                 <button id='force_pull'>Refresh</button>
+                <input id='toggle_do_pull_timer' type='checkbox' checked='checked' /> 
                 <img src='{{ URL }}/static/imgs/loading.gif' class='loading' />
             </div>
         </div>

@@ -11,6 +11,7 @@
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
+    var _willet_padding = null;
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -194,6 +195,16 @@
     };
 
     /**
+     * Hides the top bar and padding
+     */
+    var _willet_close_top_bar = function() {
+        //$('#_willet_padding').hide();
+        _willet_padding.hide();
+        _willet_topbar.slideUp('fast'); 
+        _willet_store_analytics('SIBTUserClosedTopBar');
+    };
+
+    /**
     * Expand the top bar and load the results iframe
     */
     var _willet_do_vote_yes = function() { _willet_do_vote(1);};
@@ -297,7 +308,11 @@
             "<div class='iframe' style='display: none'> "+
             "    <div style='display: none' class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
             "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' ></iframe> "+ 
-            "</div></div>";
+            "</div>" +
+            "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
+            "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+            "</div>" +
+        "</div>";
         return bar_html;
     };
 
@@ -308,8 +323,8 @@
         var body = $('body'); 
         
         // create the padding for the top bar
-        var padding = document.createElement('div');
-        padding = $(padding)
+        _willet_padding = document.createElement('div');
+        _willet_padding = $(_willet_padding)
             .attr('id', '_willet_padding')
             .css('display', 'none');
 
@@ -318,11 +333,12 @@
             .attr('id', '_willet_sibt_bar')
             .css('display', "none")
             .html(build_top_bar_html());
-        body.prepend(padding);
+        body.prepend(_willet_padding);
         body.prepend(_willet_topbar);
 
         // bind event handlers
         $('#_willet_toggle_results').unbind().bind('click', _willet_toggle_results);
+        $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
         $('#yesBtn').click(_willet_do_vote_yes);
         $('#noBtn').click(_willet_do_vote_no);
         
@@ -348,7 +364,7 @@
                 .fadeIn();
             $('#_willet_toggle_results').fadeIn();
         }
-        padding.show(); 
+        _willet_padding.show(); 
         _willet_topbar.slideDown('slow');
     };
 
@@ -357,9 +373,9 @@
      */
     var _willet_show_topbar_ask = function() {
         // create the padding for the top bar
-        var padding = document.createElement('div');
+        _willet_padding = document.createElement('div');
 
-        padding = $(padding)
+        _willet_padding = $(_willet_padding)
             .attr('id', '_willet_padding')
             .css('display', 'none');
 
@@ -369,11 +385,13 @@
             .css('display', "none")
             .html(build_top_bar_html(true));
 
-        $("body").prepend(padding).prepend(_willet_topbar);
+        $("body").prepend(_willet_padding).prepend(_willet_topbar);
 
         var iframe = _willet_topbar.find('div.iframe iframe');
         var iframe_div = _willet_topbar.find('div.iframe');
 
+        $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+        
         _willet_topbar.find('div.message')
             .css('cursor', 'pointer')
             .click(function() {
@@ -412,7 +430,7 @@
             }
         );
         
-        padding.show(); 
+        _willet_padding.show(); 
         _willet_topbar.slideDown('slow'); 
     };
 
