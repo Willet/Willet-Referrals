@@ -427,7 +427,8 @@ class Barbara(URIHandler):
         pass
 
 class ShowActions(URIHandler):
-    def get(self):
+    @admin_required
+    def get(self, admin):
         template_values = {}
             
         self.response.out.write(self.render_page(
@@ -437,7 +438,8 @@ class ShowActions(URIHandler):
         )
 
 class GetActionsSince(URIHandler):
-    def get(self):
+    @admin_required
+    def get(self, admin):
         """This is going to fetch actions since a datetime"""
         since = self.request.get('since')
         before = self.request.get('before')
