@@ -54,3 +54,5 @@ class UpdateProductShopify( URIHandler ):
         product = ProductShopify.get_by_id( str(data['id']) )
         
         product.update_from_json( data )
+
+

@@ -14,3 +14,4 @@ class FetchShopifyProducts( URIHandler ):
         app_type = self.request.get( 'app_type' )
 
         client.get_products( app_type )
+

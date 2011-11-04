@@ -44,7 +44,23 @@ def persist_actions(list_keys):
                     timeout_ms *= 2
                 else:
                     break
+def persist_action(action):
+    from apps.sibt.actions import *
+    logging.error('persisting action')
+    timeout_ms = 100
 
+    if action:
+        while True:
+            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (action.__class__.__name__.lower(), timeout_ms))
+            try:
+                another_action = Action.all().filter('uuid =', action.uuid).get()
+                if another_action == None:
+                    action.hardPut() # Will validate the instance.
+            except datastore_errors.Timeout:
+                thread.sleep(timeout_ms)
+                timeout_ms *= 2
+            else:
+                break
 
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
@@ -83,19 +99,20 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode())
 
-        bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
-        bucket_key = "_willet_actions_bucket:%s" % bucket
-        logging.warn('bucket key: %s' % bucket_key)
+        deferred.defer(persist_action, self)
+        #bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
+        #bucket_key = "_willet_actions_bucket:%s" % bucket
+        #logging.warn('bucket key: %s' % bucket_key)
 
-        list_identities = memcache.get(bucket_key) or []
-        list_identities.append(key)
-        memcache.set(bucket_key, list_identities)
+        #list_identities = memcache.get(bucket_key) or []
+        #list_identities.append(key)
+        #memcache.set(bucket_key, list_identities)
 
-        logging.warn('bucket length: %d' % len(list_identities))
-        if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
-            memcache.set(bucket_key, [])
-            logging.warn('bucket overfilling, persisting!')
-            deferred.defer(persist_actions, list_identities)
+        #logging.warn('bucket length: %d' % len(list_identities))
+        #if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
+        #    memcache.set(bucket_key, [])
+        #    logging.warn('bucket overfilling, persisting!')
+        #    deferred.defer(persist_actions, list_identities)
 
     def get_class_name(self):
         return self.__class__.__name__
