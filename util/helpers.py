@@ -171,11 +171,16 @@ def admin_required( fn ):
     def check(self, param=None):
         client = self.get_client()
 
+        logging.info('checking admin for client: %s' % client)
         if client and client.email in ADMIN_EMAILS: 
             fn(self, client)
         elif self.request.remote_addr in ADMIN_IPS:
             fn(self, client)
         else:
+            logging.info('not admin\nemail: %s\nip: %s' % (
+                client.email,
+                self.request.remote_addr
+            ))
             self.redirect ( '/' )
     return check
 
