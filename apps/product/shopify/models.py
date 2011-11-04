@@ -39,9 +39,11 @@ class ProductShopify(Product):
         uuid = generate_uuid( 16 )
         
         # Make the product
-        product = ProductShopify( key_name     = uuid,
-                                  uuid         = uuid,
-                                  client       = client )
+        product = ProductShopify(
+                key_name = uuid,
+                uuid = uuid,
+                client = client
+        )
 
         # Now, update it with info.
         # update_from_json will PUT the obj.
@@ -59,6 +61,7 @@ class ProductShopify(Product):
     def get_or_fetch(url, client):
         product = ProductShopify.get_by_url( url )
         if product == None:
+            logging.warn('Could not get product for url: %s' % url)
             try:
                 result = urlfetch.fetch(
                         url = '%s.json' % url,
@@ -67,13 +70,15 @@ class ProductShopify(Product):
                             
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_id( str(data['id']) )
-                product.add_url( url )
-            
+                if product:
+                    product.add_url( url )
+                else:
+                    logging.error('failed to get product for id: %s' % str(data['id']))
             except:
                 logging.error("error fetching and storing product for url %s" % url, exc_info=True)
         return product
 
-    def update_from_json( self, data ):
+    def update_from_json(self, data):
         logging.info("data %s" % data)
         tags = description = images = None
         price = 0.0
