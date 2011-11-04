@@ -28,7 +28,6 @@ class SIBTShopify(SIBT, AppShopify):
 
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
-    button_enabled = db.BooleanProperty(default=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

@@ -35,7 +35,7 @@ NUM_VOTE_SHARDS = 15
 class SIBT(App):
     """Model storing the data for a client's 'Should I Buy This?' app"""
     emailed_at_10 = db.BooleanProperty( default = False )
-   
+    button_enabled = db.BooleanProperty(default=True)
     store_name    = db.StringProperty( indexed = True )
     #store_url     = db.LinkProperty( indexed = False, default = None, required = False )
 

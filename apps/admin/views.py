@@ -186,13 +186,16 @@ class ManageApps(URIHandler):
         all_apps = App.all()
         apps = []
         for app in all_apps:
-            d = {
-                'uuid': app.uuid,
-                'client_name': app.client.name,
-                'class_name': app.class_name(),
-                'client': app.client,
-                'app': app
-            }
+            try:
+                d = {
+                    'uuid': app.uuid,
+                    'client_name': app.client.name,
+                    'class_name': app.class_name(),
+                    'client': app.client,
+                    'app': app
+                }
+            except Exception,e:
+                logging.error('error adding app: %s' % e, exc_info=True)
             apps.append(d)
         return apps
     
