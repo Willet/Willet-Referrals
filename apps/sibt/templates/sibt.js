@@ -474,7 +474,7 @@
             }
         }, {
             'name': 'jQuery Colorbox',
-            'url': '{{ URL }}/static/js/jquery.colorbox-min.js',
+            'url': '{{ URL }}/static/js/jquery.colorbox.js',
             'dom_el': null,
             'loaded': false,
             'test': function() {
