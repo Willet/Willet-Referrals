@@ -72,6 +72,13 @@ class Email():
     def welcomeClient( app_name, to_addr, name, store_name ):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
+    
+        # Grab first name only
+        try:
+            name = name.split(' ')[0]
+        except:
+            pass
+
         body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com<br /> Cell 519-580-9876<br /> @fjharris</p> """ % (name, app_name, store_name)
         
         logging.info("Emailing X%sX" % to_addr)
