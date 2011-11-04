@@ -97,20 +97,20 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode())
 
-        deferred.defer(persist_action, self)
-        #bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
-        #bucket_key = "_willet_actions_bucket:%s" % bucket
-        #logging.warn('bucket key: %s' % bucket_key)
+        #deferred.defer(persist_action, self)
+        bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
+        bucket_key = "_willet_actions_bucket:%s" % bucket
+        logging.warn('bucket key: %s' % bucket_key)
 
-        #list_identities = memcache.get(bucket_key) or []
-        #list_identities.append(key)
-        #memcache.set(bucket_key, list_identities)
+        list_identities = memcache.get(bucket_key) or []
+        list_identities.append(key)
+        memcache.set(bucket_key, list_identities)
 
-        #logging.warn('bucket length: %d' % len(list_identities))
-        #if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
-        #    memcache.set(bucket_key, [])
-        #    logging.warn('bucket overfilling, persisting!')
-        #    deferred.defer(persist_actions, list_identities)
+        logging.warn('bucket length: %d' % len(list_identities))
+        if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
+            memcache.set(bucket_key, [])
+            logging.warn('bucket overfilling, persisting!')
+            deferred.defer(persist_actions, list_identities)
 
     def get_class_name(self):
         return self.__class__.__name__
