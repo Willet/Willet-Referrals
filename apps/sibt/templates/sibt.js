@@ -473,7 +473,9 @@
             }, 'callback': function() {
                 return;
             }
-        }, {
+        }, 
+        /*
+        {
             'name': 'jQuery',
             'url': '{{ URL }}/static/js/jquery.min.js',
             'dom_el': null,
@@ -484,15 +486,18 @@
                 $ = jQuery;
                 return;
             }
-        }, {
+        },
+        */
+        {
             'name': 'jQuery Colorbox',
-            'url': '{{ URL }}/static/js/jquery.colorbox-min.js',
+            'url': '{{ URL }}/static/js/jquery.colorbox.js',
             'dom_el': null,
             'loaded': false,
             'test': function() {
                 return (typeof jQuery == 'function' && typeof jQuery.colorbox == 'function');
             }, 'callback': function() {
                 // HACKETY HACK HACK
+                $ = jQuery;
                 $.colorbox = jQuery.colorbox;
                 jQuery.colorbox.init();
             }

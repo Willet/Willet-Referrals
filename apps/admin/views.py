@@ -21,6 +21,7 @@ from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import get_link_by_willt_code
+from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions   import SIBTClickAction
 from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
@@ -432,7 +433,17 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        pass
+        ps = Action.all()
+
+        count = 0
+        for p in ps:
+            try:
+                c = p.app_
+            except:
+                count += 1
+                p.delete()
+
+        self.response.out.write( count )
 
 class ShowActions(URIHandler):
     @admin_required
