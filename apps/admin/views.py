@@ -425,9 +425,17 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        p = ProductShopify.all().filter( 'shopify_id =', '60952062' ).get()
-        p.description = "<p>These 23cm long <b>Block chopsticks</b> are available in <b>3 colors : </b>blue, pink and red. They have a gripping end, to grab food easier. <br />Made of plastic AS, so dishwasher safe.</p><p>And of course, they interlock with each other like the famous bricks!</p><p>Made in China.</p>"
-        p.put()
+        ps = Action.all()
+
+        count = 0
+        for p in ps:
+            try:
+                c = p.app_
+            except:
+                count += 1
+                p.delete()
+
+        self.response.out.write( count )
 
 class ShowActions(URIHandler):
     @admin_required

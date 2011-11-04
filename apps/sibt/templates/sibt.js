@@ -472,7 +472,9 @@
             }, 'callback': function() {
                 return;
             }
-        }, {
+        }, 
+        /*
+        {
             'name': 'jQuery',
             'url': '{{ URL }}/static/js/jquery.min.js',
             'dom_el': null,
@@ -483,7 +485,9 @@
                 $ = jQuery;
                 return;
             }
-        }, {
+        },
+        */
+        {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
             'dom_el': null,
