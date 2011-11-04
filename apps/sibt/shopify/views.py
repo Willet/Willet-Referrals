@@ -354,7 +354,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 product_images = product.images
                 product_title = product.title
 
-
+        if not hasattr(app, 'button_enabled'):
+            # this should only happen once, can be removed at a later date
+            app.button_enabled = True
+            app.put()
+    
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
             ab_test_options = [ "Not sure? Poll your friends!",

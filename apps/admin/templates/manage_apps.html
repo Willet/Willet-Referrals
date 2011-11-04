@@ -1,8 +1,18 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block right_head %}
+    <p><a href="{{ URL }}{% url ShowActions %}">Actions</a></p>
+    <p><a href="{{ URL }}{% url ManageApps %}">Apps</a></p>
+{% endblock right_head %}
+
+{% block bottom_content %}
     <div class="span-24 prepend-top">
         <h1 class="prepend-top center">Manage Installed Apps</h1>
+        {% for message in messages %}
+            <div class="prepend-3 span-21 {{ message.type }}">
+                {{ message.text }}
+            </div>
+        {% endfor %}
         {% for app in apps %}
             <div class="prepend-3 span-6">
                 {{ app.client_name }} 
@@ -11,12 +21,20 @@
                 {{ app.class_name }}
             </div>
             <div class="span-6 append-3 last">
-                <form method="post" action="?">
-                    <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                    <input type="submit" value="Install Scripts" />
-                </form>
+                {% ifequal app.class_name "SIBTShopify" %}
+                    <form method="post" action="?">
+                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                        {% if app.app.button_enabled %}
+                            <input type="hidden" name="action" value="disable_button" />
+                            <input type="submit" value="Disable Button" />
+                        {% else %}
+                            <input type="hidden" name="action" value="enable_button" />
+                            <input type="submit" value="Enable Button" />
+                        {% endif %}
+                    </form>
+                {% endifequal %}
             </div>
         {% endfor %}
     </div>
-{% endblock content %}
+{% endblock bottom_content %}
 

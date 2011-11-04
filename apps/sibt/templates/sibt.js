@@ -8,6 +8,7 @@
     var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
     var _willet_has_voted = ('{{ has_voted }}' == 'True');
+    var sibt_button_enabled = ('{{ app.button_enabled }}' == 'True');
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
@@ -558,27 +559,30 @@
                 _willet_store_analytics('SIBTShowingTopBarAsk');
                 _willet_show_topbar_ask();
             }
-
-            if (_willet_is_asker) {
-                button_html = 'See what your friends said';
-            } else if (_willet_show_votes) {
-                button_html = 'Help {{ asker_name }} by voting!';
-            } else {
-                button_html = '{{AB_CTA_text}}';
-            }
-
-            button = $(button)
-                .addClass('button')
-                .html(button_html)
-                .css('display', 'none')
-                .attr('title', 'Ask your friends if you should buy this!')
-                .attr('id','_willet_button')
-                .click(_willet_button_onclick);
             
-            $(purchase_cta).append(button);
-            button.fadeIn(250, function() {
-                $(this).css('display', 'inline-block'); 
-            });
+            if (sibt_button_enabled) {
+                // only add button if it's enabled in the app 
+                if (_willet_is_asker) {
+                    button_html = 'See what your friends said';
+                } else if (_willet_show_votes) {
+                    button_html = 'Help {{ asker_name }} by voting!';
+                } else {
+                    button_html = '{{AB_CTA_text}}';
+                }
+
+                button = $(button)
+                    .addClass('button')
+                    .html(button_html)
+                    .css('display', 'none')
+                    .attr('title', 'Ask your friends if you should buy this!')
+                    .attr('id','_willet_button')
+                    .click(_willet_button_onclick);
+                
+                $(purchase_cta).append(button);
+                button.fadeIn(250, function() {
+                    $(this).css('display', 'inline-block'); 
+                });
+            }
             
             // watch for message
             // Create IE + others compatible event handler
