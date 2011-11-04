@@ -26,23 +26,20 @@ def persist_actions(list_keys):
     from apps.sibt.actions import *
     action_dict = memcache.get_multi([key for key in list_keys]) 
     timeout_ms = 100
-
+    
+    logging.info('batch putting a list of actions from memcache: %s' % list_keys)
+    actions_to_put = []
     for key in list_keys:
         data = action_dict.get(key)
         action = db.model_from_protobuf(entity_pb.EntityProto(data))
-
         if action:
-            while True:
-                logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (action.__class__.__name__.lower(), timeout_ms))
-                try:
-                    another_action = Action.all().filter('uuid =', action.uuid).get()
-                    if another_action == None:
-                        action.hardPut() # Will validate the instance.
-                except datastore_errors.Timeout:
-                    thread.sleep(timeout_ms)
-                    timeout_ms *= 2
-                else:
-                    break
+            actions_to_put.append(action)
+
+    try:
+        db.put(actions_to_put)
+    except Exception,e:
+        logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
+
 def persist_action(action):
     from apps.sibt.actions import *
     timeout_ms = 100
