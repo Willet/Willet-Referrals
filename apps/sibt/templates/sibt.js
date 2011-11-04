@@ -497,6 +497,7 @@
                 return (typeof jQuery == 'function' && typeof jQuery.colorbox == 'function');
             }, 'callback': function() {
                 // HACKETY HACK HACK
+                $ = jQuery;
                 $.colorbox = jQuery.colorbox;
                 jQuery.colorbox.init();
             }
