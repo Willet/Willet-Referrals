@@ -24,7 +24,7 @@ from apps.user.models       import User, get_or_create_user_by_email
 
 from util.consts            import *
 from util.helpers           import generate_uuid
-from util.helpers           import url 
+from util.helpers           import url as build_url 
 from util.shopify_helpers   import get_shopify_url
 
 # ------------------------------------------------------------------------------
@@ -70,14 +70,14 @@ class ClientShopify( Client ):
         uuid  = generate_uuid( 16 )
         domain = get_shopify_url( data['domain'] )
         if domain == '':
-            domain = url
+            domain = url_
 
         store = ClientShopify( key_name = uuid,
                                uuid     = uuid,
                                email    = data['email'],
                                passphrase = '',
                                name     = data['name'],
-                               url      = url,
+                               url      = url_,
                                domain   = domain,
                                token    = token,
                                id       = str(data['id']),
@@ -95,12 +95,9 @@ class ClientShopify( Client ):
                          phone      = data['phone'],
                          email      = data['email'], 
                          client     = store )
-
-        logging.info("Tasking up %s" % url('FetchShopifyProducts'))
-
         # Query the Shopify API to dl all Products
         taskqueue.add(
-                url = url('FetchShopifyProducts'),
+                url = build_url('FetchShopifyProducts'),
                 params = {
                     'client_uuid': uuid,
                     'app_type'   : app_type
@@ -227,3 +224,57 @@ def get_store_info(store_url, store_token, app_type):
     logging.info('shop: %s' % (shop))
     
     return shop
+
+def get_product_imgs(store_url, store_token, app_type):
+    """ Fetch images for all the products in this store """
+
+    # Construct the API URL
+    url      = '%s/admin/products.json' % (store_url)
+    
+    # Fix inputs ( legacy )
+    if app_type == "referral":
+        app_type = 'ReferralShopify'
+    elif app_type == "sibt": 
+        app_type = 'SIBTShopify'
+    
+    # Grab Shopify API settings
+    settings = SHOPIFY_APPS[app_type]
+
+    username = settings['api_key'] 
+    password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
+
+    # this creates a password manager
+    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    # because we have put None at the start it will always
+    # use this username/password combination for  urls
+    # for which `url` is a super-url
+    passman.add_password(None, url, username, password)
+
+    # create the AuthHandler
+    authhandler = urllib2.HTTPBasicAuthHandler(passman)
+
+    opener = urllib2.build_opener(authhandler)
+
+    # All calls to urllib2.urlopen will now use our handler
+    # Make sure not to include the protocol in with the URL, or
+    # HTTPPasswordMgrWithDefaultRealm will be very confused.
+    # You must (of course) use it when fetching the page though.
+    urllib2.install_opener(opener)
+
+    # authentication is now handled automatically for us
+    logging.info("Querying %s" % url )
+    result = urllib2.urlopen(url)
+
+    # Grab the data about the order from Shopify
+    details  = json.loads( result.read() ) #['orders'] # Fetch the order
+    products = details['products']
+
+    ret = []
+    for p in products:
+        for k, v in p.iteritems():
+            if 'images' in k:
+                if len(v) != 0:
+                    img = v[0]['src'].split('?')[0]
+                    ret.append( img )   
+    return ret
+

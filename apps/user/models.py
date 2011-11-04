@@ -167,6 +167,9 @@ class User( db.Expando ):
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
+    def validateSelf(self):
+        pass
+
     @classmethod
     def get(cls, memcache_key):
         """Checks memcache for model before hitting database

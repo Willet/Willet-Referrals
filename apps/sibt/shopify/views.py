@@ -26,6 +26,7 @@ from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTClickAction
 from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
@@ -336,11 +337,16 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             logging.info('could not get an instance, check page views')
 
             # check for two page views
-            view_actions = ButtonLoadAction.all()\
-                    .filter('user =', user)\
-                    .filter('url =', target)\
-                    .count()
-            if view_actions >= 1:# or user.is_admin():
+
+            #view_actions = ButtonLoadAction.all()\
+            #        .filter('user =', user)\
+            #        .filter('url =', target)\
+            #        .count()
+            tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
+            logging.info('got tracked urls')
+            logging.info(tracked_urls)
+            if target in tracked_urls:
+                #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 

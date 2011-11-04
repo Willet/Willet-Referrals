@@ -10,6 +10,7 @@ import logging
 
 from google.appengine.api   import memcache
 from google.appengine.ext   import db
+from google.appengine.datastore import entity_pb
 
 from apps.action.models     import ClickAction
 from apps.action.models     import VoteAction
@@ -166,7 +167,7 @@ class SIBTShowingButton(ShowAction):
 
         what = 'SIBTShowingButton'
         uuid = generate_uuid( 16 )
-        action = ShowAction(
+        action = SIBTShowingButton(
                 key_name = uuid,
                 uuid = uuid,
                 user = user,
@@ -175,7 +176,28 @@ class SIBTShowingButton(ShowAction):
                 url = url
         )
         action.put()
+
+        # tracking urls for fast lookup
+        tracking_urls = memcache.get(action.get_tracking_key()) or []
+        tracking_urls.append(url)
+        memcache.set(action.get_tracking_key(), tracking_urls)
         return action
+
+    @classmethod
+    def get_tracking_by_user_and_app(cls, user, app):
+        tracking_key = '%s-%s-%s' % (
+            cls.__name__,
+            app.uuid,
+            user.uuid
+        )
+        return memcache.get(tracking_key) or []
+    
+    def get_tracking_key(self):
+        return '%s-%s-%s' % (
+            self.__class__.__name__,
+            self.app_.uuid,
+            self.user.uuid
+        )
 
 class SIBTShowingResults(SIBTShowAction):
     @staticmethod
