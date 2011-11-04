@@ -112,7 +112,8 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '173.177.235.110',    # Montreal apartment
-              '70.31.244.131'       # Montreal apartment x2
+              '70.31.244.131',       # Montreal apartment x2
+              '76.65.157.73'        # Montreal apartment( BELL)
             ]
 
 # the apps we are using
