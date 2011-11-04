@@ -10,24 +10,49 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.client.models import Client
-from apps.product.shopify.models import get_or_fetch_shopify_product
+from apps.client.shopify.models  import ClientShopify
+from apps.product.shopify.models import ProductShopify
 
-from util.consts import *
-from util.helpers import *
+from util.consts     import *
+from util.helpers    import *
+from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
-class FetchProductShopify(webapp.RequestHandler):
-    """Fetch shopify product"""
+class CreateProductShopify( URIHandler ):
+    """Create a Shopify product"""
     def post(self):
+        logging.info("HEADERS : %s %r" % (
+            self.request.headers,
+            self.request.headers
+            )
+        )
 
-        url = self.request.get('url')
-        client_uuid = self.request.get('client')
-        client = Client.all().filter('uuid =', client_uuid).get()
+        store_url = get_shopify_url(self.request.headers['X-Shopify-Shop-Domain'])
+        logging.info("store: %s " % store_url)
+        client = ClientShopify.get_by_url( store_url ) 
 
-        logging.info('getting url: %s' % url)
+        # Grab the data about the product from Shopify
+        product = json.loads(self.request.body) 
 
-        product = get_or_fetch_shopify_product(url, client)
+        ProductShopify.create_from_json( client, product )
+
+class UpdateProductShopify( URIHandler ):
+    """Update a Shopify product"""
+    def post(self):
+        logging.info("HEADERS : %s %r" % (
+            self.request.headers,
+            self.request.headers
+            )
+        )
+
+        store_url = "http://%s" % self.request.headers['X-Shopify-Shop-Domain']
+        logging.info("store: %s " % store_url)
+        store_url = get_shopify_url(self.request.headers['X-Shopify-Shop-Domain'])
+
+        # Grab the data about the product from Shopify
+        data = json.loads(self.request.body) 
+        product = ProductShopify.get_by_id( str(data['id']) )
         
-        logging.info("done updating %s" % product)
+        product.update_from_json( data )
+
 

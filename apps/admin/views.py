@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re, urllib, sys
 from inspect import getmodule
+from datetime import datetime
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -25,9 +26,6 @@ from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
-from apps.product.shopify.models import ProductShopify
-from apps.product.shopify.models import get_shopify_product_by_id
-from apps.order.shopify.models import OrderShopify
 from apps.link.models import Link
 
 from util                 import httplib2
@@ -36,7 +34,6 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 class Admin( URIHandler ):
-    
     @admin_required
     def get(self, admin):
         """
@@ -101,7 +98,6 @@ class Admin( URIHandler ):
 
         self.response.out.write( str )
 
-
 class InitRenameFacebookData(webapp.RequestHandler):
     """Ensure all user models have their facebook properties prefixed exactly
        'fb_' and not 'facebook_' """
@@ -142,18 +138,7 @@ class RenameFacebookData(webapp.RequestHandler):
 
 class ImportPlugin(URIHandler):
     def get(self):
-        
-        try: 
-            from plugin.plugin import * 
-            logging.error('plugin')
-            logging.error(LinkedInOAuthHandler)
-        except:
-            logging.error('err', exc_info=True)
-        self.response.out.write(self.render_page(
-                'routes.html',
-                {},
-            )
-        )
+        pass
 
 class ShowRoutes(URIHandler):
     def format_route(self, route):
@@ -264,8 +249,6 @@ class ManageApps(URIHandler):
             )
         ) 
 
-
-
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
         stats = Stats.get_stats()
@@ -358,7 +341,6 @@ class SIBTInstanceStats( URIHandler ):
         self.response.out.write( str )
         return
 
-
 class InstallShopifyJunk( URIHandler ):
     def get( self ):
         """ Install the webhooks into the Shopify store """
@@ -440,16 +422,73 @@ class InstallShopifyJunk( URIHandler ):
                 logging.info('install failed %d script_tags' % len(script_tags))
         logging.info('installed %d script_tags' % len(script_tags))
 
-
 class Barbara(URIHandler):
     def get( self ):
-        count = 0
-        links = Link.all()
-        for l in links:
-            try:
-                user = l.user
-            except:
-                l.delete()
-                count += 1
+        pass
 
-        self.response.out.write( count)
+class ShowActions(URIHandler):
+    @admin_required
+    def get(self, admin):
+        template_values = {}
+            
+        self.response.out.write(self.render_page(
+                'actions.html',
+                template_values,
+            )
+        )
+
+class GetActionsSince(URIHandler):
+    @admin_required
+    def get(self, admin):
+        """This is going to fetch actions since a datetime"""
+        since = self.request.get('since')
+        before = self.request.get('before')
+        try:
+            actions = Action.all()
+            actions = actions.order('-created')
+            if since:
+                logging.info('filtering by since %s' % since) 
+                last_pull = Action.get(str(since))
+                actions = actions.filter('created >', last_pull.created)
+                actions = sorted(actions, key=lambda action: action.created)
+            elif before:
+                logging.info('filtering actions before %s' % before)
+                before_pull = Action.get(str(before))
+                actions = actions.filter('created <', before_pull.created)
+                actions = actions.fetch(limit=10)
+                #actions = sorted(actions, key=lambda action: action.created)
+            else:
+                actions = actions.order('created').fetch(limit=10)
+                logging.info('%s' % actions)
+                actions = sorted(actions, key=lambda action: action.created)
+                logging.info('%s' % actions)
+
+            actions_json = []
+            for action in actions:
+                # add some extra shit
+                user = to_dict(action.user)
+                user['name'] = action.user.name
+
+                client = action.app_.client
+                client = to_dict(client)
+
+                created_format = '%s' % action.created
+                action = to_dict(action)
+                action['created_format'] = created_format
+
+
+                actions_json.append({
+                    'action': action,
+                    'user': user,
+                    'client': client
+                })
+            #actions_json = ''
+            #actions_json = [to_dict(action) for action in actions]
+            actions_json = json.dumps(actions_json)
+            #a_str = 'Got %s from %s' % (actions_json, actions)
+            self.response.out.write(actions_json)
+            #self.response.out.write(a_str)
+        except Exception, e:
+            logging.error(e, exc_info=True)
+            self.response.out.write(e)
+

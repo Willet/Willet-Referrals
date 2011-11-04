@@ -22,10 +22,11 @@ from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
 from apps.link.models         import get_link_by_willt_code
 from apps.link.models         import create_link
-from apps.product.shopify.models import get_or_fetch_shopify_product
+from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTClickAction
 from apps.sibt.actions        import SIBTVoteAction
+from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
@@ -301,14 +302,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             show_votes = True
 
             try:
-                logging.info('got asker name: %s' % asker_name)
                 asker_name = asker_name.split(' ')[0]
-                logging.info('got asker name: %s' % asker_name)
                 if not asker_name:
                     asker_name = 'I'
             except:
                 logging.warn('error splitting the asker name')
-            logging.info('got asker name: %s' % asker_name)
 
             is_asker = (instance.asker.key() == user.key()) 
             if not is_asker:
@@ -327,29 +325,32 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-            #product = get_or_fetch_shopify_product(target, app.client)
-
             # precache this page's product
-            taskqueue.add(
-                url = url('FetchProductShopify'), 
-                params = {
-                    'url': target,
-                    'client': app.client.uuid
-                }
-            )
+            #taskqueue.add(
+            #    url = url('FetchProductShopify'), 
+            #    params = {
+            #        'url': target,
+            #        'client': app.client.uuid
+            #    }
+            #)
         else:
             logging.info('could not get an instance, check page views')
 
             # check for two page views
-            view_actions = ButtonLoadAction.all()\
-                    .filter('user =', user)\
-                    .filter('url =', target)\
-                    .count()
-            if view_actions >= 1:# or user.is_admin():
+
+            #view_actions = ButtonLoadAction.all()\
+            #        .filter('user =', user)\
+            #        .filter('url =', target)\
+            #        .count()
+            tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
+            logging.info('got tracked urls')
+            logging.info(tracked_urls)
+            if target in tracked_urls:
+                #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
-                product = get_or_fetch_shopify_product(target, app.client)
+                product = ProductShopify.get_or_fetch(target, app.client)
                 product_images = product.images
                 product_title = product.title
 

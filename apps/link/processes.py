@@ -200,13 +200,15 @@ class CleanBadLinks( webapp.RequestHandler ):
         str   = 'Cleaning the bad links'
         for l in links:
             clicks = l.count_clicks()
+            try:
+                if l.user == None and clicks != 0:
+                    count += 1
+                    str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
-            if l.user == None and clicks != 0:
-                count += 1
-                str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
-
+                    l.delete()
+            except Exception,e:
                 l.delete()
-
+                logging.warn('probably unable to resolve property: %s' % e)
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
 

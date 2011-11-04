@@ -12,7 +12,7 @@ from apps.client.shopify.models  import ClientShopify
 from apps.order.models           import *
 from apps.order.shopify.models   import get_shopify_order_by_token
 from apps.order.shopify.models   import create_shopify_order
-from apps.product.shopify.models import get_shopify_product_by_id
+from apps.product.shopify.models import ProductShopify
 from apps.user.models            import User
 from apps.user.models            import get_or_create_user_by_email
 from apps.user.models            import get_user_by_uuid
@@ -95,7 +95,7 @@ class OrderWebhookNotification(URIHandler):
             # Grab the purchased items and save some information about them.
             elif k == 'line_items':
                 for j in v:
-                    product = get_shopify_product_by_id(str(j['product_id']))
+                    product = ProductShopify.get_by_id(str(j['product_id']))
                     if product:
                         items.append(product.key())
 

@@ -92,6 +92,26 @@ class AppShopify(Model):
         }
         webhooks.append(data)
 
+        # Install the "Product Creation" webhook
+        data = {
+            "webhook": {
+                "address": "%s/product/shopify/webhook/create" % ( URL ),
+                "format" : "json",
+                "topic"  : "products/create"
+            }
+        }
+        webhooks.append(data)
+        
+        # Install the "Product Update" webhook
+        data = {
+            "webhook": {
+                "address": "%s/product/shopify/webhook/update" % ( URL ),
+                "format" : "json",
+                "topic"  : "products/update"
+            }
+        }
+        webhooks.append(data)
+
         for webhook in webhooks:
             logging.info('Installing extra hook %s' % webhook)
             logging.info("POSTING to %s %r " % (url, webhook))

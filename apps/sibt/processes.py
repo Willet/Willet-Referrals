@@ -12,8 +12,9 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.sibt.actions        import SIBTVoteAction
-from apps.app.models          import get_app_by_id
+from apps.sibt.actions        import *
+from apps.app.models          import App
+from apps.app.models import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
 from apps.product.models      import Product
@@ -118,10 +119,11 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 # add testimonial
                 create_testimonial(user=user, message=message, link=link)
 
-                # Send data to Mixpanel
-                app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
-                app.storeAnalyticsDatum( 'SIBTInstanceSharedOnFacebook', user, link.target_url )
-                
+                # Send data to s/Mixpanel/us/ !
+                #app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
+                #app.storeAnalyticsDatum( 'SIBTInstanceSharedOnFacebook', user, link.target_url )
+                SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
+
                 response['success'] = True
         except Exception,e:
             response['data']['message'] = str(e)
@@ -153,7 +155,8 @@ class StartSIBTInstance(URIHandler):
             instance = app.create_instance(user, None, link, img)
         
             # Store analytics datapoint
-            app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
+            #app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
+            SIBTInstanceCreated.create(user, instance=instance, medium='unknown/twitter')
             
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
@@ -250,9 +253,83 @@ class StoreAnalytics( URIHandler ):
     def get( self ):
         user = get_user_by_uuid( self.request.get('user_uuid') )
 
-        event  = self.request.get( 'evnt' )
+        event  = self.request.get('evnt')
         target = self.request.get( 'target_url' )
         app    = get_app_by_id( self.request.get( 'app_uuid' ) )
 
         # Now, tell Mixpanel
         app.storeAnalyticsDatum( event, user, target )
+        logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
+
+class TrackSIBTShowAction(URIHandler):
+    def get(self):
+        """Compatibility with iframe shizz"""
+        self.post()
+
+    def post(self):
+        """So javascript can track a sibt specific show actions"""
+        success = False
+        instance = SIBTInstance.get(self.request.get('instance_uuid')) 
+        app = App.get(self.request.get('app_uuid'))
+        user = User.get(self.request.get('user_uuid'))
+        what = self.request.get('evnt')
+        url = self.request.get('target_url')
+        action = None
+        try:
+            action_class = globals()[what]
+            action = action_class.create(user, 
+                    instance=instance, 
+                    url=url,
+                    app=app
+            )
+        except Exception,e:
+            logging.warn('(this is not serious) could not create class: %s' % e)
+            try:
+                action = SIBTShowAction.create(user, instance, what)
+            except Exception, e:
+                logging.error('this is serious: %s' % e, exc_info=True)
+            else:
+                logging.info('tracked action: %s' % action)
+                success = True
+        else:
+            logging.info('tracked action: %s' % action)
+            success = True
+
+        self.response.out.write('')
+
+class TrackSIBTUserAction(URIHandler):
+    def get(self):
+        """Compatibility with iframe shizz"""
+        self.post()
+
+    def post(self):
+        """So javascript can track a sibt specific show actions"""
+        success = False
+        instance = SIBTInstance.get(self.request.get('instance_uuid')) 
+        app = App.get(self.request.get('app_uuid'))
+        user = User.get(self.request.get('user_uuid'))
+        what = self.request.get('what')
+        url = self.request.get('target_url')
+        action = None
+        try:
+            action_class = globals()[what]
+            action = action_class.create(user, 
+                    instance=instance, 
+                    url=url,
+                    app=app
+            )
+        except Exception,e:
+            logging.warn('(this is not serious) could not create class: %s' % e)
+            try:
+                action = SIBTUserAction.create(user, instance, what)
+            except Exception, e:
+                logging.error('this is serious: %s' % e, exc_info=True)
+            else:
+                logging.info('tracked action: %s' % action)
+                success = True
+        else:
+            logging.info('tracked action: %s' % action)
+            success = True
+
+        self.response.out.write('')
+

@@ -30,16 +30,14 @@ class Model(db.Model):
         return True
 
     def hardPut( self ):
-        # By default, Python fcns return None
-        # If you want to prevent an object from being saved to the db, have 
-        # validateSelf return anyhting except None
-        if self.validateSelf( ) == None:
-            
-            logging.debug("PUTTING %s" % self.__class__.__name__)
-            db.put( self )
+        logging.debug("PUTTING %s" % self.__class__.__name__)
+        db.put( self )
         
     def validateSelf( self ):
         pass # Fill in in sub class!!
+
+    def get_key(self):
+        return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
     @classmethod
     def get(cls, memcache_key):

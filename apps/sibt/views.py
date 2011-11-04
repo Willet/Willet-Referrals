@@ -15,8 +15,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time                       import time
 from urlparse                   import urlparse
 
-from apps.sibt.actions          import SIBTClickAction
-from apps.sibt.actions          import SIBTVoteAction
+from apps.sibt.actions import *
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
@@ -25,8 +24,7 @@ from apps.link.models           import Link
 from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
-from apps.product.shopify.models import get_or_fetch_shopify_product 
-from apps.product.shopify.models import get_shopify_product_by_id 
+from apps.product.shopify.models import ProductShopify
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
@@ -65,9 +63,9 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Grab the product info
         if app.client.uuid == 'e54825444acb4f2e': # ie. if doggie seat belt
-            product = get_shopify_product_by_id( '48647062' )
+            product = ProductShopify.get_by_id('48647062')
         else:
-            product = get_or_fetch_shopify_product(target, app.client)
+            product = ProductShopify.get_or_fetch(target, app.client)
 
         # Make a new Link
         link = create_link(target, app, origin_domain, user)
@@ -97,9 +95,11 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Now, tell Mixpanel
         if is_topbar_ask:
-            app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+            #app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+            SIBTShowingAskTopBarIframe.create(user, url=target, app=app)
         else:
-            app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+            #app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+            SIBTShowingAskIframe.create(user, url=target, app=app)
 
         # User stats
         user_email = user.get_attr('email') if user else ""
@@ -217,9 +217,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
         logging.info("Did we get an instance? %s" % instance.uuid)
         
-        # default event
-        event = 'SIBTShowingVoteIframe'
-
         if instance:
             if app == None:
                 app = instance.app_
@@ -233,19 +230,25 @@ class VoteDynamicLoader(webapp.RequestHandler):
             if not instance.is_live:
                 has_voted = True
 
-            if is_asker:
-                event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                event = 'SIBTShowingResultsToFriend'
-
             if link == None: 
                 link = instance.link
             share_url = link.get_willt_url()
 
-            # Now, tell Mixpanel
-            app.storeAnalyticsDatum( event, user, target )
+            if is_asker:
+                SIBTShowingResultsToAsker.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToAsker'
+            elif has_voted:
+                SIBTShowingResults.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToFriend'
+            else:
+                SIBTShowingVote.create(user=user, instance=instance)
 
-            product = get_or_fetch_shopify_product(target, app.client)
+
+            # Now, tell Mixpanel
+            # ... NOPE, I don't wanna!
+            #app.storeAnalyticsDatum( event, user, target )
+
+            product = ProductShopify.get_or_fetch(target, app.client)
 
             template_values = {
                     'evnt' : event,
@@ -355,10 +358,8 @@ class ShowResults(webapp.RequestHandler):
                         logging.error('failed to get instance: %s' % e, exc_info=True)
 
         logging.info("Did we get an instance? %s" % instance)
+        event = 'SIBTShowingButton'
         
-        # default event
-        event = 'SIBTShowingVoteIframe'
-
         if instance:
             if app == None:
                 app = instance.app_
@@ -396,14 +397,17 @@ class ShowResults(webapp.RequestHandler):
                         )
                         has_voted = True
 
-            
             if not instance.is_live:
                 has_voted = True
 
             if is_asker:
+                SIBTShowingResultsToAsker.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToAsker'
             elif has_voted:
+                SIBTShowingResults.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToFriend'
+            else:
+                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None: 
                 link = instance.link
@@ -417,9 +421,9 @@ class ShowResults(webapp.RequestHandler):
                 vote_percentage = str(int(float(float(yesses)/float(total))*100))
 
             # Now, tell Mixpanel
-            app.storeAnalyticsDatum(event, user, target)
+            #app.storeAnalyticsDatum(event, user, target)
 
-            product = get_or_fetch_shopify_product(target, app.client)
+            product = ProductShopify.get_or_fetch(target, app.client)
 
             template_values = {
                 'evnt' : event,
@@ -456,3 +460,4 @@ class ShowResults(webapp.RequestHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+

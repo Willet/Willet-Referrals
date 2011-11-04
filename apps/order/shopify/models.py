@@ -39,6 +39,11 @@ class OrderShopify( Order ):
 def create_shopify_order( user, client, order_token, order_id, order_num = "",
                           subtotal = 0.0, referrer = "" ):
     """ Create an Order for a Shopify store """
+
+    # Don't duplicate orders!
+    o = get_shopify_order_by_id( order_id ) 
+    if o != None:
+        return o
     
     logging.info(referrer)
 

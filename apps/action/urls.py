@@ -1,3 +1,7 @@
 #!/usr/bin/env python
 
-urlpatterns = [ ]
+from .processes import TrackShowAction
+
+urlpatterns = [
+    (r'/action/trackshowaction', TrackShowAction),        
+]
