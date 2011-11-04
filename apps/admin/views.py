@@ -21,6 +21,7 @@ from apps.referral.models import Referral
 from apps.referral.shopify.models import ReferralShopify
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import get_link_by_willt_code
+from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions   import SIBTClickAction
 from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
@@ -424,8 +425,8 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        p = ShopifyProduct.all().filter( 'shopify_id =', '60952062' ).get()
-        p.description = "<p>These 23cm long<b> Block chopsticks</b> are available in <b>3 colors : </b>blue, pink and red. They have a gripping end, to grab food easier. <br />Made of plastic AS, so dishwasher safe.</p><p>And of course, they interlock with each other like the famous bricks!</p><p>Made in China.</p>"
+        p = ProductShopify.all().filter( 'shopify_id =', '60952062' ).get()
+        p.description = "<p>These 23cm long <b>Block chopsticks</b> are available in <b>3 colors : </b>blue, pink and red. They have a gripping end, to grab food easier. <br />Made of plastic AS, so dishwasher safe.</p><p>And of course, they interlock with each other like the famous bricks!</p><p>Made in China.</p>"
         p.put()
 
 class ShowActions(URIHandler):
