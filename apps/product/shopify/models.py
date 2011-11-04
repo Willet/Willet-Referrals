@@ -31,7 +31,7 @@ class ProductShopify(Product):
         super(ProductShopify, self).__init__(*args, **kwargs)
     
     @staticmethod
-    def create_from_json( client, data ):
+    def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         if ProductShopify.get_by_id( str( data['id'] ) ) != None:
             return
@@ -42,12 +42,14 @@ class ProductShopify(Product):
         product = ProductShopify(
                 key_name = uuid,
                 uuid = uuid,
-                client = client
+                client = client,
+                resource_url = url
         )
 
         # Now, update it with info.
         # update_from_json will PUT the obj.
-        product.update_from_json( data )
+        product.update_from_json(data)
+        return product
 
     @staticmethod
     def get_by_url(url):
@@ -71,9 +73,10 @@ class ProductShopify(Product):
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_id( str(data['id']) )
                 if product:
-                    product.add_url( url )
+                    product.add_url(url)
                 else:
                     logging.error('failed to get product for id: %s' % str(data['id']))
+                    product = ProductShopify.create_from_json(client, data, url=url)
             except:
                 logging.error("error fetching and storing product for url %s" % url, exc_info=True)
         return product
@@ -119,7 +122,7 @@ class ProductShopify(Product):
 
         self.put()
 
-    def add_url( self, url ):
+    def add_url(self, url):
         """ The Shopify API doesn't give us the URL for the product.
             Just add it here """
         self.resource_url = url
