@@ -189,7 +189,9 @@ class ManageApps(URIHandler):
             d = {
                 'uuid': app.uuid,
                 'client_name': app.client.name,
-                'class_name': app.class_name()
+                'class_name': app.class_name(),
+                'client': app.client,
+                'app': app
             }
             apps.append(d)
         return apps
@@ -208,9 +210,9 @@ class ManageApps(URIHandler):
 
     @admin_required
     def post(self, admin=None):
-        rqv = get_request_variables(['app_id', 'action'], self)
-        app = App.all().filter('uuid =', rqv['app_id']).get()
-        action = rqv['action']
+        app_id = self.request.get('app_id')
+        action = self.request.get('action')
+        app = App.get(app_id)
         
         messages = []
 
@@ -220,13 +222,16 @@ class ManageApps(URIHandler):
                 action,
                 app.class_name()
             ))
-            if app.class_name() == 'ReferralShopify':
-                # we shall just ignore action for now
-                client = app.client
-                install_script_tags(app.target_url, client.token)
+            if app.class_name() == 'SIBTShopify':
+                if action == 'enable_button':
+                    app.button_enabled = True
+                    app.put()
+                elif action == 'disable_button':
+                    app.button_enabled = False
+                    app.put()
                 messages.append({
                     'type': 'message',
-                    'text': 'Ran install_script_tags for %s' % client.name
+                    'text': '%s for %s' % (action, app.client.name) 
                 })
             else:
                 messages.append({
@@ -236,7 +241,7 @@ class ManageApps(URIHandler):
         else:
             messages.append({
                 'type': 'error',
-                'text': 'Could not get app for id: %s' % rqv['app_id'] 
+                'text': 'Could not get app for id: %s' % app_id 
             })
 
         template_values = {

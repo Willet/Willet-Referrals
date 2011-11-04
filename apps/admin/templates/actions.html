@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% block right_head %}
+    <p><a href="{{ URL }}{% url ShowActions %}">Actions</a></p>
+    <p><a href="{{ URL }}{% url ManageApps %}">Apps</a></p>
+{% endblock right_head %}
+
 {% block head %}
 <script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
     <style type="text/css">
@@ -366,7 +372,7 @@
     </script>
 {% endblock %}
 
-{% block content %}
+{% block bottom_content %}
     <div class="span-24 prepend-top">
         <h1 class="prepend-top center">Actions</h1>
         <h3>Filters</h3>
@@ -404,5 +410,5 @@
             <img src='{{ URL }}/static/imgs/loading.gif' class='loading' />
         </div>
     </div>
-{% endblock content %}
+{% endblock bottom_content %}
 

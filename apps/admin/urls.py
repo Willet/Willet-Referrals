@@ -11,7 +11,7 @@ urlpatterns = [
     (r'/admin/renamefb', RenameFacebookData),
     (r'/admin/renameinit', InitRenameFacebookData),
     (r'/admin/trackErr', TrackCallbackError),
-    (r'/admin/manageApps', ManageApps),
+    (r'/admin/apps', ManageApps),
     (r'/admin/ithinkiateacookie', TrackRemoteError),
     (r'/admin/sibt', SIBTInstanceStats),
     (r'/admin/install', InstallShopifyJunk),
