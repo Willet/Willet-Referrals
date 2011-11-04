@@ -24,7 +24,6 @@ from util.model              import Model
 """Helper method to persist actions to datastore"""
 def persist_actions(list_keys):
     from apps.sibt.actions import *
-    logging.error('persisting list_keys')
     action_dict = memcache.get_multi([key for key in list_keys]) 
     timeout_ms = 100
 
@@ -46,7 +45,6 @@ def persist_actions(list_keys):
                     break
 def persist_action(action):
     from apps.sibt.actions import *
-    logging.error('persisting action')
     timeout_ms = 100
 
     if action:

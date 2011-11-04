@@ -282,7 +282,7 @@ class User( db.Expando ):
             fname = self.get_attr('email')
         
         if fname == None or fname == '':
-            fname = "A %s User!" % (NAME)
+            fname = "User %s" % (self.uuid)
 
         return fname
     name = property(get_full_name)

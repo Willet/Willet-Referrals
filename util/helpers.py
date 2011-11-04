@@ -169,10 +169,11 @@ def login_required( fn ):
 
 def admin_required( fn ):
     def check(self, param=None):
-        admin  = [ 'harrismc@gmail.com', 'z4beth@gmail.com', 'barbara@getwillet.com', 'barbara@wil.lt', 'fraser.harris@gmail.com'  ]
         client = self.get_client()
 
-        if client and client.email in admin: 
+        if client and client.email in ADMIN_EMAILS: 
+            fn(self, client)
+        elif self.request.remote_addr in ADMIN_IPS:
             fn(self, client)
         else:
             self.redirect ( '/' )
