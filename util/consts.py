@@ -9,7 +9,7 @@ import logging
 from urlparse import urlunsplit
 
 # Product Stuff
-NAME = 'Willet Inc.'
+NAME = 'Willet'
 
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
@@ -149,9 +149,8 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-try:
-    from local_consts import *
-except Exception, e:
-    logging.info('no local_consts.py: %s' % e, exc_info=True)
-    pass
-
+#try:
+#    from local_consts import *
+#except Exception, e:
+#    logging.info('no local_consts.py: %s' % e, exc_info=True)
+#    pass
