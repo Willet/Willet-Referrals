@@ -10,5 +10,6 @@ urlpatterns = [
     (r'/dashboard/test', ShowDashboardTestPage),
     (r'/demo(.*)',       ShowDemoSitePage),
     (r'/beta',           ShowBetaPage),
+    (r'/shopify',        ShowShopifyPage),
     (r'/()',             ShowLandingPage) # Must be last
 ]

@@ -25,10 +25,6 @@
         <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
 
         <!-- Scripts -->
-        <!-- Mixpanel -->
-        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
-        <!-- End Mixpanel -->
-        
         <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/jrumble.1.1.min.js" type="text/javascript" charset="utf-8"></script>
 
@@ -71,17 +67,9 @@
                     </div>
                     <div class="prepend-top span-15 last right_col">
                         <div id="right_header" class="span-15 last">
-                            <!-- 
-                            {% if client %}
-                                <p><a class="login" href='{{logout_url}}'>Logout</a></p>
-                            {% else %}
-                                <p><a class="login" href='{{login_url}}'>Login</a></p>
-                            {% endif %}
-                            -->
                             {% block right_head %}{% endblock right_head %}
                         </div>
                         {% block right_content %}
-                        
                         {% endblock right_content %}
                     </div>
                     {% endblock content %}
@@ -108,13 +96,11 @@
                     <div class="prepend-1 span-5 lower-50" style="font-size: 1.4em"> 
                         <a href="/">Home</a> <br />
                         <a href="/about">About / Contact Us</a> <br />
-                        <button href="#chat" onclick="return SnapABug.startChat(false);">Chat With Us</button>
                     </div>
                     <div class="prepend-2 span-8 lower-75 center">
                         <h1 style="margin-bottom: 15px;"><a href="/">{{ NAME }}</a></h1>
                     </div>
                     <div class="prepend-2 span-6 lower-75 last center" style="margin-top: 5px;">
-                        <a  href="http://mixpanel.com/f/partner"><img style="margin-top: -25px" src="http://mixpanel.com/site_media/images/partner/badge_blue.png" alt="Web Analytics" /></a>
                         <p>Copyright &copy; 2011 <a href='http://www.willetinc.com'>Willet Inc</a></p>
                     </div>
                 </div>
@@ -128,14 +114,7 @@
         </div>
      
         <script>
-        // Tell Mixpanel who this person is!
-        {% if client %} 
-            mpq.push(['name_tag', '{{client.email}}']);
-            mpq.push(['identify', '{{client.email}}']);
-        {% endif %}
-        {% block mixpanelTracking %} {% endblock mixpanelTracking %}
-        </script>
-     
+         
          <!-- Late loading scripts -->
         {% block lazyload %}{% endblock %}
         
