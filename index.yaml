@@ -67,3 +67,8 @@ indexes:
   - name: what
   - name: uuid
 
+- kind: Action
+  properties:
+  - name: what
+  - name: created
+

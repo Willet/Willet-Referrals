@@ -38,6 +38,7 @@
                 app_uuid: '{{ app.uuid }}',
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}',
+                user_uuid: '{{ user.uuid }}';
                 motivation: ''
             };
 
@@ -225,6 +226,7 @@
             };
             
             var done_fb_message = function() {
+                storeAnalytics('SIBTAskUserClickedShare');
                 $('#motivation').hide();
                 $("#invite").hide();
                 $("#loading").fadeIn();
@@ -254,13 +256,16 @@
                 $('#share-button').click(done_fb_message);
 
                 $('#cancel-button').click(function() {
+                    storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
                 $('#close-button').click(function() {
+                    storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
 
-                $('#edit-motivation').click(function() {
+                $('#edit-motivation').cli')(function() {
+                    storeAnalytics('SIBTAskUserClickedEditMotivation');
                     $('#hide-me-after').hide();
                     var mtext = $('#m_text');
                     motivation_text = mtext.val();

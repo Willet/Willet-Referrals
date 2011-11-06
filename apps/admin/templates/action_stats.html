@@ -82,26 +82,11 @@
         <div class="span-12">
             <h3>Top Bar Button</h3>
 
-            <div class="span-4">
-                <h4>Clicks</h4>
-            </div>
-            <div class="span-4">
-                <h4>Ask Iframe</h4>
-            </div>
-            <div class="span-4 last">
-                <h4>Instance</h4>
-            </div>
-
-            <div class="span-4">
-                {{ top_bar_click_count }}
-            </div>
-            <div class="span-4">
-                {{ num_tb_clicks_to_iframe }}
-            </div>
-            <div class="span-4 last">
-                {{ num_tb_clicks_to_instance }}
-            </div>
-
+            {% for count in tb_counts %}
+                {{ count.name }}<br />
+                {{ count.count }}
+            {% endfor %}
+           
             {% for click in top_bar_clicks %}
                 <div class="span-4">
                     {{ click.created }}
@@ -117,25 +102,10 @@
         <div class="span-12 last">
             <h3>SIBT Button</h3>
 
-            <div class="span-4">
-                <h4>Clicks</h4>
-            </div>
-            <div class="span-4">
-                <h4>Ask Iframe</h4>
-            </div>
-            <div class="span-4 last">
-                <h4>Instance</h4>
-            </div>
-
-            <div class="span-4">
-                {{ button_click_count }}
-            </div>
-            <div class="span-4">
-                {{ num_button_clicks_to_iframe }}
-            </div>
-            <div class="span-4 last">
-                {{ num_button_clicks_to_instance }}
-            </div>
+            {% for count in b_counts %}
+                {{ count.name }}<br />
+                {{ count.count }}
+            {% endfor %}
 
             {% for click in button_clicks %}
                 <div class="span-4">

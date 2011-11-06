@@ -499,3 +499,75 @@ class SIBTUserClosedTopBar(UserAction):
         )
         action.put()
 
+class SIBTAskUserClickedEditMotivation(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTAskUserClickedEditMotivation'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTAskUserClickedEditMotivation(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+class SIBTAskUserClosedIframe(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTAskUserClosedIframe'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTAskUserClosedIframe(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+class SIBTAskUserClickedShare(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTAskUserClickedShare'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTAskUserClickedShare(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
