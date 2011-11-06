@@ -433,17 +433,31 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        ps = Action.all()
+        """
+        c = ClientShopify.all().get()
 
-        count = 0
-        for p in ps:
+        images = [ { 'src' : 'http://www.i-mockery.com/store/pixel-poster-winter-sample1.gif' } ]
+        data = { 'id' : 'asd',
+                 'title' : 'adfa',
+                 'product_type' : 'asd',
+                 'images' : images,
+                 'tags' : 'asd,asd'}
+        str = ""
+        for i in range(1, 10):
+            p = ProductShopify.create_from_json(c, data)
+            str +=  "'%s'," % ( p.uuid )
+
+        self.response.out.write( str )
+        """
+        products = ProductShopify.all()
+
+        str = ""
+        for p in products:
             try:
-                c = p.app_
+                str += "<img src='%s' class='slideshowImg' />" % p.images[0]
             except:
-                count += 1
-                p.delete()
-
-        self.response.out.write( count )
+                pass;
+        self.response.out.write( str )
 
 class ShowActions(URIHandler):
     @admin_required

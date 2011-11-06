@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <script type="text/javascript" src="/static/js/jquery.cycle.lite.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('.slideshow').cycle({
+            fx: 'fade' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+        });
+    });
+</script>
+
+{% endblock head %}
+
 {% block content %}
     <div class="span-24 last lower-15" id="right_header">
         <p><a href='/shopify'>Own a Shopify Store?</a></p>
-        <p><a href="/demo">Discover</a></p>
+        <p><a href="/products">Learn More</a></p>
         <p><a href='/about'>About Us</a></p>
     </div>
     <div class="lower-75 span-24 last">
@@ -11,7 +23,7 @@
         <p id="long_line" class="center">Optimizing the 2<sup>nd</sup>ecommerce funnel you didn't know you have.</p>
     </div>
     <div class="prepend-top span-24 last">
-        <div class="span-12">
+        <div class="span-14">
             <h2><span class="big"></span> The 2<sup>nd</sup> Funnel </h2>
             <p class="prepend-1 span-8" id="long_line" style="text-align: justify">
                 Traffic lacking intent to buy
@@ -27,8 +39,11 @@
                 so that you can make moeny
             </p>
         </div>
-        <div class="span-12 last">
-            <img  style="background-color: white; border-radius: 20px;" class="span-12 last" src="http://unbouncepages-com.s3.amazonaws.com/hello.rf.rs/what_you_know.original.png" />
+        <div class="span-10 last">
+            <div class="slideshow span-10 last center">
+                <img src="http://cloud.github.com/downloads/malsup/cycle/beach1.jpg" style="min-height;300px; min-width:300px; max-width:400px; max-height:400px;" />
+            </div>
+
             <h1><a href="/demo" style="color: #fce8e3; margin-top: 25px;" class="center new_call_to_action">Discover</a></h1>
         </div>
     </div>
