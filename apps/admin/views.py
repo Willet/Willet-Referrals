@@ -511,3 +511,144 @@ class GetActionsSince(URIHandler):
             logging.error(e, exc_info=True)
             self.response.out.write(e)
 
+class ShowClickActions(URIHandler):
+    @admin_required
+    def get(self, admin):
+
+        top_bar_clicks = Action.all().filter('what =', 'SIBTUserClickedTopBarAsk')
+        button_clicks = Action.all().filter('what =', 'SIBTUserClickedButtonAsk')
+        tb_c = []
+        b_c = []
+
+        num_button_clicks_to_iframe = 0
+        num_button_clicks_to_instance = 0
+        num_tb_clicks_to_iframe = 0
+        num_tb_clicks_to_instance = 0
+
+        for click in button_clicks:
+            try:
+                # we want to get the askiframe event
+                # but we have to make sure there wasn't ANOTHER click before this
+                next_actions = Action.all()\
+                        .filter('user =', click.user)\
+                        .filter('created >', click.created)\
+                        .filter('app_ =', click.app_)
+                n_a_b = next_actions\
+                        .filter('what =', 'SIBTUserClickedButtonAsk')\
+                        .get()
+                n_a_tb = next_actions\
+                        .filter('what =', 'SIBTUserClickedTopBarAsk')\
+                        .get()
+                        
+                showed_ask_iframe = next_actions\
+                        .filter('what =', 'SIBTAskIframe')
+                created_instance = next_actions\
+                        .filter('what =', 'SIBTInstanceCreated')
+
+                if n_a_b:
+                    showed_ask_iframe = showed_ask_iframe\
+                            .filter('created <', n_a_b.created)
+                    logging.info('1 filtering by n_a_b')
+                if n_a_tb:
+                    showed_ask_iframe = showed_ask_iframe\
+                            .filter('created <', n_a_tb.created)
+                    logging.info('1 filtering by n_a_tb')
+                if n_a_b:
+                    created_instance = created_instance\
+                            .filter('created <', n_a_b.created)
+                    logging.info('2 filtering by n_a_b')
+                if n_a_tb:
+                    created_instance = created_instance\
+                            .filter('created <', n_a_tb.created)
+                    logging.info('2 filtering by n_a_tb')
+
+                showed_ask_iframe = showed_ask_iframe.get()
+                created_instance = created_instance.get()
+
+                if created_instance:
+                    logging.info('num_button_clicks_to_instance')
+                    num_button_clicks_to_instance += 1 
+
+                if showed_ask_iframe:
+                    logging.info('num_button_clicks_to_iframe ')
+                    num_button_clicks_to_iframe += 1 
+
+                b_c.append({
+                    'created': '%s' % click.created,
+                    'uuid': click.uuid,
+                    'user': click.user.name,
+                    'client': click.app_.client.name
+                })
+            except Exception, e:
+                logging.warn('had to ignore one: %s' % e, exc_info=True)
+
+        for click in top_bar_clicks:
+            try:
+                #'we want to get the askiframe event
+                # but we have to make sure there wasn't ANOTHER click before this
+                next_actions = Action.all()\
+                        .filter('user =', click.user)\
+                        .filter('created >', click.created)\
+                        .filter('app_ =', click.app_)
+                n_a_b = next_actions\
+                        .filter('what =', 'SIBTUserClickedButtonAsk')\
+                        .get()
+                n_a_tb = next_actions\
+                        .filter('what =', 'SIBTUserClickedTopBarAsk')\
+                        .get()
+                        
+                showed_ask_iframe = next_actions\
+                        .filter('what =', 'SIBTAskIframe')
+                created_instance = next_actions\
+                        .filter('what =', 'SIBTInstanceCreated')
+
+                if n_a_b:
+                    showed_ask_iframe = showed_ask_iframe\
+                            .filter('created <', n_a_b.created)
+                if n_a_tb:
+                    showed_ask_iframe = showed_ask_iframe\
+                            .filter('created <', n_a_tb.created)
+                if n_a_b:
+                    created_instance = created_instance\
+                            .filter('created <', n_a_b.created)
+                if n_a_tb:
+                    created_instance = created_instance\
+                            .filter('created <', n_a_tb.created)
+
+                created_instance = created_instance.get()
+                showed_ask_iframe = showed_ask_iframe.get()
+
+                if created_instance:
+                    num_tb_clicks_to_instance += 1 
+                    logging.info('num_tb_clicks_to_instance  ')
+
+                if showed_ask_iframe:
+                    num_tb_clicks_to_iframe += 1 
+                    logging.info('num_tb_clicks_to_iframe   ')
+
+                tb_c.append({
+                    'created': '%s' % click.created,
+                    'uuid': click.uuid,
+                    'user': click.user.name,
+                    'client': click.app_.client.name
+                })
+            except Exception, e:
+                logging.warn('ignore one: %s' % e, exc_info=True)
+
+        button_click_count = button_clicks.count()
+        top_bar_click_count = top_bar_clicks.count()
+
+        template_values = {
+            'num_tb_clicks_to_instance': num_tb_clicks_to_instance,
+            'num_tb_clicks_to_iframe': num_tb_clicks_to_iframe,
+            'top_bar_clicks': tb_c,
+            'top_bar_click_count': top_bar_click_count,
+
+            'num_button_clicks_to_iframe': num_button_clicks_to_iframe,
+            'num_button_clicks_to_instance': num_button_clicks_to_instance,
+            'button_clicks': b_c,
+            'button_click_count': button_click_count
+        }
+
+        self.response.out.write(self.render_page('action_stats.html', template_values))
+
