@@ -24,16 +24,25 @@ from util.model              import Model
 """Helper method to persist actions to datastore"""
 def persist_actions(list_keys):
     from apps.sibt.actions import *
-    action_dict = memcache.get_multi([key for key in list_keys]) 
-    timeout_ms = 100
+    action_dict = memcache.get_multi(list_keys) 
     
     logging.info('batch putting a list of actions from memcache: %s' % list_keys)
     actions_to_put = []
-    for key in list_keys:
-        data = action_dict.get(key)
-        action = db.model_from_protobuf(entity_pb.EntityProto(data))
-        if action:
-            actions_to_put.append(action)
+    try:
+        actions_to_put = [
+                db.model_from_protobuf(
+                    entity_pb.EntityProto(
+                        action_dict.get(key)
+                    )
+                ) for key in list_keys
+        ]
+    except Exception,e:
+        logging.error('error in list comprehension: %s' % e, exc_info=True)
+    #for key in list_keys:
+    #    data = action_dict.get(key)
+    #    action = db.model_from_protobuf(entity_pb.EntityProto(data))
+    #    if action:
+    #        actions_to_put.append(action)
 
     try:
         db.put(actions_to_put)
@@ -94,20 +103,20 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode())
 
-        #deferred.defer(persist_action, self)
         bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
         bucket_key = "_willet_actions_bucket:%s" % bucket
         logging.warn('bucket key: %s' % bucket_key)
 
         list_identities = memcache.get(bucket_key) or []
         list_identities.append(key)
-        memcache.set(bucket_key, list_identities)
 
         logging.warn('bucket length: %d' % len(list_identities))
         if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
             memcache.set(bucket_key, [])
             logging.warn('bucket overfilling, persisting!')
             deferred.defer(persist_actions, list_identities)
+        else:
+            memcache.set(bucket_key, list_identities)
 
     def get_class_name(self):
         return self.__class__.__name__

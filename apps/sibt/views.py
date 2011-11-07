@@ -192,26 +192,11 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 except:
                     try:
                         # ugh, get the instance by actions ...
-                        actions = SIBTClickAction.get_by_user_and_url(user,target)
-                        if actions.count() > 0:
-                            unfiltered_count = actions.count()
-                            instances = SIBTInstance.all()\
-                                .filter('url =', target)\
-                                .filter('is_live =', True)
-                            key_list = [instance.key() for instance in instances]
-                            actions = actions\
-                                    .filter('sibt_instance !=', '')\
-                                    .filter('sibt_instance IN', key_list)
-                            logging.info('got %d/%d actions after filtered by keys %s' % (
-                                actions.count(),
-                                unfiltered_count,
-                                key_list
-                            ))
-                            if actions.count() > 0:
-                                action = actions.get()
-                                instance = action.sibt_instance
-                                logging.info('no link, got action %s and instance %s' % (action, instance))
-                            assert(instance != None)
+                        action = SIBTClickAction.get_for_instance(app, user,target)
+                        if action:
+                            instance = action.sibt_instance
+                            logging.info('no link, got action %s and instance %s' % (action, instance))
+                        assert(instance != None)
                     except:
                         logging.error('failed to get instance', exc_info=True)
 
@@ -334,26 +319,11 @@ class ShowResults(webapp.RequestHandler):
                     try:
                         # ugh, get the instance by actions ...
                         logging.info('failed to get instance for asker by url: %s' % e)
-                        actions = SIBTClickAction.get_by_user_and_url(user,target)
-                        if actions.count() > 0:
-                            unfiltered_count = actions.count()
-                            instances = SIBTInstance.all()\
-                                .filter('url =', target)\
-                                .filter('is_live =', True)
-                            key_list = [instance.key() for instance in instances]
-                            actions = actions\
-                                    .filter('sibt_instance !=', '')\
-                                    .filter('sibt_instance IN', key_list)
-                            logging.info('got %d/%d actions after filtered by keys %s' % (
-                                actions.count(),
-                                unfiltered_count,
-                                key_list
-                            ))
-                            if actions.count() > 0:
-                                action = actions.get()
-                                instance = action.sibt_instance
-                                logging.info('no link, got action %s and instance %s' % (action, instance))
-                            assert(instance != None)
+                        action = SIBTClickAction.get_for_instance(app, user, target)
+                        if action:
+                            instance = action.sibt_instance
+                            logging.info('no link, got action %s and instance %s' % (action, instance))
+                        assert(instance != None)
                     except Exception, e:
                         logging.error('failed to get instance: %s' % e, exc_info=True)
 
