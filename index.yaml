@@ -55,3 +55,27 @@ indexes:
   - name: user
   - name: sibt_instance
 
+- kind: Action
+  properties:
+  - name: app_
+  - name: user
+  - name: what
+  - name: created
+
+- kind: Action
+  properties:
+  - name: what
+  - name: uuid
+
+- kind: Action
+  properties:
+  - name: what
+  - name: created
+
+- kind: Action
+  properties:
+  - name: app_
+  - name: class
+  - name: user
+  - name: created
+
