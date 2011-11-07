@@ -175,3 +175,60 @@ class AppShopify(Model):
                     )        
                 )
         logging.info('installed %d script_tags' % len(script_tags))
+
+    def install_assets(self, assets=None):
+        """Installs our assets on the clients store
+            Must first get the `main` template in use"""
+        username = self.settings['api_key'] 
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        h.add_credentials(username, password)
+        
+        main_id = None
+
+        if assets == None:
+            assets = []
+
+        # get the theme ID
+        theme_url = '%s/admin/themes.json' % self.store_url
+        logging.info('Getting themes %s' % theme_url)
+        resp, content = h.request(theme_url, 'GET', headers = header)
+
+        if int(resp.status) == 200:
+            # we are okay
+            content = json.loads(content)
+            for theme in content['themes']:
+                if theme.role == 'main':
+                    main_id = theme.id
+                    break
+        else:
+            logging.error('%s error getting themes: \n%s\n%s' % (
+                self.class_name(),
+                resp,
+                content
+            ))
+            return
+
+        # now post all the assets
+        url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
+        for asset in assets: 
+            logging.info("POSTING to %s %r " % (url, asset) )
+            resp, content = h.request(
+                url,
+                "PUT",
+                body = json.dumps(asset),
+                headers = header
+            )
+            logging.info('%r %r' % (resp, content))
+            if int(resp.status) != 200: 
+                Email.emailBarbara(
+                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
+                        self.class_name(),
+                        resp,
+                        content
+                    )        
+                )
+
+        logging.info('installed %d assets' % len(assets))
+

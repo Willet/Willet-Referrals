@@ -51,7 +51,7 @@ def get_target_url( referrer ):
         return target
     except Exception, e:
         logging.warn('error parsing referer %s: %s' % (
-                'referrer',
+                referrer,
                 e
             ),
             exc_info=True
