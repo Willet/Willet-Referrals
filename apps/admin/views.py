@@ -221,9 +221,11 @@ class ManageApps(URIHandler):
 
         if app != None:
             # we got an app
-            logging.info('running action %s on app of type %s' % (
+            logging.info('running action %s on app of type %s\nbutton: %s\ntb: %s' % (
                 action,
-                app.class_name()
+                app.class_name(),
+                app.button_enabled,
+                app.top_bar_enabled
             ))
             if app.class_name() == 'SIBTShopify':
                 if action == 'enable_button':
@@ -241,10 +243,18 @@ class ManageApps(URIHandler):
                 elif action == 'set_number_shows_before_tb':
                     app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
                     app.put()
+                else:
+                    logging.error("bad action: %s" % action)
                 messages.append({
                     'type': 'message',
                     'text': '%s for %s' % (action, app.client.name) 
                 })
+                logging.info('done action %s on app of type %s\nbutton: %s\ntb: %s' % (
+                    action,
+                    app.class_name(),
+                    app.button_enabled,
+                    app.top_bar_enabled
+                ))
             else:
                 messages.append({
                     'type': 'error',

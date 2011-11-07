@@ -192,11 +192,11 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 except:
                     try:
                         # ugh, get the instance by actions ...
-                        instances = SIBTInstance.all(key_only=True)\
+                        instances = SIBTInstance.all(key_onlys=True)\
                             .filter('url =', url)\
                             .filter('is_live =', True)\
                             .fetch(100)
-                        key_list = [instance.key() for instance in instances]
+                        key_list = [instance.id_or_name() for instance in instances]
                         action = SIBTClickAction.get_for_instance(app, user, target, key_list)
                         if action:
                             instance = action.sibt_instance
@@ -324,7 +324,12 @@ class ShowResults(webapp.RequestHandler):
                     try:
                         # ugh, get the instance by actions ...
                         logging.info('failed to get instance for asker by url: %s' % e)
-                        action = SIBTClickAction.get_for_instance(app, user, target)
+                        instances = SIBTInstance.all(key_onlys=True)\
+                            .filter('url =', url)\
+                            .filter('is_live =', True)\
+                            .fetch(100)
+                        key_list = [instance.id_or_name() for instance in instances]
+                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
                         if action:
                             instance = action.sibt_instance
                             logging.info('no link, got action %s and instance %s' % (action, instance))

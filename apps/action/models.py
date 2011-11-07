@@ -49,6 +49,16 @@ def persist_actions(list_keys):
     except Exception,e:
         logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
 
+def defer_put(action):
+    from apps.sibt.actions import *
+    
+    try:
+        db.put(action)
+    except Exception,e:
+        logging.error('error putting: %s' % e, exc_info=True)
+
+
+
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------

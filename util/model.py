@@ -11,7 +11,7 @@ class Model(db.Model):
     
     def put(self):
         """Stores model instance in memcache and database"""
-        key = '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+        key = self.get_key()
         logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
@@ -25,20 +25,32 @@ class Model(db.Model):
                 break
         # Memcache *after* model is given datastore key
         if self.key():
+            logging.debug('setting new memcache entity: %s' % key)
             memcache.set(key, db.model_to_protobuf(self).Encode())
             
         return True
 
     def hardPut( self ):
         logging.debug("PUTTING %s" % self.__class__.__name__)
-        db.put( self )
+        db.put(self)
         
     def validateSelf( self ):
         pass # Fill in in sub class!!
 
     def get_key(self):
-        return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+        if hasattr(self, 'memcache_class'):
+            return '%s-%s' % (self.memcache_class, self._memcache_key)
+        else:
+            return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
+    @classmethod
+    def build_key(cls, memcache_key):
+        if hasattr(cls, 'memcache_class'):
+            key = '%s-%s' % (cls.memcache_class, memcache_key)
+        else:
+            key = '%s-%s' % (cls.__name__.lower(), memcache_key)
+        return key
+    
     @classmethod
     def get(cls, memcache_key):
         """Checks memcache for model before hitting database
@@ -46,7 +58,7 @@ class Model(db.Model):
         TODO(barbara): Enforce the above statement!!!
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
-        key = '%s-%s' % (cls.__name__.lower(), memcache_key)
+        key = cls.build_key(memcache_key)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
@@ -54,6 +66,7 @@ class Model(db.Model):
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
+                logging.debug('setting new memcache entity: %s' % key)
                 memcache.set(key, db.model_to_protobuf(entity).Encode())
             return entity
         else:

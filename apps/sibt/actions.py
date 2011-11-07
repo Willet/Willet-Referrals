@@ -61,6 +61,9 @@ class SIBTClickAction(ClickAction):
     ## Accessors 
     @staticmethod
     def get_for_instance(app, user, url, key_list):
+        logging.debug('getting action for:\napp: %s\nuser: %s\nurl: %s\nkeys: %s' % (
+            app, user, url, key_list    
+        ))
         model = None
         try:
             tracking = SIBTClickAction.get_tracking_by_user_and_app(user, app)
@@ -68,7 +71,12 @@ class SIBTClickAction(ClickAction):
             
             for key in tracking:
                 model = db.model_from_protobuf(entity_pb.EntityProto(actions.get(key)))
-                if model.sibt_instance.key() in key_list:
+                logging.info('got tracking key: %s and model %s %s' % (
+                    key, 
+                    model,
+                    model.sibt_instance.key().id_or_name()
+                ))
+                if model.sibt_instance.key().id_or_name() in key_list:
                     break
                 model = None
             if not model:
@@ -161,6 +169,7 @@ class SIBTVoteAction(VoteAction):
 
     @staticmethod
     def get_by_app_and_instance_and_user(a, i, u):
+        action = None
         key = SIBTVoteAction.get_tracking_by_user_and_instance(u, i)
         if key:
             action = SIBTVoteAction.get(key)

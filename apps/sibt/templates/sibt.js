@@ -14,6 +14,7 @@
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
     var _willet_padding = null;
+    var _willet_topbar_hide_button = null;
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -197,12 +198,24 @@
     };
 
     /**
+     * When a user hides the top bar, it shows the little
+     * "Show" button in the top right. This handles the clicks to that
+     */
+    var _willet_unhide_topbar = function() {
+        _willet_topbar_hide_button.slideUp('fast');
+        //_willet_padding.show();
+        _willet_topbar.slideDown('fast'); 
+        _willet_store_analytics('SIBTUserReOpenedTopBar');
+    };
+
+    /**
      * Hides the top bar and padding
      */
     var _willet_close_top_bar = function() {
         //$('#_willet_padding').hide();
-        _willet_padding.hide();
+        //_willet_padding.hide();
         _willet_topbar.slideUp('fast'); 
+        _willet_topbar_hide_button.slideDown('fast');
         _willet_store_analytics('SIBTUserClosedTopBar');
     };
 
@@ -323,7 +336,7 @@
     */
     var _willet_show_topbar = function() {
         var body = $('body'); 
-        
+
         // create the padding for the top bar
         _willet_padding = document.createElement('div');
         _willet_padding = $(_willet_padding)
@@ -553,6 +566,14 @@
         var hash_search = '#code=';
         var hash_index  = hash.indexOf(hash_search);
 
+        // create the hide button
+        _willet_topbar_hide_button = $(document.createElement('div'));
+        _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+            .html('Show')
+            .css('display', 'none')
+            .click(_willet_unhide_topbar);
+        $('body').prepend(_willet_topbar_hide_button);
+
         if (_willet_show_votes || hash_index != -1) {
             _willet_show_topbar();
         } else {
@@ -583,7 +604,7 @@
                     .attr('title', 'Ask your friends if you should buy this!')
                     .attr('id','_willet_button')
                     .click(_willet_button_onclick);
-                
+               
                 $(purchase_cta).append(button);
                 button.fadeIn(250, function() {
                     $(this).css('display', 'inline-block'); 

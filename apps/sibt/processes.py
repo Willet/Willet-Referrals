@@ -15,7 +15,7 @@ from apps.app.models          import App
 from apps.app.models import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
-from apps.product.models      import Product
+from apps.product.shopify.models      import Product
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
@@ -46,7 +46,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
         product = None
         try:
-            product = Product.get_by_id(int(product_id))
+            product = Product.get_by_id(product_id)
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
             try:
