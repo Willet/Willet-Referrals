@@ -3,9 +3,6 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-from datetime import datetime 
-from datetime import timedelta
-
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
@@ -206,6 +203,7 @@ class GetExpiredSIBTInstances(URIHandler):
     
     def get(self):
         """Gets a list of SIBT instances to be expired and emails to be sent"""
+        from datetime import datetime
         right_now = datetime.now()
         expired_instances = SIBTInstance.all()\
                 .filter('is_live =', True)\
