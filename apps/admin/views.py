@@ -232,6 +232,15 @@ class ManageApps(URIHandler):
                 elif action == 'disable_button':
                     app.button_enabled = False
                     app.put()
+                elif action == 'enable_tb':
+                    app.top_bar_enabled = True
+                    app.put()
+                elif action == 'disable_tb':
+                    app.top_bar_enabled = False 
+                    app.put()
+                elif action == 'set_number_shows_before_tb':
+                    app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
+                    app.put()
                 messages.append({
                     'type': 'message',
                     'text': '%s for %s' % (action, app.client.name) 

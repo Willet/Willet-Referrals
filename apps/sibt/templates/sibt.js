@@ -9,6 +9,7 @@
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
     var _willet_has_voted = ('{{ has_voted }}' == 'True');
     var sibt_button_enabled = ('{{ app.button_enabled }}' == 'True');
+    var sibt_tb_enabled = ('{{ app.top_bar_enabled }}' == 'True');
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
@@ -560,7 +561,7 @@
             var button_html = '';
 
             // check if we are showing top bar ask too
-            if (show_top_bar_ask) {
+            if (sibt_tb_enabled && show_top_bar_ask) {
                 _willet_store_analytics('SIBTShowingTopBarAsk');
                 _willet_show_topbar_ask();
             }

@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 
-{% block right_head %}
-    <p><a href="{{ URL }}{% url ShowActions %}">Actions</a></p>
-    <p><a href="{{ URL }}{% url ManageApps %}">Apps</a></p>
-{% endblock right_head %}
+{% include "admin_menu.html" %}
 
 {% block head %}
-<script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
     <style type="text/css">
         .filters input {
             padding: 4px;

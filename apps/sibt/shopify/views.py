@@ -252,9 +252,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             try:
                 # Is User an asker for this URL?
                 logging.info('trying to get instance for url: %s' % target)
-                actions  = SIBTClickAction.get_by_user_and_url(user, target)
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
-                logging.info("INSTANCE %r" % instance )
                 assert(instance != None)
                 event = 'SIBTShowingResults'
                 logging.info('got instance by user/target: %s' % instance.uuid)
@@ -269,24 +267,18 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 except Exception, e:
                     try:
                         logging.info('trying actions: %s' % e)
-                        if actions.count() > 0:
-                            # filter actions for instances that are active
-                            unfiltered_count = actions.count()
-                            instances = SIBTInstance.all()\
-                                .filter('url =', target)\
-                                .filter('is_live =', True)
-                            key_list = [instance.key() for instance in instances]
-                            actions = actions.filter('sibt_instance IN', key_list)
-                            logging.info('got %d/%d actions after filtered by keys %s' % (
-                                actions.count(),
-                                unfiltered_count,
-                                key_list
-                            ))
-                            if actions.count() != 0:
-                                instance = actions[0].sibt_instance
-                                assert(instance != None)
-                                logging.info('got instance by action: %s' % instance.uuid)
-                                event = 'SIBTShowingVote'
+                        instances = SIBTInstance.all(key_only=True)\
+                            .filter('url =', target)\
+                            .filter('is_live =', True)\
+                            .fetch(100)
+                        key_list = [instance.key() for instance in instances]
+                        action = SIBTClickAction.get_by_user_and_url(app, user, target, key_list)
+                        
+                        if action:
+                            instance = action.sibt_instance
+                            assert(instance != None)
+                            logging.info('got instance by action: %s' % instance.uuid)
+                            event = 'SIBTShowingVote'
                     except Exception, e:
                         logging.info('no instance available: %s' % e)
         except:
@@ -325,27 +317,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-            # precache this page's product
-            #taskqueue.add(
-            #    url = url('FetchProductShopify'), 
-            #    params = {
-            #        'url': target,
-            #        'client': app.client.uuid
-            #    }
-            #)
         else:
             logging.info('could not get an instance, check page views')
 
-            # check for two page views
-
-            #view_actions = ButtonLoadAction.all()\
-            #        .filter('user =', user)\
-            #        .filter('url =', target)\
-            #        .count()
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
             logging.info('got tracked urls')
             logging.info(tracked_urls)
-            if target in tracked_urls:
+            if tracked_urls.count(target) >= app.num_shows_before_tb:
                 #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
@@ -354,8 +332,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 product_images = product.images
                 product_title = product.title
 
+        # this should only happen once, can be removed at a later date
+        # TODO remove this code
         if not hasattr(app, 'button_enabled'):
-            # this should only happen once, can be removed at a later date
             app.button_enabled = True
             app.put()
     

@@ -17,21 +17,19 @@ from apps.action.models     import VoteAction
 from apps.action.models     import ShowAction 
 from apps.action.models     import UserAction 
 
-from apps.sibt.models import SIBTInstance
-
 from util.helpers           import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ----------------------------------------------------
 ## -----------------------------------------------------------------------------
-class SIBTClickAction( ClickAction ):
+class SIBTClickAction(ClickAction):
     """ Designates a 'click' action for a User on a SIBT instance. 
         Currently used for 'Referral' and 'SIBT' Apps """
 
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="click_actions" )
+    sibt_instance = db.ReferenceProperty(db.Model, collection_name="click_actions")
 
     # URL that was clicked on
-    url           = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
 
     def __str__(self):
         return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
@@ -62,24 +60,26 @@ class SIBTClickAction( ClickAction ):
 
     ## Accessors 
     @staticmethod
-    def get_for_instance(app, user, url):
-        tracking = SIBTClickAction.get_tracking_by_user_and_app(user, app)
-        actions = memcache.get_multi(tracking)
-        instances = SIBTInstance.all(key_only=True)\
-            .filter('url =', url)\
-            .filter('is_live =', True)\
-            .fetch(100)
-        key_list = [instance.key() for instance in instances]
-        for key in tracking:
-            model = db.model_from_protobuf(entity_pb.EntityProto(actions.get(key)))
-            if model.sibt_instance.key() in key_list:
-                return model
-
-        return SIBTClickAction.all()\
-                .filter('user =', user)\
-                .filter('url =', url)\
-                .filter('sibt_instance IN', key_list)\
-                .get()
+    def get_for_instance(app, user, url, key_list):
+        model = None
+        try:
+            tracking = SIBTClickAction.get_tracking_by_user_and_app(user, app)
+            actions = memcache.get_multi(tracking)
+            
+            for key in tracking:
+                model = db.model_from_protobuf(entity_pb.EntityProto(actions.get(key)))
+                if model.sibt_instance.key() in key_list:
+                    break
+                model = None
+            if not model:
+                model = SIBTClickAction.all()\
+                    .filter('user =', user)\
+                    .filter('url =', url)\
+                    .filter('sibt_instance IN', key_list)\
+                    .get()
+        except Exception, e:
+            logging.error('could not get model for instance: %s' % e, exc_info=True)
+        return model
 
     @staticmethod
     def get_by_instance(instance):
@@ -160,22 +160,25 @@ class SIBTVoteAction(VoteAction):
         return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
 
     @staticmethod
-    def get_by_app_and_instance_and_user( a, i, u ):
+    def get_by_app_and_instance_and_user(a, i, u):
         key = SIBTVoteAction.get_tracking_by_user_and_instance(u, i)
         if key:
             action = SIBTVoteAction.get(key)
-            if action:
-                return action
 
-        return SIBTVoteAction.all().filter('app_ =', a)\
-                                   .filter('sibt_instance =', i)\
-                                   .filter('user =', u)\
-                                   .get()
+        if not action:
+            action = SIBTVoteAction.all()\
+                    .filter('app_ =', a)\
+                    .filter('sibt_instance =', i)\
+                    .filter('user =', u)\
+                    .get()
+        return action
 
     @staticmethod
     def get_by_app_and_instance( a, i ):
-        return SIBTVoteAction.all().filter('app_ =', a)\
-                                   .filter('sibt_instance =', i).get()
+        return SIBTVoteAction.all()\
+                .filter('app_ =', a)\
+                .filter('sibt_instance =', i)\
+                .get()
 
 class SIBTShowAction(ShowAction):
     sibt_instance = db.ReferenceProperty( db.Model, collection_name="show_actions" )

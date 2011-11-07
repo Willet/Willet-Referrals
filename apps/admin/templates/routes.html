@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% include "admin_menu.html" %}
+
+{% block bottom_content %}
     <div class="span-24 prepend-top">
         <h1 class="prepend-top center">Routes</h1>
         {% for route in routes %}
@@ -15,5 +17,5 @@
             </div>
         {% endfor %}
     </div>
-{% endblock content %}
+{% endblock bottom_content %}
 
