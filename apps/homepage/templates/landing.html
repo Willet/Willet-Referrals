@@ -1,15 +1,58 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <script type="text/javascript" src="/static/js/jquery.cycle.lite.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('.slideshow').cycle({
+            fx: 'fade' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+        });
+    });
+</script>
+
+{% endblock head %}
+
 {% block content %}
-    <div class="prepend-top center lower-100 span-24 last">
-        <h1 class="main_title center">Social Referrals</h1>
-        <p>
-            We haven't launched yet, but if you'd like to find out when we do, sign up at <a href="http://hello.rf.rs">hello.rf.rs</a>.
-        </p>
+    <div class="span-24 last lower-15" id="right_header">
+        <p><a href='/shopify'>Own a Shopify Store?</a></p>
+        <p><a href="/products">Learn More</a></p>
+        <p><a href='/about'>About Us</a></p>
+    </div>
+    <div class="lower-75 span-24 last">
+        <h1 class="main_title center">Turn Browsers into Shoppers</h1>
+        <p id="long_line" class="center">Optimizing the 2<sup>nd</sup>ecommerce funnel you didn't know you have.</p>
+    </div>
+    <div class="prepend-top span-24 last">
+        <div class="span-14">
+            <h2><span class="big"></span> The 2<sup>nd</sup> Funnel </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify">
+                Traffic lacking intent to buy
+            </p>
+        <br />
+            <h2><span class="big"></span> Engage Your Social Customers </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify">
+                Engage with these people
+            </p>
+        <br />
+            <h2><span class="big"></span> Maximize Your Sales </h2>
+            <p class="prepend-1 span-8" id="long_line" style="text-align: justify"> 
+                so that you can make moeny
+            </p>
+        </div>
+        <div class="span-10 last">
+            <div class="slideshow span-10 last center">
+                <img src="http://cloud.github.com/downloads/malsup/cycle/beach1.jpg" style="min-height;300px; min-width:300px; max-width:400px; max-height:400px;" />
+            </div>
+
+            <h1><a href="/demo" style="color: #fce8e3; margin-top: 25px;" class="center new_call_to_action">Discover</a></h1>
+        </div>
     </div>
 {% endblock content %}
 
+{% block bottom_content %}
+    something else ...
+    
+{% endblock bottom_content %}
+
 {% block lazyload %}
-    mpq.push(['register', {'referring site': document.referrer}]);
-    mpq.push(['track_funnel', 1, 'landing_page']);
 {% endblock lazyload %}

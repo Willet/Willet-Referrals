@@ -10,6 +10,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.sibt.actions        import *
+from apps.action.models import UserAction
 from apps.app.models          import App
 from apps.app.models import get_app_by_id
 from apps.email.models        import Email
@@ -27,7 +28,10 @@ from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
-        user = get_or_create_user_by_cookie(self)
+        user = User.get(self.request.get('user_uuid'))
+        if not user:
+            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            user = get_or_create_user_by_cookie(self)
         app  = get_app_by_id(self.request.get('app_uuid'))
         willt_code = self.request.get('willt_code')
         link = get_link_by_willt_code(willt_code)

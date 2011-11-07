@@ -22,15 +22,16 @@ from util.gaesessions import get_current_session
 class ShowLandingPage(URIHandler):
     # Renders the main template
     def get(self, page):
-        stats = Stats.all().get()
-        landing = ''
-        if stats:
-            if hasattr(stats, 'landing'):
-                landing = stats.landing
-
-        template_values = { 'campaign_results' : landing }
+        template_values = { }
         
         self.response.out.write(self.render_page('landing.html', template_values))
+
+class ShowShopifyPage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = { }
+        
+        self.response.out.write(self.render_page('shopify.html', template_values))
 
 class ShowAboutPage( URIHandler ):
     # Renders the main template

@@ -9,7 +9,7 @@ import logging
 from urlparse import urlunsplit
 
 # Product Stuff
-NAME = 'Willet Inc.'
+NAME = 'Willet'
 
 # Domain Stuff
 USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
@@ -97,7 +97,7 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 
 # controls the number of memcache buckets
 # and the maximum length of a bucket before it gets put to datastore
-NUM_ACTIONS_MEMCACHE_BUCKETS = 10
+NUM_ACTIONS_MEMCACHE_BUCKETS = 50
 
 # List of root template directories
 # to import templates from
@@ -154,4 +154,3 @@ try:
 except Exception, e:
     logging.info('no local_consts.py: %s' % e, exc_info=True)
     pass
-

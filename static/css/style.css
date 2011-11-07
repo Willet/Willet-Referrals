@@ -675,29 +675,13 @@ div#right_header a:visited {
     -moz-transition: 0.3s;
 
     font-size: 15px;
-    border-radius: 20px;
-    border: 1px solid transparent;
     padding: 8px 12px;
     text-shadow: 0px 0px 1px rgba(255,255,255,0.1);
     color: rgba(0,0,0,0.6);
-
-    -webkit-box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-    -moz-box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-    box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-
-    background: rgb(255, 255, 255);
 }
 div#right_header a:hover {
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.25);
     text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
     color: rgba(0, 0, 0, 0.8);
-
-    background: rgba(0, 0, 0, 0.01);
-    -webkit-box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-    -moz-box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-    box-shadow: inset 0px 0px 1px 0px rgba(0,0,0,0.25);
-
 }
 div#right_header a:active {
     border-radius: 10px;
@@ -1066,7 +1050,7 @@ button img {
 }
 
 .main_title {
-    font-size: 7.0em;
+    font-size: 6.0em;
 }
 #long_line{
     margin-top: -20px;

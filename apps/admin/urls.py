@@ -17,6 +17,7 @@ urlpatterns = [
     (r'/admin/install', InstallShopifyJunk),
     (r'/admin/barbara', Barbara),
     (r'/admin/actions', ShowActions),
-    (r'/admin/actions/since/', GetActionsSince)
+    (r'/admin/actions/since/', GetActionsSince),
+    (r'/admin/click_actions', ShowClickActions)
 ]
 

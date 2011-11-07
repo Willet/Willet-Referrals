@@ -433,17 +433,31 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        ps = Action.all()
+        """
+        c = ClientShopify.all().get()
 
-        count = 0
-        for p in ps:
+        images = [ { 'src' : 'http://www.i-mockery.com/store/pixel-poster-winter-sample1.gif' } ]
+        data = { 'id' : 'asd',
+                 'title' : 'adfa',
+                 'product_type' : 'asd',
+                 'images' : images,
+                 'tags' : 'asd,asd'}
+        str = ""
+        for i in range(1, 10):
+            p = ProductShopify.create_from_json(c, data)
+            str +=  "'%s'," % ( p.uuid )
+
+        self.response.out.write( str )
+        """
+        products = ProductShopify.all()
+
+        str = ""
+        for p in products:
             try:
-                c = p.app_
+                str += "<img src='%s' class='slideshowImg' />" % p.images[0]
             except:
-                count += 1
-                p.delete()
-
-        self.response.out.write( count )
+                pass;
+        self.response.out.write( str )
 
 class ShowActions(URIHandler):
     @admin_required
@@ -510,4 +524,101 @@ class GetActionsSince(URIHandler):
         except Exception, e:
             logging.error(e, exc_info=True)
             self.response.out.write(e)
+
+class ShowClickActions(URIHandler):
+    @admin_required
+    def get(self, admin):
+        things = {
+            'tb': {
+                'action': 'SIBTUserClickedTopBarAsk',
+                'show_action': 'SIBTShowingTopBarAsk',
+                'l': [],
+                'counts': {},
+            },
+            'b': {
+                'action': 'SIBTUserClickedButtonAsk',
+                'show_action': 'SIBTShowingButton',
+                'l': [],
+                'counts': {},
+            }        
+        }
+        actions_to_check = [
+            'SIBTShowingAskIframe',
+            'SIBTInstanceCreated',
+            'SIBTAskUserClickedEditMotivation',
+            'SIBTAskUserClosedIframe',
+            'SIBTAskUserClickedShare'
+        ]
+        for t in things:
+            things[t]['counts'][things[t]['show_action']] = Action\
+                    .all(keys_only=True)\
+                    .filter('class =', things[t]['show_action'])\
+                    .count(999999)
+            
+            for click in Action.all().filter('what =', things[t]['action']).order('created'):
+                try:
+                    # we want to get the askiframe event
+                    # but we have to make sure there wasn't ANOTHER click after this
+
+                    next_show_button = Action.all()\
+                            .filter('user =', click.user)\
+                            .filter('created >', click.created)\
+                            .filter('app_ =', click.app_)\
+                            .filter('class =', 'SIBTShowingButton')\
+                            .get()
+
+                    for action in actions_to_check:
+                        if action not in things[t]['counts']:
+                            things[t]['counts'][action] = 0
+
+                        a = Action.all()\
+                                .filter('user =', click.user)\
+                                .filter('created >', click.created)\
+                                .filter('app_ =', click.app_)\
+                                .filter('class =', action)\
+                                .get()
+                        if a:
+                            logging.info(a)
+                            if next_show_button:
+                                if a.created > next_show_button.created:
+                                    logging.info('ignoring %s over %s' % (
+                                        a,
+                                        next_show_button
+                                    ))
+                                    continue
+                            things[t]['counts'][action] += 1
+                            logging.info('%s + 1' % action)
+
+                    client = ''
+                    if click.app_.client:
+                        if hasattr(click.app_.client, 'name'):
+                            client = click.app_.client.name
+                        elif hasattr(click.app_.client, 'domain'):
+                            client = click.app_.client.domain
+                        elif hasattr(click.app_.client, 'email'):
+                            client = click.app_.client.email
+                        else:
+                            client = click.app_.client.uuid
+                    else:
+                        client = 'No client'
+
+                    things[t]['l'].append({
+                        'created': '%s' % click.created,
+                        'uuid': click.uuid,
+                        'user': click.user.name,
+                        'client': client
+                    })
+                except Exception, e:
+                    logging.warn('had to ignore one: %s' % e, exc_info=True)
+            things[t]['counts'][things[t]['action']] = len(things[t]['l'])
+            
+            l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
+            l = sorted(l, key=lambda item: item['value'], reverse=True)
+            things[t]['counts'] = l
+        template_values = {
+            'tb_counts': things['tb']['counts'],
+            'b_counts': things['b']['counts'],
+        }
+
+        self.response.out.write(self.render_page('action_stats.html', template_values))
 
