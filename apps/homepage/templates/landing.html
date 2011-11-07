@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <script type="text/javascript" src="/static/js/jquery.cycle.lite.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.cycle.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.easing.js"></script>
     <script type="text/javascript">
     $(document).ready(function() {
-        $('.slideshow').cycle({
-            fx: 'fade' // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+        $('.slideshow img:first').fadeIn(1000, function() {
+            $('.slideshow').cycle({
+                fx:     'scrollDown, scrollLeft, scrollRight, scrollUp', 
+                easing: 'easeInBack', 
+                speed:   1000,
+                timeout: 500
+            });
         });
     });
 </script>
@@ -18,6 +24,7 @@
         <p><a href="/products">Learn More</a></p>
         <p><a href='/about'>About Us</a></p>
     </div>
+
     <div class="lower-75 span-24 last">
         <h1 class="main_title center">Turn Browsers into Shoppers</h1>
         <p id="long_line" class="center">Optimizing the 2<sup>nd</sup>ecommerce funnel you didn't know you have.</p>
@@ -31,7 +38,8 @@
         <br />
             <h2><span class="big"></span> Engage Your Social Customers </h2>
             <p class="prepend-1 span-8" id="long_line" style="text-align: justify">
-                Engage with these people
+            
+            
             </p>
         <br />
             <h2><span class="big"></span> Maximize Your Sales </h2>
@@ -41,17 +49,54 @@
         </div>
         <div class="span-10 last">
             <div class="slideshow span-10 last center">
-                <img src="http://cloud.github.com/downloads/malsup/cycle/beach1.jpg" style="min-height;300px; min-width:300px; max-width:400px; max-height:400px;" />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/gt_toolset_med.jpg?1196' class='first slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/dream_starbright_280.jpg?1196' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/2024_280.jpg?1196' class='slideshowImg' />
+                <img src='/static/imgs/1.png' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/LJ50_1_White_180dpi_1.jpg?1196' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/cshsh-03.jpg?1196' class='slideshowImg' />
+                <img src='/static/imgs/2.png' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0018/8882/products/DesperadoSkullRing3-feature.jpg?100002' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0018/8882/products/bombercat-feature.jpg?100002' class='slideshowImg' />
+                <img src='/static/imgs/3.png' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/12604.jpg?1196' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/upup.jpg?1196' class='slideshowImg' />
+                <img src='/static/imgs/4.png' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/73060.jpg?1196' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/28148.jpg?1196' class='slideshowImg' />
+                <img src='/static/imgs/5.png' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0091/0412/products/kee-ka-kimono-turquoise-green__17135_zoom.jpg?1196' class='slideshowImg' />
+                <img src='http://cdn.shopify.com/s/files/1/0029/8962/products/tamagoyaki_pan_yellow.jpg?102781' class='slideshowImg' />
+                <img src='/static/imgs/6.png' class='slideshowImg' />
             </div>
 
-            <h1><a href="/demo" style="color: #fce8e3; margin-top: 25px;" class="center new_call_to_action">Discover</a></h1>
+            <div class="span-10 last">
+                <h1><a href="/more" style="color: #fce8e3; margin-top: 25px;" class="new_call_to_action">Learn More</a></h1>
+            </div>
         </div>
+    </div>
+    <div class="prepend-top span-24 last customers">
+    <h2>Your Favourite Brands Use Willet</h2>
+        <p>No matter the store, we have a solution for you.</p>
+        <div class="prepend-1 span-23 append-bottom">
+            <img src="http://cdn.shopify.com/s/files/1/0029/8962/t/5/assets/bg-logo.png" />
+            <img src="http://cdn.shopify.com/s/files/1/0068/2192/assets/sproos-logo-hover.jpg?101453" />
+            <img src="http://cdn.shopify.com/s/files/1/0051/9552/t/4/assets/logo.png?102459" />
+            <img src="http://cdn.shopify.com/s/files/1/0076/7752/t/1/assets/logo.png?100078" />
+            <img src="http://cdn.shopify.com/s/files/1/0061/2762/assets/wplogo.png?101930" />
+        </div>
+        <div class="prepend-top prepend-1 span-23 append-bottom">
+            <img src="http://cdn.shopify.com/s/files/1/0052/5862/assets/logo.png?100429" />
+            <img src="http://cdn.shopify.com/s/files/1/0072/0632/t/1/assets/logo.png?101387" />
+            <img src="http://cdn.shopify.com/s/files/1/0093/1902/files/Sluts_shades_large.jpg?422" />
+            <img src="http://cdn.shopify.com/s/files/1/0061/1532/assets/logo.png?100197" />
+            <img src="http://cdn.shopify.com/s/files/1/0102/2562/t/3/assets/logo.png?3528" />
+        </div>
+        <p style="float: right">And more ...</p>
     </div>
 {% endblock content %}
 
 {% block bottom_content %}
-    something else ...
-    
 {% endblock bottom_content %}
 
 {% block lazyload %}

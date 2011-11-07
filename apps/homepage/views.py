@@ -26,12 +26,33 @@ class ShowLandingPage(URIHandler):
         
         self.response.out.write(self.render_page('landing.html', template_values))
 
+class ShowPrivacyPage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = { }
+        
+        self.response.out.write(self.render_page('privacy.html', template_values))
+
+class ShowTermsPage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = { }
+        
+        self.response.out.write(self.render_page('terms.html', template_values))
+
 class ShowShopifyPage(URIHandler):
     # Renders the main template
     def get(self):
         template_values = { }
         
         self.response.out.write(self.render_page('shopify.html', template_values))
+
+class ShowMorePage(URIHandler):
+    # Renders the main template
+    def get(self):
+        template_values = { }
+        
+        self.response.out.write(self.render_page('more.html', template_values))
 
 class ShowAboutPage( URIHandler ):
     # Renders the main template
