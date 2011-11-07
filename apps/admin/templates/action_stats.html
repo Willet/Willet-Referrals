@@ -83,40 +83,14 @@
             <h3>Top Bar Button</h3>
 
             {% for count in tb_counts %}
-                {{ count.name }}<br />
-                {{ count.count }}
-            {% endfor %}
-           
-            {% for click in top_bar_clicks %}
-                <div class="span-4">
-                    {{ click.created }}
-                </div>
-                <div class="span-4">
-                    {{ click.user }}
-                </div>
-                <div class="span-4 last">
-                    {{ click.client }}
-                </div>
+                {{ count.name }}: {{ count.value }}<br /><br />
             {% endfor %}
         </div>
         <div class="span-12 last">
             <h3>SIBT Button</h3>
 
             {% for count in b_counts %}
-                {{ count.name }}<br />
-                {{ count.count }}
-            {% endfor %}
-
-            {% for click in button_clicks %}
-                <div class="span-4">
-                    {{ click.created }}
-                </div>
-                <div class="span-4">
-                    {{ click.user }}
-                </div>
-                <div class="span-4 last">
-                    {{ click.client }}
-                </div>
+                {{ count.name }}: {{ count.value }}<br /><br />
             {% endfor %}
         </div>
     </div>

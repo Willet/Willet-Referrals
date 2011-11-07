@@ -533,77 +533,61 @@ class ShowClickActions(URIHandler):
                 'action': 'SIBTUserClickedTopBarAsk',
                 'show_action': 'SIBTShowingTopBarAsk',
                 'l': [],
-                'count': 0,
                 'counts': {},
-                'clicks_to_iframe': 0,
-                'clicks_to_instance': 0,
             },
             'b': {
                 'action': 'SIBTUserClickedButtonAsk',
                 'show_action': 'SIBTShowingButton',
                 'l': [],
-                'count': 0,
                 'counts': {},
-                'clicks_to_iframe': 0,
-                'clicks_to_instance': 0,
             }        
         }
         actions_to_check = [
-            'SIBTAskIframe',
+            'SIBTShowingAskIframe',
             'SIBTInstanceCreated',
             'SIBTAskUserClickedEditMotivation',
             'SIBTAskUserClosedIframe',
             'SIBTAskUserClickedShare'
         ]
         for t in things:
-            things[t]['counts'][things[t]['show_action']] = {
-                'name': things[t]['show_action'],
-                'count': Action.all()\
-                    .filter('what =', things[t]['show_action'])\
-                    .count(),
-            }
+            things[t]['counts'][things[t]['show_action']] = Action\
+                    .all(keys_only=True)\
+                    .filter('class =', things[t]['show_action'])\
+                    .count(999999)
+            
             for click in Action.all().filter('what =', things[t]['action']).order('created'):
                 try:
                     # we want to get the askiframe event
                     # but we have to make sure there wasn't ANOTHER click after this
-                    next_actions = Action.all()\
+
+                    next_show_button = Action.all()\
                             .filter('user =', click.user)\
                             .filter('created >', click.created)\
                             .filter('app_ =', click.app_)\
-                            .order('created')
-                    n_a_b = next_actions\
-                            .filter('what =', 'SIBTUserClickedButtonAsk')\
+                            .filter('class =', 'SIBTShowingButton')\
                             .get()
-                    n_a_tb = next_actions\
-                            .filter('what =', 'SIBTUserClickedTopBarAsk')\
-                            .get()   
 
                     for action in actions_to_check:
                         if action not in things[t]['counts']:
                             things[t]['counts'][action] = 0
 
-                        a = next_actions\
-                                .filter('what =', action)\
+                        a = Action.all()\
+                                .filter('user =', click.user)\
+                                .filter('created >', click.created)\
+                                .filter('app_ =', click.app_)\
+                                .filter('class =', action)\
                                 .get()
                         if a:
-                            if n_a_b:
-                                if a.created > n_a_b.created:
+                            logging.info(a)
+                            if next_show_button:
+                                if a.created > next_show_button.created:
                                     logging.info('ignoring %s over %s' % (
                                         a,
-                                        n_a_b
+                                        next_show_button
                                     ))
-                                    a = None
-                            if n_a_tb:
-                                if a.created > n_a_tb.created:
-                                    logging.info('ignoring %s over %s' % (
-                                        a,
-                                        n_a_tb
-                                    ))
-                                    a = None
-                        if a:
-                            things[t]['counts'][a]['count'] += 1
-                            things[t]['counts'][a]['name'] = a
-                            logging.info('%s + 1' % a)
+                                    continue
+                            things[t]['counts'][action] += 1
+                            logging.info('%s + 1' % action)
 
                     client = ''
                     if click.app_.client:
@@ -626,20 +610,14 @@ class ShowClickActions(URIHandler):
                     })
                 except Exception, e:
                     logging.warn('had to ignore one: %s' % e, exc_info=True)
-            things[t]['count'] = len(things[t]['l'])
-
+            things[t]['counts'][things[t]['action']] = len(things[t]['l'])
+            
+            l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
+            l = sorted(l, key=lambda item: item['value'], reverse=True)
+            things[t]['counts'] = l
         template_values = {
             'tb_counts': things['tb']['counts'],
-            'num_tb_clicks_to_instance': things['tb']['clicks_to_instance'],
-            'num_tb_clicks_to_iframe': things['tb']['clicks_to_iframe'],
-            'top_bar_clicks': things['tb']['l'],
-            'top_bar_click_count': things['tb']['count'],
-
             'b_counts': things['b']['counts'],
-            'num_button_clicks_to_iframe': things['b']['clicks_to_iframe'],
-            'num_button_clicks_to_instance': things['b']['clicks_to_instance'],
-            'button_clicks': things['b']['l'],
-            'button_click_count': things['b']['count'] 
         }
 
         self.response.out.write(self.render_page('action_stats.html', template_values))

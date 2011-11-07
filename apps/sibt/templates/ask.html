@@ -38,7 +38,7 @@
                 app_uuid: '{{ app.uuid }}',
                 willt_code: '{{ willt_code }}',
                 product_img: '{{ productImg|first }}',
-                user_uuid: '{{ user.uuid }}';
+                user_uuid: '{{ user.uuid }}',
                 motivation: ''
             };
 
@@ -52,7 +52,7 @@
                         app_uuid: '{{ app.uuid }}',
                         user_uuid: '{{ user.uuid }}',
                         target_url: '{{ target_url }}'
-                    }, type: 'post',
+                    }, type: 'get',
                     success: function (response) {
                         return;
                     }
@@ -264,7 +264,7 @@
                     doPostMessage('close');
                 });
 
-                $('#edit-motivation').cli')(function() {
+                $('#edit-motivation').click(function() {
                     storeAnalytics('SIBTAskUserClickedEditMotivation');
                     $('#hide-me-after').hide();
                     var mtext = $('#m_text');

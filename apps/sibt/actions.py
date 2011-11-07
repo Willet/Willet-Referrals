@@ -49,6 +49,7 @@ class SIBTClickAction( ClickAction ):
         #super(SIBTClickAction, act).create()
 
         act.put()
+        return act
 
     ## Accessors 
     @staticmethod
@@ -127,6 +128,7 @@ class SIBTShowAction(ShowAction):
                                 sibt_instance = instance)
         #super(SIBTShowAction, act).create()
         act.put()
+        return act
     
     def __str__(self):
         return 'Showing %s to %s(%s) for sibt instance %s on site %s' % (
@@ -498,6 +500,7 @@ class SIBTUserClosedTopBar(UserAction):
                 what = what
         )
         action.put()
+        return action
 
 class SIBTAskUserClickedEditMotivation(UserAction):
     @staticmethod
@@ -522,6 +525,7 @@ class SIBTAskUserClickedEditMotivation(UserAction):
                 what = what
         )
         action.put()
+        return action
 
 class SIBTAskUserClosedIframe(UserAction):
     @staticmethod
@@ -546,6 +550,7 @@ class SIBTAskUserClosedIframe(UserAction):
                 what = what
         )
         action.put()
+        return action
 
 class SIBTAskUserClickedShare(UserAction):
     @staticmethod
@@ -570,4 +575,52 @@ class SIBTAskUserClickedShare(UserAction):
                 what = what
         )
         action.put()
+        return action
+
+class SIBTUserAction(UserAction):
+    sibt_instance = db.ReferenceProperty( db.Model, collection_name="sibt_user_actions" )
+
+    ## Constructor
+    @staticmethod
+    def create(user, instance, what):
+        # Make the action
+        uuid = generate_uuid( 16 )
+        act  = SIBTUserAction(  key_name = uuid,
+                                uuid     = uuid,
+                                user     = user,
+                                app_     = instance.app_,
+                                link     = instance.link,
+                                url      = instance.link.target_url,
+                                what = what,
+                                sibt_instance = instance)
+        #super(SIBTShowAction, act).create()
+        act.put()
+        return act
+    
+    def __str__(self):
+        return '%s(%s) did %s to %s(%s) for sibt instance %s on site %s' % (
+                self.user.get_full_name(), 
+                self.user.uuid,
+                self.what,
+                self.sibt_instance.uuid,
+                self.sibt_instance.app_.client.domain
+        )
+
+    ## Accessors 
+    @staticmethod
+    def get_by_instance(instance):
+        return SIBTUserAction.all().filter('sibt_instance =', instance)
+
+    @staticmethod
+    def get_by_app_and_instance_and_user(app, instance, user):
+        return SIBTUserAction.all().filter('app_ =', app)\
+                                   .filter('sibt_instance =', instance)\
+                                   .filter('user =', user)\
+                                   .get()
+
+    @staticmethod
+    def get_by_app_and_instance(app, instance):
+        return SIBTUserAction.all().filter('app_ =', app)\
+                                   .filter('sibt_instance =', instance).get()
+
 

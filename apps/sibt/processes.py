@@ -10,6 +10,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.sibt.actions        import *
+from apps.action.models import UserAction
 from apps.app.models          import App
 from apps.app.models import get_app_by_id
 from apps.email.models        import Email
