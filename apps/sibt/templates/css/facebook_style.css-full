@@ -173,7 +173,7 @@
 }
     #_willet_sibt_bar ._willet_wrapper {
         margin: auto;
-        display: inline-block;
+        display: block;
         float: none;
         text-align: center; 
         width: 600px;

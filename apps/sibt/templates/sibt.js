@@ -202,10 +202,16 @@
      * "Show" button in the top right. This handles the clicks to that
      */
     var _willet_unhide_topbar = function() {
+        $.cookie('_willet_topbar_closed', false);
         _willet_topbar_hide_button.slideUp('fast');
         //_willet_padding.show();
-        _willet_topbar.slideDown('fast'); 
-        _willet_store_analytics('SIBTUserReOpenedTopBar');
+        if (_willet_topbar == null) {
+            _willet_store_analytics('SIBTShowingTopBarAsk');
+            _willet_show_topbar_ask();
+        } else {
+            _willet_topbar.slideDown('fast'); 
+            _willet_store_analytics('SIBTUserReOpenedTopBar');
+        }
     };
 
     /**
@@ -214,6 +220,7 @@
     var _willet_close_top_bar = function() {
         //$('#_willet_padding').hide();
         //_willet_padding.hide();
+        $.cookie('_willet_topbar_closed', true);
         _willet_topbar.slideUp('fast'); 
         _willet_topbar_hide_button.slideDown('fast');
         _willet_store_analytics('SIBTUserClosedTopBar');
@@ -565,6 +572,7 @@
         var hash        = window.location.hash;
         var hash_search = '#code=';
         var hash_index  = hash.indexOf(hash_search);
+        var cookie_topbar_closed = $.cookie('_willet_topbar_closed') || false;
 
         // create the hide button
         _willet_topbar_hide_button = $(document.createElement('div'));
@@ -578,15 +586,20 @@
             _willet_show_topbar();
         } else {
             var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-            var button       = document.createElement('a');
+            var button = document.createElement('a');
             var button_html = '';
 
             // check if we are showing top bar ask too
             if (sibt_tb_enabled && show_top_bar_ask) {
-                _willet_store_analytics('SIBTShowingTopBarAsk');
-                _willet_show_topbar_ask();
-            }
-            
+                if (cookie_topbar_closed) {
+                    // user has hidden the top bar
+                    _willet_topbar_hide_button.slideDown('fast');
+                } else {
+                    _willet_store_analytics('SIBTShowingTopBarAsk');
+                    _willet_show_topbar_ask();
+                }
+            } 
+
             if (sibt_button_enabled) {
                 // only add button if it's enabled in the app 
                 if (_willet_is_asker) {
