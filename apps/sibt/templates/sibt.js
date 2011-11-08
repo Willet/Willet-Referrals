@@ -572,7 +572,7 @@
         var hash        = window.location.hash;
         var hash_search = '#code=';
         var hash_index  = hash.indexOf(hash_search);
-        var cookie_topbar_closed = $.cookie('_willet_topbar_closed') || false;
+        var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
 
         // create the hide button
         _willet_topbar_hide_button = $(document.createElement('div'));
