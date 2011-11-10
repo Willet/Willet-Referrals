@@ -30,6 +30,9 @@ from util.model           import Model
 NUM_SHARE_SHARDS = 15
 
 class App(Model, polymodel.PolyModel):
+    # static memcache class name
+    memcache_class = 'app'
+
     # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
     

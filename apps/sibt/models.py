@@ -16,7 +16,7 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
-from apps.sibt.actions          import SIBTClickAction
+from apps.sibt.actions   import SIBTClickAction
 from apps.app.models      import App
 from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
@@ -35,7 +35,17 @@ NUM_VOTE_SHARDS = 15
 class SIBT(App):
     """Model storing the data for a client's 'Should I Buy This?' app"""
     emailed_at_10 = db.BooleanProperty( default = False )
+    
+    # if the button is enabled for this app
     button_enabled = db.BooleanProperty(default=True)
+    
+    # if the top bar is enabled for this app 
+    top_bar_enabled = db.BooleanProperty(default=True)
+
+    # number of times a user has to view the page before
+    # we show the top bar
+    num_shows_before_tb = db.IntegerProperty(default=1)
+
     store_name    = db.StringProperty( indexed = True )
     #store_url     = db.LinkProperty( indexed = False, default = None, required = False )
 

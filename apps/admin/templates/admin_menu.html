@@ -1,0 +1,7 @@
+{% block right_head %}
+    <p><a href="{{ URL }}{% url ShowActions %}">Actions</a></p>
+    <p><a href="{{ URL }}{% url ShowClickActions %}">Click Stats</a></p>
+    <p><a href="{{ URL }}{% url ManageApps %}">Manage Apps</a></p>
+    <p><a href="{{ URL }}/_ah/stats">AE Stats</a></p>
+    <p><a href="{{ URL }}{% url ShowRoutes %}">Routes</a></p>
+{% endblock right_head %}
