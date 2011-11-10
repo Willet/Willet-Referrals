@@ -28,21 +28,24 @@ def persist_actions(list_keys):
     
     logging.info('batch putting a list of actions from memcache: %s' % list_keys)
     actions_to_put = []
-    try:
-        actions_to_put = [
-                db.model_from_protobuf(
-                    entity_pb.EntityProto(
-                        action_dict.get(key)
-                    )
-                ) for key in list_keys
-        ]
-    except Exception,e:
-        logging.error('error in list comprehension: %s' % e, exc_info=True)
-    #for key in list_keys:
-    #    data = action_dict.get(key)
-    #    action = db.model_from_protobuf(entity_pb.EntityProto(data))
-    #    if action:
-    #        actions_to_put.append(action)
+    #try:
+    #    actions_to_put = [
+    #            db.model_from_protobuf(
+    #                entity_pb.EntityProto(
+    #                    action_dict.get(key)
+    #                )
+    #            ) for key in list_keys
+    #    ]
+    #except Exception,e:
+    #    logging.error('error in list comprehension: %s' % e, exc_info=True)
+    for key in list_keys:
+        data = action_dict.get(key)
+        try:
+            action = db.model_from_protobuf(entity_pb.EntityProto(data))
+            if action:
+                actions_to_put.append(action)
+        except Exception, e:
+            logging.error('error getting action: %s' % e, exc_info=True)
 
     try:
         db.put(actions_to_put)
