@@ -18,7 +18,7 @@ body > div#wrap {
 div#main {
     position: relative;
     padding-top: 0;
-    padding-bottom: 180px; /* must be same height as the footer + gap */
+    padding-bottom: 75px; /* must be same height as the footer + gap */
     
 }
 div#header {
@@ -403,7 +403,6 @@ div.call_to_action div.subtitle {
     font-weight:bold;
     cursor:pointer;
     width: 230px;
-    margin-left: 10px;
     
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
 
@@ -1066,11 +1065,9 @@ div.about img {
 
 /*** LANIDNG PAGE ***/
 .slideshowImg {
-    width: 275px;
-    height: 275px;
+    width: 300px;
+    height: 300px;
     border-radius: 10px;
-    border:  1px solid #ccc; 
-    background-color: #eee; 
 }
 
 .slideshow {
@@ -1078,10 +1075,23 @@ div.about img {
     width:   300px; 
     padding: 0; 
     margin:  0; 
+    border-radius: 10px;
+    border:  2px solid #ccc; 
+    -webkit-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
+
 }
 
 .customers img {
     width: 125px;
     margin-right: 40px;
 
+}
+
+.cloud_text {
+    height: 400px;
+    background: transparent;
+    background-image: url("../imgs/wispy_cloud.png");
+    background-repeat: no-repeat;
 }
