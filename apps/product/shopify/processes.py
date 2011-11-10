@@ -51,8 +51,10 @@ class UpdateProductShopify( URIHandler ):
 
         # Grab the data about the product from Shopify
         data = json.loads(self.request.body) 
-        product = ProductShopify.get_by_id( str(data['id']) )
+        product = ProductShopify.get_by_shopify_id( str(data['id']) )
         
-        product.update_from_json( data )
-
-
+        if product:
+            product.update_from_json( data )
+        else:
+            client = ClientShopify.get_by_url( store_url ) 
+            ProductShopify.create_from_json( client, product )

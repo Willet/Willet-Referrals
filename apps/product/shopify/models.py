@@ -33,7 +33,7 @@ class ProductShopify(Product):
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
-        if ProductShopify.get_by_id( str( data['id'] ) ) != None:
+        if ProductShopify.get_by_shopify_id( str( data['id'] ) ) != None:
             return
 
         uuid = generate_uuid( 16 )
@@ -56,7 +56,8 @@ class ProductShopify(Product):
         return ProductShopify.all().filter('resource_url =', url).get()
 
     @staticmethod
-    def get_by_id(id):
+    def get_by_shopify_id(id):
+        id = str( id )
         return ProductShopify.all().filter('shopify_id =', id).get()
 
     @staticmethod
@@ -71,7 +72,7 @@ class ProductShopify(Product):
                 )
                             
                 data = json.loads(result.content)['product']
-                product = ProductShopify.get_by_id( str(data['id']) )
+                product = ProductShopify.get_by_shopify_id( str(data['id']) )
                 if product:
                     product.add_url(url)
                 else:

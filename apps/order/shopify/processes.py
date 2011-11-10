@@ -95,7 +95,7 @@ class OrderWebhookNotification(URIHandler):
             # Grab the purchased items and save some information about them.
             elif k == 'line_items':
                 for j in v:
-                    product = ProductShopify.get_by_id(str(j['product_id']))
+                    product = ProductShopify.get_by_shopify_id(str(j['product_id']))
                     if product:
                         items.append(product.key())
 

@@ -15,7 +15,7 @@ from apps.app.models          import App
 from apps.app.models import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
-from apps.product.shopify.models      import Product
+from apps.product.shopify.models      import ProductShopify
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.testimonial.models  import create_testimonial
@@ -28,6 +28,8 @@ from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
+        logging.info("SHARESIBTONFACEBOOK")
+
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
@@ -46,13 +48,9 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
         product = None
         try:
-            product = Product.get_by_id(product_id)
+            product = ProductShopify.get_by_shopify_id( str(product_id) )
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
-            try:
-                product = Product.get_by_key_name(product_id)
-            except:
-                logging.error('Could not get product by name %s' % product_id, exc_info=True)
         try:
             product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
             product_desc = remove_html_tags(product_desc)

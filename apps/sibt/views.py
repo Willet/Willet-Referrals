@@ -63,7 +63,7 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         # Grab the product info
         if app.client.uuid == 'e54825444acb4f2e': # ie. if doggie seat belt
-            product = ProductShopify.get_by_id('48647062')
+            product = ProductShopify.get_by_shopify_id('48647062')
         else:
             product = ProductShopify.get_or_fetch(target, app.client)
 
@@ -123,7 +123,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             'productImg' : product.images, 
             'productName': product.title, 
             'productDesc': productDesc,
-            'product_id': product.key().id_or_name(),
+            'product_id': product.shopify_id,
             'productURL': store_domain,
 
             #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
