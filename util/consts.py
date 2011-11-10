@@ -97,7 +97,7 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 
 # controls the number of memcache buckets
 # and the maximum length of a bucket before it gets put to datastore
-NUM_ACTIONS_MEMCACHE_BUCKETS = 50
+NUM_ACTIONS_MEMCACHE_BUCKETS = 25
 
 # List of root template directories
 # to import templates from
