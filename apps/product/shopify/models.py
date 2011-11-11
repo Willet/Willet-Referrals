@@ -12,8 +12,6 @@ from util.helpers import generate_uuid
 
 class ProductShopify(Product):
     
-    processed = db.BooleanProperty( default = False, indexed = True )
-
     shopify_id = db.StringProperty( indexed = True )
 
     # this is the URL used to lookup this product
@@ -36,8 +34,7 @@ class ProductShopify(Product):
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
-        
-        if product != None:
+        if product == None:
             uuid = generate_uuid( 16 )
             
             # Make the product

@@ -57,4 +57,4 @@ class UpdateProductShopify( URIHandler ):
             product.update_from_json( data )
         else:
             client = ClientShopify.get_by_url( store_url ) 
-            ProductShopify.create_from_json( client, product )
+            ProductShopify.create_from_json( client, data )
