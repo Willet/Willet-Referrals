@@ -35,18 +35,18 @@ class ProductShopify(Product):
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
-        if ProductShopify.get_by_shopify_id( str( data['id'] ) ) != None:
-            return
-
-        uuid = generate_uuid( 16 )
+        product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
         
-        # Make the product
-        product = ProductShopify(
-                key_name = uuid,
-                uuid = uuid,
-                client = client,
-                resource_url = url
-        )
+        if product != None:
+            uuid = generate_uuid( 16 )
+            
+            # Make the product
+            product = ProductShopify(
+                    key_name     = uuid,
+                    uuid         = uuid,
+                    client       = client,
+                    resource_url = url
+            )
 
         # Now, update it with info.
         # update_from_json will PUT the obj.

@@ -503,17 +503,31 @@ class Barbara(URIHandler):
                     
         self.response.out.write( "%s <p>%d</p>" % (str, count) )
         """
-        products = ProductShopify.all().filter( 'processed =', True )
-        
+        products = ProductShopify.all()
+        logging.info( "%d" % products.count())
+        ids = []
+
         str = ""
         count = 0
         for p in products:
-            q = ProductShopify.all().filter( 'shopify_id =', p.shopify_id ).filter('processed =', False)
-            str += "<p>%s %d</p>"% (p.title, q.count())
-            if q.count() >= 1:
-                p.delete()
-                count += 1
-        
+            q = ProductShopify.all().filter( 'shopify_id =', p.shopify_id )
+            if q.count() > 1:
+                logging.info( "<p>%s %d</p>"% (p.title, q.count()) )
+                """
+                for w in q:
+                    if w.key() != p.key():
+                        count += 1
+                        str += "<p>%s(%s) %s (%s) </p>"% (p.title, p.key(), w.title, w.key())
+                        #w.processed = True
+                        #w.put()
+                        orders = OrderShopify.all().filter( 'products =', w.key() )
+                        for o in orders:
+                            o.products.remove( w.key() )
+                            o.products.append( p.key() )
+                            o.put()
+                        #w.delete()
+                """
+
         self.response.out.write( "%s <p>%d</p>" % (str, count) )
 
 
