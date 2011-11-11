@@ -36,7 +36,7 @@ class Order( Model, polymodel.PolyModel ):
     subtotal_price = db.FloatProperty( indexed = False ) # no taxes
     
     # Products that were purchased in this order
-    products       = db.ListProperty( db.Key, indexed=False )
+    products       = db.ListProperty( db.Key )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""

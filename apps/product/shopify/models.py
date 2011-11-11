@@ -12,6 +12,8 @@ from util.helpers import generate_uuid
 
 class ProductShopify(Product):
     
+    processed = db.BooleanProperty( default = False, indexed = True )
+
     shopify_id = db.StringProperty( indexed = True )
 
     # this is the URL used to lookup this product

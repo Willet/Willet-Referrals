@@ -17,7 +17,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
+from apps.sibt.shopify.models import SIBTShopify
 from apps.referral.models import Referral
+from apps.order.shopify.models import OrderShopify
 from apps.referral.shopify.models import ReferralShopify
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import get_link_by_willt_code
@@ -32,6 +34,7 @@ from apps.link.models import Link
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
+from util.helpers           import url as build_url
 from util.urihandler import URIHandler
 
 class Admin( URIHandler ):
@@ -453,30 +456,107 @@ class InstallShopifyJunk( URIHandler ):
 class Barbara(URIHandler):
     def get( self ):
         """
-        c = ClientShopify.all().get()
+        apps = SIBTShopify.all()
 
-        images = [ { 'src' : 'http://www.i-mockery.com/store/pixel-poster-winter-sample1.gif' } ]
-        data = { 'id' : 'asd',
-                 'title' : 'adfa',
-                 'product_type' : 'asd',
-                 'images' : images,
-                 'tags' : 'asd,asd'}
+        count = ''
+        for a in apps:
+            c = a.client
+
+            if c:
+                # Query the Shopify API to dl all Products
+                taskqueue.add(
+                        url = build_url('FetchShopifyProducts'),
+                        params = {
+                            'client_uuid': c.uuid,
+                            'app_type'   : 'sibt'
+                        }
+                    )
+                count += '<p>%s</p>' % c.name
+
+        self.response.out.write( count )
+        products = ProductShopify.all().filter( 'processed =', True )
+        logging.info("Products Processed: %d" % products.count() )
+            
+        i = 1176
+        products = ProductShopify.all().fetch( 1, offset= i)
         str = ""
-        for i in range(1, 10):
-            p = ProductShopify.create_from_json(c, data)
-            str +=  "'%s'," % ( p.uuid )
-
-        self.response.out.write( str )
+        count = 0
+        while True: 
+            for p in products:
+                if not p.processed:
+                    q = ProductShopify.all().filter( 'shopify_id =', p.shopify_id )
+                    for w in q:
+                        if w.key() != p.key():
+                            #str += "<p>%s %s %s %s</p>" % (p.key(), p.processed, w.key(), w.processed)
+                            orders = OrderShopify.all().filter( 'products =', w.key() )
+                            for o in orders:
+                                o.products.remove( w.key() )
+                                o.products.append( p.key() )
+                                o.put()
+                            # w.delete()
+                            #count += 1
+                            w.processed = True
+                            w.put()
+            i += 1
+            products = ProductShopify.all().fetch( 1, offset=i )
+            logging.info("I %d"% i )
+                    
+        self.response.out.write( "%s <p>%d</p>" % (str, count) )
         """
-        products = ProductShopify.all()
-
+        products = ProductShopify.all().filter( 'processed =', True )
+        
         str = ""
+        count = 0
         for p in products:
-            try:
-                str += "<img src='%s' class='slideshowImg' />" % p.images[0]
-            except:
-                pass;
-        self.response.out.write( str )
+            q = ProductShopify.all().filter( 'shopify_id =', p.shopify_id ).filter('processed =', False)
+            str += "<p>%s %d</p>"% (p.title, q.count())
+            if q.count() >= 1:
+                p.delete()
+                count += 1
+        
+        self.response.out.write( "%s <p>%d</p>" % (str, count) )
+
+
+
+class Barbara2( URIHandler ):
+    def post ( self ):
+        p1 = self.request.get('p1')
+        p2 = self.request.get('p2')
+        p3 = self.request.get('p3')
+        p4 = self.request.get('p4')
+        p5 = self.request.get('p5')
+        
+        if p2:
+            orders = OrderShopify.all().filter( 'products =', p2.key() )
+            for o in orders:
+                logging.info("Removed p2")
+                o.products.remove( p2.key() )
+                o.products.append( p1.key() )
+                o.put()
+        
+        if p3:
+            orders = OrderShopify.all().filter( 'products =', p3.key() )
+            for o in orders:
+                logging.info("Removed p3")
+                o.products.remove( p3.key() )
+                o.products.append( p1.key() )
+                o.put()
+                
+        if p4:
+            orders = OrderShopify.all().filter( 'products =', p4.key() )
+            for o in orders:
+                logging.info("Removed p4")
+                o.products.remove( p4.key() )
+                o.products.append( p1.key() )
+                o.put()
+        
+        if p5:
+            orders = OrderShopify.all().filter( 'products =', p5.key() )
+            for o in orders:
+                logging.info("Removed p5")
+                o.products.remove( p5.key() )
+                o.products.append( p1.key() )
+                o.put()
 
 class ShowActions(URIHandler):
     @admin_required

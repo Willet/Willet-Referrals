@@ -81,6 +81,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         
         template_values = {
             'app'            : app,
+            'domain'         : app.client.domain,
             'URL'            : URL,
             'willt_code'     : link.willt_url_code,
             'willt_url'      : link.get_willt_url(),

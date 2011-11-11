@@ -118,7 +118,7 @@ var _willet_run_scripts = function() {
                 var u = "http://pinterest.com/pin/create/button/?" +
                         "url=" + window.location.href + 
                         "&media=" + photo + 
-                        "&description=" + data.product.body_html;
+                        "&description=" + "Found on {{domain}}!";
                 $(a).attr( 'href', u );
                 $(a).attr( 'class', 'pin-it-button' );
                 $(a).attr( 'count-layout', "horizontal" );

@@ -40,6 +40,38 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
+
+    def do_install( self ):
+        # Define our script tag 
+        tags = [{
+            "script_tag": {
+                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                    URL,
+                    self.uuid
+                ),
+                "event": "onload"
+            }
+        }]
+
+        # Install yourself in the Shopify store
+        self.install_webhooks()
+        self.install_script_tags(script_tags=tags)
+
+        # Email Barbara
+        Email.emailBarbara(
+            'ButtonsShopify Install: %s %s %s' % (
+                self.uuid,
+                self.client.name,
+                self.client.url
+            )
+        )
+
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient( "ShopConnection", 
+                             self.client.merchant.get_attr('email'), 
+                             self.client.merchant.get_full_name(), 
+                             self.client.name )
+
 # Constructor ------------------------------------------------------------------
 def create_shopify_buttons_app(client, app_token):
 
@@ -53,37 +85,9 @@ def create_shopify_buttons_app(client, app_token):
                           store_token = app_token,
                           button_selector = "_willet_buttons_app" ) 
     app.put()
-    
-    # Define our script tag 
-    tags = [{
-        "script_tag": {
-            "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
-                URL,
-                uuid
-            ),
-            "event": "onload"
-        }
-    }]
 
-    # Install yourself in the Shopify store
-    app.install_webhooks()
-    app.install_script_tags(script_tags=tags)
-
-    # Email Barbara
-    Email.emailBarbara(
-        'ButtonsShopify Install: %s %s %s' % (
-            uuid,
-            client.name,
-            client.url
-        )
-    )
-
-    # Fire off "personal" email from Fraser
-    Email.welcomeClient( "ShopConnection", 
-                         client.merchant.get_attr('email'), 
-                         client.merchant.get_full_name(), 
-                         client.name )
-    
+    app.do_install()
+        
     return app
 
 # Accessors --------------------------------------------------------------------
