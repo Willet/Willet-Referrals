@@ -611,7 +611,6 @@
                 }
 
                 button = $(button)
-                    .addClass('button')
                     .html(button_html)
                     .css('display', 'none')
                     .attr('title', 'Ask your friends if you should buy this!')
