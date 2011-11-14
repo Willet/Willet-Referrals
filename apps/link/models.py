@@ -29,13 +29,16 @@ __all__ = [
 
 def put_link(memcache_key):
     """Deferred task to put a link to datastore"""
-    data = memcache.get(memcache_key)
-    if data:
-        link = db.model_from_protobuf(entity_pb.EntityProto(data))
-        link.put()
-        logging.info('deferred link put: %s' % link)
-    else:
-        logging.info('no data for key: %s' % memcache_key)
+    try:
+        data = memcache.get(memcache_key)
+        if data:
+            link = db.model_from_protobuf(entity_pb.EntityProto(data))
+            link.put()
+            logging.info('deferred link put: %s' % link)
+        else:
+            logging.info('no data for key: %s' % memcache_key)
+    except Exception, e:
+        logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
 
 class Link(Model):
     """A tracking link that will be shared by our future Users. A Link keeps 
