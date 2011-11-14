@@ -79,22 +79,22 @@ class SIBT(App):
         # Make the properties
         uuid = generate_uuid( 16 )
         
-        # set end if None
-        if end == None:
-            now = datetime.now()
-            six_hours = timedelta(hours=6)
-            end = now + six_hours
         
         # Now, make the object
-        instance = SIBTInstance( key_name     = uuid,
-                                 uuid         = uuid,
-                                 asker        = user,
-                                 app_         = self,
-                                 end_datetime = end,
-                                 link         = link,
-                                 product_img  = img,
-                                 motivation   = motivation,
-                                 url          = link.target_url )
+        instance = SIBTInstance(key_name     = uuid,
+                                uuid         = uuid,
+                                asker        = user,
+                                app_         = self,
+                                link         = link,
+                                product_img  = img,
+                                motivation   = motivation,
+                                url          = link.target_url)
+        # set end if None
+        if end == None:
+            six_hours = timedelta(hours=6)
+            end = instance.created + six_hours
+        instance.end_datetime = end
+        logging.info('instance created: %s\nends: %s' % (instance.created, instance.end_datetime))
         instance.put()
         
         # GAY BINGO

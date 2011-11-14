@@ -289,7 +289,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # If we have an instance, figure out if 
         # a) Is User asker?
         # b) Has this User voted?
-        if instance != None:
+        if instance:
             is_live    = instance.is_live
             asker_name = instance.asker.get_first_name()
             asker_pic  = instance.asker.get_attr('pic')

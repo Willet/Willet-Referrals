@@ -134,7 +134,8 @@ class SIBTShopify(SIBT, AppShopify):
             app = SIBTShopify.all()\
                 .filter('store_url =', url)\
                 .get()
-            app.memcache_by_store_url()
+            if app:
+                app.memcache_by_store_url()
 
         return app
 

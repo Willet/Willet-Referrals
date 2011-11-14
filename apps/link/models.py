@@ -1,16 +1,22 @@
-# Models for tracking links
-import logging, datetime, random
+#!/usr/bin/env python
+
+import logging
+import datetime
+import random
+import inspect
 
 from decimal import *
 
-from google.appengine.api import urlfetch, memcache
 from google.appengine.api import taskqueue
+from google.appengine.ext import deferred 
 from google.appengine.ext import db
+from google.appengine.datastore import entity_pb
 from google.appengine.api import memcache
-from util.model import Model
 
+from util.model import Model
 from util.helpers import encode_base62
 from util.helpers import url
+from util.consts import MEMCACHE_TIMEOUT
 
 NUM_SHARDS = 25
 
@@ -20,6 +26,16 @@ __all__ = [
     'Tweet',
     'CodeCounter'
 ]
+
+def put_link(memcache_key):
+    """Deferred task to put a link to datastore"""
+    data = memcache.get(memcache_key)
+    if data:
+        link = db.model_from_protobuf(entity_pb.EntityProto(data))
+        link.put()
+        logging.info('deferred link put: %s' % link)
+    else:
+        logging.info('no data for key: %s' % memcache_key)
 
 class Link(Model):
     """A tracking link that will be shared by our future Users. A Link keeps 
@@ -108,24 +124,40 @@ class Link(Model):
         db.delete(self)
         return delete_counters(c)
 
+    def memcache_by_code(self):
+        return memcache.set(
+                self.willt_url_code, 
+                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+
+    @staticmethod
+    def create_link(targetURL, app, domain, user=None, usr=""):
+        """Produces a Link containing a unique wil.lt url that will be tracked"""
+
+        logging.debug('called create_link')
+        code = encode_base62(get_a_willt_code())
+        logging.debug('got code %s' %  code)
+        link = Link(key_name         = code,
+                    target_url       = targetURL,
+                    willt_url_code   = code,
+                    supplied_user_id = usr,
+                    app_             = app,
+                    user             = user,
+                    origin_domain    = domain)
+        logging.debug('putting link')
+
+        #link.put()
+        link.memcache_by_code()
+        deferred.defer(put_link, link.willt_url_code)
+        
+        logging.info("Successful put of Link %s" % code)
+        return link
+
 
 def create_link(targetURL, app, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
-
+    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
     logging.debug('called create_link')
-    code = encode_base62(get_a_willt_code())
-    logging.debug('got code %s' %  code)
-    link = Link(key_name         = code,
-                target_url       = targetURL,
-                willt_url_code   = code,
-                supplied_user_id = usr,
-                app_             = app,
-                user             = user,
-                origin_domain    = domain)
-    logging.debug('putting link')
-    link.put()
-    logging.info("Successful put of Link %s" % code)
-    return link
+    return Link.create_link(targetURL, app, domain, user, usr) 
 
 def get_link_by_url( url_arg ):
     return Link.all().filter( 'target_url =', url_arg ).get()

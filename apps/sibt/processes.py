@@ -79,6 +79,12 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         }
 
         # first do sharing on facebook
+        if fb_token and fb_id:
+            logging.info('token and id set, updating user')
+            user.update(
+                fb_identity = fb_id,
+                fb_access_token = fb_token
+            ) 
         if not hasattr(user, 'fb_access_token') or \
             not hasattr(user, 'fb_identity'):
             logging.info('Setting users facebook info')    
