@@ -536,7 +536,6 @@ class Barbara(URIHandler):
         for o in orders:
             str += "<p>%s %s %f</p>" % (o.created.strftime('%H:%M:%S %A %B %d, %Y'), o.store_name, o.subtotal_price)
 
-        """
         app = SIBTShopify.all().filter( 'uuid =', 'e99c0d0feb6c42db' ).get()
 
         act = ScriptLoadAction.get_by_app( app ).order( '-created' )
@@ -551,8 +550,51 @@ class Barbara(URIHandler):
                 break
 
         self.response.out.write( "%s" % (str) )
+        """
+        webhooks = []
+        # Install the "Product Creation" webhook
+        data = {
+            "webhook": {
+                "address": "%s/product/shopify/webhook/create" % ( URL ),
+                "format" : "json",
+                "topic"  : "products/create"
+            }
+        }
+        webhooks.append(data)
+        
+        # Install the "Product Update" webhook
+        data = {
+            "webhook": {
+                "address": "%s/product/shopify/webhook/update" % ( URL ),
+                "format" : "json",
+                "topic"  : "products/update"
+            }
+        }
+        webhooks.append(data)
+        
+        apps = SIBTShopify.all()
 
+        for a in apps:
+            url      = '%s/admin/webhooks.json' % a.store_url
+            username = a.settings['api_key'] 
+            password = hashlib.md5(a.settings['api_secret'] + a.store_token).hexdigest()
+            header   = {'content-type':'application/json'}
+            h        = httplib2.Http()
+        
+            # Auth the http lib
+            h.add_credentials(username, password)
 
+            for webhook in webhooks:
+                resp, content = h.request(
+                    url,
+                    "POST",
+                    body = json.dumps(webhook),
+                    headers = header
+                )
+                if int(resp.status) == 401:
+                    logging.info("Faield for %s %s" % (a.store_url, content) )
+                else:
+                    logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
 
 class Barbara2( URIHandler ):
     def post ( self ):
