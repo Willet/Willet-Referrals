@@ -30,7 +30,6 @@ from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
 from apps.user.models           import User
-from apps.user.models           import get_user_by_uuid
 
 from util.consts                import *
 from util.helpers               import *
@@ -44,15 +43,15 @@ class AskDynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
             
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
-        app    = get_sibt_shopify_app_by_store_url( self.request.get('store_url') )
-        target = get_target_url( self.request.get('url') )
+        user   = User.get(self.request.get('user_uuid'))
+        app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        target = get_target_url(self.request.get('url'))
+
         logging.debug('target: %s' % target)
         logging.info("APP: %r" % app)
         
         # if this is a topbar ask
-        is_topbar_ask = self.request.get('is_topbar_ask')
-        is_topbar_ask = (is_topbar_ask != '') 
+        is_topbar_ask = (self.request.get('is_topbar_ask') != '') 
 
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
@@ -68,10 +67,11 @@ class AskDynamicLoader(webapp.RequestHandler):
             product = ProductShopify.get_or_fetch(target, app.client)
 
         # Make a new Link
-        link = create_link(target, app, origin_domain, user)
+        link = Link.create(target, app, origin_domain, user)
+        user_is_admin = user.is_admin()
         
         # GAY BINGO
-        if not user.is_admin():
+        if not user_is_admin:
             bingo( 'sibt_button_text4' )
             bingo( 'sibt_facebook_style' )
 
@@ -85,7 +85,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             "Desperately in need of some shopping advice! Should I buy this <input id='m_text' />? Would you? Tell me here:",
         ]
         
-        if not user.is_admin():
+        if not user_is_admin:
             ab_opt = ab_test('sibt_share_text2',
                               ab_share_options,
                               user = user,
@@ -114,7 +114,18 @@ class AskDynamicLoader(webapp.RequestHandler):
             store_domain = self.request.get('store_url')
 
         try:
-            productDesc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+            #parts = product.description[:150].split('.')
+            #logging.info('got parts: %s' % parts)
+            #parts = parts[:-1]
+            #logging.info('got off last bit: %s' % parts)
+            #productDesc = '.'.join(parts) + '.'
+            
+            ex = '[!\.\?]+'
+            parts = re.split(ex, product.description[:150])
+            productDesc = '.'.join(parts[:-1])
+            if productDesc[:-1] not in ex:
+                productDesc += '.'
+                        
         except Exception,e:
             productDesc = ''
             logging.warn('Probably no product description: %s' % e, exc_info=True)
@@ -155,8 +166,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
         template_values = {}
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
-        target = get_target_url( self.request.get('url') )
+        user   = User.get(self.request.get('user_uuid'))
+        target = get_target_url(self.request.get('url'))
         link   = None
         app    = None
 
@@ -170,6 +181,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 # Grab the link
 
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
+                logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
                 app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
                 link = get_link_by_willt_code(self.request.get('willt_code'))
                 
@@ -280,7 +292,7 @@ class ShowResults(webapp.RequestHandler):
     """Shows the results of a 'should I buy this'"""
     def get(self):
         template_values = {}
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        user   = User.get(self.request.get('user_uuid'))
         target = get_target_url( self.request.get('url') )
 
         doing_vote  = (self.request.get('doing_vote')  == 'true')
@@ -294,14 +306,14 @@ class ShowResults(webapp.RequestHandler):
         try:
             # get instance by instance_uuid
             assert(instance != None)
-        except:
+        except Exception, e:
             try:
-                logging.info('failed to get instance by instance_uuid: %s' % instance_uuid)
+                logging.info('failed to get instance by uuid: %s\n%s' % (
+                            instance_uuid, e))
                 # get instance by link
-                # Grab the link
-
-                app  = get_sibt_shopify_app_by_store_url(self.request.get('store_url'))
-                link = get_link_by_willt_code(self.request.get('willt_code'))
+                app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+                code = self.request.get('willt_code')
+                link = get_link_by_willt_code(code)
                 
                 if link == None:
                     # no willt code, asker probably came back to page with
@@ -324,7 +336,7 @@ class ShowResults(webapp.RequestHandler):
                     try:
                         # ugh, get the instance by actions ...
                         logging.info('failed to get instance for asker by url: %s' % e)
-                        instances = SIBTInstance.all(key_onlys=True)\
+                        instances = SIBTInstance.all(keys_only=True)\
                             .filter('url =', url)\
                             .filter('is_live =', True)\
                             .fetch(100)
@@ -422,6 +434,7 @@ class ShowResults(webapp.RequestHandler):
                 'share_url': share_url,
                 'is_asker' : is_asker,
                 'instance' : instance,
+                'instance_ends': instance.end_datetime.isoformat(),
                 'has_voted': has_voted,
                 'is_live': instance.is_live,
 

@@ -97,7 +97,7 @@ class Action(Model, polymodel.PolyModel):
     def put(self):
         """Override util.model.put with some custom shizzbang"""
         key = self.get_key()
-        memcache.set(key, db.model_to_protobuf(self).Encode())
+        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
         bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
         bucket_key = "_willet_actions_bucket:%s" % bucket
@@ -108,11 +108,11 @@ class Action(Model, polymodel.PolyModel):
 
         logging.warn('bucket length: %d' % len(list_identities))
         if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
-            memcache.set(bucket_key, [])
+            memcache.set(bucket_key, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overfilling, persisting!')
             deferred.defer(persist_actions, list_identities)
         else:
-            memcache.set(bucket_key, list_identities)
+            memcache.set(bucket_key, list_identities, time=MEMCACHE_TIMEOUT)
 
     def get_class_name(self):
         return self.__class__.__name__

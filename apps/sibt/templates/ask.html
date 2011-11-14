@@ -33,7 +33,7 @@
             var fbData = {
                 msg: '', 
                 img: '{{ productImg|first }}', 
-                name: '{{ productName }}',
+                name: '{{ productName|escape }}',
                 product_id: '{{ product_id }}',
                 app_uuid: '{{ app.uuid }}',
                 willt_code: '{{ willt_code }}',
@@ -59,38 +59,48 @@
                 });
             };
 
-            var share = function(medium, uid) {
-                storeAnalytics('SIBTShowingAskIframe');
+            var share = function() {
+                storeAnalytics('SIBTAskUserClickedShare');
+                $('#motivation').hide();
+                $("#invite").hide();
+                $("#loading").fadeIn();
 
-                // use the selected medium to share about your purchase
+                var el = $('#share-text')[0];
+                if (el.tagName != "TEXTAREA") {
+                    var mtext = $('#m_text');
+                    motivation_text = mtext.val();
+                    mtext.replaceWith(motivation_text);
+                    message = $(el).text();
+                } else {
+                    message = $(el).val();
+                }
 
-                var uid = uid || '';
-                //var message = shareText.value.substring(0,141);
-                // initiate facebook login event if requested
-                if (medium === 'fb') {
-                    fbData.msg = message; 
-                    fbData.motivation = motivation_text;
-                    if (userFound) {
-                        fb_share_handler(fbData)
-                        return;
-                    } else {
-                        fb_login_and_share();
-                        return;
-                    } // if (userFound u
-                } else if (medium === 'twitter'){
-                    var OAuthURL = '{{BASE_URL}}/oauth/twitter/login?wuid=' +
-                                    '&m=' + message + 
-                                    '&wcode={{willt_code}}' + 
-                                    '&img={{productImg|first}}' + 
-                                    '&name={{productName}}' + 
-                                    '&product_id={{product_id}}';
-                    var AuthWindow = window.open(OAuthURL, '_blank');
-                } 
+                fbData.msg = message; 
+                fbData.motivation = motivation_text;
+                //if (userFound) {
+                //    fb_share_handler(fbData)
+                //    return;
+                //} else {
+                    FB.login(function(lr) {
+                            if (!lr.authResponse) {
+                                // we weren't given permission
+                                storeAnalytics('SIBTFBConnectCancelled');
+                                doPostMessage('close');
+                                window.close();
+                            } else { 
+                                // TODO: need to support new authresponse
+                                fbData.fb_token = lr.authResponse.accessToken;
+                                fbData.fb_id = lr.authResponse.userID;
+                                fb_share_handler(fbData);
+                            }
+                        }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                    );
+                    return;
+                //} // if (userFound u
                 shareArea.style.visibility = 'visible';
             };
 
             var fb_share_handler = function(payload) {
-                //console.log(payload);
                 $.ajax({
                     url: '{% url ShareSIBTInstanceOnFacebook %}',
                     type: 'post',
@@ -135,18 +145,16 @@
             var fb_login_and_share = function() {
                 // tries to auth with facebook 
                 FB.login(function(lr) {
-                        //console.log(lr);
                         if (!lr.authResponse) {
-                            storeAnalytics( 'SIBTFBConnectCancelled' );
                             // we weren't given permission
+                            storeAnalytics('SIBTFBConnectCancelled');
+                            doPostMessage('close');
                             window.close();
                         } else { 
                             // TODO: need to support new authresponse
                             fbData.fb_token = lr.authResponse.accessToken;
                             fbData.fb_id = lr.authResponse.userID;
                             fb_share_handler(fbData);
-                            //mixpanelTrack('Facebook');
-                            //mixpanelTrack('Share');
                         }
                     }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                 );
@@ -225,25 +233,6 @@
                 share('fb');
             };
             
-            var done_fb_message = function() {
-                storeAnalytics('SIBTAskUserClickedShare');
-                $('#motivation').hide();
-                $("#invite").hide();
-                $("#loading").fadeIn();
-
-                var el = $('#share-text')[0];
-                if (el.tagName != "TEXTAREA") {
-                    var mtext = $('#m_text');
-                    motivation_text = mtext.val();
-                    mtext.replaceWith(motivation_text);
-                    message = $(el).text();
-                } else {
-                    message = $(el).val();
-                }
-
-                share('fb');
-            };
-
             $(document).ready(function() {
                 // fb is loaded, run our scripts
                 iframeBody = document.getElementById('willt');
@@ -253,14 +242,13 @@
                 charsLeft  = document.getElementById('chars-left');
 
                 // the share on facebook buttonn
-                $('#share-button').click(done_fb_message);
+                //$('#share-button').click(share);
 
                 $('#cancel-button').click(function() {
                     storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
                 $('#close-button').click(function() {
-                    storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
 
@@ -335,7 +323,7 @@
             </div>
             <div id="buttons">
                 <div style="float: right; padding-right: 8px">
-                    <input class="post" type="button" id="share-button" value="Ask for Advice" />
+                    <input class="post" type="button" id="share-button" onclick="javascript:share();return 0;" value="Ask for Advice" />
                     <input class="close" type="button" id="cancel-button" value="Cancel" />
                 </div>
             </div>
@@ -400,3 +388,4 @@
     </script>
 </body>
 </html>
+

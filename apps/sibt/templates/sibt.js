@@ -78,7 +78,6 @@
     */
     var _willet_topbar_onclick = function(e) {
         _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
-
     };
 
     var _willet_button_onclick = function(e, message) {
@@ -583,6 +582,8 @@
         $('body').prepend(_willet_topbar_hide_button);
 
         if (_willet_show_votes || hash_index != -1) {
+            // if we are showing votes (user has click action)
+            // or if there is a willet hash
             _willet_show_topbar();
         } else {
             var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
@@ -672,6 +673,7 @@
     } catch (e) {
         var error = e;
         var message = '';
+        var script = 'sibt.js';
 
         if (e.name && e.message) {
             error = e.name;

@@ -29,9 +29,6 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
-from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_id
-from apps.sibt.shopify.models import get_or_create_sibt_shopify_app
-from apps.sibt.shopify.models import get_sibt_shopify_app_by_store_url
 from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
@@ -57,7 +54,7 @@ class SIBTShopifyWelcome(URIHandler):
             client = self.get_client() # May be None
         
             token = self.request.get('t') # token
-            app = get_or_create_sibt_shopify_app(client, token=token)
+            app = SIBTShopify.get_or_create(client, token=token)
             
             client_email = None
             shop_owner = 'Shopify Merchant'
@@ -240,11 +237,16 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         instance = share_url = link       = asker_name = asker_pic        = None
         target   = product_title = product_images = ''
         willet_code = self.request.get('willt_code') 
-        target      = get_target_url( self.request.headers.get('REFERER') )
-        user        = get_or_create_user_by_cookie(self)
-        shop_url    = get_shopify_url( self.request.get('store_url') )
-        app         = get_sibt_shopify_app_by_store_url(shop_url)
+        target      = get_target_url(self.request.headers.get('REFERER'))
+        shop_url    = get_shopify_url(self.request.get('store_url'))
+        app         = SIBTShopify.get_by_store_url(shop_url)
         event       = 'SIBTShowingButton'
+
+        user = User.get(self.request.get('user_uuid'))
+        if not user:
+            logging.info('could not get user by request user_uuid: %s' %
+                    self.request.get('user_uuid'))
+            user = get_or_create_user_by_cookie(self)
 
         # Try to find an instance for this { url, user }
         try:
@@ -287,7 +289,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # If we have an instance, figure out if 
         # a) Is User asker?
         # b) Has this User voted?
-        if instance != None:
+        if instance:
             is_live    = instance.is_live
             asker_name = instance.asker.get_first_name()
             asker_pic  = instance.asker.get_attr('pic')
@@ -400,15 +402,16 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
         user      = get_or_create_user_by_cookie(self)
-        app       = get_sibt_shopify_app_by_store_url(store_url)
-        target    = get_target_url( self.request.headers.get('REFERER') )
+        app       = SIBTShopify.get_by_store_url(store_url)
+        target    = get_target_url(self.request.headers.get('REFERER'))
 
         # Store a script load action.
-        ScriptLoadAction.create( user, app, target )
+        ScriptLoadAction.create(user, app, target)
 
         template_values = {
             'URL' : URL,
             'store_url': store_url,
+            'user': user,
             'sibt_button_id': '_willet_shouldIBuyThisButton',
         }
         path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')

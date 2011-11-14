@@ -8,6 +8,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import logging
 import sys
+import inspect
 
 from django.utils import simplejson
 
@@ -22,6 +23,7 @@ from traceback import print_tb
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
+from google.appengine.ext import deferred
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
@@ -32,6 +34,7 @@ from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats,
 from apps.email.models    import Email
 
 from util.consts          import FACEBOOK_QUERY_URL, ADMIN_EMAILS, ADMIN_IPS
+from util.consts import MEMCACHE_TIMEOUT
 from util.model           import Model
 from util.helpers         import *
 from util                 import oauth2 as oauth
@@ -151,7 +154,7 @@ class User( db.Expando ):
                 break
         # Memcache *after* model is given datastore key
         if self.key():
-            memcache.set(key, db.model_to_protobuf(self).Encode())
+            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
             
         return True
 
@@ -185,7 +188,7 @@ class User( db.Expando ):
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
-                memcache.set(key, db.model_to_protobuf(entity).Encode())
+                memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:
             logging.debug('Model::get(): %s found in memcache!' % key)
@@ -1036,8 +1039,10 @@ class User( db.Expando ):
 
 # Gets by X
 def get_user_by_uuid( uuid ):
+    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
     logging.info("Getting user by uuid " + str(uuid))
-    user = User.all().filter('uuid =', uuid).get()
+    #user = User.all().filter('uuid =', uuid).get()
+    user = User.get(uuid)
     return user
 
 def get_user_by_twitter(t_handle):
@@ -1309,33 +1314,31 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     
     return user
 
-def get_user_by_cookie(request_handler):
-    """Read a user by cookie. Update IP address if present"""
-    uuid = read_user_cookie( request_handler )
-    if uuid:
-        user = get_user_by_uuid(uuid)
-        if user:
-            ip = request_handler.request.remote_addr
-            if hasattr(user, 'ips') and ip not in user.ips:
-                user.ips.append(ip)
-            else: 
-                user.ips = [ip]
-            user.save()
-            return user
-    return None
-
-def get_or_create_user_by_cookie( request_handler, referrer=None ): 
-    user= get_user_by_cookie( request_handler )
-    if user is None:
-        user = create_user( referrer )
-        
-        # Now, store the IP address for this new User
-        ip = request_handler.request.remote_addr
+def add_ip_to_user(user_uuid, ip):
+    """Done as a deferred task otherwise have to put a user everytime we get
+    one by cookie"""
+    logging.info('adding %s to user %s' % (ip, user_uuid))
+    user = User.get(user_uuid)
+    if user:
         if hasattr(user, 'ips') and ip not in user.ips:
             user.ips.append(ip)
         else: 
             user.ips = [ip]
         user.save()
+
+def get_user_by_cookie(request_handler):
+    """Read a user by cookie. Update IP address if present"""
+    user = User.get(read_user_cookie(request_handler))
+    if user:
+        ip = request_handler.request.remote_addr
+        deferred.defer(add_ip_to_user, user.uuid, ip)
+    return user
+
+def get_or_create_user_by_cookie( request_handler, referrer=None ): 
+    user = get_user_by_cookie(request_handler)
+    if user is None:
+        user = create_user(referrer)
+        deferred.defer(add_ip_to_user, user.uuid, ip)
 
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)

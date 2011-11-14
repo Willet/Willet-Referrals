@@ -550,7 +550,6 @@ class Barbara(URIHandler):
                 break
 
         self.response.out.write( "%s" % (str) )
-        """
         webhooks = []
         # Install the "Product Creation" webhook
         data = {
@@ -595,46 +594,8 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
-
-class Barbara2( URIHandler ):
-    def post ( self ):
-        p1 = self.request.get('p1')
-        p2 = self.request.get('p2')
-        p3 = self.request.get('p3')
-        p4 = self.request.get('p4')
-        p5 = self.request.get('p5')
-        
-        if p2:
-            orders = OrderShopify.all().filter( 'products =', p2.key() )
-            for o in orders:
-                logging.info("Removed p2")
-                o.products.remove( p2.key() )
-                o.products.append( p1.key() )
-                o.put()
-        
-        if p3:
-            orders = OrderShopify.all().filter( 'products =', p3.key() )
-            for o in orders:
-                logging.info("Removed p3")
-                o.products.remove( p3.key() )
-                o.products.append( p1.key() )
-                o.put()
-                
-        if p4:
-            orders = OrderShopify.all().filter( 'products =', p4.key() )
-            for o in orders:
-                logging.info("Removed p4")
-                o.products.remove( p4.key() )
-                o.products.append( p1.key() )
-                o.put()
-        
-        if p5:
-            orders = OrderShopify.all().filter( 'products =', p5.key() )
-            for o in orders:
-                logging.info("Removed p5")
-                o.products.remove( p5.key() )
-                o.products.append( p1.key() )
-                o.put()
+        """
+        pass
 
 class ShowActions(URIHandler):
     @admin_required

@@ -21,8 +21,8 @@ class TrackShowAction(webapp.RequestHandler):
     def post(self):
         """Javascript can track generic Show Actions"""
         try:
-            user = User.get(self.request.get('user'))
-            app = App.get(self.request.get('app'))
+            user = User.get(self.request.get('user')) if self.request.get('user') else None
+            app = App.get(self.request.get('app')) if self.request.get('app') else None
             what = self.request.get('what')
 
             action = ShowAction.create(user, app, what)
@@ -35,8 +35,8 @@ class TrackUserAction(webapp.RequestHandler):
     def post(self):
         """Javascript can track generic user Actions"""
         try:
-            user = User.get(self.request.get('user'))
-            app = App.get(self.request.get('app'))
+            user = User.get(self.request.get('user')) if self.request.get('user') else None
+            app = App.get(self.request.get('app')) if self.request.get('app') else None
             what = self.request.get('what')
 
             action = UserAction.create(user, app, what)
