@@ -30,7 +30,6 @@ from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
 from apps.user.models           import User
-from apps.user.models           import get_user_by_uuid
 
 from util.consts                import *
 from util.helpers               import *
@@ -44,7 +43,7 @@ class AskDynamicLoader(webapp.RequestHandler):
     def get(self):
         template_values = {}
             
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        user   = User.get(self.request.get('user_uuid'))
         app    = get_sibt_shopify_app_by_store_url( self.request.get('store_url') )
         target = get_target_url( self.request.get('url') )
         logging.debug('target: %s' % target)
@@ -155,8 +154,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
         template_values = {}
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
-        target = get_target_url( self.request.get('url') )
+        user   = User.get(self.request.get('user_uuid'))
+        target = get_target_url(self.request.get('url'))
         link   = None
         app    = None
 
@@ -280,7 +279,7 @@ class ShowResults(webapp.RequestHandler):
     """Shows the results of a 'should I buy this'"""
     def get(self):
         template_values = {}
-        user   = get_user_by_uuid( self.request.get('user_uuid') )
+        user   = User.get(self.request.get('user_uuid'))
         target = get_target_url( self.request.get('url') )
 
         doing_vote  = (self.request.get('doing_vote')  == 'true')

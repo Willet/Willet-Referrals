@@ -6,6 +6,8 @@ from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
 
+from util.consts import MEMCACHE_TIMEOUT
+
 class Model(db.Model):
     """A generic extension of db.Model"""
     
@@ -26,7 +28,7 @@ class Model(db.Model):
         # Memcache *after* model is given datastore key
         if self.key():
             logging.debug('setting new memcache entity: %s' % key)
-            memcache.set(key, db.model_to_protobuf(self).Encode())
+            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
             
         return True
 
@@ -67,7 +69,7 @@ class Model(db.Model):
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
                 logging.debug('setting new memcache entity: %s' % key)
-                memcache.set(key, db.model_to_protobuf(entity).Encode())
+                memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:
             logging.debug('Model::get(): %s found in memcache!' % key)

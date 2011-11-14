@@ -194,7 +194,7 @@ class InitCodes(webapp.RequestHandler):
 
 class CleanBadLinks( webapp.RequestHandler ):
     def get(self):
-        links = Link.all()
+        links = Link.all().filter('user =', None)
 
         count = 0
         str   = 'Cleaning the bad links'

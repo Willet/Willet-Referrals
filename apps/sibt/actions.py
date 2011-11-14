@@ -18,6 +18,7 @@ from apps.action.models     import ShowAction
 from apps.action.models     import UserAction 
 
 from util.helpers           import generate_uuid
+from util.consts import MEMCACHE_TIMEOUT
 
 ## -----------------------------------------------------------------------------
 ## SIBTClickAction Subclass ----------------------------------------------------
@@ -54,7 +55,7 @@ class SIBTClickAction(ClickAction):
 
         tracking_keys = memcache.get(action.get_tracking_key()) or []
         tracking_keys.append(action.get_key())
-        memcache.set(action.get_tracking_key(), tracking_keys)
+        memcache.set(action.get_tracking_key(), tracking_keys, time=MEMCACHE_TIMEOUT)
         
         return action 
 
@@ -139,7 +140,7 @@ class SIBTVoteAction(VoteAction):
         
         # we memcache by classname-instance_uuid-user_uuid
         # so we can look it up really easily later on
-        memcache.set(action.get_tracking_key(), action.get_key())
+        memcache.set(action.get_tracking_key(), action.get_key(), time=MEMCACHE_TIMEOUT)
 
         return action
     
@@ -261,7 +262,7 @@ class SIBTShowingButton(ShowAction):
         # tracking urls for fast lookup
         tracking_urls = memcache.get(action.get_tracking_key()) or []
         tracking_urls.append(url)
-        memcache.set(action.get_tracking_key(), tracking_urls)
+        memcache.set(action.get_tracking_key(), tracking_urls, time=MEMCACHE_TIMEOUT)
         return action
 
     @classmethod
@@ -571,6 +572,31 @@ class SIBTUserClosedTopBar(UserAction):
 
         uuid = generate_uuid( 16 )
         action = SIBTUserClosedTopBar(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        return action
+
+class SIBTUserReOpenedTopBar(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTUserReOpenedTopBar'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserReOpenedTopBar(
                 key_name = uuid,
                 uuid     = uuid,
                 user     = user,

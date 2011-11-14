@@ -15,6 +15,7 @@ from datetime import timedelta
 from django.utils         import simplejson as json
 from google.appengine.ext import db
 from google.appengine.api import memcache
+from google.appengine.datastore import entity_pb
 
 from apps.sibt.actions   import SIBTClickAction
 from apps.app.models      import App
@@ -133,7 +134,7 @@ class SIBT(App):
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
-class SIBTInstance( Model ):
+class SIBTInstance(Model):
     # Unique identifier for memcache and DB key
     uuid            = db.StringProperty( indexed = True )
 
@@ -169,6 +170,17 @@ class SIBTInstance( Model ):
         self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
 
+    def put(self):
+        """So we memcache by asker_uuid and url as well"""
+        logging.info('enhanced SIBTShopify put')
+        super(SIBTInstance, self).put()
+        self.memcache_by_asker_and_url()
+
+    def memcache_by_asker_and_url(self):
+        return memcache.set(
+                '%s-%s' % (self.asker.uuid, self.url), 
+                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+    
     @staticmethod 
     def _get_from_datastore(uuid):
         return db.Query(SIBTInstance).filter('uuid =', uuid).get()
@@ -176,11 +188,18 @@ class SIBTInstance( Model ):
     # Accessor ---------------------------------------------------------------------
     @staticmethod
     def get_by_asker_for_url(user, url, only_live=True):
-        return SIBTInstance.all()\
+        data = memcache.get('%s-%s' % (user.uuid, url))
+        if data:
+            instance = db.model_from_protobuf(entity_pb.EntityProto(data))
+        else:
+            instance = SIBTInstance.all()\
                 .filter('is_live =', only_live)\
                 .filter('asker =', user)\
                 .filter('url =', db.Link(url))\
                 .get()
+            if instance:
+                instance.memcache_by_asker_and_url()
+        return instance
 
     @staticmethod
     def get_by_link(link, only_live=True):
@@ -250,8 +269,6 @@ class SIBTInstance( Model ):
 
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
-
-
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------

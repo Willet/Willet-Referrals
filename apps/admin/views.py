@@ -530,8 +530,6 @@ class Barbara(URIHandler):
 
         self.response.out.write( "%s <p>%d</p>" % (str, count) )
 
-
-
 class Barbara2( URIHandler ):
     def post ( self ):
         p1 = self.request.get('p1')

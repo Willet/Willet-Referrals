@@ -99,6 +99,11 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 # and the maximum length of a bucket before it gets put to datastore
 NUM_ACTIONS_MEMCACHE_BUCKETS = 25
 
+# number of seconds to memcache an item
+# see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache
+# TODO: Try 2591999 instead
+MEMCACHE_TIMEOUT = 1728000
+
 # List of root template directories
 # to import templates from
 TEMPLATE_DIRS = (
@@ -149,8 +154,8 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
