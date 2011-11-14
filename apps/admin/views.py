@@ -17,6 +17,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
+from apps.action.models import ScriptLoadAction
 from apps.sibt.shopify.models import SIBTShopify
 from apps.referral.models import Referral
 from apps.order.shopify.models import OrderShopify
@@ -24,6 +25,7 @@ from apps.referral.shopify.models import ReferralShopify
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import get_link_by_willt_code
 from apps.product.shopify.models import ProductShopify
+from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.actions   import SIBTClickAction
 from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
@@ -502,7 +504,6 @@ class Barbara(URIHandler):
             logging.info("I %d"% i )
                     
         self.response.out.write( "%s <p>%d</p>" % (str, count) )
-        """
         products = ProductShopify.all()
         logging.info( "%d" % products.count())
         ids = []
@@ -513,7 +514,6 @@ class Barbara(URIHandler):
             q = ProductShopify.all().filter( 'shopify_id =', p.shopify_id )
             if q.count() > 1:
                 logging.info( "<p>%s %d</p>"% (p.title, q.count()) )
-                """
                 for w in q:
                     if w.key() != p.key():
                         count += 1
@@ -526,9 +526,17 @@ class Barbara(URIHandler):
                             o.products.append( p.key() )
                             o.put()
                         #w.delete()
-                """
-
         self.response.out.write( "%s <p>%d</p>" % (str, count) )
+
+        orders = OrderShopify.all()
+
+        orders = sorted( orders, key = lambda x: x.created )
+
+        str = ""
+        for o in orders:
+            str += "<p>%s %s %f</p>" % (o.created.strftime('%H:%M:%S %A %B %d, %Y'), o.store_name, o.subtotal_price)
+
+        """
 
 class Barbara2( URIHandler ):
     def post ( self ):
