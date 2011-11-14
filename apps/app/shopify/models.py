@@ -112,6 +112,16 @@ class AppShopify(Model):
         }
         webhooks.append(data)
 
+        # Install the "Product Delete" webhook
+        data = {
+            "webhook": {
+                "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                "format" : "json",
+                "topic"  : "products/delete"
+            }
+        }
+        webhooks.append(data)
+
         for webhook in webhooks:
             logging.info('Installing extra hook %s' % webhook)
             logging.info("POSTING to %s %r " % (url, webhook))
