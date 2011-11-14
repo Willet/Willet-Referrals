@@ -58,3 +58,21 @@ class UpdateProductShopify( URIHandler ):
         else:
             client = ClientShopify.get_by_url( store_url ) 
             ProductShopify.create_from_json( client, data )
+
+class DeleteProductShopify( URIHandler ):
+    """Delete a Shopify product"""
+    def post(self):
+        logging.info("HEADERS : %s %r" % (
+            self.request.headers,
+            self.request.headers
+            )
+        )
+
+        # Grab the data about the product from Shopify
+        data = json.loads(self.request.body) 
+
+        product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
+        
+        # Delete the product from our DB.
+        if product:
+            product.delete()

@@ -110,15 +110,27 @@ class ProductShopify(Product):
         except:
             logging.info("No tags for this product %s" % self.uuid)
 
+        type = data[ 'product_type' ]
+
+
         # Update the Product
         self.shopify_id    = str(data['id'])
-        self.title         = data['title']
-        self.price         = price
-        self.images        = images
-        self.description   = description
-        self.type          = data[ 'product_type' ]
-        self.tags          = tags
+        self.title         = data[ 'title' ]
         self.json_response = json.dumps( data )
+        
+        if len(type) != 0:
+            self.type          = type
+        if price != 0.0:
+            self.price         = price
+        if images != None and len(images) != 0:
+            self.images        = images
+        if description != None and len(description) != 0:
+            self.description   = description
+        if tags != None and len(tags) != 0:
+            self.tags          = tags
+
+        if hasattr( self, 'processed' ):
+            delattr( self, 'processed' )
 
         self.put()
 

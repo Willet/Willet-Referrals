@@ -9,6 +9,8 @@ urlpatterns = [
     # Processes
     (r'/product/shopify/webhook/create', CreateProductShopify),
     (r'/product/shopify/fetch', FetchProductShopify),
-    (r'/product/shopify/webhook/update', UpdateProductShopify)
+    (r'/product/shopify/webhook/update', UpdateProductShopify),
+    (r'/product/shopify/webhook/delete', DeleteProductShopify)
+
 ]
 
