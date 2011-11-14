@@ -133,10 +133,10 @@ class Link(Model):
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     @staticmethod
-    def create_link(targetURL, app, domain, user=None, usr=""):
+    def create(targetURL, app, domain, user=None, usr=""):
         """Produces a Link containing a unique wil.lt url that will be tracked"""
 
-        logging.debug('called create_link')
+        logging.debug('called Link.create')
         code = encode_base62(get_a_willt_code())
         logging.debug('got code %s' %  code)
         link = Link(key_name         = code,
@@ -146,7 +146,6 @@ class Link(Model):
                     app_             = app,
                     user             = user,
                     origin_domain    = domain)
-        logging.debug('putting link')
 
         #link.put()
         link.memcache_by_code()
@@ -160,7 +159,7 @@ def create_link(targetURL, app, domain, user=None, usr=""):
     """Produces a Link containing a unique wil.lt url that will be tracked"""
     logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
     logging.debug('called create_link')
-    return Link.create_link(targetURL, app, domain, user, usr) 
+    return Link.create(targetURL, app, domain, user, usr) 
 
 def get_link_by_url( url_arg ):
     return Link.all().filter( 'target_url =', url_arg ).get()

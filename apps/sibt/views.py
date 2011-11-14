@@ -67,7 +67,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             product = ProductShopify.get_or_fetch(target, app.client)
 
         # Make a new Link
-        link = create_link(target, app, origin_domain, user)
+        link = Link.create(target, app, origin_domain, user)
         user_is_admin = user.is_admin()
         
         # GAY BINGO
