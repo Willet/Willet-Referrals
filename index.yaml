@@ -79,3 +79,15 @@ indexes:
   - name: user
   - name: created
 
+- kind: Action
+  properties:
+  - name: app_
+  - name: class
+  - name: created
+
+- kind: Action
+  properties:
+  - name: app_
+  - name: class
+  - name: created
+    direction: desc
