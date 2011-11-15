@@ -1338,6 +1338,7 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
     user = get_user_by_cookie(request_handler)
     if user is None:
         user = create_user(referrer)
+        ip = request_handler.request.remote_addr
         deferred.defer(add_ip_to_user, user.uuid, ip)
 
     # Set a cookie to identify the user in the future
