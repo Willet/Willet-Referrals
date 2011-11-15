@@ -71,8 +71,7 @@ class PostConversion( URIHandler ):
 
 
 class EmailerCron( URIHandler ):
-    @admin_required
-    def get( self, admin ):
+    def get( self ):
         apps = App.all()
 
         for c in apps:
@@ -89,8 +88,7 @@ class EmailerCron( URIHandler ):
                                            'email' : c.client.email} )
 
 class EmailerQueue( URIHandler ):
-    @admin_required
-    def post( self, admin ):
+    def post( self ):
         email_addr  = self.request.get('email')
         app_id = self.request.get('app_id')
 
