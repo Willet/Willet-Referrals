@@ -95,7 +95,7 @@ class SIBT(App):
             end = instance.created + six_hours
         instance.end_datetime = end
         logging.info('instance created: %s\nends: %s' % (instance.created, instance.end_datetime))
-        instance.put()
+        instance.special_put()
         
         # GAY BINGO
         if not user.is_admin():
@@ -170,7 +170,7 @@ class SIBTInstance(Model):
         self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
 
-    def put(self):
+    def special_put(self):
         """So we memcache by asker_uuid and url as well"""
         logging.info('enhanced SIBTShopify put')
         super(SIBTInstance, self).put()
