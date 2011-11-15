@@ -4,6 +4,7 @@ __author__      = "Barbara Macdonald"
 __copyright__   = "Copyright 2011, Barbara"
 
 import logging
+import datetime
 
 #from django.utils import simplejson as json
 #from google.appengine.api import urlfetch
@@ -44,4 +45,4 @@ class TrackUserAction(webapp.RequestHandler):
         except Exception,e:
             logging.error('There was an error storing the action: %s' % e, 
                     exc_info=True)
- 
+

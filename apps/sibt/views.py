@@ -34,6 +34,7 @@ from apps.user.models           import User
 from util.consts                import *
 from util.helpers               import *
 from util.urihandler            import URIHandler
+from util.strip_html import strip_html
 
 class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -121,7 +122,8 @@ class AskDynamicLoader(webapp.RequestHandler):
             #productDesc = '.'.join(parts) + '.'
             
             ex = '[!\.\?]+'
-            parts = re.split(ex, product.description[:150])
+            productDesc = strip_html(product.description)
+            parts = re.split(ex, productDesc[:150])
             productDesc = '.'.join(parts[:-1])
             if productDesc[:-1] not in ex:
                 productDesc += '.'
