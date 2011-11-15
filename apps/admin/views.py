@@ -561,12 +561,14 @@ class Barbara(URIHandler):
         }
         webhooks.append(data)
         
+        """
+        webhooks = []
         # Install the "Product Update" webhook
         data = {
             "webhook": {
-                "address": "%s/product/shopify/webhook/update" % ( URL ),
+                "address": "%s/product/shopify/webhook/delete" % ( URL ),
                 "format" : "json",
-                "topic"  : "products/update"
+                "topic"  : "products/delete"
             }
         }
         webhooks.append(data)
@@ -594,8 +596,6 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
-        """
-        pass
 
 class ShowActions(URIHandler):
     @admin_required
