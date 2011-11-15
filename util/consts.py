@@ -97,12 +97,7 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 
 # controls the number of memcache buckets
 # and the maximum length of a bucket before it gets put to datastore
-NUM_ACTIONS_MEMCACHE_BUCKETS = 20
-
-# number of seconds to memcache an item
-# see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache
-# TODO: Try 2591999 instead
-MEMCACHE_TIMEOUT = 1728000
+NUM_ACTIONS_MEMCACHE_BUCKETS = 25
 
 # List of root template directories
 # to import templates from
@@ -117,8 +112,9 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '173.177.235.110',    # Montreal apartment
-              '70.31.244.131',       # Montreal apartment x2
-              '76.65.157.73'        # Montreal apartment( BELL)
+              '70.31.244.131',      # Montreal apartment x2
+              '76.65.157.73',       # Montreal apartment( BELL)
+              '24.150.35.66',       # Barbara's Burlington House
             ]
 
 # the apps we are using
@@ -154,8 +150,8 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-try:
-    from local_consts import *
-except Exception, e:
-    logging.info('no local_consts.py: %s' % e, exc_info=True)
-    pass
+#try:
+#    from local_consts import *
+#except Exception, e:
+#    logging.info('no local_consts.py: %s' % e, exc_info=True)
+#    pass
