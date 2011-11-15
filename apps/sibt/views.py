@@ -61,10 +61,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         logging.info("APP: %r" % app)
 
         # Grab the product info
-        if app.client.uuid == 'e54825444acb4f2e': # ie. if doggie seat belt
-            product = ProductShopify.get_by_shopify_id('48647062')
-        else:
-            product = ProductShopify.get_or_fetch(target, app.client)
+        product = ProductShopify.get_or_fetch(target, app.client)
 
         # Make a new Link
         link = Link.create(target, app, origin_domain, user)
