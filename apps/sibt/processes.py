@@ -3,6 +3,8 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+import re
+
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
@@ -25,6 +27,7 @@ from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
 from util.urihandler          import URIHandler
+from util.strip_html import strip_html
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
@@ -52,8 +55,14 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
         try:
-            product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
-            product_desc = remove_html_tags(product_desc)
+            #product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
+            #product_desc = remove_html_tags(product_desc)
+            ex = '[!\.\?]+'
+            product_desc = strip_html(product.description)
+            parts = re.split(ex, product_desc[:150])
+            product_desc = '.'.join(parts[:-1])
+            if product_desc[:-1] not in ex:
+                product_desc += '.'
         except:
             logging.info('could not get product description')
         
@@ -314,9 +323,13 @@ class TrackSIBTUserAction(URIHandler):
     def post(self):
         """So javascript can track a sibt specific show actions"""
         success = False
-        instance = SIBTInstance.get(self.request.get('instance_uuid')) 
-        app = App.get(self.request.get('app_uuid'))
-        user = User.get(self.request.get('user_uuid'))
+        instance = app = user = action = None
+        if self.request.get('instance_uuid'):
+            instance = SIBTInstance.get(self.request.get('instance_uuid')) 
+        if self.request.get('app_uuid'):
+            app = App.get(self.request.get('app_uuid'))         
+        if self.request.get('user_uuid'):
+            user = User.get(self.request.get('user_uuid'))
         what = self.request.get('what')
         url = self.request.get('target_url')
         action = None

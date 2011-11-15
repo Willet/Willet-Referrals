@@ -22,28 +22,41 @@ from util.helpers            import generate_uuid
 from util.model              import Model
 
 """Helper method to persist actions to datastore"""
-def persist_actions(list_keys):
+def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.sibt.actions import *
     action_dict = memcache.get_multi(list_keys) 
-    
+
+    mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+
     logging.info('batch putting a list of actions from memcache: %s' % list_keys)
     actions_to_put = []
-    #try:
-    #    actions_to_put = [
-    #            db.model_from_protobuf(
-    #                entity_pb.EntityProto(
-    #                    action_dict.get(key)
-    #                )
-    #            ) for key in list_keys
-    #    ]
-    #except Exception,e:
-    #    logging.error('error in list comprehension: %s' % e, exc_info=True)
+    had_error = False
     for key in list_keys:
         data = action_dict.get(key)
         try:
             action = db.model_from_protobuf(entity_pb.EntityProto(data))
             if action:
                 actions_to_put.append(action)
+        except AssertionError, e:
+            # there was an error getting all the actions
+            # let's decrement the number of buckets
+            # but before we can do this we have to save the last bucket so
+            # it's contents are not deleted
+
+            old_key = mbc.get_bucket(mbc.count)
+            if bucket_key != old_key and not decrementing and not had_error:
+                # we dont want to do this for the last bucket because it will
+                # duplicate the entries we are about to create
+                old_count = mbc.count
+                mbc.decrement_count()
+                logging.warn(
+                    'encounted error, going to decrement buckets from %s to %s' 
+                    % (old_count, mbc.count), exc_info=True)
+
+                last_keys = memcache.get(old_key) or []
+                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
+                deferred.defer(persist_actions, old_key, last_keys, decrementing=True)
+                had_error = True
         except Exception, e:
             logging.error('error getting action: %s' % e, exc_info=True)
 
@@ -51,6 +64,10 @@ def persist_actions(list_keys):
         db.put(actions_to_put)
     except Exception,e:
         logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
+
+    if decrementing:
+        logging.warn('decremented mbc `%s` to %d and removed %s' % (
+            mbc.name, mbc.count, bucket_key))
 
 def defer_put(action):
     from apps.sibt.actions import *
@@ -60,7 +77,50 @@ def defer_put(action):
     except Exception,e:
         logging.error('error putting: %s' % e, exc_info=True)
 
+class MemcacheBucketConfig(Model):
+    """Used so we can dynamically scale the number of memcache buckets"""
+    name = db.StringProperty(indexed = True)
+    count = db.IntegerProperty(default = 20)
+    _memcache_key_name = 'name'
 
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
+        super(MemcacheBucketConfig, self).__init__(*args, **kwargs)
+
+    def get_bucket(self, number):
+        return '%s:%s' % (self.name, number)
+
+    def get_random_bucket(self):
+        bucket = random.randint(0, self.count)
+        return self.get_bucket(bucket) 
+
+    def decrement_count(self):
+        self.count -= 1
+        self.put()
+
+    def increment_count(self):
+        self.count += 1
+        self.put()
+
+    @staticmethod
+    def create(name):
+        mbc = MemcacheBucketConfig(name=name)
+        if mbc:
+            mbc.put()
+        return mbc
+
+    @staticmethod
+    def get_or_create(name):
+        mbc = MemcacheBucketConfig.get(name)
+        if not mbc:
+            # we are creating this MBC for the first time
+            mbc = MemcacheBucketConfig.create(name)
+        return mbc
+    
+    @classmethod
+    def _get_from_datastore(cls, name):
+        """Datastore retrieval using memcache_key"""
+        return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
 
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
@@ -99,20 +159,20 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-        bucket = random.randint(0, NUM_ACTIONS_MEMCACHE_BUCKETS)
-        bucket_key = "_willet_actions_bucket:%s" % bucket
-        logging.warn('bucket key: %s' % bucket_key)
+        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        bucket = mbc.get_random_bucket()
+        logging.info('bucket: %s' % bucket)
 
-        list_identities = memcache.get(bucket_key) or []
+        list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
-        logging.warn('bucket length: %d' % len(list_identities))
-        if len(list_identities) > NUM_ACTIONS_MEMCACHE_BUCKETS:
-            memcache.set(bucket_key, [], time=MEMCACHE_TIMEOUT)
-            logging.warn('bucket overfilling, persisting!')
-            deferred.defer(persist_actions, list_identities)
+        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
+        if len(list_identities) > mbc.count:
+            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
+            logging.warn('bucket overflowing, persisting!')
+            deferred.defer(persist_actions, bucket, list_identities)
         else:
-            memcache.set(bucket_key, list_identities, time=MEMCACHE_TIMEOUT)
+            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
     def get_class_name(self):
         return self.__class__.__name__

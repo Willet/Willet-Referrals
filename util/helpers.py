@@ -43,7 +43,7 @@ def to_dict(something, recursion=0):
             logging.error(e, exc_info=True)
     return output
 
-def get_target_url( referrer ):
+def get_target_url(referrer):
     target = None
     try:
         page_url = urlparse( referrer )

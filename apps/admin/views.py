@@ -682,10 +682,10 @@ class ShowClickActions(URIHandler):
         }
         actions_to_check = [
             'SIBTShowingAskIframe',
-            'SIBTInstanceCreated',
             'SIBTAskUserClickedEditMotivation',
             'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare'
+            'SIBTAskUserClickedShare',
+            'SIBTInstanceCreated',
         ]
         for t in things:
             things[t]['counts'][things[t]['show_action']] = Action\

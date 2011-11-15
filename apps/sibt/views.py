@@ -34,6 +34,7 @@ from apps.user.models           import User
 from util.consts                import *
 from util.helpers               import *
 from util.urihandler            import URIHandler
+from util.strip_html import strip_html
 
 class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -74,11 +75,8 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         ab_share_options = [ 
             "I'm not sure if I should buy this. What do you think?",
-            
             "Would you buy this? I need help making a decision!",
-            
             "I need some shopping advice. Should I buy this? Would you?",
-            
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
         
@@ -88,7 +86,7 @@ class AskDynamicLoader(webapp.RequestHandler):
                               user = user,
                               app  = app )
         else:
-            ab_opt = "Should I buy this? Please let me know!"
+            ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
         # Now, tell Mixpanel
         if is_topbar_ask:
@@ -118,7 +116,8 @@ class AskDynamicLoader(webapp.RequestHandler):
             #productDesc = '.'.join(parts) + '.'
             
             ex = '[!\.\?]+'
-            parts = re.split(ex, product.description[:150])
+            productDesc = strip_html(product.description)
+            parts = re.split(ex, productDesc[:150])
             productDesc = '.'.join(parts[:-1])
             if productDesc[:-1] not in ex:
                 productDesc += '.'
