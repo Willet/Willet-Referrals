@@ -1318,15 +1318,15 @@ def add_ip_to_user(user_uuid, ip):
     """Done as a deferred task otherwise have to put a user everytime we get
     one by cookie"""
     logging.info('adding %s to user %s' % (ip, user_uuid))
-    def txn(user_uuid):
-        user = User.get(user_uuid)
+    def txn(user):
         if user:
             if hasattr(user, 'ips') and ip not in user.ips:
                 user.ips.append(ip)
             else: 
                 user.ips = [ip]
             user.save()
-    db.run_in_transaction(txn, user_uuid)
+    user = User.get(user_uuid)
+    db.run_in_transaction(txn, user)
 
 def get_user_by_cookie(request_handler):
     """Read a user by cookie. Update IP address if present"""
