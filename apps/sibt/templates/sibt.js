@@ -295,8 +295,8 @@
         if (is_ask_bar) {
             image_src = '{{ product_images|first }}';
             asker_text = '';
-            message = "Not sure if you should buy this?" +
-                "<button id='askBtn' class=''>Ask Your Friends For Advice</button>";
+            message = "Decisions are hard to make." +
+                "<button id='askBtn' class=''>{{AB_CTA_text}}</button>";
         } 
 
         var bar_html = "<div class='_willet_wrapper'> " +
