@@ -66,14 +66,14 @@
                 $("#loading").fadeIn();
 
                 var el = $('#share-text')[0];
-                if (el.tagName != "TEXTAREA") {
-                    var mtext = $('#m_text');
-                    motivation_text = mtext.val();
-                    mtext.replaceWith(motivation_text);
-                    message = $(el).text();
-                } else {
+                //if (el.tagName != "TEXTAREA") {
+                //    var mtext = $('#m_text');
+                    //motivation_text = mtext.val();
+                    //mtext.replaceWith(motivation_text);
+                //    message = $(el).text();
+                //} else {
                     message = $(el).val();
-                }
+                //}
 
                 fbData.msg = message; 
                 fbData.motivation = motivation_text;
@@ -252,20 +252,8 @@
                     doPostMessage('close');
                 });
 
-                $('#edit-motivation').click(function() {
-                    storeAnalytics('SIBTAskUserClickedEditMotivation');
-                    $('#hide-me-after').hide();
-                    var mtext = $('#m_text');
-                    motivation_text = mtext.val();
-                    mtext.replaceWith(motivation_text);
-                    var sharetext = $('#share-text');
-                    var text = sharetext.text();
-                    var textarea = $('<textarea/>');
-                    sharetext.replaceWith(textarea);
-                    textarea.attr('id', 'share-text');
-                    textarea.val($.trim(text));
-                });
-
+                
+                /*
                 // random default values
                 var default_values = [
                     'ex: for prom',
@@ -293,6 +281,7 @@
                         toggleDefaultValue(el, true); 
                     }
                 });
+                */
             });
         </script>
         
@@ -304,13 +293,7 @@
         <div id="motivation" class="">
             <div id="top-div" width="100%">
                 <div id="top-text">
-                    <div id='share-text'>
-                        {{ AB_share_text }}
-                        <input type="hidden" class="defaultValue" value="ex: for prom, for work, as a gift" />
-                    </div>
-                    <div id="hide-me-after">
-                        <span id="edit-motivation"><img alt="Edit Message" title="Edit Message" src="{{ URL }}/static/imgs/edit-12.gif" /></span> 
-                    </div>
+                    <textarea id="share-text">{{ AB_share_text }}</textarea>
                 </div>
                 <div id="product-img">
                     <img src="{{productImg|first}}" />
