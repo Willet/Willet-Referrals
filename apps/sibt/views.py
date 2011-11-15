@@ -77,11 +77,8 @@ class AskDynamicLoader(webapp.RequestHandler):
 
         ab_share_options = [ 
             "I'm not sure if I should buy this. What do you think?",
-            
             "Would you buy this? I need help making a decision!",
-            
             "I need some shopping advice. Should I buy this? Would you?",
-            
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
         
@@ -91,7 +88,7 @@ class AskDynamicLoader(webapp.RequestHandler):
                               user = user,
                               app  = app )
         else:
-            ab_opt = "Should I buy this? Please let me know!"
+            ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
         # Now, tell Mixpanel
         if is_topbar_ask:

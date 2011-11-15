@@ -356,7 +356,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                   user = user,
                                   app  = app )
         else:
-            cta_button_text = "Unsure? Ask your friends!"
+            cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
         
         # Grab all template values
