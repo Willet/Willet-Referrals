@@ -561,7 +561,6 @@ class Barbara(URIHandler):
         }
         webhooks.append(data)
         
-        """
         webhooks = []
         data = {
             "webhook": {
@@ -599,6 +598,7 @@ class Barbara(URIHandler):
         """
         apps = App.all()
         for a in apps:
+            logging.info( a.store_url )
             url      = '%s/admin/webhooks.json' % a.store_url
             username = a.settings['api_key'] 
             password = hashlib.md5(a.settings['api_secret'] + a.store_token).hexdigest()
@@ -610,16 +610,20 @@ class Barbara(URIHandler):
 
             resp, content = h.request( url, "GET", headers = header)
             data = json.loads( content ) 
-            logging.info( resp.status )
-            logging.info( content )
+            #logging.info( resp.status )
+            #logging.info( content )
 
             if resp.status == 200:
+                count = 0
                 for w in data['webhooks']:
-                    if w['address'] == 'http://social-referral.appspot.com/o/shopify/webhook/create':
-                        url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
-                        resp, content = h.request( url, "DELETE", headers = header)
-                        logging.info( 'Removed from %s' % a.store_url )
-        """
+                    #logging.info("Checking %s %s" % (w['address'], w['address'] == 'http://social-referral.appspot.com/o/shopify/webhook/create'))
+                    if w['address'] == 'http://social-referral.appspot.com/o/shopify/webhook/create' or  w['address'] == 'http://social-referral.appspot.com/o/shopify/webhook/create/' :
+                        count += 1
+                        logging.info("Got one %d" % count )
+                        if count > 1:
+                            url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
+                            resp, content = h.request( url, "DELETE", headers = header)
+                            logging.info( 'Removed from %s' % a.store_url )
 
 class ShowActions(URIHandler):
     @admin_required
