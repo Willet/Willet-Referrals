@@ -12,7 +12,9 @@ class MLStripper(HTMLParser):
         return ''.join(self.fed)
 
 def strip_html(html):
-    html = html.replace('&nbsp;', ' ')
+    html = html.replace('&nbsp;', ' ')\
+            .replace('<br />', ' ')\
+            .replace('<br>', ' ')
     s = MLStripper()
     s.feed(html)
     return s.get_data()

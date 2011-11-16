@@ -117,9 +117,16 @@ class AskDynamicLoader(webapp.RequestHandler):
             #productDesc = '.'.join(parts) + '.'
             
             ex = '[!\.\?]+'
+            #logging.info('before strip html: %s' % product.description)
             productDesc = strip_html(product.description)
+            #logging.info('stripped of html: %s' % productDesc)
             parts = re.split(ex, productDesc[:150])
-            productDesc = '.'.join(parts[:-1])
+            #logging.info('parts: %s' % parts)
+            if len(parts) > 1:
+                productDesc = '.'.join(parts[:-1])
+            else:
+                productDesc = '.'.join(parts)
+            #logging.info('cut last part: %s' % productDesc)
             if productDesc[:-1] not in ex:
                 productDesc += '.'
                         

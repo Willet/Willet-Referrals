@@ -95,8 +95,12 @@ class MemcacheBucketConfig(Model):
         return self.get_bucket(bucket) 
 
     def decrement_count(self):
-        self.count -= 1
-        self.put()
+        if self.count == 0:
+            logging.error('trying to decrement count for %s lower than 0' % 
+                    self.name)
+        else:
+            self.count -= 1
+            self.put()
 
     def increment_count(self):
         self.count += 1
