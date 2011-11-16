@@ -54,7 +54,6 @@
         // Use the handy event callback
         document.addEventListener("DOMContentLoaded", function(){
             document.removeEventListener("DOMContentLoaded", arguments.callee, false );
-            console.log('hit 1');
             run();
         }, false);
     } else if (document.attachEvent) {
@@ -63,7 +62,6 @@
         document.attachEvent("onreadystatechange", function(){
             if (document.readyState === "complete") {
                 document.detachEvent( "onreadystatechange", arguments.callee );
-                console.log('hit 2');
                 run();
             }
         });
@@ -80,7 +78,6 @@
                 return;
             }
             // and execute any waiting functions
-            console.log('hit 3');
             run();
         })();
     }
