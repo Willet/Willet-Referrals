@@ -431,7 +431,7 @@ class ShowResults(webapp.RequestHandler):
                 'share_url': share_url,
                 'is_asker' : is_asker,
                 'instance' : instance,
-                'instance_ends': instance.end_datetime.isoformat(),
+                'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
                 'has_voted': has_voted,
                 'is_live': instance.is_live,
 
