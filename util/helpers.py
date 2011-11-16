@@ -107,7 +107,15 @@ def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""
     logging.info("Setting a user cookie: %s" % user_uuid)
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
-    cookieutil.set_secure_cookie(name = 'willet_user_uuid', value = user_uuid, expires_days= 365*10)
+    #cookieutil.set_secure_cookie(
+    #        name = 'willet_user_uuid', 
+    #        value = user_uuid,
+    #        expires_days= 365*10)
+    cookieutil.set_secure_cookie(
+            name = 'willet_user_uuid', 
+            value = user_uuid,
+            expires_days= 365*10,
+            domain = '.%s' % APP_DOMAIN)
 
 def read_user_cookie( request_handler ):
     """Sets a cookie to identify a user"""
