@@ -29,7 +29,6 @@ from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 import apps.oauth.models
-from apps.order.shopify.models import OrderShopify
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
 from apps.email.models    import Email
 
@@ -58,7 +57,7 @@ class EmailModel(Model):
     
 # Constructor ------------------------------------------------------------------
 def create_email_model( user, email ):
-    if email != '':
+    if email != '' and email != None:
         # Check to see if we have one already
         em = EmailModel.all().filter( 'address = ', email ).get()
         
@@ -440,6 +439,8 @@ class User( db.Expando ):
    
     def compute_analytics(self, scope='day', period_start=datetime.today()):
         """computes analytics for this user on this scope"""
+        pass
+        """
         midnight = datetime_time(0)
         period_start = period_start.combine(period_start.date(), midnight)
         if scope == 'day':
@@ -588,6 +589,7 @@ class User( db.Expando ):
         else:
             logging.info('no links to process')   
         return
+        """
     
     def get_analytics_for_app(self, 
             app=None, scope=None, order='period_start'):
@@ -1181,7 +1183,6 @@ def create_user(referrer):
     uuid=generate_uuid(16)
     user = User(key_name=uuid, uuid=uuid, referrer=referrer)
     user.put()
-    
     return user
 
 # Get or Create by X

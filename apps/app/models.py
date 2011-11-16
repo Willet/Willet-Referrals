@@ -18,7 +18,6 @@ from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
 from apps.link.models     import Link, get_link_by_willt_code 
-from apps.order.models    import Order
 from apps.user.models     import User
 from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats
 
@@ -74,6 +73,10 @@ class App(Model, polymodel.PolyModel):
         self.client     = None
         self.put()
     
+    @staticmethod
+    def get_by_client( client ):
+        return App.all().filter( 'client =', client )
+
     def storeAnalyticsDatum( self, event, user, target ):
         if 'social-referral.appspot.com' not in URL:
             return
@@ -99,6 +102,8 @@ class App(Model, polymodel.PolyModel):
     def compute_analytics(self, scope):
         """Update the AppAnalytics model for this uuid 
             with latest available data""" 
+        pass
+        """
 
         app = get_app_by_id(self.uuid)
         service_keys = ['facebook_share_id', 'tweet_id', 'linkedin_share_url']
@@ -231,6 +236,7 @@ class App(Model, polymodel.PolyModel):
             app_analytics['e'],
             top_user_lists
         )
+        """
 
     def get_reports_since(self, scope, t, count=None):
         """ Get the reports analytics for this app since 't'"""

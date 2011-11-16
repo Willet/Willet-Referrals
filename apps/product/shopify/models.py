@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import logging
-from datetime import datetime
+from datetime                   import datetime
 
 from django.utils               import simplejson as json
 from google.appengine.api       import urlfetch
-from google.appengine.ext import db
+from google.appengine.ext       import db
 
-from apps.product.models import Product
-from util.helpers import generate_uuid
+from apps.product.models        import Product
+from util.helpers               import generate_uuid
 
 class ProductShopify(Product):
     

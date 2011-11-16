@@ -30,6 +30,7 @@ from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
 from apps.user.models           import User
+from apps.user.models           import get_user_by_cookie
 
 from util.consts                import *
 from util.helpers               import *
@@ -45,7 +46,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         template_values = {}
             
         user   = User.get(self.request.get('user_uuid'))
-        app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        app    = SIBTShopify.get_by_store_url(self.request.get('store_url'))
         target = get_target_url(self.request.get('url'))
 
         logging.debug('target: %s' % target)

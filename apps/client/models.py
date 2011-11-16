@@ -19,7 +19,6 @@ from google.appengine.ext.db import polymodel
 
 from apps.link.models       import Link 
 from apps.user.models       import User, get_or_create_user_by_email
-from apps.order.shopify.models import OrderShopify
 from util                   import httplib2
 from util.consts            import *
 from util.model             import Model

@@ -82,6 +82,8 @@ class AppShopify(Model):
         }
         webhooks.append(data)
         
+        """
+        We fetch the order info now to avoid duplicating Users.
         # Install the "Order Creation" webhook
         data = {
             "webhook": {
@@ -91,6 +93,7 @@ class AppShopify(Model):
             }
         }
         webhooks.append(data)
+        """
 
         # Install the "Product Creation" webhook
         data = {

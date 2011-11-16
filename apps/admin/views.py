@@ -561,7 +561,6 @@ class Barbara(URIHandler):
         }
         webhooks.append(data)
         
-        """
         webhooks = []
         # Install the "Product Update" webhook
         data = {
@@ -573,7 +572,7 @@ class Barbara(URIHandler):
         }
         webhooks.append(data)
         
-        apps = SIBTShopify.all()
+        apps = SIBTShopify.all().get()
 
         for a in apps:
             url      = '%s/admin/webhooks.json' % a.store_url
@@ -596,6 +595,23 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
+
+        a = SIBTShopify.all().get()
+        url      = '%s/admin/orders/95530442.json' % a.store_url
+        username = a.settings['api_key'] 
+        password = hashlib.md5(a.settings['api_secret'] + a.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+    
+        # Auth the http lib
+        h.add_credentials(username, password)
+
+        resp, content = h.request( url, "GET", headers = header)
+        logging.info( resp.status )
+        logging.info( content )
+        """
+        pass
+
 
 class ShowActions(URIHandler):
     @admin_required
