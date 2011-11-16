@@ -573,7 +573,7 @@ class Barbara(URIHandler):
         webhooks.append(data)
         webhooks.append(data)
         
-        apps = SIBTShopify.all().get()
+        apps = SIBTShopify.all()
 
         for a in apps:
             url      = '%s/admin/webhooks.json' % a.store_url
