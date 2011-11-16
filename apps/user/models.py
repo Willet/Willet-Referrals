@@ -212,8 +212,8 @@ class User( db.Expando ):
 
         return False
     
-    def merge( self, u ):
-        """ Merge u into self. Deletes u. """
+    def merge_data( self, u ):
+        """ Merge u into self. """
         if self.key() == u.key():
             return
 
@@ -222,10 +222,6 @@ class User( db.Expando ):
             setattr( self, p, getattr( u, p ) )
 
         self.put()
-        # TODO: uncomment once we know it works.
-        # u.delete()
-
-        # TODO: Walk all DB objs and point old refs to new user
 
     def get_name_or_handle(self):
         name = self.get_handle()

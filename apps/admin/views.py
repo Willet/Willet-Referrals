@@ -561,15 +561,16 @@ class Barbara(URIHandler):
         }
         webhooks.append(data)
         
+        """
         webhooks = []
-        # Install the "Product Update" webhook
         data = {
             "webhook": {
-                "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                "address": "%s/o/shopify/webhook/create" % ( URL ),
                 "format" : "json",
-                "topic"  : "products/delete"
+                "topic"  : "orders/create"
             }
         }
+        webhooks.append(data)
         webhooks.append(data)
         
         apps = SIBTShopify.all().get()
@@ -595,23 +596,30 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
-
-        a = SIBTShopify.all().get()
-        url      = '%s/admin/orders/95530442.json' % a.store_url
-        username = a.settings['api_key'] 
-        password = hashlib.md5(a.settings['api_secret'] + a.store_token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
-    
-        # Auth the http lib
-        h.add_credentials(username, password)
-
-        resp, content = h.request( url, "GET", headers = header)
-        logging.info( resp.status )
-        logging.info( content )
         """
-        pass
+        apps = App.all()
+        for a in apps:
+            url      = '%s/admin/webhooks.json' % a.store_url
+            username = a.settings['api_key'] 
+            password = hashlib.md5(a.settings['api_secret'] + a.store_token).hexdigest()
+            header   = {'content-type':'application/json'}
+            h        = httplib2.Http()
+        
+            # Auth the http lib
+            h.add_credentials(username, password)
 
+            resp, content = h.request( url, "GET", headers = header)
+            data = json.loads( content ) 
+            logging.info( resp.status )
+            logging.info( content )
+
+            if resp.status == 200:
+                for w in data['webhooks']:
+                    if w['address'] == 'http://social-referral.appspot.com/o/shopify/webhook/create':
+                        url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
+                        resp, content = h.request( url, "DELETE", headers = header)
+                        logging.info( 'Removed from %s' % a.store_url )
+        """
 
 class ShowActions(URIHandler):
     @admin_required

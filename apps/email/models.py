@@ -18,8 +18,8 @@ from util.consts import *
 ###################
 
 
-barbara   = 'barbara@getwillet.com'
-fraser    = 'fraser@getwillet.com'
+barbara   = '"Barbara Macdonald" <barbara@getwillet.com>'
+fraser    = '"Fraser Harris" <fraser@getwillet.com>'
 matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)

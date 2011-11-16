@@ -3,15 +3,22 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+import hashlib
 import logging
-from django.utils import simplejson as json
+
+from django.utils                import simplejson as json
+from google.appengine.api        import urlfetch
 
 from apps.app.models             import App
 from apps.client.models          import get_client_by_uuid
-from apps.order.shopify.models   import create_shopify_order
+from apps.client.shopify.models  import ClientShopify
+from apps.order.shopify.models   import OrderShopify
+from apps.product.shopify.models import ProductShopify
 from apps.user.models            import User
 from apps.user.models            import get_user_by_cookie
+from apps.user.models            import get_or_create_user_by_email
 
+from util                        import httplib2
 from util.helpers                import *
 from util.urihandler             import URIHandler
 
@@ -29,21 +36,32 @@ class OrderIframeNotification(webapp.RequestHandler):
         url      = self.request.get( 'url' ).split( '/' )
         l        = len( url )
         token    = url[ l - 1 ]
-        order_id = url[ l - 2 ]
+        store_id = url[ l - 2 ]
 
-        # Pick the first app if this client has > 1
-        app = App.get_by_client( client ).get()
+        # Try to fetch order.
+        # Have we been webhook-pinged by Shopify yet?
+        # A bit of a race condition here ..
+        order = OrderShopify.get_by_token( token )
+        if order:
+            if order.user:
+                # Merge User data
+                user.merge_data( order.user )
+                
+                # Delete the old User
+                order.user.delete()
 
-        # Make a new Shopify Order
-        create_shopify_order( user, client, app, token, order_id )
+            order.user = user
+            order.put()
+        
+        else:
+            # Otherwise, make a new Shopify Order
+            OrderShopify.create( user, client, token )
 
 class OrderWebhookNotification(URIHandler):
     def get(self):
         return self.post()
 
     def post(self):
-        pass
-        """
         logging.info("HEADERS : %s %r" % (
             self.request.headers,
             self.request.headers
@@ -109,8 +127,14 @@ class OrderWebhookNotification(URIHandler):
             elif k == 'landing_site':
                 logging.info("LANDING SITE: %s" % v )
  
-        # Make a User
-        user = get_or_create_user_by_email( email, request_handler=self )
+        # Fetch the order if we hve it.
+        o = OrderShopify.get_by_token( token )
+        if o == None:
+            user = get_or_create_user_by_email( email, request_handler=self )
+        else:
+            user = o.user
+ 
+        # Update the User's info
         user.update(first_name         = first_name,
                     last_name          = last_name,
                     address1           = address1,
@@ -127,11 +151,9 @@ class OrderWebhookNotification(URIHandler):
                     ip                 = ip,
                     accepts_marketing  = accepts_marketing)
 
-        # Make the ShopifyOrder
-        o = get_shopify_order_by_token( token )
         if o == None:
             # Make the Order
-            o = create_shopify_order(
+            o = OrderShopify.create(
                 user,
                 client,
                 token,
@@ -141,14 +163,12 @@ class OrderWebhookNotification(URIHandler):
                 referring_site
             )
         else:
+            # Otherise, update it.
+            o.order_id       = order_id
             o.order_num      = order_num
             o.subtotal       = subtotal
             o.referring_site = referring_site
 
-            # Now merge the Users
-            o.user.merge( user )
-
         # Store the purchased items in the order
         o.products.extend( items )
         o.put()
-        """
