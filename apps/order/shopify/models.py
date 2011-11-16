@@ -39,11 +39,12 @@ class OrderShopify( Order ):
         """ Create an Order for a Shopify store """
 
         # Don't duplicate orders!
-        o = OrderShopify.get_by_id( order_id ) 
+        o = OrderShopify.get_by_token( order_token ) 
         if o != None:
+            logging.info("Not duplicating Order %s" % (order_token))
             return o
         
-        logging.info(referrer)
+        logging.info("Creating new Order with ref: %s" % referrer)
 
         uuid = generate_uuid( 16 )
 

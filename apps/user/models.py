@@ -217,6 +217,8 @@ class User( db.Expando ):
         if self.key() == u.key():
             return
 
+        logging.info("merging %s into %s" % ( u.uuid, self.uuid ))
+
         props = u.dynamic_properties()
         for p in props:
             setattr( self, p, getattr( u, p ) )

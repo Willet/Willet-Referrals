@@ -43,15 +43,21 @@ class OrderIframeNotification(webapp.RequestHandler):
         # A bit of a race condition here ..
         order = OrderShopify.get_by_token( token )
         if order:
-            if order.user:
+            logging.info("Have the order already")
+            if order.user and order.user.key() != user.key():
                 # Merge User data
                 user.merge_data( order.user )
                 
                 # Delete the old User
+                # No need to clean up links from other objs since this User was 
+                # ONLY attached to this Order
+                logging.info("Deleting %s" % order.user.uuid)
                 order.user.delete()
 
-            order.user = user
-            order.put()
+            if order.user == None:
+                logging.info("%s is new user for this order" % ( user.uuid ))
+                order.user = user
+                order.put()
         
         else:
             # Otherwise, make a new Shopify Order
