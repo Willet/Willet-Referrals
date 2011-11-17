@@ -22,6 +22,7 @@ from apps.link.models       import Link
 from apps.product.shopify.models import ProductShopify
 from apps.user.models       import User, get_or_create_user_by_email
 
+from util                   import httplib2
 from util.consts            import *
 from util.helpers           import generate_uuid
 from util.helpers           import url as build_url 
@@ -182,8 +183,6 @@ class ClientShopify( Client ):
 
 # Shopify API Calls  -----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):
-    # Constuct the API URL
-    url = '%s/admin/shop.json' % ( store_url )
     
     # Fix inputs ( legacy )
     if app_type == "referral":
@@ -194,32 +193,21 @@ def get_store_info(store_url, store_token, app_type):
     # Grab Shopify API settings
     settings = SHOPIFY_APPS[app_type]
 
+    # Constuct the API URL
+    url      = '%s/admin/shop.json' % ( store_url )
     username = settings['api_key'] 
     password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
+    header   = {'content-type':'application/json'}
+    h        = httplib2.Http()
     
-    # this creates a password manager
-    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # because we have put None at the start it will always
-    # use this username/password combination for  urls
-    # for which `url` is a super-url
-    passman.add_password(None, url, username, password)
-
-    # create the AuthHandler
-    authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-    opener = urllib2.build_opener(authhandler)
-
-    # All calls to urllib2.urlopen will now use our handler
-    # Make sure not to include the protocol in with the URL, or
-    # HTTPPasswordMgrWithDefaultRealm will be very confused.
-    # You must (of course) use it when fetching the page though.
-    urllib2.install_opener(opener)
+    # Auth the http lib
+    h.add_credentials(username, password)
     
-    # authentication is now handled automatically for us
     logging.info("Querying %s" % url )
-    result = urllib2.urlopen(url)
+    resp, content = h.request( url, "GET", headers = header)
     
-    details = json.loads( result.read() ) 
+    details = json.loads( content ) 
+    logging.info( details )
     shop    = details['shop']
     logging.info('shop: %s' % (shop))
     
@@ -227,10 +215,6 @@ def get_store_info(store_url, store_token, app_type):
 
 def get_product_imgs(store_url, store_token, app_type):
     """ Fetch images for all the products in this store """
-
-    # Construct the API URL
-    url      = '%s/admin/products.json' % (store_url)
-    
     # Fix inputs ( legacy )
     if app_type == "referral":
         app_type = 'ReferralShopify'
@@ -239,34 +223,22 @@ def get_product_imgs(store_url, store_token, app_type):
     
     # Grab Shopify API settings
     settings = SHOPIFY_APPS[app_type]
-
+    
+    # Construct the API URL
+    url      = '%s/admin/products.json' % (store_url)
     username = settings['api_key'] 
     password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
-
-    # this creates a password manager
-    passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    # because we have put None at the start it will always
-    # use this username/password combination for  urls
-    # for which `url` is a super-url
-    passman.add_password(None, url, username, password)
-
-    # create the AuthHandler
-    authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-    opener = urllib2.build_opener(authhandler)
-
-    # All calls to urllib2.urlopen will now use our handler
-    # Make sure not to include the protocol in with the URL, or
-    # HTTPPasswordMgrWithDefaultRealm will be very confused.
-    # You must (of course) use it when fetching the page though.
-    urllib2.install_opener(opener)
-
-    # authentication is now handled automatically for us
+    header   = {'content-type':'application/json'}
+    h        = httplib2.Http()
+    
+    # Auth the http lib
+    h.add_credentials(username, password)
+    
     logging.info("Querying %s" % url )
-    result = urllib2.urlopen(url)
+    resp, content = h.request( url, "GET", headers = header)
 
     # Grab the data about the order from Shopify
-    details  = json.loads( result.read() ) #['orders'] # Fetch the order
+    details  = json.loads( content ) #['orders'] # Fetch the order
     products = details['products']
 
     ret = []

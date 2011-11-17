@@ -69,6 +69,28 @@ class AppShopify(Model):
         # Auth the http lib
         h.add_credentials(username, password)
         
+        # First fetch webhooks that already exist
+        resp, content = h.request( url, "GET", headers = header)
+        data = json.loads( content ) 
+        #logging.info('%s %s' % (resp, content))
+
+        # See what we've already installed and flag it so we don't double install
+        order_create = product_create = product_delete = product_update = True
+        for w in data['webhooks']:
+            #logging.info("checking %s"% w['address'])
+            if w['address'] == '%s/o/shopify/webhook/create' % URL or \
+               w['address'] == '%s/o/shopify/webhook/create/' % URL:
+                order_create = False
+            if w['address'] == '%s/product/shopify/webhook/create' % URL or \
+               w['address'] == '%s/product/shopify/webhook/create/' % URL:
+                product_create = False
+            if w['address'] == '%s/product/shopify/webhook/delete' % URL or \
+               w['address'] == '%s/product/shopify/webhook/delete/' % URL:
+                product_delete = False
+            if w['address'] == '%s/product/shopify/webhook/update' % URL or \
+               w['address'] == '%s/product/shopify/webhook/update/' % URL:
+                product_update = False
+
         # Install the "App Uninstall" webhook
         data = {
             "webhook": {
@@ -90,7 +112,8 @@ class AppShopify(Model):
                 "topic"  : "orders/create"
             }
         }
-        webhooks.append(data)
+        if order_create:
+            webhooks.append(data)
 
         # Install the "Product Creation" webhook
         data = {
@@ -100,7 +123,8 @@ class AppShopify(Model):
                 "topic"  : "products/create"
             }
         }
-        webhooks.append(data)
+        if product_create:
+            webhooks.append(data)
         
         # Install the "Product Update" webhook
         data = {
@@ -110,7 +134,8 @@ class AppShopify(Model):
                 "topic"  : "products/update"
             }
         }
-        webhooks.append(data)
+        if product_update:
+            webhooks.append(data)
 
         # Install the "Product Delete" webhook
         data = {
@@ -120,7 +145,8 @@ class AppShopify(Model):
                 "topic"  : "products/delete"
             }
         }
-        webhooks.append(data)
+        if product_delete:
+            webhooks.append(data)
 
         for webhook in webhooks:
             logging.info('Installing extra hook %s' % webhook)
