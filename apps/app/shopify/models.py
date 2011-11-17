@@ -210,9 +210,10 @@ class AppShopify(Model):
             # we are okay
             content = json.loads(content)
             for theme in content['themes']:
-                if theme.role == 'main':
-                    main_id = theme.id
-                    break
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        main_id = theme['id']
+                        break
         else:
             logging.error('%s error getting themes: \n%s\n%s' % (
                 self.class_name(),

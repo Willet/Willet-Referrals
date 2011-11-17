@@ -242,11 +242,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         app         = SIBTShopify.get_by_store_url(shop_url)
         event       = 'SIBTShowingButton'
 
-        user = User.get(self.request.get('user_uuid'))
-        if not user:
-            logging.info('could not get user by request user_uuid: %s' %
-                    self.request.get('user_uuid'))
-            user = get_or_create_user_by_cookie(self)
+        #user = User.get(self.request.get('user_uuid'))
+        #if not user:
+        #    logging.info('could not get user by request user_uuid: %s' %
+        #            self.request.get('user_uuid'))
+        user = get_or_create_user_by_cookie(self)
 
         # Try to find an instance for this { url, user }
         try:

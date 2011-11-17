@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 import logging
-from datetime                   import datetime
 
 from django.utils               import simplejson as json
 from google.appengine.api       import urlfetch
-from google.appengine.ext       import db
+from google.appengine.ext import db
+from google.appengine.api import memcache
+from google.appengine.datastore import entity_pb
 
 from apps.product.models        import Product
 from util.helpers               import generate_uuid
+from util.consts import MEMCACHE_TIMEOUT
 
 class ProductShopify(Product):
     
@@ -51,8 +53,19 @@ class ProductShopify(Product):
         return product
 
     @staticmethod
+    def get_memcache_key(url):
+        return 'product-shopify:%s' % url
+
+    @staticmethod
     def get_by_url(url):
-        return ProductShopify.all().filter('resource_url =', url).get()
+        data = memcache.get(ProductShopify.get_memcache_key(url))
+        if data:
+            product = db.model_from_protobuf(entity_pb.EntityProto(data))
+        else:
+            product = ProductShopify.all().filter('resource_url =', url).get()
+            if product:
+                product.memcache_by_url()
+        return product
 
     @staticmethod
     def get_by_shopify_id(id):
@@ -64,7 +77,7 @@ class ProductShopify(Product):
         if url == 'http://www.mydoggieseatbelt.com/': # special case for landing page product
             url = 'http://www.mydoggieseatbelt.com/collections/frontpage/products/copy-of-doggie-seatbelt'
 
-        product = ProductShopify.get_by_url( url )
+        product = ProductShopify.get_by_url(url)
         if product == None:
             logging.warn('Could not get product for url: %s' % url)
             try:
@@ -141,5 +154,16 @@ class ProductShopify(Product):
         """ The Shopify API doesn't give us the URL for the product.
             Just add it here """
         self.resource_url = url
+        self.memcache_by_url()
         self.put()
+
+    def memcache_by_url(self):
+        """Memcaches this product by its url, False if memcache fails or if
+        this product has no resource_url"""
+        if hasattr(self, 'resource_url'):
+            return memcache.set(
+                    ProductShopify.get_memcache_key(self.resource_url), 
+                    db.model_to_protobuf(self).Encode(),
+                    time=MEMCACHE_TIMEOUT)
+        return False
 

@@ -23,6 +23,7 @@ from apps.email.models    import Email
 from util                 import httplib2
 from util.consts          import *
 from util.helpers         import generate_uuid
+from util.helpers import url as reverse_url
 
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
@@ -41,19 +42,41 @@ class SIBTShopify(SIBT, AppShopify):
     
     def do_install(self):
         """Installs this instance"""
-        data = [{
-            "script_tag": {
-                "src": "%s/s/shopify/sibt.js?store_id=%s&store_url=%s" % (
-                    URL,
-                    self.store_id,
-                    self.store_url
-                ),
-                "event": "onload"
+        #data = [{
+        #    "script_tag": {
+        #        "src": "%s/s/shopify/sibt.js?store_id=%s&store_url=%s" % (
+        #            URL,
+        #            self.store_id,
+        #            self.store_url
+        #        ),
+        #        "event": "onload"
+        #    }
+        #}]
+
+        script_src = '<script src="//%s%s?store_url={{ shop.permanent_domain }}"></script>' % (
+                    DOMAIN, reverse_url('SIBTShopifyServeScript'))
+        willet_snippet = script_src + """
+            <div 
+                id="_willet_shouldIBuyThisButton"
+                data-merchant_name="{{ shop.name | escape }}"
+                data-product_id="{{ product.id }}"
+                data-title="{{ product.title | escape  }}"
+                data-price="{{ product.price | money }}"
+                data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"
+                data-page_source="product"
+                class="wantButton"></div>
+            <!-- END Willet SIBT for Shopify -->""" 
+
+        liquid_assets = [{
+            'asset': {
+                'value': willet_snippet,
+                'key': 'snippets/willet_sibt.liquid'
             }
         }]
         # Install yourself in the Shopify store
         self.install_webhooks()
-        self.install_script_tags(script_tags=data)
+        #self.install_script_tags(script_tags=data)
+        self.install_assets(assets=liquid_assets)
 
         # Email Barbara
         Email.emailBarbara(

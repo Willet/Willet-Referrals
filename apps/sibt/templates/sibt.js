@@ -558,7 +558,7 @@
         }
 
         if (all_loaded) {
-            _willet_run_scripts();
+            run();
         } else {
             window.setTimeout(_willet_check_scripts,100);
         }
@@ -566,81 +566,92 @@
 
     /**
     * Main script to run
+    * We have jQuery!!!!
     */
-    var _willet_run_scripts = function() {
-        var hash        = window.location.hash;
-        var hash_search = '#code=';
-        var hash_index  = hash.indexOf(hash_search);
-        var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
+    var run = function() {
+        var purchase_cta = $('#_willet_shouldIBuyThisButton');
+        
+        if (purchase_cta.length > 0) {
+            
+            _willet_store_analytics();
 
-        // create the hide button
-        _willet_topbar_hide_button = $(document.createElement('div'));
-        _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-            .html('Show')
-            .css('display', 'none')
-            .click(_willet_unhide_topbar);
-        $('body').prepend(_willet_topbar_hide_button);
+            // run our scripts
+            var hash        = window.location.hash;
+            var hash_search = '#code=';
+            var hash_index  = hash.indexOf(hash_search);
+            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
 
-        if (_willet_show_votes || hash_index != -1) {
-            // if we are showing votes (user has click action)
-            // or if there is a willet hash
-            _willet_show_topbar();
-        } else {
-            var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-            var button = document.createElement('a');
-            var button_html = '';
+            // create the hide button
+            _willet_topbar_hide_button = $(document.createElement('div'));
+            _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+                .html('Show')
+                .css('display', 'none')
+                .click(_willet_unhide_topbar);
+            $('body').prepend(_willet_topbar_hide_button);
 
-            // check if we are showing top bar ask too
-            if (sibt_tb_enabled && show_top_bar_ask) {
+            if (_willet_show_votes || hash_index != -1) {
+                // if we are showing votes (user has click action)
+                // or if there is a willet hash
                 if (cookie_topbar_closed) {
                     // user has hidden the top bar
                     _willet_topbar_hide_button.slideDown('fast');
                 } else {
-                    _willet_store_analytics('SIBTShowingTopBarAsk');
-                    _willet_show_topbar_ask();
+                    _willet_show_topbar();
                 }
-            } 
+            } else {
+                var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
+                var button = document.createElement('a');
+                var button_html = '';
 
-            if (sibt_button_enabled) {
-                // only add button if it's enabled in the app 
-                if (_willet_is_asker) {
-                    button_html = 'See what your friends said';
-                } else if (_willet_show_votes) {
-                    button_html = 'Help {{ asker_name }} by voting!';
-                } else {
-                    button_html = '{{AB_CTA_text}}';
+                // check if we are showing top bar ask too
+                if (sibt_tb_enabled && show_top_bar_ask) {
+                    if (cookie_topbar_closed) {
+                        // user has hidden the top bar
+                        _willet_topbar_hide_button.slideDown('fast');
+                    } else {
+                        _willet_store_analytics('SIBTShowingTopBarAsk');
+                        _willet_show_topbar_ask();
+                    }
+                } 
+
+                if (sibt_button_enabled) {
+                    // only add button if it's enabled in the app 
+                    if (_willet_is_asker) {
+                        button_html = 'See what your friends said';
+                    } else if (_willet_show_votes) {
+                        button_html = 'Help {{ asker_name }} by voting!';
+                    } else {
+                        button_html = '{{AB_CTA_text}}';
+                    }
+
+                    button = $(button)
+                        .html(button_html)
+                        .css('display', 'none')
+                        .attr('title', 'Ask your friends if you should buy this!')
+                        .attr('id','_willet_button')
+                        .click(_willet_button_onclick);
+                
+                    $(purchase_cta).append(button);
+                    button.fadeIn(250, function() {
+                        $(this).css('display', 'inline-block'); 
+                    });
                 }
-
-                button = $(button)
-                    .html(button_html)
-                    .css('display', 'none')
-                    .attr('title', 'Ask your friends if you should buy this!')
-                    .attr('id','_willet_button')
-                    .click(_willet_button_onclick);
-               
-                $(purchase_cta).append(button);
-                button.fadeIn(250, function() {
-                    $(this).css('display', 'inline-block'); 
+                
+                // watch for message
+                // Create IE + others compatible event handler
+                $(window).bind('onmessage message', function(e) {
+                    var message = e.originalEvent.data;
+                    //console.log('parent received message: ', e.data, e);
+                    if (message == 'shared') {
+                        _willet_ask_success = true;
+                    } else if (message == 'top_bar_shared') {
+                        //console.log('shared on top bar!'); 
+                        _willet_topbar_ask_success();
+                    } else if (message == 'close') {
+                        $.colorbox.close();
+                    }
                 });
-            }
-            
-            // watch for message
-            // Create IE + others compatible event handler
-            //var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-            //var eventer = window[eventMethod];
-            //var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
-            $(window).bind('onmessage message', function(e) {
-                var message = e.originalEvent.data;
-                //console.log('parent received message: ', e.data, e);
-                if (message == 'shared') {
-                    _willet_ask_success = true;
-                } else if (message == 'top_bar_shared') {
-                    //console.log('shared on top bar!'); 
-                    _willet_topbar_ask_success();
-                } else if (message == 'close') {
-                    $.colorbox.close();
-                }
-            });
+            } // if willet div id on page
         } 
     };
 
@@ -649,27 +660,21 @@
     * !!! We are asuming we are good to insert
     */
     try {
-        var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-        
-        if ( purchase_cta ) {
-            var _willet_style = document.createElement('style');
-            var _willet_head  = document.getElementsByTagName('head')[0];
-            _willet_style.type = 'text/css';
-            _willet_style.setAttribute('charset','utf-8');
-            _willet_style.setAttribute('media','all');
-            if (_willet_style.styleSheet) {
-                _willet_style.styleSheet.cssText = _willet_css;
-            } else {
-                var rules = document.createTextNode(_willet_css);
-                _willet_style.appendChild(rules);
-            }
-            _willet_head.appendChild(_willet_style);
-            
-            // run our scripts
-            _willet_check_scripts();
-
-            _willet_store_analytics();
+        // We have to add our CSS right away otherwise we'll get in trouble
+        // with colorbox
+        var _willet_style = document.createElement('style');
+        var _willet_head  = document.getElementsByTagName('head')[0];
+        _willet_style.type = 'text/css';
+        _willet_style.setAttribute('charset','utf-8');
+        _willet_style.setAttribute('media','all');
+        if (_willet_style.styleSheet) {
+            _willet_style.styleSheet.cssText = _willet_css;
+        } else {
+            var rules = document.createTextNode(_willet_css);
+            _willet_style.appendChild(rules);
         }
+        _willet_head.appendChild(_willet_style);
+        _willet_check_scripts();
     } catch (e) {
         var error = e;
         var message = '';

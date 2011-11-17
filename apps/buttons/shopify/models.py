@@ -121,3 +121,4 @@ def get_shopify_buttons_by_url( store_url ):
 
     logging.info("Shopify: Looking for %s" % store_url)
     return ButtonsShopify.all().filter( 'store_url =', store_url ).get()
+
