@@ -71,3 +71,4 @@ class OrderShopify( Order ):
     @staticmethod
     def get_by_token( t ):
         return OrderShopify.all().filter( 'order_token =', t ).get()
+
