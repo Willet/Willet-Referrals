@@ -120,6 +120,7 @@ ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '70.31.244.131',      # Montreal apartment x2
               '76.65.157.73',       # Montreal apartment( BELL)
               '24.150.35.66',       # Barbara's Burlington House
+              '184.175.46.107',     # Barbara's Kitchener House
             ]
 
 # the apps we are using
