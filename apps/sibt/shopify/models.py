@@ -53,19 +53,27 @@ class SIBTShopify(SIBT, AppShopify):
         #    }
         #}]
 
-        script_src = '<script src="//%s%s?store_url={{ shop.permanent_domain }}"></script>' % (
-                    DOMAIN, reverse_url('SIBTShopifyServeScript'))
+        script_src = """<!-- START willet sibt for Shopify -->
+            <script type="text/javascript">
+            (function(window) {
+                var hash = window.location.hash;
+                var hash_index = hash.indexOf('#code=');
+                var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code;
+                var src = "//%s%s?" + params;
+                var script = window.document.createElement("script");
+                script.type = "text/javascript";
+                script.src = src;
+                window.document.getElementsByTagName("head")[0].appendChild(script);
+            }(window));
+            </script>
+            """ % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
         willet_snippet = script_src + """
-            <div 
-                id="_willet_shouldIBuyThisButton"
-                data-merchant_name="{{ shop.name | escape }}"
-                data-product_id="{{ product.id }}"
-                data-title="{{ product.title | escape  }}"
-                data-price="{{ product.price | money }}"
-                data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"
-                data-page_source="product"
-                class="wantButton"></div>
-            <!-- END Willet SIBT for Shopify -->""" 
+            <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                data-price="{{ product.price | money }}" data-page_source="product"
+                data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
+            <!-- END Willet SIBT for Shopify -->"""
 
         liquid_assets = [{
             'asset': {

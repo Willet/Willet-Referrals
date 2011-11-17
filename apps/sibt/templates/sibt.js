@@ -662,19 +662,22 @@
     try {
         // We have to add our CSS right away otherwise we'll get in trouble
         // with colorbox
-        var _willet_style = document.createElement('style');
-        var _willet_head  = document.getElementsByTagName('head')[0];
-        _willet_style.type = 'text/css';
-        _willet_style.setAttribute('charset','utf-8');
-        _willet_style.setAttribute('media','all');
-        if (_willet_style.styleSheet) {
-            _willet_style.styleSheet.cssText = _willet_css;
-        } else {
-            var rules = document.createTextNode(_willet_css);
-            _willet_style.appendChild(rules);
+        if (window._willet_sibt_run === undefined) {
+            window._willet_sibt_run = true;
+            var _willet_style = document.createElement('style');
+            var _willet_head  = document.getElementsByTagName('head')[0];
+            _willet_style.type = 'text/css';
+            _willet_style.setAttribute('charset','utf-8');
+            _willet_style.setAttribute('media','all');
+            if (_willet_style.styleSheet) {
+                _willet_style.styleSheet.cssText = _willet_css;
+            } else {
+                var rules = document.createTextNode(_willet_css);
+                _willet_style.appendChild(rules);
+            }
+            _willet_head.appendChild(_willet_style);
+            _willet_check_scripts();
         }
-        _willet_head.appendChild(_willet_style);
-        _willet_check_scripts();
     } catch (e) {
         var error = e;
         var message = '';
