@@ -209,7 +209,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     try:
                         # ugh, get the instance by actions ...
                         instances = SIBTInstance.all(key_onlys=True)\
-                            .filter('url =', url)\
+                            .filter('url =', target)\
                             .filter('is_live =', True)\
                             .fetch(100)
                         key_list = [instance.id_or_name() for instance in instances]
@@ -313,7 +313,7 @@ class ShowResults(webapp.RequestHandler):
         except Exception, e:
             try:
                 logging.info('failed to get instance by uuid: %s\n%s' % (
-                            instance_uuid, e))
+                            self.request.get('instance_uuid'), e))
                 # get instance by link
                 app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
                 code = self.request.get('willt_code')
@@ -341,13 +341,12 @@ class ShowResults(webapp.RequestHandler):
                         # ugh, get the instance by actions ...
                         logging.info('failed to get instance for asker by url: %s' % e)
                         instances = SIBTInstance.all(keys_only=True)\
-                            .filter('url =', url)\
-                            .filter('is_live =', True)\
+                            .filter('url =', target)\
                             .fetch(100)
                         key_list = [instance.id_or_name() for instance in instances]
                         action = SIBTClickAction.get_for_instance(app, user, target, key_list)
                         if action:
-                            instance = action.sibt_instance
+                            instance = action.sibt_instance.get()
                             logging.info('no link, got action %s and instance %s' % (action, instance))
                         assert(instance != None)
                     except Exception, e:

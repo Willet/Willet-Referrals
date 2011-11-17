@@ -15,6 +15,8 @@
     var _willet_topbar = null;
     var _willet_padding = null;
     var _willet_topbar_hide_button = null;
+    var willt_code = null;
+    var hash_index = -1;
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -125,10 +127,10 @@
     */
     var _willet_show_vote = function() {
         var photo_src = $('#image img').attr('src'); 
-        var hash        = window.location.hash;
-        var hash_search = '#code=';
-        var hash_index  = hash.indexOf(hash_search);
-        var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+        //var hash        = window.location.hash;
+        //var hash_search = '#code=';
+        //var hash_index  = hash.indexOf(hash_search);
+        //var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
             
         var url = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
                 "&user_uuid={{user.uuid}}" + 
@@ -205,8 +207,13 @@
         _willet_topbar_hide_button.slideUp('fast');
         //_willet_padding.show();
         if (_willet_topbar == null) {
-            _willet_store_analytics('SIBTShowingTopBarAsk');
-            _willet_show_topbar_ask();
+            if (_willet_show_votes || hash_index != -1) {
+                _willet_show_topbar();
+                _willet_store_analytics('SIBTUserReOpenedTopBar');
+            } else {
+                _willet_show_topbar_ask();
+                _willet_store_analytics('SIBTShowingTopBarAsk');
+            }
         } else {
             _willet_topbar.slideDown('fast'); 
             _willet_store_analytics('SIBTUserReOpenedTopBar');
@@ -240,10 +247,10 @@
         var iframe = _willet_topbar.find('div.iframe iframe');//$('#_willet_sibt_bar div.iframe iframe');
 
         // constructing the iframe src
-        var hash        = window.location.hash;
-        var hash_search = '#code=';
-        var hash_index  = hash.indexOf(hash_search);
-        var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+        //var hash        = window.location.hash;
+        //var hash_search = '#code=';
+        //var hash_index  = hash.indexOf(hash_search);
+        //var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
         var results_src = "{{ URL }}/s/results.html?" +
             "willt_code=" + willt_code + 
             "&user_uuid={{user.uuid}}" + 
@@ -570,15 +577,14 @@
     */
     var run = function() {
         var purchase_cta = $('#_willet_shouldIBuyThisButton');
-        
         if (purchase_cta.length > 0) {
-            
             _willet_store_analytics();
 
             // run our scripts
             var hash        = window.location.hash;
             var hash_search = '#code=';
-            var hash_index  = hash.indexOf(hash_search);
+            hash_index  = hash.indexOf(hash_search);
+            willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
             var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
 
             // create the hide button
