@@ -922,7 +922,11 @@ class User( db.Expando ):
                     logging.info("CONVERTING MSG")
                     msg = unicode(msg, 'utf-8', errors='ignore')
 
-                caption = link.app_.client.domain
+
+                try:
+                    caption = link.app_.client.domain
+                except:
+                    caption = link.app_.client.url
                 caption = caption.encode( 'ascii', 'ignore' )
                 if isinstance(caption, str):
                     logging.info("CONVERTING")

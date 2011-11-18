@@ -116,8 +116,11 @@
                                 // but the share failed!
                                 userFound = false; // dont do this twice
                                 fb_login_and_share();
+                            } else {
+                                console.log("Facebook post failure", response);
+                                $("#loading").hide();
+                                $("#error").fadeIn(300);
                             }
-                            //console.log("Facebook post failure", response);
                         }
                     }
                 });
@@ -315,6 +318,15 @@
             <h1 style="margin-top: 70px">Working ...</h1>
             <img src="/static/imgs/ajax-loader.gif" />
         </div>
+        <div id="error" class="willt hidden">
+            <h1 style="margin-top: 70px">Uh Oh!</h1>
+            <p>
+                An error occurred with Facebook. <br />
+                Please try again later.
+            </p>
+            <input class="close" type="button" id="close-button" value="Close" />
+        </div>
+
         <div id="thanks" class="willt hidden">
             <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
 

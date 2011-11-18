@@ -402,7 +402,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             'evnt' : event,
             
-            'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else ""
