@@ -63,10 +63,23 @@
         document.body.appendChild( iframe );
     };
 
+    var _willet_start_partial_instance = function() {
+        var iframe = document.createElement( 'iframe' );
+
+        iframe.style.display = 'none';
+        iframe.src = "{{ URL }}{% url StartPartialSIBTInstance %}?" + 
+                    "&app_uuid={{app.uuid}}" +
+                    "&user_uuid={{user.uuid}}" +
+                    "&willt_code={{willt_code}}" + 
+                    "&product_uuid={{product_uuid}}";
+
+        document.body.appendChild( iframe );
+    };
+
     /**
     * Called when ask iframe is closed
     */
-    var _willet_ask_callback = function() {
+    var _willet_ask_callback = function( fb_response ) {
         if (_willet_ask_success) {
             _willet_is_asker = true;
             $('#_willet_button').html('Refresh the page to see your results!');
@@ -100,24 +113,43 @@
     /**
     * shows the ask your friends iframe
     */
-    var _willet_show_ask = function () {
-        var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
-                                     "&store_url={{ store_url }}" +
-                                     "&url=" + window.location.href;
+    var _willet_show_ask = function ( message ) {
 
-        $.colorbox({
-            transition: 'fade',
-            close: '',
-            scrolling: false,
-            iframe: true, 
-            initialWidth: 0, 
-            initialHeight: 0, 
-            innerWidth: '450px',
-            innerHeight: '240px', 
-            fixed: true,
-            href: url,
-            onClosed: _willet_ask_callback
-        });
+        {% if AB_FACEBOOK_NO_CONNECT %}
+            _willet_start_partial_instance();
+            //_willet_store_analytics('SIBTNoConnectFBDialog');
+
+            FB.ui({ method:  'feed', 
+                    link:    '{{share_url}}',
+                    picture: '{{product_images|first}}',
+                    name:    '{{product_title}}',
+                    caption: '{{store_url}}',
+                    description: '{{ product_desc|striptags }}',
+                    redirect_uri: '{{fb_redirect}}' }, 
+                    _willet_ask_callback );
+
+        {% else %}
+
+            //_willet_store_analytics('SIBTConnectFBDialog');
+
+            var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
+                                         "&store_url={{ store_url }}" +
+                                         "&url=" + window.location.href;
+
+            $.colorbox({
+                transition: 'fade',
+                close: '',
+                scrolling: false,
+                iframe: true, 
+                initialWidth: 0, 
+                initialHeight: 0, 
+                innerWidth: '450px',
+                innerHeight: '240px', 
+                fixed: true,
+                href: url,
+                onClosed: _willet_ask_callback
+            });
+        {% endif %}
     };
 
     /**
@@ -508,6 +540,19 @@
             }
         },
         */
+        {% if AB_FACEBOOK_NO_CONNECT %}
+        {
+            'name': 'Facebook',
+            'url': 'http://connect.facebook.net/en_US/all.js',
+            'dom_el': null,
+            'loaded': false,
+            'test': function() {
+                return (typeof FB == 'object');
+            }, 'callback': function() {
+                return;
+            }
+        },
+        {% endif %}
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
@@ -651,6 +696,16 @@
                         $.colorbox.close();
                     }
                 });
+
+            // If we're trying ask without connect:
+            {% if AB_FACEBOOK_NO_CONNECT %}
+                FB.init({
+                    appId: '{{FACEBOOK_APP_ID}}', // App ID
+                    cookie: true, // enable cookies to allow the server to access the session
+                    xfbml: true  // parse XFBML
+                });
+            {% endif %}
+
             } // if willet div id on page
         } 
     };

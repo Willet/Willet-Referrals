@@ -18,8 +18,10 @@ from apps.app.models import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import get_link_by_willt_code
 from apps.product.shopify.models      import ProductShopify
+from apps.product.models      import Product
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
+from apps.sibt.models         import PartialSIBTInstance
 from apps.testimonial.models  import create_testimonial
 from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie, get_user_by_uuid
 
@@ -355,3 +357,12 @@ class TrackSIBTUserAction(URIHandler):
 
         self.response.out.write('')
 
+
+class StartPartialSIBTInstance( URIHandler ):
+    def get( self ):
+        app     = App.get( self.request.get( 'app_uuid' ) )
+        link    = get_link_by_willt_code( self.request.get( 'willt_code' ) )
+        product = Product.get( self.request.get( 'product_uuid' ) )
+        user    = User.get( self.request.get( 'user_uuid' ) )
+
+        PartialSIBTInstance.create( user, app, link, product )

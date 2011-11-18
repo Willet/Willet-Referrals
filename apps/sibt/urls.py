@@ -5,9 +5,11 @@ from apps.sibt.processes import *
 
 urlpatterns = [
     # Views
-    (r'/s/ask.html',      AskDynamicLoader),
-    (r'/s/vote.html',     VoteDynamicLoader),
-    (r'/s/results.html',     ShowResults),
+    (r'/s/ask.html',            AskDynamicLoader),
+    (r'/s/vote.html',           VoteDynamicLoader),
+    (r'/s/results.html',        ShowResults),
+    (r'/s/fb_thanks.html',      ShowFBThanks),
+    (r'/s/startPartialInstance', StartPartialSIBTInstance),
 
     # Processes
     (r'/s/doVote',        DoVote),

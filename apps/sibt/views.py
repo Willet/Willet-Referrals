@@ -26,6 +26,7 @@ from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.models           import SIBTInstance
+from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.stats.models          import Stats
@@ -458,3 +459,49 @@ class ShowResults(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+class ShowFBThanks( URIHandler ):
+    """ Called to show fb_thanks.html. 
+        We know the user jsut shared on FB, so create an instance etc. """
+
+    # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
+    def get( self ):
+        email       = ""
+        user_cancelled = True
+        post_id     = self.request.get( 'post_id' ) # from FB
+        user        = get_user_by_cookie( self )
+        partial     = PartialSIBTInstance.get_by_user( user )
+        
+        if post_id != "":
+            user_cancelled = False
+
+            # GAY BINGO
+            if not user.is_admin():
+                bingo( 'sibt_fb_no_connect_dialog' )
+            
+            # Grab stuff from PartialSIBTInstance
+            app      = partial.app_
+            link     = partial.link
+            product  = partial.product
+
+            # Make the Instance!
+            instance = app.create_instance(user, None, link, product.images[0])
+    
+            # increment link stuff
+            link.app_.increment_shares()
+            link.add_user(user)
+            logging.info('incremented link and added user')
+
+            SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
+        else:
+            pass
+
+        # Now, remove the PartialSIBTInstance. We're done with it!
+        partial.delete()
+
+        template_values = { 'email' : user.get_attr( 'email' ),
+                            'show_thanks' : show_thanks }
+        
+        path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return

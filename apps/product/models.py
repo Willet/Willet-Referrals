@@ -25,3 +25,8 @@ class Product(Model, db.polymodel.PolyModel):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Product, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def _get_from_datastore( uuid ):
+        """Datastore retrieval using memcache_key"""
+        return db.Query(Product).filter('uuid =', uuid).get()

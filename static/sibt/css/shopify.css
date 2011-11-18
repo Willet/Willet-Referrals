@@ -1,6 +1,6 @@
 body {
     text-align: center;
-    overflow: auto;
+    overflow: hidden;
     background-color: white;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
     margin:0px;
@@ -15,6 +15,203 @@ body {
     height: 215px;
     width: 400px;
     border: 1px solid #BDC7D8;
+}
+#thanks_wrapper {
+    text-align: center;
+    font-size: 80%; 
+    margin: 0 auto;
+    height: 235px;
+    width: 100%;
+    border: 1px solid #BDC7D8;
+}
+
+#fb_header{
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #6D84B4;
+    background-image: none;
+    background-origin: padding-box;
+    color: white;
+    direction: ltr;
+    display: block;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 11px;
+    height: 32px;
+    line-height: 14px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 0px;
+    text-align: left;
+    width: 100%; 
+}
+
+#fb_header img {
+    float: left;
+    border-radius: 5px;
+    height: 24px;
+    margin: 4px 10px 4px 0px;
+}
+
+#fb_header h2 {
+    margin: 0px;
+    padding-top: 10px;
+}
+
+.fb_textinput {
+    -webkit-appearance: none;
+    -webkit-box-orient: vertical;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: white;
+    background-image: none;
+    background-origin: padding-box;
+    border-bottom-color: #BDC7D8;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-left-color: #BDC7D8;
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: #BDC7D8;
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-top-color: #BDC7D8;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-top-style: solid;
+    border-top-width: 1px;
+    color: #333;
+    cursor: auto;
+    direction: ltr;
+    display: inline-block;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    letter-spacing: normal;
+    line-height: normal;
+    margin-bottom: 2px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 5px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    padding-bottom: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    resize: both;
+    text-align: -webkit-auto;
+    text-indent: 0px;
+    text-shadow: none;
+    text-transform: none;
+    unicode-bidi: normal;
+    white-space: pre-wrap;
+    width: 50%;
+    word-spacing: 0px;
+    word-wrap: break-word;
+}
+
+#fb_footer button {
+    -webkit-appearance: none;
+    -webkit-border-horizontal-spacing: 0px;
+    -webkit-border-vertical-spacing: 0px;
+    -webkit-box-align: center;
+    -webkit-box-shadow:0 1px 2px #999;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #EEE;
+    background-image: none;
+    background-origin: padding-box;
+    background-position: 0% 0%;
+    background-repeat: repeat;
+    border-bottom-color: #888;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-collapse: collapse;
+    border-left-color: #999;
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: #999;
+    border-right-style: soild;
+    border-right-width: 1px;
+    border-top-color: #999;
+    border-top-style: soild;
+    border-top-width: 1px;
+    box-sizing: border-box;
+    color: #333;
+    cursor: pointer;
+    direction: ltr;
+    display: inline-block;
+    float: none;
+    font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: bold;
+    letter-spacing: normal;
+    line-height: normal;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 0px;
+    margin-top: 0px;
+    outline-color: #333;
+    outline-style: none;
+    outline-width: 0px;
+    padding: 5px;
+    text-align: center;
+    text-decoration: none;
+    text-indent: 0px;
+    text-shadow: none;
+    text-transform: none;
+    unicode-bidi: normal;
+    vertical-align: baseline;
+    white-space: nowrap;
+    word-spacing: 0px;
+}
+
+#fb_footer {
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #F2F2F2;
+    background-image: none;
+    background-origin: padding-box;
+    bottom: 0px;
+    color: #333;
+    direction: ltr;
+    display: block;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 11px;
+    height: 46px;
+    left: 0px;
+    line-height: 14px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 400px;
+    padding-right: 0px;
+    padding-top: 0px;
+    position: fixed;
+    right: 0px;
+    text-align: left;
+    unicode-bidi: normal;
+    z-index: 10;
+    width: 160px;
 }
 .willt {
     background: #F7F7F7;

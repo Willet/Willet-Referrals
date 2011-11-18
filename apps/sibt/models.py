@@ -271,9 +271,8 @@ class SIBTInstance(Model):
         memcache.incr(self.uuid+"VoteCounter_nos")
 
 # ------------------------------------------------------------------------------
-# SIBTInstance Class Definition ------------------------------------------------
+# VoteCounter Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
-
 class VoteCounter(db.Model):
     """Sharded counter for voting counts"""
 
@@ -281,3 +280,54 @@ class VoteCounter(db.Model):
     yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
     nos           = db.IntegerProperty(indexed=False, required=True, default=0)
 
+# ------------------------------------------------------------------------------
+# PartialSIBTInstance Class Definition -----------------------------------------
+# ------------------------------------------------------------------------------
+class PartialSIBTInstance(Model):
+    uuid        = db.StringProperty( indexed = True )
+
+    # User is the only index.
+    user        = db.ReferenceProperty(db.Model, 
+                                       collection_name='partial_sibt_instances',
+                                       indexed=True)
+    link        = db.ReferenceProperty(db.Model, 
+                                       collection_name='link_partial_sibt_instances',
+                                       indexed=False)
+    product     = db.ReferenceProperty(db.Model, 
+                                       collection_name='product_partial_sibt_instances',
+                                       indexed=False)
+    app_        = db.ReferenceProperty( db.Model,
+                                       collection_name='app_partial_sibt_instances',
+                                       indexed=False)
+
+    def __init__(self, *args, **kwargs):
+        """ Initialize this model """
+        self._memcache_key = kwargs['uuid'] 
+        super(PartialSIBTInstance, self).__init__(*args, **kwargs)
+
+    """ Users can only have 1 of these ever.
+        If they already have one, update it.
+        Otherwise, make a new one. """
+    @staticmethod
+    def create( user, app, link, product ):
+
+        instance = PartialSIBTInstance.get_by_user( user )
+        if instance:
+            instance.link    = link
+            instance.product = product
+            instance.app_    = app
+        else: 
+            uuid = generate_uuid( 16 )
+
+            instance = PartialSIBTInstance( key_name = uuid,
+                                            uuid     = uuid,
+                                            user     = user,
+                                            link     = link, 
+                                            product  = product,
+                                            app_     = app )
+        instance.put()
+        return instance
+
+    @staticmethod
+    def get_by_user( user ):
+        return PartialSIBTInstance.all().filter( 'user =', user ).get()

@@ -234,8 +234,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
-        instance = share_url = link       = asker_name = asker_pic        = None
-        target   = product_title = product_images = ''
+        instance = share_url = link       = asker_name = asker_pic = product = None
+        target   = ''
         willet_code = self.request.get('willt_code') 
         target      = get_target_url(self.request.headers.get('REFERER'))
         shop_url    = get_shopify_url(self.request.get('store_url'))
@@ -330,9 +330,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
-                product = ProductShopify.get_or_fetch(target, app.client)
-                product_images = product.images
-                product_title = product.title
+            product = ProductShopify.get_or_fetch(target, app.client)
 
         # this should only happen once, can be removed at a later date
         # TODO remove this code
@@ -355,9 +353,22 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                   ['css/facebook_style.css', 'css/colorbox.css'],
                                   user = user,
                                   app  = app )
+
+            fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
+
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
+            fb_connect      = True
+
+        logging.info("FB : %s" % fb_connect)
+
+        # If we're using FB's dialog, we need to make the Link now.
+        if fb_connect:
+            origin_domain = os.environ['HTTP_REFERER'] if\
+                os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+            link = Link.create(target, app, origin_domain, user)
+            share_url = "%s/%s" % (URL, link.willt_url_code)
         
         # Grab all template values
         template_values = {
@@ -369,21 +380,29 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'share_url': share_url,
             'show_top_bar_ask': show_top_bar_ask,
             
-            'app' : app,
+            'app'            : app,
             'instance'       : instance,
             'asker_name'     : asker_name, 
-            'asker_pic': asker_pic,
-            'product_title': product_title,
-            'product_images': product_images,
-            
+            'asker_pic'      : asker_pic,
+
+            'store_url'      : shop_url,
+            'store_id'       : self.request.get('store_id'),
+            'product_uuid'   : product.uuid if product else "",
+            'product_title'  : product.title if product else "",
+            'product_images' : product.images if product else "",
+            'product_desc'   : product.description if product else "",
+          
             'user': user,
-            'store_id' : self.request.get('store_id'),
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'store_url' : shop_url,
 
-            'evnt' : event
+            'evnt' : event,
+            
+            'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
+            'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
+            'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'willt_code' : link.willt_url_code if link else ""
         }
 
         # Store a script load action.
