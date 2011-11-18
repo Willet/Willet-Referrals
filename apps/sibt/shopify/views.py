@@ -271,7 +271,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                         logging.info('trying actions: %s' % e)
                         instances = SIBTInstance.all(keys_only=True)\
                             .filter('url =', target)\
-                            .filter('is_live =', True)\
                             .fetch(100)
                         key_list = [key.id_or_name() for key in instances]
                         action = SIBTClickAction.get_for_instance(app, user, target, key_list)

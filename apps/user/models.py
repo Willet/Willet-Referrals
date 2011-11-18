@@ -66,11 +66,13 @@ def create_email_model( user, email ):
             em = EmailModel(key_name=email, address=email, user=user )
         
         # TODO: We might need to merge Users here
-        if em.user.uuid != user.uuid:
-            Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
-            logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
-            em.user = user
-        
+        try:
+            if em.user.uuid != user.uuid:
+                Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
+                logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
+                em.user = user
+        except Exception, e:
+            logging.error('create_email_model error: %s' % e, exc_info=True)
         em.put()
     
 # Accessors --------------------------------------------------------------------
