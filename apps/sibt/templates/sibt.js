@@ -126,7 +126,7 @@
                     picture: '{{product_images|first}}',
                     name:    '{{product_title}}',
                     caption: '{{store_url}}',
-                    description: '{{ product_desc|striptags }}',
+                    description: "{{ product_desc|striptags }}",
                     redirect_uri: '{{fb_redirect}}' }, 
                     _willet_ask_callback );
 
