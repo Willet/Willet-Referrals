@@ -497,8 +497,8 @@ class ShowFBThanks( URIHandler ):
         # Now, remove the PartialSIBTInstance. We're done with it!
         partial.delete()
 
-        template_values = { 'email' : user.get_attr( 'email' ),
-                            'show_thanks' : show_thanks }
+        template_values = { 'email'          : user.get_attr( 'email' ),
+                            'user_cancelled' : user_cancelled }
         
         path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)

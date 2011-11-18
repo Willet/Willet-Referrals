@@ -3,6 +3,9 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+import datetime
+import random
+
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
@@ -358,7 +361,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
-            fb_connect      = True
+            random.seed( datetime.now() )
+            fb_connect      = random.randint( 0, 1 )
+            logging.error( "fb connect %d" % fb_connect )
 
         logging.info("FB : %s" % fb_connect)
 
