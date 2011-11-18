@@ -170,11 +170,12 @@ class OrderWebhookNotification(URIHandler):
             )
         else:
             # Otherise, update it.
-            o.order_id       = order_id
-            o.order_num      = order_num
-            o.subtotal       = subtotal
+            o.order_id = str(order_id)
+            o.order_number = str(order_num)
+            o.subtotal_price = float(subtotal)
             o.referring_site = referring_site
 
         # Store the purchased items in the order
         o.products.extend( items )
         o.put()
+
