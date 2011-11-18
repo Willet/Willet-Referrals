@@ -135,11 +135,6 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 # add testimonial
                 create_testimonial(user=user, message=message, link=link)
 
-                # Send data to s/Mixpanel/us/ !
-                #app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
-                #app.storeAnalyticsDatum( 'SIBTInstanceSharedOnFacebook', user, link.target_url )
-                SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
-
                 response['success'] = True
         except Exception,e:
             response['data']['message'] = str(e)
@@ -170,10 +165,6 @@ class StartSIBTInstance(URIHandler):
             # Make the Instance!
             instance = app.create_instance(user, None, link, img)
         
-            # Store analytics datapoint
-            #app.storeAnalyticsDatum( 'SIBTInstanceCreated', user, link.target_url )
-            SIBTInstanceCreated.create(user, instance=instance, medium='unknown/twitter')
-            
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:

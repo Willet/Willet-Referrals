@@ -17,7 +17,8 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.sibt.actions   import SIBTClickAction
+from apps.sibt.actions    import SIBTClickAction
+from apps.sibt.actions    import SIBTInstanceCreated
 from apps.app.models      import App
 from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
@@ -79,7 +80,6 @@ class SIBT(App):
         # Make the properties
         uuid = generate_uuid( 16 )
         
-        
         # Now, make the object
         instance = SIBTInstance(key_name     = uuid,
                                 uuid         = uuid,
@@ -96,6 +96,9 @@ class SIBT(App):
         instance.end_datetime = end
         logging.info('instance created: %s\nends: %s' % (instance.created, instance.end_datetime))
         instance.special_put()
+            
+        # Now, make an action
+        SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
         
         # GAY BINGO
         if not user.is_admin():

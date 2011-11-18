@@ -15,7 +15,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time                       import time
 from urlparse                   import urlparse
 
-from apps.sibt.actions import *
+from apps.sibt.actions          import *
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
@@ -90,6 +90,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
+
         # Now, tell Mixpanel
         if is_topbar_ask:
             #app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
@@ -135,6 +136,8 @@ class AskDynamicLoader(webapp.RequestHandler):
             productDesc = ''
             logging.warn('Probably no product description: %s' % e, exc_info=True)
 
+        logging.error( "AB %s" % ab_opt )
+        
         template_values = {
             'productImg' : product.images, 
             'productName': product.title, 
@@ -142,7 +145,6 @@ class AskDynamicLoader(webapp.RequestHandler):
             'product_id': product.shopify_id,
             'productURL': store_domain,
 
-            #'FACEBOOK_APP_ID' : FACEBOOK_APP_ID,
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'app': app,
             'willt_url': link.get_willt_url(),
@@ -489,8 +491,6 @@ class ShowFBThanks( URIHandler ):
             link.app_.increment_shares()
             link.add_user(user)
             logging.info('incremented link and added user')
-
-            SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
         else:
             pass
 
