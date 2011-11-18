@@ -23,6 +23,8 @@ from util.model              import Model
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
+    from apps.buttons.actions import *
+    from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
     action_dict = memcache.get_multi(list_keys) 
 

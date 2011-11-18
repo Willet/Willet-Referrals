@@ -707,6 +707,56 @@ class SIBTFBConnectCancelled(UserAction):
         action.put()
         return action
 
+class SIBTNoConnectFBDialog(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTNoConnectFBDialog'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTNoConnectFBDialog(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        return action
+
+class SIBTConnectFBDialog(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTConnectFBDialog'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTConnectFBDialog(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        return action
+
 class SIBTUserAction(UserAction):
     sibt_instance = db.ReferenceProperty( db.Model, collection_name="sibt_user_actions" )
 

@@ -119,7 +119,7 @@
 
         {% if AB_FACEBOOK_NO_CONNECT %}
             _willet_start_partial_instance();
-            //_willet_store_analytics('SIBTNoConnectFBDialog');
+            _willet_store_analytics('SIBTNoConnectFBDialog');
 
             FB.ui({ method:  'feed', 
                     link:    '{{share_url}}',
@@ -132,7 +132,7 @@
 
         {% else %}
 
-            //_willet_store_analytics('SIBTConnectFBDialog');
+            _willet_store_analytics('SIBTConnectFBDialog');
 
             var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                          "&store_url={{ store_url }}" +

@@ -363,7 +363,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             stylesheet      = 'css/colorbox.css'
             random.seed( datetime.now() )
             fb_connect      = random.randint( 0, 1 )
-            logging.error( "fb connect %d" % fb_connect )
 
         logging.info("FB : %s" % fb_connect)
 

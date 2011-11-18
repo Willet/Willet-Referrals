@@ -136,8 +136,6 @@ class AskDynamicLoader(webapp.RequestHandler):
             productDesc = ''
             logging.warn('Probably no product description: %s' % e, exc_info=True)
 
-        logging.error( "AB %s" % ab_opt )
-        
         template_values = {
             'productImg' : product.images, 
             'productName': product.title, 
