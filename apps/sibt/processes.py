@@ -125,7 +125,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 # create the instance!
                 # Make the Instance!
                 instance = app.create_instance(user, 
-                        None, link, img, motivation=motivation)
+                        None, link, img, motivation=motivation, 
+                        dialog="ConnectFB")
         
                 # increment link stuff
                 link.app_.increment_shares()
@@ -163,7 +164,8 @@ class StartSIBTInstance(URIHandler):
 
         try:
             # Make the Instance!
-            instance = app.create_instance(user, None, link, img)
+            instance = app.create_instance(user, None, link, img, 
+                                           motivation=None, dialog="ConnectFB")
         
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid

@@ -393,10 +393,12 @@ class SIBTInstanceAction(UserAction):
         )
 
 class SIBTInstanceCreated(SIBTInstanceAction):
+    medium = db.StringProperty( default="", indexed=True )
+
     @staticmethod
     def create(user, **kwargs):
         what = 'SIBTInstanceCreated'
-        medium = None
+        medium = ""
     
         # make sure we get an instance
         instance = None
@@ -406,6 +408,8 @@ class SIBTInstanceCreated(SIBTInstanceAction):
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
         
+        logging.error("MEDIUM: %s" % medium )
+
         uuid = generate_uuid(16)
         action = SIBTInstanceCreated(
                 key_name = uuid,
@@ -414,7 +418,8 @@ class SIBTInstanceCreated(SIBTInstanceAction):
                 app_     = instance.app_,
                 link     = instance.link,
                 url      = instance.link.target_url,
-                what = what,
+                what     = what,
+                medium   = medium,
                 sibt_instance = instance
         )
         #super(SIBTInstanceCreated, action).create()

@@ -483,7 +483,8 @@ class ShowFBThanks( URIHandler ):
             product  = partial.product
 
             # Make the Instance!
-            instance = app.create_instance(user, None, link, product.images[0])
+            instance = app.create_instance(user, None, link, product.images[0],
+                                           motivation=None, dialog="NoConnectFB")
     
             # increment link stuff
             link.app_.increment_shares()

@@ -18,20 +18,18 @@ from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
-from apps.sibt.shopify.models import SIBTShopify
 from apps.referral.models import Referral
-from apps.order.shopify.models import OrderShopify
-from apps.referral.shopify.models import ReferralShopify
 from apps.client.shopify.models import ClientShopify
+from apps.link.models import Link
 from apps.link.models import get_link_by_willt_code
+from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
+from apps.referral.shopify.models import ReferralShopify
+from apps.sibt.actions import *
 from apps.sibt.shopify.models import SIBTShopify
-from apps.sibt.actions   import SIBTClickAction
-from apps.sibt.actions   import SIBTVoteAction
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
-from apps.link.models import Link
 
 from util                 import httplib2
 from util.consts import *
@@ -788,3 +786,20 @@ class ShowClickActions(URIHandler):
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
+class FBConnectStats( URIHandler ):
+    def get( self ):
+        no_connect = SIBTNoConnectFBDialog.all().count()
+        connect = SIBTConnectFBDialog.all().count()
+
+        instance_connect = SIBTInstanceCreated.all().filter( 'medium =', "ConnectFB" ).count()
+        instance_noconnect = SIBTInstanceCreated.all().filter( 'medium =', "NoConnectFB" ).count()
+
+        html = "<h2> Opportunity Counts </h2>"
+        html += "<p>No Connect Dialog: %d</p>" % no_connect
+        html += "<p>Connect Dialog: %d</p>" % connect
+
+        html += "<h2> Instances </h2>"
+        html += "<p>No Connect Dialog: %d</p>" % instance_noconnect
+        html += "<p>Connect Dialog: %d</p>" % instance_connect
+        
+        self.response.out.write(html)

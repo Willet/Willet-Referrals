@@ -75,8 +75,9 @@ class SIBT(App):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance(self, user, end, link, img, motivation=None):
+    def create_instance(self, user, end, link, img, motivation=None, dialog=""):
         logging.info("MAKING A SIBT INSTANCE")
+        logging.error("DIALOG %s" % dialog)
         # Make the properties
         uuid = generate_uuid( 16 )
         
@@ -98,7 +99,7 @@ class SIBT(App):
         instance.special_put()
             
         # Now, make an action
-        SIBTInstanceCreated.create(user, instance=instance, medium='facebook')
+        SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
         
         # GAY BINGO
         if not user.is_admin():
@@ -108,15 +109,17 @@ class SIBT(App):
             try:
                 Email.emailBarbara("""
                     SIBT INSTANCE:<br />
+                    dialog = %s <br />
                     uuid= %s<br />
                     user.key= %s<br />
                     page= %s<br />
                     link= http://rf.rs/%s<br />
                     name= %s<br />
                     fb_uuid= %s<br />
-                    fb_access_token= %s <br \>
+                    fb_access_token= %s <br />
                     <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>
                     """ % (
+                        dialog,
                         uuid,
                         user.key(), 
                         link.target_url,
