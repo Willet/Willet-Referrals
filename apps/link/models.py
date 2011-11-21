@@ -147,9 +147,9 @@ class Link(Model):
                     user             = user,
                     origin_domain    = domain)
 
-        #link.put()
+        link.put()
         link.memcache_by_code()
-        deferred.defer(put_link, link.willt_url_code)
+        #deferred.defer(put_link, link.willt_url_code)
         
         logging.info("Successful put of Link %s" % code)
         return link
