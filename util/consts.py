@@ -121,6 +121,7 @@ ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '76.65.157.73',       # Montreal apartment( BELL)
               '24.150.35.66',       # Barbara's Burlington House
               '184.175.46.107',     # Barbara's Kitchener House
+              '69.166.16.20',       # VeloCity @ Hub
             ]
 
 # the apps we are using
