@@ -388,7 +388,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
 
-            'store_url'      : app.client.domain,
+            'store_url'      : shop_url,
+            'store_domain'   : app.client.domain,
             'store_id'       : self.request.get('store_id'),
             'product_uuid'   : product.uuid if product else "",
             'product_title'  : product.title if product else "",
