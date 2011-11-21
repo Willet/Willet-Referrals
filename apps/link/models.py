@@ -129,8 +129,27 @@ class Link(Model):
 
     def memcache_by_code(self):
         return memcache.set(
-                self.willt_url_code, 
+                Link.get_memcache_key_for_code(self.willt_url_code), 
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+
+    @classmethod
+    def get_memcache_key_for_code(cls, code):
+        return '%s-%s' % (cls.__class__.__name__, code)
+
+    @staticmethod
+    def get_by_code(code):
+        link = None
+        try:
+            data = memcache.get(Link.get_memcache_key_for_code(code))
+            if data:
+                link = db.model_from_protobuf(entity_pb.EntityProto(data))
+            else:
+                logging.info('no data for key: %s' % memcache_key)
+        except Exception, e:
+            logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
+        if not link:
+            link = Link.all().filter('willt_url_code =', code).get()
+        return link
 
     @staticmethod
     def create(targetURL, app, domain, user=None, usr=""):
@@ -147,9 +166,9 @@ class Link(Model):
                     user             = user,
                     origin_domain    = domain)
 
-        link.put()
+        #link.put()
         link.memcache_by_code()
-        #deferred.defer(put_link, link.willt_url_code)
+        deferred.defer(put_link, Link.get_memcache_key_for_code(code))
         
         logging.info("Successful put of Link %s" % code)
         return link
@@ -164,8 +183,10 @@ def create_link(targetURL, app, domain, user=None, usr=""):
 def get_link_by_url( url_arg ):
     return Link.all().filter( 'target_url =', url_arg ).get()
 
-def get_link_by_willt_code( code ):
-    return Link.all().filter('willt_url_code =', code).get()
+def get_link_by_willt_code(code):
+    #return Link.all().filter('willt_url_code =', code).get()
+    logging.warn('get_link_by_willt_code has been deprecated')
+    return Link.get_by_code(code)
 
 def get_link_by_supplied_user_id( uid ):
     return Link.all().filter('supplied_user_id =', uid)

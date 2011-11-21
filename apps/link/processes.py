@@ -33,7 +33,7 @@ class TrackWilltURL( webapp.RequestHandler ):
             return
 
         # Fetch the Link
-        link = get_link_by_willt_code(code)
+        link = Link.get_by_code(code)
         if not link:
             self.redirect("/")
             return
