@@ -204,6 +204,7 @@ user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, h
     'trunk.ly spider contact@trunk.ly',
     'Squrl Java/1.6.0_22',
     'CURL/1.1',
+    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     'PycURL/7.19.7', "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)",
     'MetaURI API/2.0 +metauri.com', 'Mozilla/5.0 (compatible; PaperLiBot/2.1)',
     'MLBot (www.metadatalabs.com/mlbot)', 'Mozilla/5.0 (compatible; Butterfly/1.0; +http://labs.topsy.com/butterfly/) Gecko/2009032608 Firefox/3.0.8',

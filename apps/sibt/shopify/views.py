@@ -240,10 +240,14 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         instance = share_url = link       = asker_name = asker_pic = product = None
         target   = ''
         willet_code = self.request.get('willt_code') 
-        target      = get_target_url(self.request.headers.get('REFERER'))
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
         event       = 'SIBTShowingButton'
+
+        if self.request.get('page_url'):
+            target = get_target_url(self.request.get('page_url'))
+        else:
+            target = get_target_url(self.request.headers.get('REFERER'))
 
         #user = User.get(self.request.get('user_uuid'))
         #if not user:

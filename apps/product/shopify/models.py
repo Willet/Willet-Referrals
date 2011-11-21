@@ -91,7 +91,7 @@ class ProductShopify(Product):
                 if product:
                     product.add_url(url)
                 else:
-                    logging.error('failed to get product for id: %s' % str(data['id']))
+                    logging.warn('failed to get product for id: %s' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
             except:
                 logging.error("error fetching and storing product for url %s" % url, exc_info=True)
