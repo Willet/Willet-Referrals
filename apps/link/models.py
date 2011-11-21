@@ -140,7 +140,8 @@ class Link(Model):
     def get_by_code(code):
         link = None
         try:
-            data = memcache.get(Link.get_memcache_key_for_code(code))
+            memcache_key = Link.get_memcache_key_for_code(code)
+            data = memcache.get(memcache_key)
             if data:
                 link = db.model_from_protobuf(entity_pb.EntityProto(data))
             else:
