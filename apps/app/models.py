@@ -402,7 +402,9 @@ class App(Model, polymodel.PolyModel):
         self.add_shares(1)
 
 def get_app_by_id( id ):
-    return App.all().filter( 'uuid =', id ).get()
+    logging.warn("Use App.get() !!!")
+    #return App.all().filter( 'uuid =', id ).get()
+    return App.get(id)
 
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
