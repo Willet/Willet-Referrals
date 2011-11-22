@@ -57,7 +57,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
 
                 last_keys = memcache.get(old_key) or []
                 memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
-                deferred.defer(persist_actions, old_key, last_keys, decrementing=True)
+                deferred.defer(persist_actions, old_key, last_keys, decrementing=True, _queue='slow-deferred')
                 had_error = True
         except Exception, e:
             logging.error('error getting action: %s' % e, exc_info=True)
@@ -176,7 +176,7 @@ class Action(Model, polymodel.PolyModel):
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
-            deferred.defer(persist_actions, bucket, list_identities)
+            deferred.defer(persist_actions, bucket, list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
