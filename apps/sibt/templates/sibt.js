@@ -126,7 +126,7 @@
                     picture: '{{product_images|first}}',
                     name:    '{{product_title}}',
                     caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags }}",
+                    description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: '{{fb_redirect}}' }, 
                     _willet_ask_callback );
 
@@ -705,6 +705,9 @@
 
             // If we're trying ask without connect:
             {% if AB_FACEBOOK_NO_CONNECT %}
+                var fb_div = $(document.createElement('div'));
+                fb_div.attr('id', 'fb-root');
+                $('body').append(fb_div);
                 FB.init({
                     appId: '{{FACEBOOK_APP_ID}}', // App ID
                     cookie: true, // enable cookies to allow the server to access the session
