@@ -17,6 +17,7 @@
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
+    var imgOverlayEnabled = true;
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -95,6 +96,18 @@
         _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
     };
 
+    var _willet_button_mouseenter = function(e) {
+        if ( imgOverlayEnabled ){
+            $("#imgOverlaySpan").show(); //fadeIn('fast');
+            $("#_willet_overlay_button").show();
+        }
+    };
+
+    var _willet_button_mouseleave = function(e) {
+        $("#imgOverlaySpan").hide(); //fadeOut('fast');
+        $("#_willet_overlay_button").hide();
+    };
+
     var _willet_button_onclick = function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         try {
@@ -110,6 +123,10 @@
             _willet_store_analytics(message);
             _willet_show_ask();        
         }
+
+        // Turn off image overlay if it was on
+        _willet_button_mouseleave();
+        imgOverlayEnabled = false;
     };
 
     /**
@@ -152,6 +169,8 @@
                 onClosed: _willet_ask_callback
             });
         {% endif %}
+
+        _willet_button_mouseleave();
     };
 
     /**
@@ -680,6 +699,7 @@
                         .css('display', 'none')
                         .attr('title', 'Ask your friends if you should buy this!')
                         .attr('id','_willet_button')
+                        .attr('class','_willet_button')
                         .click(_willet_button_onclick);
                 
                     $(purchase_cta).append(button);
@@ -703,22 +723,74 @@
                     }
                 });
 
-            // If we're trying ask without connect:
-            {% if AB_FACEBOOK_NO_CONNECT %}
-                FB.init({
-                    appId: '{{FACEBOOK_APP_ID}}', // App ID
-                    cookie: true, // enable cookies to allow the server to access the session
-                    xfbml: true  // parse XFBML
-                });
-            {% endif %}
+                // If we're trying ask without connect:
+                {% if AB_FACEBOOK_NO_CONNECT %}
+                    // Put fb_root div in the page
+                    var fb_div = $(document.createElement( 'div' ));
+                    fb_div.attr( 'id', 'fb-root' );
+                    $('body').append( fb_div );
 
+                    FB.init({
+                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        cookie: true, // enable cookies to allow the server to access the session
+                        xfbml: true  // parse XFBML
+                    });
+                {% endif %}
+
+                // Walk events on image div and make sure there are no
+                // mouse ones.
+                var imgElem     = $('{{img_elem_selector}}');
+                var imgWidth  = imgElem.width();
+                var imgHeight = imgElem.height();
+                var foo = $.data( imgElem.get(0), 'events' );
+                var imgMouseEvent = true;
+                if ( foo != null ) {
+                    $.each( foo, function(i,o) {
+                        alert( i );
+                        if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
+                            imgMouseEvent = false;
+                        }
+                    });
+                }
+                
+                // Image overlay stuff
+                if ( imgMouseEvent ){
+                    var overlaySpan = $(document.createElement( 'span' ));
+                    overlaySpan.attr('id', 'imgOverlaySpan' );
+                    overlaySpan.css({ "display" : "none", "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute", "background" : 'url(http://barbara-willet.appspot.com/static/imgs/heart_q.png) no-repeat', "background-size" : imgWidth + "px " + imgHeight + "px" });
+                    imgElem.parent().append( overlaySpan );
+
+                    var btnWidth   = button.width();
+                    var btnHeight  = button.height();
+                    var leftMargin = ( imgWidth - btnWidth ) / 2;
+                    var topMargin  = (( imgHeight ) / 2 ) + btnHeight;
+                    var btn        = $(document.createElement('button'));
+                    btn.html(button_html)
+                       .css( { 'display'     : 'none', 
+                               'margin-top'  : "-" + topMargin  + "px !important",
+                               'margin-left' : leftMargin + "px !important",
+                               'position'    : 'relative',
+                               'z-index'     : '99999' } )
+                       .attr('title', 'Ask your friends if you should buy this!')
+                       .attr('id','_willet_overlay_button')
+                       .attr('class','_willet_button')
+                       .click(_willet_button_onclick);
+                
+                    alert('asdasdasdad');
+                    overlaySpan.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                    imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                    btn.hover(_willet_button_mouseenter);
+                    btn.focus(_willet_button_mouseenter),
+
+                    imgElem.parent().append( btn );
+                }
             } // if willet div id on page
         } 
     };
 
     /**
     * Insert style and get the ball rolling
-    * !!! We are asuming we are good to insert
+    * !!! We are assuming we are good to insert
     */
     try {
         // We have to add our CSS right away otherwise we'll get in trouble
