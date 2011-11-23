@@ -173,7 +173,7 @@ class ShowRoutes(URIHandler):
                     # we clobbered some urls
                     raise Exception('url route conflict with %s' % app)
             except Exception,e:
-                logging.error('error importing %s: %s' % (app, e))
+                logging.error('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
         template_values = {
@@ -807,7 +807,7 @@ class FBConnectStats( URIHandler ):
 
 class ReloadURIS(URIHandler):
     def get(self):
-        memcache.add('reload_uris', True)
+        memcache.set('reload_uris', True)
 
 class CheckMBC(URIHandler):
     @admin_required

@@ -503,3 +503,4 @@ class ShowFBThanks( URIHandler ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+

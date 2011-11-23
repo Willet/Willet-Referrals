@@ -338,7 +338,7 @@ class LoadAction( Action ):
     """ Parent class for Load actions.
         ie. ScriptLoad, ButtonLoad """
 
-    url = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True, default=True)
 
     def __str__(self):
         return 'LoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)

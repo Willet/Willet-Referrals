@@ -70,6 +70,7 @@ class SIBTShopifyWelcome(URIHandler):
                 'app': app,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
+                'install_code': "{% include 'willet_sibt' %}"
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
@@ -325,7 +326,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-        else:
+        elif app:
             logging.info('could not get an instance, check page views')
 
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
@@ -337,6 +338,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 # show top-bar-ask
                 show_top_bar_ask = True 
             product = ProductShopify.get_or_fetch(target, app.client)
+        else:
+            logging.warn("no app and no instance!")
 
         # this should only happen once, can be removed at a later date
         # TODO remove this code

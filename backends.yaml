@@ -1,0 +1,6 @@
+backends:
+ - name: analytics
+   class: B1
+   options: dynamic
+   instances: 1
+
