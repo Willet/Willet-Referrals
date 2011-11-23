@@ -407,6 +407,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             'evnt' : event,
             'img_elem_selector' : "#image img",
+            'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,

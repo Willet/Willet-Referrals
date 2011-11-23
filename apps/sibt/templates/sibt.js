@@ -98,12 +98,12 @@
 
     var _willet_button_mouseenter = function(e) {
         if ( imgOverlayEnabled ){
-            $("#overlayImgDiv").show(); //fadeIn('fast');
+            $("#overlayImgDiv").fadeIn('fast', function() { $("#overlayImgDiv").mouseleave(_willet_button_mouseleave).unbind('mouseenter'); } );
         }
     };
 
     var _willet_button_mouseleave = function(e) {
-        $("#overlayImgDiv").hide(); //fadeIn('fast');
+        $("#overlayImgDiv").fadeOut('fast', function() { $("#overlayImgDiv").mouseenter(_willet_button_mouseenter); });
     };
 
     var _willet_button_onclick = function(e, message) {
@@ -753,42 +753,42 @@
                     
                     // Image overlay stuff
                     if ( imgMouseEvent ){
+                        // Set up the Button
+                        var btn  = $( document.createElement('button') );
+                        btn.html('Get advice!')
+                           .attr('title', 'Ask your friends if you should buy this!')
+                           .attr('id','_willet_overlay_button')
+                           .attr('class','_willet_overlay_button')
+                           .click(_willet_button_onclick);
+
+                        var shaTopDiv = $( document.createElement( 'div' ) );
+                        shaTopDiv.css({ "-webkit-box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
+                                        "-moz-box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
+                                        "box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
+                                        "width"      : imgWidth + "px", 
+                                        "height"     : imgHeight + "px" });
+                        
+                        // Set up encapsulating div
+                        var imgDiv = $(document.createElement( 'div' ));
+                        imgDiv.attr( 'id', 'overlayImgDiv' );
+                        imgDiv.css({"display" : "none", 
+                                    "width"   : imgWidth + "px", 
+                                    "height"  : imgHeight + "px" });
+                        
+                        imgDiv.mouseenter(_willet_button_mouseenter);
+                        imgElem.mouseenter(_willet_button_mouseenter);
+                        
+                        imgDiv.append( btn );
+                        imgDiv.append( shaTopDiv );
+                        imgDiv.insertBefore( imgElem );
+                        
+                        /*
                         var heartImg = $(document.createElement( 'img' ));
                         heartImg.attr( 'id', 'imgOverlaySpan' );
                         heartImg.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
                         heartImg.css({ "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
-
-                        var btnWidth   = button.width();
-                        var btnHeight  = button.height();
-                        var leftMargin = ( imgWidth - btnWidth - 10 /*btn padding*/ ) / 2;
-                        var topMargin  = ( imgHeight - btnHeight - 10 /*padding*/ ) / 2;
-                        var btn        = document.createElement('button');
-                        btn.style.cssText = "margin-top : " + topMargin + "px !important; " + 
-                                            "margin-left : " + leftMargin + "px !important; " + 
-                                            "position : absolute;" +
-                                            "z-index : 1;" + 
-                                            "display: block";
-                        btn = $(btn);
-                        btn.html(button_html)
-                            .attr('title', 'Ask your friends if you should buy this!')
-                           .attr('id','_willet_overlay_button')
-                           .attr('class','_willet_button')
-                           .click(_willet_button_onclick);
-                     
-                        var imgDiv = $(document.createElement( 'div' ));
-                        imgDiv.attr( 'id', 'overlayImgDiv' );
-                        imgDiv.css({"display" : "none", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
-                        
-                        imgDiv.hover(_willet_button_mouseenter, _willet_button_mouseleave);
-                        imgDiv.focus(_willet_button_mouseenter);
-                        
                         imgDiv.append( heartImg );
-                        imgDiv.append( btn );
-                        
-                        imgDiv.insertBefore( imgElem );
-                        
-                        imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
-                        imgElem.focus(_willet_button_mouseenter);
+                        */
                     }
                 }
             } 

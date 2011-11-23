@@ -1,4 +1,4 @@
-/*
+'/*
     ColorBox Core Style:
     The following CSS is consistent between example themes and should not be altered.
 */
@@ -399,3 +399,38 @@
         font-size: 16px !important;
         margin-left: 20px; 
     }
+
+._willet_overlay_button {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    z-index: 1;
+    display: block;
+    
+    font-size: 1.0em;
+    line-height: 1;
+    text-align: right;
+    text-shadow: white 2px 2px 2px;
+    
+    margin: 0px;
+    padding: 10px;
+
+    color: black;
+    background-color: transparent;
+
+    border: none;
+    cursor: pointer;
+}
+
+._willet_overlay_button:hover {
+    background-color: black;
+    color: white;
+    text-shadow: white 0px 0px 0px;
+}
+
+#overlayImgDiv {
+    position: absolute;
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
+    -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
+    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
+}';
