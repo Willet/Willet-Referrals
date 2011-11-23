@@ -79,7 +79,7 @@
 .willet_cboxIE6 #willet_cboxMiddleRight {
     _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split(\'"\')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod=\'scale\')");
 }
-#_willet_button {
+._willet_button {
     clear: both;
     display: inline-block;
     /*display: none;*/
@@ -102,16 +102,16 @@
     border-radius: 3px;
     margin-left: 0px;
 }
-#_willet_button:hover {
+._willet_button:hover {
     background-color: #ECEEF5;
     border-color: #9DACCE;
 }
-#_willet_button:focus {
+._willet_button:focus {
     background-color: #ECEEF5;
     border: 1px solid #CAD4E7;
 }
-#_willet_button.used,
-#_willet_button:active {
+._willet_button.used,
+._willet_button:active {
     color: #AAA;
     background: url({{URL}}/static/sibt/imgs/fb_ask_gr.png) 2px 4px no-repeat, #EEE;
     border: 1px solid #DDD; 

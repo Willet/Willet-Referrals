@@ -99,7 +99,7 @@
     var _willet_button_mouseenter = function(e) {
         if ( imgOverlayEnabled ){
             $("#imgOverlaySpan").show(); //fadeIn('fast');
-            $("#_willet_overlay_button").show();
+            $("#_willet_overlay_button").css( 'display', 'block' );
         }
     };
 
@@ -740,49 +740,74 @@
                 // Walk events on image div and make sure there are no
                 // mouse ones.
                 var imgElem     = $('{{img_elem_selector}}');
-                var imgWidth  = imgElem.width();
-                var imgHeight = imgElem.height();
-                var foo = $.data( imgElem.get(0), 'events' );
-                var imgMouseEvent = true;
-                if ( foo != null ) {
-                    $.each( foo, function(i,o) {
-                        alert( i );
-                        if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
-                            imgMouseEvent = false;
-                        }
-                    });
-                }
-                
-                // Image overlay stuff
-                if ( imgMouseEvent ){
-                    var overlaySpan = $(document.createElement( 'span' ));
-                    overlaySpan.attr('id', 'imgOverlaySpan' );
-                    overlaySpan.css({ "display" : "none", "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute", "background" : 'url(http://barbara-willet.appspot.com/static/imgs/heart_q.png) no-repeat', "background-size" : imgWidth + "px " + imgHeight + "px" });
-                    imgElem.parent().append( overlaySpan );
+                if ( imgElem ) {
+                    var imgWidth  = imgElem.width();
+                    var imgHeight = imgElem.height();
+                    var foo = $.data( imgElem.get(0), 'events' );
+                    var imgMouseEvent = true;
+                    if ( foo != null ) {
+                        $.each( foo, function(i,o) {
+                            if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
+                                imgMouseEvent = false;
+                            }
+                        });
+                    }
+                    
+                    // Image overlay stuff
+                    if ( imgMouseEvent ){
+                        var imgDiv = $(document.createElement( 'div' ));
+                        imgDiv.css({"width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
+                        imgDiv.insertBefore( imgElem );
+                        
+                        var overlaySpan = $(document.createElement( 'img' ));
+                        overlaySpan.attr('id', 'imgOverlaySpan' );
+                        overlaySpan.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
+                        overlaySpan.css({ "display" : "none", "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
+                        imgDiv.append( overlaySpan );
 
-                    var btnWidth   = button.width();
-                    var btnHeight  = button.height();
-                    var leftMargin = ( imgWidth - btnWidth ) / 2;
-                    var topMargin  = (( imgHeight ) / 2 ) + btnHeight;
-                    var btn        = $(document.createElement('button'));
-                    btn.html(button_html)
-                       .css( { 'display'     : 'none', 
-                               'margin-top'  : "-" + topMargin  + "px !important",
-                               'margin-left' : leftMargin + "px !important",
-                               'position'    : 'relative',
-                               'z-index'     : '99999' } )
-                       .attr('title', 'Ask your friends if you should buy this!')
-                       .attr('id','_willet_overlay_button')
-                       .attr('class','_willet_button')
-                       .click(_willet_button_onclick);
-                
-                    alert('asdasdasdad');
-                    overlaySpan.hover(_willet_button_mouseenter, _willet_button_mouseleave);
-                    imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
-                    btn.hover(_willet_button_mouseenter);
-                    btn.focus(_willet_button_mouseenter),
+                        var btnWidth   = button.width();
+                        var btnHeight  = button.height();
+                        var leftMargin = ( imgWidth - btnWidth ) / 2;
+                        var topMargin  = ( imgHeight - btnHeight ) / 2;
+                        var btn        = document.createElement('button');
+                        btn.style.cssText = "margin-top : " + topMargin + "px !important; " + 
+                                            "margin-left : " + leftMargin + "px !important; " + 
+                                            "position : absolute;" +
+                                            "z-index : 1;";
+                        btn = $(btn);
+                        btn.html(button_html)
+                            /*
+                           .css( { 'display'     : 'none', 
+                                   'margin-top'  : "-" + topMargin  + "px !important",
+                                   'margin-left' : leftMargin + "px !important",
+                                   'position'    : 'relative',
+                                   'z-index'     : '99999' } )
+                           .css( 'cssText', 
+                           "margin-top : -" +
+                                            topMargin + "px !important; " + 
+                                            "margin-left : " + leftMargin + 
+                                            "px !important; " + 
+                                            "position : relative;" +
+                                            "z-index : 99999" )
+                           */
+                           .attr('title', 'Ask your friends if you should buy this!')
+                           .attr('id','_willet_overlay_button')
+                           .attr('class','_willet_button')
+                           .click(_willet_button_onclick);
+                    
+                        imgDiv.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                        imgDiv.focus(_willet_button_mouseenter);
+                        
+                        overlaySpan.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                        overlaySpan.focus(_willet_button_mouseenter);
+                        imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                        imgElem.focus(_willet_button_mouseenter);
+                        btn.hover(_willet_button_mouseenter);
+                        btn.focus(_willet_button_mouseenter),
 
-                    imgElem.parent().append( btn );
+                        //imgElem.parent().append( btn );
+                        imgDiv.append( imgElem );
+                    }
                 }
             } // if willet div id on page
         } 
