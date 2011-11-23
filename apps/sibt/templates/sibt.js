@@ -98,14 +98,12 @@
 
     var _willet_button_mouseenter = function(e) {
         if ( imgOverlayEnabled ){
-            $("#imgOverlaySpan").show(); //fadeIn('fast');
-            $("#_willet_overlay_button").css( 'display', 'block' );
+            $("#overlayImgDiv").show(); //fadeIn('fast');
         }
     };
 
     var _willet_button_mouseleave = function(e) {
-        $("#imgOverlaySpan").hide(); //fadeOut('fast');
-        $("#_willet_overlay_button").hide();
+        $("#overlayImgDiv").hide(); //fadeIn('fast');
     };
 
     var _willet_button_onclick = function(e, message) {
@@ -755,15 +753,10 @@
                     
                     // Image overlay stuff
                     if ( imgMouseEvent ){
-                        var imgDiv = $(document.createElement( 'div' ));
-                        imgDiv.css({"width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
-                        imgDiv.insertBefore( imgElem );
-                        
-                        var overlaySpan = $(document.createElement( 'img' ));
-                        overlaySpan.attr('id', 'imgOverlaySpan' );
-                        overlaySpan.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
-                        overlaySpan.css({ "display" : "none", "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
-                        imgDiv.append( overlaySpan );
+                        var heartImg = $(document.createElement( 'img' ));
+                        heartImg.attr( 'id', 'imgOverlaySpan' );
+                        heartImg.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
+                        heartImg.css({ "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
 
                         var btnWidth   = button.width();
                         var btnHeight  = button.height();
@@ -773,40 +766,29 @@
                         btn.style.cssText = "margin-top : " + topMargin + "px !important; " + 
                                             "margin-left : " + leftMargin + "px !important; " + 
                                             "position : absolute;" +
-                                            "z-index : 1;";
+                                            "z-index : 1;" + 
+                                            "display: block";
                         btn = $(btn);
                         btn.html(button_html)
-                            /*
-                           .css( { 'display'     : 'none', 
-                                   'margin-top'  : "-" + topMargin  + "px !important",
-                                   'margin-left' : leftMargin + "px !important",
-                                   'position'    : 'relative',
-                                   'z-index'     : '99999' } )
-                           .css( 'cssText', 
-                           "margin-top : -" +
-                                            topMargin + "px !important; " + 
-                                            "margin-left : " + leftMargin + 
-                                            "px !important; " + 
-                                            "position : relative;" +
-                                            "z-index : 99999" )
-                           */
-                           .attr('title', 'Ask your friends if you should buy this!')
+                            .attr('title', 'Ask your friends if you should buy this!')
                            .attr('id','_willet_overlay_button')
                            .attr('class','_willet_button')
                            .click(_willet_button_onclick);
-                    
+                     
+                        var imgDiv = $(document.createElement( 'div' ));
+                        imgDiv.attr( 'id', 'overlayImgDiv' );
+                        imgDiv.css({"display" : "none", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
+                        
                         imgDiv.hover(_willet_button_mouseenter, _willet_button_mouseleave);
                         imgDiv.focus(_willet_button_mouseenter);
                         
-                        overlaySpan.hover(_willet_button_mouseenter, _willet_button_mouseleave);
-                        overlaySpan.focus(_willet_button_mouseenter);
+                        imgDiv.append( heartImg );
+                        imgDiv.append( btn );
+                        
+                        imgDiv.insertBefore( imgElem );
+                        
                         imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
                         imgElem.focus(_willet_button_mouseenter);
-                        btn.hover(_willet_button_mouseenter);
-                        btn.focus(_willet_button_mouseenter),
-
-                        //imgElem.parent().append( btn );
-                        imgDiv.append( btn );
                     }
                 }
             } 
