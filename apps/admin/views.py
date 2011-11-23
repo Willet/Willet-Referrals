@@ -172,7 +172,7 @@ class ShowRoutes(URIHandler):
                     # we clobbered some urls
                     raise Exception('url route conflict with %s' % app)
             except Exception,e:
-                logging.error('error importing %s: %s' % (app, e))
+                logging.error('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
         template_values = {
@@ -803,3 +803,18 @@ class FBConnectStats( URIHandler ):
         html += "<p>Connect Dialog: %d</p>" % instance_connect
         
         self.response.out.write(html)
+
+class ReloadURIS(URIHandler):
+    def get(self):
+        memcache.set('reload_uris', True)
+
+class CheckMBC(URIHandler):
+    @admin_required
+    def get(self, admin):
+        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        num = self.request.get('num')
+        if num:
+            mbc.count = num 
+            mbc.put()
+        self.response.out.write('Count: %d' % mbc.count)
+
