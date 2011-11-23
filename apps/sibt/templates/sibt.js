@@ -767,8 +767,8 @@
 
                         var btnWidth   = button.width();
                         var btnHeight  = button.height();
-                        var leftMargin = ( imgWidth - btnWidth ) / 2;
-                        var topMargin  = ( imgHeight - btnHeight ) / 2;
+                        var leftMargin = ( imgWidth - btnWidth - 10 /*btn padding*/ ) / 2;
+                        var topMargin  = ( imgHeight - btnHeight - 10 /*padding*/ ) / 2;
                         var btn        = document.createElement('button');
                         btn.style.cssText = "margin-top : " + topMargin + "px !important; " + 
                                             "margin-left : " + leftMargin + "px !important; " + 
@@ -806,10 +806,11 @@
                         btn.focus(_willet_button_mouseenter),
 
                         //imgElem.parent().append( btn );
-                        imgDiv.append( imgElem );
+                        imgDiv.append( btn );
                     }
                 }
             } 
+        }
     };
 
     /**
