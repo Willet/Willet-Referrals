@@ -79,6 +79,30 @@ def create_email_model( user, email ):
 def get_emails_by_user( user ):
     return EmailModel.all().filter( 'user =', user )
 
+def deferred_user_put(user_uuid):
+    user = User.get(user_uuid)
+    if not user.key():
+        # user has no key, not in db
+        def txn():
+            logging.debug('Model::save(): Saving %s to memcache and datastore.' % user.uuid)
+            timeout_ms = 100
+            while True:
+                logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (user.__class__.__name__.lower(), timeout_ms))
+                try:
+                    user.hardPut() # Will validate the instance.
+                except datastore_errors.Timeout:
+                    thread.sleep(timeout_ms)
+                    timeout_ms *= 2
+                else:
+                    break
+
+            # Memcache *after* model is given datastore key
+        db.run_in_transaction(txn)
+            
+        if user.key():
+            memcache_key = user.get_key()
+            memcache.set(memcache_key, db.model_to_protobuf(user).Encode(), time=MEMCACHE_TIMEOUT)
+
 # ------------------------------------------------------------------------------
 # User Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -138,10 +162,17 @@ class User( db.Expando ):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return User.all().filter('uuid =', uuid).get()
+
+    def put_later(self):
+        """Memcaches and defers the put"""
+        key = self.get_key()
+        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        deferred.defer(deferred_user_put, self.uuid, _queue='slow-deferred')
+        logging.info('put_later: %s' % self.uuid)
     
     def put(self):
         """Stores model instance in memcache and database"""
-        key = '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+        key = self.get_key()
         logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
@@ -163,7 +194,7 @@ class User( db.Expando ):
         # By default, Python fcns return None
         # If you want to prevent an object from being saved to the db, have 
         # validateSelf return anyhting except None
-        if self.validateSelf( ) == None:
+        if self.validateSelf() == None:
             
             logging.debug("PUTTING %s" % self.__class__.__name__)
             db.put( self )
@@ -197,22 +228,26 @@ class User( db.Expando ):
 
     def is_admin( self ):
         logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
+        if hasattr(self, 'is_admin'):
+            return self.is_admin
+        is_admin = False
 
         emails = get_emails_by_user( self )
         # Filter by user email
         for e in emails:
             if e.address in ADMIN_EMAILS:
                 logging.info("%s is an ADMIN (via email check)" % (self.uuid))
-                return True
+                is_admin = True
 
         # Filter by IP
-        if hasattr(self, 'ips'):
+        if not is_admin and hasattr(self, 'ips'):
             for i in self.ips:
                 if i in ADMIN_IPS:
                     logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
-                    return True
+                    is_admin = True
 
-        return False
+        self.is_admin = is_admin
+        return is_admin 
     
     def merge_data( self, u ):
         """ Merge u into self. """
@@ -1190,7 +1225,7 @@ def create_user(referrer):
     """Create a new User object with the given attributes"""
     uuid=generate_uuid(16)
     user = User(key_name=uuid, uuid=uuid, referrer=referrer)
-    user.put()
+    user.put_later()
     return user
 
 # Get or Create by X
@@ -1342,7 +1377,7 @@ def get_user_by_cookie(request_handler):
     user = User.get(read_user_cookie(request_handler))
     if user:
         ip = request_handler.request.remote_addr
-        deferred.defer(add_ip_to_user, user.uuid, ip)
+        deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
     return user
 
 def get_or_create_user_by_cookie( request_handler, referrer=None ): 
@@ -1351,7 +1386,7 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
         ip = request_handler.request.remote_addr
         user = create_user(referrer)
         ip = request_handler.request.remote_addr
-        deferred.defer(add_ip_to_user, user.uuid, ip)
+        deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
 
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)

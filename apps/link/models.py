@@ -169,7 +169,7 @@ class Link(Model):
 
         #link.put()
         link.memcache_by_code()
-        deferred.defer(put_link, Link.get_memcache_key_for_code(code))
+        deferred.defer(put_link, Link.get_memcache_key_for_code(code), _queue='slow-deferred')
         
         logging.info("Successful put of Link %s" % code)
         return link

@@ -15,6 +15,7 @@ from apps.app.models    import get_app_by_id
 from apps.buttons.shopify.models import * 
 from apps.client.shopify.models  import ClientShopify
 from apps.link.models   import create_link
+from apps.link.models import Link
 from apps.link.models   import get_link_by_url
 from apps.link.models   import get_link_by_willt_code
 from apps.user.models   import get_or_create_user_by_cookie
@@ -62,7 +63,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         template_values = {}
         user   = get_or_create_user_by_cookie( self )
         target = get_target_url( self.request.headers.get('REFERER') )
-        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
+        app    = ButtonsShopify.get(self.request.get('app_uuid'))
 
         # set the stylesheet we are going to use
         style = self.request.get('style')
@@ -73,7 +74,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         willt_code = self.request.get('willt_code')
         logging.info("Willt_code %s" % willt_code )
         if willt_code != "":
-            link = get_link_by_willt_code( willt_code )
+            link = Link.get_by_code(willt_code)
             logging.info("Link %s" % (link.target_url ))
         else:
             logging.info("Making a link for %s" % target)
@@ -109,3 +110,4 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         
         self.response.out.write(template.render(path, template_values))
         return
+
