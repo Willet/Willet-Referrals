@@ -143,7 +143,7 @@
                     picture: '{{product_images|first}}',
                     name:    '{{product_title}}',
                     caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags }}",
+                    description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: '{{fb_redirect}}' }, 
                     _willet_ask_callback );
 
@@ -722,7 +722,7 @@
                         $.colorbox.close();
                     }
                 });
-
+                
                 // If we're trying ask without connect:
                 {% if AB_FACEBOOK_NO_CONNECT %}
                     // Put fb_root div in the page
@@ -809,8 +809,7 @@
                         imgDiv.append( imgElem );
                     }
                 }
-            } // if willet div id on page
-        } 
+            } 
     };
 
     /**
