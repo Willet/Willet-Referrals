@@ -16,6 +16,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
+from apps.action.models import MemcacheBucketConfig 
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral

@@ -17,6 +17,7 @@
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
+    var imgOverlayEnabled = true;
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -95,6 +96,16 @@
         _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
     };
 
+    var _willet_button_mouseenter = function(e) {
+        if ( imgOverlayEnabled ){
+            $("#overlayImgDiv").show(); //fadeIn('fast');
+        }
+    };
+
+    var _willet_button_mouseleave = function(e) {
+        $("#overlayImgDiv").hide(); //fadeIn('fast');
+    };
+
     var _willet_button_onclick = function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         try {
@@ -110,6 +121,10 @@
             _willet_store_analytics(message);
             _willet_show_ask();        
         }
+
+        // Turn off image overlay if it was on
+        _willet_button_mouseleave();
+        imgOverlayEnabled = false;
     };
 
     /**
@@ -126,7 +141,7 @@
                     picture: '{{product_images|first}}',
                     name:    '{{product_title}}',
                     caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags }}",
+                    description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: '{{fb_redirect}}' }, 
                     _willet_ask_callback );
 
@@ -152,6 +167,8 @@
                 onClosed: _willet_ask_callback
             });
         {% endif %}
+
+        _willet_button_mouseleave();
     };
 
     /**
@@ -680,6 +697,7 @@
                         .css('display', 'none')
                         .attr('title', 'Ask your friends if you should buy this!')
                         .attr('id','_willet_button')
+                        .attr('class','_willet_button')
                         .click(_willet_button_onclick);
                 
                     $(purchase_cta).append(button);
@@ -702,23 +720,84 @@
                         $.colorbox.close();
                     }
                 });
+                
+                // If we're trying ask without connect:
+                {% if AB_FACEBOOK_NO_CONNECT %}
+                    // Put fb_root div in the page
+                    var fb_div = $(document.createElement( 'div' ));
+                    fb_div.attr( 'id', 'fb-root' );
+                    $('body').append( fb_div );
 
-            // If we're trying ask without connect:
-            {% if AB_FACEBOOK_NO_CONNECT %}
-                FB.init({
-                    appId: '{{FACEBOOK_APP_ID}}', // App ID
-                    cookie: true, // enable cookies to allow the server to access the session
-                    xfbml: true  // parse XFBML
-                });
-            {% endif %}
+                    FB.init({
+                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        cookie: true, // enable cookies to allow the server to access the session
+                        xfbml: true  // parse XFBML
+                    });
+                {% endif %}
 
-            } // if willet div id on page
-        } 
+                // Walk events on image div and make sure there are no
+                // mouse ones.
+                var imgElem     = $('{{img_elem_selector}}');
+                if ( imgElem ) {
+                    var imgWidth  = imgElem.width();
+                    var imgHeight = imgElem.height();
+                    var foo = $.data( imgElem.get(0), 'events' );
+                    var imgMouseEvent = true;
+                    if ( foo != null ) {
+                        $.each( foo, function(i,o) {
+                            if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
+                                imgMouseEvent = false;
+                            }
+                        });
+                    }
+                    
+                    // Image overlay stuff
+                    if ( imgMouseEvent ){
+                        var heartImg = $(document.createElement( 'img' ));
+                        heartImg.attr( 'id', 'imgOverlaySpan' );
+                        heartImg.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
+                        heartImg.css({ "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
+
+                        var btnWidth   = button.width();
+                        var btnHeight  = button.height();
+                        var leftMargin = ( imgWidth - btnWidth - 10 /*btn padding*/ ) / 2;
+                        var topMargin  = ( imgHeight - btnHeight - 10 /*padding*/ ) / 2;
+                        var btn        = document.createElement('button');
+                        btn.style.cssText = "margin-top : " + topMargin + "px !important; " + 
+                                            "margin-left : " + leftMargin + "px !important; " + 
+                                            "position : absolute;" +
+                                            "z-index : 1;" + 
+                                            "display: block";
+                        btn = $(btn);
+                        btn.html(button_html)
+                            .attr('title', 'Ask your friends if you should buy this!')
+                           .attr('id','_willet_overlay_button')
+                           .attr('class','_willet_button')
+                           .click(_willet_button_onclick);
+                     
+                        var imgDiv = $(document.createElement( 'div' ));
+                        imgDiv.attr( 'id', 'overlayImgDiv' );
+                        imgDiv.css({"display" : "none", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
+                        
+                        imgDiv.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                        imgDiv.focus(_willet_button_mouseenter);
+                        
+                        imgDiv.append( heartImg );
+                        imgDiv.append( btn );
+                        
+                        imgDiv.insertBefore( imgElem );
+                        
+                        imgElem.hover(_willet_button_mouseenter, _willet_button_mouseleave);
+                        imgElem.focus(_willet_button_mouseenter);
+                    }
+                }
+            } 
+        }
     };
 
     /**
     * Insert style and get the ball rolling
-    * !!! We are asuming we are good to insert
+    * !!! We are assuming we are good to insert
     */
     try {
         // We have to add our CSS right away otherwise we'll get in trouble

@@ -409,6 +409,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
 
             'evnt' : event,
+            'img_elem_selector' : "#image img",
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,

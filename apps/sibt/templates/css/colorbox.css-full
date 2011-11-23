@@ -80,7 +80,7 @@
     _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split(\'"\')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod=\'scale\')");
 }
 
-#_willet_button {
+._willet_button {
     min-width: 202px !important;
     max-width: 240px !important;
     height: 28px !important;
@@ -125,7 +125,7 @@
     vertical-align: baseline;
     white-space: nowrap !important;
 }
-#_willet_button:hover {
+._willet_button:hover {
     background-color: #ddd;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
     background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
@@ -135,11 +135,11 @@
     background-image: linear-gradient(top, #fafafa, #ddd);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#fafafa", EndColorStr="#dddddd");
 }
-#_willet_button:focus {
+._willet_button:focus {
     outline: 0;
     background: #fafafa;
 }
-#_willet_button:active {        
+._willet_button:active {        
     -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
     -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
     box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
