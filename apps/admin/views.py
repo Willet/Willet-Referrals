@@ -16,6 +16,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
+from apps.action.models import MemcacheBucketConfig 
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
@@ -803,3 +804,18 @@ class FBConnectStats( URIHandler ):
         html += "<p>Connect Dialog: %d</p>" % instance_connect
         
         self.response.out.write(html)
+
+class ReloadURIS(URIHandler):
+    def get(self):
+        memcache.add('reload_uris', True)
+
+class CheckMBC(URIHandler):
+    @admin_required
+    def get(self, admin):
+        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        num = self.request.get('num')
+        if num:
+            mbc.count = num 
+            mbc.put()
+        self.response.out.write('Count: %d' % mbc.count)
+

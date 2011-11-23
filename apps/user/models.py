@@ -81,7 +81,7 @@ def get_emails_by_user( user ):
 
 def deferred_user_put(user_uuid):
     user = User.get(user_uuid)
-    if not user.key():
+    if user:
         # user has no key, not in db
         def txn():
             logging.debug('Model::save(): Saving %s to memcache and datastore.' % user.uuid)
@@ -167,7 +167,7 @@ class User( db.Expando ):
         """Memcaches and defers the put"""
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-        deferred.defer(deferred_user_put, self.uuid, _queue='slow-deferred')
+        deferred.defer(deferred_user_put, self.uuid)
         logging.info('put_later: %s' % self.uuid)
     
     def put(self):
@@ -228,8 +228,8 @@ class User( db.Expando ):
 
     def is_admin( self ):
         logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
-        if hasattr(self, 'is_admin'):
-            return self.is_admin
+        if hasattr(self, 'user_is_admin'):
+            return self.user_is_admin
         is_admin = False
 
         emails = get_emails_by_user( self )
@@ -246,7 +246,7 @@ class User( db.Expando ):
                     logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
                     is_admin = True
 
-        self.is_admin = is_admin
+        self.user_is_admin = is_admin
         return is_admin 
     
     def merge_data( self, u ):

@@ -63,7 +63,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
             logging.error('error getting action: %s' % e, exc_info=True)
 
     try:
-        db.put(actions_to_put)
+        db.put_async(actions_to_put)
     except Exception,e:
         logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
 
