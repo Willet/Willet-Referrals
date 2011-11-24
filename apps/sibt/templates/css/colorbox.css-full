@@ -430,7 +430,100 @@
 
 #overlayImgDiv {
     position: absolute;
-    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
-    -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
-    -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.8);
-}';
+}
+#willet_shadow_tl {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/tl.png);
+    background-repeat: no-repeat;
+    float: left;
+    position: relative;
+    top: -12px;
+    left: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_tc {
+    height: 12px;
+    margin: 0px;
+    padding: 0px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/ct.png);
+    background-repeat: repeat-x;
+    float: left;
+    position: relative;
+    top: -24px;
+}
+
+#willet_shadow_tr {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/tr.png);
+    background-repeat: no-repeat;
+    float: right;
+    position: relative;
+    top: -36px;
+    right: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_ml {
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cl.png);
+    background-repeat: repeat-y;
+    float: left;
+    position: relative;
+    top: -24px;
+    left: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+#willet_shadow_mr {
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cr.png);
+    background-repeat: repeat-y;
+    float: right;
+    position: relative;
+    top: -24px;
+    right: -24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_bl {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/bl.png);
+    background-repeat: no-repeat;
+    float: left;
+    position: relative;
+    left: -24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_bc {
+    height: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cb.png);
+    background-repeat: repeat-x;
+    float: left;
+    position: relative;
+    bottom: 24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_br {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/br.png);
+    background-repeat: no-repeat;
+    float: right;
+    position: relative;
+    bottom: 36px;
+    right: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+';

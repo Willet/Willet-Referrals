@@ -761,13 +761,51 @@
                            .attr('class','_willet_overlay_button')
                            .click(_willet_button_onclick);
 
-                        var shaTopDiv = $( document.createElement( 'div' ) );
-                        shaTopDiv.css({ "-webkit-box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
-                                        "-moz-box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
-                                        "box-shadow" : "5px 5px 5px rgba(0, 0, 0, 0.8)",
-                                        "width"      : imgWidth + "px", 
-                                        "height"     : imgHeight + "px" });
+                        // Middle bit
+                        var midShadowDiv = $(document.createElement( 'div' ));
+                        midShadowDiv.attr( 'id', 'willet_shadow_content' );
                         
+                        var mlDiv = $(document.createElement( 'div' ));
+                        mlDiv.attr( 'id', 'willet_shadow_ml' );
+                        mlDiv.css( 'height', imgHeight + "px" );
+                        var mrDiv = $(document.createElement( 'div' ));
+                        mrDiv.attr( 'id', 'willet_shadow_mr' );
+                        mrDiv.css( 'height', imgHeight + "px" );
+                        midShadowDiv.append( mlDiv );
+                        midShadowDiv.append( btn );
+                        midShadowDiv.append( mrDiv );
+
+                        // Top Shadows
+                        var topShadowDiv = $(document.createElement( 'div' ));
+                        topShadowDiv.css( 'height', '12px' );
+                        var tlDiv = $(document.createElement( 'div' ));
+                        tlDiv.attr( 'id', 'willet_shadow_tl' );
+                        var tcDiv = $(document.createElement( 'div' ));
+                        tcDiv.css( 'width', imgWidth + "px" );
+                        tcDiv.attr( 'id', 'willet_shadow_tc' );
+                        var trDiv = $(document.createElement( 'div' ));
+                        trDiv.attr( 'id', 'willet_shadow_tr' );
+
+                        topShadowDiv.append( tlDiv );
+                        topShadowDiv.append( tcDiv );
+                        topShadowDiv.append( trDiv );
+
+                        // Bottom Shadows
+                        var btmShadowDiv = $(document.createElement( 'div' ));
+                        btmShadowDiv.css( 'height', '12px' );
+                        var blDiv = $(document.createElement( 'div' ));
+                        blDiv.attr( 'id', 'willet_shadow_bl' );
+                        blDiv.css( 'bottom', "-" + (imgHeight-24) + "px" );
+                        var bcDiv = $(document.createElement( 'div' ));
+                        bcDiv.css( 'width', imgWidth + "px" );
+                        bcDiv.attr( 'id', 'willet_shadow_bc' );
+                        var brDiv = $(document.createElement( 'div' ));
+                        brDiv.attr( 'id', 'willet_shadow_br' );
+
+                        btmShadowDiv.append( blDiv );
+                        btmShadowDiv.append( bcDiv );
+                        btmShadowDiv.append( brDiv );
+
                         // Set up encapsulating div
                         var imgDiv = $(document.createElement( 'div' ));
                         imgDiv.attr( 'id', 'overlayImgDiv' );
@@ -778,8 +816,12 @@
                         imgDiv.mouseenter(_willet_button_mouseenter);
                         imgElem.mouseenter(_willet_button_mouseenter);
                         
-                        imgDiv.append( btn );
-                        imgDiv.append( shaTopDiv );
+                        imgDiv.append( topShadowDiv );
+                        
+                        imgDiv.append( midShadowDiv );
+                        
+                        imgDiv.append( btmShadowDiv );
+                        
                         imgDiv.insertBefore( imgElem );
                         
                         /*
