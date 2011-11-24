@@ -817,5 +817,10 @@ class CheckMBC(URIHandler):
         if num:
             mbc.count = num 
             mbc.put()
+        
+        tb_click = SIBTUserClickedTopBarAsk.all().count()
+        b_click = SIBTUserClickedButtonAsk.all().count() 
+        self.response.out.write('top bar: %d' % tb_click)
+        self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
