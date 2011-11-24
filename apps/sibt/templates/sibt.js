@@ -96,6 +96,13 @@
         _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
     };
 
+    /**
+    * Onclick event handler for the 'sibt' overlay button
+    */
+    var _willet_overlay_onclick = function(e) {
+        _willet_button_onclick(e, 'SIBTUserClickedOverlayAsk');
+    };
+
     var _willet_button_mouseenter = function(e) {
         if ( imgOverlayEnabled ){
             $("#overlayImgDiv").fadeIn('fast', function() { $("#overlayImgDiv").mouseleave(_willet_button_mouseleave).unbind('mouseenter'); } );
@@ -759,7 +766,7 @@
                            .attr('title', 'Ask your friends if you should buy this!')
                            .attr('id','_willet_overlay_button')
                            .attr('class','_willet_overlay_button')
-                           .click(_willet_button_onclick);
+                           .click(_willet_overlay_onclick);
 
                         // Middle bit
                         var midShadowDiv = $(document.createElement( 'div' ));
