@@ -202,53 +202,45 @@
     top:0;
     left:0;
 }
-    #_willet_sibt_bar ._willet_wrapper {
-        margin: auto;
+
+#_willet_sibt_ask_bar {
+    border-bottom: 1px solid #133783;
+    box-shadow: 0 0 3px 1px rgba(0,0,0,0.75);
+    background-color: #3B5998;
+    display: block;
+
+    width: 100%;
+    margin: 0px;
+
+    color: white;
+    text-shadow: 0px 0px 0px rgba(255,255,255,0.5);
+    font-family: Helvetica, Arial, sans-serif;
+	font-size: 1.0em;
+    position: fixed;
+    z-index:50000000;
+    top:0;
+    left:0;
+}
+    #_willet_sibt_bar ._willet_wrapper, #_willet_sibt_ask_bar ._willet_wrapper {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        margin-right: auto;
+        margin-left: auto;
         display: block;
         float: none;
         text-align: center; 
-        width: 600px;
+        width: 75%;
     }
-    #_willet_sibt_bar div.last {
+    #_willet_sibt_bar div.last, #_willet_sibt_ask_bar div.last {
         margin-right: 0px;
     }
-    #_willet_sibt_bar div {
+    #_willet_sibt_bar div, #_willet_sibt_ask_bar div{
         display: inline-block;
         float: left;
     }
-    #_willet_sibt_bar div._willet_button {
-        line-height: 40px;
-        cursor: pointer;
-        padding-left: 5px;
-        padding-right: 5px;
-        border-radius: 1px;
-        text-align: right;
-        float: right;
-        background: transparent;
-        padding-top: 0px;
-        padding-bottom: 0px;
-        margin-left: 0px;
-        margin-bottom: 0px;
-        margin-top: 0px;
-        color: white;
-        border: 0px;
-        font-size: 14px;
-        text-transform: none;
-    }
-    #_willet_sibt_bar div.toggle_results {
+    #_willet_sibt_bar div.toggle_results, #_willet_sibt_ask_bar div.toggle_results {
         width: 58px;
     }
-    #_willet_sibt_bar div._willet_button:hover {
-        background-color: #4B67A1;
-        color: #FFFFFF;
-    }
-        #_willet_sibt_bar div._willet_button span {
-            line-height: inherit; 
-        }
-            #_willet_sibt_bar div._willet_button span img {
-                position: relative;
-                top: 2px;
-            }
     #_willet_sibt_bar div.asker {
         display: inline-block;
         font-weight: bold;
@@ -280,7 +272,7 @@
             line-height: 17px;
             font-size: 12px;
         }
-    #_willet_sibt_bar div.message {
+    #_willet_sibt_bar div.message, #_willet_sibt_ask_bar div.message {
         display: inline-block;
         float: left;
         text-shadow: 0px 0px 1px black;

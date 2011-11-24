@@ -347,56 +347,54 @@
      *      if true, loads ask_in_the_bar iframe
      */
     var build_top_bar_html = function (is_ask_bar) {
-        var is_ask_bar = is_ask_bar || false;
-        var image_src = '{{ asker_pic }}';
-        var asker_text = '';
-        //var asker_text = "<div class='name'>" +
-        //    "&#147;I'm not sure if I should buy this {{ instance.motivation }}.&#148;" +
-        //    "</div>";
-        var message = 'Should <em>{{ asker_name }}</em> Buy This?';
 
-        if (is_ask_bar) {
-            image_src = '{{ product_images|first }}';
-            asker_text = '';
-            message = "Decisions are hard to make." +
-                "<button id='askBtn' class=''>{{AB_CTA_text}}</button>";
-        } 
-
-        var bar_html = "<div class='_willet_wrapper'> " +
-            "<div class='asker'>" +
-                "<div class='pic'><img src='" + image_src + "' /></div>" +
-                 asker_text  +
-            "</div>" +
-            "<div class='message'>" + message + "</div>" +
-            "<div class='vote last' style='display: none'>" +
-            "    <button id='yesBtn' class='yes'>Buy it</button> "+
-            "    <button id='noBtn' class='no'>Skip it</button> "+
-            "</div> "+
-            "<div id='_willet_toggle_results' class='_willet_button toggle_results last' style='display: none'> "+
-            "    <span class='down'>" +
-            "      Show <img src='{{URL}}/static/imgs/arrow-down.gif' /> "+
-            "   </span> "+
-            "   <span class='up' style='display: none'>" +
-            "      Hide <img src='{{URL}}/static/imgs/arrow-up.gif' /> "+
-            "   </span> "+
-            "</div>"+
-            "<div id='_willet_getlink_results' class='last' style='display: none'> "+
-            "    <span class='getlink'>" +
-            "      &nbsp;<img alt='Invite a friend to vote' title='Invite a friend to vote' src='{{URL}}/static/imgs/paper-clip.gif' />&nbsp;"+
-            "   </span> "+
-            "   <div id='_willet_sharelink'>Invite a friend to vote:<br />"+
-            "       <input type='text' readonly='reaodnly value='{{ share_url }}' />'"+
-            "   </div> "+
-            "</div> "+
-            "<div class='clear'></div> "+
-            "<div class='iframe' style='display: none'> "+
-            "    <div style='display: none' class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
-            "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' ></iframe> "+ 
-            "</div>" +
-            "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
-            "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
-            "</div>" +
-        "</div>";
+        if (is_ask_bar || false) {
+            var bar_html = "<div class='_willet_wrapper'><span>Decisions are hard to make. {{AB_CTA_text}}</span>" +
+                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 0px; cursor: pointer;'>" +
+                "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                "</div>" +
+            "</div>";
+        } else {
+            var asker_text = '';
+            var message = 'Should <em>{{ asker_name }}</em> Buy This?';
+            var image_src = '{{ asker_pic }}';
+            
+            var bar_html = "<div class='_willet_wrapper'> " +
+                "<div class='asker'>" +
+                    "<div class='pic'><img src='" + image_src + "' /></div>" +
+                     asker_text  +
+                "</div>" +
+                "<div class='message'>" + message + "</div>" +
+                "<div class='vote last' style='display: none'>" +
+                "    <button id='yesBtn' class='yes'>Buy it</button> "+
+                "    <button id='noBtn' class='no'>Skip it</button> "+
+                "</div> "+
+                "<div id='_willet_toggle_results' class='_willet_button toggle_results last' style='display: none'> "+
+                "    <span class='down'>" +
+                "      Show <img src='{{URL}}/static/imgs/arrow-down.gif' /> "+
+                "   </span> "+
+                "   <span class='up' style='display: none'>" +
+                "      Hide <img src='{{URL}}/static/imgs/arrow-up.gif' /> "+
+                "   </span> "+
+                "</div>"+
+                "<div id='_willet_getlink_results' class='last' style='display: none'> "+
+                "    <span class='getlink'>" +
+                "      &nbsp;<img alt='Invite a friend to vote' title='Invite a friend to vote' src='{{URL}}/static/imgs/paper-clip.gif' />&nbsp;"+
+                "   </span> "+
+                "   <div id='_willet_sharelink'>Invite a friend to vote:<br />"+
+                "       <input type='text' readonly='reaodnly value='{{ share_url }}' />'"+
+                "   </div> "+
+                "</div> "+
+                "<div class='clear'></div> "+
+                "<div class='iframe' style='display: none'> "+
+                "    <div style='display: none' class='loading'><img src='{{URL}}/static/imgs/ajax-loader.gif' /></div>"+
+                "    <iframe id='_willet_results' height='280' width='100%' frameBorder='0' ></iframe> "+ 
+                "</div>" +
+                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
+                "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                "</div>" +
+            "</div>";
+        }
         return bar_html;
     };
 
@@ -465,7 +463,7 @@
 
         _willet_topbar  = document.createElement('div');
         _willet_topbar = $(_willet_topbar)
-            .attr('id', '_willet_sibt_bar')
+            .attr('id', '_willet_sibt_ask_bar')
             .css('display', "none")
             .html(build_top_bar_html(true));
 
@@ -476,7 +474,7 @@
 
         $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
         
-        _willet_topbar.find('div.message')
+        _willet_topbar.find( '._willet_wrapper span' )
             .css('cursor', 'pointer')
             .click(function() {
                 // user has clicked on the ask their friends top bar
@@ -659,9 +657,15 @@
             // create the hide button
             _willet_topbar_hide_button = $(document.createElement('div'));
             _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-                .html('Show')
                 .css('display', 'none')
                 .click(_willet_unhide_topbar);
+            
+            if ( show_top_bar_ask ) {
+                _willet_topbar_hide_button.html('Get advice!');
+            } else {
+                _willet_topbar_hide_button.html('Help {{ asker_name }}!');
+            }
+
             $('body').prepend(_willet_topbar_hide_button);
 
             if (_willet_show_votes || hash_index != -1) {
