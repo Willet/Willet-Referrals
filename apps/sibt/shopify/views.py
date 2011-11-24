@@ -426,7 +426,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_overlay'  : 1 if top_or_overlay == "overlay" else 0,
 
             'evnt' : event,
-            'img_elem_selector' : "#image img", #app.img_selector
+            'img_elem_selector' : app.img_selector,
             'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
