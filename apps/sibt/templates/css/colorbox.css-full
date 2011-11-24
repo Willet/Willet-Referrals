@@ -410,13 +410,15 @@
     font-size: 1.0em;
     line-height: 1;
     text-align: right;
-    text-shadow: white 2px 2px 2px;
+    text-shadow: white 1px 1px 3px;
+    font-weight: bold;
     
     margin: 0px;
     padding: 10px;
 
     color: black;
-    background-color: transparent;
+    background-color: #727272;
+    opacity: 0.8;
 
     border: none;
     cursor: pointer;
