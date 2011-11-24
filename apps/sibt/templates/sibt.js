@@ -369,7 +369,7 @@
                 "    <button id='yesBtn' class='yes'>Buy it</button> "+
                 "    <button id='noBtn' class='no'>Skip it</button> "+
                 "</div> "+
-                "<div id='_willet_toggle_results' class='_willet_button toggle_results last' style='display: none'> "+
+                "<div id='_willet_toggle_results' class='_button toggle_results last' style='display: none'> "+
                 "    <span class='down'>" +
                 "      Show <img src='{{URL}}/static/imgs/arrow-down.gif' /> "+
                 "   </span> "+
@@ -662,6 +662,8 @@
             
             if ( show_top_bar_ask ) {
                 _willet_topbar_hide_button.html('Get advice!');
+            } else if( _willet_is_asker ) {
+                _willet_topbar_hide_button.html('See your results!');
             } else {
                 _willet_topbar_hide_button.html('Help {{ asker_name }}!');
             }

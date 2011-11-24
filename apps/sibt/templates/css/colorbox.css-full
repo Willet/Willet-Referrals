@@ -241,6 +241,57 @@
     #_willet_sibt_bar div.toggle_results, #_willet_sibt_ask_bar div.toggle_results {
         width: 58px;
     }
+
+    #_willet_sibt_bar div._button, #_willet_sibt_ask_bar div._button {
+        line-height: 40px;
+        
+        cursor: pointer;
+        padding-left: 5px;
+        padding-right: 12px;
+        border-radius: 1px;
+        text-align: right;
+        float: right;
+        background: transparent;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        margin-left: 0px;
+        margin-bottom: 0px;
+        margin-top: 6px;
+        color: black;
+        border: 0px;
+        font-size: 14px;
+        text-transform: none;
+
+        background-color: #ccc;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ccc));
+        background-image: -webkit-linear-gradient(top, #eee, #ccc);
+        background-image: -moz-linear-gradient(top, #eee, #ccc);
+        background-image: -ms-linear-gradient(top, #eee, #ccc);
+        background-image: -o-linear-gradient(top, #eee, #ccc);
+        background-image: linear-gradient(top, #eee, #ccc);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#eeeeee", EndColorStr="#cccccc");
+        
+        border: 1px solid #777;
+        -moz-border-radius: .2em;
+        -webkit-border-radius: .2em;
+        border-radius: .2em;
+        
+        box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+        -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+        -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    }
+    #_willet_sibt_bar div._button:hover, #_willet_sibt_ask_bar div._button:hover {
+        background-color: #4B67A1;
+        color: #FFFFFF;
+    }
+        #_willet_sibt_bar div._willet_button span, #_willet_sibt_ask_bar div._willet_button span {
+            line-height: inherit; 
+        }
+            #_willet_sibt_bar div._willet_button span img, #_willet_sibt_ask_bar div._willet_button span img {
+                position: relative;
+                top: 2px;
+            }
+
     #_willet_sibt_bar div.asker {
         display: inline-block;
         font-weight: bold;
