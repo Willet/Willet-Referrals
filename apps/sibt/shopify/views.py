@@ -353,7 +353,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text4', 
+            cta_button_text = ab_test( 'sibt_button_text5', 
                                         ab_test_options, 
                                         user = user,
                                         app  = app )
