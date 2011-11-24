@@ -765,7 +765,7 @@
                         btn.html('Get advice!')
                            .attr('title', 'Ask your friends if you should buy this!')
                            .attr('id','_willet_overlay_button')
-                           .attr('class','_willet_overlay_button')
+                           .attr('class','_willet_overlay_button2')
                            .click(_willet_overlay_onclick);
 
                         // Middle bit
