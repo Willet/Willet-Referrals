@@ -370,3 +370,133 @@
         font-size: 16px !important;
         margin-left: 20px; 
     }
+
+
+._willet_overlay_button {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    z-index: 1;
+    display: block;
+    
+    font-size: 1.0em;
+    line-height: 1;
+    text-align: right;
+    text-shadow: white 1px 1px 3px;
+    font-weight: bold;
+    
+    margin: 0px;
+    padding: 10px;
+
+    color: black;
+    background-color: #727272;
+    opacity: 0.8;
+
+    border: none;
+    cursor: pointer;
+}
+
+._willet_overlay_button:hover {
+    background-color: black;
+    color: white;
+    text-shadow: white 0px 0px 0px;
+}
+
+#overlayImgDiv {
+    position: absolute;
+}
+#willet_shadow_tl {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/tl.png);
+    background-repeat: no-repeat;
+    float: left;
+    position: relative;
+    top: -12px;
+    left: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_tc {
+    height: 12px;
+    margin: 0px;
+    padding: 0px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mt.png);
+    background-repeat: repeat-x;
+    float: left;
+    position: relative;
+    top: -24px;
+}
+
+#willet_shadow_tr {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/tr.png);
+    background-repeat: no-repeat;
+    float: right;
+    position: relative;
+    top: -36px;
+    right: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_ml {
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/ml.png);
+    background-repeat: repeat-y;
+    float: left;
+    position: relative;
+    top: -24px;
+    left: -12px;
+    margin: 0px;
+    padding: 0px;
+}
+#willet_shadow_mr {
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mr.png);
+    background-repeat: repeat-y;
+    float: right;
+    position: relative;
+    top: -24px;
+    right: -24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_bl {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/bl.png);
+    background-repeat: no-repeat;
+    float: left;
+    position: relative;
+    left: -24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_bc {
+    height: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mb.png);
+    background-repeat: repeat-x;
+    float: left;
+    position: relative;
+    bottom: 24px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#willet_shadow_br {
+    height: 12px;
+    width: 12px;
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/br.png);
+    background-repeat: no-repeat;
+    float: right;
+    position: relative;
+    bottom: 36px;
+    right: -12px;
+    margin: 0px;
+    padding: 0px;
+}
