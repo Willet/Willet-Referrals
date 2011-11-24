@@ -365,11 +365,24 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
+            overlay_style = ab_test('sibt_overlay_style', 
+                                    ["_willet_overlay_button", "_willet_overlay_button2"],
+                                    user = user,
+                                    app  = app )
+
+
+            top_or_overlay = ab_test( 'sibt_top_or_overlay',
+                                      ['top', 'overlay'],
+                                      user = user,
+                                      app  = app )
         else:
+            random.seed( datetime.now() )
+            
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
-            random.seed( datetime.now() )
             fb_connect      = random.randint( 0, 1 )
+            top_or_overlay  = "top" if fb_connect == 1 else "overlay"
+            overlay_style   = "_willet_overlay_button"
 
         logging.info("FB : %s" % fb_connect)
 
@@ -395,6 +408,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
 
+            'AB_overlay_style' : overlay_style,
+
             'store_url'      : shop_url,
             'store_domain'   : app.client.domain,
             'store_id'       : self.request.get('store_id'),
@@ -407,9 +422,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
+            'AB_top_bar'  : 1 if top_or_overlay == "top" else 0,
+            'AB_overlay'  : 1 if top_or_overlay == "overlay" else 0,
 
             'evnt' : event,
-            'img_elem_selector' : "#image img",
+            'img_elem_selector' : "#image img", #app.img_selector
             'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],

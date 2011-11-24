@@ -9,7 +9,7 @@
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
     var _willet_has_voted = ('{{ has_voted }}' == 'True');
     var sibt_button_enabled = ('{{ app.button_enabled }}' == 'True');
-    var sibt_tb_enabled = ('{{ app.top_bar_enabled }}' == 'True');
+    var sibt_tb_enabled = ('{{ app.top_bar_enabled }}' == 'True' && {{AB_top_bar}});
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
@@ -17,7 +17,7 @@
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
-    var imgOverlayEnabled = true;
+    var imgOverlayEnabled = {{AB_overlay}};
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -745,27 +745,27 @@
                 // Walk events on image div and make sure there are no
                 // mouse ones.
                 var imgElem     = $('{{img_elem_selector}}');
-                if ( imgElem ) {
+                if ( imgElem.length > 0 ) {
                     var imgWidth  = imgElem.width();
                     var imgHeight = imgElem.height();
                     var foo = $.data( imgElem.get(0), 'events' );
-                    var imgMouseEvent = true;
+                    var noImgMouseEvent = true;
                     if ( foo != null ) {
                         $.each( foo, function(i,o) {
                             if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
-                                imgMouseEvent = false;
+                                noImgMouseEvent = false;
                             }
                         });
                     }
                     
                     // Image overlay stuff
-                    if ( imgMouseEvent ){
+                    if ( noImgMouseEvent ){
                         // Set up the Button
                         var btn  = $( document.createElement('button') );
                         btn.html('Get advice!')
                            .attr('title', 'Ask your friends if you should buy this!')
                            .attr('id','_willet_overlay_button')
-                           .attr('class','_willet_overlay_button2')
+                           .attr('class','{{AB_overlay_style}}')
                            .click(_willet_overlay_onclick);
 
                         // Middle bit

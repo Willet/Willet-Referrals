@@ -597,6 +597,8 @@ class Barbara(URIHandler):
         """
         apps = App.all()
         for a in apps:
+            a.put()
+        """
             logging.info( a.store_url )
             url      = '%s/admin/webhooks.json' % a.store_url
             username = a.settings['api_key'] 
@@ -623,7 +625,7 @@ class Barbara(URIHandler):
                             url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
-
+        """
 class ShowActions(URIHandler):
     @admin_required
     def get(self, admin):

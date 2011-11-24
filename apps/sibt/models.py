@@ -55,7 +55,7 @@ class SIBT(App):
     buy_btn_id    = db.StringProperty( indexed = True )
     
     # DOM id of product image on a product page
-    img_id        = db.StringProperty( indexed = True )
+    img_selector  = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

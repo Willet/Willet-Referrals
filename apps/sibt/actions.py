@@ -17,6 +17,8 @@ from apps.action.models     import VoteAction
 from apps.action.models     import ShowAction 
 from apps.action.models     import UserAction 
 
+from apps.gae_bingo.gae_bingo import bingo
+
 from util.helpers           import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
@@ -534,6 +536,8 @@ class SIBTUserClickedTopBarAsk(UserAction):
         )
         action.put()
 
+        bingo( 'sibt_top_or_overlay' )
+        
         return action
 
 class SIBTUserClickedButtonAsk(UserAction):
@@ -586,7 +590,11 @@ class SIBTUserClickedOverlayAsk(UserAction):
         )
         action.put()
 
-        return action    
+        # Score bingo for bar or button
+        bingo( 'sibt_overlay_style' )
+        bingo( 'sibt_top_or_overlay' )
+        
+        return action 
 
 class SIBTUserClosedTopBar(UserAction):
     @staticmethod
