@@ -249,7 +249,6 @@
     }
     #_willet_sibt_bar div._button:hover, #_willet_sibt_ask_bar div._button:hover {
         background-color: #4B67A1;
-        color: #FFFFFF;
     }
         #_willet_sibt_bar div._button span, #_willet_sibt_ask_bar div._button span {
             line-height: inherit; 
