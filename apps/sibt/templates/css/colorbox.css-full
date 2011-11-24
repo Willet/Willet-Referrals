@@ -434,7 +434,7 @@
 #willet_shadow_tl {
     height: 12px;
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/tl.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/tl.png);
     background-repeat: no-repeat;
     float: left;
     position: relative;
@@ -448,7 +448,7 @@
     height: 12px;
     margin: 0px;
     padding: 0px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/ct.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mt.png);
     background-repeat: repeat-x;
     float: left;
     position: relative;
@@ -458,7 +458,7 @@
 #willet_shadow_tr {
     height: 12px;
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/tr.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/tr.png);
     background-repeat: no-repeat;
     float: right;
     position: relative;
@@ -470,7 +470,7 @@
 
 #willet_shadow_ml {
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cl.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/ml.png);
     background-repeat: repeat-y;
     float: left;
     position: relative;
@@ -481,7 +481,7 @@
 }
 #willet_shadow_mr {
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cr.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mr.png);
     background-repeat: repeat-y;
     float: right;
     position: relative;
@@ -494,7 +494,7 @@
 #willet_shadow_bl {
     height: 12px;
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/bl.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/bl.png);
     background-repeat: no-repeat;
     float: left;
     position: relative;
@@ -505,7 +505,7 @@
 
 #willet_shadow_bc {
     height: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/cb.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/mb.png);
     background-repeat: repeat-x;
     float: left;
     position: relative;
@@ -517,7 +517,7 @@
 #willet_shadow_br {
     height: 12px;
     width: 12px;
-    background-image: url(http://cdn.wibiya.com/Graphics_Toolbar/Share/shadow/br.png);
+    background-image: url(http://social-referral.appspot.com/static/imgs/shadows/br.png);
     background-repeat: no-repeat;
     float: right;
     position: relative;
