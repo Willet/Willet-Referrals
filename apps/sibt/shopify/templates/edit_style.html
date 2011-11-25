@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <link rel="stylesheet" media="screen" type="text/css" href="/static/css/colorpicker.css" />
+    <link rel="stylesheet" media="screen" type="text/css" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" />
+    <script type="text/javascript" src="/static/js/colorpicker.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('#go_to_shopify').click(function() {
+            window.location = "{{app.store_url}}/admin";
+        }); 
+        $('input.make_colorpicker').each(function(i){
+            var el = $(this);
+            var options = {
+                color: el.attr('data-default') || 'blue',
+                onSubmit: function(hsb, hex, rgb, el) {
+                    //$(el).closest('input').val(hex);
+                    $(el).val(hex);
+                    $(el).ColorPickerHide();
+                },
+                onChange: function(hsb, hex, rgb, el) {
+                    $(el).val(hex).css('background-color', '#'+hex);
+                },
+                onShow: function(picker) {
+                    $(picker).fadeIn('fast');
+                    return false;
+                },
+                onHide: function(picker) {
+                    $(picker).fadeOut('fast');
+                    return false;
+                },
+                onBeforeShow: function () {
+                    $(this).ColorPickerSetColor(this.value);
+                }
+            };
+            el.css('background-color', '#'+el.val());
+            el.ColorPicker(options);
+        });
+        $('input.slider').each(function(i){
+            var el = $(this);
+            var options = {
+                value: el.val(),
+                min: el.attr('data-min') || 0,
+                max: el.attr('data-max') || 100,
+                step: el.attr('data-step') || 1,
+                slide: function(event, ui) {
+                    $(this).data('caller').val(ui.value);
+                }
+            };
+            var slider = $(document.createElement('div'));
+            el.after(slider);
+            slider.slider(options);
+            slider.data('caller', el);
+        });
+    });
+    </script>
+    <style type="text/css">
+        input {
+            width: 75px !important;
+            height: initial;
+            padding: 1px !important;
+            margin: 1px !important;
+        }
+        div.white {
+            background: rgba(255,255,255,0.6);
+        }
+    </style>
+{% endblock head %}
+
+{% block right_head %}
+    {% if analytics %}
+        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
+    {% endif %}
+{% endblock right_head %}
+
+{% block content %}
+        <h2 class="span-24 last lower-100 center">Edit your button style</h2>
+        {{ css }}
+        <form method="POST" action="?">
+            <h3>Button Style</h3>
+            <div class="span-24 last center">
+                <div class="span-12 white"><h4>Text Color</h4></div>
+                <div class="span-12 last white">
+                    <input value="{{ button.color }}" name='button:color' type="text" class="make_colorpicker" data-default="" />
+                </div>
+
+                <div class="span-12"><h4>Text Size</strong></div>
+                <div class="span-12 last">
+                    <input readonly="readonly" value='{{ button.text_size }}' name='button:text-size' id='button-text-size' type="text" class="slider" />
+                </div>
+
+                <div class="span-12 white"><h4>Text Font</strong></div>
+                <div class="span-12 last white">
+                    <select name='button:font-family'>
+                        {% for ff in ff_options %}
+                            {% ifequal button.font_family ff %}
+                                <option value="{{ ff }}" selected="selected">{{ ff }}</option>
+                            {% else %}
+                                <option value="{{ ff }}">{{ ff }}</option>
+                            {% endifequal %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="span-12"><h4>Border Color</strong></div>
+                <div class="span-12 last">
+                    <input value="{{ button.border_color }}" name='button:border-color' id='button-border-colour' type="text" class="make_colorpicker" data-default="" />
+                </div>
+                
+                <div class="span-12 white"><h4>Border Size</strong></div>
+                <div class="span-12 last white">
+                    <input readonly="readonly" value='{{ button.border_width }}' name='button:border-width' id='button-border-size' type="text" class="slider" />
+                </div>
+
+                <div class="span-12"><h4>Background Gradient Start</strong></div>
+                <div class="span-12 last">
+                    <input value="{{ button.background_gradient_start }}" name='button:background-gradient-start' id='button-background-gradient-start' type="text" class="make_colorpicker" data-default="" />
+                </div>
+
+                <div class="span-12"><h4>Background Gradient End</strong></div>
+                <div class="span-12 last">
+                    <input value="{{ button.background_gradient_end }}" name='button:background-gradient-end' id='button-background-gradient-end' type="text" class="make_colorpicker" data-default="" />
+                </div>
+            </div>
+            <div class="span-2 prepend-10 append-20 last">
+                <input class='button blue' type='submit' value='Save' />
+            </div>
+        </form>
+        <form method="POST" action="?">
+            <div class="span-2 prepend-10 append-20 last">
+                <input type="hidden" name="set_to_default" value="true" />
+                <input class='button' type='submit' value='Reset' />
+            </div>
+        </form>
+        <div class="prepend-top span-24 last center">
+            <button class='blue' id='go_to_shopify'>
+                <img src="/static/imgs/shopify-bag-36.png" />
+                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                    Return to your Store 
+                </span>
+            </button>
+        </div>
+{% endblock content %}
+

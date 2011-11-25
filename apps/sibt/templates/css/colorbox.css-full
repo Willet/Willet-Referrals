@@ -80,51 +80,6 @@
     _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split(\'"\')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod=\'scale\')");
 }
 
-._willet_button {
-    min-width: 202px !important;
-    max-width: 240px !important;
-    height: 28px !important;
-    margin: 5px 0px 5px 0px !important;
-    padding: 2px 5px 0px 5px !important;
-    
-    clear: both !important; 
-    display: none;
-    cursor: pointer !important;
-    
-    font: bold 13px/2em Arial, Helvetica !important;
-    text-decoration: none !important;
-    text-indent: 0px !important;
-    text-align: center !important;
-    text-shadow: 0 1px 0 rgba(255,255,255,.8) !important;
-    line-height: 26px !important;
-    
-    -webkit-transition:all 400ms ease;
-    -moz-transition:all 400ms ease;
-    -o-transition:all 400ms ease;
-    transition:all 400ms ease;
-
-    color: #333 !important;
-    background-color: #ccc !important;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#ccc));
-    background-image: -webkit-linear-gradient(top, #eee, #ccc);
-    background-image: -moz-linear-gradient(top, #eee, #ccc);
-    background-image: -ms-linear-gradient(top, #eee, #ccc);
-    background-image: -o-linear-gradient(top, #eee, #ccc);
-    background-image: linear-gradient(top, #eee, #ccc);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#eeeeee", EndColorStr="#cccccc");
-    
-    border: 1px solid #777 !important;
-    -moz-border-radius: .2em;
-    -webkit-border-radius: .2em;
-    border-radius: .2em;
-    
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-
-    vertical-align: baseline;
-    white-space: nowrap !important;
-}
 ._willet_button:hover {
     background-color: #ddd;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));

@@ -77,6 +77,47 @@ class SIBTShopifyWelcome(URIHandler):
         except:
             logging.error('wtf', exc_info=True)
 
+class SIBTShopifyEditStyle(URIHandler):
+    def post(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
+        post_vars = self.request.arguments()
+
+        if self.request.get('set_to_default'):
+            logging.error('reset button')
+            app.reset_button_css()
+            app.set_button_css(SIBTShopify.button_defaults)
+        else:
+            css_dict = app.get_button_css_dict()
+            for key in css_dict:
+                if 'button:%s' % key in post_vars:
+                    css_dict[key] = self.request.get('button:%s' % key) 
+
+            app.set_button_css(css_dict)
+        self.get(app_uuid, app = app)
+
+    def get(self, app_uuid, app=None):
+        if not app:
+            app = SIBTShopify.get(app_uuid)
+
+        css_dict = app.get_button_css_dict()
+        logging.error(css_dict)
+        display_dict = {}
+        for key in css_dict:
+            # because template has issues with variables that have
+            # a dash in them
+            display_dict[key.replace('-', '_')] = css_dict[key]
+
+        template_values = {
+            'button': display_dict,
+            'app': app,        
+            'message': '',
+            'ff_options': [
+                'Arial,Helvetica',
+            ]
+        }
+        
+        self.response.out.write(self.render_page('edit_style.html', template_values)) 
+
 class ShowEditPage(URIHandler):
     def get(self):
         # Renders a app page
@@ -379,6 +420,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
             link = Link.create(target, app, origin_domain, user)
             share_url = "%s/%s" % (URL, link.willt_url_code)
+
+        # a whole bunch of css bullshit!
+        if app:
+            logging.error("got app button css")
+            button_css = app.get_button_css()
+        else:
+            button_css = SIBTShopify.get_default_button_css()
         
         # Grab all template values
         template_values = {
@@ -414,7 +462,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else ""
+            'willt_code' : link.willt_url_code if link else "",
+            'button_css': button_css,
         }
 
         # Store a script load action.

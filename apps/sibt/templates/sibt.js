@@ -4,6 +4,7 @@
 
 (function(document, window){
     var _willet_css = {% include stylesheet %}
+    var _willet_button_css ='._willet_button { {{ button_css }} }';
     var _willet_ask_success = false;
     var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
@@ -810,9 +811,9 @@
             _willet_style.setAttribute('charset','utf-8');
             _willet_style.setAttribute('media','all');
             if (_willet_style.styleSheet) {
-                _willet_style.styleSheet.cssText = _willet_css;
+                _willet_style.styleSheet.cssText = _willet_css + _willet_button_css;
             } else {
-                var rules = document.createTextNode(_willet_css);
+                var rules = document.createTextNode(_willet_css + _willet_button_css);
                 _willet_style.appendChild(rules);
             }
             _willet_head.appendChild(_willet_style);

@@ -35,6 +35,59 @@ class SIBTShopify(SIBT, AppShopify):
 
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
+    button_css = db.StringProperty(default=None,required=False)
+    button_defaults = {
+        'color': '333333',
+        'text-size': '12',
+        'border-width': '1',
+        'border-color': '777777',
+        'background-gradient-start': 'eeeeee',
+        'background-gradient-end': 'cccccc',
+        'height': '28',
+        'border-radius': '0.2',
+        'margin-top': '5',
+        'margin-right': '0',
+        'margin-bottom': '5',
+        'margin-left': '0',
+        'padding-top': '2',
+        'padding-right': '5',
+        'padding-bottom': '0',
+        'padding-left': '5',
+        'font-family': 'Arial, Helvetica',
+    }
+    button_default_css = """
+        min-width: 202px !important; 
+        max-width: 240px !important; 
+        height: %(height)spx !important; 
+        margin: %(margin-top)spx %(margin-right)spx %(margin-bottom)spx %(margin-left)spx !important; 
+        padding: %(padding-top)spx %(padding-right)spx %(padding-bottom)spx %(padding-left)spx !important; 
+        clear: both !important; 
+        display: none; 
+        cursor: pointer !important; 
+        font: bold %(text-size)spx/2em %(font-family)s !important; 
+        text-decoration: none !important; 
+        text-indent: 0px !important; 
+        text-align: center !important; 
+        text-shadow: 0 1px 0 rgba(255,255,255,.8) !important; 
+        line-height: 26px !important; 
+        color: #%(color)s !important; 
+        background-color: #%(background-gradient-end)s !important; 
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#%(background-gradient-start)s), to(#%(background-gradient-end)s)); 
+        background-image: -webkit-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
+        background-image: -moz-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
+        background-image: -ms-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
+        background-image: -o-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
+        background-image: linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#%(background-gradient-start)s", EndColorStr="#%(background-gradient-end)s"); 
+        border: %(border-width)spx solid #%(border-color)s !important; 
+        -moz-border-radius: %(border-radius)sem; 
+        -webkit-border-radius: %(border-radius)sem; 
+        border-radius: %(border-radius)sem; 
+        box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
+        -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
+        -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
+        vertical-align: baseline; 
+        white-space: nowrap !important;"""
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -111,7 +164,62 @@ class SIBTShopify(SIBT, AppShopify):
         return memcache.set(
                 self.store_url, 
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+
+    def reset_button_css(self):
+        self.button_css = None
+        self.set_button_css()
+        
+    def get_button_css_dict(self):
+        try:
+            assert(self.button_css != None)
+            data = json.loads(self.button_css)
+            assert(data != None)
+        except Exception, e:
+            logging.error('could not decode: %s' % self.button_css, exc_info=True)
+            data = SIBTShopify.button_defaults
+        return data
+
+    def set_button_css(self, css=None):
+        """Expects a dict"""
+        try:
+            assert(css != None)
+            self.button_css = json.dumps(css)
+        except:
+            self.button_css = None
+        self.gen_button_css()
+        self.put()
+
+    def gen_button_css(self):
+        defaults = SIBTShopify.button_defaults
+        button_css = SIBTShopify.button_default_css
+        try:
+            assert(self.button_css != None)
+            data = json.loads(self.button_css)
+            assert(data != None)
+            defaults.update(data)
+        except Exception, e:
+            logging.error(e, exc_info=True)
+            pass
+        button_css = button_css % defaults
+        button_css = button_css.replace('\n','').replace('\r', '')
+        memcache.set('app-%s-button-css' % self.uuid, button_css) 
+        return button_css
+
+    def get_button_css(self):
+        data = memcache.get('app-%s-button-css' % self.uuid) 
+        if data:
+            logging.error("from memcache: %s" % data)
+            return data
+        else:
+            return self.gen_button_css()
     
+    @staticmethod
+    def get_default_button_css():
+        defaults = SIBTShopify.button_defaults
+        button_css = SIBTShopify.button_default_css % defaults
+        button_css = button_css.replace('\n','').replace('\r', '')
+        return button_css
+        
     @staticmethod
     def create(client, token):
         uuid = generate_uuid( 16 )
