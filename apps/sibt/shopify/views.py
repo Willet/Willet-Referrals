@@ -239,7 +239,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = ''
+        target   = bar_tab_or_overlay = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -353,7 +353,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text5', 
+            cta_button_text = ab_test( 'sibt_button_text4', 
                                         ab_test_options, 
                                         user = user,
                                         app  = app )
@@ -370,18 +370,19 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                     user = user,
                                     app  = app )
 
-
-            top_or_overlay = ab_test( 'sibt_top_or_overlay',
-                                      ['top', 'overlay'],
-                                      user = user,
-                                      app  = app )
+            # If subsequent page viewing and we should prompt user:
+            if show_top_bar_ask:
+                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
+                                              ['bar', 'tab', 'overlay'],
+                                              user = user,
+                                              app  = app )
+                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
         else:
             random.seed( datetime.now() )
             
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
             fb_connect      = random.randint( 0, 1 )
-            top_or_overlay  = "top" if fb_connect == 1 else "overlay"
             overlay_style   = "_willet_overlay_button"
 
         logging.info("FB : %s" % fb_connect)
@@ -422,11 +423,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : 1 if top_or_overlay == "top" else 0,
-            'AB_overlay'  : 1 if top_or_overlay == "overlay" else 0,
+            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
+            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
+            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
 
             'evnt' : event,
-            'img_elem_selector' : app.img_selector,
+            'img_elem_selector' : "#image img", #app.img_selector,
             'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],

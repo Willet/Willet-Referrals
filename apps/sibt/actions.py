@@ -536,7 +536,8 @@ class SIBTUserClickedTopBarAsk(UserAction):
         )
         action.put()
 
-        bingo( 'sibt_top_or_overlay' )
+        # Score bingo for bar or button
+        bingo( 'sibt_bar_tab_or_overlay' )
         
         return action
 
@@ -592,7 +593,7 @@ class SIBTUserClickedOverlayAsk(UserAction):
 
         # Score bingo for bar or button
         bingo( 'sibt_overlay_style' )
-        bingo( 'sibt_top_or_overlay' )
+        bingo( 'sibt_bar_tab_or_overlay' )
         
         return action 
 
@@ -619,6 +620,9 @@ class SIBTUserClickedTabAsk(UserAction):
                 what = what
         )
         action.put()
+        
+        # Score bingo for bar or button
+        bingo( 'sibt_bar_tab_or_overlay' )
 
         return action 
 

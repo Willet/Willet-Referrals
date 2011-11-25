@@ -222,7 +222,7 @@
     left:0;
 }
     #_willet_sibt_bar ._willet_wrapper, #_willet_sibt_ask_bar ._willet_wrapper {
-        margin-top: 0px;
+        margin-top: 4px;
         margin-bottom: 5px;
         margin-right: auto;
         margin-left: auto;
