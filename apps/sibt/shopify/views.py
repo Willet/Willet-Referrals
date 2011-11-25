@@ -86,10 +86,12 @@ class SIBTShopifyEditStyle(URIHandler):
             logging.error('reset button')
             app.reset_button_css()
         else:
-            css_dict = app.get_button_css_dict()
+            css_dict = app.get_css_dict()
             for key in css_dict:
-                if 'button:%s' % key in post_vars:
-                    css_dict[key] = self.request.get('button:%s' % key) 
+                for value in css_dict['key']['values']:
+                    lookup = '%s:%s' % (key, value)
+                    if lookup in post_vars:
+                        css_dict[key][value] = self.request.get(lookup) 
 
             app.set_button_css(css_dict)
         self.get(app_uuid, app = app)
@@ -98,16 +100,19 @@ class SIBTShopifyEditStyle(URIHandler):
         if not app:
             app = SIBTShopify.get(app_uuid)
 
-        css_dict = app.get_button_css_dict()
-        logging.error(css_dict)
+        css_dict = app.get_css_dict()
         display_dict = {}
         for key in css_dict:
             # because template has issues with variables that have
             # a dash in them
             display_dict[key.replace('-', '_')] = css_dict[key]
 
+        css_dict = app.get_css_dict()
+        css_values = app.get_css()
+
         template_values = {
             'button': display_dict,
+            'button_css': app.get_button_css(),
             'app': app,        
             'message': '',
             'ff_options': [
