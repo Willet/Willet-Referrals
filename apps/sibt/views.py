@@ -442,7 +442,8 @@ class ShowResults(webapp.RequestHandler):
                 'has_voted': has_voted,
                 'is_live': instance.is_live,
 
-                'vote_percentage': vote_percentage
+                'vote_percentage': vote_percentage,
+                'total_votes' : total
             }
 
             # Finally, render the HTML!

@@ -238,9 +238,6 @@
         display: inline-block;
         float: left;
     }
-    #_willet_sibt_bar div.toggle_results, #_willet_sibt_ask_bar div.toggle_results {
-        width: 58px;
-    }
 
     #_willet_sibt_bar div._button, #_willet_sibt_ask_bar div._button {
         line-height: 40px;
@@ -416,28 +413,19 @@
             content: "?";
         }
     #_willet_sibt_bar div.iframe {
-        text-align: center;
-        align: center;
-        float: none;
-        margin: 0 auto;
-        background: #FFFFFF;
-        height: 280px;
-        width: 100%;
-        padding: 0;
-        border: 1px solid #133783;
-        margin-top:5px;
+        float: left;
+        height: 40px;
+        width: 600px;
+        padding: 0px;
+        margin: 0px;
+        border: none;
+        background: transparent;
+        overflow: hidden;
     }
         #_willet_sibt_bar div.iframe iframe {
-            overflow-x: hidden;
-        }
-        #_willet_sibt_bar div.iframe div.loading {
-            text-align: center;
-            margin: 0 auto;
-            vertical-align: middle;
-            height: 280px;
-            padding: 0px;
-            padding-top: 100px;
-            width: 100%;
+            overflow: hidden;
+            height: 40px;
+            width: 600px;
         }
     #askBtn {
         font-size: 16px !important;
