@@ -36,24 +36,36 @@ class SIBTShopify(SIBT, AppShopify):
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
     button_css = db.StringProperty(default=None,required=False)
-    button_defaults = {
-        'color': '333333',
-        'text-size': '12',
-        'border-width': '1',
-        'border-color': '777777',
-        'background-gradient-start': 'eeeeee',
-        'background-gradient-end': 'cccccc',
-        'height': '28',
-        'border-radius': '0.2',
-        'margin-top': '5',
-        'margin-right': '0',
-        'margin-bottom': '5',
-        'margin-left': '0',
-        'padding-top': '2',
-        'padding-right': '5',
-        'padding-bottom': '0',
-        'padding-left': '5',
-        'font-family': 'Arial, Helvetica',
+    defaults = {
+        '._willet_button': {
+            'color': '333333',
+            'text-size': '12',
+            'border-width': '1',
+            'border-color': '777777',
+            'background-gradient-start': 'eeeeee',
+            'background-gradient-end': 'cccccc',
+            'height': '28',
+            'border-radius': '0.2',
+            'margin-top': '5',
+            'margin-right': '0',
+            'margin-bottom': '5',
+            'margin-left': '0',
+            'padding-top': '2',
+            'padding-right': '5',
+            'padding-bottom': '0',
+            'padding-left': '5',
+            'font-family': 'Arial, Helvetica',
+            'box-shadow-inset': 'rgba(255,255,255,.8)',
+            'box-shadow-outset': 'rgba(0,0,0,.3)',
+        }, '._willet_button:hover': {
+            'background-gradient-start': 'fafafa',
+            'background-gradient-end': 'dddddd',
+        }, '._willet_button:active': {
+            'background-gradient-start': 'fafafa',
+            'background-gradient-end': 'fafafa',
+        }, '': {
+            
+        }
     }
     button_default_css = """
         min-width: 202px !important; 
@@ -83,9 +95,9 @@ class SIBTShopify(SIBT, AppShopify):
         -moz-border-radius: %(border-radius)sem; 
         -webkit-border-radius: %(border-radius)sem; 
         border-radius: %(border-radius)sem; 
-        box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
-        -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
-        -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3); 
+        box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
+        -moz-box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
+        -webkit-box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
         vertical-align: baseline; 
         white-space: nowrap !important;"""
 
@@ -166,7 +178,6 @@ class SIBTShopify(SIBT, AppShopify):
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     def reset_button_css(self):
-        self.button_css = None
         self.set_button_css()
         
     def get_button_css_dict(self):
@@ -176,7 +187,7 @@ class SIBTShopify(SIBT, AppShopify):
             assert(data != None)
         except Exception, e:
             logging.error('could not decode: %s' % self.button_css, exc_info=True)
-            data = SIBTShopify.button_defaults
+            data = SIBTShopify.get_default_dict()
         return data
 
     def set_button_css(self, css=None):
@@ -185,13 +196,14 @@ class SIBTShopify(SIBT, AppShopify):
             assert(css != None)
             self.button_css = json.dumps(css)
         except:
-            self.button_css = None
+            self.button_css = json.dumps(SIBTShopify.get_default_dict()) 
         self.gen_button_css()
         self.put()
 
     def gen_button_css(self):
-        defaults = SIBTShopify.button_defaults
-        button_css = SIBTShopify.button_default_css
+        defaults = SIBTShopify.get_default_dict()
+        default_css = SIBTShopify.get_default_css()
+        logging.error('defaults: %s\ndefault css: %s' % (defaults, default_css))
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
@@ -200,23 +212,30 @@ class SIBTShopify(SIBT, AppShopify):
         except Exception, e:
             logging.error(e, exc_info=True)
             pass
-        button_css = button_css % defaults
-        button_css = button_css.replace('\n','').replace('\r', '')
-        memcache.set('app-%s-button-css' % self.uuid, button_css) 
-        return button_css
+        default_css = default_css % defaults
+        default_css = default_css.replace('\n','').replace('\r', '')
+        memcache.set('app-%s-button-css' % self.uuid, default_css) 
+        return default_css
 
     def get_button_css(self):
         data = memcache.get('app-%s-button-css' % self.uuid) 
         if data:
-            logging.error("from memcache: %s" % data)
             return data
         else:
             return self.gen_button_css()
-    
-    @staticmethod
-    def get_default_button_css():
-        defaults = SIBTShopify.button_defaults
-        button_css = SIBTShopify.button_default_css % defaults
+
+    @classmethod
+    def get_default_dict(cls):
+        return cls.button_defaults.copy()
+
+    @classmethod
+    def get_default_css(cls):
+        return cls.button_default_css
+
+    @classmethod
+    def get_default_button_css(cls):
+        defaults = cls.get_default_dict()
+        button_css = cls.button_default_css % defaults
         button_css = button_css.replace('\n','').replace('\r', '')
         return button_css
         

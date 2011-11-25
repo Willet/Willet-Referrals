@@ -118,12 +118,39 @@
                     <input value="{{ button.background_gradient_start }}" name='button:background-gradient-start' id='button-background-gradient-start' type="text" class="make_colorpicker" data-default="" />
                 </div>
 
-                <div class="span-12"><h4>Background Gradient End</strong></div>
-                <div class="span-12 last">
+                <div class="span-12 white"><h4>Background Gradient End</strong></div>
+                <div class="span-12 last white">
                     <input value="{{ button.background_gradient_end }}" name='button:background-gradient-end' id='button-background-gradient-end' type="text" class="make_colorpicker" data-default="" />
                 </div>
             </div>
-            <div class="span-2 prepend-10 append-20 last">
+                
+            <h3>Button - Hover</h3>
+            <div class="span-24 last center">
+                <div class="span-12 white"><h4>Text Color</h4></div>
+                <div class="span-12 last white">
+                    <input value="{{ button.color }}" name='._willet_button:hover:color' type="text" class="make_colorpicker" data-default="" />
+                </div>
+                <div class="span-12"><h4>Border Color</strong></div>
+                <div class="span-12 last">
+                    <input value="{{ button.border_color }}" name='._willet_button:hover:border-color' id='button-border-colour' type="text" class="make_colorpicker" data-default="" />
+                </div>
+                
+                <div class="span-12 white"><h4>Border Size</strong></div>
+                <div class="span-12 last white">
+                    <input readonly="readonly" value='{{ button.border_width }}' name='._willet_button:hover:border-width' id='button-border-size' type="text" class="slider" />
+                </div>
+
+                <div class="span-12"><h4>Background Gradient Start</strong></div>
+                <div class="span-12 last">
+                    <input value="{{ button.background_gradient_start }}" name='._willet_button:hover:background-gradient-start' id='button-background-gradient-start' type="text" class="make_colorpicker" data-default="" />
+                </div>
+
+                <div class="span-12 white"><h4>Background Gradient End</strong></div>
+                <div class="span-12 last white">
+                    <input value="{{ button.background_gradient_end }}" name='._willet_button:hover:background-gradient-end' id='button-background-gradient-end' type="text" class="make_colorpicker" data-default="" />
+                </div>
+            </div>
+            <div class="span-2 prepend-10 append-10 last">
                 <input class='button blue' type='submit' value='Save' />
             </div>
         </form>

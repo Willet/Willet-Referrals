@@ -85,7 +85,6 @@ class SIBTShopifyEditStyle(URIHandler):
         if self.request.get('set_to_default'):
             logging.error('reset button')
             app.reset_button_css()
-            app.set_button_css(SIBTShopify.button_defaults)
         else:
             css_dict = app.get_button_css_dict()
             for key in css_dict:
