@@ -595,8 +595,11 @@ class Barbara(URIHandler):
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
         """
-        apps = App.all()
+        apps = SIBTShopify.all()
         for a in apps:
+            a.image_selector = "#image"
+            a.put()
+        """
             logging.info( a.store_url )
             url      = '%s/admin/webhooks.json' % a.store_url
             username = a.settings['api_key'] 
