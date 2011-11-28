@@ -186,6 +186,7 @@ class DoVote( URIHandler ):
         which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
         instance = SIBTInstance.get( instance_uuid )
+        app = instance.app_
 
         # Make a Vote action for this User
         action = SIBTVoteAction.create( user, instance, which )
@@ -204,7 +205,9 @@ class DoVote( URIHandler ):
                 instance.asker.get_full_name(), 
                 which, 
                 instance.link.get_willt_url(), 
-                instance.product_img
+                instance.product_img,
+                app.client.name,
+                app.client.domain
             ) 
 
         self.response.out.write('ok')

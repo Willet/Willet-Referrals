@@ -138,6 +138,10 @@ class SIBT(App):
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
 
+        @staticmethod
+        def get_by_uuid( uuid ):
+            return SIBT.all().filter( 'uuid =', uuid ).get()
+
 # Accessors --------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
