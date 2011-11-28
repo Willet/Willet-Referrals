@@ -14,6 +14,8 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+
+from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import MemcacheBucketConfig 
@@ -599,6 +601,10 @@ class Barbara(URIHandler):
         for a in apps:
             a.put()
         """
+        apps = SIBTShopify.all()
+        for a in apps:
+            a.img_selector = "#image"
+            a.put()
             logging.info( a.store_url )
             url      = '%s/admin/webhooks.json' % a.store_url
             username = a.settings['api_key'] 
@@ -626,6 +632,7 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         """
+
 class ShowActions(URIHandler):
     @admin_required
     def get(self, admin):

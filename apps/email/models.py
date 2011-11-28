@@ -24,7 +24,7 @@ matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
 
-from_addr = barbara
+from_addr = 'z4beth@gmail.com' #barbara
 
 #####################
 #### Email Class ####
@@ -86,17 +86,19 @@ class Email():
 
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img ):
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
             name = "Savvy Shopper"
         body = template.render(Email.template_path('sibt_voteNotification.html'),
             {
-                'name'        : name,
+                'name'        : name.title(),
                 'vote_type'   : vote_type,
                 'vote_url'    : vote_url,
-                'product_img' :  product_img
+                'product_img' : product_img,
+                'client_name' : client_name,
+                'client_domain' : client_domain 
             }
         )
         

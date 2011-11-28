@@ -57,6 +57,9 @@ class SIBT(App):
     # DOM id of product image on a product page
     img_selector  = db.StringProperty( indexed = True )
 
+    # DOM selector of product image on a product page
+    img_selector  = db.StringProperty( indexed = True )
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
@@ -137,6 +140,10 @@ class SIBT(App):
             except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
+
+        @staticmethod
+        def get_by_uuid( uuid ):
+            return SIBT.all().filter( 'uuid =', uuid ).get()
 
 # Accessors --------------------------------------------------------------------
 
