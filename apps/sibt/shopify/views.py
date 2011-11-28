@@ -435,9 +435,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # a whole bunch of css bullshit!
         if app:
             logging.error("got app button css")
-            button_css = app.get_button_css()
+            app_css = app.get_css()
         else:
-            button_css = SIBTShopify.get_default_button_css()
+            app_css = SIBTShopify.get_default_css()
         
         # Grab all template values
         template_values = {
@@ -474,7 +474,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else "",
-            'button_css': button_css,
+            'app_css': app_css,
         }
 
         # Store a script load action.
