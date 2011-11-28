@@ -1,112 +1,48 @@
-#colorbox, #willet_cboxOverlay, #willet_cboxWrapper{position:absolute; top:0; left:0; z-index:999999; overflow:hidden;}
-#willet_cboxOverlay{position:fixed; width:100%; height:100%;}
-#willet_cboxMiddleLeft, #willet_cboxBottomLeft{clear:left;}
-#willet_cboxContent{position:relative; text-align: center;}
-#willet_cboxLoadedContent{overflow:auto; text-align: center;}
-#willet_cboxTitle{margin:0;}
-#willet_cboxLoadingOverlay, #willet_cboxLoadingGraphic{position:absolute; top:0; left:0; width:100%;}
-#willet_cboxPrevious, #willet_cboxNext, #willet_cboxClose, #willet_cboxSlideshow{cursor:pointer;}
-.willet_cboxPhoto{float:left; margin:auto; border:0; display:block;}
-.willet_cboxIframe{text-align: center; overflow-y: auto; overflow-x: hidden; width:100%; height:100%; display:block; border:0;}
-
-#willet_cboxOverlay{background: rgba(255,255,255,0.75);}
-#colorbox{
-    z-index:50000000;
-    ^z-index: initial;
-}
-    #willet_cboxTopLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 0;}
-    #willet_cboxTopCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -50px;}
-    #willet_cboxTopRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px 0;}
-    #willet_cboxBottomLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 -25px;}
-    #willet_cboxBottomCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -75px;}
-    #willet_cboxBottomRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px -25px;}
-    #willet_cboxMiddleLeft{width:25px; background:url({{URL}}/static/colorbox/example4/images/border2.png) repeat-y 0 0;}
-    #willet_cboxMiddleRight{width:25px; background:url({{URL}}/static/colorbox/example4/images/border2.png) repeat-y -25px 0;}
-    #willet_cboxContent{background:#fff; overflow:hidden;}
-        #willet_cboxError{padding:50px; border:1px solid #ccc;}
-        #willet_cboxLoadedContent{margin-bottom:20px;}
-        #willet_cboxTitle{position:absolute; bottom:0px; left:0; text-align:center; width:100%; color:#999;}
-        #willet_cboxCurrent{position:absolute; bottom:0px; left:100px; color:#999;}
-        #willet_cboxSlideshow{position:absolute; bottom:0px; right:42px; color:#444;}
-        #willet_cboxPrevious{position:absolute; bottom:0px; left:0; color:#444;}
-        #willet_cboxNext{position:absolute; bottom:0px; left:63px; color:#444;}
-        #willet_cboxLoadingOverlay{background:#fff url({{URL}}/static/colorbox/example1/images/loading.gif) no-repeat 5px 5px;}
-        #willet_cboxClose{position:absolute; bottom:0; right:0; display:block; color:#444;}
-
-.willet_cboxIE #willet_cboxTopLeft,
-.willet_cboxIE #willet_cboxTopCenter,
-.willet_cboxIE #willet_cboxTopRight,
-.willet_cboxIE #willet_cboxBottomLeft,
-.willet_cboxIE #willet_cboxBottomCenter,
-.willet_cboxIE #willet_cboxBottomRight,
-.willet_cboxIE #willet_cboxMiddleLeft,
-.willet_cboxIE #willet_cboxMiddleRight {
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF);
-}
-
-.willet_cboxIE6 #willet_cboxTopLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopLeft.png);}
-.willet_cboxIE6 #willet_cboxTopCenter{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopCenter.png);}
-.willet_cboxIE6 #willet_cboxTopRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderTopRight.png);}
-.willet_cboxIE6 #willet_cboxBottomLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomLeft.png);}
-.willet_cboxIE6 #willet_cboxBottomCenter{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomCenter.png);}
-.willet_cboxIE6 #willet_cboxBottomRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderBottomRight.png);}
-.willet_cboxIE6 #willet_cboxMiddleLeft{background:url({{URL}}/static/colorbox/example4/images/ie6/borderMiddleLeft.png);}
-.willet_cboxIE6 #willet_cboxMiddleRight{background:url({{URL}}/static/colorbox/example4/images/ie6/borderMiddleRight.png);}
-
-.willet_cboxIE6 #willet_cboxTopLeft,
-.willet_cboxIE6 #willet_cboxTopCenter,
-.willet_cboxIE6 #willet_cboxTopRight,
-.willet_cboxIE6 #willet_cboxBottomLeft,
-.willet_cboxIE6 #willet_cboxBottomCenter,
-.willet_cboxIE6 #willet_cboxBottomRight,
-.willet_cboxIE6 #willet_cboxMiddleLeft,
-.willet_cboxIE6 #willet_cboxMiddleRight {
-    _behavior: expression(this.src = this.src ? this.src : this.currentStyle.backgroundImage.split(\'"\')[1], this.style.background = "none", this.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src=" + this.src + ", sizingMethod=\'scale\')");
-}
-
 ._willet_button {
     min-width: 202px !important; 
-    max-width: 240px !important; 
-    height: %(._willet_button-height)spx !important; 
-    margin: %(._willet_button-margin-top)spx %(_willet_button-margin-right)spx %(_willet_button-margin-bottom)spx %(_willet_button-margin-left)spx !important; 
-    padding: %(._willet_button-padding-top)spx %(_willet_button-padding-right)spx %(_willet_button-padding-bottom)spx %(_willet_button-padding-left)spx !important; 
+    max-width: {{ willet_button.width }}px !important; 
+    height: {{ willet_button.height}}px !important; 
+    margin: {{ willet_button.margin_top }}px {{ willet_button.margin_right }}px {{ willet_button.margin_bottom }}px {{ willet_button.margin_left }}px !important; 
+    padding: {{ willet_button.padding_top }}px {{ willet_button.padding_right }}px {{ willet_button.padding_bottom }}px {{ willet_button.padding_left }}px !important; 
     clear: both !important; 
     display: none; 
     cursor: pointer !important; 
-    font: bold %(._willet_button-text-size)spx/2em %(_willet_button-font-family)s !important; 
+    font: bold {{ willet_button.text_size }}px/2em {{ willet_button.font_family }} !important; 
     text-decoration: none !important; 
     text-indent: 0px !important; 
     text-align: center !important; 
     text-shadow: 0 1px 0 rgba(255,255,255,.8) !important; 
-    line-height: 26px !important; 
-    color: #%(._willet_button-color)s !important; 
-    background-color: #%(._willet_button-background-gradient-end)s !important; 
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#%(._willet_button-background-gradient-start)s), to(#%(_willet_button-background-gradient-end)s)); 
-    background-image: -webkit-linear-gradient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-background-gradient-end)s); 
-    background-image: -moz-linear-gradient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-background-gradient-end)s); 
-    background-image: -ms-linear-gradient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-background-gradient-end)s); 
-    background-image: -o-linear-gradient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-background-gradient-end)s); 
-    background-image: linear-gradient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-background-gradient-end)s); 
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#%(._willet_button-background-gradient-start)s", EndColorStr="#%(_willet_button-background-gradient-end)s"); 
-    border: %(._willet_button-border-width)spx solid #%(_willet_button-border-color)s !important; 
-    -moz-border-radius: %(._willet_button-border-radius)sem; 
-    -webkit-border-radius: %(._willet_button-border-radius)sem; 
-    border-radius: %(._willet_button-border-radius)sem; 
-    box-shadow: 0 0 1px 1px %(._willet_button-box-shadow-inset)s inset, 0 1px 0 %(_willet_button-box-shadow-outset)s; 
-    -moz-box-shadow: 0 0 1px 1px %(._willet_button-box-shadow-inset)s inset, 0 1px 0 %(_willet_button-box-shadow-outset)s; 
-    -webkit-box-shadow: 0 0 1px 1px %(._willet_button-box-shadow-inset)s inset, 0 1px 0 %(_willet_button-box-shadow-outset)s; 
+    line-height: {{ willet_button.line_height }}px !important; 
+    color: #{{ willet_button.color }} !important; 
+    background-color: #{{ willet_button.background_gradient_end }} !important; 
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#{{ willet_button.background_gradient_start }}), to(#{{ willet_button.background_gradient_end }})); 
+    background-image: -webkit-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
+    background-image: -moz-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
+    background-image: -ms-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
+    background-image: -o-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
+    background-image: linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#{{ willet_button.background_gradient_start }}", EndColorStr="#{{ willet_button.background_gradient_end }}"); 
+    border: {{ willet_button.border_width }}px solid #{{ willet_button.border_color }} !important; 
+    -moz-border-radius: {{ willet_button.border_radius }}em; 
+    -webkit-border-radius: {{ willet_button.border_radius }}em; 
+    border-radius: {{ willet_button.border_radius }}em; 
+    box-shadow: 0 0 1px 1px {{ willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
+    -moz-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
+    -webkit-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
     vertical-align: baseline; 
     white-space: nowrap !important;
 }
 ._willet_button:hover {
     background-color: #ddd;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
-    background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
-    background-image: -moz-linear-gradient(top, #fafafa, #ddd);
-    background-image: -ms-linear-gradient(top, #fafafa, #ddd);
-    background-image: -o-linear-gradient(top, #fafafa, #ddd);
-    background-image: linear-gradient(top, #fafafa, #ddd);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#fafafa", EndColorStr="#dddddd");
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#{{ willet_button__hover.background_gradient_start }}), to(#{{ willet_button__hover.background_gradient_end }}));
+    background-image: -webkit-linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
+    background-image: -moz-linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
+    background-image: -ms-linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
+    background-image: -o-linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
+    background-image: linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#{{ willet_button__hover.background_gradient_start }}", EndColorStr="#{{ willet_button__hover.background_gradient_end }}");
+    border: {{ willet_button__hover.border_width }}px solid #{{ willet_button__hover.border_color }} !important; 
+    color: #{{ willet_button__hover.color }} !important;
 }
 ._willet_button:focus {
     outline: 0;

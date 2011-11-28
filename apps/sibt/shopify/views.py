@@ -80,45 +80,52 @@ class SIBTShopifyWelcome(URIHandler):
 class SIBTShopifyEditStyle(URIHandler):
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
+        #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
         post_vars = self.request.arguments()
 
         if self.request.get('set_to_default'):
             logging.error('reset button')
-            app.reset_button_css()
+            app.reset_css()
         else:
             css_dict = app.get_css_dict()
             for key in css_dict:
-                for value in css_dict['key']['values']:
+                for value in css_dict[key]:
                     lookup = '%s:%s' % (key, value)
+                    logging.info('looking for: %s' % lookup)
                     if lookup in post_vars:
+                        logging.info('found with value: %s' % 
+                                self.request.get(lookup))
                         css_dict[key][value] = self.request.get(lookup) 
 
-            app.set_button_css(css_dict)
+            app.set_css(css_dict)
         self.get(app_uuid, app = app)
 
     def get(self, app_uuid, app=None):
         if not app:
+            #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
             app = SIBTShopify.get(app_uuid)
 
         css_dict = app.get_css_dict()
+        css_values = app.get_css()
         display_dict = {}
         for key in css_dict:
             # because template has issues with variables that have
             # a dash in them
-            display_dict[key.replace('-', '_')] = css_dict[key]
+            new_key = key.replace('-', '_').replace('.','_')
+            logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
+            display_dict[new_key] = css_dict[key]
 
-        css_dict = app.get_css_dict()
-        css_values = app.get_css()
+        logging.warn('css: %s' % css_values)
 
         template_values = {
-            'button': display_dict,
-            'button_css': app.get_button_css(),
+            'css': css_values,
             'app': app,        
             'message': '',
             'ff_options': [
                 'Arial,Helvetica',
             ]
         }
+        template_values.update(display_dict)
         
         self.response.out.write(self.render_page('edit_style.html', template_values)) 
 
