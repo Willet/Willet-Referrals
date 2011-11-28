@@ -7,7 +7,7 @@
     clear: both !important; 
     display: none; 
     cursor: pointer !important; 
-    font: bold {{ willet_button.text_size }}px/2em {{ willet_button.font_family }} !important; 
+    font: bold {{ willet_button.text_size }}px {{ willet_button.font_family }} !important; 
     text-decoration: none !important; 
     text-indent: 0px !important; 
     text-align: center !important; 
