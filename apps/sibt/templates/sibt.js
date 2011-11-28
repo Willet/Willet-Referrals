@@ -109,7 +109,6 @@
     */
     var _willet_tab_onclick = function(e) {
         _willet_button_onclick(e, 'SIBTUserClickedTabAsk');
-        $('#_willet_bottom_tab').slideUp('fast');
     };
 
     var _willet_button_mouseenter = function(e) {
@@ -141,6 +140,8 @@
         // Turn off image overlay if it was on
         _willet_button_mouseleave();
         imgOverlayEnabled = false;
+        
+        $('#_willet_bottom_tab').slideUp('fast');
     };
 
     /**
