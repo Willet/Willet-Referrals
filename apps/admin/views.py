@@ -595,7 +595,7 @@ class Barbara(URIHandler):
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
         """
-        apps = App.all()
+        apps = SIBTShopify.all()
         for a in apps:
             a.put()
         """

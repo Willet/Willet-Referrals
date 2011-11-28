@@ -60,7 +60,7 @@ class SIBTShopify(SIBT, AppShopify):
                 var hash_index = hash.indexOf('#code=');
                 var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
                 var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                var src = "//%s%s?" + params;
+                var src = "http://%s%s?" + params;
                 var script = window.document.createElement("script");
                 script.type = "text/javascript";
                 script.src = src;
