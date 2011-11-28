@@ -54,6 +54,9 @@ class SIBT(App):
     # Div IDs or class names
     buy_btn_id    = db.StringProperty( indexed = True )
 
+    # DOM selector of product image on a product page
+    img_selector  = db.StringProperty( indexed = True )
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)

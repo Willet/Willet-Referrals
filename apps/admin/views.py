@@ -597,7 +597,7 @@ class Barbara(URIHandler):
         """
         apps = SIBTShopify.all()
         for a in apps:
-            a.image_selector = "#image"
+            a.img_selector = "#image"
             a.put()
         """
             logging.info( a.store_url )
