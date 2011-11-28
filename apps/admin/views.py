@@ -596,9 +596,12 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
+        """
         apps = SIBTShopify.all()
         for a in apps:
             a.put()
+       
+       """
         apps = SIBTShopify.all()
         for a in apps:
             a.img_selector = "#image"
@@ -629,9 +632,9 @@ class Barbara(URIHandler):
                             url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
-        """
 
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
+        """
 
 class ShowActions(URIHandler):
     @admin_required

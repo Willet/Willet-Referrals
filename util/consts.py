@@ -160,5 +160,5 @@ INSTALLED_APPS = [
 try:
     from local_consts import *
 except Exception, e:
-    logging.info('no local_consts.py: %s' % e, exc_info=True)
-    pass
+#    logging.info('no local_consts.py: %s' % e, exc_info=True)
+#    pass
