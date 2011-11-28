@@ -811,9 +811,9 @@
             _willet_style.setAttribute('charset','utf-8');
             _willet_style.setAttribute('media','all');
             if (_willet_style.styleSheet) {
-                _willet_style.styleSheet.cssText = _willet_css + _willet_button_css;
+                _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
             } else {
-                var rules = document.createTextNode(_willet_css + _willet_button_css);
+                var rules = document.createTextNode(_willet_css + _willet_app_css);
                 _willet_style.appendChild(rules);
             }
             _willet_head.appendChild(_willet_style);
