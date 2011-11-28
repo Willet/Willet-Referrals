@@ -17,6 +17,8 @@ from apps.action.models     import VoteAction
 from apps.action.models     import ShowAction 
 from apps.action.models     import UserAction 
 
+from apps.gae_bingo.gae_bingo import bingo
+
 from util.helpers           import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
@@ -534,6 +536,9 @@ class SIBTUserClickedTopBarAsk(UserAction):
         )
         action.put()
 
+        # Score bingo for bar or button
+        bingo( 'sibt_bar_tab_or_overlay' )
+        
         return action
 
 class SIBTUserClickedButtonAsk(UserAction):
@@ -561,7 +566,66 @@ class SIBTUserClickedButtonAsk(UserAction):
         action.put()
 
         return action
-    
+
+class SIBTUserClickedOverlayAsk(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTUserClickedOverlayAsk'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedOverlayAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+        # Score bingo for bar or button
+        bingo( 'sibt_overlay_style' )
+        bingo( 'sibt_bar_tab_or_overlay' )
+        
+        return action 
+
+class SIBTUserClickedTabAsk(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTUserClickedOverlayAsk'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedOverlayAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        
+        # Score bingo for bar or button
+        bingo( 'sibt_bar_tab_or_overlay' )
+
+        return action 
+
 class SIBTUserClosedTopBar(UserAction):
     @staticmethod
     def create(user, **kwargs):

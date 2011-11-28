@@ -291,7 +291,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = ''
+        target   = bar_tab_or_overlay = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -417,11 +417,25 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
+            overlay_style = ab_test('sibt_overlay_style', 
+                                    ["_willet_overlay_button", "_willet_overlay_button2"],
+                                    user = user,
+                                    app  = app )
+
+            # If subsequent page viewing and we should prompt user:
+            if show_top_bar_ask:
+                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
+                                              ['bar', 'tab', 'overlay'],
+                                              user = user,
+                                              app  = app )
+                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
         else:
+            random.seed( datetime.now() )
+            
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
-            random.seed( datetime.now() )
             fb_connect      = random.randint( 0, 1 )
+            overlay_style   = "_willet_overlay_button"
 
         logging.info("FB : %s" % fb_connect)
 
@@ -454,6 +468,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
 
+            'AB_overlay_style' : overlay_style,
+
             'store_url'      : shop_url,
             'store_domain'   : app.client.domain,
             'store_id'       : self.request.get('store_id'),
@@ -466,9 +482,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
+            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
+            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
+            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
 
             'evnt' : event,
-            'img_elem_selector' : "#image img",
+            'img_elem_selector' : "#image img", #app.img_selector,
+            'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,

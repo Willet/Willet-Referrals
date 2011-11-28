@@ -189,6 +189,8 @@ def get_store_info(store_url, store_token, app_type):
         app_type = 'ReferralShopify'
     elif app_type == "sibt": 
         app_type = 'SIBTShopify'
+    elif app_type == "buttons": 
+        app_type = 'ButtonsShopify'
     
     # Grab Shopify API settings
     settings = SHOPIFY_APPS[app_type]

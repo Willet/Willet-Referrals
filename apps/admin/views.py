@@ -14,6 +14,8 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+
+from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import MemcacheBucketConfig 
@@ -594,9 +596,13 @@ class Barbara(URIHandler):
                     logging.info("Faield for %s %s" % (a.store_url, content) )
                 else:
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
-        """
-        apps = App.all()
+        apps = SIBTShopify.all()
         for a in apps:
+            a.put()
+        apps = SIBTShopify.all()
+        for a in apps:
+            a.img_selector = "#image"
+            a.put()
             logging.info( a.store_url )
             url      = '%s/admin/webhooks.json' % a.store_url
             username = a.settings['api_key'] 
@@ -623,6 +629,9 @@ class Barbara(URIHandler):
                             url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
+        """
+
+        Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
 
 class ShowActions(URIHandler):
     @admin_required
@@ -817,5 +826,10 @@ class CheckMBC(URIHandler):
         if num:
             mbc.count = num 
             mbc.put()
+        
+        tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
+        b_click = SIBTUserClickedButtonAsk.all().filter('is_admin =', False).count() 
+        self.response.out.write('top bar: %d' % tb_click)
+        self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
