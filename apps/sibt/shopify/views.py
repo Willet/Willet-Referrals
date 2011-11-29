@@ -456,10 +456,16 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # a whole bunch of css bullshit!
         if app:
+            if not app.overlay_enabled:
+                AB_overlay = 0
+            else:
+                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+
             logging.error("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
+            AB_overlay = 0
         
         # Grab all template values
         template_values = {
@@ -492,7 +498,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
             'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
-            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+            'AB_overlay'  : AB_overlay,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
