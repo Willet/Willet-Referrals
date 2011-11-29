@@ -135,6 +135,21 @@ class Email():
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
+    ### MAILOUTS ###
+    @staticmethod
+    def Mailout_Nov28(to_addr, name, app_uuid):
+        if name == "":
+            name = "Savvy Shopper"
+        subject = 'Updates from Willet'
+        body = template.render(
+            Email.template_path('mailout_nov28.html'), {
+                'name': name,
+                'app_uuid' : app_uuid
+        })
+
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, dev_team, subject, body)
+
     @staticmethod 
     def template_path(path):
         return os.path.join('apps/email/templates/', path)

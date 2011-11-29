@@ -44,6 +44,9 @@ class SIBT(App):
     # if the top bar is enabled for this app 
     top_bar_enabled = db.BooleanProperty(default=True)
 
+    # if the img overlay is enabled for this app 
+    overlay_enabled = db.BooleanProperty(default=True)
+
     # number of times a user has to view the page before
     # we show the top bar
     num_shows_before_tb = db.IntegerProperty(default=1)
