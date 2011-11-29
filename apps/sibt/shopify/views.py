@@ -417,15 +417,23 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
-            overlay_style = ab_test('sibt_overlay_style', 
-                                    ["_willet_overlay_button", "_willet_overlay_button2"],
-                                    user = user,
-                                    app  = app )
+            if app.overlay_enabled:
+                overlay_style = ab_test('sibt_overlay_style', 
+                                        ["_willet_overlay_button", "_willet_overlay_button2"],
+                                        user = user,
+                                        app  = app )
+            else:
+                overlay_style = "_willet_overlay_button"
 
             # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask:
+            if show_top_bar_ask and app.overlay_enabled:
                 bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
                                               ['bar', 'tab', 'overlay'],
+                                              user = user,
+                                              app  = app )
+            elif show_top_bar_ask:
+                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
+                                              ['bar', 'tab'],
                                               user = user,
                                               app  = app )
                 logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
@@ -448,10 +456,16 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # a whole bunch of css bullshit!
         if app:
+            if not app.overlay_enabled:
+                AB_overlay = 0
+            else:
+                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+
             logging.error("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
+            AB_overlay = 0
         
         # Grab all template values
         template_values = {
@@ -484,7 +498,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
             'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
-            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+            'AB_overlay'  : AB_overlay,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
