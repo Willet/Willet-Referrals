@@ -27,22 +27,22 @@
                 <br /><br />
                 <iframe width="425" height="349" src="http://www.youtube.com/embed/vaM5mVoYXVQ?hl=en&fs=1" frameborder="0" allowfullscreen></iframe>
                 <br />
-                <strong>Special code: </strong><input style='font-size:13px' type='text' readonly='readonly' value='&lt;div id='_willet_shouldIBuyThisButton'&gt;&lt;/div&gt;' />
+                <strong>Special code: </strong><input style='font-size:13px' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
             </p>
             <p>
-                If you have any other questions, please e-mail Barbara at: 
-                <br /><br />
-                barbara@getwillet.com
-            </p>
+                If you have any other questions, please e-mail barbara@getwillet.com </p>
+
+            <button class='' id='edit' title="Change how the button looks on your website!">
+                <a href="{% url SIBTShopifyEditStyle app.uuid %}">Customize the Button</a>
+            </button>
+            
+            <br /><br />
 
             <button class='blue' id='go_to_shopify'>
                 <img src="/static/imgs/shopify-bag-36.png" />
                 <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
                     Return to your Store 
                 </span>
-            </button>
-            <button class='' id='edit'>
-                <a href="{% url SIBTShopifyEditStyle app.uuid %}">Edit Button</a>
             </button>
 
         </div>
