@@ -788,6 +788,7 @@
                             imgDiv.append( btmShadowDiv );
                             imgDiv.insertBefore( imgElem );
                             
+                            imgDiv.css('left', imgElem.offset().left+parseInt(imgElem.css('padding-left'))+'px');
                             /*
                             var heartImg = $(document.createElement( 'img' ));
                             heartImg.attr( 'id', 'imgOverlaySpan' );
