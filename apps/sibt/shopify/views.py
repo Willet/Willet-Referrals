@@ -432,6 +432,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                       user = user,
                                       app  = app )
                 logging.info("BAR TAB? %s" % bar_or_tab )
+
+            AB_top_bar = 1 if bar_or_tab == "bar" else 0
+            AB_btm_tab = not AB_top_bar
         else:
             random.seed( datetime.now() )
             
@@ -439,6 +442,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             stylesheet      = 'css/colorbox.css'
             fb_connect      = random.randint( 0, 1 )
             overlay_style   = "_willet_overlay_button"
+            AB_top_bar = 1 
+            AB_btm_tab = 1
 
         logging.info("FB : %s" % fb_connect)
 
@@ -485,8 +490,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : 1 if bar_or_tab == "bar" else 0,
-            'AB_btm_tab'  : 1 if bar_or_tab == "tab" else 0,
+            'AB_top_bar'  : AB_top_bar,
+            'AB_btm_tab'  : AB_btm_tab,
             'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
 
             'evnt' : event,
