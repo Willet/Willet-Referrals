@@ -291,7 +291,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = bar_tab_or_overlay = ''
+        target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -449,10 +449,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             link = Link.create(target, app, origin_domain, user)
             share_url = "%s/%s" % (URL, link.willt_url_code)
 
+        # a whole bunch of css bullshit!
         if app:
-            AB_overlay = not (bar_or_tab == "bar" or bar_or_tab =="tab") if app.overlay_enabled else 0
-
-            # a whole bunch of css bullshit!
             logging.info("got app button css")
             app_css = app.get_css()
         else:
@@ -490,9 +488,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
-            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
-            'AB_overlay'  : AB_overlay,
+            'AB_top_bar'  : 1 if bar_or_tab == "bar" else 0,
+            'AB_btm_tab'  : 1 if bar_or_tab == "tab" else 0,
+            'AB_overlay'  : not (bar_or_tab == "bar" or bar_or_tab =="tab") if app.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
