@@ -824,7 +824,7 @@ class CheckMBC(URIHandler):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         num = self.request.get('num')
         if num:
-            mbc.count = num 
+            mbc.count = int(num) 
             mbc.put()
         
         tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
