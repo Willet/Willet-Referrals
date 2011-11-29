@@ -627,12 +627,7 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         """
-<<<<<<< HEAD
         Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
-=======
-
-        Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
->>>>>>> f0c2efaee8aae9a5a3c6c94d4a9d3896b15fd94a
 
 class ShowActions(URIHandler):
     @admin_required
@@ -825,7 +820,7 @@ class CheckMBC(URIHandler):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         num = self.request.get('num')
         if num:
-            mbc.count = num 
+            mbc.count = int(num) 
             mbc.put()
         
         tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
