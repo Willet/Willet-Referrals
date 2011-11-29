@@ -78,6 +78,7 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
+    # @TODO add some security here
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
         #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
