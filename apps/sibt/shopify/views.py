@@ -434,7 +434,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 logging.info("BAR TAB? %s" % bar_or_tab )
 
             AB_top_bar = 1 if bar_or_tab == "bar" else 0
-            AB_btm_tab = not AB_top_bar
+            AB_btm_tab = int(not AB_top_bar)
         else:
             random.seed( datetime.now() )
             

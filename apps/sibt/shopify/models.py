@@ -166,7 +166,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def generate_css(self):
         class_defaults = SIBTShopify.get_default_dict()
-        logging.error('class_defaults : %s' % class_defaults )
+        logging.info('class_defaults : %s' % class_defaults )
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
