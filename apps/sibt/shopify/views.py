@@ -70,7 +70,7 @@ class SIBTShopifyWelcome(URIHandler):
                 'app': app,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
-                'install_code': "{% include 'willet_sibt' %}"
+                'install_code': "<div id='_willet_shouldIBuyThisButton'></div>" #{% include 'willet_sibt' %}"
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
