@@ -26,6 +26,9 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /gae_bingo/static
+  static_dir: apps/gae_bingo/static
+
 - url: /(.*)
   script: urls.py
 

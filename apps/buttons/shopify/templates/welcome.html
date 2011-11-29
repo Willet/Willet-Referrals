@@ -35,24 +35,13 @@
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
             <p class="center"> 
                 Thanks for installing "ShopConnection"!  
-                There are only 2 additional steps to complete the installation!
+                There is only 1 more step!
                 <br /><br />
                 We simply need to determine where the buttons will be placed on your product pages.
             </p>
 
-            <h2> First Step </h2>
-            <p>
-                Navigate to the <em>Template Editor</em> for your <a href="{{app.store_url}}/admin/themes">store's Theme</a>.
-                Under the <em>Layouts</em> section, click on <em>theme.liquid</em>.
-            </p><p>
-                <strong>1. After</strong><span class="code">&lt;head&gt;</span> at the top, add:
-            
-                <input style='font-size:13px;max-width: 435px;width:435px;' type='text' readonly='readonly' value='<script src="http://svpply.com/api/all.js#xsvml=1" type="text/javascript"></script>' />
-            </p><p>
-                <strong>2. Click</strong> <em>save</em> near the top of the screen.
-            </p>
-
-            <h2> Second Step </h2>
+            <br /><br />
+            <p> Open your <em>Template Editor</em> under <em>Themes</em> in Shopify.</p>
 
             <p>
                 Under the <em>Snippets</em> section, click on <em>product.liquid</em>.
@@ -60,7 +49,7 @@
                 <strong>1. Look </strong>for where you would like the sharing buttons to be placed on your product pages.
             </p><p>
                 <strong>2. Once </strong>you've picked a spot, add this code:
-                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app" style="padding-top:10px; padding-bottom: 10px; height:28px; width: 285px;"> <div style="float: left; margin-top: 3px; margin-right: 5px; width: 70px !important;"> <sv:product-button type="boxed"></sv:product-button> </div> </div>' />           
+                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
             </p><p>
                 <strong> 3. Click</strong> <em>save</em> near the top of the screen.
             </p>

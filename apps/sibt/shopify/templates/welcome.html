@@ -16,6 +16,7 @@
     {% if analytics %}
         <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
     {% endif %}
+    <p><a href="{% url SIBTShopifyEditStyle app.uuid %}">Edit App Style</a></p>
 {% endblock right_head %}
 
 {% block content %}
@@ -26,13 +27,8 @@
                 <br /><br />
                 <iframe width="425" height="349" src="http://www.youtube.com/embed/vaM5mVoYXVQ?hl=en&fs=1" frameborder="0" allowfullscreen></iframe>
                 <br />
-                <strong>Special code: </strong><input style='font-size:13px' type='text' readonly='readonly' value='<div id="_willet_shouldIBuyThisButton"></div>' />
+                <strong>Special code: </strong><input style='font-size:13px' type='text' readonly='readonly' value='{{ install_code|escape }}' />
             </p>
-            <h3> Instructions </h3>
-            <p>From your Theme Template Editor in Shopify, open "product.liquid" from the Snippets or Templates section.</p>
-            <p>Look for every line of "</form>" and paste our code on the line immediately following it.</p>
-            <p>Save! That's it!</p>
-
             <p>
                 If you have any other questions, please e-mail Barbara at: 
                 <br /><br />
@@ -44,6 +40,9 @@
                 <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
                     Return to your Store 
                 </span>
+            </button>
+            <button class='' id='edit'>
+                <a href="{% url SIBTShopifyEditStyle app.uuid %}">Edit Button</a>
             </button>
 
         </div>

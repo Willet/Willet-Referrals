@@ -91,3 +91,9 @@ indexes:
   - name: class
   - name: created
     direction: desc
+
+- kind: _GAEBingoSnapshotLog
+  ancestor: yes
+  properties:
+  - name: time_recorded
+    direction: desc

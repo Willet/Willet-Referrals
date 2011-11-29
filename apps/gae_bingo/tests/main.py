@@ -1,8 +1,8 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.gae_bingo.tests import RunStep
-from apps.gae_bingo import middleware
+from gae_bingo.tests import RunStep
+from gae_bingo import middleware
 
 application = webapp.WSGIApplication([
     ("/gae_bingo/tests/run_step", RunStep),

@@ -442,7 +442,8 @@ class ShowResults(webapp.RequestHandler):
                 'has_voted': has_voted,
                 'is_live': instance.is_live,
 
-                'vote_percentage': vote_percentage
+                'vote_percentage': vote_percentage,
+                'total_votes' : total
             }
 
             # Finally, render the HTML!
@@ -503,3 +504,4 @@ class ShowFBThanks( URIHandler ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+

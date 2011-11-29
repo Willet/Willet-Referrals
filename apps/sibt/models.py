@@ -56,6 +56,9 @@ class SIBT(App):
 
     # Div IDs or class names
     buy_btn_id    = db.StringProperty( indexed = True )
+    
+    # DOM id of product image on a product page
+    img_selector  = db.StringProperty( indexed = True )
 
     # DOM selector of product image on a product page
     img_selector  = db.StringProperty( indexed = True )

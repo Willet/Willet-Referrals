@@ -70,11 +70,64 @@ class SIBTShopifyWelcome(URIHandler):
                 'app': app,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
+                'install_code': "{% include 'willet_sibt' %}"
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
         except:
             logging.error('wtf', exc_info=True)
+
+class SIBTShopifyEditStyle(URIHandler):
+    def post(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
+        #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
+        post_vars = self.request.arguments()
+
+        if self.request.get('set_to_default'):
+            logging.error('reset button')
+            app.reset_css()
+        else:
+            css_dict = app.get_css_dict()
+            for key in css_dict:
+                for value in css_dict[key]:
+                    lookup = '%s:%s' % (key, value)
+                    logging.info('looking for: %s' % lookup)
+                    if lookup in post_vars:
+                        logging.info('found with value: %s' % 
+                                self.request.get(lookup))
+                        css_dict[key][value] = self.request.get(lookup) 
+
+            app.set_css(css_dict)
+        self.get(app_uuid, app = app)
+
+    def get(self, app_uuid, app=None):
+        if not app:
+            #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
+            app = SIBTShopify.get(app_uuid)
+
+        css_dict = app.get_css_dict()
+        css_values = app.get_css()
+        display_dict = {}
+        for key in css_dict:
+            # because template has issues with variables that have
+            # a dash in them
+            new_key = key.replace('-', '_').replace('.','_')
+            logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
+            display_dict[new_key] = css_dict[key]
+
+        logging.warn('css: %s' % css_values)
+
+        template_values = {
+            'css': css_values,
+            'app': app,        
+            'message': '',
+            'ff_options': [
+                'Arial,Helvetica',
+            ]
+        }
+        template_values.update(display_dict)
+        
+        self.response.out.write(self.render_page('edit_style.html', template_values)) 
 
 class ShowEditPage(URIHandler):
     def get(self):
@@ -238,7 +291,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = ''
+        target   = bar_tab_or_overlay = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -325,7 +378,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-        else:
+        elif app:
             logging.info('could not get an instance, check page views')
 
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
@@ -337,6 +390,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 # show top-bar-ask
                 show_top_bar_ask = True 
             product = ProductShopify.get_or_fetch(target, app.client)
+        else:
+            logging.warn("no app and no instance!")
 
         # this should only happen once, can be removed at a later date
         # TODO remove this code
@@ -362,11 +417,25 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
+            overlay_style = ab_test('sibt_overlay_style', 
+                                    ["_willet_overlay_button", "_willet_overlay_button2"],
+                                    user = user,
+                                    app  = app )
+
+            # If subsequent page viewing and we should prompt user:
+            if show_top_bar_ask:
+                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
+                                              ['bar', 'tab', 'overlay'],
+                                              user = user,
+                                              app  = app )
+                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
         else:
+            random.seed( datetime.now() )
+            
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
-            random.seed( datetime.now() )
             fb_connect      = random.randint( 0, 1 )
+            overlay_style   = "_willet_overlay_button"
 
         logging.info("FB : %s" % fb_connect)
 
@@ -376,6 +445,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
             link = Link.create(target, app, origin_domain, user)
             share_url = "%s/%s" % (URL, link.willt_url_code)
+
+        # a whole bunch of css bullshit!
+        if app:
+            logging.error("got app button css")
+            app_css = app.get_css()
+        else:
+            app_css = SIBTShopify.get_default_css()
         
         # Grab all template values
         template_values = {
@@ -392,6 +468,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
 
+            'AB_overlay_style' : overlay_style,
+
             'store_url'      : shop_url,
             'store_domain'   : app.client.domain,
             'store_id'       : self.request.get('store_id'),
@@ -404,13 +482,19 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
+            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
+            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
+            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
 
             'evnt' : event,
+            'img_elem_selector' : "#image img", #app.img_selector,
+            'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else ""
+            'willt_code' : link.willt_url_code if link else "",
+            'app_css': app_css,
         }
 
         # Store a script load action.

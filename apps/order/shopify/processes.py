@@ -141,21 +141,24 @@ class OrderWebhookNotification(URIHandler):
             user = o.user
  
         # Update the User's info
-        user.update(first_name         = first_name,
-                    last_name          = last_name,
-                    address1           = address1,
-                    address2           = address2,
-                    city               = city,
-                    province           = province,
-                    country_code       = country_code,
-                    postal_code        = postal_code,
-                    latitude           = latitude,
-                    longitude          = longitude,
-                    phone              = phone,
-                    email              = email,
-                    shopify_id         = shopify_id,
-                    ip                 = ip,
-                    accepts_marketing  = accepts_marketing)
+        if user:
+            user.update(first_name         = first_name,
+                        last_name          = last_name,
+                        address1           = address1,
+                        address2           = address2,
+                        city               = city,
+                        province           = province,
+                        country_code       = country_code,
+                        postal_code        = postal_code,
+                        latitude           = latitude,
+                        longitude          = longitude,
+                        phone              = phone,
+                        email              = email,
+                        shopify_id         = shopify_id,
+                        ip                 = ip,
+                        accepts_marketing  = accepts_marketing)
+        else:
+            logging.error('NO USER: %s' % token)
 
         if o == None:
             # Make the Order

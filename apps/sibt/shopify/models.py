@@ -16,6 +16,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
+from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
 from apps.sibt.models     import SIBT 
@@ -35,6 +36,44 @@ class SIBTShopify(SIBT, AppShopify):
 
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
+    button_css = db.TextProperty(default=None,required=False)
+    defaults = {
+        'willet_button': {
+            'color': '333333',
+            'text_size': '12',
+            'width': '240',
+            'border_width': '1',
+            'border_color': '777777',
+            'line_height': '26',
+            'background_gradient_start': 'eeeeee',
+            'background_gradient_end': 'cccccc',
+            'height': '28',
+            'border_radius': '0.2',
+            'margin_top': '5',
+            'margin_right': '0',
+            'margin_bottom': '5',
+            'margin_left': '0',
+            'padding_top': '2',
+            'padding_right': '5',
+            'padding_bottom': '0',
+            'padding_left': '5',
+            'font_family': 'Arial, Helvetica',
+            'box_shadow_inset': 'rgba(255,255,255,.8)',
+            'box_shadow_outset': 'rgba(0,0,0,.3)',
+        }, 'willet_button__hover': {
+            'color': '333333',
+            'border_color': '777777',
+            'border_width': '1',
+            'background_gradient_start': 'fafafa',
+            'background_gradient_end': 'dddddd',
+        }, 'willet_button__active': {
+            'color': '333333',
+            'border_color': '777777',
+            'border_width': '1',
+            'background_gradient_start': 'fafafa',
+            'background_gradient_end': 'fafafa',
+        }
+    }
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -42,17 +81,6 @@ class SIBTShopify(SIBT, AppShopify):
     
     def do_install(self):
         """Installs this instance"""
-        #data = [{
-        #    "script_tag": {
-        #        "src": "%s/s/shopify/sibt.js?store_id=%s&store_url=%s" % (
-        #            URL,
-        #            self.store_id,
-        #            self.store_url
-        #        ),
-        #        "event": "onload"
-        #    }
-        #}]
-
         script_src = """<!-- START willet sibt for Shopify -->
             <script type="text/javascript">
             (function(window) {
@@ -60,14 +88,13 @@ class SIBTShopify(SIBT, AppShopify):
                 var hash_index = hash.indexOf('#code=');
                 var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
                 var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                var src = "//%s%s?" + params;
+                var src = "http://%s%s?" + params;
                 var script = window.document.createElement("script");
                 script.type = "text/javascript";
                 script.src = src;
                 window.document.getElementsByTagName("head")[0].appendChild(script);
             }(window));
-            </script>
-            """ % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
         willet_snippet = script_src + """
             <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
                 data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
@@ -111,7 +138,78 @@ class SIBTShopify(SIBT, AppShopify):
         return memcache.set(
                 self.store_url, 
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-    
+
+    def reset_css(self):
+        self.set_css()
+        
+    def get_css_dict(self):
+        try:
+            assert(self.button_css != None)
+            data = json.loads(self.button_css)
+            assert(data != None)
+        except Exception, e:
+            logging.error('could not decode: %s\n%s' % 
+                    (e, self.button_css), exc_info=True)
+            data = SIBTShopify.get_default_dict()
+        return data
+
+    def set_css(self, css=None):
+        """Expects a dict"""
+        try:
+            assert(css != None)
+            self.button_css = json.dumps(css)
+        except:
+            logging.info('setting to default')
+            self.button_css = json.dumps(SIBTShopify.get_default_dict()) 
+        self.generate_css()
+        self.put()
+
+    def generate_css(self):
+        class_defaults = SIBTShopify.get_default_dict()
+        logging.error('class_defaults : %s' % class_defaults )
+        try:
+            assert(self.button_css != None)
+            data = json.loads(self.button_css)
+            assert(data != None)
+            logging.warn('updating with data:\n%s' % data)
+            class_defaults.update(data)
+        except Exception, e:
+            logging.error(e, exc_info=True)
+            pass
+        css = SIBTShopify.generate_default_css(class_defaults)
+        memcache.set('app-%s-sibt-css' % self.uuid, css) 
+        return css 
+
+    def get_css(self):
+        data = memcache.get('app-%s-sibt-css' % self.uuid) 
+        if data:
+            return data
+        else:
+            return self.generate_css()
+
+    @classmethod
+    def get_default_dict(cls):
+        return cls.defaults.copy()
+
+    @classmethod
+    def get_default_css(cls):
+        return cls.generate_default_css() 
+
+    @classmethod
+    def generate_default_css(cls, values=None):
+        """Uses the values dict to generate the sibt css"""
+        if not values:
+            values = cls.get_default_dict()
+        path = 'apps/sibt/templates/css/sibt_user_style.css'
+        rendered = template.render(path, values)
+        rendered = rendered.replace('\n', '').replace('\r','')
+        return rendered
+
+    @classmethod
+    def get_default_button_css(cls):
+        logging.warn('this method shouldnt be used: get_default_button_css')
+        return cls.get_default_css()
+        
     @staticmethod
     def create(client, token):
         uuid = generate_uuid( 16 )

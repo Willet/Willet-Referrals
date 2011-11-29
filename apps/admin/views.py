@@ -175,7 +175,7 @@ class ShowRoutes(URIHandler):
                     # we clobbered some urls
                     raise Exception('url route conflict with %s' % app)
             except Exception,e:
-                logging.error('error importing %s: %s' % (app, e))
+                logging.error('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
         template_values = {
@@ -627,7 +627,12 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         """
+<<<<<<< HEAD
         Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
+=======
+
+        Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
+>>>>>>> f0c2efaee8aae9a5a3c6c94d4a9d3896b15fd94a
 
 class ShowActions(URIHandler):
     @admin_required
@@ -812,7 +817,7 @@ class FBConnectStats( URIHandler ):
 
 class ReloadURIS(URIHandler):
     def get(self):
-        memcache.add('reload_uris', True)
+        memcache.set('reload_uris', True)
 
 class CheckMBC(URIHandler):
     @admin_required

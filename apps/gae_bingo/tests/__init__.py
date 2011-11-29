@@ -2,13 +2,14 @@ import os
 import logging
 import simplejson
 
-from google.appengine.ext.webapp import template, RequestHandler
+from google.appengine.ext.webapp import RequestHandler
 from google.appengine.api import memcache
 
 from apps.gae_bingo.gae_bingo import ab_test, bingo, choose_alternative
 from apps.gae_bingo.cache import BingoCache, BingoIdentityCache
 from apps.gae_bingo.config import can_control_experiments
-from apps.gae_bingo.dashboard import ControlExperiment
+from apps.gae_bingo.api import ControlExperiment
+from apps.gae_bingo.models import ConversionTypes
 
 # See gae_bingo/tests/run_tests.py for the full explanation/sequence of these tests
 
@@ -34,6 +35,8 @@ class RunStep(RequestHandler):
             v = self.participate_in_chimpanzees()
         elif step == "participate_in_crocodiles":
             v = self.participate_in_crocodiles()
+        elif step == "participate_in_hippos":
+            v = self.participate_in_hippos()
         elif step == "convert_in":
             v = self.convert_in()
         elif step == "count_participants_in":
@@ -76,6 +79,10 @@ class RunStep(RequestHandler):
     def participate_in_crocodiles(self):
         # Weighted test
         return ab_test("crocodiles", {"a": 100, "b": 200, "c": 400})
+    
+    def participate_in_hippos(self):
+        # Multiple conversions test
+        return ab_test("hippos", conversion_name=["hippos_binary", "hippos_counting"], conversion_type=[ConversionTypes.Binary, ConversionTypes.Counting])
 
     def convert_in(self):
         bingo(self.request.get("conversion_name"))
@@ -83,7 +90,7 @@ class RunStep(RequestHandler):
 
     def end_and_choose(self):
         bingo_cache = BingoCache.get()
-        choose_alternative(self.request.get("experiment_name"), int(self.request.get("alternative_number")))
+        choose_alternative(self.request.get("canonical_name"), int(self.request.get("alternative_number")))
 
     def count_participants_in(self):
         return reduce(lambda a, b: a + b, 

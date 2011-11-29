@@ -6,7 +6,9 @@ urlpatterns = [
     (r'/s/shopify/beta',        ShowBetaPage),
     (r'/s/shopify/code',        ShowCodePage),
     (r'/s/shopify/edit',        ShowEditPage),
+    (r'/s/shopify/(.*)/edit', SIBTShopifyEditStyle),
     (r'/s/shopify/finished',    ShowFinishedPage),
     (r'/s/shopify/sibt.js',     SIBTShopifyProductDetection),
     (r'/s/shopify/real-sibt.js',     SIBTShopifyServeScript),
 ]
+

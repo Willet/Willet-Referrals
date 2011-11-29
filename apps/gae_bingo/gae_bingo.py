@@ -7,12 +7,13 @@ import time
 from google.appengine.api import memcache
 
 from apps.gae_bingo.actions import GaeBingoAlt
+from apps.gae_bingo import cookies
 
 from .cache import BingoCache, bingo_and_identity_cache
-from .models import create_experiment_and_alternatives
+from .models import create_experiment_and_alternatives, ConversionTypes
 from .identity import identity
 
-def ab_test(canonical_name, alternative_params = None, conversion_name = None, user = None, app = None):
+def ab_test(canonical_name, alternative_params = None, conversion_name = None, conversion_type = ConversionTypes.Binary, user = None, app = None):
 
     bingo_cache, bingo_identity_cache = bingo_and_identity_cache()
 
@@ -48,15 +49,21 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, u
                 # Handle multiple conversions for a single experiment by just quietly
                 # creating multiple experiments for each conversion
                 conversion_names = conversion_name if type(conversion_name) == list else [conversion_name]
+                conversion_types = conversion_type if type(conversion_type) == list else [conversion_type] * len(conversion_names)
 
-                for i, conversion_name in enumerate(conversion_names):
+                if len(conversion_names) != len(conversion_types):
+                    # we were called improperly with mismatched lists lengths.. default everything to Binary
+                    conversion_types = [ConversionTypes.Binary] * len(conversion_names)
+
+                for i, (conversion_name, conversion_type) in enumerate(zip(conversion_names,conversion_types)):
                     unique_experiment_name = canonical_name if i == 0 else "%s (%s)" % (canonical_name, i + 1)
 
                     exp, alts = create_experiment_and_alternatives(
                                     unique_experiment_name,
                                     canonical_name,
                                     alternative_params, 
-                                    conversion_name
+                                    conversion_name,
+                                    conversion_type
                                     )
 
                     bingo_cache.add_experiment(exp, alts)
@@ -100,7 +107,6 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, u
             # alternative N should be the same across all experiments w/ same canonical name.
             returned_content = alternative.content
 
-
     # Barbara's Code
     if user:
         GaeBingoAlt.create( user, app, canonical_name, returned_content )
@@ -138,13 +144,13 @@ def score_conversion(experiment_name, canonical_name):
     if experiment_name not in bingo_identity_cache.participating_tests:
         return
 
-    if experiment_name in bingo_identity_cache.converted_tests:
-        return
-
     experiment = bingo_cache.get_experiment(experiment_name)
 
     if not experiment or not experiment.live:
         # Don't count conversions for short-circuited experiments that are no longer live
+        return
+
+    if experiment_name in bingo_identity_cache.converted_tests and experiment.conversion_type!=ConversionTypes.Counting:
         return
 
     alternative = find_alternative_for_user(canonical_name, bingo_cache.get_alternatives(experiment_name))
@@ -154,14 +160,13 @@ def score_conversion(experiment_name, canonical_name):
 
     bingo_identity_cache.convert_in(experiment_name)
 
-def choose_alternative(experiment_name, alternative_number):
+def choose_alternative(canonical_name, alternative_number):
 
     bingo_cache = BingoCache.get()
-    experiment = bingo_cache.get_experiment(experiment_name)
 
     # Need to end all experiments that may have been kicked off
     # by an experiment with multiple conversions
-    experiments, alternative_lists = bingo_cache.experiments_and_alternatives_from_canonical_name(experiment.canonical_name)
+    experiments, alternative_lists = bingo_cache.experiments_and_alternatives_from_canonical_name(canonical_name)
 
     if not experiments or not alternative_lists:
         return
@@ -176,24 +181,32 @@ def choose_alternative(experiment_name, alternative_number):
             experiment.set_short_circuit_content(alternative_chosen[0].content)
             bingo_cache.update_experiment(experiment)
 
-def delete_experiment(experiment_name):
+def delete_experiment(canonical_name):
 
     bingo_cache = BingoCache.get()
-    experiment = bingo_cache.get_experiment(experiment_name)
 
-    if experiment.live:
-        raise Exception("Cannot delete a live experiment")
+    # Need to delete all experiments that may have been kicked off
+    # by an experiment with multiple conversions
+    experiments, alternative_lists = bingo_cache.experiments_and_alternatives_from_canonical_name(canonical_name)
 
-    bingo_cache.delete_experiment_and_alternatives(experiment)
+    if not experiments or not alternative_lists:
+        return
 
-def resume_experiment(experiment_name):
+    for i in range(len(experiments)):
+        experiment, alternatives = experiments[i], alternative_lists[i]
+
+        if experiment.live:
+            raise Exception("Cannot delete a live experiment")
+
+        bingo_cache.delete_experiment_and_alternatives(experiment)
+
+def resume_experiment(canonical_name):
 
     bingo_cache = BingoCache.get()
-    experiment = bingo_cache.get_experiment(experiment_name)
 
     # Need to resume all experiments that may have been kicked off
     # by an experiment with multiple conversions
-    experiments, alternative_lists = bingo_cache.experiments_and_alternatives_from_canonical_name(experiment.canonical_name)
+    experiments, alternative_lists = bingo_cache.experiments_and_alternatives_from_canonical_name(canonical_name)
 
     if not experiments or not alternative_lists:
         return
