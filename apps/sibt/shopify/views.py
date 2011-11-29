@@ -80,8 +80,11 @@ class SIBTShopifyWelcome(URIHandler):
 class SIBTShopifyEditStyle(URIHandler):
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
-        #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
         post_vars = self.request.arguments()
+
+        client = self.get_client()
+        if client.uuid != app.client.uuid:
+            self.redirect('/')
 
         if self.request.get('set_to_default'):
             logging.error('reset button')
@@ -91,10 +94,10 @@ class SIBTShopifyEditStyle(URIHandler):
             for key in css_dict:
                 for value in css_dict[key]:
                     lookup = '%s:%s' % (key, value)
-                    logging.info('looking for: %s' % lookup)
+                    #logging.info('looking for: %s' % lookup)
                     if lookup in post_vars:
-                        logging.info('found with value: %s' % 
-                                self.request.get(lookup))
+                        #logging.info('found with value: %s' % 
+                        #        self.request.get(lookup))
                         css_dict[key][value] = self.request.get(lookup) 
 
             app.set_css(css_dict)
@@ -102,8 +105,10 @@ class SIBTShopifyEditStyle(URIHandler):
 
     def get(self, app_uuid, app=None):
         if not app:
-            #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
             app = SIBTShopify.get(app_uuid)
+        client = self.get_client()
+        if client.uuid != app.client.uuid:
+            self.redirect('/')
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()
@@ -112,7 +117,7 @@ class SIBTShopifyEditStyle(URIHandler):
             # because template has issues with variables that have
             # a dash in them
             new_key = key.replace('-', '_').replace('.','_')
-            logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
+            #logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
             display_dict[new_key] = css_dict[key]
 
         logging.warn('css: %s' % css_values)
@@ -291,7 +296,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = bar_tab_or_overlay = ''
+        target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -405,7 +410,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text4', 
+            cta_button_text = ab_test( 'sibt_button_text5', 
                                         ab_test_options, 
                                         user = user,
                                         app  = app )
@@ -417,18 +422,24 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
-            overlay_style = ab_test('sibt_overlay_style', 
-                                    ["_willet_overlay_button", "_willet_overlay_button2"],
-                                    user = user,
-                                    app  = app )
+            if app.overlay_enabled:
+                overlay_style = ab_test( 'sibt_overlay_style', 
+                                         ["_willet_overlay_button", "_willet_overlay_button2"],
+                                         user = user,
+                                         app  = app )
+            else:
+                overlay_style = "_willet_overlay_button"
 
             # If subsequent page viewing and we should prompt user:
             if show_top_bar_ask:
-                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
-                                              ['bar', 'tab', 'overlay'],
-                                              user = user,
-                                              app  = app )
-                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
+                bar_or_tab = ab_test( 'sibt_bar_or_tab',
+                                      ['bar', 'tab'],
+                                      user = user,
+                                      app  = app )
+                logging.info("BAR TAB? %s" % bar_or_tab )
+
+            AB_top_bar = 1 if bar_or_tab == "bar" else 0
+            AB_btm_tab = int(not AB_top_bar)
         else:
             random.seed( datetime.now() )
             
@@ -436,6 +447,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             stylesheet      = 'css/colorbox.css'
             fb_connect      = random.randint( 0, 1 )
             overlay_style   = "_willet_overlay_button"
+            AB_top_bar = 1 
+            AB_btm_tab = 1
 
         logging.info("FB : %s" % fb_connect)
 
@@ -448,7 +461,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # a whole bunch of css bullshit!
         if app:
-            logging.error("got app button css")
+            logging.info("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
@@ -482,9 +495,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
-            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
-            'AB_overlay'  : int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+            'AB_top_bar'  : AB_top_bar,
+            'AB_btm_tab'  : AB_btm_tab,
+            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,

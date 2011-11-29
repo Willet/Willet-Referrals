@@ -4,7 +4,11 @@
 
 (function(document, window){
     var _willet_css = {% include stylesheet %}
-    var _willet_app_css = '{{ app_css }}';
+    {% ifequal stylesheet "css/facebook_style.css" %}
+        var _willet_app_css = '';
+    {% else %}
+        var _willet_app_css = '{{ app_css }}';
+    {% endifequal %}
     var _willet_ask_success = false;
     var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
@@ -318,7 +322,7 @@
 
         if (is_ask_bar || false) {
             var bar_html = "<div class='_willet_wrapper'><span>Decisions are hard to make. {{AB_CTA_text}}</span>" +
-                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: -1px; cursor: pointer;'>" +
+                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                 "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                 "</div>" +
             "</div>";
@@ -788,6 +792,8 @@
                             imgDiv.append( btmShadowDiv );
                             imgDiv.insertBefore( imgElem );
                             
+                            imgDiv.css('left', imgElem.offset().left+parseInt(imgElem.css('padding-left'))+'px');
+                            imgDiv.css('top', imgElem.offset().top+parseInt(imgElem.css('padding-top'))+'px');
                             /*
                             var heartImg = $(document.createElement( 'img' ));
                             heartImg.attr( 'id', 'imgOverlaySpan' );

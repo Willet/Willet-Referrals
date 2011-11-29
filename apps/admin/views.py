@@ -626,8 +626,15 @@ class Barbara(URIHandler):
                             url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
+<<<<<<< HEAD
         """
         Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
+=======
+
+        Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
+        Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
+        """
+>>>>>>> 99fddc60cd1408e7cf0b038ec27195b6c85916da
 
 class ShowActions(URIHandler):
     @admin_required

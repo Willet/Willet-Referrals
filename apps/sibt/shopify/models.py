@@ -148,8 +148,8 @@ class SIBTShopify(SIBT, AppShopify):
             data = json.loads(self.button_css)
             assert(data != None)
         except Exception, e:
-            logging.error('could not decode: %s\n%s' % 
-                    (e, self.button_css), exc_info=True)
+            #logging.error('could not decode: %s\n%s' % 
+            #        (e, self.button_css), exc_info=True)
             data = SIBTShopify.get_default_dict()
         return data
 
@@ -159,22 +159,22 @@ class SIBTShopify(SIBT, AppShopify):
             assert(css != None)
             self.button_css = json.dumps(css)
         except:
-            logging.info('setting to default')
+            #logging.info('setting to default')
             self.button_css = json.dumps(SIBTShopify.get_default_dict()) 
         self.generate_css()
         self.put()
 
     def generate_css(self):
         class_defaults = SIBTShopify.get_default_dict()
-        logging.error('class_defaults : %s' % class_defaults )
+        logging.info('class_defaults : %s' % class_defaults )
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
             assert(data != None)
-            logging.warn('updating with data:\n%s' % data)
+            #logging.warn('updating with data:\n%s' % data)
             class_defaults.update(data)
         except Exception, e:
-            logging.error(e, exc_info=True)
+            #logging.error(e, exc_info=True)
             pass
         css = SIBTShopify.generate_default_css(class_defaults)
         memcache.set('app-%s-sibt-css' % self.uuid, css) 
