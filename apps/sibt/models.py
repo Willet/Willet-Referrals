@@ -78,7 +78,7 @@ class SIBT(App):
 
         # GAY BINGO!
         if not user.is_admin():
-            bingo( 'sibt_share_text2' )
+            bingo( 'sibt_share_text3' )
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -112,7 +112,7 @@ class SIBT(App):
         
         # GAY BINGO
         if not user.is_admin():
-            bingo( 'sibt_share_text2' )
+            bingo( 'sibt_share_text3' )
 
         if not user.is_admin() and "social-referral" in URL:
             try:

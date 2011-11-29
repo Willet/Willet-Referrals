@@ -405,7 +405,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text4', 
+            cta_button_text = ab_test( 'sibt_button_text5', 
                                         ab_test_options, 
                                         user = user,
                                         app  = app )
@@ -418,25 +418,20 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
             if app.overlay_enabled:
-                overlay_style = ab_test('sibt_overlay_style', 
-                                        ["_willet_overlay_button", "_willet_overlay_button2"],
-                                        user = user,
-                                        app  = app )
+                overlay_style = ab_test( 'sibt_overlay_style', 
+                                         ["_willet_overlay_button", "_willet_overlay_button2"],
+                                         user = user,
+                                         app  = app )
             else:
                 overlay_style = "_willet_overlay_button"
 
             # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask and app.overlay_enabled:
-                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
-                                              ['bar', 'tab', 'overlay'],
-                                              user = user,
-                                              app  = app )
-            elif show_top_bar_ask:
-                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
-                                              ['bar', 'tab'],
-                                              user = user,
-                                              app  = app )
-                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
+            if show_top_bar_ask:
+                bar_or_tab = ab_test( 'sibt_bar_or_tab',
+                                      ['bar', 'tab'],
+                                      user = user,
+                                      app  = app )
+                logging.info("BAR TAB? %s" % bar_or_tab )
         else:
             random.seed( datetime.now() )
             
@@ -454,21 +449,14 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             link = Link.create(target, app, origin_domain, user)
             share_url = "%s/%s" % (URL, link.willt_url_code)
 
-        # a whole bunch of css bullshit!
         if app:
+            AB_overlay = not (bar_or_tab == "bar" or bar_or_tab =="tab") if app.overlay_enabled else 0
 
-            if not app.overlay_enabled:
-                logging.info("ABC")
-                AB_overlay = 0
-            else:
-                logging.info("2ABC")
-                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay")
-
-            logging.error("got app button css")
+            # a whole bunch of css bullshit!
+            logging.info("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
-            logging.info("AB3C")
             AB_overlay = 0
         
         logging.info("AB OVERLAY: %d" % AB_overlay )
