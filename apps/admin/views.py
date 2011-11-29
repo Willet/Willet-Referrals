@@ -627,9 +627,8 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
-        Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
         """
-        pass
+        Email.goodbyeFromFraser( 'fraser.harris@gmail.com', 'Fraser', 'SIBTShopify')
 
 class ShowActions(URIHandler):
     @admin_required
