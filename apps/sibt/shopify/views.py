@@ -417,15 +417,23 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
-            overlay_style = ab_test('sibt_overlay_style', 
-                                    ["_willet_overlay_button", "_willet_overlay_button2"],
-                                    user = user,
-                                    app  = app )
+            if app.overlay_enabled:
+                overlay_style = ab_test('sibt_overlay_style', 
+                                        ["_willet_overlay_button", "_willet_overlay_button2"],
+                                        user = user,
+                                        app  = app )
+            else:
+                overlay_style = "_willet_overlay_button"
 
             # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask:
+            if show_top_bar_ask and app.overlay_enabled:
                 bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
                                               ['bar', 'tab', 'overlay'],
+                                              user = user,
+                                              app  = app )
+            elif show_top_bar_ask:
+                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
+                                              ['bar', 'tab'],
                                               user = user,
                                               app  = app )
                 logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
