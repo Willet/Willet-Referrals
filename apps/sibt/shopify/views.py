@@ -456,17 +456,23 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # a whole bunch of css bullshit!
         if app:
+
             if not app.overlay_enabled:
+                logging.info("ABC")
                 AB_overlay = 0
             else:
-                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
+                logging.info("2ABC")
+                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay")
 
             logging.error("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
+            logging.info("AB3C")
             AB_overlay = 0
         
+        logging.info("AB OVERLAY: %d" % AB_overlay )
+
         # Grab all template values
         template_values = {
             'URL' : URL,
