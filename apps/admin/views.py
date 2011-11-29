@@ -18,7 +18,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
-from apps.action.models import MemcacheBucketConfig 
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
@@ -39,6 +38,7 @@ from util.consts import *
 from util.helpers import *
 from util.helpers           import url as build_url
 from util.urihandler import URIHandler
+from util.memcache_bucket_config import MemcacheBucketConfig 
 
 class Admin( URIHandler ):
     @admin_required

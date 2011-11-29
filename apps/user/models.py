@@ -37,6 +37,7 @@ from util.consts import MEMCACHE_TIMEOUT
 from util.model           import Model
 from util.helpers         import *
 from util                 import oauth2 as oauth
+from util.memcache_bucket_config import MemcacheBucketConfig
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------
@@ -79,29 +80,48 @@ def create_email_model( user, email ):
 def get_emails_by_user( user ):
     return EmailModel.all().filter( 'user =', user )
 
-def deferred_user_put(user_uuid):
-    user = User.get(user_uuid)
-    if user:
-        # user has no key, not in db
-        def txn():
-            logging.debug('Model::save(): Saving %s to memcache and datastore.' % user.uuid)
-            timeout_ms = 100
-            while True:
-                logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (user.__class__.__name__.lower(), timeout_ms))
-                try:
-                    user.hardPut() # Will validate the instance.
-                except datastore_errors.Timeout:
-                    thread.sleep(timeout_ms)
-                    timeout_ms *= 2
-                else:
-                    break
+#def deferred_user_put(user_uuid):
+def deferred_user_put(bucket_key, list_keys, decrementing=False):
+    mbc = MemcacheBucketConfig.get_or_create('_willet_user_put_bucket')
+    users_to_put = []
+    had_error = False
+    user_dict = memcache.get_multi(list_keys)
+    for key in list_keys:
+        data = user_dict.get(key)
+        try:
+            user = db.model_from_protobuf(entity_pb.EntityProto(data))
+        except AssertionError, e:
+            old_key = mbc.get_bucket(mbc.count)
+            if bucket_key != old_key and not decrementing and not had_error:
+                # we dont want to do this for the last bucket because it will
+                # duplicate the entries we are about to create
+                old_count = mbc.count
+                mbc.decrement_count()
+                logging.warn(
+                    'encounted error, going to decrement buckets from %s to %s' 
+                    % (old_count, mbc.count), exc_info=True)
 
-            # Memcache *after* model is given datastore key
+                last_keys = memcache.get(old_key) or []
+                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
+                deferred.defer(deferred_user_put, old_key, last_keys, decrementing=True, _queue='slow-deferred')
+                had_error = True
+        except Exception, e:
+            logging.error('error getting action: %s' % e, exc_info=True)
+
+    try:
+        def txn():
+            db.put_async(users_to_put)
         db.run_in_transaction(txn)
-            
-        if user.key():
-            memcache_key = user.get_key()
-            memcache.set(memcache_key, db.model_to_protobuf(user).Encode(), time=MEMCACHE_TIMEOUT)
+        for user in users_to_put:
+            if user.key():
+                memcache_key = user.get_key()
+                memcache.set(memcache_key, db.model_to_protobuf(user).Encode(), time=MEMCACHE_TIMEOUT)
+    except Exception,e:
+        logging.error('Error putting %s: %s' % (users_to_put, e), exc_info=True)
+
+    if decrementing:
+        logging.warn('decremented mbc `%s` to %d and removed %s' % (
+            mbc.name, mbc.count, bucket_key))
 
 # ------------------------------------------------------------------------------
 # User Class Definition --------------------------------------------------------
