@@ -78,11 +78,13 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
-    # @TODO add some security here
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
-        #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
         post_vars = self.request.arguments()
+
+        client = self.get_client()
+        if client.uuid != app.client.uuid:
+            self.redirect('/')
 
         if self.request.get('set_to_default'):
             logging.error('reset button')
@@ -92,10 +94,10 @@ class SIBTShopifyEditStyle(URIHandler):
             for key in css_dict:
                 for value in css_dict[key]:
                     lookup = '%s:%s' % (key, value)
-                    logging.info('looking for: %s' % lookup)
+                    #logging.info('looking for: %s' % lookup)
                     if lookup in post_vars:
-                        logging.info('found with value: %s' % 
-                                self.request.get(lookup))
+                        #logging.info('found with value: %s' % 
+                        #        self.request.get(lookup))
                         css_dict[key][value] = self.request.get(lookup) 
 
             app.set_css(css_dict)
@@ -103,8 +105,10 @@ class SIBTShopifyEditStyle(URIHandler):
 
     def get(self, app_uuid, app=None):
         if not app:
-            #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
             app = SIBTShopify.get(app_uuid)
+        client = self.get_client()
+        if client.uuid != app.client.uuid:
+            self.redirect('/')
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()
@@ -113,7 +117,7 @@ class SIBTShopifyEditStyle(URIHandler):
             # because template has issues with variables that have
             # a dash in them
             new_key = key.replace('-', '_').replace('.','_')
-            logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
+            #logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
             display_dict[new_key] = css_dict[key]
 
         logging.warn('css: %s' % css_values)
