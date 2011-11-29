@@ -72,7 +72,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         
         # GAY BINGO
         if not user_is_admin:
-            bingo( 'sibt_button_text4' )
+            bingo( 'sibt_button_text5' )
             bingo( 'sibt_facebook_style' )
 
         ab_share_options = [ 
@@ -83,7 +83,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         ]
         
         if not user_is_admin:
-            ab_opt = ab_test('sibt_share_text2',
+            ab_opt = ab_test('sibt_share_text3',
                               ab_share_options,
                               user = user,
                               app  = app )

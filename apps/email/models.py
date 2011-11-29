@@ -7,12 +7,9 @@ Date:  March 2011
 """
 import logging
 import os
-import urllib, urllib2
 
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch
-from google.appengine.api.mail import EmailMessage
 from google.appengine.ext.webapp import template
+from google.appengine.api.mail import EmailMessage
 
 from util.consts import *
 
@@ -20,13 +17,10 @@ from util.consts import *
 #### Addresses ####
 ###################
 
-support   = "support@getwillet.com"
-info      = "info@getwillet.com"
 
-barbara_email = 'barbara@getwillet.com'
-barbara   = '"Barbara Macdonald" <%s>' % barbara_email
+barbara   = '"Barbara Macdonald" <barbara@getwillet.com>'
 fraser    = '"Fraser Harris" <fraser@getwillet.com>'
-matt      = '"Matt" <harrismc@gmail.com>'
+matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
 
@@ -144,9 +138,7 @@ class Email():
     ### MAILOUTS ###
     @staticmethod
     def Mailout_Nov28(to_addr, name, app_uuid):
-        if name == "":
-            name = "Savvy Shopper"
-        subject = 'Updates from Willet'
+        subject = 'Updates About "Should I Buy This"!'
         body = template.render(
             Email.template_path('mailout_nov28.html'), {
                 'name': name,
@@ -162,30 +154,6 @@ class Email():
 
     @staticmethod
     def send_email(from_address, to_address, subject, body):
-        params = {
-            "api_user": "BarbaraEMac",
-            "to" : to_address,
-            "subject" : subject,
-            "html" : body,
-            "from" : info,
-            "fromname" : "Willet",
-            "bcc" : barbara_email
-        }
-        payload = urllib.urlencode(params)
-        payload += "&api_key=w1llet!!"
-
-        #logging.info('https://sendgrid.com/api/mail.send.json?&%s' % payload)
-
-        # Save the campaign data in a bucket
-        result = urlfetch.fetch(
-            url = 'https://sendgrid.com/api/mail.send.json',
-            payload = payload,
-            method  = urlfetch.POST,
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        )
-        logging.info("Email Result: %s"% result.content)
-
-        """
         try:
             e = EmailMessage(
                     sender=from_address, 
@@ -196,7 +164,6 @@ class Email():
             e.send()
         except Exception,e:
             logging.error('error sending email: %s', e)
-        """
 
 # end class
 

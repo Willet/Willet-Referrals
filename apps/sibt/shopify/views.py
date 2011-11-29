@@ -291,7 +291,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     def get(self):
         is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
         instance = share_url = link       = asker_name = asker_pic = product = None
-        target   = bar_tab_or_overlay = ''
+        target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
@@ -405,7 +405,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                 "Ask your friends what they think",
                                 "Need advice? Ask your friends!",
                                 "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text4', 
+            cta_button_text = ab_test( 'sibt_button_text5', 
                                         ab_test_options, 
                                         user = user,
                                         app  = app )
@@ -418,25 +418,20 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
             if app.overlay_enabled:
-                overlay_style = ab_test('sibt_overlay_style', 
-                                        ["_willet_overlay_button", "_willet_overlay_button2"],
-                                        user = user,
-                                        app  = app )
+                overlay_style = ab_test( 'sibt_overlay_style', 
+                                         ["_willet_overlay_button", "_willet_overlay_button2"],
+                                         user = user,
+                                         app  = app )
             else:
                 overlay_style = "_willet_overlay_button"
 
             # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask and app.overlay_enabled:
-                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
-                                              ['bar', 'tab', 'overlay'],
-                                              user = user,
-                                              app  = app )
-            elif show_top_bar_ask:
-                bar_tab_or_overlay = ab_test( 'sibt_bar_tab_or_overlay',
-                                              ['bar', 'tab'],
-                                              user = user,
-                                              app  = app )
-                logging.info("BAR TAB OVERLAY? %s" % bar_tab_or_overlay )
+            if show_top_bar_ask:
+                bar_or_tab = ab_test( 'sibt_bar_or_tab',
+                                      ['bar', 'tab'],
+                                      user = user,
+                                      app  = app )
+                logging.info("BAR TAB? %s" % bar_or_tab )
         else:
             random.seed( datetime.now() )
             
@@ -456,17 +451,14 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # a whole bunch of css bullshit!
         if app:
-            if not app.overlay_enabled:
-                AB_overlay = 0
-            else:
-                AB_overlay = int(not show_votes) if (bar_tab_or_overlay == "") else int(bar_tab_or_overlay == "overlay"),
-
-            logging.error("got app button css")
+            logging.info("got app button css")
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
             AB_overlay = 0
         
+        logging.info("AB OVERLAY: %d" % AB_overlay )
+
         # Grab all template values
         template_values = {
             'URL' : URL,
@@ -496,9 +488,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': stylesheet,
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : 1 if bar_tab_or_overlay == "bar" else 0,
-            'AB_btm_tab'  : 1 if bar_tab_or_overlay == "tab" else 0,
-            'AB_overlay'  : AB_overlay,
+            'AB_top_bar'  : 1 if bar_or_tab == "bar" else 0,
+            'AB_btm_tab'  : 1 if bar_or_tab == "tab" else 0,
+            'AB_overlay'  : not (bar_or_tab == "bar" or bar_or_tab =="tab") if app.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
