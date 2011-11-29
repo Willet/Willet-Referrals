@@ -7,9 +7,12 @@ Date:  March 2011
 """
 import logging
 import os
+import urllib, urllib2
 
-from google.appengine.ext.webapp import template
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
 from google.appengine.api.mail import EmailMessage
+from google.appengine.ext.webapp import template
 
 from util.consts import *
 
@@ -17,8 +20,11 @@ from util.consts import *
 #### Addresses ####
 ###################
 
+info = "info@getwillet.com"
 
-barbara   = '"Barbara Macdonald" <barbara@getwillet.com>'
+barbara_email = "barbara@getwillet.com"
+
+barbara   = '"Barbara Macdonald" <%s>' % barbara_email
 fraser    = '"Fraser Harris" <fraser@getwillet.com>'
 matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
@@ -146,7 +152,7 @@ class Email():
         })
 
         logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, dev_team, subject, body)
+        Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod 
     def template_path(path):
@@ -154,6 +160,29 @@ class Email():
 
     @staticmethod
     def send_email(from_address, to_address, subject, body):
+        params = {
+            "api_user" : "BarbaraEMac",
+            "api_key"  : "w1llet!!"
+            "to"       : to_address,
+            "subject"  : subject,
+            "html"     : body,
+            "from"     : info,
+            "fromname" : "Willet",
+            "bcc"      : barbara_email,
+        }
+
+        #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
+
+        # Save the campaign data in a bucket
+        result = urlfetch.fetch(
+            url     = 'https://sendgrid.com/api/mail.send.json',
+            payload = urllib.urlencode( params ), 
+            method  = urlfetch.POST,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        logging.info("%s"% result.content)
+        
+        """
         try:
             e = EmailMessage(
                     sender=from_address, 
@@ -164,6 +193,7 @@ class Email():
             e.send()
         except Exception,e:
             logging.error('error sending email: %s', e)
+        """
 
 # end class
 
