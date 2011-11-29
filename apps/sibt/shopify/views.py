@@ -77,6 +77,58 @@ class SIBTShopifyWelcome(URIHandler):
         except:
             logging.error('wtf', exc_info=True)
 
+class SIBTShopifyEditStyle(URIHandler):
+    def post(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
+        #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
+        post_vars = self.request.arguments()
+
+        if self.request.get('set_to_default'):
+            logging.error('reset button')
+            app.reset_css()
+        else:
+            css_dict = app.get_css_dict()
+            for key in css_dict:
+                for value in css_dict[key]:
+                    lookup = '%s:%s' % (key, value)
+                    logging.info('looking for: %s' % lookup)
+                    if lookup in post_vars:
+                        logging.info('found with value: %s' % 
+                                self.request.get(lookup))
+                        css_dict[key][value] = self.request.get(lookup) 
+
+            app.set_css(css_dict)
+        self.get(app_uuid, app = app)
+
+    def get(self, app_uuid, app=None):
+        if not app:
+            #app = SIBTShopify.all().filter('uuid =', app_uuid).get()
+            app = SIBTShopify.get(app_uuid)
+
+        css_dict = app.get_css_dict()
+        css_values = app.get_css()
+        display_dict = {}
+        for key in css_dict:
+            # because template has issues with variables that have
+            # a dash in them
+            new_key = key.replace('-', '_').replace('.','_')
+            logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
+            display_dict[new_key] = css_dict[key]
+
+        logging.warn('css: %s' % css_values)
+
+        template_values = {
+            'css': css_values,
+            'app': app,        
+            'message': '',
+            'ff_options': [
+                'Arial,Helvetica',
+            ]
+        }
+        template_values.update(display_dict)
+        
+        self.response.out.write(self.render_page('edit_style.html', template_values)) 
+
 class ShowEditPage(URIHandler):
     def get(self):
         # Renders a app page
@@ -393,6 +445,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
             link = Link.create(target, app, origin_domain, user)
             share_url = "%s/%s" % (URL, link.willt_url_code)
+
+        # a whole bunch of css bullshit!
+        if app:
+            logging.error("got app button css")
+            app_css = app.get_css()
+        else:
+            app_css = SIBTShopify.get_default_css()
         
         # Grab all template values
         template_values = {
@@ -434,7 +493,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else ""
+            'willt_code' : link.willt_url_code if link else "",
+            'app_css': app_css,
         }
 
         # Store a script load action.
