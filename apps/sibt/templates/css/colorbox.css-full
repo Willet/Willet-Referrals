@@ -911,12 +911,14 @@ dient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-bac
     position: fixed;
     bottom: 0px;
     right: 10px;
+    z-index: 50000;
 
     color: black;
     background-color: yellow;
 
     font: 0.9em Arial, Helvetica;
     font-weight: bold;
+    text-align: center;
 
     box-shadow: 0px 0px 7px #727272;;
     -moz-box-shadow: 0px 0px 7px #727272;
@@ -933,7 +935,4 @@ dient(top, #%(._willet_button-background-gradient-start)s, #%(_willet_button-bac
     cursor: pointer;
     display: none;
 }
-
-
-
 ';

@@ -455,10 +455,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
-            AB_overlay = 0
         
-        logging.info("AB OVERLAY: %d" % AB_overlay )
-
         # Grab all template values
         template_values = {
             'URL' : URL,
@@ -490,7 +487,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : 1 if bar_or_tab == "bar" else 0,
             'AB_btm_tab'  : 1 if bar_or_tab == "tab" else 0,
-            'AB_overlay'  : not (bar_or_tab == "bar" or bar_or_tab =="tab") if app.overlay_enabled else 0,
+            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
