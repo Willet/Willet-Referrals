@@ -826,12 +826,12 @@ class CheckMBC(URIHandler):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         num = self.request.get('num')
         if num:
-            mbc.count = num 
+            mbc.count = int(num) 
             mbc.put()
         
-        tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
-        b_click = SIBTUserClickedButtonAsk.all().filter('is_admin =', False).count() 
-        self.response.out.write('top bar: %d' % tb_click)
-        self.response.out.write('buttons: %d' % b_click)
+        #tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
+        #b_click = SIBTUserClickedButtonAsk.all().filter('is_admin =', False).count() 
+        #self.response.out.write('top bar: %d' % tb_click)
+        #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
