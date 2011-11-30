@@ -182,7 +182,7 @@
                 iframe: true, 
                 initialWidth: 0, 
                 initialHeight: 0, 
-                innerWidth: '450px',
+                innerWidth: '400px',
                 innerHeight: '240px', 
                 fixed: true,
                 href: url,
