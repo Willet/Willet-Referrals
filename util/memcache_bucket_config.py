@@ -4,8 +4,12 @@ import random
 import logging
 
 from google.appengine.ext    import db
+from google.appengine.api import memcache
+from google.appengine.datastore import entity_pb
+from google.appengine.ext import deferred
 
 from util.model import Model
+from util.consts import MEMCACHE_TIMEOUT
 
 class MemcacheBucketConfig(Model):
     """Used so we can dynamically scale the number of memcache buckets"""
@@ -36,23 +40,96 @@ class MemcacheBucketConfig(Model):
         self.count += 1
         self.put()
 
+    def put_later(self, entity):
+        MemcacheBucketConfig.put_later(self.name, entity)
+
     @staticmethod
-    def create(name):
-        mbc = MemcacheBucketConfig(name=name)
+    def create(name, count=20):
+        mbc = MemcacheBucketConfig(name=name, count=count)
         if mbc:
             mbc.put()
         return mbc
 
     @staticmethod
-    def get_or_create(name):
+    def get_or_create(name, count=20):
         mbc = MemcacheBucketConfig.get(name)
         if not mbc:
             # we are creating this MBC for the first time
-            mbc = MemcacheBucketConfig.create(name)
+            mbc = MemcacheBucketConfig.create(name, count)
         return mbc
     
     @classmethod
     def _get_from_datastore(cls, name):
         """Datastore retrieval using memcache_key"""
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
+
+    @staticmethod
+    def put_later(mbc_name, entity):
+        mbc = MemcacheBucketConfig.get_or_create(mbc_name)
+        key = entity.get_key()
+
+        memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
+
+        bucket = mbc.get_random_bucket()
+        logging.info('mbc: %s' % mbc_name)
+        logging.info('bucket: %s' % bucket)
+
+        list_identities = memcache.get(bucket) or []
+        list_identities.append(key)
+
+        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
+        if len(list_identities) > mbc.count:
+            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
+            logging.warn('bucket overflowing, persisting!')
+            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
+        else:
+            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
+
+        logging.info('put_later: %s' % key)
+
+def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
+    logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))
+    mbc = MemcacheBucketConfig.get_or_create(mbc_name)
+    entities_to_put = []
+    had_error = False
+    object_dict = memcache.get_multi(list_keys)
+    for key in list_keys:
+        data = object_dict.get(key)
+        try:
+            entity = db.model_from_protobuf(entity_pb.EntityProto(data))
+            if entity:
+                entities_to_put.append(entity)
+        except AssertionError, e:
+            old_key = mbc.get_bucket(mbc.count)
+            if bucket_key != old_key and not decrementing and not had_error:
+                old_count = mbc.count
+                mbc.decrement_count()
+                logging.warn(
+                    'encounted error, going to decrement buckets from %s to %s' 
+                    % (old_count, mbc.count), exc_info=True)
+
+                last_keys = memcache.get(old_key) or []
+                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
+                deferred.defer(batch_put, mbc_name, old_key, last_keys, 
+                        decrementing=True, _queue='slow-deferred')
+                had_error = True
+        except Exception, e:
+            logging.error('error getting object: %s' % e, exc_info=True)
+
+    try:
+        def txn():
+            db.put_async(entities_to_put)
+        db.run_in_transaction(txn)
+        for entity in entities_to_put:
+            if entity.key():
+                memcache_key = entity.get_key()
+                memcache.set(memcache_key, 
+                        db.model_to_protobuf(entity).Encode(), 
+                        time=MEMCACHE_TIMEOUT)
+    except Exception,e:
+        logging.error('Error putting %s: %s' % (entities_to_put, e), exc_info=True)
+
+    if decrementing:
+        logging.warn('decremented mbc `%s` to %d and removed %s' % (
+            mbc.name, mbc.count, bucket_key))
 

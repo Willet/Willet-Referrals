@@ -38,6 +38,43 @@ from util.model           import Model
 from util.helpers         import *
 from util                 import oauth2 as oauth
 from util.memcache_bucket_config import MemcacheBucketConfig
+from util.memcache_bucket_config import batch_put 
+
+# -----
+# UserIPs Class Definition
+# -----
+class UserIPs(Model):
+    user = db.ReferenceProperty(User, collection_name="user_ips")
+    ips = db.StringListProperty(default=None)
+    _memcache_bucket_name = '_user_ips_bucket'
+
+    def __init__(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self._memcache_key = kwargs['user'].uuid
+        else:
+            self._memcache_key = None
+        super(UserIPs, self).__init__(*args, **kwargs)
+
+    def add(self, ip):
+        if not ip in self.ips:
+            self.ips.append(ip)
+            return True
+        return False
+
+    @classmethod
+    def get_or_create(cls, user):
+        uips = cls.get(user.uuid)
+        if not uips:
+            uips = cls(user=user)
+
+        return uips
+
+    def put_later(self):
+        """Calls the mbc put later"""
+        mbc = MemcacheBucketConfig.get_or_create(
+                self._memcache_bucket_name, count=20)
+        mbc.put_later(self)
+        #MemcacheBucketConfig.put_later(self._memcache_bucket_name, self)
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------
@@ -82,6 +119,7 @@ def get_emails_by_user( user ):
 
 #def deferred_user_put(user_uuid):
 def deferred_user_put(bucket_key, list_keys, decrementing=False):
+    logging.info("Batch putting a list of users to memcache: %s" % list_keys)
     mbc = MemcacheBucketConfig.get_or_create('_willet_user_put_bucket')
     users_to_put = []
     had_error = False
@@ -187,7 +225,22 @@ class User( db.Expando ):
         """Memcaches and defers the put"""
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-        deferred.defer(deferred_user_put, self.uuid)
+
+        mbc = MemcacheBucketConfig.get_or_create('_willet_user_put_bucket')
+        bucket = mbc.get_random_bucket()
+        logging.info('bucket: %s' % bucket)
+
+        list_identities = memcache.get(bucket) or []
+        list_identities.append(key)
+
+        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
+        if len(list_identities) > mbc.count:
+            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
+            logging.warn('bucket overflowing, persisting!')
+            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
+        else:
+            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
+
         logging.info('put_later: %s' % self.uuid)
     
     def put(self):
@@ -268,7 +321,24 @@ class User( db.Expando ):
 
         self.user_is_admin = is_admin
         return is_admin 
-    
+
+    def add_ip(self, ip):
+        """gets the ips for this user and put_later's it to the datastore"""
+        user_ips = self.user_ips
+        if not user_ips:
+            user_ips = UserIps.get_or_create(self)
+
+        if not self.has_ip(ip):
+            user_ips.add(ip)
+            user_ips.put_later()
+
+    def has_ip(self, ip):
+        user_ips = self.user_ips
+        if not user_ips:
+            user_ips = UserIps.get_or_create(self)
+
+        return ip in user_ips.ips
+
     def merge_data( self, u ):
         """ Merge u into self. """
         if self.key() == u.key():
@@ -1234,7 +1304,7 @@ def create_user_by_email(email, referrer):
     """Create a new User object with the given attributes"""
     user = User(key_name=email, uuid=generate_uuid(16), 
                 referrer=referrer)
-    user.put()
+    user.put_later()
 
     # Make an email model
     create_email_model( user, email )
@@ -1381,6 +1451,7 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
 def add_ip_to_user(user_uuid, ip):
     """Done as a deferred task otherwise have to put a user everytime we get
     one by cookie"""
+    logging.warn('this method is deprecated: add_ip_to_user')
     logging.info('adding %s to user %s' % (ip, user_uuid))
     def txn(user):
         if user:
@@ -1397,16 +1468,17 @@ def get_user_by_cookie(request_handler):
     user = User.get(read_user_cookie(request_handler))
     if user:
         ip = request_handler.request.remote_addr
-        deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
+        user.add_ip(ip)
+        #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
     return user
 
 def get_or_create_user_by_cookie( request_handler, referrer=None ): 
     user = get_user_by_cookie(request_handler)
     if user is None:
-        ip = request_handler.request.remote_addr
         user = create_user(referrer)
         ip = request_handler.request.remote_addr
-        deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
+        user.add_ip(ip)
+        #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
 
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)
@@ -1450,3 +1522,4 @@ def create_relationship( from_u, to_u, provider = '' ):
     r.put()
 
     return r # return incase the caller wants it
+
