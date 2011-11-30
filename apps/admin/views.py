@@ -627,8 +627,15 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
-        """
         Email.goodbyeFromFraser( 'fraser.harris@gmail.com', 'Fraser', 'SIBTShopify')
+        """
+        apps = SIBTShopify.all()
+        for a in apps:
+            if a.store_url == 'http://thirsttees.myshopify.com':
+                a.btm_tab_enabled = False
+            else:
+                a.btm_tab_enabled = True
+            a.put()
 
 class ShowActions(URIHandler):
     @admin_required
