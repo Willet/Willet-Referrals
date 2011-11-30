@@ -448,7 +448,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 elif app.top_bar_enabled and not app.btm_tab_enabled:
                     AB_top_bar = 0 
                     AB_btm_tab = 1
-                else: 
+                else:  # both False
                     AB_top_bar = 0 
                     AB_btm_tab = 0
             else:
