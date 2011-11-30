@@ -813,8 +813,6 @@ class FBConnectStats( URIHandler ):
 
 class ReloadURIS(URIHandler):
     def get(self):
-        memcache.flush_all()
-        
         memcache.set('reload_uris', True)
 
 class CheckMBC(URIHandler):
@@ -878,13 +876,14 @@ class UpdateStore( URIHandler ):
             
             # Auth the http lib
             h.add_credentials(username, password)
-            
+
             # First fetch webhooks that already exist
             resp, content = h.request( url, "GET", headers = header)
+            logging.info( 'Fetching script_tags: %s' % content )
             data = json.loads( content ) 
 
             for w in data['script_tags']:
                 if '%s/s/shopify/sibt.js' % URL in w['src']:
                     url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
                     resp, content = h.request( url, "DELETE", headers = header)
-                    logging.info("Uninstalling: URL: %s Result: %s" % (url, content) )
+                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
