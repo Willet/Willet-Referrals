@@ -161,7 +161,7 @@
             FB.ui({ method:  'feed', 
                     link:    '{{share_url}}',
                     picture: '{{product_images|first}}',
-                    name:    '{{product_title}}',
+                    name:    "{{product_title|escape}}",
                     caption: '{{store_domain}}',
                     description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: '{{fb_redirect}}' }, 

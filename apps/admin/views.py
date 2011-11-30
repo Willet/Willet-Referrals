@@ -36,7 +36,7 @@ from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_tw
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
-from util.helpers           import url as build_url
+from util.helpers           import url as reverse_url
 from util.urihandler import URIHandler
 from util.memcache_bucket_config import MemcacheBucketConfig 
 
@@ -468,7 +468,7 @@ class Barbara(URIHandler):
             if c:
                 # Query the Shopify API to dl all Products
                 taskqueue.add(
-                        url = build_url('FetchShopifyProducts'),
+                        url = reverse_url('FetchShopifyProducts'),
                         params = {
                             'client_uuid': c.uuid,
                             'app_type'   : 'sibt'
@@ -598,10 +598,6 @@ class Barbara(URIHandler):
                     logging.info('installed %d webhooks for %s' % (len(webhooks), a.store_url))
         apps = SIBTShopify.all()
         for a in apps:
-            a.put()
-       
-        apps = SIBTShopify.all()
-        for a in apps:
             a.overlay_enabled = True
             a.put()
             logging.info( a.store_url )
@@ -630,10 +626,9 @@ class Barbara(URIHandler):
                             url = '%s/admin/webhooks/%s.json' % (a.store_url, w['id'])
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
-
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
-        Email.Mailout_Nov28( 'z4beth@gmail.com', 'barbara', 'asd')
         """
+        Email.goodbyeFromFraser( 'fraser.harris@gmail.com', 'Fraser', 'SIBTShopify')
 
 class ShowActions(URIHandler):
     @admin_required
@@ -835,3 +830,60 @@ class CheckMBC(URIHandler):
         #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
+
+class UpdateStore( URIHandler ):
+    def get(self):
+        store_url = self.request.get( 'store' )
+
+        app = SIBTShopify.get_by_store_url(store_url)
+
+        if app:
+            script_src = """<!-- START willet sibt for Shopify -->
+                <script type="text/javascript">
+                (function(window) {
+                    var hash = window.location.hash;
+                    var hash_index = hash.indexOf('#code=');
+                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    var src = "http://%s%s?" + params;
+                    var script = window.document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    window.document.getElementsByTagName("head")[0].appendChild(script);
+                }(window));
+                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            willet_snippet = script_src + """
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
+                <!-- END Willet SIBT for Shopify -->"""
+
+            liquid_assets = [{
+                'asset': {
+                    'value': willet_snippet,
+                    'key': 'snippets/willet_sibt.liquid'
+                }
+            }]
+            
+            app.install_assets(assets=liquid_assets)
+
+            url      = '%s/admin/script_tags.json' % app.store_url
+            username = app.settings['api_key'] 
+            password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
+            header   = {'content-type':'application/json'}
+            h        = httplib2.Http()
+            
+            # Auth the http lib
+            h.add_credentials(username, password)
+
+            # First fetch webhooks that already exist
+            resp, content = h.request( url, "GET", headers = header)
+            logging.info( 'Fetching script_tags: %s' % content )
+            data = json.loads( content ) 
+
+            for w in data['script_tags']:
+                if '%s/s/shopify/sibt.js' % URL in w['src']:
+                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
+                    resp, content = h.request( url, "DELETE", headers = header)
+                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )

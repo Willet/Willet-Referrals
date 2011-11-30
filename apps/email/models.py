@@ -7,9 +7,12 @@ Date:  March 2011
 """
 import logging
 import os
+import urllib, urllib2
 
-from google.appengine.ext.webapp import template
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
 from google.appengine.api.mail import EmailMessage
+from google.appengine.ext.webapp import template
 
 from util.consts import *
 
@@ -17,9 +20,10 @@ from util.consts import *
 #### Addresses ####
 ###################
 
+info = "info@getwillet.com"
 
-barbara   = '"Barbara Macdonald" <barbara@getwillet.com>'
-fraser    = '"Fraser Harris" <fraser@getwillet.com>'
+barbara   = "barbara@getwillet.com"
+fraser    = 'fraser@getwillet.com'
 matt      = 'harrismc@gmail.com'
 dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
 team      = '%s, %s' % (fraser, barbara)
@@ -79,11 +83,31 @@ class Email():
         except:
             pass
 
-        body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com<br /> Cell 519-580-9876<br /> @fjharris</p> """ % (name, app_name, store_name)
+        body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name)
         
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
 
+    @staticmethod
+    def goodbyeFromFraser( to_addr, name, app_name ):
+        to_addr = to_addr
+        subject = 'We are sad to see you go :('
+    
+        # Grab first name only
+        try:
+            name = name.split(' ')[0]
+        except:
+            pass
+
+        if 'SIBT' in app_name:
+            app_name = "Should I Buy This"
+        else:
+            app_name = "ShopConnection"
+
+        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(fraser, to_addr, subject, body)
 
     @staticmethod
     def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
@@ -146,7 +170,7 @@ class Email():
         })
 
         logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, dev_team, subject, body)
+        Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod 
     def template_path(path):
@@ -154,6 +178,29 @@ class Email():
 
     @staticmethod
     def send_email(from_address, to_address, subject, body):
+        params = {
+            "api_user" : "BarbaraEMac",
+            "api_key"  : "w1llet!!",
+            "to"       : to_address,
+            "subject"  : subject,
+            "html"     : body,
+            "from"     : info,
+            "fromname" : "Willet",
+            "bcc"      : barbara
+        }
+
+        #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
+
+        # Save the campaign data in a bucket
+        result = urlfetch.fetch(
+            url     = 'https://sendgrid.com/api/mail.send.json',
+            payload = urllib.urlencode( params ), 
+            method  = urlfetch.POST,
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        logging.info("%s"% result.content)
+        
+        """
         try:
             e = EmailMessage(
                     sender=from_address, 
@@ -164,6 +211,7 @@ class Email():
             e.send()
         except Exception,e:
             logging.error('error sending email: %s', e)
+        """
 
 # end class
 

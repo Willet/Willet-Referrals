@@ -70,7 +70,7 @@ class SIBTShopifyWelcome(URIHandler):
                 'app': app,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
-                'install_code': "{% include 'willet_sibt' %}"
+                'install_code': "<div id='_willet_shouldIBuyThisButton'></div>" #{% include 'willet_sibt' %}"
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
@@ -438,8 +438,10 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                       app  = app )
                 logging.info("BAR TAB? %s" % bar_or_tab )
 
-            AB_top_bar = 1 if bar_or_tab == "bar" else 0
-            AB_btm_tab = int(not AB_top_bar)
+                AB_top_bar = 1 if bar_or_tab == "bar" else 0
+                AB_btm_tab = int(not AB_top_bar)
+            else:
+                AB_top_bar = AB_btm_tab = 0
         else:
             random.seed( datetime.now() )
             
@@ -447,8 +449,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             stylesheet      = 'css/colorbox.css'
             fb_connect      = random.randint( 0, 1 )
             overlay_style   = "_willet_overlay_button"
-            AB_top_bar = 1 
-            AB_btm_tab = 1
+            AB_top_bar = AB_btm_tab = 1
 
         logging.info("FB : %s" % fb_connect)
 
