@@ -63,23 +63,23 @@ b[0]&&b[0].ownerDocument||c);var h=[],i;for(var j=0,k;(k=a[j])!=null;j++){typeof
 	},
 	
 	// Abstracting the HTML and event identifiers for easy rebranding
-	colorbox = 'colorbox',
+	colorbox = 'willet_colorbox',
 	prefix = 'cbox',
     willet_prefix = 'willet_' + prefix,
     boxElement = willet_prefix + 'Element',
 	
 	// Events	
-	event_open = prefix + '_open',
-	event_load = prefix + '_load',
-	event_complete = prefix + '_complete',
-	event_cleanup = prefix + '_cleanup',
-	event_closed = prefix + '_closed',
-	event_purge = prefix + '_purge',
+	event_open = willet_prefix + '_open',
+	event_load = willet_prefix + '_load',
+	event_complete = willet_prefix + '_complete',
+	event_cleanup = willet_prefix + '_cleanup',
+	event_closed = willet_prefix + '_closed',
+	event_purge = willet_prefix + '_purge',
 	
 	// Special Handling for IE
 	isIE = $.browser.msie && !$.support.opacity, // Detects IE6,7,8.  IE9 supports opacity.  Feature detection alone gave a false positive on at least one phone browser and on some development versions of Chrome, hence the user-agent test.
 	isIE6 = isIE && $.browser.version < 7,
-	event_ie6 = prefix + '_IE6',
+	event_ie6 = willet_prefix + '_IE6',
 
 	// Cached jQuery Object Variables
 	$overlay,

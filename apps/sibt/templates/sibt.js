@@ -175,7 +175,7 @@
                                          "&store_url={{ store_url }}" +
                                          "&url=" + window.location.href;
 
-            $.colorbox({
+            $.willet_colorbox({
                 transition: 'fade',
                 close: '',
                 scrolling: false,
@@ -210,7 +210,7 @@
                 "&instance_uuid={{instance.uuid}}" +
                 "&url=" + window.location.href;  
 
-        $.colorbox({
+        $.willet_colorbox({
             transition: 'fade',
             scrolling: true, 
             iframe: true,
@@ -535,15 +535,12 @@
             'dom_el': null,
             'loaded': false,
             'test': function() {
-                return (typeof jQuery          == 'function' && 
-                        typeof jQuery.colorbox == 'function' && 
-                        typeof jQuery.cookie   == 'function');
+                return (typeof jQuery == 'function' && typeof jQuery.willet_colorbox == 'function')
             }, 'callback': function() {
                 // HACKETY HACK HACK
                 $ = jQuery;
-                $.colorbox = jQuery.colorbox;
-                $.cookie   = jQuery.cookie;
-                jQuery.colorbox.init();
+                $.willet_colorbox = jQuery.willet_colorbox;
+                jQuery.willet_colorbox.init();
             }
         }
     ];
@@ -680,7 +677,7 @@
                         //console.log('shared on top bar!'); 
                         _willet_topbar_ask_success();
                     } else if (message == 'close') {
-                        $.colorbox.close();
+                        $.willet_colorbox.close();
                     }
                 });
                 
