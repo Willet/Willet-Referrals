@@ -41,7 +41,27 @@ class MemcacheBucketConfig(Model):
         self.put()
 
     def put_later(self, entity):
-        MemcacheBucketConfig.put_later(self.name, entity)
+        """Will put this entity in a bucket!"""
+        key = entity.get_key()
+
+        memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
+
+        bucket = self.get_random_bucket()
+        logging.info('mbc: %s' % self.name)
+        logging.info('bucket: %s' % bucket)
+
+        list_identities = memcache.get(bucket) or []
+        list_identities.append(key)
+
+        logging.info('bucket length: %d/%d' % (len(list_identities), self.count))
+        if len(list_identities) > self.count:
+            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
+            logging.warn('bucket overflowing, persisting!')
+            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
+        else:
+            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
+
+        logging.info('put_later: %s' % key)
 
     @staticmethod
     def create(name, count=20):
@@ -62,30 +82,6 @@ class MemcacheBucketConfig(Model):
     def _get_from_datastore(cls, name):
         """Datastore retrieval using memcache_key"""
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
-
-    @staticmethod
-    def put_later(mbc_name, entity):
-        mbc = MemcacheBucketConfig.get_or_create(mbc_name)
-        key = entity.get_key()
-
-        memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
-
-        bucket = mbc.get_random_bucket()
-        logging.info('mbc: %s' % mbc_name)
-        logging.info('bucket: %s' % bucket)
-
-        list_identities = memcache.get(bucket) or []
-        list_identities.append(key)
-
-        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        if len(list_identities) > mbc.count:
-            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
-            logging.warn('bucket overflowing, persisting!')
-            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
-        else:
-            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
-
-        logging.info('put_later: %s' % key)
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))

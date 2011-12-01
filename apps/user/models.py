@@ -40,41 +40,6 @@ from util                 import oauth2 as oauth
 from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_bucket_config import batch_put 
 
-# -----
-# UserIPs Class Definition
-# -----
-class UserIPs(Model):
-    user = db.ReferenceProperty(User, collection_name="user_ips")
-    ips = db.StringListProperty(default=None)
-    _memcache_bucket_name = '_user_ips_bucket'
-
-    def __init__(self, *args, **kwargs):
-        if 'user' in kwargs:
-            self._memcache_key = kwargs['user'].uuid
-        else:
-            self._memcache_key = None
-        super(UserIPs, self).__init__(*args, **kwargs)
-
-    def add(self, ip):
-        if not ip in self.ips:
-            self.ips.append(ip)
-            return True
-        return False
-
-    @classmethod
-    def get_or_create(cls, user):
-        uips = cls.get(user.uuid)
-        if not uips:
-            uips = cls(user=user)
-
-        return uips
-
-    def put_later(self):
-        """Calls the mbc put later"""
-        mbc = MemcacheBucketConfig.get_or_create(
-                self._memcache_bucket_name, count=20)
-        mbc.put_later(self)
-        #MemcacheBucketConfig.put_later(self._memcache_bucket_name, self)
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------
@@ -324,18 +289,19 @@ class User( db.Expando ):
 
     def add_ip(self, ip):
         """gets the ips for this user and put_later's it to the datastore"""
-        user_ips = self.user_ips
+        user_ips = self.user_ips.get()
         if not user_ips:
-            user_ips = UserIps.get_or_create(self)
-
+            user_ips = UserIPs.get_or_create(self)
         if not self.has_ip(ip):
             user_ips.add(ip)
             user_ips.put_later()
+            return True
+        return False
 
     def has_ip(self, ip):
-        user_ips = self.user_ips
+        user_ips = self.user_ips.get()
         if not user_ips:
-            user_ips = UserIps.get_or_create(self)
+            user_ips = UserIPs.get_or_create(self)
 
         return ip in user_ips.ips
 
@@ -1484,6 +1450,48 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
     set_user_cookie(request_handler, user.uuid)
 
     return user
+
+# -----
+# UserIPs Class Definition
+# -----
+class UserIPs(Model):
+    user = db.ReferenceProperty(User, collection_name="user_ips")
+    ips = db.StringListProperty(default=None)
+    _memcache_bucket_name = '_user_ips_bucket'
+
+    def __init__(self, *args, **kwargs):
+        if 'user_uuid' in kwargs:
+            self._memcache_key = kwargs['user_uuid']
+        else:
+            self._memcache_key = None
+        super(UserIPs, self).__init__(*args, **kwargs)
+
+    def add(self, ip):
+        if not ip in self.ips:
+            self.ips.append(ip)
+            return True
+        return False
+
+    def put_later(self):
+        """Calls the mbc put later"""
+        mbc = MemcacheBucketConfig.get_or_create(
+                self._memcache_bucket_name, count=20)
+        mbc.put_later(self)
+        #MemcacheBucketConfig.put_later(self._memcache_bucket_name, self)
+
+    @classmethod
+    def get_or_create(cls, user):
+        uips = cls.get(user.uuid)
+        if not uips:
+            uips = cls(user=user, user_uuid=user.uuid)
+
+        return uips
+
+    @classmethod
+    def _get_from_datastore(cls, user_uuid):
+        logging.info('getting by user_uuid: %s' % user_uuid)
+        return cls.all().filter('user =', user_uuid).get()
+
 
 # ------------------------------------------------------------------------------
 # Relationship Class Definition ------------------------------------------------

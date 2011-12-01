@@ -830,7 +830,6 @@ class CheckMBC(URIHandler):
         #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
-
 class UpdateStore( URIHandler ):
     def get(self):
         store_url = self.request.get( 'store' )
@@ -887,3 +886,39 @@ class UpdateStore( URIHandler ):
                     url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
                     resp, content = h.request( url, "DELETE", headers = header)
                     logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
+
+class MemcacheConsole(URIHandler):
+    @admin_required
+    def post(self, admin):
+        key = self.request.get('key')
+        value = None
+        new_value = self.request.get('value')
+        protobuf = self.request.get('protobuf')
+        messages = []
+        if key:
+            value = memcache.get('key')
+            if protobuf:
+                value = db.model_from_protobuf(entity_pb.EntityProto(value))
+            if new_value:
+                if protobuf:
+                    messages.append('Not supported')
+                else:
+                    memcache.set(key, new_value)
+                    messages.append('Changed %s from %s to %s' % (
+                        key, value, new_value    
+                    ))
+        data = {
+            'key': key,
+            'value': value,
+            'new_value': new_value,
+            'messages': messages,
+        }
+        return json.dumps(data)
+
+    @admin_required
+    def get(self, admin):
+        self.response.out.write(self.render_page(
+                'memcache_console.html', {},
+            )
+        )
+
