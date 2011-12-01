@@ -153,42 +153,24 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function ( message ) {
+        _willet_store_analytics('SIBTConnectFBDialog');
 
-        {% if AB_FACEBOOK_NO_CONNECT %}
-            _willet_start_partial_instance();
-            _willet_store_analytics('SIBTNoConnectFBDialog');
-
-            FB.ui({ method:  'feed', 
-                    link:    '{{share_url}}',
-                    picture: '{{product_images|first}}',
-                    name:    "{{product_title|escape}}",
-                    caption: '{{store_domain}}',
-                    description: "{{ product_desc|striptags|escape }}",
-                    redirect_uri: '{{fb_redirect}}' }, 
-                    _willet_ask_callback );
-
-        {% else %}
-
-            _willet_store_analytics('SIBTConnectFBDialog');
-
-            var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
-                                         "&store_url={{ store_url }}" +
-                                         "&url=" + window.location.href;
-
-            $.willet_colorbox({
-                transition: 'fade',
-                close: '',
-                scrolling: false,
-                iframe: true, 
-                initialWidth: 0, 
-                initialHeight: 0, 
-                innerWidth: '400px',
-                innerHeight: '220px', 
-                fixed: true,
-                href: url,
-                onClosed: _willet_ask_callback
-            });
-        {% endif %}
+        var url =  "{{URL}}/s/preask.html?user_uuid={{ user.uuid }}" + 
+                                     "&store_url={{ store_url }}" +
+                                     "&url=" + window.location.href;
+        $.willet_colorbox({
+            transition: 'fade',
+            close: '',
+            scrolling: false,
+            iframe: true, 
+            initialWidth: 0, 
+            initialHeight: 0, 
+            innerWidth: '400px',
+            innerHeight: '220px', 
+            fixed: true,
+            href: url,
+            onClosed: _willet_ask_callback
+        });
 
         _willet_button_mouseleave();
     };
@@ -516,19 +498,6 @@
             }
         },
         */
-        {% if AB_FACEBOOK_NO_CONNECT %}
-        {
-            'name': 'Facebook',
-            'url': 'http://connect.facebook.net/en_US/all.js',
-            'dom_el': null,
-            'loaded': false,
-            'test': function() {
-                return (typeof FB == 'object');
-            }, 'callback': function() {
-                return;
-            }
-        },
-        {% endif %}
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
@@ -681,20 +650,6 @@
                     }
                 });
                 
-                // If we're trying ask without connect:
-                {% if AB_FACEBOOK_NO_CONNECT %}
-                    // Put fb_root div in the page
-                    var fb_div = $(document.createElement( 'div' ));
-                    fb_div.attr( 'id', 'fb-root' );
-                    $('body').append( fb_div );
-
-                    FB.init({
-                        appId: '{{FACEBOOK_APP_ID}}', // App ID
-                        cookie: true, // enable cookies to allow the server to access the session
-                        xfbml: true  // parse XFBML
-                    });
-                {% endif %}
-
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );
