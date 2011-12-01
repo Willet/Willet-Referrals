@@ -160,7 +160,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         if is_topbar_ask:
             path = os.path.join('apps/sibt/templates/', 'ask_in_the_bar.html')
         else:
-            path = os.path.join('apps/sibt/templates/', 'ask.html')
+            path = os.path.join('apps/sibt/templates/', 'preask.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
