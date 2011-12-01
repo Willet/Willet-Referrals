@@ -44,6 +44,9 @@ class SIBT(App):
     # if the top bar is enabled for this app 
     top_bar_enabled = db.BooleanProperty(default=True)
 
+    # if the bottom tab is enabled for this app 
+    btm_tab_enabled = db.BooleanProperty(default=True)
+
     # if the img overlay is enabled for this app 
     overlay_enabled = db.BooleanProperty(default=True)
 

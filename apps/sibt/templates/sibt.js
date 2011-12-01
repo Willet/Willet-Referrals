@@ -14,7 +14,6 @@
     var _willet_show_votes = ('{{ show_votes }}' == 'True');
     var _willet_has_voted = ('{{ has_voted }}' == 'True');
     var sibt_button_enabled = ('{{ app.button_enabled }}' == 'True');
-    var sibt_tb_enabled = ('{{ app.top_bar_enabled }}' == 'True' && {{AB_top_bar}});
     var is_live = ('{{ is_live }}' == 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
     var _willet_topbar = null;
@@ -22,8 +21,9 @@
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
+    var sibt_tb_enabled   = {{AB_top_bar}};
     var imgOverlayEnabled = {{AB_overlay}};
-    var bottomTabEnabled = {{AB_btm_tab}};
+    var bottomTabEnabled  = {{AB_btm_tab}};
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -182,8 +182,8 @@
                 iframe: true, 
                 initialWidth: 0, 
                 initialHeight: 0, 
-                innerWidth: '450px',
-                innerHeight: '240px', 
+                innerWidth: '400px',
+                innerHeight: '220px', 
                 fixed: true,
                 href: url,
                 onClosed: _willet_ask_callback

@@ -375,7 +375,7 @@ b[0]&&b[0].ownerDocument||c);var h=[],i;for(var j=0,k;(k=a[j])!=null;j++){typeof
 		// Cache values needed for size calculations
 		interfaceHeight = $topBorder.height() + $bottomBorder.height() + $content.outerHeight(true) - $content.height();//Subtraction needed for IE6
 		interfaceWidth = $leftBorder.width() + $rightBorder.width() + $content.outerWidth(true) - $content.width();
-		loadedHeight = $loaded.outerHeight(true);
+		loadedHeight = $loaded.outerHeight(true) - 20;
 		loadedWidth = $loaded.outerWidth(true);
 		
 		// Setting padding to remove the need to do size conversions during the animation step.

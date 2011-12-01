@@ -627,8 +627,15 @@ class Barbara(URIHandler):
                             resp, content = h.request( url, "DELETE", headers = header)
                             logging.info( 'Removed from %s' % a.store_url )
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
-        """
         Email.goodbyeFromFraser( 'fraser.harris@gmail.com', 'Fraser', 'SIBTShopify')
+        """
+        apps = SIBTShopify.all()
+        for a in apps:
+            if a.store_url == 'http://thirsttees.myshopify.com':
+                a.btm_tab_enabled = False
+            else:
+                a.btm_tab_enabled = True
+            a.put()
 
 class ShowActions(URIHandler):
     @admin_required
@@ -922,3 +929,28 @@ class MemcacheConsole(URIHandler):
             )
         )
 
+class ShowCounts( URIHandler ):
+    def get( self ):
+
+        btn_shows = SIBTShowingButton.all().count()
+
+        click_ask_btn = SIBTUserClickedButtonAsk.all().count()
+        click_ask_overlay = SIBTUserClickedOverlayAsk.all().count()
+        click_ask_bar = SIBTUserClickedTopBarAsk.all().count()
+
+        ask_shows = SIBTShowingAskIframe.all().count()
+
+        ask_share = SIBTAskUserClickedShare.all().count()
+
+        connect_cancelled = SIBTFBConnectCancelled.all().count()
+
+        str = "<p>Button Shows: %d</p>" % btn_shows
+
+        str += "<p>Btn Clicks: %d</p>" % click_ask_btn
+        str += "<p>Bar Clicks: %d</p>" % click_ask_bar
+        str += "<p>Overlay Clicks: %d</p>" % click_ask_overlay
+        str += "<p>Showing Ask: %d</p>" % ask_shows
+        str += "<p>Shared the Ask: %d</p>" % ask_share
+        str += "<p>FB Connect Cancelled: %d</p>" % connect_cancelled
+
+        self.response.out.write( str )

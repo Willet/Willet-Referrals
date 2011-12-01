@@ -432,14 +432,25 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             # If subsequent page viewing and we should prompt user:
             if show_top_bar_ask:
-                bar_or_tab = ab_test( 'sibt_bar_or_tab',
-                                      ['bar', 'tab'],
-                                      user = user,
-                                      app  = app )
-                logging.info("BAR TAB? %s" % bar_or_tab )
+                if app.top_bar_enabled and app.btm_tab_enabled:
+                    bar_or_tab = ab_test( 'sibt_bar_or_tab',
+                                          ['bar', 'tab'],
+                                          user = user,
+                                          app  = app )
+                    logging.info("BAR TAB? %s" % bar_or_tab )
 
-                AB_top_bar = 1 if bar_or_tab == "bar" else 0
-                AB_btm_tab = int(not AB_top_bar)
+                    AB_top_bar = 1 if bar_or_tab == "bar" else 0
+                    AB_btm_tab = int(not AB_top_bar)
+
+                elif not app.top_bar_enabled and app.btm_tab_enabled:
+                    AB_top_bar = 1 
+                    AB_btm_tab = 0
+                elif app.top_bar_enabled and not app.btm_tab_enabled:
+                    AB_top_bar = 0 
+                    AB_btm_tab = 1
+                else:  # both False
+                    AB_top_bar = 0 
+                    AB_btm_tab = 0
             else:
                 AB_top_bar = AB_btm_tab = 0
         else:

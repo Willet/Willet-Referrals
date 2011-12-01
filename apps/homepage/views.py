@@ -9,6 +9,8 @@ import inspect
 
 from django.utils import simplejson as json
 from google.appengine.ext import webapp
+from google.appengine.api import urlfetch, memcache
+
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
