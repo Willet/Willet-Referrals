@@ -183,7 +183,7 @@
                 initialWidth: 0, 
                 initialHeight: 0, 
                 innerWidth: '400px',
-                innerHeight: '240px', 
+                innerHeight: '220px', 
                 fixed: true,
                 href: url,
                 onClosed: _willet_ask_callback
