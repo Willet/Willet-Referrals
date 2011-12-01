@@ -535,11 +535,14 @@
             'dom_el': null,
             'loaded': false,
             'test': function() {
-                return (typeof jQuery == 'function' && typeof jQuery.colorbox == 'function');
+                return (typeof jQuery          == 'function' && 
+                        typeof jQuery.colorbox == 'function' && 
+                        typeof jQuery.cookie   == 'function');
             }, 'callback': function() {
                 // HACKETY HACK HACK
                 $ = jQuery;
                 $.colorbox = jQuery.colorbox;
+                $.cookie   = jQuery.cookie;
                 jQuery.colorbox.init();
             }
         }
