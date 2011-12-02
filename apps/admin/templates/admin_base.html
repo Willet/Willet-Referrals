@@ -67,11 +67,7 @@
                     </div>
                     <div class="prepend-top span-15 last right_col">
                         <div id="right_header" class="span-15 last">
-                            <p><a href="{{ URL }}{% url ShowActions %}">Actions</a></p>
-                            <p><a href="{{ URL }}{% url ShowClickActions %}">Click Stats</a></p>
-                            <p><a href="{{ URL }}{% url ManageApps %}">Manage Apps</a></p>
-                            <p><a href="{{ URL }}/_ah/stats">AE Stats</a></p>
-                            <p><a href="{{ URL }}{% url ShowRoutes %}">Routes</a></p>
+                            {% include "admin_menu.html" %}
                             {% block right_head %}{% endblock right_head %}
                         </div>
                         {% block right_content %}
@@ -122,8 +118,6 @@
         <div class='hidden'>
         {% block hidden %}{% endblock %}
         </div>
-     
-        <script>
          
          <!-- Late loading scripts -->
         {% block lazyload %}{% endblock %}

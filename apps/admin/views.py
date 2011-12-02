@@ -18,7 +18,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
-from apps.action.models import MemcacheBucketConfig 
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
@@ -39,6 +38,7 @@ from util.consts import *
 from util.helpers import *
 from util.helpers           import url as reverse_url
 from util.urihandler import URIHandler
+from util.memcache_bucket_config import MemcacheBucketConfig 
 
 class Admin( URIHandler ):
     @admin_required
@@ -837,7 +837,6 @@ class CheckMBC(URIHandler):
         #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
-
 class UpdateStore( URIHandler ):
     def get(self):
         store_url = self.request.get( 'store' )
@@ -895,6 +894,48 @@ class UpdateStore( URIHandler ):
                     resp, content = h.request( url, "DELETE", headers = header)
                     logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
 
+class MemcacheConsole(URIHandler):
+    @admin_required
+    def post(self, admin):
+        key = self.request.get('key')
+        value = None
+        new_value = self.request.get('value')
+        protobuf = self.request.get('protobuf')
+        messages = []
+        if key:
+            logging.info('looking up key: %s' % key)
+            value = memcache.get(key)
+            if protobuf:
+                value = db.model_from_protobuf(entity_pb.EntityProto(value))
+            if new_value:
+                if protobuf:
+                    messages.append('Not supported')
+                else:
+                    memcache.set(key, new_value)
+                    messages.append('Changed %s from %s to %s' % (
+                        key, value, new_value    
+                    ))
+            logging.info('got value: %s' % value)
+        data = {
+            'key': key,
+            'value': value,
+            'new_value': new_value,
+            'messages': messages,
+        }
+        try:
+            json_data = json.dumps(data)
+        except:
+            json_data = json.dumps({'key': key, 'messages': ['Error decoding key:value']})
+
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json_data)
+
+    @admin_required
+    def get(self, admin):
+        self.response.out.write(self.render_page(
+                'memcache_console.html', {},
+            )
+        )
 
 class ShowCounts( URIHandler ):
     def get( self ):

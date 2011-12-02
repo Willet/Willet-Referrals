@@ -98,6 +98,12 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 # controls the number of memcache buckets
 # and the maximum length of a bucket before it gets put to datastore
 NUM_ACTIONS_MEMCACHE_BUCKETS = 20
+MEMCACHE_BUCKET_COUNTS = {
+    'default': 20,
+    '_willet_actions_bucket': 25,
+    '_willet_user_ips_bucket': 20,
+    '_willet_user_put_bucket': 20,
+}
 
 # number of seconds to memcache an item
 # see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache

@@ -21,6 +21,7 @@ urlpatterns = [
     (r'/admin/click_actions', ShowClickActions),
     (r'/admin/fb_connect', FBConnectStats),
     (r'/admin/reload_uris', ReloadURIS),
+    (r'/admin/memcache_console', MemcacheConsole),
     (r'/admin/check_mbc', CheckMBC),
     (r'/admin/updateStore', UpdateStore),
     (r'/admin/counts', ShowCounts)
