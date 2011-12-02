@@ -215,6 +215,18 @@
                     doPostMessage('close');
                 });
 
+                // Take THAT IE!
+                if(!Array.indexOf){
+                    Array.prototype.indexOf = function(obj){
+                        for(var i=0; i<this.length; i++){
+                            if(this[i]==obj){
+                                return i;
+                            }
+                        }
+                        return -1;
+                    }
+                }
+
                       
         });
         </script>
@@ -251,6 +263,10 @@
                 padding: 5px;
                 margin: 35px 10px 10px 10px;
                 float: left;
+
+                -webkit-box-shadow:0 1px 2px #999;
+                -moz-box-shadow:0 1px 2px #999;
+                box-shadow:0 1px 2px #999;
             }
             ul {
                 list-style-type: none;
@@ -335,11 +351,12 @@
                 width: 50%;
                 height: 35px;
                 background-color: #e9f0f0;
+                text-decoration: none;
             }
             .willet p {
                 float: left;
                 font-size: 10px;
-                margin-left: 17px;
+                margin-left: 10px;
             }
             .willet img {
                 float: left;
@@ -384,9 +401,9 @@
                 font-size: 11px;
                 margin-top: 5px;
                 height: 35px;
+                max-height: 35px;
             }
             #btns {
-                width: 45.9%;
                 text-align: right;
                 font-size: 11px;
                 background-color: #e9f0f0;
@@ -461,7 +478,7 @@
                 background-color: #e9f0f0;
             }
             #cancel button {
-                margin: 0px 17px 0px 0px;
+                margin: 5px 10px 0px 0px;
                 float: right;
             }
         </style>
@@ -480,7 +497,7 @@
                     <p class="fb">f</p>
                     <p>Ask All Friends</p>
                 </button>
-                <button title="Post to your friends' walls" value="Choose Your Friends" onclick="chooseFriends()">
+                <button style="float: right;" title="Post to your friends' walls" value="Choose Your Friends" onclick="chooseFriends()">
                     <p class="fb">f</p>
                     <p>Choose Which Friends</p>
                 </button>
