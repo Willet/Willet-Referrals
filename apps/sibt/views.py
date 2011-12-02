@@ -157,14 +157,201 @@ class AskDynamicLoader(webapp.RequestHandler):
         }
 
         # Finally, render the HTML!
-        if is_topbar_ask:
-            path = os.path.join('apps/sibt/templates/', 'ask_in_the_bar.html')
-        else:
-            path = os.path.join('apps/sibt/templates/', 'ask.html')
+        path = os.path.join('apps/sibt/templates/', 'ask.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+class Ask2DynamicLoader(webapp.RequestHandler):
+    """When requested serves a plugin that will contain various functionality
+       for sharing information about a purchase just made by one of our clients"""
+    
+    # TODO: THis code is Shopify specific. Refactor.
+    def get(self):
+        template_values = {}
+            
+        user   = User.get(self.request.get('user_uuid'))
+        app    = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        target = get_target_url(self.request.get('url'))
+
+        logging.debug('target: %s' % target)
+        logging.info("APP: %r" % app)
+        
+        origin_domain = os.environ['HTTP_REFERER'] if\
+            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+        
+        logging.debug('target: %s' % target)
+        logging.info("APP: %r" % app)
+
+        # Grab the product info
+        product = ProductShopify.get_or_fetch(target, app.client)
+
+        # Make a new Link
+        link = Link.create(target, app, origin_domain, user)
+        user_is_admin = user.is_admin()
+        
+        # GAY BINGO
+        if not user_is_admin:
+            bingo( 'sibt_button_text5' )
+            bingo( 'sibt_facebook_style' )
+
+        ab_share_options = [ 
+            "I'm not sure if I should buy this. What do you think?",
+            "Would you buy this? I need help making a decision!",
+            "I need some shopping advice. Should I buy this? Would you?",
+            "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
+        ]
+        
+        if not user_is_admin:
+            ab_opt = ab_test('sibt_share_text3',
+                              ab_share_options,
+                              user = user,
+                              app  = app )
+        else:
+            ab_opt = "ADMIN: Should I buy this? Please let me know!"
+
+
+        # Now, tell Mixpanel
+        if is_topbar_ask:
+            #app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
+            SIBTShowingAskTopBarIframe.create(user, url=target, app=app)
+        else:
+            #app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
+            SIBTShowingAskIframe.create(user, url=target, app=app)
+
+        # User stats
+        user_email = user.get_attr('email') if user else ""
+        user_found = True if hasattr(user, 'fb_access_token') else False
+
+        store_domain = ''
+        try:
+            page_url = urlparse(self.request.headers.get('referer'))
+            store_domain   = "%s://%s" % (page_url.scheme, page_url.netloc)
+        except Exception, e:
+            logging.error('error parsing referer %s' % e)
+            store_domain = self.request.get('store_url')
+
+        try:
+            #parts = product.description[:150].split('.')
+            #logging.info('got parts: %s' % parts)
+            #parts = parts[:-1]
+            #logging.info('got off last bit: %s' % parts)
+            #productDesc = '.'.join(parts) + '.'
+            
+            ex = '[!\.\?]+'
+            #logging.info('before strip html: %s' % product.description)
+            productDesc = strip_html(product.description)
+            #logging.info('stripped of html: %s' % productDesc)
+            parts = re.split(ex, productDesc[:150])
+            #logging.info('parts: %s' % parts)
+            if len(parts) > 1:
+                productDesc = '.'.join(parts[:-1])
+            else:
+                productDesc = '.'.join(parts)
+            #logging.info('cut last part: %s' % productDesc)
+            if productDesc[:-1] not in ex:
+                productDesc += '.'
+                        
+        except Exception,e:
+            productDesc = ''
+            logging.warn('Probably no product description: %s' % e, exc_info=True)
+
+        template_values = {
+            'productImg' : product.images, 
+            'productName': product.title, 
+            'productDesc': productDesc,
+            'product_id': product.shopify_id,
+            'productURL': store_domain,
+
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'app': app,
+            'willt_url': link.get_willt_url(),
+            'willt_code': link.willt_url_code,
+
+            'target_url' : target,
+            
+            'user': user,
+            'user_email': user_email,
+            'user_found': str(user_found).lower(),
+            'AB_share_text' : ab_opt
+        }
+
+        path = os.path.join('apps/sibt/templates/', 'ask2.html')
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+
+class PreAskDynamicLoader(webapp.RequestHandler):
+    """When requested serves a plugin that will contain various functionality
+       for sharing information about a purchase just made by one of our clients"""
+    
+    # TODO: THis code is Shopify specific. Refactor.
+    def get(self):
+        store_domain = self.request.get('store_url')
+        app        = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        user       = User.get(self.request.get('user_uuid'))
+        user_found = True if hasattr(user, 'fb_access_token') else False
+        target     = self.request.get( 'url' )
+        
+        # We need this stuff here to fill in the FB.ui stuff 
+        # if the user wants to post on wall
+        try:
+            page_url = urlparse(self.request.headers.get('referer'))
+            store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
+        except Exception, e:
+            logging.error('error parsing referer %s' % e)
+
+        # Fix the product description
+        product = ProductShopify.get_or_fetch(target, app.client)
+        try:
+            ex = '[!\.\?]+'
+            productDesc = strip_html(product.description)
+            parts = re.split(ex, productDesc[:150])
+            if len(parts) > 1:
+                productDesc = '.'.join(parts[:-1])
+            else:
+                productDesc = '.'.join(parts)
+            if productDesc[:-1] not in ex:
+                productDesc += '.'
+        except Exception,e:
+            productDesc = ''
+            logging.warn('Probably no product description: %s' % e, exc_info=True)
+
+        # Make a new Link
+        origin_domain = os.environ['HTTP_REFERER'] if\
+            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+        link = Link.create(target, app, origin_domain, user)
+        
+        template_values = {
+            'URL' : URL,
+
+            'app_uuid'     : app.uuid,
+            'user_uuid'    : self.request.get( 'user_uuid' ),
+            'target_url'   : self.request.get( 'url' ),
+            'store_url'    : self.request.get( 'store_url' ),
+            'store_domain' : self.request.get( 'store_url' ),
+
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'user_found'     : str(user_found).lower(),
+
+            'product_uuid'   : product.uuid,
+            'product_title'  : product.title if product else "",
+            'product_images' : product.images if product else "",
+            'product_desc'   : productDesc,
+
+            'share_url'      : link.get_willt_url(),
+            'willt_code'     : link.willt_url_code,
+        }
+
+        path = os.path.join('apps/sibt/templates/', 'preask.html')
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+
 
 class VoteDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
