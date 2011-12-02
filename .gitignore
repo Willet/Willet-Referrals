@@ -6,3 +6,4 @@ util/local_consts.py
 *.marks
 .ropeproject
 aeenv.py
+*.DS_Store
