@@ -210,7 +210,7 @@
             };
             
             $(document).ready(function() {
-                $('#cancel-btn').click(function() {
+                $('.cancel-btn').click(function() {
                     storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
@@ -244,13 +244,13 @@
                 color: white;
                 font-family: fb_font;
                 font-size: 16px;
-                font-weight: bold;
 
                 border: 1px solid #1C4596;
                 border-radius: 5px;
 
                 padding: 5px;
                 margin: 35px 10px 10px 10px;
+                float: left;
             }
             ul {
                 list-style-type: none;
@@ -329,28 +329,19 @@
                 margin: 0px;
                 padding: 30px 10px 0px 10px;
             }
-            #cancel {
-                float: right;
+
+            .willet {
+                float: left;
                 width: 50%;
                 height: 35px;
                 background-color: #e9f0f0;
             }
-            #cancel button {
-                margin: 0px 17px 0px 0px;
-                float: right;
-            }
-            #willet {
-                float: right;
-                width: 50%;
-                height: 35px;
-                background-color: #e9f0f0;
-            }
-            #willet p {
+            .willet p {
                 float: left;
                 font-size: 10px;
                 margin-left: 17px;
             }
-            #willet img {
+            .willet img {
                 float: left;
                 height: 20px;
                 margin: 5px 10px 5px 3px;
@@ -395,6 +386,7 @@
                 height: 35px;
             }
             #btns {
+                width: 45.9%;
                 text-align: right;
                 font-size: 11px;
                 background-color: #e9f0f0;
@@ -402,7 +394,7 @@
                 padding: 3px 7px 2px 10px;
                 height: 24px;
             }
-            #btns button {
+            #btns button, #cancel button {
                -webkit-appearance: none;
                 -webkit-border-horizontal-spacing: 0px;
                 -webkit-border-vertical-spacing: 0px;
@@ -442,7 +434,6 @@
                 font-size: 13px;
                 font-style: normal;
                 font-variant: normal;
-                font-weight: bold;
                 letter-spacing: normal;
                 line-height: normal;
                 margin-bottom: 0px;
@@ -462,6 +453,16 @@
                 vertical-align: baseline;
                 white-space: nowrap;
                 word-spacing: 0px;
+            }
+            #cancel {
+                float: right;
+                width: 50%;
+                height: 35px;
+                background-color: #e9f0f0;
+            }
+            #cancel button {
+                margin: 0px 17px 0px 0px;
+                float: right;
             }
         </style>
     </head>
@@ -486,9 +487,9 @@
             </div>
 
             <div id="cancel">
-                <button id="cancel-btn" title="Cancel" />Cancel</button>
+                <button class="cancel-btn" title="Cancel" />Cancel</button>
             </div>
-            <div id="willet">
+            <div class="willet">
                 <p>Powered by</p>
                 <a href="http://www.willetinc"><img src="/static/imgs/logo.png" /></a>
             </div>
@@ -510,10 +511,15 @@
             <div id="shareText">
                 <textarea id="share-text">{{ AB_share_text }}</textarea>
             </div>
-            
+             
+            <div class="willet" style="height: 29px;">
+                <p>Powered by</p>
+                <a href="http://www.willetinc"><img src="/static/imgs/logo.png" /></a>
+            </div>
+
             <div id="btns">
                 <button id="email-btn" style="width:50px;" onClick="updateEmailAddress();">Ask</button>
-                <button id="cancel-btn" onClick="window.close();">Cancel</button>
+                <button class="cancel-btn" title="Cancel">Cancel</button>
             </div>
         </div>
     </div>
