@@ -44,6 +44,12 @@ class SIBT(App):
     # if the top bar is enabled for this app 
     top_bar_enabled = db.BooleanProperty(default=True)
 
+    # if the bottom tab is enabled for this app 
+    btm_tab_enabled = db.BooleanProperty(default=True)
+
+    # if the img overlay is enabled for this app 
+    overlay_enabled = db.BooleanProperty(default=True)
+
     # number of times a user has to view the page before
     # we show the top bar
     num_shows_before_tb = db.IntegerProperty(default=1)
@@ -55,7 +61,10 @@ class SIBT(App):
     buy_btn_id    = db.StringProperty( indexed = True )
     
     # DOM id of product image on a product page
-    img_id        = db.StringProperty( indexed = True )
+    img_selector  = db.StringProperty( indexed = True )
+
+    # DOM selector of product image on a product page
+    img_selector  = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -72,7 +81,7 @@ class SIBT(App):
 
         # GAY BINGO!
         if not user.is_admin():
-            bingo( 'sibt_share_text2' )
+            bingo( 'sibt_share_text3' )
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -106,7 +115,7 @@ class SIBT(App):
         
         # GAY BINGO
         if not user.is_admin():
-            bingo( 'sibt_share_text2' )
+            bingo( 'sibt_share_text3' )
 
         if not user.is_admin() and "social-referral" in URL:
             try:
@@ -137,6 +146,10 @@ class SIBT(App):
             except Exception, e:
                Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
+
+        @staticmethod
+        def get_by_uuid( uuid ):
+            return SIBT.all().filter( 'uuid =', uuid ).get()
 
 # Accessors --------------------------------------------------------------------
 

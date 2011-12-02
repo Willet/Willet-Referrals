@@ -98,6 +98,12 @@ BUTTONS_SHOPIFY_API_SHARED_SECRET = '9aca00dc207a002e499694355cd71882'
 # controls the number of memcache buckets
 # and the maximum length of a bucket before it gets put to datastore
 NUM_ACTIONS_MEMCACHE_BUCKETS = 20
+MEMCACHE_BUCKET_COUNTS = {
+    'default': 20,
+    '_willet_actions_bucket': 25,
+    '_willet_user_ips_bucket': 20,
+    '_willet_user_put_bucket': 20,
+}
 
 # number of seconds to memcache an item
 # see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache
@@ -115,13 +121,13 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
                  'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
-ADMIN_IPS = [ '70.83.160.171',      # Notman House
-              '173.177.235.110',    # Montreal apartment
-              '70.31.244.131',      # Montreal apartment x2
-              '76.65.157.73',       # Montreal apartment( BELL)
+ADMIN_IPS = [ #'70.83.160.171',      # Notman House
+              #'173.177.235.110',    # Montreal apartment
+              #'70.31.244.131',      # Montreal apartment x2
+              #'76.65.157.73',       # Montreal apartment( BELL)
               '24.150.35.66',       # Barbara's Burlington House
               '184.175.46.107',     # Barbara's Kitchener House
-              '69.166.16.20',       # VeloCity @ Hub
+              '69.166.16.20'        # VeloCity @ Hub
             ]
 
 # the apps we are using

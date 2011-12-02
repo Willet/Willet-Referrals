@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+       <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+        
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Should I Buy This?</title>
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+
+        <script type="text/javascript">
+            var willet_conversion, fbToken, next, highlight, 
+                sendEmailiframeBody, shareArea, shareFrame, shareText, 
+                charsLeft, clear, storeAnalytics;
+            var message,
+                motivation_text; 
+            var userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+            var fbData = {
+                msg: '', 
+                img: '{{ productImg|first }}', 
+                name: '{{ productName|escape }}',
+                product_id: '{{ product_id }}',
+                app_uuid: '{{ app.uuid }}',
+                willt_code: '{{ willt_code }}',
+                product_img: '{{ productImg|first }}',
+                user_uuid: '{{ user.uuid }}',
+                motivation: ''
+            };
+
+            var storeAnalytics = function( evnt ) {
+                $.ajax({
+                    //url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
+                    url: "{{ URL }}{% url TrackSIBTUserAction %}",
+                    data: {
+                        what: evnt,
+                        instance_uuid: '',
+                        app_uuid: '{{ app.uuid }}',
+                        user_uuid: '{{ user.uuid }}',
+                        target_url: '{{ target_url }}'
+                    }, type: 'get',
+                    success: function (response) {
+                        return;
+                    }
+                });
+            };
+
+            var share = function() {
+                storeAnalytics('SIBTAskUserClickedShare');
+                $('#motivation').hide();
+                $("#invite").hide();
+                $("#loading").fadeIn();
+
+                var el = $('#share-text')[0];
+                //if (el.tagName != "TEXTAREA") {
+                //    var mtext = $('#m_text');
+                    //motivation_text = mtext.val();
+                    //mtext.replaceWith(motivation_text);
+                //    message = $(el).text();
+                //} else {
+                    message = $(el).val();
+                //}
+
+                fbData.msg = message; 
+                fbData.motivation = motivation_text;
+                //if (userFound) {
+                //    fb_share_handler(fbData)
+                //    return;
+                //} else {
+                    FB.login(function(lr) {
+                            if (!lr.authResponse) {
+                                // we weren't given permission
+                                storeAnalytics('SIBTFBConnectCancelled');
+                                doPostMessage('close');
+                                window.close();
+                            } else { 
+                                // TODO: need to support new authresponse
+                                fbData.fb_token = lr.authResponse.accessToken;
+                                fbData.fb_id = lr.authResponse.userID;
+                                fb_share_handler(fbData);
+                            }
+                        }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                    );
+                    return;
+                //} // if (userFound u
+                shareArea.style.visibility = 'visible';
+            };
+
+            var fb_share_handler = function(payload) {
+                $.ajax({
+                    url: '{% url ShareSIBTInstanceOnFacebook %}',
+                    type: 'post',
+                    dataType: 'json',
+                    data: payload,
+                    success: function (response) {
+                        console.log('got response', response);
+                        if (response.success) {
+                            shareComplete('facebook');
+                        } else {
+                            if (userFound) {
+                                // we tried to use an existing user
+                                // but the share failed!
+                                userFound = false; // dont do this twice
+                                fb_login_and_share();
+                            } else {
+                                console.log("Facebook post failure", response);
+                                $("#loading").hide();
+                                $("#error").fadeIn(300);
+                            }
+                        }
+                    }
+                });
+            };
+
+            var twitterCallback = function() {
+                /**
+                 * called after successful share on twitter
+                 */
+                $.ajax({
+                    url: "{% url StartSIBTInstance %}",
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        app_uuid: "{{app.uuid}}",
+                        willt_code: "{{willt_code}}",
+                        product_img : "{{productImg|first}}" },
+                    success: function (tr) {
+                        shareComplete('twitter');
+                        //console.log(tr);
+                    }
+                }); 
+            };
+
+            var fb_login_and_share = function() {
+                // tries to auth with facebook 
+                FB.login(function(lr) {
+                        if (!lr.authResponse) {
+                            // we weren't given permission
+                            storeAnalytics('SIBTFBConnectCancelled');
+                            doPostMessage('close');
+                            window.close();
+                        } else { 
+                            // TODO: need to support new authresponse
+                            fbData.fb_token = lr.authResponse.accessToken;
+                            fbData.fb_id = lr.authResponse.userID;
+                            fb_share_handler(fbData);
+                        }
+                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                );
+            };
+
+            var shareComplete = function(medium) {
+                // Sharing is complete (either twitter or facebook)
+                $("#invite").hide();
+                $("#loading").hide();
+                if (medium == 'twitter') {
+                    // ask for their email
+                    $("#thanks").fadeIn(300);
+                } else {
+                    // we will have the facebook email
+                    // so dont ask for it
+                    $('#thanks_facebook').fadeIn(300);
+                }
+                doPostMessage('shared');
+                //console.log("Sharing complete!");
+
+                return true;
+            };
+            
+            var doPostMessage = function(message) {
+                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+                target.postMessage(
+                    message,
+                    '*'
+                );
+            };
+
+            var toggleThanks = function () {
+                $("#invite").toggle();
+                $("#thanks").fadeIn(300);
+                parent._willet_ask_success = true;
+            };
+
+            var updateEmailAddress = function() {
+                var addr = document.getElementById( 'email-field' ).value;
+                    
+                $.ajax({
+                    url: "/updateEmailAddress",
+                    type: 'post',
+                    data: { email : addr },
+                    success: function (tr) {
+                        document.getElementById('email-field').style.display = 'none';
+                        document.getElementById('email-btn').style.display = 'none';
+                        document.getElementById('email-conf').style.display = 'inline';
+                    }
+                });
+            };
+    
+            var reset = function() { 
+                iframeBody.style.visibility = 'visible';
+                shareArea.style.visibility = 'hidden';
+                shareFrame.src = '';
+            };
+    
+            var toggleDefaultValue = function(el, set_default) {
+                if (set_default) {
+                    var value = el.siblings('.defaultValue').val();
+                    el.addClass('default');
+                    el.val(value);
+                    //console.log('setting default value', value);
+                } else {
+                    el.removeClass('default');
+                    el.val('');
+                    //console.log('removing default, clearing val');
+                }
+            }; // end function
+
+            var done_motivation = function () {
+                // go to next!
+                $('#motivation').hide();
+                //$('#invite').fadeIn('fast');
+                share('fb');
+            };
+            
+            $(document).ready(function() {
+                // fb is loaded, run our scripts
+                iframeBody = document.getElementById('willt');
+                shareFrame = document.getElementById('willt-frame');
+                shareArea  = document.getElementById('share-area'),
+                shareText  = document.getElementById('share-text'),
+                charsLeft  = document.getElementById('chars-left');
+
+                // the share on facebook buttonn
+                //$('#share-button').click(share);
+
+                $('#cancel-button').click(function() {
+                    storeAnalytics('SIBTAskUserClosedIframe');
+                    doPostMessage('close');
+                });
+                $('.close-button').click(function() {
+                    doPostMessage('close');
+                });
+
+                
+                /*
+                // random default values
+                var default_values = [
+                    'ex: for prom',
+                    'ex: for work',
+                    'ex: as a gift'
+                ];
+                var randomnumber = Math.floor(Math.random() * default_values.length);
+                $('#share-text input.defaultValue').val(default_values[randomnumber]);
+
+                // Controls default values of input & textarea elements
+                $('.defaultValue').siblings('input, textarea').focus(function () {
+                    var el = $(this),
+                        defaultValue = el.siblings('.defaultValue').val();
+                    if (el.val() === defaultValue) {
+                        toggleDefaultValue(el, false);
+                    }
+                }).blur(function () { 
+                    var el = $(this);
+                    if (el.val() === '' ) {
+                        toggleDefaultValue(el, true);
+                    }
+                }).each(function () { 
+                    var el = $(this);
+                    if (el.val() === '') {
+                        toggleDefaultValue(el, true); 
+                    }
+                });
+                */
+            });
+        </script>
+        
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+
+    </head>
+    <body>
+    <div id="wrapper">
+        <div id="motivation" class="">
+            <div id="top-div" width="100%">
+                <div id="top-text">
+                    <textarea id="share-text">{{ AB_share_text }}</textarea>
+                </div>
+                <div id="product-img">
+                    <img src="{{productImg|first}}" />
+                </div>
+                <div id="text-div">
+                    <h3>{{ productName }}</h3>
+                    <span class='grey'>{{ productURL }}</span>
+                    {{ productDesc|striptags }}
+                </div>
+            </div>
+            <div id="buttons">
+                <div style="float: right; padding-right: 8px">
+                    <input class="post" type="button" id="share-button" onclick="javascript:share();return 0;" value="Ask for Advice" />
+                    <input class="close" type="button" id="cancel-button" value="Cancel" />
+                </div>
+            </div>
+        </div>
+        <div id="loading" class="willt hidden">
+            <h1 style="margin-top: 70px">Working ...</h1>
+            <img src="/static/imgs/ajax-loader.gif" />
+        </div>
+        <div id="error" class="willt hidden">
+            <h1 style="margin-top: 70px">Uh Oh!</h1>
+            <p>
+                An error occurred with Facebook. <br />
+                Please try again later.
+            </p>
+            <input class="close-button" type="button" value="Close" />
+        </div>
+
+        <div id="thanks" class="willt hidden">
+            <h1 style="margin-top: 1.5em">Asking your friends ...</h1>
+
+            <div id="email-wrapper">
+                <p>
+                    Enter your e-mail address so we can<br /> notify you when your the feedback:
+                </p>
+                
+                <input id="email-field" type="text"> </input>
+                <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
+                <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+            </div>
+        </div>
+
+        <div id="thanks_facebook" class="willt hidden">
+            <h1 style="margin-top: 2.5em">Asking your friends...</h1>
+            <p>
+                We will contact you as soon as your friends vote!
+                <br />
+                <input class="close-button" type="button" value="Close" />
+            </p>
+        </div>
+
+        <div id="tweet-complete" onclick="twitterCallback();"></div>
+        <div id="share-area">
+            <iframe id="willt-frame" class="hidden"></iframe>
+        </div>
+    </div>
+
+    <div id="fb-root"></div>
+    <script>
+        window.fbAsyncInit = function() {
+            // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+            //FB._https = true;
+            FB.init({
+                appId: '{{FACEBOOK_APP_ID}}', // App ID
+                //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                oauth: true, // enable OAuth 2.0
+                xfbml: true  // parse XFBML
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s);
+            js.id = id;
+            js.async = true;
+            js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+</body>
+</html>
+

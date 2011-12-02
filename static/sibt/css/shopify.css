@@ -13,7 +13,7 @@ body {
     min-height: 215px;
     max-height: 215px;
     height: 215px;
-    width: 400px;
+    width: 398px;
     border: 1px solid #BDC7D8;
 }
 #thanks_wrapper {
@@ -361,9 +361,9 @@ textarea {
     }
     #motivation #buttons {
         position: absolute;
-        bottom: 24px;
-        width: 400px;
-        left: 25px;
+        bottom: 4px;
+        width: 398px;
+        left: 1px;
     }
         #motivation #buttons input { -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
             cursor: pointer;

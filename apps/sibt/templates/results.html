@@ -47,59 +47,64 @@
             });
         </script>
         <style type="text/css">
+            html, body {
+                padding: 0px;
+                margin: 0px;
+                height: 40px;
+            }
             #wrapper {
                 display: inline-block;
                 width: 100%;
+                height: 40px;
+                float: left;
+                
+                color: white;
+                background-color: transparent;
+                
+                font-family: Helvetica, Arial, sans-serif;
+                line-height: 40px;
+                text-shadow: 0px 0px 1px black;
+                font-size: 16px;
+                text-align: left;
+                font-weight: bold;
             }
-                #wrapper div {
-                    display: inline-block;
+                #wrapper #num_votes {
                     float: left;
-                    font-family: Helvetica, Arial, sans-serif;
+                    width: 30%;
+                    margin-right: 10px;
                 }
-                    #wrapper #result {
-                        color: #333333;
-                        background-color: #ECEFF5;
-                        padding: 10px;
-                        margin-right: 5%;
-                        width:25%;
-                        max-width:100px;
-                        text-align: center;
-                    }
-                        #wrapper #result div {
-                            margin-top: 1em;
-                            width: 100%;
-                            margin-bottom: 1em;
-                        }
-                            #wrapper #result div h1 {
-                                margin: auto;
-                            }
-                    #wrapper #comments-div {
-                        width: 74%;
-                    }
-                        #wrapper #comments-div #fb-comments {
-                            width: 100%;
-                        }
-                            iframe {
-                                width: 100% !important;
-                            }
+                #wrapper #percentage {
+                    color: #333333;
+                    background-color: #ECEFF5;
+                    border-radius: 5px;
+                    
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    float: left;
+                    margin-right: 10px;
+                }
+                #wrapper #time {
+                    float: right;
+                    font-size: 0.8em;
+                }
         </style>
     </head>
     <body>
     <div id="wrapper">
-            <div id="result">
-                <div>
-                    {% if vote_percentage  %}
-                        <h1><span>{{ vote_percentage }}</span>%</h1>
-                        say buy it!
-                    {% else %}
-                        <h3>Nobody has voted yet :(</h3>
-                    {% endif %}
-                </div>
-                <div>
-                    <span>Voting ends </span>
-                    <abbr class="timeago" title="{{ instance_ends }}"></abbr>
-                </div>
-            </div>
+        <div id="num_votes">
+            {{ total_votes }} friends voted so far.
+        </div>
+        {% if vote_percentage %}
+        <div id="percentage">
+            {{ vote_percentage }}% say buy it!
+        </div>
+        {% endif %}
+        <div id="time">
+            <span>Voting ends</span>
+            <abbr class="timeago" title="{{ instance_ends }}"></abbr>
+        </div>
+    </div>
+        <!--
             <div id="comments-div">
                 <h3 id="title">Tell {{ asker_name }} why!</h3>
                 <script>
@@ -130,13 +135,11 @@
                 <div id="fb-root"></div>
                 <div id="fb-comments" class="fb-comments hidden" data-width="100%" data-href="{{fb_comments_url}}" data-num-posts="5"></div>
             </div>
-        <!--
         <div id="share_again">
             <p>
                 Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
             </p>
         </div>
         -->
-    </div>
     </body>
 </html>

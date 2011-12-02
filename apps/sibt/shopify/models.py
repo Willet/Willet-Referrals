@@ -16,6 +16,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
+from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
 from apps.sibt.models     import SIBT 
@@ -35,94 +36,43 @@ class SIBTShopify(SIBT, AppShopify):
 
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
-    button_css = db.StringProperty(default=None,required=False)
+    button_css = db.TextProperty(default=None,required=False)
     defaults = {
-        '_willet_button': {
-            'values': {
-                'color': '333333',
-                'text-size': '12',
-                'border-width': '1',
-                'border-color': '777777',
-                'background-gradient-start': 'eeeeee',
-                'background-gradient-end': 'cccccc',
-                'height': '28',
-                'border-radius': '0.2',
-                'margin-top': '5',
-                'margin-right': '0',
-                'margin-bottom': '5',
-                'margin-left': '0',
-                'padding-top': '2',
-                'padding-right': '5',
-                'padding-bottom': '0',
-                'padding-left': '5',
-                'font-family': 'Arial, Helvetica',
-                'box-shadow-inset': 'rgba(255,255,255,.8)',
-                'box-shadow-outset': 'rgba(0,0,0,.3)',
-            }, 'template': """
-                ._willet_button {
-                    min-width: 202px !important; 
-                    max-width: 240px !important; 
-                    height: %(height)spx !important; 
-                    margin: %(margin-top)spx %(margin-right)spx %(margin-bottom)spx %(margin-left)spx !important; 
-                    padding: %(padding-top)spx %(padding-right)spx %(padding-bottom)spx %(padding-left)spx !important; 
-                    clear: both !important; 
-                    display: none; 
-                    cursor: pointer !important; 
-                    font: bold %(text-size)spx/2em %(font-family)s !important; 
-                    text-decoration: none !important; 
-                    text-indent: 0px !important; 
-                    text-align: center !important; 
-                    text-shadow: 0 1px 0 rgba(255,255,255,.8) !important; 
-                    line-height: 26px !important; 
-                    color: #%(color)s !important; 
-                    background-color: #%(background-gradient-end)s !important; 
-                    background-image: -webkit-gradient(linear, left top, left bottom, from(#%(background-gradient-start)s), to(#%(background-gradient-end)s)); 
-                    background-image: -webkit-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -moz-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -ms-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -o-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#%(background-gradient-start)s", EndColorStr="#%(background-gradient-end)s"); 
-                    border: %(border-width)spx solid #%(border-color)s !important; 
-                    -moz-border-radius: %(border-radius)sem; 
-                    -webkit-border-radius: %(border-radius)sem; 
-                    border-radius: %(border-radius)sem; 
-                    box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
-                    -moz-box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
-                    -webkit-box-shadow: 0 0 1px 1px %(box-shadow-inset)s inset, 0 1px 0 %(box-shadow-outset)s; 
-                    vertical-align: baseline; 
-                    white-space: nowrap !important; }"""
-        }, '_willet_button:hover': {
-            'values': {
-                'background-gradient-start': 'fafafa',
-                'background-gradient-end': 'dddddd',
-            }, 'template': """
-                .willet_button:hover {
-                    background-color: #%(background-gradient-end)s !important; 
-                    background-image: -webkit-gradient(linear, left top, left bottom, from(#%(background-gradient-start)s), to(#%(background-gradient-end)s)); 
-                    background-image: -webkit-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -moz-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -ms-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -o-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#%(background-gradient-start)s", EndColorStr="#%(background-gradient-end)s"); 
-            }""",
-        }, '_willet_button:active': {
-            'values': {
-                'background-gradient-start': 'fafafa',
-                'background-gradient-end': 'fafafa',
-            }, 'template': """
-                .willet_button:active {
-                    background-color: #%(background-gradient-end)s !important; 
-                    background-image: -webkit-gradient(linear, left top, left bottom, from(#%(background-gradient-start)s), to(#%(background-gradient-end)s)); 
-                    background-image: -webkit-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -moz-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -ms-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: -o-linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    background-image: linear-gradient(top, #%(background-gradient-start)s, #%(background-gradient-end)s); 
-                    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#%(background-gradient-start)s", EndColorStr="#%(background-gradient-end)s"); 
-            }""",
-        }, 
+        'willet_button': {
+            'color': '333333',
+            'text_size': '12',
+            'width': '240',
+            'border_width': '1',
+            'border_color': '777777',
+            'line_height': '26',
+            'background_gradient_start': 'eeeeee',
+            'background_gradient_end': 'cccccc',
+            'height': '28',
+            'border_radius': '0.2',
+            'margin_top': '5',
+            'margin_right': '0',
+            'margin_bottom': '5',
+            'margin_left': '0',
+            'padding_top': '2',
+            'padding_right': '5',
+            'padding_bottom': '0',
+            'padding_left': '5',
+            'font_family': 'Arial, Helvetica',
+            'box_shadow_inset': 'rgba(255,255,255,.8)',
+            'box_shadow_outset': 'rgba(0,0,0,.3)',
+        }, 'willet_button__hover': {
+            'color': '333333',
+            'border_color': '777777',
+            'border_width': '1',
+            'background_gradient_start': 'fafafa',
+            'background_gradient_end': 'dddddd',
+        }, 'willet_button__active': {
+            'color': '333333',
+            'border_color': '777777',
+            'border_width': '1',
+            'background_gradient_start': 'fafafa',
+            'background_gradient_end': 'fafafa',
+        }
     }
 
     def __init__(self, *args, **kwargs):
@@ -131,17 +81,6 @@ class SIBTShopify(SIBT, AppShopify):
     
     def do_install(self):
         """Installs this instance"""
-        #data = [{
-        #    "script_tag": {
-        #        "src": "%s/s/shopify/sibt.js?store_id=%s&store_url=%s" % (
-        #            URL,
-        #            self.store_id,
-        #            self.store_url
-        #        ),
-        #        "event": "onload"
-        #    }
-        #}]
-
         script_src = """<!-- START willet sibt for Shopify -->
             <script type="text/javascript">
             (function(window) {
@@ -149,14 +88,13 @@ class SIBTShopify(SIBT, AppShopify):
                 var hash_index = hash.indexOf('#code=');
                 var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
                 var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                var src = "//%s%s?" + params;
+                var src = "http://%s%s?" + params;
                 var script = window.document.createElement("script");
                 script.type = "text/javascript";
                 script.src = src;
                 window.document.getElementsByTagName("head")[0].appendChild(script);
             }(window));
-            </script>
-            """ % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
         willet_snippet = script_src + """
             <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
                 data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
@@ -201,8 +139,8 @@ class SIBTShopify(SIBT, AppShopify):
                 self.store_url, 
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-    def reset_button_css(self):
-        self.set_button_css()
+    def reset_css(self):
+        self.set_css()
         
     def get_css_dict(self):
         try:
@@ -210,67 +148,67 @@ class SIBTShopify(SIBT, AppShopify):
             data = json.loads(self.button_css)
             assert(data != None)
         except Exception, e:
-            logging.error('could not decode: %s' % self.button_css, exc_info=True)
+            #logging.error('could not decode: %s\n%s' % 
+            #        (e, self.button_css), exc_info=True)
             data = SIBTShopify.get_default_dict()
         return data
 
-    def set_button_css(self, css=None):
+    def set_css(self, css=None):
         """Expects a dict"""
         try:
             assert(css != None)
             self.button_css = json.dumps(css)
         except:
+            #logging.info('setting to default')
             self.button_css = json.dumps(SIBTShopify.get_default_dict()) 
-        self.gen_button_css()
+        self.generate_css()
         self.put()
 
-    def gen_button_css(self):
-        defaults = SIBTShopify.get_default_dict()
-        templates = SIBTShopify.get_default_css()
+    def generate_css(self):
+        class_defaults = SIBTShopify.get_default_dict()
+        logging.info('class_defaults : %s' % class_defaults )
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
             assert(data != None)
-            defaults.update(data)
+            #logging.warn('updating with data:\n%s' % data)
+            class_defaults.update(data)
         except Exception, e:
-            logging.error(e, exc_info=True)
+            #logging.error(e, exc_info=True)
             pass
+        css = SIBTShopify.generate_default_css(class_defaults)
+        memcache.set('app-%s-sibt-css' % self.uuid, css) 
+        return css 
 
-        css = ''
-        for item in templates: 
-            css += item['template'] % item['values']
-        css = css.replace('\n','').replace('\r', '')
-
-        memcache.set('app-%s-button-css' % self.uuid, css) 
-        return css
-
-    def get_button_css(self):
-        data = memcache.get('app-%s-button-css' % self.uuid) 
+    def get_css(self):
+        data = memcache.get('app-%s-sibt-css' % self.uuid) 
         if data:
             return data
         else:
-            return self.gen_button_css()
+            return self.generate_css()
 
     @classmethod
     def get_default_dict(cls):
-        copy = cls.defaults.copy()
-        d = dict([(key, copy[key]['values']) for key in copy])
-        return d 
+        return cls.defaults.copy()
 
     @classmethod
     def get_default_css(cls):
-        copy = cls.defaults.copy()
-        d = dict([(key, copy[key]['template']) for key in copy])
-        return d
+        return cls.generate_default_css() 
+
+    @classmethod
+    def generate_default_css(cls, values=None):
+        """Uses the values dict to generate the sibt css"""
+        if not values:
+            values = cls.get_default_dict()
+        path = 'apps/sibt/templates/css/sibt_user_style.css'
+        rendered = template.render(path, values)
+        rendered = rendered.replace('\n', '').replace('\r','')
+        return rendered
 
     @classmethod
     def get_default_button_css(cls):
-        css_response = ''
-        defaults = cls.defaults.copy()
-        for item in defaults: 
-            css_response += item['template'] % item['values']
-        css_response = css_response.replace('\n','').replace('\r', '')
-        return css_response
+        logging.warn('this method shouldnt be used: get_default_button_css')
+        return cls.get_default_css()
         
     @staticmethod
     def create(client, token):

@@ -20,9 +20,9 @@ cron:
 #  schedule: every 6 hours
 
 # Link Crons
-- description: Clean bad links
-  url: /link/cleanBadLinks
-  schedule: every 30 minutes
+#- description: Clean bad links
+#  url: /link/cleanBadLinks
+#  schedule: every 30 minutes
 
 # User Crons
 #- description: compute daily analytics for users 
@@ -38,9 +38,9 @@ cron:
 #  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
 
 # App Engine Bingo Crons
-- description: persist gae bingo experiments to datastore
-  url: /gae_bingo/persist
-  schedule: every 5 minutes
+#- description: persist gae bingo experiments to datastore
+#  url: /gae_bingo/persist
+#  schedule: every 5 minutes
 
 - description: scan for expired SIBT votes
   url: /s/getExpired

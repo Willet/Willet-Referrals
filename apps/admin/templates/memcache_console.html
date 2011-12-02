@@ -1,0 +1,131 @@
+{% extends "admin_base.html" %}
+
+{% block head %}
+    <script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+    <style type="text/css">
+        .mc_body {
+            padding-bottom: 150px;
+        }
+        div.ul_container h3,
+        div.ul_container strong {
+            cursor: pointer;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var key = $('#key')
+            , value = $('#value')
+            , protobuf = $('#protobuf')
+            , clear_value = $('#clear_value')
+            , key_list = $('#key_list')
+            , messages = $('#messages')
+            , submit = $('#submit')
+            , keys = {enter: 13}
+            , submit_key_value = function(e) {
+                if (key.val() == '')
+                    return;
+                $('#suggestions ul').fadeOut();    
+                var data = {key: key.val()};
+                if (protobuf.is(':checked')) {
+                    data.protobuf = true;
+                }
+                if (clear_value.is(':checked')) {
+                    data.value = ''; 
+                } else if (value.val() != '') {
+                    data.value = value.val();
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url MemcacheConsole %}', 
+                    data: data,
+                    dataType: 'json',
+                    success: function(data) {
+                        key.val('');
+                        value.val('');
+                        protobuf.removeAttr('checked');
+                        clear_value.removeAttr('checked');
+                        var li = $(document.createElement('li'));
+                        if (data.new_value != '') {
+                            li.html("<strong>" + data.key + "</strong> = " + data.new_value);
+                        } else {
+                            li.html("<strong>" + data.key + "</strong> = " + data.value);
+                        }
+                        li.hide();
+                        key_list.prepend(li);
+                        li.slideDown();
+                        for (i = 0; i <= data.messages.length; i++) {
+                            var m = $(document.createElement('li'));
+                            m.html(data.messages[i]);
+                            m.hide();
+                            messages.append(m);
+                            m.fadeIn();
+                        }
+                    }
+                });
+            };
+            submit.click(submit_key_value);
+            key.keyup(function(e){
+                if (e.keyCode == keys.enter) {
+                    submit_key_value(e); 
+                }
+            });
+            value.keyup(function(e){
+                if (e.keyCode == keys.enter) {
+                    submit_key_value(e); 
+                }
+            });
+            $('div.ul_container h3').click(function(e){
+                $(this).siblings('ul').slideToggle();     
+            });
+            $('div.ul_container li strong').live('click', function(e){
+                key.val($(this).text());
+                value.val('');
+                protobuf.removeAttr('checked');
+                clear_value.removeAttr('checked');
+                key.focus();
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block bottom_content %}
+    <div class="span-24 prepend-top mc_body">
+        <h1 class="prepend-top center">Memcache Console v0.1</h1>
+        <ul id="messages"></ul>
+        <div class='span-24 last clear'>
+            <div class='span-8'>
+                <h3>Key</h3>
+                <input id="key" value="" />
+            </div>
+            <div class="span-8">
+                <h3>Value</h3>
+                <input id="value" value="" />
+            </div>
+            <div class="span-4">
+                <input type="checkbox" id="protobuf" title="Expecting a protobuf (entity)?" />
+                <input type="checkbox" id="clear_value" title="Clear the value" />
+            </div>
+            <div class="span-4 last">
+                <button id="submit">&#175;</button>
+            </div>
+        </div>
+        <div class='span-24 last clear ul_container'>
+            <h3>Query Responses</h3>
+            <ul id="key_list"></ul>
+        </div>
+        <div id="suggestions" class='span-24 last clear ul_container'>
+            <h3>Try some suggested queries:</h3>
+            <ul>
+                <li><strong>reload_uris</strong>: 
+                    When set to <em>"True"</em> the set of memcached URIS is 
+                    reloaded on the <em>next</em> request.
+                </li>
+                <li><strong>combined_uris</strong>: 
+                    The URI set that the application is currently using.
+                    Probably not a good idea to <em>"set"</em> this.
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock bottom_content %}
+
