@@ -903,7 +903,8 @@ class MemcacheConsole(URIHandler):
         protobuf = self.request.get('protobuf')
         messages = []
         if key:
-            value = memcache.get('key')
+            logging.info('looking up key: %s' % key)
+            value = memcache.get(key)
             if protobuf:
                 value = db.model_from_protobuf(entity_pb.EntityProto(value))
             if new_value:
@@ -914,13 +915,20 @@ class MemcacheConsole(URIHandler):
                     messages.append('Changed %s from %s to %s' % (
                         key, value, new_value    
                     ))
+            logging.info('got value: %s' % value)
         data = {
             'key': key,
             'value': value,
             'new_value': new_value,
             'messages': messages,
         }
-        return json.dumps(data)
+        try:
+            json_data = json.dumps(data)
+        except:
+            json_data = json.dumps({'key': key, 'messages': ['Error decoding key:value']})
+
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json_data)
 
     @admin_required
     def get(self, admin):

@@ -171,6 +171,9 @@ class User( db.Expando ):
     # ReferenceProperty
     #emails = db.EmailProperty(indexed=True)
 
+    # MBC NAME
+    _memcache_bucket_name = '_willet_user_put_bucket'
+
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -191,7 +194,7 @@ class User( db.Expando ):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-        mbc = MemcacheBucketConfig.get_or_create('_willet_user_put_bucket')
+        mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
         bucket = mbc.get_random_bucket()
         logging.info('bucket: %s' % bucket)
 
@@ -202,7 +205,7 @@ class User( db.Expando ):
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
-            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
+            deferred.defer(batch_put, self._memcache_bucket_name, bucket, list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
@@ -1457,7 +1460,7 @@ def get_or_create_user_by_cookie( request_handler, referrer=None ):
 class UserIPs(Model):
     user = db.ReferenceProperty(User, collection_name="user_ips")
     ips = db.StringListProperty(default=None)
-    _memcache_bucket_name = '_user_ips_bucket'
+    _memcache_bucket_name = '_willet_user_ips_bucket'
 
     def __init__(self, *args, **kwargs):
         if 'user_uuid' in kwargs:
@@ -1474,8 +1477,7 @@ class UserIPs(Model):
 
     def put_later(self):
         """Calls the mbc put later"""
-        mbc = MemcacheBucketConfig.get_or_create(
-                self._memcache_bucket_name, count=20)
+        mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
         mbc.put_later(self)
         #MemcacheBucketConfig.put_later(self._memcache_bucket_name, self)
 

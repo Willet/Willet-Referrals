@@ -10,6 +10,7 @@ from google.appengine.ext import deferred
 
 from util.model import Model
 from util.consts import MEMCACHE_TIMEOUT
+from util.consts import MEMCACHE_BUCKET_COUNTS
 
 class MemcacheBucketConfig(Model):
     """Used so we can dynamically scale the number of memcache buckets"""
@@ -57,21 +58,26 @@ class MemcacheBucketConfig(Model):
         if len(list_identities) > self.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
-            deferred.defer(batch_put, bucket, list_identities, _queue='slow-deferred')
+            deferred.defer(batch_put, self.name, bucket, list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
         logging.info('put_later: %s' % key)
 
     @staticmethod
-    def create(name, count=20):
+    def create(name, count=None):
+        if not count:
+            if name in MEMCACHE_BUCKET_COUNTS:
+                count = MEMCACHE_BUCKET_COUNTS[name]
+            else:
+                count = MEMCACHE_BUCKET_COUNTS['default']
         mbc = MemcacheBucketConfig(name=name, count=count)
         if mbc:
             mbc.put()
         return mbc
 
     @staticmethod
-    def get_or_create(name, count=20):
+    def get_or_create(name, count=None):
         mbc = MemcacheBucketConfig.get(name)
         if not mbc:
             # we are creating this MBC for the first time
@@ -113,9 +119,9 @@ def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
             logging.error('error getting object: %s' % e, exc_info=True)
 
     try:
-        def txn():
-            db.put_async(entities_to_put)
-        db.run_in_transaction(txn)
+        #def txn():
+        db.put_async(entities_to_put)
+        #db.run_in_transaction(txn)
         for entity in entities_to_put:
             if entity.key():
                 memcache_key = entity.get_key()
