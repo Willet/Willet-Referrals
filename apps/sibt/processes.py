@@ -354,7 +354,7 @@ class TrackSIBTUserAction(URIHandler):
         self.response.out.write('')
 
 class StartPartialSIBTInstance( URIHandler ):
-    def get( self ):
+    def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
         link    = get_link_by_willt_code( self.request.get( 'willt_code' ) )
         product = Product.get( self.request.get( 'product_uuid' ) )
@@ -457,3 +457,9 @@ class StartSIBTAnalytics(URIHandler):
         }
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
+
+class SendFBMessages( URIHandler ):
+    def post( self ):
+        user      = User.get( self.response.get( 'user_uuid' ) )
+        friendIds = self.response.get( 'friendIds' )
+        msg       = self.response.get( 'msg' )

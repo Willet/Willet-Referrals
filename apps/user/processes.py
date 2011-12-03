@@ -365,3 +365,10 @@ class UpdateEmailAddress(webapp.RequestHandler):
         user = get_user_by_cookie( self )
 
         user.update( email=self.request.get('email') )
+
+class UpdateFBAccessToken( URIHandler ):
+    """ Store FB access token and FB id in User """
+    def post( self ):
+        user = User.get( self.response.get( 'user_uuid' ) )
+        user.update( fb_access_token = self.response.get( 'accessToken' ),
+                     fb_identity     = self.response.get( 'fbUserId' ) ) 

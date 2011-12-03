@@ -14,7 +14,7 @@
         </script>
         
         <!-- Favicon -->
-        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/ padding-top: 3px;imgs/favicon.ico' />
         
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
@@ -26,32 +26,84 @@
         <script src="/static/js/jquery.ui.autocomplete.html.js" type="text/javascript"></script>
 
         <script type="text/javascript">
-            var userFound  = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
-            var friends = [];
-            var friendNames = [];
-            var selectionCount = 0;
+            var userFound      = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+            var friends        = []; // List of { id, name } from FB
+            var friendNames    = []; // List of names to use in autocomplete (sorted)
+            var selectionCount = 0;  // Number of friends selected to msg
 
-            function createFriend(fb_id, name) {
-                this.fb_id = fb_id;
-                this.name  = name;
-            };
-
+            // AJAX methods
             var storeAnalytics = function( evnt ) {
+                var payload = { what          : evnt,
+                                instance_uuid : '',
+                                app_uuid      : '{{ app_uuid }}',
+                                user_uuid     : '{{ user_uuid }}',
+                                target_url    : '{{ target_url }}'
+                              };
                 $.ajax({
-                    url: "{{ URL }}{% url TrackSIBTUserAction %}",
-                    data: {
-                        what: evnt,
-                        instance_uuid: '',
-                        app_uuid   : '{{ app_uuid }}',
-                        user_uuid  : '{{ user_uuid }}',
-                        target_url : '{{ target_url }}'
-                    }, type: 'get',
-                    success: function (response) {
-                        return;
+                    url      : "{{ URL }}{% url TrackSIBTUserAction %}",
+                    dataType : 'json',
+                    data     : payload,
+                    type     : 'post',
+                    success  : function (response) {
+                        alert( 'tracking user action' );
+                    }
+                });
+            };
+            
+            var updateServerUser = function( accessToken, userId ) {
+                payload = { user_uuid   : "{{user_uuid}}",
+                            accessToken : accessToken,
+                            fbUserId    : userId };
+                $.ajax({
+                    url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+                    type     : 'post',
+                    dataType : 'json',
+                    data     : payload,
+                    success  : function (tr) {
+                        alert( 'updated user' );
+                    }
+                });
+            };
+ 
+            var startPartialInstance = function() {
+                var payload = { app_uuid     : "{{app_uuid}}",
+                                user_uuid    : "{{user_uuid}}",
+                                product_uuid : "{{product_uuid}}",
+                                willt_code   : "{{willt_code}}" };
+
+                $.ajax({
+                    url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
+                    type     : 'post',
+                    dataType : 'json',
+                    data     : payload,
+                    success  : function (tr) {
+                        alert("Starting partial instnce");
                     }
                 });
             };
 
+            var sendMessages = function() {
+                var friendIds = [];
+
+                $.each( $("input[type='checked']:checked"), function( i ) { alert(i); friendIds.push(i ); } );
+                
+                payload = { user_uuid   : "{{user_uuid}}",
+                            friendIds  : friendIds,
+                            msg    : $("#share-text").attr("value")
+                          };
+                $.ajax({
+                    url      : "{{ URL }}{% url SendFBMessages %}",
+                    type     : 'post',
+                    dataType : 'json',
+                    data     : payload,
+                    success  : function (tr) {
+                        alert("SUCCESS");
+                    }
+                });
+            };
+            // Done AJAX methods
+
+            // Post to parent page that we are hosted in
             var doPostMessage = function(message) {
                 var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
                 target.postMessage(
@@ -60,6 +112,7 @@
                 );
             };
 
+            // Open up the FB dialog. Does not do a FB connect with us.
             var postOnWall = function () {
                 startPartialInstance();
                 storeAnalytics('SIBTNoConnectFBDialog');
@@ -76,56 +129,37 @@
                 doPostMessage('close');
             };
 
-            var chooseFriends = function () {
+            var runFriendPicker = function () {
                 // If the user hasn't connected with us,
                 if ( !userFound ) {
                     $("#fb_btns").html( '<h3>Login to Facebook<br />so you can select your friends!</h3>' );
 
                    FB.login(function(response) {
-                            if (!response.authResponse) {
+                            var authResp = response.authResponse;
+
+                            if (!authResp) {
                                 // we weren't given permission
                                 storeAnalytics('SIBTFBConnectCancelled');
                                 doPostMessage('close');
                                 window.close();
                             } else { 
-                                FBConnectHandler( response.authResponse );
+                                // Store FB data in the server.
+                                updateServerUser( authResp.accessToken, authResp.userID );
+
+                                fetchFBFriends( );
                             }
                         }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                     );
                 } else {
-                    // Redirect to friend picker
-                
-                    FB.api( '/me/friends', function(response) {
-                        alert( response );
-                    });
-
-
-                    
-                
+                    // User is logged in AND connected (in theory)
+                    fetchFBFriends( );
                 }
             };
-
-            var updateServerUser = function( accessToken, userId ) {
-                payload = { user_uuid   : "{{user_uuid}}",
-                            accessToken : accessToken,
-                            fbUserId    : userId };
-                $.ajax({
-                    url: "{{ URL }}{% url StartPartialSIBTInstance %}",
-                    type: 'post',
-                    dataType: 'json',
-                    data: payload,
-                    success: function (tr) {
-                        return;
-                    }
-                });
-            };
-
-            var FBConnectHandler = function (authResponse) {
+            
+            // Query FB api to grab logged-in user's friends
+            var fetchFBFriends = function ( ) {
                 $("#splash").hide();
                 $("#friendPicker").show();
-
-                // Store FB data in the server.
-                updateServerUser( authResponse.accessToken, authResponse.userID );
 
                 FB.api( '/me/friends', function(response) {
                     friends = response.data;
@@ -173,19 +207,25 @@
                     var tmp = $(document.createElement( 'img' ));
                     tmp.attr( 'src', 'http://graph.facebook.com/' + fb_id + '/picture' );
                     tmp.attr( 'id', 'img' + fb_id );
+                    tmp.attr( 'title', name );
+                    tmp.attr( 'alt', name );
                     tmp.attr( 'style', 'width:52px; height:52px;' );
                     tmp.attr( 'onclick', 'friendClick(this)' );
                     $('#chosenFriends').append( tmp );
 
-                    selectionCount += 1;
-                    
-                    $("#selectionCount").html( "Selected: " + selectionCount );
+                } else {
+                    var tmp = $("#img" + fb_id);
                 }
+                
+                tmp.attr( 'class', 'selectedFriend' );
+                
+                selectionCount += 1;
+                $("#selectionCount").html( "Selected: " + selectionCount );
             };
 
             var deselectFriend = function ( fb_id ) {
                 $('#check' + fb_id ).remove();
-                $('#img' + fb_id ).remove();
+                $('#img' + fb_id ).attr( 'class', '' );
 
                 selectionCount -= 1;
                 $("#selectionCount").html( "Selected: " + selectionCount );
@@ -195,20 +235,7 @@
                 var id = $(elem).attr( 'id' );
                 deselectFriend( id.substring( 3 ) );
             };
-    
-            var startPartialInstance = function() {
-                $.ajax({
-                    url: "{{ URL }}{% url StartPartialSIBTInstance %}?" + 
-                            "&app_uuid={{app_uuid}}" +
-                            "&user_uuid={{user_uuid}}" +
-                            "&product_uuid={{product_uuid}}" +
-                            "&willt_code={{willt_code}}",
-                    type: 'get',
-                    success: function (tr) {
-                    }
-                });
-            };
-            
+               
             $(document).ready(function() {
                 $('.cancel-btn').click(function() {
                     storeAnalytics('SIBTAskUserClosedIframe');
@@ -226,262 +253,13 @@
                         return -1;
                     }
                 }
+            });
 
-                      
-        });
         </script>
         
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
-
-        <style>
-            @font-face {
-                 font-family: fb_font;
-                 src: url("/static/fonts/KlavikaBold.otf") 
-            }
-            html, body {
-                background-color: white;
-                color: #383f41;
-            }
-            button {
-                background: rgb(186,209,226); /* Old browsers */
-                /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-                background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2JhZDFlMiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzYjU5OTciIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-                background: -moz-linear-gradient(top,  rgba(186,209,226,1) 0%, rgba(59,89,151,1) 100%); /* FF3.6+ */
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(186,209,226,1)), color-stop(100%,rgba(59,89,151,1))); /* Chrome,Safari4+ */
-                background: -webkit-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Chrome10+,Safari5.1+ */
-                background: -o-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Opera 11.10+ */
-                background: -ms-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* IE10+ */
-                background: linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* W3C */
-                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bad1e2', endColorstr='#3b5997',GradientType=0 ); /* IE6-8 */
-                color: white;
-                font-family: fb_font;
-                font-size: 16px;
-
-                border: 1px solid #1C4596;
-                border-radius: 5px;
-
-                padding: 5px;
-                margin: 35px 10px 10px 10px;
-                float: left;
-
-                -webkit-box-shadow:0 1px 2px #999;
-                -moz-box-shadow:0 1px 2px #999;
-                box-shadow:0 1px 2px #999;
-            }
-            ul {
-                list-style-type: none;
-                text-indent: 0px;
-                left: 408px;
-                width: 145px;
-                padding: 0px;
-                border: 1px solid #383f41;
-                border-radius: 2px;
-            }
-            li {
-                margin: 0px 0px 0px -30px;
-                padding: 0px 0px 0px 32px;
-                width: 135px;
-                font-size: 11px;
-                text-align: left;
-                text-indent: 0px;
-                height: 20px;
-                background-color: white;
-            }
-            .ui-autocomplete {
-                max-height: 100px;
-                overflow-y: auto;
-                /* prevent horizontal scrollbar */
-                overflow-x: hidden;
-                /* add padding to account for vertical scrollbar */
-                padding-right: 20px;
-                background-color: white;
-            }
-            /* IE 6 doesn't support max-height
-             * we use height instead, but this forces the menu to always be this tall
-             */
-            * html .ui-autocomplete {
-                height: 100px;
-            }
-            button .fb {
-                font-family: fb_font;
-                font-size: 40px;
-                padding: 0px 8px 0px 0px;
-                margin: 6px 0px 0px 0px;
-                float: left;
-                border-right: 1px solid #1C4596;
-            }
-            button p {
-                float: left;
-                margin: 15px 0px 0px 10px;
-                padding: 0px;
-            }
-            #title_bar {
-                width: 100%;
-                height: 55px;
-                border-bottom: 1px solid #616262;
-            }
-            #title_bar img {
-                float: left;
-                height: 50px;
-                margin: 0px 0px 0px 6px;
-                padding: 0px;
-            }
-            #title_bar h2 {
-                font-size: 25px;
-                margin: 0px -20px 0px 0px;
-                padding: 10px;
-            }
-            #title_bar p {
-                font-size: 10px;
-                padding: 0px;
-                margin: -10px 0px 0px 94px;
-            }
-            #fb_btns {
-                height: 124px;
-                color: #616262;
-                background-color: #e9f0f0;
-            }
-            #fb_btns h3 {
-                margin: 0px;
-                padding: 30px 10px 0px 10px;
-            }
-
-            .willet {
-                float: left;
-                width: 50%;
-                height: 35px;
-                background-color: #e9f0f0;
-                text-decoration: none;
-            }
-            .willet p {
-                float: left;
-                font-size: 10px;
-                margin-left: 10px;
-            }
-            .willet img {
-                float: left;
-                height: 20px;
-                margin: 5px 10px 5px 3px;
-            }
-            #nameEntry {
-                text-align: left;
-                padding-left: 15px;
-                border-bottom: 1px solid #616262;
-            }
-            #tags {
-                width: 160px;
-                margin-left: 2px;
-            }
-            #selectionCount {
-                float: right;
-                margin-right: 15px;
-            }
-            #chosenFriends {
-                height: 112px;
-                overflow-y: auto;
-                text-align: left;
-                padding: 0px 5px 0px 5px;
-                background-color: #e9f0f0;
-            }
-            #chosenFriends p {
-                padding-left: 10px;
-            }
-            #chosenFriends img {
-                margin: 5px 5px 0px 5px;
-                padding: 5px;
-                border: 1px solid #3B5997;
-                border-radius: 5px;
-                background-color: #526EA6;
-            }
-            #shareText {
-                padding: 0px 10px 0px 10px;
-                background-color: #e9f0f0;
-            }
-            #share-text {
-                font-size: 11px;
-                margin-top: 5px;
-                height: 35px;
-                max-height: 35px;
-            }
-            #btns {
-                text-align: right;
-                font-size: 11px;
-                background-color: #e9f0f0;
-                margin: 0px;
-                padding: 3px 7px 2px 10px;
-                height: 24px;
-            }
-            #btns button, #cancel button {
-               -webkit-appearance: none;
-                -webkit-border-horizontal-spacing: 0px;
-                -webkit-border-vertical-spacing: 0px;
-                -webkit-box-align: center;
-                -webkit-box-shadow:0 1px 2px #999;
-                -moz-box-shadow:0 1px 2px #999;
-                box-shadow:0 1px 2px #999;
-                -webkit-rtl-ordering: logical;
-                -webkit-user-select: text;
-                background-attachment: scroll;
-                background-clip: border-box;
-                background-color: #EEE;
-                background-image: none;
-                background-origin: padding-box;
-                background-position: 0% 0%;
-                background-repeat: repeat;
-                border-bottom-color: #888;
-                border-bottom-style: solid;
-                border-bottom-width: 1px;
-                border-collapse: collapse;
-                border-left-color: #999;
-                border-left-style: solid;
-                border-left-width: 1px;
-                border-right-color: #999;
-                border-right-style: soild;
-                border-right-width: 1px;
-                border-top-color: #999;
-                border-top-style: soild;
-                border-top-width: 1px;
-                box-sizing: border-box;
-                color: #333;
-                cursor: pointer;
-                direction: ltr;
-                display: inline-block;
-                float: none;
-                font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
-                font-size: 13px;
-                font-style: normal;
-                font-variant: normal;
-                letter-spacing: normal;
-                line-height: normal;
-                margin-bottom: 0px;
-                margin-left: 10px;
-                margin-right: 0px;
-                margin-top: 0px;
-                outline-color: #333;
-                outline-style: none;
-                outline-width: 0px;
-                padding: 2px;
-                text-align: center;
-                text-decoration: none;
-                text-indent: 0px;
-                text-shadow: none;
-                text-transform: none;
-                unicode-bidi: normal;
-                vertical-align: baseline;
-                white-space: nowrap;
-                word-spacing: 0px;
-            }
-            #cancel {
-                float: right;
-                width: 50%;
-                height: 35px;
-                background-color: #e9f0f0;
-            }
-            #cancel button {
-                margin: 5px 10px 0px 0px;
-                float: right;
-            }
-        </style>
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+    
     </head>
     <body>
     <div id="wrapper">
@@ -497,7 +275,7 @@
                     <p class="fb">f</p>
                     <p>Ask All Friends</p>
                 </button>
-                <button style="float: right;" title="Post to your friends' walls" value="Choose Your Friends" onclick="chooseFriends()">
+                <button style="float: right;" title="Post to your friends' walls" value="Choose Your Friends" onclick="runFriendPicker()">
                     <p class="fb">f</p>
                     <p>Choose Which Friends</p>
                 </button>
@@ -529,13 +307,13 @@
                 <textarea id="share-text">{{ AB_share_text }}</textarea>
             </div>
              
-            <div class="willet" style="height: 29px;">
+            <div class="willet" style="height: 32px; padding-top: 3px;">
                 <p>Powered by</p>
                 <a href="http://www.willetinc"><img src="/static/imgs/logo.png" /></a>
             </div>
 
             <div id="btns">
-                <button id="email-btn" style="width:50px;" onClick="updateEmailAddress();">Ask</button>
+                <button style="width:50px;" onClick="sendMessages()">Ask</button>
                 <button class="cancel-btn" title="Cancel">Cancel</button>
             </div>
         </div>
