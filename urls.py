@@ -17,8 +17,13 @@ from apps.gae_bingo.middleware import GAEBingoWSGIMiddleware
 def main():
     old_len = 0
     new_len = 0
-    combined_uris = memcache.get('combined_uris')
     reload_uris = memcache.get('reload_uris')
+    try:
+        combined_uris = memcache.get('combined_uris')
+    except:
+        reload_uris   = True
+        combined_uris = False
+
     if reload_uris or not combined_uris:
         # if we have no uris, or if we are rewriting
         logging.info('reloading uris %s %s' % (reload_uris, combined_uris))
