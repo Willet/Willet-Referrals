@@ -1,0 +1,267 @@
+@font-face {
+     font-family: fb_font;
+     src: url("/static/fonts/KlavikaBold.otf") 
+}
+html, body {
+    background-color: white;
+    color: #383f41;
+}
+button {
+    background: rgb(186,209,226); /* Old browsers */
+    /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2JhZDFlMiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzYjU5OTciIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+    background: -moz-linear-gradient(top,  rgba(186,209,226,1) 0%, rgba(59,89,151,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(186,209,226,1)), color-stop(100%,rgba(59,89,151,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* IE10+ */
+    background: linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bad1e2', endColorstr='#3b5997',GradientType=0 ); /* IE6-8 */
+    color: white;
+    font-family: fb_font;
+    font-size: 16px;
+
+    border: 1px solid #1C4596;
+    border-radius: 5px;
+
+    padding: 5px;
+    margin: 35px 10px 10px 10px;
+    float: left;
+
+    -webkit-box-shadow:0 1px 2px #999;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+    user-select: none;
+    -moz-user-drag: -moz-none;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+ul {
+    list-style-type: none;
+    text-indent: 0px;
+    left: 408px;
+    width: 145px;
+    padding: 0px;
+    border: 1px solid #383f41;
+    border-radius: 2px;
+}
+li {
+    margin: 0px 0px 0px -30px;
+    padding: 0px 0px 0px 32px;
+    width: 135px;
+    font-size: 11px;
+    text-align: left;
+    text-indent: 0px;
+    height: 20px;
+    background-color: white;
+}
+.ui-autocomplete {
+    max-height: 100px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    /* add padding to account for vertical scrollbar */
+    padding-right: 20px;
+    background-color: white;
+}
+/* IE 6 doesn't support max-height
+ * we use height instead, but this forces the menu to always be this tall
+ */
+* html .ui-autocomplete {
+    height: 100px;
+}
+button .fb {
+    font-family: fb_font;
+    font-size: 40px;
+    padding: 0px 8px 0px 0px;
+    margin: 6px 0px 0px 0px;
+    float: left;
+    border-right: 1px solid #1C4596;
+}
+button p {
+    float: left;
+    margin: 15px 0px 0px 10px;
+    padding: 0px;
+}
+#title_bar {
+    width: 100%;
+    height: 55px;
+    border-bottom: 1px solid #616262;
+}
+#title_bar img {
+    float: left;
+    height: 50px;
+    margin: 0px 0px 0px 6px;
+    padding: 0px;
+}
+#title_bar h2 {
+    font-size: 25px;
+    margin: 0px -20px 0px 0px;
+    padding: 10px;
+}
+#title_bar p {
+    font-size: 10px;
+    padding: 0px;
+    margin: -10px 0px 0px 94px;
+}
+#fb_btns {
+    height: 124px;
+    color: #616262;
+    background-color: #e9f0f0;
+}
+#fb_btns h3 {
+    margin: 0px;
+    padding: 30px 10px 0px 10px;
+}
+
+.willet {
+    float: left;
+    width: 50%;
+    height: 35px;
+    background-color: #e9f0f0;
+    text-decoration: none;
+}
+.willet p {
+    float: left;
+    font-size: 10px;
+    margin-left: 10px;
+}
+.willet img {
+    float: left;
+    height: 20px;
+    margin: 5px 10px 5px 3px;
+}
+#nameEntry {
+    text-align: left;
+    padding-left: 15px;
+    border-bottom: 1px solid #616262;
+}
+#tags {
+    width: 160px;
+    margin-left: 2px;
+}
+#selectionCount {
+    float: right;
+    margin-right: 15px;
+}
+#chosenFriends {
+    height: 112px;
+    overflow-y: auto;
+    text-align: left;
+    padding: 0px 5px 0px 5px;
+    background-color: #e9f0f0;
+}
+#chosenFriends p {
+    padding-left: 10px;
+}
+#chosenFriends img {
+}
+.selectedFriend {
+    margin: 5px 5px 0px 5px;
+    padding: 5px;
+    border: 1px solid #3B5997;
+    border-radius: 5px;
+    background-color: #526EA6;
+}
+.notSelectedFriend {
+    border: 1px solid #383f41;
+    border-radius: 5px;
+    padding: 0px;
+    margin: 10px 10px 5px 10px;
+    opacity: 0.5;
+}
+.notSelectedFriend:hover {
+    opacity: 1.0;
+}
+#shareText {
+    padding: 2px 10px 0px 10px;
+    background-color: #e9f0f0;
+}
+#share-text {
+    font-size: 11px;
+    margin-top: 5px;
+    height: 27px;
+    max-height: 30px;
+}
+#btns {
+    text-align: right;
+    font-size: 11px;
+    background-color: #e9f0f0;
+    margin: 0px;
+    padding: 6px 7px 2px 10px;
+    height: 27px;
+}
+#btns button, #cancel button {
+   -webkit-appearance: none;
+    -webkit-border-horizontal-spacing: 0px;
+    -webkit-border-vertical-spacing: 0px;
+    -webkit-box-align: center;
+    -webkit-box-shadow:0 1px 2px #999;
+    -moz-box-shadow:0 1px 2px #999;
+    box-shadow:0 1px 2px #999;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: #EEE;
+    background-image: none;
+    background-origin: padding-box;
+    background-position: 0% 0%;
+    background-repeat: repeat;
+    border-bottom-color: #888;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-collapse: collapse;
+    border-left-color: #999;
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: #999;
+    border-right-style: soild;
+    border-right-width: 1px;
+    border-top-color: #999;
+    border-top-style: soild;
+    border-top-width: 1px;
+    box-sizing: border-box;
+    color: #333;
+    cursor: pointer;
+    direction: ltr;
+    display: inline-block;
+    float: none;
+    font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    font-variant: normal;
+    letter-spacing: normal;
+    line-height: normal;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    margin-right: 0px;
+    margin-top: 0px;
+    outline-color: #333;
+    outline-style: none;
+    outline-width: 0px;
+    padding: 2px;
+    text-align: center;
+    text-decoration: none;
+    text-indent: 0px;
+    text-shadow: none;
+    text-transform: none;
+    unicode-bidi: normal;
+    vertical-align: baseline;
+    white-space: nowrap;
+    word-spacing: 0px;
+}
+#cancel {
+    float: right;
+    width: 50%;
+    height: 35px;
+    background-color: #e9f0f0;
+}
+#cancel button {
+    margin: 5px 10px 0px 0px;
+    float: right;
+}
+
