@@ -58,13 +58,16 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_by_url(url):
+        # TODO: Enable this when we have a way to edit/upate memcahce
+        """
         data = memcache.get(ProductShopify.get_memcache_key(url))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
-            product = ProductShopify.all().filter('resource_url =', url).get()
-            if product:
-                product.memcache_by_url()
+        """
+        product = ProductShopify.all().filter('resource_url =', url).get()
+        if product:
+            product.memcache_by_url()
         return product
 
     @staticmethod
