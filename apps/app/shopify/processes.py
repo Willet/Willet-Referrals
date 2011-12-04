@@ -31,7 +31,7 @@ class DoUninstalledApp( URIHandler ):
 
         # Say goodbye from Fraser
         Email.goodbyeFromFraser( client.merchant.get_attr( 'email' ),
-                                 client.merchant.get_attr( 'first_name' ),
+                                 client.merchant.get_attr( 'full_name' ),
                                  app_class_name )
 
         # "Delete" the App
