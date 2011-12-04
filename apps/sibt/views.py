@@ -137,11 +137,12 @@ class AskDynamicLoader(webapp.RequestHandler):
             logging.warn('Probably no product description: %s' % e, exc_info=True)
 
         template_values = {
-            'productImg' : product.images, 
-            'productName': product.title, 
-            'productDesc': productDesc,
-            'product_id': product.shopify_id,
-            'productURL': store_domain,
+            'product_uuid' : product.uuid,
+            'productImg'   : product.images[0], 
+            'productName'  : product.title, 
+            'productDesc'  : productDesc,
+            'product_id'   : product.shopify_id,
+            'productURL'   : store_domain,
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'app': app,

@@ -203,7 +203,6 @@ class Email():
 
             #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
 
-            # Save the campaign data in a bucket
             result = urlfetch.fetch(
                 url     = 'https://sendgrid.com/api/mail.send.json',
                 payload = urllib.urlencode( params ), 
@@ -211,6 +210,5 @@ class Email():
                 headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             )
             logging.info("%s"% result.content)
-
 # end class
 
