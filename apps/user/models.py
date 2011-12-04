@@ -1098,6 +1098,97 @@ class User( db.Expando ):
             
         return fb_share_id, plugin_response
 
+    def fb_post_to_friends(self, ids, names, msg, img, name, desc, store_domain, link):
+        try:
+            """ We try to build the params, utf8 encode them"""
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'description'  : desc.encode('utf8'),
+                'name'         : name.encode('utf8'),
+                'caption'      : store_domain.encode('utf8')
+            }
+
+        except Exception, e:
+            logging.warn('there was an error encoding, do it the old way %s' % e, exc_info = True)
+
+            msg = msg.encode( 'ascii', 'ignore' )
+            if isinstance(msg, str):
+                logging.info("CONVERTING MSG")
+                msg = unicode(msg, 'utf-8', errors='ignore')
+
+            caption = store_domain.encode( 'ascii', 'ignore' )
+            if isinstance(caption, str):
+                logging.info("CONVERTING")
+                caption = unicode(caption, 'utf-8', errors='ignore')
+            
+            name = name.encode( 'ascii', 'ignore' )
+            if isinstance(name, str):
+                logging.info("CONVERTING name" )
+                name = unicode(name, 'utf-8', errors='ignore')
+            
+            desc = desc.encode('ascii', 'ignore') 
+            if isinstance(desc, str):
+                desc = unicode(desc, 'utf-8', errors='ignore')
+
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'description'  : desc,
+                'name'         : name,
+                'caption'      : caption
+            }
+
+        # For each person, share the message
+        fb_share_ids = []
+        for i in range( 0, len( ids ) ):
+            id   = ids[i]
+            name = names[i]
+
+            # Update the params - personalize the msg
+            params.update( { 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) } )
+            payload = urllib.urlencode( params )
+
+            facebook_share_url = "https://graph.facebook.com/%s/feed" % id
+
+            fb_response, plugin_response, fb_share_id = None, None, None
+            try:
+                #logging.info(facebook_share_url + params)
+                fb_response = urlfetch.fetch( facebook_share_url, 
+                                              payload,
+                                              method   = urlfetch.POST,
+                                              deadline = 7 )
+            except urlfetch.DownloadError, e: 
+                logging.error('error sending fb request: %s' % e)
+                return [], 'fail'
+                # No response from facebook
+                
+            if fb_response is not None:
+                fb_results = simplejson.loads(fb_response.content)
+                
+                if fb_results.has_key('id'):
+                    
+                    fb_share_ids.append( fb_results['id'] )
+                    
+                    """
+                    taskqueue.add(
+                        url    = url('FetchFriendFacebookData'),
+                        params = { 'fb_id' : id }
+                    )
+                    """
+                else:
+                    fb_share_ids.append( 'fail' )
+                    logging.info(fb_results)
+
+            else:
+                # we are assuming a nil response means timeout and success
+                pass
+            
+        return fb_share_ids
+    
+    
     def facebook_action(self, action, obj, obj_link):
         """Does an ACTION on OBJECT on users timeline"""
         logging.info("FB Action %s %s %s" % (action, obj, obj_link))

@@ -369,6 +369,6 @@ class UpdateEmailAddress(webapp.RequestHandler):
 class UpdateFBAccessToken( URIHandler ):
     """ Store FB access token and FB id in User """
     def post( self ):
-        user = User.get( self.response.get( 'user_uuid' ) )
-        user.update( fb_access_token = self.response.get( 'accessToken' ),
-                     fb_identity     = self.response.get( 'fbUserId' ) ) 
+        user = User.get( self.request.get( 'user_uuid' ) )
+        user.update( fb_access_token = self.request.get( 'accessToken' ),
+                     fb_identity     = self.request.get( 'fbUserId' ) ) 

@@ -292,7 +292,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
         store_domain  = self.request.get('store_url')
         app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
         user          = User.get(self.request.get('user_uuid'))
-        user_found    = True if hasattr(user, 'fb_access_token') else False
+        user_found    = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin()
         target        = self.request.get( 'url' )
         
@@ -353,7 +353,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'user_found'     : str(user_found).lower(),
+            'user_has_fb_token' : user_found,
 
             'product_uuid'   : product.uuid,
             'product_title'  : product.title if product else "",
