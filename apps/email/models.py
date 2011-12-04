@@ -178,40 +178,39 @@ class Email():
 
     @staticmethod
     def send_email(from_address, to_address, subject, body):
-        params = {
-            "api_user" : "BarbaraEMac",
-            "api_key"  : "w1llet!!",
-            "to"       : to_address,
-            "subject"  : subject,
-            "html"     : body,
-            "from"     : info,
-            "fromname" : "Willet",
-            "bcc"      : barbara
-        }
-
-        #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
-
-        # Save the campaign data in a bucket
-        result = urlfetch.fetch(
-            url     = 'https://sendgrid.com/api/mail.send.json',
-            payload = urllib.urlencode( params ), 
-            method  = urlfetch.POST,
-            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        )
-        logging.info("%s"% result.content)
         
-        """
-        try:
-            e = EmailMessage(
-                    sender=from_address, 
-                    to=to_address, 
-                    subject=subject, 
-                    html=body
-                    )
-            e.send()
-        except Exception,e:
-            logging.error('error sending email: %s', e)
-        """
+        if ',' in to_address:
+            try:
+                e = EmailMessage(
+                        sender=from_address, 
+                        to=to_address, 
+                        subject=subject, 
+                        html=body
+                        )
+                e.send()
+            except Exception,e:
+                logging.error('error sending email: %s', e)
+        else:
+            params = {
+                "api_user" : "BarbaraEMac",
+                "api_key"  : "w1llet!!",
+                "to"       : to_address,
+                "subject"  : subject,
+                "html"     : body,
+                "from"     : info,
+                "fromname" : "Willet",
+                "bcc"      : barbara
+            }
 
+            #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
+
+            # Save the campaign data in a bucket
+            result = urlfetch.fetch(
+                url     = 'https://sendgrid.com/api/mail.send.json',
+                payload = urllib.urlencode( params ), 
+                method  = urlfetch.POST,
+                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            )
+            logging.info("%s"% result.content)
 # end class
 
