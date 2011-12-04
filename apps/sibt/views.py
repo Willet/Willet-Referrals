@@ -137,11 +137,12 @@ class AskDynamicLoader(webapp.RequestHandler):
             logging.warn('Probably no product description: %s' % e, exc_info=True)
 
         template_values = {
-            'productImg' : product.images, 
-            'productName': product.title, 
-            'productDesc': productDesc,
-            'product_id': product.shopify_id,
-            'productURL': store_domain,
+            'product_uuid' : product.uuid,
+            'productImg'   : product.images[0], 
+            'productName'  : product.title, 
+            'productDesc'  : productDesc,
+            'product_id'   : product.shopify_id,
+            'productURL'   : store_domain,
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'app': app,
@@ -289,11 +290,12 @@ class PreAskDynamicLoader(webapp.RequestHandler):
     
     # TODO: THis code is Shopify specific. Refactor.
     def get(self):
-        store_domain = self.request.get('store_url')
-        app        = SIBTShopify.get_by_store_url(self.request.get('store_url'))
-        user       = User.get(self.request.get('user_uuid'))
-        user_found = True if hasattr(user, 'fb_access_token') else False
-        target     = self.request.get( 'url' )
+        store_domain  = self.request.get('store_url')
+        app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        user          = User.get(self.request.get('user_uuid'))
+        user_found    = 1 if hasattr(user, 'fb_access_token') else 0
+        user_is_admin = user.is_admin()
+        target        = self.request.get( 'url' )
         
         # We need this stuff here to fill in the FB.ui stuff 
         # if the user wants to post on wall
@@ -324,6 +326,23 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         link = Link.create(target, app, origin_domain, user)
         
+        # Which share message should we use?
+        ab_share_options = [ 
+            "I'm not sure if I should buy this. What do you think?",
+            "Would you buy this? I need help making a decision!",
+            "I need some shopping advice. Should I buy this? Would you?",
+            "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
+        ]
+        
+        if not user_is_admin:
+            ab_opt = ab_test('sibt_share_text3',
+                              ab_share_options,
+                              user = user,
+                              app  = app )
+        else:
+            ab_opt = "ADMIN: Should I buy this? Please let me know!"
+
+
         template_values = {
             'URL' : URL,
 
@@ -335,7 +354,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'user_found'     : str(user_found).lower(),
+            'user_has_fb_token' : user_found,
 
             'product_uuid'   : product.uuid,
             'product_title'  : product.title if product else "",
@@ -344,6 +363,8 @@ class PreAskDynamicLoader(webapp.RequestHandler):
 
             'share_url'      : link.get_willt_url(),
             'willt_code'     : link.willt_url_code,
+
+            'AB_share_text'  : ab_opt,
         }
 
         path = os.path.join('apps/sibt/templates/', 'preask.html')

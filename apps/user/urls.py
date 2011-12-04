@@ -14,5 +14,6 @@ urlpatterns = [
     (r'/klout', QueryKloutAPI),
     (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
     (r'/tweet', UpdateTwitterGraph),  
+    (r'/u/updateFBAccessToken', UpdateFBAccessToken),  
 ]
 

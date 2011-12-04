@@ -628,7 +628,6 @@ class Barbara(URIHandler):
                             logging.info( 'Removed from %s' % a.store_url )
         Email.SIBTVoteNotification( 'becmacdonald@gmail.com', 'name', 'yes', 'adsf', 'adf', 'asd', 'asd' )
         Email.goodbyeFromFraser( 'fraser.harris@gmail.com', 'Fraser', 'SIBTShopify')
-        """
         apps = SIBTShopify.all()
         for a in apps:
             if a.store_url == 'http://thirsttees.myshopify.com':
@@ -636,6 +635,12 @@ class Barbara(URIHandler):
             else:
                 a.btm_tab_enabled = True
             a.put()
+        """
+        products = ProductShopify.all()
+        for p in products:
+            if p.uuid == None:
+                p.uuid = generate_uuid( 16 )
+                p.put()
 
 class ShowActions(URIHandler):
     @admin_required

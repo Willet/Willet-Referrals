@@ -237,6 +237,24 @@
             };
             
             $(document).ready(function() {
+               FB.login(function(lr) {
+                        if (!lr.authResponse) {
+                            // we weren't given permission
+                            storeAnalytics('SIBTFBConnectCancelled');
+                            doPostMessage('close');
+                            window.close();
+                        } else { 
+                            // TODO: need to support new authresponse
+                            fbData.fb_token = lr.authResponse.accessToken;
+                            fbData.fb_id = lr.authResponse.userID;
+                            fb_share_handler(fbData);
+                        }
+                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                );
+
+
+
+
                 // fb is loaded, run our scripts
                 iframeBody = document.getElementById('willt');
                 shareFrame = document.getElementById('willt-frame');

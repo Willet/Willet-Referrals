@@ -410,8 +410,6 @@ class SIBTInstanceCreated(SIBTInstanceAction):
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
         
-        logging.error("MEDIUM: %s" % medium )
-
         uuid = generate_uuid(16)
         action = SIBTInstanceCreated(
                 key_name = uuid,

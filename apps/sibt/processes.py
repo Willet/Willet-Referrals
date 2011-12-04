@@ -12,18 +12,21 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.sibt.actions        import *
-from apps.action.models import UserAction
+from apps.action.models       import UserAction
 from apps.app.models          import App
-from apps.app.models import get_app_by_id
+from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
-from apps.link.models         import get_link_by_willt_code
-from apps.product.shopify.models      import ProductShopify
+from apps.link.models         import Link
+from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import PartialSIBTInstance
 from apps.testimonial.models  import create_testimonial
-from apps.user.models         import User, get_or_create_user_by_cookie, get_user_by_cookie, get_user_by_uuid
+from apps.user.models         import User
+from apps.user.models         import get_or_create_user_by_cookie
+from apps.user.models         import get_user_by_cookie
+from apps.user.models         import get_user_by_uuid
 
 from util.consts              import *
 from util.helpers             import url 
@@ -41,7 +44,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             user = get_or_create_user_by_cookie(self)
         app  = get_app_by_id(self.request.get('app_uuid'))
         willt_code = self.request.get('willt_code')
-        link = get_link_by_willt_code(willt_code)
+        link = Link.get_by_code(willt_code)
         img = self.request.get('product_img')
         product_name = self.request.get('name')
         product_desc = None 
@@ -148,7 +151,7 @@ class StartSIBTInstance(URIHandler):
     def post(self):
         user = get_or_create_user_by_cookie(self)
         app  = get_app_by_id(self.request.get('app_uuid'))
-        link = get_link_by_willt_code(self.request.get('willt_code'))
+        link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         
         logging.info("Starting SIBT instance for %s" % link.target_url )
@@ -354,9 +357,9 @@ class TrackSIBTUserAction(URIHandler):
         self.response.out.write('')
 
 class StartPartialSIBTInstance( URIHandler ):
-    def get( self ):
+    def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
-        link    = get_link_by_willt_code( self.request.get( 'willt_code' ) )
+        link    = Link.get_by_code( self.request.get( 'willt_code' ) )
         product = Product.get( self.request.get( 'product_uuid' ) )
         user    = User.get( self.request.get( 'user_uuid' ) )
 
@@ -457,3 +460,93 @@ class StartSIBTAnalytics(URIHandler):
         }
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
+
+class SendFBMessages( URIHandler ):
+    def post( self ):
+        logging.info("TARGETTED_SHARESIBTONFACEBOOK")
+        
+        # Fetch arguments 
+        ids       = self.request.get( 'ids' )
+        names     = self.request.get( 'names' )
+        msg       = self.request.get( 'msg' )
+        app       = App.get( self.request.get('app_uuid') )
+        product   = Product.get( self.request.get( 'product_uuid' ) )
+        link      = Link.get_by_code( self.request.get( 'willt_code' ) )
+        
+        user      = User.get( self.request.get( 'user_uuid' ) )
+        fb_token  = self.request.get('fb_access_token')
+        fb_id     = self.request.get('fb_id')
+        if not user:
+            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            user  = get_or_create_user_by_cookie(self)
+
+        logging.error('friends %s %r' % (ids, names))
+        logging.error( 'msg :%s '% msg )
+
+        # Format the product's desc for FB
+        try:
+            ex = '[!\.\?]+'
+            product_desc = strip_html(product.description)
+            parts = re.split(ex, product_desc[:150])
+            product_desc = '.'.join(parts[:-1])
+            if product_desc[:-1] not in ex:
+                product_desc += '.'
+        except:
+            logging.info('could not get product description')
+        
+        # Check formatting of share msg
+        try:
+            if isinstance(msg, str):
+                message = unicode(message, errors='ignore')
+        except:
+            logging.info('error transcoding to unicode', exc_info=True)
+
+        # defaults
+        response = {
+            'success': False,
+            'data': {}
+        }
+
+        # first do sharing on facebook
+        if fb_token and fb_id:
+            logging.info('token and id set, updating user')
+            user.update(
+                fb_identity = fb_id,
+                fb_access_token = fb_token
+            ) 
+
+        try:
+            fb_share_ids = user.fb_post_to_friends( ids,
+                                                    names,
+                                                    msg,
+                                                    product.images[0],
+                                                    product.title,
+                                                    product_desc,
+                                                    app.client.domain,
+                                                    link )
+            logging.info('shared on facebook, got share id %s' % fb_share_ids)
+
+            # if it wasn't successful ...
+            if len(fb_share_ids) != len(ids):
+                # posting failed!
+                response['data']['message'] = 'Could not post to facebook'
+            else:
+                # create the instance!
+                # Make the Instance!
+                instance = app.create_instance( user, 
+                                                None, 
+                                                link, 
+                                                product.images[0], 
+                                                motivation="",
+                                                dialog="ConnectFB")
+                # increment shares
+                for i in ids:
+                    app.increment_shares()
+
+                response['success'] = True
+        except Exception,e:
+            response['data']['message'] = str(e)
+            logging.error('we had an error sharing on facebook', exc_info=True)
+
+        logging.info('response: %s' % response)
+        self.response.out.write(json.dumps(response))
