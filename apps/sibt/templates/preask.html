@@ -46,7 +46,7 @@
                     data     : payload,
                     type     : 'post',
                     success  : function (response) {
-                        alert( 'tracking user action' );
+                        return;
                     }
                 });
             };
@@ -62,7 +62,7 @@
                     dataType : 'json',
                     data     : payload,
                     success  : function (tr) {
-                        alert( 'updated user' );
+                        return;
                     }
                 });
 
@@ -81,7 +81,7 @@
                     dataType : 'json',
                     data     : payload,
                     success  : function (tr) {
-                        alert("Starting partial instnce");
+                        return;
                     }
                 });
             };
@@ -123,7 +123,7 @@
                         
                         $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
                         
-                        $("#btns").html( '<button class="cancel-btn" title="Close">Close</button>' );
+                        $("#btns").html( '<button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
 
                     }
                 });
