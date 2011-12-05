@@ -199,8 +199,14 @@
                         select: friendSelectedByAutocomplete,
                         close:  clearNameEntry
                     });  
-                });
 
+                    // Start by showing some friends
+                    if ( friends.length <= 125 ) {
+                        for( var i = 0; i < friends.length; i ++ ) {
+                            selectFriend( friends[i].name, friends[i].id );
+                        }
+                    }
+               });
             };
 
             var clearNameEntry = function() {
@@ -212,15 +218,15 @@
                 
                 var i = friendNames.indexOf( ui.item.value );
                 selectFriend( ui.item.value, friends[i].id );
+            };
 
+            var selectFriend = function ( name, fb_id ) {
                 // Clean up UI
                 var p = $("#chosenFriends p");
                 if ( p.length != 0 ) {
                     p.remove();
                 }
-            };
-
-            var selectFriend = function ( name, fb_id ) {
+                
                 // Have we added a checkbox for this yet?
                 var div = $('#check' + fb_id);
                 if ( div.length == 0 ) {
