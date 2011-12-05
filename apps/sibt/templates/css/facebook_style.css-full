@@ -245,6 +245,7 @@
     }
         #_willet_sibt_bar div._willet_button span, #_willet_sibt_ask_bar div._willet_button span {
             line-height: inherit; 
+            font-size: 15px;
         }
             #_willet_sibt_bar div._willet_button span img, #_willet_sibt_ask_bar div._willet_button span img {
                 position: relative;

@@ -289,7 +289,7 @@
     var build_top_bar_html = function (is_ask_bar) {
 
         if (is_ask_bar || false) {
-            var bar_html = "<div class='_willet_wrapper'><span>Decisions are hard to make. {{AB_CTA_text}}</span>" +
+            var bar_html = "<div class='_willet_wrapper'><span style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</span>" +
                 "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                 "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                 "</div>" +
