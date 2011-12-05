@@ -54,4 +54,3 @@ class ComputeUserAnalytics(webapp.RequestHandler):
                 logging.error('called computeUserAnalytics with bad key %s' % key)
         return
 
-

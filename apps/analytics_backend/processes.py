@@ -1,27 +1,18 @@
-#!/usr/bin/env python
+#!/usr/env/python
 
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
+#import logging
+import datetime
+
 from google.appengine.ext import webapp
-from google.appengine.api import taskqueue
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
 
-from google.appengine.api import apiproxy_stub_map
-from google.appengine.api import runtime
+from apps.analytics_backend.models import AnalyticsHourSlice
 
-def shutdown_hook():
-    apiproy_stub_map.apiproxy.CancelApiCalls()
-    save_state()
-    # May want to raise an exception
-    
+class EnsureHourlySlices(webapp.RequestHandler):
+    def get(self):
+        today = datetime.datetime.today()
+        for hour in range(24):
+            val = today - datetime.timedelta(hours=hour)
+            # Ensure the existence of, or trigger the creation of any missing Hour entities
+            # This, and any similar entitiy creation methods, must be idempotent
+            AnalyticsHourSlice.get_or_create(start=val)
 
-def start():
-    pass
-
-def run():
-    while not runtime.is_shutting_down():
-        # do something
-        break 
-
-runtime.set_shutdown_hook(my_shutdown_hook)

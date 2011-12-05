@@ -42,6 +42,11 @@ cron:
 #  url: /gae_bingo/persist
 #  schedule: every 5 minutes
 
+# Backend Analytics entity creating!
+- description: Creating hourly TimeSlice entities for analytics
+  url: /bea/EnsureHourlySlices
+  schedule: every 30 minutes
+
 - description: scan for expired SIBT votes
   url: /s/getExpired
   schedule: every 5 minutes

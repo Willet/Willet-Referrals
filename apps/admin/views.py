@@ -927,11 +927,6 @@ class MemcacheConsole(URIHandler):
             'new_value': new_value,
             'messages': messages,
         }
-        try:
-            json_data = json.dumps(data)
-        except:
-            json_data = json.dumps({'key': key, 'messages': ['Error decoding key:value']})
-
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json_data)
 
