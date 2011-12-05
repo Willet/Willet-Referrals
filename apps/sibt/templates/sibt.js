@@ -151,8 +151,8 @@
             iframe: true, 
             initialWidth: 0, 
             initialHeight: 0, 
-            innerWidth: '450px',
-            innerHeight: '240px', 
+            innerWidth: '400px',
+            innerHeight: '220px', 
             fixed: true,
             href: url,
             onClosed: _willet_ask_callback
