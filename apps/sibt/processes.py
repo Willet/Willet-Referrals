@@ -317,6 +317,7 @@ class TrackSIBTShowAction(URIHandler):
         self.response.out.write('')
 
 class TrackSIBTUserAction(URIHandler):
+    """ For actions WITH AN INSTANCE """
     def get(self):
         """Compatibility with iframe shizz"""
         self.post()
@@ -497,7 +498,7 @@ class SendFBMessages( URIHandler ):
         # Check formatting of share msg
         try:
             if isinstance(msg, str):
-                message = unicode(message, errors='ignore')
+                message = unicode(msg, errors='ignore')
         except:
             logging.info('error transcoding to unicode', exc_info=True)
 

@@ -72,19 +72,6 @@
         document.body.appendChild( iframe );
     };
 
-    var _willet_start_partial_instance = function() {
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url StartPartialSIBTInstance %}?" + 
-                    "&app_uuid={{app.uuid}}" +
-                    "&user_uuid={{user.uuid}}" +
-                    "&willt_code={{willt_code}}" + 
-                    "&product_uuid={{product_uuid}}";
-
-        document.body.appendChild( iframe );
-    };
-
     /**
     * Called when ask iframe is closed
     */
@@ -153,7 +140,6 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function ( message ) {
-        _willet_store_analytics('SIBTConnectFBDialog');
 
         var url =  "{{URL}}/s/preask.html?user_uuid={{ user.uuid }}" + 
                                      "&store_url={{ store_url }}" +
@@ -165,8 +151,8 @@
             iframe: true, 
             initialWidth: 0, 
             initialHeight: 0, 
-            innerWidth: '400px',
-            innerHeight: '220px', 
+            innerWidth: '450px',
+            innerHeight: '240px', 
             fixed: true,
             href: url,
             onClosed: _willet_ask_callback
@@ -498,6 +484,19 @@
             }
         },
         */
+        {% if AB_FACEBOOK_NO_CONNECT %}
+        {
+            'name': 'Facebook',
+            'url': 'http://connect.facebook.net/en_US/all.js',
+            'dom_el': null,
+            'loaded': false,
+            'test': function() {
+                return (typeof FB == 'object');
+            }, 'callback': function() {
+                return;
+            }
+        },
+        {% endif %}
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
@@ -650,6 +649,20 @@
                     }
                 });
                 
+                // If we're trying ask without connect:
+                {% if AB_FACEBOOK_NO_CONNECT %}
+                    // Put fb_root div in the page
+                    var fb_div = $(document.createElement( 'div' ));
+                    fb_div.attr( 'id', 'fb-root' );
+                    $('body').append( fb_div );
+
+                    FB.init({
+                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        cookie: true, // enable cookies to allow the server to access the session
+                        xfbml: true  // parse XFBML
+                    });
+                {% endif %}
+
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );

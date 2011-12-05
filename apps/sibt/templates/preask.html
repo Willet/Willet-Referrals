@@ -130,6 +130,16 @@
             };
             // Done AJAX methods
 
+
+            var closeIframe = function( action ) {
+                if ( action != "" ){
+                    storeAnalytics( action );
+                }
+
+                doPostMessage('close');
+                window.close();
+            };
+
             // Post to parent page that we are hosted in
             var doPostMessage = function(message) {
                 var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
@@ -142,7 +152,6 @@
             // Open up the FB dialog. Does not do a FB connect with us.
             var postOnWall = function () {
                 startPartialInstance();
-                storeAnalytics('SIBTNoConnectFBDialog');
 
                 FB.ui({ method:  'feed',
                         display: 'popup',
@@ -153,10 +162,12 @@
                         description: "{{ product_desc|striptags|escape }}",
                         redirect_uri: '{{fb_redirect}}' });
                 
-                doPostMessage('close');
+                closeIframe( 'SIBTNoConnectFBDialog' );
             };
 
             var runFriendPicker = function () {
+                storeAnalytics('SIBTConnectFBDialog');
+                
                 // If the user hasn't connected with us,
                 // if ( !{{user_has_fb_token}} ) {
                     $("#fb_btns").html( '<h3>Login to Facebook<br />so you can select your friends!</h3>' );
@@ -166,10 +177,10 @@
 
                             if (!authResp) {
                                 // we weren't given permission
-                                storeAnalytics('SIBTFBConnectCancelled');
-                                doPostMessage('close');
-                                window.close();
+                                closeIframe( 'SIBTConnectFBCancelled' );
                             } else { 
+                                storeAnalytics('SIBTFBConnected');
+
                                 // Store FB data in the server.
                                 updateServerUser( authResp.accessToken, authResp.userID );
 
@@ -280,7 +291,6 @@
                
             $(document).ready(function() {
                 $('.cancel-btn').click(function() {
-                    storeAnalytics('SIBTAskUserClosedIframe');
                     doPostMessage('close');
                 });
 
@@ -324,11 +334,11 @@
             </div>
 
             <div id="cancel">
-                <button class="cancel-btn" title="Cancel" />Cancel</button>
+                <button class="cancel-btn" title="Cancel" onclick="closeIframe('SIBTAskIframeCancelled');" />Cancel</button>
             </div>
             <div class="willet">
                 <p>Powered by</p>
-                <a href="http://www.willetinc"><img src="/static/imgs/logo.png" /></a>
+                <a href="http://www.willetinc.com"><img src="/static/imgs/logo.png" /></a>
             </div>
         </div>
 
@@ -351,12 +361,12 @@
              
             <div class="willet" style="height: 32px; padding-top: 3px;">
                 <p>Powered by</p>
-                <a href="http://www.willetinc"><img src="/static/imgs/logo.png" /></a>
+                <a href="http://www.willetinc.com"><img src="/static/imgs/logo.png" /></a>
             </div>
 
             <div id="btns">
                 <button style="width:50px;" onClick="sendMessages()">Ask</button>
-                <button class="cancel-btn" title="Cancel">Cancel</button>
+                <button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>
             </div>
         </div>
     </div>
