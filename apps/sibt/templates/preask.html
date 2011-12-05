@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-       <!-- Google Analytics -->
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-23764505-9']);
-            _gaq.push(['_trackPageview']);
-            (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-        
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/ padding-top: 3px;imgs/favicon.ico' />
         
@@ -23,7 +11,7 @@
         <style>       
             @font-face {
                  font-family: fb_font;
-                 src: url("/static/fonts/KlavikaBold.otf") 
+                 src: url("/static/fonts/KlavikaBold.otf");
             }
         </style>
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
@@ -34,7 +22,7 @@
     <div id="wrapper">
         <div id="splash">
             <div id="title_bar">
-                <img src="/static/imgs/sibt_logo_79x50.png" />
+                <img width="79px" height="50px" src="/static/imgs/sibt_logo_79x50.png" />
                 <h2>Should I Buy This?</h2>
                 <p>The fastest way to get shopping advice from friends & family</p>
             </div>
@@ -55,7 +43,9 @@
             </div>
             <div class="willet">
                 <p>Powered by</p>
-                <a href="http://www.willetinc.com"><img src="/static/imgs/logo.png" /></a>
+                <a href="http://www.willetinc.com">
+                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                </a>
             </div>
         </div>
 
@@ -78,7 +68,9 @@
              
             <div class="willet" style="height: 32px; padding-top: 3px;">
                 <p>Powered by</p>
-                <a href="http://www.willetinc.com"><img src="/static/imgs/logo.png" /></a>
+                <a href="http://www.willetinc.com">
+                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                </a>
             </div>
 
             <div id="btns">
@@ -401,6 +393,19 @@
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
     </script>
+
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-23764505-9']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+        
 </body>
 </html>
 
