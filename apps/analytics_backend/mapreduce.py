@@ -2,7 +2,7 @@
 
 import logging
 
-from util.mapreduce import operation
+from mapreduce import operation
 
 from apps.action.models import Action
 from apps.analytics_backend.models import actions_to_count

@@ -156,6 +156,7 @@ INSTALLED_APPS = [
     'testimonial',
     'user',
     'user_analytics',
+    'analytics_backend',
     'gae_bingo',
     'gae_bingo.tests',
     # LINK MUST ALWAYS BE LAST

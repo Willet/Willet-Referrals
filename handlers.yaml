@@ -1,8 +1,7 @@
 handlers:
 
-handlers:
 - url: /mapreduce(/.*)?
-  script: util/mapreduce/main.py
+  script: mapreduce/main.py
   login: admin
 
 - url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
