@@ -90,10 +90,15 @@
                 var ids   = [];
                 var names = [];
 
+                // Clean up UI to show loader gif
+                $("#nameEntry").html('<p>Asking ...</p>');
+                $("#chosenFriends").html( '<img src="/static/imgs/ajax-loader.gif" id="loader" />' );
+                $("#shareText").html('');
+                $("#btns").html('');
+
                 $.each( $("input[type='checkbox']:checked"), function( i ) { 
                     ids.push( $($("input[type='checkbox']:checked")[i]).attr('value') ); 
                     names.push( $($("input[type='checkbox']:checked")[i]).attr('name') ); 
-                    
                     } );
                 
                 payload = { user_uuid : "{{user_uuid}}",
@@ -101,8 +106,8 @@
                             product_uuid    : "{{product_uuid}}",
                             fb_access_token : fbAccessToken,
                             fb_id     : fbIdentity,
-                            ids       : ids,
-                            names     : names,
+                            ids       : JSON.stringify( ids ),
+                            names     : JSON.stringify( names ),
                             msg       : $("#share-text").attr("value"),
                             willt_code: "{{willt_code}}"
                           };
@@ -112,7 +117,14 @@
                     dataType : 'json',
                     data     : payload,
                     success  : function (tr) {
-                        alert("SUCCESS");
+
+                        $("#nameEntry").html('');
+                        $("#chosenFriends").html( '<h3>Asks Away! </h3> <p>Your friends have been asked to help you by <b>voting</b> on whether you should buy this product or not.</p>' );
+                        
+                        $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
+                        
+                        $("#btns").html( '<button class="cancel-btn" title="Close">Close</button>' );
+
                     }
                 });
             };
@@ -146,7 +158,7 @@
 
             var runFriendPicker = function () {
                 // If the user hasn't connected with us,
-                if ( !{{user_has_fb_token}} ) {
+                // if ( !{{user_has_fb_token}} ) {
                     $("#fb_btns").html( '<h3>Login to Facebook<br />so you can select your friends!</h3>' );
 
                    FB.login(function(response) {
@@ -165,10 +177,10 @@
                             }
                         }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                     );
-                } else {
+               // } else {
                     // User is logged in AND connected (in theory)
-                    fetchFBFriends( );
-                }
+               //     fetchFBFriends( );
+               // }
             };
             
             // Query FB api to grab logged-in user's friends
