@@ -275,11 +275,12 @@
                 });  
 
                 // Start by showing some friends
-                if ( friends.length <= 125 ) {
-                    for( var i = 0; i < friends.length; i ++ ) {
+                //if ( friends.length <= 125 ) {
+                    for( var i = 0; i < 125; i ++ ) {
                         selectFriend( friends[i].name, friends[i].id );
+                        deselectFriend( friends[i].id );
                     }
-                }
+                //}
            });
         };
 
