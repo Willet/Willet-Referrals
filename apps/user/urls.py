@@ -6,6 +6,7 @@ urlpatterns = [
     #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
     (r'/user/get/(.*)/', ShowProfileJSON),
     (r'/user/(.*)/(.*)/', ShowProfilePage),
+    (r'/user/safariCookieHack', UserCookieSafariHack),
     
     # processes
     (r'/updateEmailAddress', UpdateEmailAddress),

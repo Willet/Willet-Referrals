@@ -2,6 +2,50 @@
   * Copyright 2011, Willet, Inc.
  **/
 
+// Fun Safari cookie hack ... wooooo
+var firstTimeSession = 0;
+var doSafariCookieHack = function() {
+    if (firstTimeSession == 0) {
+        firstTimeSession = 1;
+        document.getElementById('sessionform').submit()
+        setTimeout(setCookieHackFlag, 2000);
+    }
+};
+
+var setCookieHackFlag = function() {
+    window.cookieSafariHackReady = true;
+};
+
+// Let's be dumb about this ... this'll fire on more than just Safari
+// BUT it will fire on Safari, which is what we need.
+// TODO: Fix this. Apparently, there is no easy way to determine strictly 'Safari'.
+if ( navigator.userAgent.indexOf('Safari') != -1 ) {
+    var hackIFrame = document.createElement( 'iframe' );
+    hackIFrame.setAttribute( 'src', "{{URL}}{% url UserCookieSafariHack %}" );
+    hackIFrame.setAttribute( 'id', "sessionFrame" );
+    hackIFrame.setAttribute( 'name', "sessionFrame" );
+    hackIFrame.setAttribute( 'onload', "doSafariCookieHack();" );
+    hackIFrame.style.display = 'none';
+
+    var hackForm = document.createElement( 'form' );
+    hackForm.setAttribute( 'id', 'sessionform' );
+    hackForm.setAttribute( 'action', "{{URL}}{% url UserCookieSafariHack %}" );
+    hackForm.setAttribute( 'method', 'post' );
+    hackForm.setAttribute( 'target', 'sessionFrame' );
+    hackForm.setAttribute( 'enctype', 'application/x-www-form-urlencoded' );
+    hackForm.style.display = 'none';
+
+    var hackInput = document.createElement( 'input' );
+    hackInput.setAttribute( 'type', 'text' );
+    hackInput.setAttribute( 'value', '{{user.uuid}}' );
+    hackInput.setAttribute( 'name', 'user_uuid' );
+    document.body.appendChild( hackIFrame );
+    hackForm.appendChild( hackInput );
+    document.body.appendChild( hackForm );
+} else {
+    setCookieHackFlag();
+}
+
 (function(document, window){
     var _willet_css = {% include stylesheet %}
     {% ifequal stylesheet "css/facebook_style.css" %}
@@ -546,7 +590,7 @@
             }   
         }
 
-        if (all_loaded) {
+        if (all_loaded && window.cookieSafariHackeReady) {
             run();
         } else {
             window.setTimeout(_willet_check_scripts,100);
@@ -558,6 +602,7 @@
     * We have jQuery!!!!
     */
     var run = function() {
+        
         var purchase_cta = $('#_willet_shouldIBuyThisButton');
         if (purchase_cta.length > 0) {
             _willet_store_analytics();
