@@ -1,11 +1,22 @@
 mapreduce:
-- name: Computing Hourly Action Analyitics
+- name: Computing Hourly Action Analytics
   mapper:
-    handler: apps.analytics_backend.mapreduce.build_hourly_stats
+    handler: apps.analytics_backend.processes.build_hourly_stats
     input_reader: mapreduce.input_readers.DatastoreInputReader
     params:
     - name: entity_kind
-      default: apps.analytics_backend.models.AnalyticsHourSlice
+      default: apps.analytics_backend.models.AppAnalyticsHourSlice
+    #- name: processing_rate
+    #  default: 100
+    #- name: shard_count
+    #  default: 4
+- name: Create Hourly Analytics models 
+  mapper:
+    handler: apps.analytics_backend.processes.ensure_hourly_slices
+    input_reader: mapreduce.input_readers.DatastoreInputReader
+    params:
+    - name: entity_kind
+      default: apps.app.models.App
     #- name: processing_rate
     #  default: 100
     #- name: shard_count

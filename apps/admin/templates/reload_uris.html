@@ -1,0 +1,16 @@
+{% extends "admin_base.html" %}
+
+{% block bottom_content %}
+    <div class="span-24 prepend-top">
+        <h1 class="prepend-top center">Reload URIS</h1>
+        <ul>
+            <li><a href="?">Reload URIS</a></li>
+            <li><a href="?all=true">Flush Memcache</a></li>
+        </ul>
+        <h3>{{ message }}</h3>
+        <blockquote>
+            {{ stats }}
+        </blockquote>
+    </div>
+{% endblock bottom_content %}
+

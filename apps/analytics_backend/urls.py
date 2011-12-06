@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-from apps.analytics_backend.processes import EnsureHourlySlices
+from apps.analytics_backend.processes import *
 
 urlpatterns = [
     # Processes
-    (r'/bea/EnsureHourlySlices', EnsureHourlySlices),
+    (r'/bea/(.*)/(.*)/', TimeSlices),
 ]

@@ -13,6 +13,8 @@ from google.appengine.api import datastore_errors
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
 
+from apps.app.models import App
+
 from util.consts import MEMCACHE_TIMEOUT
 
 #from apps.action.models import *
@@ -20,30 +22,50 @@ from util.consts import MEMCACHE_TIMEOUT
 #from apps.sibt.actions import *
 
 actions_to_count = [
-    #'SIBTAskUserClickedEditMotivation',
-
-    # top bar actions
     'SIBTUserClickedTopBarAsk',
     'SIBTShowingTopBarAsk',
-
-    # button actions
     'SIBTUserClickedButtonAsk',
     'SIBTShowingButton',
-
-    # ask actions
     'SIBTShowingAskIframe',
     'SIBTAskUserClosedIframe',
     'SIBTAskUserClickedShare',
     'SIBTInstanceCreated',
+    'SIBTShowingAskIframe',
+    'SIBTAskIframeCancelled',
+    'SIBTNoConnectFBDialog',
+    'SIBTNoConnectFBCancelled',
+    'SIBTConnectFBDialog',
+    'SIBTConnectFBCancelled',
+    'SIBTFBConnected',
+    'SIBTFriendChoosingCancelled',
+    'SIBTInstanceCreated'
 ]
+actions_to_count = list(set(actions_to_count))
 
 class AnalyticsTimeSlice(db.Expando):
-    """Generic Time Slice"""
+    date_range = db.ListProperty(datetime.datetime)
     start = db.DateTimeProperty()
-    end = db.DateTiemProperty()
+    end = db.DateTimeProperty()
 
-    def get_key(self):
-        return '%s:%s' % (self.__class__.__name__, self.start)
+    def increment(self, attr, new):
+        old = 0
+        if hasattr(self, attr):
+            old = getattr(self, attr)
+        new += old
+        setattr(self, attr, new)
+
+    def get_attr(self, attr):
+        value = 0
+        if hasattr(self, attr):
+            value = getattr(self, attr)
+        return value
+
+    def default(self, action):
+        setattr(self, action, 0)
+
+class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
+    """Generic Time Slice"""
+    app_ = db.ReferenceProperty(App)
 
     def put(self):
         """Stores model instance in memcache and database"""
@@ -55,7 +77,7 @@ class AnalyticsTimeSlice(db.Expando):
             logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % 
                     (self.__class__.__name__.lower(), timeout_ms))
             try:
-                self.hardPut() # Will validate the instance.
+                db.put(self)
             except datastore_errors.Timeout:
                 thread.sleep(timeout_ms)
                 timeout_ms *= 2
@@ -69,20 +91,35 @@ class AnalyticsTimeSlice(db.Expando):
             
         return True
 
+    def get_key(self):
+        return self.__class__.build_key(self.app_, self.start)
+        #return '%s:%s' % (self.__class__.__name__, self.start)
+
     @classmethod
-    def get(cls, memcache_key):
+    def build_key(cls, app_, start):
+        return '%s:%s:%s' % (cls.__name__, app_.uuid, start)
+    
+    @classmethod
+    def _get_from_datastore(cls, app_, start):
+        return cls.all()\
+                .filter('app_ =', app_)\
+                .filter('start =', start)\
+                .get()
+
+    @classmethod
+    def get(cls, app_, start):
         """Checks memcache for model before hitting database
         Each class must have a staticmethod get_from_datastore
         TODO(barbara): Enforce the above statement!!!
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
-        key = cls.build_key(memcache_key)
+        key = cls.build_key(app_, start)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
             logging.debug('%s::get(): %s not found in memcache, \
                     hitting datastore.' % (cls, key))
-            entity = cls._get_from_datastore(memcache_key)
+            entity = cls._get_from_datastore(app_, start)
             if entity:
                 logging.debug('setting new memcache entity: %s' % key)
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), 
@@ -92,7 +129,7 @@ class AnalyticsTimeSlice(db.Expando):
             logging.debug('Model::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-class AnalyticsHourSlice(AnalyticsTimeSlice):
+class AppAnalyticsHourSlice(AppAnalyticsTimeSlice):
     """A TimeSlice is a period of time with a start and end datetime that 
     reflects the start and the end of the period.
 
@@ -102,44 +139,130 @@ class AnalyticsHourSlice(AnalyticsTimeSlice):
     """
 
     @classmethod
-    def create(cls, start, put=True):
+    def create(cls, app_, start, put=True):
         """Let's create a TimeSlice!
         Start is the datetime when this timeslice starts!
         """
         end = start + datetime.timedelta(hours=1)
-        ahs = cls(start=start, end=end)
+        ahs = cls(app_=app_, start=start, end=end)
         if put:
             ahs.put()
         return ahs
 
     @classmethod
-    def get_or_create(cls, start):
-        ahs = cls.get(start)
+    def get_or_create(cls, app_, start, put=True):
+        ahs = cls.get(app_, start)
         created = False
         if not ahs:
-            ahs = cls.create(start=start)
+            ahs = cls.create(app_=app_, start=start, put=put)
             created = True
 
         return ahs, created
 
-class AnalyticsDaySlice(AnalyticsTimeSlice):
+class AppAnalyticsDaySlice(AppAnalyticsTimeSlice):
     @classmethod
-    def create(cls, start, put=True):
-        """Let's create a TimeSlice!
-        Start is the datetime when this timeslice starts!
-        """
-        end = start + datetime.timedelta(hours=1)
-        ahs = cls(start=start, end=end)
+    def create(cls, app_, start, put=True):
+        end = start + datetime.timedelta(hours=24)
+        ahs = cls(app_=app_, start=start, end=end)
         if put:
             ahs.put()
         return ahs
 
     @classmethod
-    def get_or_create(cls, hour):
-        ahs = cls.get(hour)
+    def get_or_create(cls, app_, start, put=True):
+        logging.info('looking up %s\n%s\n%s' % (cls, app_, start))
+        ahs = cls.get(app_, start)
+        logging.info('got %s' % ahs)
         created = False
         if not ahs:
-            ahs = cls.create(start=hour)
+            ahs = cls.create(app_=app_, start=start, put=put)
+            logging.info('created')
             created = True
 
         return ahs, created
+
+class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
+    def put(self):
+        """Stores model instance in memcache and database"""
+        key = self.get_key()
+        timeout_ms = 100
+        while True:
+            try:
+                db.put(self)
+            except datastore_errors.Timeout:
+                thread.sleep(timeout_ms)
+                timeout_ms *= 2
+            else:
+                break
+        if self.key():
+            memcache.set(key, db.model_to_protobuf(self).Encode(), 
+                    time=MEMCACHE_TIMEOUT)
+            
+        return True
+
+    def get_key(self):
+        return self.__class__.build_key(self.start)
+
+    @classmethod
+    def build_key(cls, start):
+        return '%s:%s' % (cls.__name__, start)
+    
+    @classmethod
+    def _get_from_datastore(cls, start):
+        return cls.all().filter('start =', start).get()
+
+    @classmethod
+    def get(cls, start):
+        """Checks memcache for model before hitting database
+        Each class must have a staticmethod get_from_datastore
+        TODO(barbara): Enforce the above statement!!!
+        Also, should it be: get_from_datastore OR _get_from_datastore?
+        """
+        key = cls.build_key(start)
+        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        data = memcache.get(key)
+        if not data:
+            entity = cls._get_from_datastore(start)
+            if entity:
+                memcache.set(key, db.model_to_protobuf(entity).Encode(), 
+                        time=MEMCACHE_TIMEOUT)
+            return entity
+        else:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+class GlobalAnalyticsHourSlice(GlobalAnalyticsTimeSlice):
+    @classmethod
+    def create(cls, start, put=True):
+        end = start + datetime.timedelta(hours=1)
+        gats = cls(start=start, end=end)
+        if put:
+            gats.put()
+        return gats
+
+    @classmethod
+    def get_or_create(cls, start, put=True):
+        gats = cls.get(start)
+        created = False
+        if not gats:
+            gats = cls.create(start, put=put)
+            created = True
+        return gats, created
+
+class GlobalAnalyticsDaySlice(GlobalAnalyticsTimeSlice):
+    @classmethod
+    def create(cls, start, put=True):
+        end = start + datetime.timedelta(hours=24)
+        gats = cls(start=start, end=end)
+        if put:
+            gats.put()
+        return gats
+
+    @classmethod
+    def get_or_create(cls, start, put=True):
+        gats = cls.get(start)
+        created = False
+        if not gats:
+            gats = cls.create(start, put=put)
+            created = True
+        return gats, created
+

@@ -825,7 +825,18 @@ class FBConnectStats( URIHandler ):
 
 class ReloadURIS(URIHandler):
     def get(self):
-        memcache.set('reload_uris', True)
+        if self.request.get('all'):
+            flushed = memcache.flush_all()
+            message = 'Flush all: %s' % flushed
+        else:
+            memcache.set('reload_uris', True)
+            message = 'reload_uris = True'
+        template_values = {
+            'message': message,
+            'stats': memcache.get_stats()
+        }
+        self.response.out.write(self.render_page('reload_uris.html', 
+            template_values))
 
 class CheckMBC(URIHandler):
     @admin_required
