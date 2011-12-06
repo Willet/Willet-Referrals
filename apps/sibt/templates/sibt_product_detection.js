@@ -4,27 +4,6 @@
      */
     var document = window.document;
 
-    var isSafari         = (/Safari/.test(navigator.userAgent));
-    var firstTimeSession = 0;
-
-    function submitSessionForm() {
-        if (firstTimeSession == 0) {
-            firstTimeSession = 1;
-            $("#sessionform").submit();
-            setTimeout(processApplication, 2000);
-        }
-    }
-
-    if (isSafari) {
-        $("body").append('<iframe id="sessionframe" name="sessionframe" onload="submitSessionForm()" src="{{URL}}{{ url UserCookieSafariHack }}" style="display:none;"></iframe><form id="sessionform" enctype="application/x-www-form-urlencoded" action="{{URL}}{{ url UserCookieSafariHack }}" target="sessionframe" action="post"><input type="text" name="user_uuid" value="{{user.uuid}}" /></form>');
-    } else {
-        processApplication();
-    }
-
-    function processApplication() {
-        alert('Session has been set. Now you can start your application!');
-    }
-
     var run = function() {
         try {
             var purchase_cta = document.getElementById('{{ sibt_button_id }}');

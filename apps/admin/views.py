@@ -149,6 +149,8 @@ class ImportPlugin(URIHandler):
 
 class ShowRoutes(URIHandler):
     def format_route(self, route):
+        memcache.set('reload_uris', True)
+
         url = route[0]
         obj = route[1]
         obj_name = obj.__name__
