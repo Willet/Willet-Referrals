@@ -82,9 +82,11 @@ class SIBTShopifyEditStyle(URIHandler):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
+        """
         client = self.get_client()
         if client.uuid != app.client.uuid:
             self.redirect('/')
+        """
 
         if self.request.get('set_to_default'):
             logging.error('reset button')
@@ -106,9 +108,12 @@ class SIBTShopifyEditStyle(URIHandler):
     def get(self, app_uuid, app=None):
         if not app:
             app = SIBTShopify.get(app_uuid)
+
+        """
         client = self.get_client()
         if client.uuid != app.client.uuid:
             self.redirect('/')
+        """
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()

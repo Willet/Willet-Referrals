@@ -7,7 +7,6 @@ urlpatterns = [
     # Views
     (r'/s/preask.html',         PreAskDynamicLoader),
     (r'/s/ask.html',            AskDynamicLoader),
-    (r'/s/ask2.html',           Ask2DynamicLoader),
     (r'/s/vote.html',           VoteDynamicLoader),
     (r'/s/results.html',        ShowResults),
     (r'/s/fb_thanks.html',      ShowFBThanks),

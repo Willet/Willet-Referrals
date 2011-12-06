@@ -97,3 +97,12 @@ class ShowProfileJSON (URIHandler):
         self.response.out.write(json.dumps(response))
 
 
+class UserCookieSafariHack( URIHandler ):
+    def post( self ):
+        self.get()
+
+    def get( self ):
+        user = User.get( self.request.get( 'user_uuid' ) )   
+        if user:
+            set_user_cookie( self, user.uuid )
+        self.response.headers.add_header('P3P', P3P_HEADER)

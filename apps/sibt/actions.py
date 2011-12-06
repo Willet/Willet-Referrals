@@ -456,6 +456,35 @@ class SIBTShowingAskIframe(ShowAction):
         action.put()
         return action
 
+class SIBTAskIframeCancelled(ShowAction):
+    """ Cancelled immediately after opening - ie. no other actions in between open and close.
+        Closed using "cancel' button on splash screen """
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTAskIframeCancelled'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        url = None
+        app = None
+        try:
+            url = kwargs['url']
+            app = kwargs['app']
+        except Exception, e:
+            logging.error('error getting url: %s' % e, exc_info=True)
+        
+        action = SIBTAskIframeCancelled(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                url = url,
+                app_ = app,
+                what = what
+        )
+        #super(SIBTShowingAskIframe, action).create()
+        action.put()
+        return action
+
 class SIBTShowingTopBarAsk(ShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -698,31 +727,6 @@ class SIBTAskUserClickedEditMotivation(UserAction):
         action.put()
         return action
 
-class SIBTAskUserClosedIframe(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'SIBTAskUserClosedIframe'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = SIBTAskUserClosedIframe(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-        return action
-
 class SIBTAskUserClickedShare(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -748,11 +752,11 @@ class SIBTAskUserClickedShare(UserAction):
         action.put()
         return action
 
-class SIBTFBConnectCancelled(UserAction):
+class SIBTConnectFBCancelled(UserAction):
     @staticmethod
     def create(user, **kwargs):
         # Make the action
-        what = 'SIBTFBConnectCancelled'
+        what = 'SIBTConnectFBCancelled'
         url = None
         app = None
         try:
@@ -762,13 +766,87 @@ class SIBTFBConnectCancelled(UserAction):
             logging.error(e, exc_info=True)
 
         uuid = generate_uuid( 16 )
-        action = SIBTFBConnectCancelled(
+        action = SIBTConnectFBCancelled(
                 key_name = uuid,
                 uuid     = uuid,
                 user     = user,
                 app_     = app,
                 url      = url,
                 what = what
+        )
+        action.put()
+        return action
+
+class SIBTFBConnected(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTFBConnected'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTFBConnected(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        return action
+
+class SIBTFriendChoosingCancelled(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTFriendChoosingCancelled'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTFriendChoosingCancelled(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+        return action
+class SIBTNoConnectFBCancelled(UserAction):
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTNoConnectFBCancelled'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTNoConnectFBCancelled(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what     = what
         )
         action.put()
         return action

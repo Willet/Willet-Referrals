@@ -2,6 +2,50 @@
   * Copyright 2011, Willet, Inc.
  **/
 
+// Fun Safari cookie hack ... wooooo
+var firstTimeSession = 0;
+var doSafariCookieHack = function() {
+    if (firstTimeSession == 0) {
+        firstTimeSession = 1;
+        document.getElementById('sessionform').submit()
+        setTimeout(setCookieHackFlag, 2000);
+    }
+};
+
+var setCookieHackFlag = function() {
+    window.cookieSafariHackReady = true;
+};
+
+// Let's be dumb about this ... this'll fire on more than just Safari
+// BUT it will fire on Safari, which is what we need.
+// TODO: Fix this. Apparently, there is no easy way to determine strictly 'Safari'.
+if ( navigator.userAgent.indexOf('Safari') != -1 ) {
+    var hackIFrame = document.createElement( 'iframe' );
+    hackIFrame.setAttribute( 'src', "{{URL}}{% url UserCookieSafariHack %}" );
+    hackIFrame.setAttribute( 'id', "sessionFrame" );
+    hackIFrame.setAttribute( 'name', "sessionFrame" );
+    hackIFrame.setAttribute( 'onload', "doSafariCookieHack();" );
+    hackIFrame.style.display = 'none';
+
+    var hackForm = document.createElement( 'form' );
+    hackForm.setAttribute( 'id', 'sessionform' );
+    hackForm.setAttribute( 'action', "{{URL}}{% url UserCookieSafariHack %}" );
+    hackForm.setAttribute( 'method', 'post' );
+    hackForm.setAttribute( 'target', 'sessionFrame' );
+    hackForm.setAttribute( 'enctype', 'application/x-www-form-urlencoded' );
+    hackForm.style.display = 'none';
+
+    var hackInput = document.createElement( 'input' );
+    hackInput.setAttribute( 'type', 'text' );
+    hackInput.setAttribute( 'value', '{{user.uuid}}' );
+    hackInput.setAttribute( 'name', 'user_uuid' );
+    document.body.appendChild( hackIFrame );
+    hackForm.appendChild( hackInput );
+    document.body.appendChild( hackForm );
+} else {
+    setCookieHackFlag();
+}
+
 (function(document, window){
     var _willet_css = {% include stylesheet %}
     {% ifequal stylesheet "css/facebook_style.css" %}
@@ -68,19 +112,6 @@
                     "&user_uuid={{user.uuid}}" +
                     "&instance_uuid={{instance.uuid}}" +
                     "&target_url=" + window.location.href;
-
-        document.body.appendChild( iframe );
-    };
-
-    var _willet_start_partial_instance = function() {
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url StartPartialSIBTInstance %}?" + 
-                    "&app_uuid={{app.uuid}}" +
-                    "&user_uuid={{user.uuid}}" +
-                    "&willt_code={{willt_code}}" + 
-                    "&product_uuid={{product_uuid}}";
 
         document.body.appendChild( iframe );
     };
@@ -153,7 +184,6 @@
     * shows the ask your friends iframe
     */
     var _willet_show_ask = function ( message ) {
-        _willet_store_analytics('SIBTConnectFBDialog');
 
         var url =  "{{URL}}/s/preask.html?user_uuid={{ user.uuid }}" + 
                                      "&store_url={{ store_url }}" +
@@ -303,7 +333,7 @@
     var build_top_bar_html = function (is_ask_bar) {
 
         if (is_ask_bar || false) {
-            var bar_html = "<div class='_willet_wrapper'><span>Decisions are hard to make. {{AB_CTA_text}}</span>" +
+            var bar_html = "<div class='_willet_wrapper'><span style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</span>" +
                 "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                 "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                 "</div>" +
@@ -498,6 +528,19 @@
             }
         },
         */
+        {% if AB_FACEBOOK_NO_CONNECT %}
+        {
+            'name': 'Facebook',
+            'url': 'http://connect.facebook.net/en_US/all.js',
+            'dom_el': null,
+            'loaded': false,
+            'test': function() {
+                return (typeof FB == 'object');
+            }, 'callback': function() {
+                return;
+            }
+        },
+        {% endif %}
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
@@ -547,7 +590,7 @@
             }   
         }
 
-        if (all_loaded) {
+        if (all_loaded && window.cookieSafariHackReady) {
             run();
         } else {
             window.setTimeout(_willet_check_scripts,100);
@@ -559,6 +602,7 @@
     * We have jQuery!!!!
     */
     var run = function() {
+        
         var purchase_cta = $('#_willet_shouldIBuyThisButton');
         if (purchase_cta.length > 0) {
             _willet_store_analytics();
@@ -650,6 +694,20 @@
                     }
                 });
                 
+                // If we're trying ask without connect:
+                {% if AB_FACEBOOK_NO_CONNECT %}
+                    // Put fb_root div in the page
+                    var fb_div = $(document.createElement( 'div' ));
+                    fb_div.attr( 'id', 'fb-root' );
+                    $('body').append( fb_div );
+
+                    FB.init({
+                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        cookie: true, // enable cookies to allow the server to access the session
+                        xfbml: true  // parse XFBML
+                    });
+                {% endif %}
+
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );

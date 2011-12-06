@@ -317,6 +317,7 @@ class TrackSIBTShowAction(URIHandler):
         self.response.out.write('')
 
 class TrackSIBTUserAction(URIHandler):
+    """ For actions WITH AN INSTANCE """
     def get(self):
         """Compatibility with iframe shizz"""
         self.post()
@@ -466,8 +467,8 @@ class SendFBMessages( URIHandler ):
         logging.info("TARGETTED_SHARESIBTONFACEBOOK")
         
         # Fetch arguments 
-        ids       = self.request.get( 'ids' )
-        names     = self.request.get( 'names' )
+        ids       = json.loads( self.request.get( 'ids' ) )
+        names     = json.loads( self.request.get( 'names' ) )
         msg       = self.request.get( 'msg' )
         app       = App.get( self.request.get('app_uuid') )
         product   = Product.get( self.request.get( 'product_uuid' ) )
@@ -497,7 +498,7 @@ class SendFBMessages( URIHandler ):
         # Check formatting of share msg
         try:
             if isinstance(msg, str):
-                message = unicode(message, errors='ignore')
+                message = unicode(msg, errors='ignore')
         except:
             logging.info('error transcoding to unicode', exc_info=True)
 
