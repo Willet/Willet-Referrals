@@ -13,6 +13,10 @@
                  font-family: fb_font;
                  src: url("/static/fonts/KlavikaBold.otf");
             }
+            @font-face {
+                 font-family: fb_font;
+                 src: url("/static/fonts/KlavikaBold.eot"); /* For IE */
+            }
         </style>
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
@@ -32,9 +36,9 @@
                     <p class="fb">f</p>
                     <p>Ask All Friends</p>
                 </button>
-                <button style="float: right;" title="Post to your friends' walls" value="Choose Your Friends" onclick="runFriendPicker()">
+                <button style="float: right;" title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
                     <p class="fb">f</p>
-                    <p>Choose Which Friends</p>
+                    <p>Choose Some Friends</p>
                 </button>
             </div>
 
