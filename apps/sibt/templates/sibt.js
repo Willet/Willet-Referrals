@@ -590,7 +590,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             }   
         }
 
-        if (all_loaded && window.cookieSafariHackeReady) {
+        if (all_loaded && window.cookieSafariHackReady) {
             run();
         } else {
             window.setTimeout(_willet_check_scripts,100);
