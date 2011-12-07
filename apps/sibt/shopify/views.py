@@ -66,7 +66,7 @@ class SIBTShopifyWelcome(URIHandler):
                 shop_owner = client.merchant.get_attr('full_name')
 
             # Switched to new install code on Nov. 23rd
-            if app.created > datetime( 2012, 11, 22 ):
+            if app.created > datetime( 2012, 12, 01 ):
                 old_install_code = 1
             else:
                 old_install_code = 0
