@@ -826,6 +826,7 @@ class SIBTFriendChoosingCancelled(UserAction):
         )
         action.put()
         return action
+
 class SIBTNoConnectFBCancelled(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -946,5 +947,4 @@ class SIBTUserAction(UserAction):
     def get_by_app_and_instance(app, instance):
         return SIBTUserAction.all().filter('app_ =', app)\
                                    .filter('sibt_instance =', instance).get()
-
 

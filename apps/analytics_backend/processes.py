@@ -22,16 +22,19 @@ from apps.action.models import Action
 
 def ensure_hourly_slices(app):
     """Makes sure the hourly app slices are there"""
-    today = datetime.datetime.today()
+    now = datetime.datetime.now() 
+    now = now - datetime.timedelta(
+            minutes=now.minute, 
+            seconds=now.second, 
+            microseconds=now.microsecond)
+
     hours = range(24)
     put_list = []
     for hour in hours:
-        val = today - datetime.timedelta(hours=hour)
-        logging.error('Creating hour')
+        val = now - datetime.timedelta(hours=hour)
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
                 put=False)
         if created:
-            logging.error('put: %s' % ahs)
             yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
@@ -77,16 +80,24 @@ def build_daily_stats(time_slice):
     end = time_slice.end
     app_ = time_slice.app_
 
-    for action in actions_to_count:
-        time_slice.default(action)
+    #for action in actions_to_count:
+    #    time_slice.default(action)
 
-    hour_slices = AppAnalyticsDaySlice.all()\
+    # app engine is a fucking whore.
+    hour_slices = AppAnalyticsHourSlice.all()\
             .filter('app_ =', app_)\
             .filter('start >=', start)\
-            .filter('end <', end)
+            .filter('start <', end)
+
+    action_first_run = []
+    logging.error('getting day stats for day: %s\nslices: %d' % (
+        start, hour_slices.count()))
 
     for hour_slice in hour_slices:
         for action in actions_to_count:
+            if action not in action_first_run:
+                time_slice.default(action)
+                action_first_run.append(action)
             hour_value = hour_slice.get_attr(action)
             time_slice.increment(action, hour_value)
 
@@ -101,16 +112,21 @@ def build_global_hourly_stats(global_slice):
 
     hour_slices = AppAnalyticsHourSlice.all()\
             .filter('start >=', start)\
-            .filter('end <', end)
+            .filter('start <', end)
     action_first_run = []
+
+    logging.info('Hour: %s\n%d slices' % (start, hour_slices.count()))
 
     for hour_slice in hour_slices:
         for action in actions_to_count:
             if action not in action_first_run:
                 global_slice.default(action)
                 action_first_run.append(action)
+            logging.error('incrementing %s from %d to %d' % (
+                action, global_slice.get_attr(action), 
+                hour_slice.get_attr(action)))
             global_slice.increment(action, hour_slice.get_attr(action))
-    yield op.db.put(global_slice)
+    yield op.db.Put(global_slice)
 
 def build_global_daily_stats(global_slice):
     start = global_slice.start
@@ -121,7 +137,7 @@ def build_global_daily_stats(global_slice):
 
     hour_slices = GlobalAnalyticsHourSlice.all()\
             .filter('start >=', start)\
-            .filter('end <', end)
+            .filter('start <', end)
     action_first_run = []
 
     for hour_slice in hour_slices:
@@ -130,7 +146,7 @@ def build_global_daily_stats(global_slice):
                 global_slice.default(action)
                 action_first_run.append(action)
             global_slice.increment(action, hour_slice.get_attr(action))
-    yield op.db.put(global_slice)
+    yield op.db.Put(global_slice)
 
 class TimeSlices(webapp.RequestHandler):
     def get(self, action, scope):
@@ -154,7 +170,10 @@ class TimeSlices(webapp.RequestHandler):
                 },
                 'hour_global': {
                     'scope_range': range(24),
-                    'today': datetime.datetime.combine(datetime.date.today(), datetime.time()),
+                    'today': datetime.datetime.now() - datetime.timedelta(
+                        minutes=datetime.datetime.now().minute, 
+                        seconds=datetime.datetime.now().second, 
+                        microseconds=datetime.datetime.now().microsecond),
                     'td': lambda t: datetime.timedelta(hours=t),
                     'cls': GlobalAnalyticsHourSlice,
                 },
@@ -184,7 +203,7 @@ class TimeSlices(webapp.RequestHandler):
                 'day_global': {
                     'name': 'Run GLOBAL Daily Analytics',
                     'func': f_base % 'build_global_daily_stats',
-                    'entity': e_base % 'GlobalAnalyticsDailySlice'
+                    'entity': e_base % 'GlobalAnalyticsDaySlice'
                 },
             }
         }

@@ -97,3 +97,14 @@ indexes:
   properties:
   - name: time_recorded
     direction: desc
+
+- kind: AppAnalyticsDaySlice
+  properties:
+  - name: app_
+  - name: start
+
+- kind: AppAnalyticsHourSlice
+  properties:
+  - name: app_
+  - name: start
+
