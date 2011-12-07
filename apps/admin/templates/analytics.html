@@ -4,51 +4,127 @@
     <script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
     <script type="text/javascript" src="{{ URL }}/static/js/jquery.timeago.js"></script>
     <style type="text/css">
-        table {
+        td {
+            font-size: 12px;
+            vertical-align: top;
+        }
+        .scroll {
             overflow: scroll;
+            max-width: 850px;
+        }
+        .push_buttom {
+            padding-bottom: 100px;
         }
     </style>
     <script type="text/javascript">
-        var actions = {{ actions }};
+        var actions = {{ actions }}
+        , series = [ 
+            {% for action in actions %}
+                {
+                    name: '{{ action }}',
+                    data: []
+                },
+            {% endfor %}
+        ]
+        , chart;
         $(document).ready(function() {
             $.getJSON('{% url AnalyticsRPC %}', function(data){
                 console.log(data);
                 $('#data').empty();
                 for (i = 0; i < data.data.length; i++) {
                     var row = $(document.createElement('tr'));
-                    var since = $(document.createElement('abbr'));
-                    since.addClass('timeago');
-                    since.attr('title', data.data[i]['start']);
+                    var since = $(document.createElement('tr'));
+                    var row_date = data.data[i]['start'];
+                    var since_html = '<td><abbr class="timeago" title="'+row_date+'"></abbr></td>'
                     row.hide();
+                    since.hide();
                     var html = ''
+                    var count = 0
                     for (j = 0; j < actions.length; j++) {
-                        html += '<td>'+data.data[i][actions[j]] + '</td>';
+                        count = data.data[i][actions[j]];
+                        if (actions[j] != series[j].name) {
+                            console.log('error: whoops!', actions[j], series[j]);
+                        }
+                        series[j].data.push([Date.parse(row_date), count]);
+                        html += '<td class="'+actions[j]+'">'+ count + '</td>';
                     }
                     row.html(html);
-                    row.prepend(since);
+                    since.html(since_html);
                     $('#data').append(row);
+                    $('#dates').append(since);
                     row.slideDown('fast');
+                    since.slideDown('fast');
                 }
                 $('abbr.timeago').timeago();
+                chart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'container',
+                        type: 'spline'
+                    },
+                    title: {
+                        text: 'Actions over time'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        month: '%e. %b',
+                        year: '%b'
+                        },
+                    yAxis: {
+                        title: {
+                            text: 'Count'
+                        },
+                        min: 0
+                    },
+                    series: series,
+                });
             }); 
+            $('#showing_actions input').click(function(e){
+                var el = $(this);
+                if (el.attr('checked') == 'checked') {
+                    $('.' + el.attr('id')).show();
+                } else {
+                    $('.' + el.attr('id')).hide();
+                }
+            });
         });
 
     </script>
 {% endblock %}
 
 {% block bottom_content %}
-    <div class="span-24 prepend-top">
+    <div class="span-24 prepend-top push-bottom">
         <h1 class="prepend-top center">Analytics</h1>
-        <table width="950px">
-            <thead>
+        <div id="container span-24"></div>
+        <div class="span-24 last clear" id='showing_actions'>
+            {% for action in actions %}
+                <input checked="checked" type="checkbox" id="{{ action }}" name="{{ action }}" /><label for="{{ action }}">{{ action }}</label>
+            {% endfor %}
+        </div>
+        <table width="950px" cellpadding="0" cellspacing="0">
+            <tbody>
                 <tr>
-                    <th>Date</th>
-                    {% for action in actions %}
-                        <th>{{ action }}</th>
-                    {% endfor %}
+                    <td>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <thead><tr><th>Date</th></tr></thead>
+                            <tbody id='dates'>
+
+                            </tbody>
+                        </table>
+                    </td>
+                    <td class='scroll'>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    {% for action in actions %}
+                                        <th class="{{ action }}">{{ action }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody id="data"></tbody>
+                        </table>
+                    </td>
                 </tr>
-            </thead>
-            <tbody id='data'></tbody>
+            </tbody>
         </table>
     </div>
 {% endblock bottom_content %}
