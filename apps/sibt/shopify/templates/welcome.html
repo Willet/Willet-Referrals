@@ -30,7 +30,12 @@
         </div>
         <div class="lower-15 span-12 last">
             <h3 class="center">Install Instructions</h3>
-            <strong style="font-size: 120%; margin-left: 33px;">Special code: </strong><input style='font-size:13px' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
+            <strong style="font-size: 120%; margin-left: 33px;">Special code: </strong>
+            {% if old_install_code %}
+                <input style='font-size:13px' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
+            {% else %}
+                <input style='font-size:13px' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
+            {% endif %}
 
             <ul>
                 <li>1. Open your <em>Template Editor</em> from under the <em>Theme</em> menu in Shopify's store manager.</li>
@@ -42,7 +47,7 @@
         </div>
         <div class="prepend-top span-24 center">
             <p>
-                If you have any other questions, please e-mail barbara@getwillet.com </p>
+                If you have any other questions, please chat with us here -></p>
 
             <button class='' id='edit' title="Change how the button looks on your website!">
                 <a href="{% url SIBTShopifyEditStyle app.uuid %}">Customize the Button</a>

@@ -65,12 +65,18 @@ class SIBTShopifyWelcome(URIHandler):
                 client_email = client.email
                 shop_owner = client.merchant.get_attr('full_name')
 
-
+            # Switched to new install code on Nov. 23rd
+            if app.created > datetime( 2012, 11, 22 ):
+                old_install_code = 1
+            else:
+                old_install_code = 0
+            
             template_values = {
                 'app': app,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
-                'install_code': "<div id='_willet_shouldIBuyThisButton'></div>" #{% include 'willet_sibt' %}"
+                'old_install_code' : old_install_code,
+                #'install_code': "<div id='_willet_shouldIBuyThisButton'></div>" #{% include 'willet_sibt' %}"
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
