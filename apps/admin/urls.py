@@ -24,6 +24,8 @@ urlpatterns = [
     (r'/admin/memcache_console', MemcacheConsole),
     (r'/admin/check_mbc', CheckMBC),
     (r'/admin/updateStore', UpdateStore),
-    (r'/admin/counts', ShowCounts)
+    (r'/admin/counts', ShowCounts),
+    (r'/admin/analytics/rpc', AnalyticsRPC),
+    (r'/admin/analytics', ShowAnalytics),
 ]
 

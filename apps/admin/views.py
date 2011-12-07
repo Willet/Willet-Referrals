@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, urllib, sys
 from inspect import getmodule
 from datetime import datetime
+import time
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -973,3 +974,48 @@ class ShowCounts( URIHandler ):
         str += "<p>FB Connect Cancelled: %d</p>" % connect_cancelled
 
         self.response.out.write( str )
+
+class AnalyticsRPC(URIHandler):
+    @admin_required
+    def get(self, admin):
+        from apps.analytics_backend.models import GlobalAnalyticsDaySlice
+        from apps.analytics_backend.models import actions_to_count
+
+        limit = self.request.get('limit') or 3
+        offset = self.request.get('offset') or 0
+        
+        day_slices = GlobalAnalyticsDaySlice.all()\
+                .order('-start')\
+                .fetch(limit, offset=offset)
+        data = []
+        for ds in day_slices:
+            obj = {}
+
+            #ms = time.mktime(ds.start.utctimetuple()) * 1000
+            #ms += getattr(ds.start, 'microseconds', 0) / 1000
+            #obj['start'] = int(ms)
+            obj['start'] = str(ds.start)
+
+            for action in actions_to_count:
+                obj[action] = ds.get_attr(action)
+            data.append(obj)
+
+        response = {
+            'success': True,
+            'data': data 
+        }
+
+        self.response.out.write(json.dumps(response))
+
+class ShowAnalytics(URIHandler):
+    @admin_required
+    def get(self, admin):
+        from apps.analytics_backend.models import actions_to_count
+
+        template_values = {
+            'actions': actions_to_count,
+            }
+        self.response.out.write(
+            self.render_page('analytics.html', template_values)
+        )
+

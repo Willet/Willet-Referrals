@@ -19,15 +19,18 @@ def to_dict(something, recursion=0):
 
     SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
     if recursion > 3:
+        logging.error('recursion too much, returning: %s' % str(something))
         return str(something)
 
     for key, prop in something.properties().iteritems():
         value = getattr(something, key)
+        logging.error('processing: %s' % key)
 
         try:
             if value is None or isinstance(value, SIMPLE_TYPES):
                 output[key] = value
-            elif isinstance(value, datetime.date):
+            elif isinstance(value, datetime.date) or \
+                    isinstance(value, datetime.datetime):
                 # Convert date/datetime to ms-since-epoch ("new Date()").
                 ms = time.mktime(value.utctimetuple()) * 1000
                 ms += getattr(value, 'microseconds', 0) / 1000
@@ -38,6 +41,7 @@ def to_dict(something, recursion=0):
                 output[key] = to_dict(value, recursion=recursion+1)
             else:
                 output[key] = str(value)
+                logging.error('weird value: %s' % str(value))
                 #raise ValueError('cannot encode ' + repr(prop))
         except Exception, e:
             logging.error(e, exc_info=True)

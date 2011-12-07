@@ -22,28 +22,41 @@ from util.consts import MEMCACHE_TIMEOUT
 #from apps.sibt.actions import *
 
 actions_to_count = [
+    'ScriptLoadAction',
+
     'SIBTUserClickedTopBarAsk',
-    'SIBTShowingTopBarAsk',
     'SIBTUserClickedButtonAsk',
+    'SIBTUserClickedOverlayAsk',
+    'SIBTUserClickedTabAsk',
+    'SIBTAskUserClickedShare',
+
+    'SIBTShowingTopBarAsk',
     'SIBTShowingButton',
     'SIBTShowingAskIframe',
+    'SIBTShowingResults',
+    'SIBTShowingResultsToAsker',
+
     'SIBTAskUserClosedIframe',
     'SIBTAskUserClickedShare',
+
     'SIBTInstanceCreated',
-    'SIBTShowingAskIframe',
+    'SIBTVoteAction',
+    'SIBTUserAction',
+    'SIBTFBConnected',
+
+    'SIBTUserClosedTopBar',
+    'SIBTUserReOpenedTopBar',
     'SIBTAskIframeCancelled',
     'SIBTNoConnectFBDialog',
     'SIBTNoConnectFBCancelled',
     'SIBTConnectFBDialog',
     'SIBTConnectFBCancelled',
-    'SIBTFBConnected',
     'SIBTFriendChoosingCancelled',
-    'SIBTInstanceCreated'
 ]
+# removing duplicates for the lazy
 actions_to_count = list(set(actions_to_count))
 
 class AnalyticsTimeSlice(db.Expando):
-    date_range = db.ListProperty(datetime.datetime)
     start = db.DateTimeProperty()
     end = db.DateTimeProperty()
 
@@ -113,6 +126,7 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
         TODO(barbara): Enforce the above statement!!!
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
+        return cls._get_from_datastore(app_, start)
         key = cls.build_key(app_, start)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
@@ -144,7 +158,8 @@ class AppAnalyticsHourSlice(AppAnalyticsTimeSlice):
         Start is the datetime when this timeslice starts!
         """
         end = start + datetime.timedelta(hours=1)
-        ahs = cls(app_=app_, start=start, end=end)
+        dr = [start, end]
+        ahs = cls(app_=app_, start=start, end=end, date_range=dr)
         if put:
             ahs.put()
         return ahs
@@ -218,6 +233,7 @@ class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
         TODO(barbara): Enforce the above statement!!!
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
+        return cls._get_from_datastore(start)
         key = cls.build_key(start)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
@@ -234,7 +250,8 @@ class GlobalAnalyticsHourSlice(GlobalAnalyticsTimeSlice):
     @classmethod
     def create(cls, start, put=True):
         end = start + datetime.timedelta(hours=1)
-        gats = cls(start=start, end=end)
+        dr = [start, end]
+        gats = cls(start=start, end=end, date_range=dr)
         if put:
             gats.put()
         return gats
@@ -252,7 +269,8 @@ class GlobalAnalyticsDaySlice(GlobalAnalyticsTimeSlice):
     @classmethod
     def create(cls, start, put=True):
         end = start + datetime.timedelta(hours=24)
-        gats = cls(start=start, end=end)
+        dr = [start, end]
+        gats = cls(start=start, end=end, date_range=dr)
         if put:
             gats.put()
         return gats
