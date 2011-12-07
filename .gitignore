@@ -2,6 +2,7 @@ app.yaml
 util/local_consts.py
 *.pyc
 *.swp
+*.swo
 *#
 *.marks
 .ropeproject
