@@ -497,6 +497,8 @@ class SendFBMessages( URIHandler ):
         
         # Check formatting of share msg
         try:
+            if len( msg ) == 0:
+                msg = "I'm not sure if I should buy this. What do you think?"
             if isinstance(msg, str):
                 message = unicode(msg, errors='ignore')
         except:
