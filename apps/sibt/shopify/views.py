@@ -418,8 +418,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
             if XMAS:
-                ab_test_options = [ "Want it for Chistmas? Click here!",
-                                    "Unsure? Get advice from friends!",
+                ab_test_options = [ "Want it for Christmas? Click here!",
                                     "Ask for this for Christmas here!" ]
                 cta_button_text = ab_test( 'sibt_xmas', 
                                             ab_test_options, 
