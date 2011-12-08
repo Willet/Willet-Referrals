@@ -71,10 +71,12 @@ class AskDynamicLoader(webapp.RequestHandler):
         user_is_admin = user.is_admin()
         
         # GAY BINGO
-        if not user_is_admin:
+        if not user_is_admin and not XMAS:
             bingo( 'sibt_button_text5' )
             bingo( 'sibt_facebook_style' )
-
+        elif not user_is_admin and XMAS:
+            bingo( 'sibt_xmas' )
+        
         ab_share_options = [ 
             "I'm not sure if I should buy this. What do you think?",
             "Would you buy this? I need help making a decision!",
@@ -217,11 +219,13 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
         
-        if not user_is_admin:
+        if not user_is_admin and not XMAS:
             ab_opt = ab_test('sibt_share_text3',
                               ab_share_options,
                               user = user,
                               app  = app )
+        elif XMAS:
+            ab_opt = "I really want this for Christmas this year. *Hint* *hint*!"
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
@@ -247,6 +251,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             'willt_code'     : link.willt_url_code,
 
             'AB_share_text'  : ab_opt,
+            'XMAS' : XMAS
         }
 
         path = os.path.join('apps/sibt/templates/', 'preask.html')

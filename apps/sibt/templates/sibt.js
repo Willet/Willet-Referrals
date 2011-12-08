@@ -670,7 +670,11 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                         .css('display', 'none')
                         .attr('title', 'Ask your friends if you should buy this!')
                         .attr('id','_willet_button')
+                        {% if XMAS %}
+                        .attr('class','_willet_button_xmas')
+                        {% else %}
                         .attr('class','_willet_button')
+                        {% endif %}
                         .click(_willet_button_onclick);
                 
                     $(purchase_cta).append(button);

@@ -417,19 +417,31 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-            ab_test_options = [ "Not sure? Poll your friends!",
-                                "Ask your friends what they think",
-                                "Need advice? Ask your friends!",
-                                "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text5', 
-                                        ab_test_options, 
-                                        user = user,
-                                        app  = app )
-            
-            stylesheet = ab_test( 'sibt_facebook_style', 
-                                  ['css/facebook_style.css', 'css/colorbox.css'],
-                                  user = user,
-                                  app  = app )
+            if XMAS:
+                ab_test_options = [ "Want it for Chistmas? Click here!",
+                                    "Unsure? Get advice from friends!",
+                                    "Ask for this for Christmas here!" ]
+                cta_button_text = ab_test( 'sibt_xmas', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+                
+                stylesheet = 'css/colorbox.css';
+                
+            else:
+                ab_test_options = [ "Not sure? Poll your friends!",
+                                    "Ask your friends what they think",
+                                    "Need advice? Ask your friends!",
+                                    "Unsure? Get advice from friends!" ]
+                cta_button_text = ab_test( 'sibt_button_text5', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+                
+                stylesheet = ab_test( 'sibt_facebook_style', 
+                                      ['css/facebook_style.css', 'css/colorbox.css'],
+                                      user = user,
+                                      app  = app )
 
             fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
@@ -531,6 +543,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else "",
             'app_css': app_css,
+
+            'XMAS' : str(XMAS).lower(),
         }
 
         # Store a script load action.
