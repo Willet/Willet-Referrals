@@ -26,6 +26,9 @@ urlpatterns = [
     (r'/admin/updateStore', UpdateStore),
     (r'/admin/counts', ShowCounts),
     (r'/admin/analytics/rpc', AnalyticsRPC),
+    (r'/admin/analytics/generate', GenerateOlderHourPeriods),
+    (r'/admin/analytics/(.*)/', ShowAppAnalytics),
+    (r'/admin/analytics/(.*)/rpc', AppAnalyticsRPC),
     (r'/admin/analytics', ShowAnalytics),
 ]
 
