@@ -712,6 +712,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );
+                    tab.attr( 'class', "willet_reset" );
                     tab.html( '<p>Can\'t decide?<br />{{AB_CTA_text}}</p>' );
                     tab.click( _willet_tab_onclick );
 
