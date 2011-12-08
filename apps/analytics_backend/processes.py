@@ -25,7 +25,7 @@ from apps.sibt.shopify.models import *
 
 def ensure_hourly_slices(app):
     """Makes sure the hourly app slices are there"""
-    now = memcache.get('day')
+    now = memcache.get('hour')
     if not now: 
         now = datetime.datetime.now() 
         now = now - datetime.timedelta(
@@ -34,6 +34,7 @@ def ensure_hourly_slices(app):
                 microseconds=now.microsecond)
     else:
         now = datetime.datetime.combine(now, datetime.time())
+    logging.error('using now %s' % now)
 
     hours = range(24)
     put_list = []
@@ -42,6 +43,7 @@ def ensure_hourly_slices(app):
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
                 put=False)
         if created:
+            logging.error('created hour slice: %s' % ahs)
             yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
@@ -169,14 +171,14 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.app.shopify.models.AppShopify'
+                        'entity': 'apps.app.models.App'
                     } 
                 },
                 'day': {
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.app.shopify.models.AppShopify'
+                        'entity': 'apps.app.models.App'
                     }
                 },
                 'hour_global': {
