@@ -943,7 +943,7 @@ class MemcacheConsole(URIHandler):
             'messages': messages,
         }
         self.response.headers['Content-Type'] = "application/json"
-        self.response.out.write(json_data)
+        self.response.out.write(json.dumps(data))
 
     @admin_required
     def get(self, admin):
@@ -1011,16 +1011,60 @@ class ShowAnalytics(URIHandler):
 
         template_values = {
             'actions': actions_to_count,
+            'app': ''
             }
         self.response.out.write(
             self.render_page('analytics.html', template_values)
         )
+
+class ShowAppAnalytics(URIHandler):
+    @admin_required
+    def get(self, admin, app_uuid):
+        app = App.get(app_uuid) 
+
+        template_values = {
+            'actions': actions_to_count,
+            'app': app
+            }
+        self.response.out.write(
+            self.render_page('analytics.html', template_values)
+        )
+
+class AppAnalyticsRPC(URIHandler):
+    @admin_required
+    def get(self, admin, app_uuid):
+        app = App.get(app_uuid)
+        limit = self.request.get('limit') or 3
+        offset = self.request.get('offset') or 0
+        
+        day_slices = AppAnalyticsDaySlice.all()\
+                .filter('app_ =', app)\
+                .order('-start')\
+                .fetch(int(limit), offset=int(offset))
+        data = []
+        for ds in day_slices:
+            obj = {}
+
+            obj['start'] = str(ds.start)
+            obj['start_day'] = str(ds.start.date())
+            
+            for action in actions_to_count:
+                obj[action] = ds.get_attr(action)
+            data.append(obj)
+
+        response = {
+            'success': True,
+            'data': data 
+        }
+
+        self.response.out.write(json.dumps(response))
 
 class GenerateOlderHourPeriods(URIHandler):
     def get(self):
         if self.request.get('reset'):
             memcache.delete_multi(['day', 'hour', 'day_global', 'hour_global'])
         else:
+            ensure = self.request.get('ensure')
 
             oldest_global = GlobalAnalyticsHourSlice.all().order('start').get()
             hour_global = oldest_global.start - datetime.timedelta(hours=1)
@@ -1030,7 +1074,6 @@ class GenerateOlderHourPeriods(URIHandler):
             day_global = global_day.start - datetime.timedelta(days=1)
             memcache.set('day_global', day_global.date())
 
-
             oldest_app = AppAnalyticsHourSlice.all().order('start').get() 
             hour = oldest_app.start - datetime.timedelta(hours=1)
             memcache.set('hour', hour)
@@ -1038,6 +1081,9 @@ class GenerateOlderHourPeriods(URIHandler):
             oldest_day = AppAnalyticsDaySlice.all().order('start').get()
             day = oldest_day.start - datetime.timedelta(days=1)
             memcache.set('day', day.date())
+
+            if ensure in ['day', 'hour', 'day_global', 'hour_global']:
+                urlfetch.fetch('%s/bea/ensure/%s/' % (URL, ensure))
 
         self.response.out.write(json.dumps({'success':True}))
 

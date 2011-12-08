@@ -16,6 +16,7 @@ from apps.analytics_backend.models import GlobalAnalyticsDaySlice
 from apps.analytics_backend.models import actions_to_count
 from apps.action.models import Action
 from apps.app.models import *
+from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
 
 #####
@@ -168,14 +169,14 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.sibt.shopify.models.SIBTShopify'
+                        'entity': 'apps.app.shopify.models.AppShopify'
                     } 
                 },
                 'day': {
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.sibt.shopify.models.SIBTShopify'
+                        'entity': 'apps.app.shopify.models.AppShopify'
                     }
                 },
                 'hour_global': {
