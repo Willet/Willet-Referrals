@@ -182,6 +182,7 @@
         var sendMessages = function() {
             var ids   = [];
             var names = [];
+            var msg   = $("#share-text").val();
 
             // Clean up UI to show loader gif
             $("#nameEntry").html('<p>Asking ...</p>');
@@ -193,7 +194,7 @@
                 ids.push( $($("input[type='checkbox']:checked")[i]).attr('value') ); 
                 names.push( $($("input[type='checkbox']:checked")[i]).attr('name') ); 
                 } );
-            
+
             payload = { user_uuid : "{{user_uuid}}",
                         app_uuid  : "{{app_uuid}}",
                         product_uuid    : "{{product_uuid}}",
@@ -201,7 +202,7 @@
                         fb_id     : fbIdentity,
                         ids       : JSON.stringify( ids ),
                         names     : JSON.stringify( names ),
-                        msg       : $("#share-text").attr("value"),
+                        msg       : msg,
                         willt_code: "{{willt_code}}"
                       };
             $.ajax({
@@ -306,7 +307,8 @@
 
                 // Start by showing some friends
                 //if ( friends.length <= 125 ) {
-                    for( var i = 0; i < 125; i ++ ) {
+                var lim = Math.min( 125, friends.length );
+                    for( var i = 0; i < lim; i ++ ) {
                         selectFriend( friends[i].name, friends[i].id );
                         deselectFriend( friends[i].id );
                     }

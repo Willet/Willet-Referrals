@@ -1099,6 +1099,13 @@ class User( db.Expando ):
         return fb_share_id, plugin_response
 
     def fb_post_to_friends(self, ids, names, msg, img, name, desc, store_domain, link):
+
+        # First, fetch the user's data.
+        taskqueue.add( url    = url('FetchFacebookData'),
+                       params = { 'user_uuid' : self.uuid, 
+                                  'fb_id'     : self.fb_identity } )
+
+        # Then, first off messages to friends.
         try:
             """ We try to build the params, utf8 encode them"""
             params = {

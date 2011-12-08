@@ -1,4 +1,40 @@
-'#colorbox, #willet_cboxOverlay, #willet_cboxWrapper{position:absolute; top:0; left:0; z-index:999999; overflow:hidden;}
+'
+.willet_reset html, .willet_reset body, .willet_reset div, .willet_reset span, .willet_reset object, .willet_reset iframe,
+.willet_reset h1, .willet_reset h2, .willet_reset h3, .willet_reset h4, .willet_reset h5, .willet_reset h6, .willet_reset p, .willet_reset blockquote, .willet_reset pre,
+.willet_reset a, .willet_reset abbr, .willet_reset acronym, .willet_reset address, .willet_reset code,
+.willet_reset del, .willet_reset dfn, .willet_reset em, .willet_reset img, .willet_reset q, .willet_reset dl, .willet_reset dt, .willet_reset dd, .willet_reset ol, .willet_reset ul, .willet_reset li,
+.willet_reset fieldset, .willet_reset form, .willet_reset label, .willet_reset legend,
+.willet_reset table, .willet_reset caption, .willet_reset tbody, .willet_reset tfoot, .willet_reset thead, .willet_reset tr, .willet_reset h, .willet_reset td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+}
+
+.willet_reset body { 
+  line-height: 1.5; 
+}
+
+.willet_reset table { border-collapse: separate; border-spacing: 0; }
+.willet_reset caption, .willet_reset th, .willet_reset td { text-align: left; font-weight: normal; }
+.willet_reset table, .willet_reset td, .willet_reset th { vertical-align: middle; }
+
+.willet_reset blockquote:before, .willet_reset blockquote:after, .willet_reset q:before,
+.willet_reset q:after { content: ""; }
+.willet_reset blockquote, .willet_reset q { quotes: "" ""; }
+
+/* Remove annoying border on linked images. */
+.willet_reset a img { border: none; }
+
+#colorbox, #willet_cboxOverlay, #willet_cboxWrapper{position:absolute; top:0; left:0; z-index:999999; overflow:hidden;}
 #willet_cboxOverlay{position:fixed; width:100%; height:100%;}
 #willet_cboxMiddleLeft, #willet_cboxBottomLeft{clear:left;}
 #willet_cboxContent{position:relative; text-align: center;}
@@ -203,6 +239,7 @@
         #_willet_sibt_bar div._willet_button span, #_willet_sibt_ask_bar div._willet_button span {
             line-height: 15px; 
             font-size: 15px;
+            position: absolute;
         }
             #_willet_sibt_bar div._willet_button span img, #_willet_sibt_ask_bar div._willet_button span img {
                 position: relative;

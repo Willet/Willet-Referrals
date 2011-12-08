@@ -333,7 +333,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var build_top_bar_html = function (is_ask_bar) {
 
         if (is_ask_bar || false) {
-            var bar_html = "<div class='_willet_wrapper'><span style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</span>" +
+            var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</p>" +
                 "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                 "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                 "</div>" +
@@ -423,6 +423,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         _willet_topbar  = document.createElement('div');
         _willet_topbar = $(_willet_topbar)
             .attr('id', '_willet_sibt_ask_bar')
+            .attr('class', 'willet_reset')
             .css('display', "none")
             .html(build_top_bar_html(true));
 
@@ -433,7 +434,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 
         $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
         
-        _willet_topbar.find( '._willet_wrapper span' )
+        _willet_topbar.find( '._willet_wrapper p' )
             .css('cursor', 'pointer')
             .click(function() {
                 // user has clicked on the ask their friends top bar
@@ -671,9 +672,9 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                         .attr('title', 'Ask your friends if you should buy this!')
                         .attr('id','_willet_button')
                         {% if XMAS %}
-                        .attr('class','_willet_button_xmas')
+                            .attr('class','_willet_button_xmas willet_reset')
                         {% else %}
-                        .attr('class','_willet_button')
+                            .attr('class','_willet_button willet_reset')
                         {% endif %}
                         .click(_willet_button_onclick);
                 
@@ -715,6 +716,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );
+                    tab.attr( 'class', "willet_reset" );
                     tab.html( '<p>Can\'t decide?<br />{{AB_CTA_text}}</p>' );
                     tab.click( _willet_tab_onclick );
 
