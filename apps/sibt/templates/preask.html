@@ -29,7 +29,7 @@
                 <div id="title_bar_xmas">
                     <img height="50px" src="/static/imgs/xmas_tree.png" style="margin-left: 25px" />
                     <h2>I want it for Christmas!</h2>
-                    <p>The best way to tell friends & family what you want</p>
+                    <p>The best way to tell friends & family what you want this year</p>
                 </div>
 
                 <div id="fb_btns" class="xmas">
@@ -47,9 +47,7 @@
                 </div>
                 <div class="willet xmas">
                     <p>Powered By</p>
-                    <a href="http://www.willetinc.com">
-                        <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
-                    </a>
+                    <a href="http://www.willetinc.com"> Willet </a>
                 </div>
 
             {% else %}
@@ -92,7 +90,6 @@
                 <label id="selectionCount"> Selected: 0</label>
             </div>
 
-            
             <div id="chosenFriends" {% if XMAS %}class="xmas2"{%endif%}>
                 <p>Enter your friends' names at the top!</p>
             </div>
@@ -104,7 +101,11 @@
             <div class="willet {% if XMAS %}xmas2{%endif%}" style="height: 32px; padding-top: 3px;">
                 <p>Powered by</p>
                 <a href="http://www.willetinc.com">
-                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                    {%if XMAS%}
+                        Willet
+                    {% else %}
+                        <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                    {%endif%}
                 </a>
             </div>
 

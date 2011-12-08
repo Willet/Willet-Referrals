@@ -333,7 +333,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var build_top_bar_html = function (is_ask_bar) {
 
         if (is_ask_bar || false) {
-            var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</p>" +
+            var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>{%if XMAS %}This is pretty neat, eh?{%else%}Decisions are hard to make.{%endif%} {{AB_CTA_text}}</p>" +
                 "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                 "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                 "</div>" +
@@ -423,7 +423,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         _willet_topbar  = document.createElement('div');
         _willet_topbar = $(_willet_topbar)
             .attr('id', '_willet_sibt_ask_bar')
-            .attr('class', 'willet_reset')
+            .attr('class', 'willet_reset {% if XMAS %}xmas{%endif%}')
             .css('display', "none")
             .html(build_top_bar_html(true));
 
@@ -716,8 +716,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );
-                    tab.attr( 'class', "willet_reset" );
-                    tab.html( '<p>Can\'t decide?<br />{{AB_CTA_text}}</p>' );
+                    tab.attr( 'class', "willet_reset {% if XMAS %}xmas{%endif%}" );
+                    tab.html( '{%if XMAS %}<p>{{AB_CTA_text}}<br />Click here!</p>{%else%}<p>Can\'t decide?<br />{{AB_CTA_text}}</p>{%endif%}' );
                     tab.click( _willet_tab_onclick );
 
                     $('body').append( tab );
