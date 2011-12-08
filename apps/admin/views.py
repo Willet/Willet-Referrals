@@ -991,9 +991,6 @@ class AnalyticsRPC(URIHandler):
         for ds in day_slices:
             obj = {}
 
-            #ms = time.mktime(ds.start.utctimetuple()) * 1000
-            #ms += getattr(ds.start, 'microseconds', 0) / 1000
-            #obj['start'] = int(ms)
             obj['start'] = str(ds.start)
             obj['start_day'] = str(ds.start.date())
             
