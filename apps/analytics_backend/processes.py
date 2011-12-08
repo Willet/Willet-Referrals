@@ -3,6 +3,7 @@
 import logging
 import datetime
 
+from google.appengine.api import memcache
 from mapreduce import operation as op
 from mapreduce import control
 from google.appengine.ext import webapp
@@ -14,7 +15,9 @@ from apps.analytics_backend.models import GlobalAnalyticsHourSlice
 from apps.analytics_backend.models import GlobalAnalyticsDaySlice
 from apps.analytics_backend.models import actions_to_count
 from apps.action.models import Action
-#from apps.app.models import App
+from apps.app.models import *
+from apps.app.shopify.models import *
+from apps.sibt.shopify.models import *
 
 #####
 # These classes are CRON jobs that initiate the objects need for map reduce
@@ -22,11 +25,16 @@ from apps.action.models import Action
 
 def ensure_hourly_slices(app):
     """Makes sure the hourly app slices are there"""
-    now = datetime.datetime.now() 
-    now = now - datetime.timedelta(
-            minutes=now.minute, 
-            seconds=now.second, 
-            microseconds=now.microsecond)
+    now = memcache.get('hour')
+    if not now: 
+        now = datetime.datetime.now() 
+        now = now - datetime.timedelta(
+                minutes=now.minute, 
+                seconds=now.second, 
+                microseconds=now.microsecond)
+    else:
+        now = datetime.datetime.combine(now, datetime.time())
+    logging.error('using now %s' % now)
 
     hours = range(24)
     put_list = []
@@ -35,6 +43,7 @@ def ensure_hourly_slices(app):
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
                 put=False)
         if created:
+            logging.error('created hour slice: %s' % ahs)
             yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
@@ -64,7 +73,11 @@ def count_action(app_, action, start, end):
 
 def ensure_daily_slices(app):
     """Makes sure the daily app slices are there"""
-    today = datetime.datetime.combine(datetime.date.today(), datetime.time())
+    today = memcache.get('day')
+    if not today:
+        today = datetime.date.today()
+    today = datetime.datetime.combine(today, datetime.time())
+
     days = range(7)
     put_list = []
     for day in days:
@@ -158,28 +171,30 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.sibt.shopify.models.SIBTShopify'
+                        'entity': 'apps.app.models.App'
                     } 
                 },
                 'day': {
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.sibt.shopify.models.SIBTShopify'
+                        'entity': 'apps.app.models.App'
                     }
                 },
                 'hour_global': {
                     'scope_range': range(24),
-                    'today': datetime.datetime.now() - datetime.timedelta(
-                        minutes=datetime.datetime.now().minute, 
-                        seconds=datetime.datetime.now().second, 
-                        microseconds=datetime.datetime.now().microsecond),
+                    'today_get': datetime.datetime.today(),
+                    'today': lambda d: d - datetime.timedelta(
+                        minutes=d.minute, 
+                        seconds=d.second, 
+                        microseconds=d.microsecond),
                     'td': lambda t: datetime.timedelta(hours=t),
                     'cls': GlobalAnalyticsHourSlice,
                 },
                 'day_global': {
                     'scope_range': range(7),
-                    'today': datetime.datetime.combine(datetime.date.today(), datetime.time()),
+                    'today_get': datetime.date.today(),
+                    'today': lambda d: datetime.datetime.combine(d, datetime.time()),
                     'td': lambda t: datetime.timedelta(days=t),
                     'cls': GlobalAnalyticsDaySlice,
                 }
@@ -213,13 +228,18 @@ class TimeSlices(webapp.RequestHandler):
                 today = oas['today']
                 scope_range = oas['scope_range']
                 created_list = []
+                base_date = memcache.get(scope)
+                if not base_date:
+                    base_date = oas['today_get']
+                base_date = oas['today'](base_date)
                 for period in scope_range:
-                    val = today - oas['td'](period)
+                    val = base_date - oas['td'](period)
                     entity, created = oas['cls'].get_or_create(start=val, put=False)
                     if created:
                         created_list.append(entity)
                 db.put(created_list)
-                self.response.out.write('Put: %s' % len(created_list))
+                data = {'success': True, 'mesage': 'Put: %s' % len(created_list)}
+                self.response.out.write(json.dumps(data))
                 return
             else:
                 mr = oas['mr']
@@ -233,7 +253,8 @@ class TimeSlices(webapp.RequestHandler):
             },
             shard_count=10
         )
-        self.response.out.write("started mr: %s" % mapreduce_id)
+        data = {'success': True, 'mesage': "started mr: %s" % mapreduce_id}
+        self.response.out.write(json.dumps(data))
 
 #class EnsureGlobalHourlySlices(webapp.RequestHandler):
 #    def get(self):
