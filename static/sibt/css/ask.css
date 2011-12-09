@@ -267,10 +267,10 @@ button p {
     border-left-style: solid;
     border-left-width: 1px;
     border-right-color: #999;
-    border-right-style: soild;
+    border-right-style: solid;
     border-right-width: 1px;
     border-top-color: #999;
-    border-top-style: soild;
+    border-top-style: solid;
     border-top-width: 1px;
     box-sizing: border-box;
     color: #333;
@@ -292,7 +292,7 @@ button p {
     outline-color: #333;
     outline-style: none;
     outline-width: 0px;
-    padding: 2px;
+    padding: 3px 7px 3px 7px;
     text-align: center;
     text-decoration: none;
     text-indent: 0px;
