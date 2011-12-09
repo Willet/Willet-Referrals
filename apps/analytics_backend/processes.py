@@ -70,6 +70,7 @@ def count_action(app_, action, start, end):
         .filter('class =', action)\
         .filter('created >=', start)\
         .filter('created <=', end)\
+        .filter('is_admin =', False)\
         .count(limit=None)
 
 def ensure_daily_slices(app):
