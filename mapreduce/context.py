@@ -34,7 +34,12 @@ from google.appengine.ext import db
 # Maximum pool size in bytes. Pool will be flushed when reaches this amount.
 # We use 950,000 bytes which is slightly less than maximum allowed RPC size of
 # 1M to have some space cushion.
-MAX_POOL_SIZE = 900 * 1000
+#MAX_POOL_SIZE = 900 * 1000
+
+# modified by Matt Harris
+# trying to reduce this per comments from:
+# http://code.google.com/p/appengine-mapreduce/wiki/UserGuidePython
+MAX_POOL_SIZE = 10 * 100
 
 # Maximum number of items. Pool will be flushed when reaches this amount.
 MAX_ENTITY_COUNT = 500
