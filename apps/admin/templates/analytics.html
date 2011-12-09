@@ -228,7 +228,7 @@
 
 {% block bottom_content %}
     <div class="span-24 prepend-top">
-        <h1 class="prepend-top center">Analytics {% if app %}for {{ app.uuid }}{% endif %}</h1>
+        <h1 class="prepend-top center">Analytics {% if app %}for {{ app.client.name }}{% endif %}</h1>
         <div id="container" class="span-24"></div>
         <h3>Filters</h3>
         <div class="span-24 last clear hidden" id='showing_actions'>
