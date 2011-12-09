@@ -251,7 +251,7 @@ class TimeSlices(webapp.RequestHandler):
         else:
             mr = options[action][scope]
         if 'reader' in mr:
-            reader = mr['reader']
+            reader = 'mapreduce.input_readers.%s' % mr['reader']
         else:
             reader = 'mapreduce.input_readers.DatastoreInputReader'
         mapreduce_id = control.start_map(

@@ -86,7 +86,8 @@
             }
             html += '</li>';
             el.html(html);
-            $('#messages').append(el);
+            $('#messages ul').append(el);
+            $('#messages').slideDown('fast');
         };
         $(document).ready(function() {
             $('#go').click(function(e){
@@ -94,7 +95,7 @@
                 var scope = $('#scope').val();
                 var app_or_global = $('#app_or_global').val();
                 $.getJSON('{{ URL }}/bea/'+action+'/'+scope+app_or_global+'/', function(data){
-                    alert(data); 
+                    handle_message('bea go', data);
                 }); 
             });
             var load_remote_data = function() {
@@ -186,7 +187,7 @@
 
             $('#generate').click(function(e){
                 $.getJSON('{{ URL }}/admin/analytics/generate', function(data){ 
-                    alert(data);
+                    handle_message('generate', data);
                 });
             });
             $('#generate_ensure').click(function(e){
@@ -196,14 +197,14 @@
                 $.getJSON('{{ URL }}/admin/analytics/generate', {
                         ensure: ensure},
                     function(data){ 
-                        alert(data);
+                        handle_message('generate ensure', data);
                 });
             });
             $('#generate_reset').click(function(e){
                 $.getJSON('{{ URL }}/admin/analytics/generate', 
                     {reset: true}, 
                     function(data){ 
-                        alert(data);
+                        handle_message('genereate reset', data);
                     }
                 );
             });
@@ -213,11 +214,12 @@
 
             $('span.mapreduce_link').live('click', function(e){
                 var mapreduce_id = $(this).attr('id');
-                var update_el = $('#status_for_' + mapreduce_id);
 
                 // do an ajax query to GAE maprduce here
-
-                update_el.html('faked: job status is %s');
+                $.getJSON('{{ URL }}/mapreduce/command/get_job_detail?mapreduce_id=' + mapreduce_id, function(data) {
+                    var update_el = $('#status_for_' + data.mapreduce_id);
+                    update_el.html(data.name + ' ' + data.result_status);
+                });
             });
 
             load_remote_data();
@@ -285,7 +287,10 @@
             </select>
             <button id="go">Go</button>
         </div>
-        <div id="messages" class="span-24"></div>
+        <h3>Messages</h3>
+        <div id="messages" class="hidden span-24">
+            <ul></ul>
+        </div>
     </div>
     <div id="space">&nbsp;</div>
 {% endblock bottom_content %}

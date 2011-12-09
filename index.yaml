@@ -114,3 +114,10 @@ indexes:
   - name: start
     direction: desc
 
+- kind: Action
+  properties:
+  - name: app_
+  - name: class
+  - name: is_admin
+  - name: created
+
