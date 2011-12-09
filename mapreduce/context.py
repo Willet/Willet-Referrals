@@ -39,7 +39,7 @@ from google.appengine.ext import db
 # modified by Matt Harris
 # trying to reduce this per comments from:
 # http://code.google.com/p/appengine-mapreduce/wiki/UserGuidePython
-MAX_POOL_SIZE = 10 * 100
+MAX_POOL_SIZE = 800 * 1000
 
 # Maximum number of items. Pool will be flushed when reaches this amount.
 MAX_ENTITY_COUNT = 500
