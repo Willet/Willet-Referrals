@@ -3,6 +3,7 @@
 {% block head %}
     <script type="text/javascript" src="{{ URL }}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
     <script type="text/javascript" src="{{ URL }}/static/js/jquery.timeago.js"></script>
+    <script type="text/javascript" src="{{ URL }}/static/js/highcharts.js"></script>
     <style type="text/css">
         td {
             font-size: 12px;
@@ -12,8 +13,43 @@
             overflow: scroll;
             max-width: 850px;
         }
-        .push_buttom {
+        #space {
             padding-bottom: 100px;
+        }
+        input[type="checkbox"] {
+            display: none;
+        }
+        input[type="checkbox"] + label:hover {
+            border: 1px solid rgba(0,0,0,0.5);
+        }
+        input[type="checkbox"] + label {
+            border: 1px solid transparent;
+            padding: 3px;
+            background-color: rgba(240,35,17,0.25); 
+            border-radius: 5px;
+            display:inline-block;
+            margin: 2px;
+            cursor: pointer;
+            text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
+        }
+        input[type="checkbox"]:checked + label {
+            background-color: rgba(195,255,104,0.75); 
+        }
+        h3 {
+            cursor: pointer; 
+        }
+        span.mapreduce_link {
+            color: blue;
+            border-bottom: 1px dashed blue; 
+            cursor: pointer;
+        }
+        span.mapreduce_link:hover {
+            border-bottom: 1px solid grey;
+            color: black;
+        }
+        span.mapreduce_link:active {
+            border-bottom: 1px solid black;
+            color: grey;
         }
     </style>
     <script type="text/javascript">
@@ -22,110 +58,235 @@
             {% for action in actions %}
                 {
                     name: '{{ action }}',
+                    id: '{{ action }}',
                     data: []
                 },
             {% endfor %}
         ]
-        , chart;
+        , chart
+        , offset = 0
+        , limit = 3
+        , app = '{{ app }}'
+        , row = 'even'
+        , handle_message = function(source, data){
+            var el = $(document.createElement('li'));
+            el.addClass('row_' + row);
+            row = (row == 'even' ? 'odd' : 'even');
+            var html = '<span class="rpc_result '+data.success+'">' + data.success + '</span>';
+            html += "<strong>" + source + "</strong><br />";
+            if (data.message) {
+                html += '<em>' + data.message + '</em><br />';
+            }
+            if (data.mapreduce_id) {
+                html += '<em>Started mapreduce job </em><span id="' + 
+                    data.mapreduce_id + '" class="mapreduce_link">' + 
+                    data.mapreduce_id + '</span> status: ' + 
+                    '<span class="mapreduce_status" id="status_for_' + 
+                    data.mapreduce_id+'"></span>';
+            }
+            html += '</li>';
+            el.html(html);
+            $('#messages').append(el);
+        };
         $(document).ready(function() {
-            $.getJSON('{% url AnalyticsRPC %}', function(data){
-                console.log(data);
-                $('#data').empty();
-                for (i = 0; i < data.data.length; i++) {
-                    var row = $(document.createElement('tr'));
-                    var since = $(document.createElement('tr'));
-                    var row_date = data.data[i]['start'];
-                    var since_html = '<td><abbr class="timeago" title="'+row_date+'"></abbr></td>'
-                    row.hide();
-                    since.hide();
-                    var html = ''
-                    var count = 0
-                    for (j = 0; j < actions.length; j++) {
-                        count = data.data[i][actions[j]];
-                        if (actions[j] != series[j].name) {
-                            console.log('error: whoops!', actions[j], series[j]);
+            $('#go').click(function(e){
+                var action = $('#action').val();
+                var scope = $('#scope').val();
+                var app_or_global = $('#app_or_global').val();
+                $.getJSON('{{ URL }}/bea/'+action+'/'+scope+app_or_global+'/', function(data){
+                    alert(data); 
+                }); 
+            });
+            var load_remote_data = function() {
+                {% if app %}
+                var url = '{% url AppAnalyticsRPC app.uuid %}';
+                {% else %}
+                var url = '{% url AnalyticsRPC %}';
+                {% endif %}
+                $.getJSON(url, {
+                        offset: offset,
+                        limit: limit
+                }, function(data){
+                    console.log(data);
+                    offset += limit;
+                    //$('#data').empty();
+                    for (i = 0; i < data.data.length; i++) {
+                        var row = $(document.createElement('tr'));
+                        var since = $(document.createElement('tr'));
+                        var row_date = data.data[i]['start_day'];
+                        var since_html = '<td><abbr class="timeago" title="'+row_date+'"></abbr></td>'
+                        row.hide();
+                        since.hide();
+                        var html = ''
+                        var count = 0
+                        for (j = 0; j < actions.length; j++) {
+                            count = data.data[i][actions[j]];
+                            if (actions[j] != series[j].name) {
+                                console.log('error: whoops!', actions[j], series[j]);
+                            }
+                            $('#' + actions[j]).data('series-id', j);
+                            series[j].data.push([Date.parse(row_date), count]);
+                            html += '<td class="'+actions[j]+'">'+ count + '</td>';
                         }
-                        series[j].data.push([Date.parse(row_date), count]);
-                        html += '<td class="'+actions[j]+'">'+ count + '</td>';
+                        row.html(html);
+                        since.html(since_html);
+                        $('#data').append(row);
+                        $('#dates').append(since);
+                        row.slideDown('fast');
+                        since.slideDown('fast');
                     }
-                    row.html(html);
-                    since.html(since_html);
-                    $('#data').append(row);
-                    $('#dates').append(since);
-                    row.slideDown('fast');
-                    since.slideDown('fast');
-                }
-                $('abbr.timeago').timeago();
-                chart = new Highcharts.Chart({
-                    chart: {
-                        renderTo: 'container',
-                        type: 'spline'
-                    },
-                    title: {
-                        text: 'Actions over time'
-                    },
-                    xAxis: {
-                        type: 'datetime',
-                        month: '%e. %b',
-                        year: '%b'
+                    $('abbr.timeago').timeago();
+                    chart = new Highcharts.Chart({
+                        chart: {
+                            renderTo: 'container',
+                            type: 'spline'
                         },
-                    yAxis: {
+                        legend: {
+                            enabled: false
+                        },
                         title: {
-                            text: 'Count'
+                            text: 'Actions over time'
                         },
-                        min: 0
-                    },
-                    series: series,
-                });
-            }); 
+                        xAxis: {
+                            type: 'datetime',
+                            dateTimeLabelFormats: {
+                                hour: '%b %e %H', 
+                                day: '%b %e',
+                                month: '%b %e',
+                                year: '%b %e'
+                            },
+                            tickInterval:24 * 3600 * 1000 
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Count'
+                            },
+                            min: 0
+                        },
+                        series: series,
+                    });
+                }); 
+            };
             $('#showing_actions input').click(function(e){
                 var el = $(this);
+                var series_id = el.data('series-id');
+                var chart_series = chart.series[series_id];
                 if (el.attr('checked') == 'checked') {
                     $('.' + el.attr('id')).show();
+                    chart_series.show();
                 } else {
                     $('.' + el.attr('id')).hide();
+                    chart_series.hide();
                 }
             });
+
+            $('#more').click(function(e){
+                load_remote_data();     
+            });
+
+            $('#generate').click(function(e){
+                $.getJSON('{{ URL }}/admin/analytics/generate', function(data){ 
+                    alert(data);
+                });
+            });
+            $('#generate_ensure').click(function(e){
+                var scope = $('#scope').val();
+                var app_or_global = $('#app_or_global').val();
+                var ensure = scope + app_or_global;
+                $.getJSON('{{ URL }}/admin/analytics/generate', {
+                        ensure: ensure},
+                    function(data){ 
+                        alert(data);
+                });
+            });
+            $('#generate_reset').click(function(e){
+                $.getJSON('{{ URL }}/admin/analytics/generate', 
+                    {reset: true}, 
+                    function(data){ 
+                        alert(data);
+                    }
+                );
+            });
+            $('h3').click(function(e){
+                $(this).next('div').toggle();
+            });
+
+            $('span.mapreduce_link').live('click', function(e){
+                var mapreduce_id = $(this).attr('id');
+                var update_el = $('#status_for_' + mapreduce_id);
+
+                // do an ajax query to GAE maprduce here
+
+                update_el.html('faked: job status is %s');
+            });
+
+            load_remote_data();
         });
 
     </script>
 {% endblock %}
 
 {% block bottom_content %}
-    <div class="span-24 prepend-top push-bottom">
-        <h1 class="prepend-top center">Analytics</h1>
-        <div id="container span-24"></div>
-        <div class="span-24 last clear" id='showing_actions'>
+    <div class="span-24 prepend-top">
+        <h1 class="prepend-top center">Analytics {% if app %}for {{ app.uuid }}{% endif %}</h1>
+        <div id="container" class="span-24"></div>
+        <h3>Filters</h3>
+        <div class="span-24 last clear hidden" id='showing_actions'>
             {% for action in actions %}
                 <input checked="checked" type="checkbox" id="{{ action }}" name="{{ action }}" /><label for="{{ action }}">{{ action }}</label>
             {% endfor %}
         </div>
-        <table width="950px" cellpadding="0" cellspacing="0">
-            <tbody>
-                <tr>
-                    <td>
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <thead><tr><th>Date</th></tr></thead>
-                            <tbody id='dates'>
+        <h3>Data</h3>
+        <div class="span-24">
+            <table width="950px" cellpadding="0" cellspacing="0">
+                <tbody>
+                    <tr>
+                        <td>
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <thead><tr><th>Date</th></tr></thead>
+                                <tbody id='dates'>
 
-                            </tbody>
-                        </table>
-                    </td>
-                    <td class='scroll'>
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    {% for action in actions %}
-                                        <th class="{{ action }}">{{ action }}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody id="data"></tbody>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td class='scroll'>
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        {% for action in actions %}
+                                            <th class="{{ action }}">{{ action }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody id="data"></tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3>Actions</h3>
+        <div class="span-24">
+            <button id="more">Load more data</button>
+            <button id="generate">Generate OLD</button>
+            <button id="generate_ensure">Generate Ensure</button>
+            <button id="generate_reset">Reset OLD</button>
+            <select id="action">
+                <option value="run">Run</option>
+                <option value="ensure">Ensure</option>
+            </select>
+            <select id="scope">
+                <option value="hour">Hour</option>
+                <option value="day">Day</option>
+            </select>
+            <select id="app_or_global">
+                <option value="">App</option>
+                <option value="_global">Global</option>
+            </select>
+            <button id="go">Go</button>
+        </div>
+        <div id="messages" class="span-24"></div>
     </div>
+    <div id="space">&nbsp;</div>
 {% endblock bottom_content %}
 
