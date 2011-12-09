@@ -35,6 +35,22 @@
         input[type="checkbox"]:checked + label {
             background-color: rgba(195,255,104,0.75); 
         }
+        h3 {
+            cursor: pointer; 
+        }
+        span.mapreduce_link {
+            color: blue;
+            border-bottom: 1px dashed blue; 
+            cursor: pointer;
+        }
+        span.mapreduce_link:hover {
+            border-bottom: 1px solid grey;
+            color: black;
+        }
+        span.mapreduce_link:active {
+            border-bottom: 1px solid black;
+            color: grey;
+        }
     </style>
     <script type="text/javascript">
         var actions = {{ actions }}
@@ -51,9 +67,26 @@
         , offset = 0
         , limit = 3
         , app = '{{ app }}'
-        , handle_message = function(data){
-            var html = "<strong>" + data.success + "</strong><br />";
-            $('#messages').append(html);
+        , row = 'even'
+        , handle_message = function(source, data){
+            var el = $(document.createElement('li'));
+            el.addClass('row_' + row);
+            row = (row == 'even' ? 'odd' : 'even');
+            var html = '<span class="rpc_result '+data.success+'">' + data.success + '</span>';
+            html += "<strong>" + source + "</strong><br />";
+            if (data.message) {
+                html += '<em>' + data.message + '</em><br />';
+            }
+            if (data.mapreduce_id) {
+                html += '<em>Started mapreduce job </em><span id="' + 
+                    data.mapreduce_id + '" class="mapreduce_link">' + 
+                    data.mapreduce_id + '</span> status: ' + 
+                    '<span class="mapreduce_status" id="status_for_' + 
+                    data.mapreduce_id+'"></span>';
+            }
+            html += '</li>';
+            el.html(html);
+            $('#messages').append(el);
         };
         $(document).ready(function() {
             $('#go').click(function(e){
@@ -157,8 +190,11 @@
                 });
             });
             $('#generate_ensure').click(function(e){
+                var scope = $('#scope').val();
+                var app_or_global = $('#app_or_global').val();
+                var ensure = scope + app_or_global;
                 $.getJSON('{{ URL }}/admin/analytics/generate', {
-                        ensure: $('#scope').val()},
+                        ensure: ensure},
                     function(data){ 
                         alert(data);
                 });
@@ -175,11 +211,20 @@
                 $(this).next('div').toggle();
             });
 
+            $('span.mapreduce_link').live('click', function(e){
+                var mapreduce_id = $(this).attr('id');
+                var update_el = $('#status_for_' + mapreduce_id);
+
+                // do an ajax query to GAE maprduce here
+
+                update_el.html('faked: job status is %s');
+            });
+
             load_remote_data();
         });
 
     </script>
-{% endblock %}')
+{% endblock %}
 
 {% block bottom_content %}
     <div class="span-24 prepend-top">

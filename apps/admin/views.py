@@ -1018,8 +1018,7 @@ class ShowAnalytics(URIHandler):
         )
 
 class ShowAppAnalytics(URIHandler):
-    @admin_required
-    def get(self, admin, app_uuid):
+    def get(self, app_uuid):
         app = App.get(app_uuid) 
 
         template_values = {
@@ -1031,8 +1030,7 @@ class ShowAppAnalytics(URIHandler):
         )
 
 class AppAnalyticsRPC(URIHandler):
-    @admin_required
-    def get(self, admin, app_uuid):
+    def get(self, app_uuid):
         app = App.get(app_uuid)
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0

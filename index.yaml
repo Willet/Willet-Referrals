@@ -108,3 +108,9 @@ indexes:
   - name: app_
   - name: start
 
+- kind: AppAnalyticsDaySlice
+  properties:
+  - name: app_
+  - name: start
+    direction: desc
+
