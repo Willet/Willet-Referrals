@@ -123,7 +123,7 @@ button p {
 }
 #fb_btns > p {
     margin: 0px;
-    padding: 30px 10px 0px 10px;
+    padding: 10px 10px 0px 10px;
     margin-top: 0px;
 }
 
@@ -179,7 +179,6 @@ button p {
 }
 #chosenFriends h3 {
     margin-top: 0px;
-    padding-top: 30px;
     text-align: center;
     margin-top: 5px;
     margin-bottom: 5px;
