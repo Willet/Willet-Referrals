@@ -32,11 +32,15 @@
             </div>
 
             <div id="fb_btns">
-                <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()">
+                {% if incentive_enabled %}
+                    <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
+                {% endif %}
+
+                <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()" {%if incentive_enabled%}style="margin-top: 15px"{%endif%}>
                     <p class="fb">f</p>
                     <p>Ask All Friends</p>
                 </button>
-                <button style="float: right;" title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
+                <button style="{%if incentive_enabled%}margin-top: 15px;{%endif%}float: right;" title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
                     <p class="fb">f</p>
                     <p>Choose Some Friends</p>
                 </button>
@@ -181,13 +185,39 @@
                 data     : payload,
                 success  : function (tr) {
 
-                    $("#nameEntry").html('');
-                    $("#chosenFriends").html( '<h3>Asks Away! </h3> <p>Your friends have been asked to help you by <b>voting</b> on whether you should buy this product or not.</p>' );
-                    
-                    $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
-                    
-                    $("#btns").html( '<button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
+                    $("#nameEntry").hide();
+                    $("#chosenFriends").height('135px');
 
+                    {% if incentive_enabled %}
+                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label><input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input> ' );
+                        
+                        $("#shareText").html( '<p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>' );
+                        
+                        $("#btns").html( '<button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button> <button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
+
+
+                    {% else %}
+                        
+                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p> ' );
+                        
+                        $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
+                        
+                        $("#btns").html( '<button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
+                    {% endif %}
+                }
+            });
+        };
+
+        var updateEmailAddress = function() {
+            var addr = document.getElementById( 'email-field' ).value;
+                
+            $.ajax({
+                url: "/updateEmailAddress",
+                type: 'post',
+                data: { email : addr },
+                success: function (tr) {
+                    doPostMessage('close');
+                    window.close();
                 }
             });
         };

@@ -72,7 +72,10 @@ class AskDynamicLoader(webapp.RequestHandler):
         
         # GAY BINGO
         if not user_is_admin:
-            bingo( 'sibt_button_text5' )
+            if app.incentive_enabled:
+                bingo( 'sibt_incentive_text' )
+            else:    
+                bingo( 'sibt_button_text6' )
             bingo( 'sibt_facebook_style' )
 
         ab_share_options = [ 
@@ -247,6 +250,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             'willt_code'     : link.willt_url_code,
 
             'AB_share_text'  : ab_opt,
+            'incentive_enabled' : app.incentive_enabled,
         }
 
         path = os.path.join('apps/sibt/templates/', 'preask.html')
@@ -592,7 +596,8 @@ class ShowFBThanks( URIHandler ):
             partial.delete()
 
         template_values = { 'email'          : user.get_attr( 'email' ),
-                            'user_cancelled' : user_cancelled }
+                            'user_cancelled' : user_cancelled,
+                            'incentive_enabled' : app.incentive_enabled }
         
         path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)

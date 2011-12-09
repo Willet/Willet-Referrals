@@ -639,11 +639,10 @@ class Barbara(URIHandler):
                 a.btm_tab_enabled = True
             a.put()
         """
-        products = ProductShopify.all()
-        for p in products:
-            if p.uuid == None:
-                p.uuid = generate_uuid( 16 )
-                p.put()
+        apps = SIBTShopify.all()
+        for a in apps:
+            a.incentive_enabled = False
+            a.put()
 
 class ShowActions(URIHandler):
     @admin_required
