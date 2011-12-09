@@ -251,6 +251,7 @@ class TimeSlices(webapp.RequestHandler):
             mr['func'],
             'mapreduce.input_readers.DatastoreInputReader', {
                 'entity_kind': mr['entity'],
+                'batch_size': 25
             },
             shard_count=10
         )
