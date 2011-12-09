@@ -21,7 +21,7 @@ html, body {
     border-radius: 5px;
 
     padding: 0px 15px 0px 15px;
-    margin: 45px 10px 10px 10px;
+    margin: 45px 5px 10px 5px;
     float: left;
     height: 45px;
 
@@ -278,7 +278,7 @@ button p {
     outline-color: #333;
     outline-style: none;
     outline-width: 0px;
-    padding: 5px;
+    padding: 2px;
     text-align: center;
     text-decoration: none;
     text-indent: 0px;
