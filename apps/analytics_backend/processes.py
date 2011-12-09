@@ -18,6 +18,7 @@ from apps.action.models import Action
 from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
+from apps.buttons.shopify.models import *
 
 #####
 # These classes are CRON jobs that initiate the objects need for map reduce
@@ -250,6 +251,7 @@ class TimeSlices(webapp.RequestHandler):
             mr['func'],
             'mapreduce.input_readers.DatastoreInputReader', {
                 'entity_kind': mr['entity'],
+                'batch_size': 25
             },
             shard_count=10
         )
