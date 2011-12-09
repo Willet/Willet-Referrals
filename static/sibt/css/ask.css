@@ -78,6 +78,7 @@ button .fb {
     margin: 6px 0px 0px 0px;
     float: left;
     border-right: 1px solid #1C4596;
+    line-height: 25px;
 }
 button p {
     float: left;
