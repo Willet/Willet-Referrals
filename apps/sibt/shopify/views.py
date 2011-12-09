@@ -417,21 +417,32 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-            ab_test_options = [ "Not sure? Poll your friends!",
-                                "Ask your friends what they think",
-                                "Need advice? Ask your friends!",
-                                "Unsure? Get advice from friends!" ]
-            cta_button_text = ab_test( 'sibt_button_text5', 
-                                        ab_test_options, 
-                                        user = user,
-                                        app  = app )
-            
+            if app.incentive_enabled:
+                ab_test_options = [ "Not sure? Let friends vote! Save $5!",
+                                    "Earn $5! Ask your friends what they think!",
+                                    "Need advice? Ask your friends! Earn $5!",
+                                    "Save $5 by getting advice from friends!" ]
+                cta_button_text = ab_test( 'sibt_incentive_text', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+            else:
+                ab_test_options = [ "Not sure? Start a vote!",
+                                    "Not sure? Let friends vote!",
+                                    "Need advice? Ask your friends to vote",
+                                    "Need advice? Ask your friends!",
+                                    "Unsure? Get advice from friends!",
+                                    "Unsure? Get your friends to vote!",
+                                    ]
+                cta_button_text = ab_test( 'sibt_button_text6', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+                
             stylesheet = ab_test( 'sibt_facebook_style', 
                                   ['css/facebook_style.css', 'css/colorbox.css'],
                                   user = user,
                                   app  = app )
-
-            fb_connect = ab_test( 'sibt_fb_no_connect_dialog' )
 
             if app.overlay_enabled:
                 overlay_style = ab_test( 'sibt_overlay_style', 
@@ -469,18 +480,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             stylesheet      = 'css/colorbox.css'
-            fb_connect      = random.randint( 0, 1 )
             overlay_style   = "_willet_overlay_button"
             AB_top_bar = AB_btm_tab = 1
-
-        logging.info("FB : %s" % fb_connect)
-
-        # If we're using FB's dialog, we need to make the Link now.
-        if fb_connect:
-            origin_domain = os.environ['HTTP_REFERER'] if\
-                os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-            link = Link.create(target, app, origin_domain, user)
-            share_url = "%s/%s" % (URL, link.willt_url_code)
 
         # a whole bunch of css bullshit!
         if app:
@@ -496,7 +497,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'show_votes' : show_votes,
             'has_voted': has_voted,
             'is_live': is_live,
-            'share_url': share_url,
             'show_top_bar_ask': show_top_bar_ask,
             
             'app'            : app,
@@ -527,7 +527,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'AB_FACEBOOK_NO_CONNECT' : True if fb_connect else False,
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else "",
             'app_css': app_css,

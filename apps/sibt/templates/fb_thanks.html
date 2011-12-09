@@ -82,7 +82,11 @@
 
             <div id="email-wrapper">
                 <p id="top_text">
-                    Leave your e-mail so we can notify you when your friends give feedback:
+                    {% if incentive_enabled %}
+                        Enter your PayPal email and we'll send you $5 immediately after you make a purchase!
+                    {% else %}
+                        Leave your e-mail so we can notify you when your friends give feedback:
+                    {% endif %}
                 </p>
                 
                 <input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input>
