@@ -16,6 +16,7 @@ from google.appengine.ext import db
 from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
+from apps.buttons.shopify.models import *
 
 from util.consts import MEMCACHE_TIMEOUT
 
