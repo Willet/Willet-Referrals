@@ -529,19 +529,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             }
         },
         */
-        {% if AB_FACEBOOK_NO_CONNECT %}
-        {
-            'name': 'Facebook',
-            'url': 'http://connect.facebook.net/en_US/all.js',
-            'dom_el': null,
-            'loaded': false,
-            'test': function() {
-                return (typeof FB == 'object');
-            }, 'callback': function() {
-                return;
-            }
-        },
-        {% endif %}
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/static/js/jquery.colorbox.js',
@@ -695,20 +682,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                     }
                 });
                 
-                // If we're trying ask without connect:
-                {% if AB_FACEBOOK_NO_CONNECT %}
-                    // Put fb_root div in the page
-                    var fb_div = $(document.createElement( 'div' ));
-                    fb_div.attr( 'id', 'fb-root' );
-                    $('body').append( fb_div );
-
-                    FB.init({
-                        appId: '{{FACEBOOK_APP_ID}}', // App ID
-                        cookie: true, // enable cookies to allow the server to access the session
-                        xfbml: true  // parse XFBML
-                    });
-                {% endif %}
-
                 if ( bottomTabEnabled ) {
                     var tab = $(document.createElement( 'div' ));
                     tab.attr( 'id', "_willet_bottom_tab" );
@@ -861,4 +834,3 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         _body.appendChild(el);
     }
 }(document, window));
-

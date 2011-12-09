@@ -20,9 +20,10 @@ html, body {
     border: 1px solid #1C4596;
     border-radius: 5px;
 
-    padding: 5px;
-    margin: 35px 10px 10px 10px;
+    padding: 0px 10px 0px 10px;
+    margin: 45px 5px 10px 5px;
     float: left;
+    height: 45px;
 
     -webkit-box-shadow:0 1px 2px #999;
     -moz-box-shadow:0 1px 2px #999;
@@ -34,6 +35,7 @@ html, body {
     -moz-user-drag: -moz-none;
     -webkit-user-drag: none;
     user-drag: none;
+    cursor: pointer;
 }
 ul {
     list-style-type: none;
@@ -76,6 +78,7 @@ button .fb {
     margin: 6px 0px 0px 0px;
     float: left;
     border-right: 1px solid #1C4596;
+    line-height: 25px;
 }
 button p {
     float: left;
@@ -103,6 +106,13 @@ button p {
     padding: 0px;
     margin: -10px 0px 0px 94px;
 }
+#title_bar p {
+    font-size: 10px;
+    padding: 0px;
+    margin: -10px 0px 0px 0px;
+    padding-left: 93px;
+    text-align: left;
+}
 #fb_btns {
     height: 124px;
     color: #616262;
@@ -112,9 +122,12 @@ button p {
     margin: 0px;
     padding: 30px 10px 0px 10px;
 }
-#fb_btns button {
-    height: 55px;
+#fb_btns > p {
+    margin: 0px;
+    padding: 10px 10px 0px 10px;
+    margin-top: 0px;
 }
+
 .willet {
     float: left;
     width: 50%;
@@ -162,11 +175,18 @@ button p {
 }
 #chosenFriends p {
     padding-left: 10px;
-}
-#chosenFriends h3 {
+    margin-top: 5px;
     text-align: center;
 }
-#chosenFriends img {
+#chosenFriends h3 {
+    margin-top: 0px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+#chosenFriends label {
+    margin-left: 10px;
+    margin-right: 10px;
 }
 .selectedFriend {
     margin: 5px 5px 0px 5px;
@@ -180,7 +200,7 @@ button p {
     border-radius: 5px;
     padding: 0px;
     margin: 10px 10px 5px 10px;
-    opacity: 0.5;
+    opacity: 0.75;
 }
 .notSelectedFriend:hover {
     opacity: 1.0;
@@ -192,6 +212,7 @@ button p {
 }
 #shareText p {
     text-align: center;
+    margin-top: 0px;
 }
 #share-text {
     font-size: 11px;
@@ -208,7 +229,7 @@ button p {
     height: 27px;
 }
 #btns button, #cancel button {
-   -webkit-appearance: none;
+    -webkit-appearance: none;
     -webkit-border-horizontal-spacing: 0px;
     -webkit-border-vertical-spacing: 0px;
     -webkit-box-align: center;
@@ -247,6 +268,7 @@ button p {
     font-size: 13px;
     font-style: normal;
     font-variant: normal;
+    font-weight: bold;
     letter-spacing: normal;
     line-height: normal;
     margin-bottom: 0px;
@@ -280,4 +302,7 @@ button p {
 
 #loader {
     margin: 50px 0px 0px 80px;
+}
+#email-field {
+    width: 270px;
 }
