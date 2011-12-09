@@ -281,11 +281,13 @@ class User( db.Expando ):
                 is_admin = True
 
         # Filter by IP
-        if not is_admin and hasattr(self, 'ips'):
-            for i in self.ips:
-                if i in ADMIN_IPS:
-                    logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
-                    is_admin = True
+        if not is_admin:
+            user_ips = self.user_ips.get()
+            if user_ips:
+                for i in user_ips.ips:
+                    if i in ADMIN_IPS:
+                        logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
+                        is_admin = True
 
         self.user_is_admin = is_admin
         return is_admin 
