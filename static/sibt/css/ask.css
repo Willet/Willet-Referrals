@@ -21,7 +21,7 @@ html, body {
     border-radius: 5px;
 
     padding: 0px 15px 0px 15px;
-    margin: 45px 5px 10px 5px;
+    margin: 45px 10px 10px 10px;
     float: left;
     height: 45px;
 
@@ -77,7 +77,7 @@ button .fb {
     padding: 0px 8px 0px 0px;
     margin: 6px 0px 0px 0px;
     float: left;
-    border-right: 1px solid #1C4596;
+    border-right: 1px solid;
 }
 button p {
     float: left;
@@ -105,6 +105,13 @@ button p {
     padding: 0px;
     margin: -10px 0px 0px 94px;
 }
+#title_bar p {
+    font-size: 10px;
+    padding: 0px;
+    margin: -10px 0px 0px 0px;
+    padding-left: 93px;
+    text-align: left;
+}
 #fb_btns {
     height: 124px;
     color: #616262;
@@ -116,7 +123,8 @@ button p {
 }
 #fb_btns > p {
     margin: 0px;
-    padding: 10px 10px 0px 10px;
+    padding: 30px 10px 0px 10px;
+    margin-top: 0px;
 }
 
 .willet {
@@ -170,6 +178,8 @@ button p {
     text-align: center;
 }
 #chosenFriends h3 {
+    margin-top: 0px;
+    padding-top: 30px;
     text-align: center;
     margin-top: 5px;
     margin-bottom: 5px;
@@ -190,7 +200,7 @@ button p {
     border-radius: 5px;
     padding: 0px;
     margin: 10px 10px 5px 10px;
-    opacity: 0.5;
+    opacity: 0.75;
 }
 .notSelectedFriend:hover {
     opacity: 1.0;
@@ -219,7 +229,7 @@ button p {
     height: 27px;
 }
 #btns button, #cancel button {
-   -webkit-appearance: none;
+    -webkit-appearance: none;
     -webkit-border-horizontal-spacing: 0px;
     -webkit-border-vertical-spacing: 0px;
     -webkit-box-align: center;
@@ -258,6 +268,7 @@ button p {
     font-size: 13px;
     font-style: normal;
     font-variant: normal;
+    font-weight: bold;
     letter-spacing: normal;
     line-height: normal;
     margin-bottom: 0px;
@@ -267,7 +278,7 @@ button p {
     outline-color: #333;
     outline-style: none;
     outline-width: 0px;
-    padding: 2px;
+    padding: 5px;
     text-align: center;
     text-decoration: none;
     text-indent: 0px;

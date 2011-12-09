@@ -417,7 +417,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-
             if app.incentive_enabled:
                 ab_test_options = [ "Not sure? Let friends vote! Save $5!",
                                     "Earn $5! Ask your friends what they think!",

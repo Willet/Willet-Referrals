@@ -76,8 +76,9 @@ class AskDynamicLoader(webapp.RequestHandler):
                 bingo( 'sibt_incentive_text' )
             else:    
                 bingo( 'sibt_button_text6' )
+            
             bingo( 'sibt_facebook_style' )
-
+        
         ab_share_options = [ 
             "I'm not sure if I should buy this. What do you think?",
             "Would you buy this? I need help making a decision!",

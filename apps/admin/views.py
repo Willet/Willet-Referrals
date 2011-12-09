@@ -641,7 +641,6 @@ class Barbara(URIHandler):
         """
         apps = SIBTShopify.all()
         for a in apps:
-            a.incentive_enabled = False
             a.put()
 
 class ShowActions(URIHandler):
