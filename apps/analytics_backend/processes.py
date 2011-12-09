@@ -35,17 +35,17 @@ def ensure_hourly_slices(app):
                 microseconds=now.microsecond)
     else:
         now = datetime.datetime.combine(now, datetime.time())
-    logging.warn('using now %s' % now)
+    logging.debug('using now %s' % now)
 
     hours = range(24)
     put_list = []
     for hour in hours:
         val = now - datetime.timedelta(hours=hour)
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
-                put=False)
-        if created:
-            logging.warn('created hour slice: %s' % ahs)
-            yield op.db.Put(ahs)     
+                put=True)
+        #if created:
+        #    logging.debug('created hour slice: %s' % ahs)
+        #yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
     """this is our mapper"""
@@ -84,9 +84,10 @@ def ensure_daily_slices(app):
     for day in days:
         val = today - datetime.timedelta(days=day)
         ahs, created = AppAnalyticsDaySlice.get_or_create(app_=app, start=val, 
-                put=False)
-        if created:
-            yield op.db.Put(ahs)      
+                put=True)
+        #if created:
+        #    logging.debug('created day slice: %s' % ahs)
+        #yield op.db.Put(ahs)      
 
 def build_daily_stats(time_slice):
     """this is our mapper"""
@@ -104,7 +105,7 @@ def build_daily_stats(time_slice):
             .filter('start <', end)
 
     action_first_run = []
-    logging.warn('getting day stats for day: %s\nslices: %d' % (
+    logging.debug('getting day stats for day: %s\nslices: %d' % (
         start, hour_slices.count()))
 
     for hour_slice in hour_slices:
@@ -136,7 +137,7 @@ def build_global_hourly_stats(global_slice):
             if action not in action_first_run:
                 global_slice.default(action)
                 action_first_run.append(action)
-            logging.warn('incrementing %s from %d to %d' % (
+            logging.debug('incrementing %s from %d to %d' % (
                 action, global_slice.get_attr(action), 
                 hour_slice.get_attr(action)))
             global_slice.increment(action, hour_slice.get_attr(action))
@@ -172,14 +173,16 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.app.models.App'
+                        'entity': 'apps.app.models.App',
+                        'reader': 'DatastoreKeyInputReader'
                     } 
                 },
                 'day': {
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.app.models.App'
+                        'entity': 'apps.app.models.App',
+                        'reader': 'DatastoreKeyInputReader'
                     }
                 },
                 'hour_global': {
@@ -204,7 +207,7 @@ class TimeSlices(webapp.RequestHandler):
                 'hour': {
                     'name': 'Run Hourly Analytics',
                     'func': f_base % 'build_hourly_stats',
-                    'entity': e_base % 'AppAnalyticsHourSlice'
+                    'entity': e_base % 'AppAnalyticsHourSlice',
                 },
                 'day': {
                     'name': 'Run Daily Analytics',
@@ -246,16 +249,20 @@ class TimeSlices(webapp.RequestHandler):
                 mr = oas['mr']
         else:
             mr = options[action][scope]
+        if 'reader' in mr:
+            reader = mr['reader']
+        else:
+            reader = 'mapreduce.input_readers.DatastoreInputReader'
         mapreduce_id = control.start_map(
             mr['name'],
             mr['func'],
-            'mapreduce.input_readers.DatastoreInputReader', {
+            reader, {
                 'entity_kind': mr['entity'],
                 'batch_size': 25
             },
             shard_count=20
         )
-        data = {'success': True, 'mesage': "started mr: %s" % mapreduce_id}
+        data = {'success': True, 'mapreduce_id': mapreduce_id}
         self.response.out.write(json.dumps(data))
 
 #class EnsureGlobalHourlySlices(webapp.RequestHandler):
