@@ -35,7 +35,7 @@ def ensure_hourly_slices(app):
                 microseconds=now.microsecond)
     else:
         now = datetime.datetime.combine(now, datetime.time())
-    logging.error('using now %s' % now)
+    logging.warn('using now %s' % now)
 
     hours = range(24)
     put_list = []
@@ -44,7 +44,7 @@ def ensure_hourly_slices(app):
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
                 put=False)
         if created:
-            logging.error('created hour slice: %s' % ahs)
+            logging.warn('created hour slice: %s' % ahs)
             yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
@@ -104,7 +104,7 @@ def build_daily_stats(time_slice):
             .filter('start <', end)
 
     action_first_run = []
-    logging.error('getting day stats for day: %s\nslices: %d' % (
+    logging.warn('getting day stats for day: %s\nslices: %d' % (
         start, hour_slices.count()))
 
     for hour_slice in hour_slices:
@@ -136,7 +136,7 @@ def build_global_hourly_stats(global_slice):
             if action not in action_first_run:
                 global_slice.default(action)
                 action_first_run.append(action)
-            logging.error('incrementing %s from %d to %d' % (
+            logging.warn('incrementing %s from %d to %d' % (
                 action, global_slice.get_attr(action), 
                 hour_slice.get_attr(action)))
             global_slice.increment(action, hour_slice.get_attr(action))
@@ -253,7 +253,7 @@ class TimeSlices(webapp.RequestHandler):
                 'entity_kind': mr['entity'],
                 'batch_size': 25
             },
-            shard_count=10
+            shard_count=20
         )
         data = {'success': True, 'mesage': "started mr: %s" % mapreduce_id}
         self.response.out.write(json.dumps(data))
