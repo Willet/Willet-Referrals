@@ -529,11 +529,7 @@ class SendFBMessages( URIHandler ):
                                                     link )
             logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
-            # if it wasn't successful ...
-            if len(fb_share_ids) != len(ids):
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
-            else:
+            if len(fb_share_ids) > 0:
                 # create the instance!
                 # Make the Instance!
                 instance = app.create_instance( user, 
@@ -546,7 +542,15 @@ class SendFBMessages( URIHandler ):
                 for i in ids:
                     app.increment_shares()
 
+                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
+
                 response['success'] = True
+            
+            # if it wasn't successful ...
+            if len(fb_share_ids) != len(ids):
+                # posting failed!
+                response['data']['message'] = 'Could not post to facebook'
+
         except Exception,e:
             response['data']['message'] = str(e)
             logging.error('we had an error sharing on facebook', exc_info=True)
