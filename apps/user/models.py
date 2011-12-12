@@ -284,7 +284,7 @@ class User( db.Expando ):
         if not is_admin:
             user_ips = self.user_ips.get()
             if user_ips:
-                for i in user_ips.ips:
+                for i in user_ips:
                     if i in ADMIN_IPS:
                         logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
                         is_admin = True
