@@ -384,6 +384,9 @@ def get_buttonloads_by_user_and_url( user, url ):
     logging.warn('get_buttonloads_by_user_and_url deprecated')
     return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)
 
+## -----------------------------------------------------------------------------
+## ShowAction Subclass ---------------------------------------------------
+## -----------------------------------------------------------------------------
 class ShowAction(Action):
     """We are showing something ..."""
 
@@ -417,6 +420,9 @@ class ShowAction(Action):
             self.url,
         )
 
+## -----------------------------------------------------------------------------
+## UserAction Subclass ---------------------------------------------------
+## -----------------------------------------------------------------------------
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
 
@@ -449,4 +455,3 @@ class UserAction(Action):
             self.what,
             self.url,
         )
-
