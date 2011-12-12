@@ -432,7 +432,7 @@ class DoAuthenticate( URIHandler ):
             if user:
                 logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_attr('email')))
                 user.client = client
-                user.put()
+                user.put_later()
 
         self.response.out.write( url if url else '/account' )
         return
@@ -488,7 +488,7 @@ class DoRegisterClient( URIHandler ):
                 if user:
                     logging.info('Attaching Client %s (%s) to User %s (%s)' % (client.uuid, client.email, user.uuid, user.get_attr('email')))
                     user.client = client
-                    user.put()
+                    user.put_later()
             
             self.response.out.write( url if url else '/account' )
             return

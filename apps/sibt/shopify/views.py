@@ -322,7 +322,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         #if not user:
         #    logging.info('could not get user by request user_uuid: %s' %
         #            self.request.get('user_uuid'))
-        user = get_or_create_user_by_cookie(self)
+        user = get_or_create_user_by_cookie( self, app )
 
         # Try to find an instance for this { url, user }
         try:
@@ -547,8 +547,8 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        user      = get_or_create_user_by_cookie(self)
         app       = SIBTShopify.get_by_store_url(store_url)
+        user      = get_or_create_user_by_cookie( self, app )
         target    = get_target_url(self.request.headers.get('REFERER'))
 
         # Store a script load action.

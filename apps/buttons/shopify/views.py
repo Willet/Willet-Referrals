@@ -61,9 +61,9 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
         """
         template_values = {}
-        user   = get_or_create_user_by_cookie( self )
         target = get_target_url( self.request.headers.get('REFERER') )
         app    = ButtonsShopify.get(self.request.get('app_uuid'))
+        user   = get_or_create_user_by_cookie( self, app )
 
         # set the stylesheet we are going to use
         style = self.request.get('style')

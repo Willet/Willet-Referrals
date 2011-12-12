@@ -38,11 +38,11 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARESIBTONFACEBOOK")
 
+        app  = get_app_by_id(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = get_or_create_user_by_cookie(self)
-        app  = get_app_by_id(self.request.get('app_uuid'))
+            user = get_or_create_user_by_cookie(self, app)
         willt_code = self.request.get('willt_code')
         link = Link.get_by_code(willt_code)
         img = self.request.get('product_img')
@@ -149,8 +149,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        user = get_or_create_user_by_cookie(self)
         app  = get_app_by_id(self.request.get('app_uuid'))
+        user = get_or_create_user_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         
@@ -180,8 +180,6 @@ class StartSIBTInstance(URIHandler):
 
 class DoVote( URIHandler ):
     def post(self):
-        #user = get_or_create_user_by_cookie( self )
-        
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
             user = User.all().filter('uuid =', user_uuid).get() 
@@ -479,7 +477,7 @@ class SendFBMessages( URIHandler ):
         fb_id     = self.request.get('fb_id')
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user  = get_or_create_user_by_cookie(self)
+            user  = get_or_create_user_by_cookie(self, app)
 
         logging.error('friends %s %r' % (ids, names))
         logging.error( 'msg :%s '% msg )

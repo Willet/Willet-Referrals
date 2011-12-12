@@ -46,7 +46,7 @@ class SendEmailInvites( webapp.RequestHandler ):
                 referrer = referral_link.user
         
         # Get the User
-        user = get_or_create_user_by_email(from_addr, referrer, self)
+        user = get_or_create_user_by_email(from_addr, self, None)
         
         # Get the Link & update it
         link = get_link_by_willt_code(willt_url_code)

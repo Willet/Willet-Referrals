@@ -31,6 +31,8 @@ class ShowLandingPage(URIHandler):
 class ShowPrivacyPage(URIHandler):
     # Renders the main template
     def get(self):
+        memcache.set('reload_uris', True)
+
         template_values = { }
         
         self.response.out.write(self.render_page('privacy.html', template_values))

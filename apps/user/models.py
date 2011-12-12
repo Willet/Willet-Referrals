@@ -12,12 +12,12 @@ import inspect
 
 from django.utils import simplejson
 
-from calendar import monthrange
-from datetime import datetime, timedelta, time as datetime_time
-from decimal  import *
-from time import time
-from hmac import new as hmac
-from hashlib import sha1
+from calendar  import monthrange
+from datetime  import datetime, timedelta, time as datetime_time
+from decimal   import *
+from time      import time
+from hmac      import new as hmac
+from hashlib   import sha1
 from traceback import print_tb
 
 from google.appengine.api import memcache
@@ -29,17 +29,22 @@ from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 import apps.oauth.models
-from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats, get_or_create_ua, get_or_create_ss
-from apps.email.models    import Email
+from apps.email.models              import Email
+from apps.user.actions              import UserCreate
+from apps.user_analytics.models     import UserAnalytics
+from apps.user_analytics.models     import UserAnalyticsServiceStats
+from apps.user_analytics.models     import get_or_create_ss
+from apps.user_analytics.models     import get_or_create_ua
 
-from util.consts          import FACEBOOK_QUERY_URL, ADMIN_EMAILS, ADMIN_IPS
-from util.consts import MEMCACHE_TIMEOUT
-from util.model           import Model
-from util.helpers         import *
-from util                 import oauth2 as oauth
-from util.memcache_bucket_config import MemcacheBucketConfig
-from util.memcache_bucket_config import batch_put 
-
+from util                           import oauth2 as oauth
+from util.consts                    import ADMIN_EMAILS
+from util.consts                    import ADMIN_IPS
+from util.consts                    import FACEBOOK_QUERY_URL
+from util.consts                    import MEMCACHE_TIMEOUT
+from util.helpers                   import *
+from util.memcache_bucket_config    import MemcacheBucketConfig
+from util.memcache_bucket_config    import batch_put 
+from util.model                     import Model
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------
@@ -68,14 +73,20 @@ def create_email_model( user, email ):
         if em == None:
             em = EmailModel(key_name=email, address=email, user=user )
         
-        # TODO: We might need to merge Users here
-        try:
-            if em.user.uuid != user.uuid:
-                Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
-                logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
-                em.user = user
-        except Exception, e:
-            logging.error('create_email_model error: %s' % e, exc_info=True)
+        else:
+            logging.error("FIRST: %s" % em.user.uuid )
+            logging.error("SECOND %s" % user.uuid )
+
+            try:
+                if em.user.uuid != user.uuid:
+                    Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
+                    logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
+                    
+                    # TODO: We might need to merge Users here
+                    em.user = user
+            except Exception, e:
+                logging.error('create_email_model error: %s' % e, exc_info=True)
+        
         em.put()
     
 # Accessors --------------------------------------------------------------------
@@ -131,49 +142,18 @@ def deferred_user_put(bucket_key, list_keys, decrementing=False):
 # ------------------------------------------------------------------------------
 class User( db.Expando ):
     # General Junk
-    uuid            = db.StringProperty(indexed = True)
-    creation_time   = db.DateTimeProperty(auto_now_add = True)
-    #first_name      = db.StringProperty(indexed=False)
-    #last_name       = db.StringProperty(indexed=False)
-    #about_me_url    = db.LinkProperty( required = False, default = None )
-    referrer        = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
-    client          = db.ReferenceProperty(db.Model, collection_name='client_user')
-    other_data      = db.StringListProperty()
-
-    # Twitter Junk
-    #twitter_handle  = db.StringProperty(indexed = True)
-    #twitter_name    = db.StringProperty()
-    #twitter_pic_url = db.LinkProperty( required = False, default = None )
-    #twitter_followers_count = db.IntegerProperty(default = 0)
-    twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
-    
-    # Linkedin Junk 
-    # ! See `mappings` in `update_linkedin_info`
-    #linkedin_id    = db.StringProperty
-    #linkedin_first_name
-    #linkedin_last_name
-    #linkedin_industry
-    #linkedin_...
+    uuid                  = db.StringProperty(indexed = True)
+    creation_time         = db.DateTimeProperty(auto_now_add = True)
+    client                = db.ReferenceProperty(db.Model, collection_name='client_user')
+    memcache_bucket       = db.StringProperty( indexed = False, default = "")
+    twitter_access_token  = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
     
-    # Klout Junk
-    #twitter_id          = db.StringProperty( indexed = False )
-    #kscore              = db.FloatProperty( indexed = False, default = 1.0 )
-    #slope               = db.FloatProperty( indexed = False )
-    #network_score       = db.FloatProperty( indexed = False )
-    #amplification_score = db.FloatProperty( indexed = False )
-    #true_reach          = db.IntegerProperty( indexed = False )
-    #topics              = db.ListProperty( str, indexed = False )
-
-    # Facebook Junk
-    #fb_identity = db.LinkProperty( required = False, indexed = True, default = None )
-
-    # ReferenceProperty
-    #emails = db.EmailProperty(indexed=True)
-
-    # MBC NAME
+    # referrer is deprecated
+    referrer              = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
+    
+    # Memcache Bucket Config name
     _memcache_bucket_name = '_willet_user_put_bucket'
-
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -187,19 +167,32 @@ class User( db.Expando ):
     @staticmethod
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
+        logging.info("GETTING USER FROM DB")
         return User.all().filter('uuid =', uuid).get()
 
     def put_later(self):
         """Memcaches and defers the put"""
         key = self.get_key()
-        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-        mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
-        bucket = mbc.get_random_bucket()
+        mbc    = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
+        bucket = self.memcache_bucket
+        
+        # If we haven't set the bucket OR
+        # if the bucket we set doesn't exist anymore: GRAB A NEW BUCKET
+        if bucket == "" or bucket > mbc.count:
+            self.memcache_bucket = mbc.get_random_bucket()
+            bucket = self.memcache_bucket
         logging.info('bucket: %s' % bucket)
 
+        # Save to memcache AFTER setting memcache_bucket
+        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
+        
         list_identities = memcache.get(bucket) or []
-        list_identities.append(key)
+        
+        # Don't add a User twice to the same bucket.
+        if key not in list_identities:
+            list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
         if len(list_identities) > mbc.count:
@@ -228,6 +221,7 @@ class User( db.Expando ):
         # Memcache *after* model is given datastore key
         if self.key():
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
             
         return True
 
@@ -319,7 +313,7 @@ class User( db.Expando ):
         for p in props:
             setattr( self, p, getattr( u, p ) )
 
-        self.put()
+        self.put_later()
 
     def get_name_or_handle(self):
         name = self.get_handle()
@@ -452,7 +446,7 @@ class User( db.Expando ):
             elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
                 #logging.info("Adding %s %s" % (k, kwargs[k]))
                 setattr( self, k, kwargs[k] )
-        self.put()
+        self.put_later()
         """
         if 'twitter_handle' in kwargs an
             self.twitter_handle = kwargs['twitter_handle']
@@ -840,7 +834,7 @@ class User( db.Expando ):
             except Exception, e:
                 exception_type, exception, tb = sys.exc_info()
                 logging.error('error updating user with linkedin dict:\n%s\n%s\n%s\n\n%s' % (e, print_tb(tb), key, extra[key]))
-        self.put()
+        self.put_later()
         return True
     #
     # Social Networking Share Functionality
@@ -1294,6 +1288,8 @@ def get_user_by_email( email ):
 # Create by X
 def create_user_by_twitter(t_handle, referrer, ip=''):
     """Create a new User object with the given attributes"""
+    raise Exception( "OLD code. Needs to be updated before usage.")
+
     # check to see if this t_handle has an oauth token
     OAuthToken = apps.oauth.models.get_oauth_by_twitter(t_handle)
     
@@ -1318,6 +1314,8 @@ def create_user_by_twitter(t_handle, referrer, ip=''):
 
 def create_user_by_linkedin(linkedin_id, referrer, ip='', would_be=False):
     """Create a new User object with the given attributes"""
+    raise Exception( "OLD code. Needs to be updated before usage.")
+    
     # check to see if this t_handle has an oauth token
     OAuthToken = apps.oauth.models.get_oauth_by_linkedin(linkedin_id)
     
@@ -1348,41 +1346,57 @@ def create_user_by_linkedin(linkedin_id, referrer, ip='', would_be=False):
     
     return user
 
-def create_user_by_facebook(fb_id, first_name, last_name, name, email, referrer, token, would_be, friends):
+def create_user_by_facebook(fb_id, first_name, last_name, name, email, token, would_be, friends, app):
     """Create a new User object with the given attributes"""
     user = User(key_name=fb_id,
-                uuid=generate_uuid(16), fb_identity=fb_id, 
-                fb_first_name=first_name, fb_last_name=last_name, fb_name=name,
-                referrer=referrer, fb_access_token=token,
+                uuid=generate_uuid(16),
+                fb_identity=fb_id, 
+                fb_first_name=first_name,
+                fb_last_name=last_name,
+                fb_name=name,
+                fb_access_token=token,
                 would_be=would_be)
     if friends:
         user.fb_friends = friends
-    user.put()
+    user.put_later()
+    
+    # Store email
+    create_email_model( user, email )
+    
+    # Store User creation action
+    UserCreate.create( user, app )
     
     # Query the SocialGraphAPI
     taskqueue.add( queue_name='socialAPI', 
                    url='/socialGraphAPI', 
                    name= fb_id + generate_uuid( 10 ),
                    params={'id' : fb_id, 'uuid' : user.uuid} )
-    
+
     return user
 
-def create_user_by_email(email, referrer):
+def create_user_by_email( email, app ):
     """Create a new User object with the given attributes"""
-    user = User(key_name=email, uuid=generate_uuid(16), 
-                referrer=referrer)
+    user = User( key_name = email, uuid = generate_uuid(16) )
+    logging.info("Putting later: %s %s" % (user.uuid, user.key()))
     user.put_later()
 
-    # Make an email model
+    # Store email
     create_email_model( user, email )
     
+    # Store User creation action
+    UserCreate.create( user, app )
+    
     return user
 
-def create_user(referrer):
+def create_user( app ):
     """Create a new User object with the given attributes"""
     uuid=generate_uuid(16)
-    user = User(key_name=uuid, uuid=uuid, referrer=referrer)
+    user = User( key_name = uuid, uuid = uuid )
     user.put_later()
+    
+    # Store User creation action
+    UserCreate.create( user, app ) 
+    
     return user
 
 # Get or Create by X
@@ -1447,15 +1461,14 @@ def get_or_create_user_by_linkedin(linkedin_id, request_handler=None, token=None
     return user
 
 def get_or_create_user_by_facebook(
-        fb_id, first_name='', last_name='', name='', email='', referrer=None, 
+        fb_id, first_name='', last_name='', name='', email='',
         verified=None, gender='', token='', would_be=False, friends=[], 
-        request_handler=None):
+        request_handler=None, app=None):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
      
     # First try to find them by cookie if request handle present
-    user = get_user_by_cookie(request_handler) if request_handler is not None\
-        else None
+    user = get_user_by_cookie(request_handler) 
     
     # Try looking by FB identity
     if user is None:
@@ -1465,7 +1478,7 @@ def get_or_create_user_by_facebook(
     if user is None:
         logging.info("Creating user: " + fb_id)
         user = create_user_by_facebook(fb_id, first_name, last_name, name, 
-                                       email, referrer, token, would_be, friends)
+                                       email, token, would_be, friends, app)
         # check to see if this user was added by reading another user's social graph
         # if so, pull profile data
         if user.would_be:
@@ -1491,7 +1504,7 @@ def get_or_create_user_by_facebook(
     
     return user
 
-def get_or_create_user_by_email(email, referrer=None, request_handler=None):
+def get_or_create_user_by_email( email, request_handler, app ):
     """Retrieve a user object if it is in the datastore, otherwise create
       a new object"""
     
@@ -1500,15 +1513,12 @@ def get_or_create_user_by_email(email, referrer=None, request_handler=None):
     
     # Then find via email
     if user is None:
-        user = get_user_by_email(email)  
+        user = get_user_by_email( email )  
     
     # Otherwise, make a new one
     if user is None:
         logging.info("Creating user: " + email)
-        user = create_user_by_email(email, referrer)
-    
-    # Update the user
-    user.update( email=email, referrer=referrer )
+        user = create_user_by_email(email, app)
     
     # Set a cookie to identify the user in the future
     set_user_cookie( request_handler, user.uuid )
@@ -1532,6 +1542,9 @@ def add_ip_to_user(user_uuid, ip):
 
 def get_user_by_cookie(request_handler):
     """Read a user by cookie. Update IP address if present"""
+    if request_handler == None:
+        return None
+
     user = User.get(read_user_cookie(request_handler))
     if user:
         ip = request_handler.request.remote_addr
@@ -1539,10 +1552,10 @@ def get_user_by_cookie(request_handler):
         #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
     return user
 
-def get_or_create_user_by_cookie( request_handler, referrer=None ): 
+def get_or_create_user_by_cookie( request_handler, app ): 
     user = get_user_by_cookie(request_handler)
     if user is None:
-        user = create_user(referrer)
+        user = create_user( app )
         ip = request_handler.request.remote_addr
         user.add_ip(ip)
         #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')

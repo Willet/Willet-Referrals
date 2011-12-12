@@ -77,7 +77,7 @@ class SIBT(App):
         logging.info("SIBTAPP HANDLING LINK CLICK" )
 
         # Fetch User by cookie
-        user = get_or_create_user_by_cookie( urihandler )
+        user = get_or_create_user_by_cookie( urihandler, self )
 
         # Create a ClickAction
         act = SIBTClickAction.create( user, self, link )

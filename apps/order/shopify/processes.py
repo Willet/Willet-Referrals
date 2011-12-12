@@ -17,6 +17,7 @@ from apps.product.shopify.models import ProductShopify
 from apps.user.models            import User
 from apps.user.models            import get_user_by_cookie
 from apps.user.models            import get_or_create_user_by_email
+from apps.user.actions           import UserCreate
 
 from util                        import httplib2
 from util.helpers                import *
@@ -49,9 +50,9 @@ class OrderIframeNotification(webapp.RequestHandler):
                 user.merge_data( order.user )
                 
                 # Delete the old User
-                # No need to clean up links from other objs since this User was 
-                # ONLY attached to this Order
                 logging.info("Deleting %s" % order.user.uuid)
+                UserCreate.get_by_user( order.user ).delete()
+
                 order.user.delete()
 
             if order.user == None:
@@ -136,7 +137,7 @@ class OrderWebhookNotification(URIHandler):
         # Fetch the order if we hve it.
         o = OrderShopify.get_by_token( token )
         if o == None:
-            user = get_or_create_user_by_email( email, request_handler=self )
+            user = get_or_create_user_by_email( email, self, client.app_ )
         else:
             user = o.user
  
