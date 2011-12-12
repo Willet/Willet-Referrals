@@ -923,8 +923,9 @@ class MemcacheConsole(URIHandler):
         if key:
             logging.info('looking up key: %s' % key)
             value = memcache.get(key)
-            if protobuf:
+            if protobuf and value:
                 value = db.model_from_protobuf(entity_pb.EntityProto(value))
+                value = to_dict(value)
             if new_value:
                 if protobuf:
                     messages.append('Not supported')
