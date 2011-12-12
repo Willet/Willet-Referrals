@@ -72,7 +72,19 @@ class SIBTShopify(SIBT, AppShopify):
             'border_width': '1',
             'background_gradient_start': 'fafafa',
             'background_gradient_end': 'fafafa',
-        }
+        }, 'willet_sibt_top_bar': {
+            'background_color': '3B5998',
+        }, 'willet_bottom_tab': {
+            'color': '0000000',
+            'background_color': 'FFFF00',
+            'font_size': '14',
+            'font_family': 'Arial, Helvetica',
+            'box_shadow_color': '727272',
+            'border_radius': '10',
+            'padding': '10'
+                
+        } 
+
     }
 
     def __init__(self, *args, **kwargs):

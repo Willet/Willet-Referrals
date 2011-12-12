@@ -66,7 +66,7 @@
         , chart
         , offset = 0
         , limit = 3
-        , app = '{{ app }}'
+        , apps = []
         , row = 'even'
         , handle_message = function(source, data){
             var el = $(document.createElement('li'));
@@ -90,27 +90,56 @@
             $('#messages').slideDown('fast');
         };
         $(document).ready(function() {
-            $('#go').click(function(e){
-                var action = $('#action').val();
-                var scope = $('#scope').val();
-                var app_or_global = $('#app_or_global').val();
-                $.getJSON('{{ URL }}/bea/'+action+'/'+scope+app_or_global+'/', function(data){
-                    handle_message('bea go', data);
-                }); 
-            });
-            var load_remote_data = function() {
-                {% if app %}
-                var url = '{% url AppAnalyticsRPC app.uuid %}';
-                {% else %}
-                var url = '{% url AnalyticsRPC %}';
-                {% endif %}
+            var update_chart = function() {
+                /*
+                chart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'container',
+                        type: 'spline'
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    title: {
+                        text: 'Actions over time'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                            hour: '%b %e %H', 
+                            day: '%b %e',
+                            month: '%b %e',
+                            year: '%b %e'
+                        },
+                        tickInterval:24 * 3600 * 1000 
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Count'
+                        },
+                        min: 0
+                    },
+                    series: series,
+                });
+                */
+            };
+            var add_app = function(obj) {
+                if (typeof  obj.app === undefined) {
+                    console.error('obj.app may not be undefined', obj);
+                    return -1;
+                }
+                var offset = app.offset || 0;
+                var limit = app.limit || 3;
+                var url = '{{ URL }}/analytics/' + app + '/rpc';
                 $.getJSON(url, {
                         offset: offset,
                         limit: limit
                 }, function(data){
                     console.log(data);
-                    offset += limit;
+                    //offset += limit;
                     //$('#data').empty();
+                    var app_data = $('#' + data.app.uuid + '_data');
+                    var app_dates = $('#' + data.app.uuid + '_dates');
                     for (i = 0; i < data.data.length; i++) {
                         var row = $(document.createElement('tr'));
                         var since = $(document.createElement('tr'));
@@ -131,41 +160,62 @@
                         }
                         row.html(html);
                         since.html(since_html);
-                        $('#data').append(row);
-                        $('#dates').append(since);
+                        app_data.append(row);
+                        app_dates.append(since);
                         row.slideDown('fast');
                         since.slideDown('fast');
                     }
                     $('abbr.timeago').timeago();
-                    chart = new Highcharts.Chart({
-                        chart: {
-                            renderTo: 'container',
-                            type: 'spline'
-                        },
-                        legend: {
-                            enabled: false
-                        },
-                        title: {
-                            text: 'Actions over time'
-                        },
-                        xAxis: {
-                            type: 'datetime',
-                            dateTimeLabelFormats: {
-                                hour: '%b %e %H', 
-                                day: '%b %e',
-                                month: '%b %e',
-                                year: '%b %e'
-                            },
-                            tickInterval:24 * 3600 * 1000 
-                        },
-                        yAxis: {
-                            title: {
-                                text: 'Count'
-                            },
-                            min: 0
-                        },
-                        series: series,
-                    });
+                    // okay we added the data
+                    // now we need to add the series to the chart
+                    // in the format:
+                    // APPUUID_ACTIONNAME
+                });
+            };
+            var load_remote_data = function(obj) {
+                if (typeof  obj.app === undefined) {
+                    console.error('obj.app may not be undefined', obj);
+                    return -1;
+                }
+                var offset = app.offset || 0;
+                var limit = app.limit || 3;
+                var url = '{{ URL }}/analytics/' + app + '/rpc';
+                $.getJSON(url, {
+                        offset: offset,
+                        limit: limit
+                }, function(data){
+                    console.log(data);
+                    //offset += limit;
+                    //$('#data').empty();
+                    var app_data = $('#' + data.app.uuid + '_data');
+                    var app_dates = $('#' + data.app.uuid + '_dates');
+                    for (i = 0; i < data.data.length; i++) {
+                        var row = $(document.createElement('tr'));
+                        var since = $(document.createElement('tr'));
+                        var row_date = data.data[i]['start_day'];
+                        var since_html = '<td><abbr class="timeago" title="'+row_date+'"></abbr></td>'
+                        row.hide();
+                        since.hide();
+                        var html = ''
+                        var count = 0
+                        for (j = 0; j < actions.length; j++) {
+                            count = data.data[i][actions[j]];
+                            if (actions[j] != series[j].name) {
+                                console.log('error: whoops!', actions[j], series[j]);
+                            }
+                            $('#' + actions[j]).data('series-id', j);
+                            series[j].data.push([Date.parse(row_date), count]);
+                            html += '<td class="'+actions[j]+'">'+ count + '</td>';
+                        }
+                        row.html(html);
+                        since.html(since_html);
+                        app_data.append(row);
+                        app_dates.append(since);
+                        row.slideDown('fast');
+                        since.slideDown('fast');
+                    }
+                    $('abbr.timeago').timeago();
+                    update_chart();
                 }); 
             };
             $('#showing_actions input').click(function(e){

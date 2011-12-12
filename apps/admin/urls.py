@@ -29,6 +29,7 @@ urlpatterns = [
     (r'/admin/analytics/generate', GenerateOlderHourPeriods),
     (r'/admin/analytics/compare', AppAnalyticsCompare),
     (r'/admin/analytics/(.*)/', ShowAppAnalytics),
+    (r'/admin/analytics/(.*)/rpc', AppAnalyticsRPC),
     (r'/admin/analytics', ShowAnalytics),
 ]
 
