@@ -25,6 +25,8 @@ from apps.email.models import Email
 
 """
 Analytics Backend!
+Based on:
+    http://code.google.com/appengine/articles/mr/mapper.html
 
 We use the following multi step structure for generating our analytics:
     1. We create an "hour" time slice for EVERY hour for EVERY app
@@ -53,7 +55,7 @@ def ensure_hourly_slices(app):
     """ENSURE we have the HOURLY APP time slices"""
     now = memcache.get('hour')
     if not now: 
-        now = datetime.datetime.now() 
+        now = datetime.datetime.now() # gets the current date and time of now. UTC. bitches. 
         now = now - datetime.timedelta(
                 minutes=now.minute, 
                 seconds=now.second, 
