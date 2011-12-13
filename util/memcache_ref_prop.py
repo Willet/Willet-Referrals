@@ -138,11 +138,16 @@ class MemcacheReferenceProperty(db.Property):
       if resolved is not None:
         return resolved
       else:
-        instance = db.get(reference_id)
-        if instance is None:
-          instance = memcache.get( self.memcache_key )
-          if instance:
-            instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
+        # Check for instance in memcache first
+        instance = memcache.get( self.memcache_key )
+        
+        if instance:
+          # Convert to model from protobuf
+          instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
+        
+        # Check in DB after checking in memcache
+        else:
+          instance = db.get(reference_id)
 
           if instance is None:
             raise ReferencePropertyResolveError(
