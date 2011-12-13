@@ -9,6 +9,8 @@ from mapreduce import control
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 
+from django.utils import simplejson as json
+
 from apps.analytics_backend.models import AppAnalyticsHourSlice
 from apps.analytics_backend.models import AppAnalyticsDaySlice
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice
@@ -19,6 +21,7 @@ from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
 from apps.buttons.shopify.models import *
+from apps.email.models import Email
 
 """
 Analytics Backend!
@@ -247,21 +250,25 @@ class TimeSlices(webapp.RequestHandler):
                     'name': 'Run Hourly Analytics',
                     'func': f_base % 'build_hourly_stats',
                     'entity': e_base % 'AppAnalyticsHourSlice',
+                    'done_callback': '/bea/run/day/', 
                 },
                 'day': {
                     'name': 'Run Daily Analytics',
                     'func': f_base % 'build_daily_stats',
-                    'entity': e_base % 'AppAnalyticsDaySlice'
+                    'entity': e_base % 'AppAnalyticsDaySlice',
+                    'done_callback': '/bea/run/hour_global/', 
                 },
                 'hour_global': {
                     'name': 'Run GLOBAL Hourly Analytics',
                     'func': f_base % 'build_global_hourly_stats',
-                    'entity': e_base % 'GlobalAnalyticsHourSlice'
+                    'entity': e_base % 'GlobalAnalyticsHourSlice',
+                    'done_callback': '/bea/run/day_global/', 
                 },
                 'day_global': {
                     'name': 'Run GLOBAL Daily Analytics',
                     'func': f_base % 'build_global_daily_stats',
-                    'entity': e_base % 'GlobalAnalyticsDaySlice'
+                    'entity': e_base % 'GlobalAnalyticsDaySlice',
+                    'done_callback': '/bea/done/', 
                 },
             }
         }
@@ -292,6 +299,9 @@ class TimeSlices(webapp.RequestHandler):
             reader = 'mapreduce.input_readers.%s' % mr['reader']
         else:
             reader = 'mapreduce.input_readers.DatastoreInputReader'
+        mapreduce_parameters = {}
+        if 'done_callback' in mr:
+            mapreduce_parameters['done_callback'] = mr['done_callback']
         mapreduce_id = control.start_map(
             mr['name'],
             mr['func'],
@@ -299,10 +309,17 @@ class TimeSlices(webapp.RequestHandler):
                 'entity_kind': mr['entity'],
                 'batch_size': 25
             },
+            mapreduce_parameters = mapreduce_parameters,
             shard_count=20
         )
         data = {'success': True, 'mapreduce_id': mapreduce_id}
         self.response.out.write(json.dumps(data))
+
+class AnalyticsDone(webapp.RequestHandler):
+    def get(self):
+        Email.emailBarbara('Finished running analytics')
+        self.response.out.write(json.dumps({'success': True}))
+
 
 #class EnsureGlobalHourlySlices(webapp.RequestHandler):
 #    def get(self):
