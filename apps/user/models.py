@@ -52,7 +52,7 @@ from util.model                     import Model
 class EmailModel(Model):
     created = db.DateTimeProperty(auto_now_add=True)
     address = db.EmailProperty(indexed=True)
-    user    = db.ReferenceProperty( db.Model, collection_name = 'emails' )
+    user    = MemcacheReferenceProperty( db.Model, collection_name = 'emails' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else None 
@@ -1569,8 +1569,8 @@ def get_or_create_user_by_cookie( request_handler, app ):
 # UserIPs Class Definition
 # -----
 class UserIPs(Model):
-    user = db.ReferenceProperty(User, collection_name="user_ips")
-    ips = db.StringListProperty(default=None)
+    user = MemcacheReferenceProperty(User, collection_name="user_ips")
+    ips  = db.StringListProperty(default=None)
     _memcache_bucket_name = '_willet_user_ips_bucket'
 
     def __init__(self, *args, **kwargs):
@@ -1618,8 +1618,8 @@ class Relationship(Model):
     """Model storing inter-user relationships data"""
     uuid      = db.StringProperty( indexed = True )
     created   = db.DateTimeProperty(auto_now_add=True)
-    from_user = db.ReferenceProperty( db.Model, collection_name="from_relationships" )
-    to_user   = db.ReferenceProperty( db.Model, default = None, collection_name="to_relationships" )
+    from_user = MemcacheReferenceProperty( db.Model, collection_name="from_relationships" )
+    to_user   = MemcacheReferenceProperty( db.Model, default = None, collection_name="to_relationships" )
     type      = db.StringProperty( default = 'friend' )
     provider  = db.StringProperty( )
 

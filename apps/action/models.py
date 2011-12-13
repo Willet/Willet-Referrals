@@ -21,6 +21,7 @@ from util.consts             import *
 from util.helpers            import generate_uuid
 from util.model              import Model
 from util.memcache_bucket_config import MemcacheBucketConfig
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
@@ -96,7 +97,7 @@ class Action(Model, polymodel.PolyModel):
     created         = db.DateTimeProperty( auto_now_add=True )
     
     # Person who did the action
-    user            = db.ReferenceProperty( db.Model, collection_name = 'user_actions' )
+    user            = MemcacheReferenceProperty( db.Model, collection_name = 'user_actions' )
     
     # True iff this Action's User is an admin
     is_admin        = db.BooleanProperty( default = False )

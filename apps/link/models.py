@@ -17,6 +17,7 @@ from util.model import Model
 from util.helpers import encode_base62
 from util.helpers import url
 from util.consts import MEMCACHE_TIMEOUT
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARDS = 25
 
@@ -54,7 +55,7 @@ class Link(Model):
     creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
     tweet_id       = db.StringProperty(required=False, default='', indexed=True)
-    user           = db.ReferenceProperty(db.Model, collection_name = 'user_')
+    user           = MemcacheReferenceProperty(db.Model, collection_name = 'user_')
     # the string our client supplied us to identify this user with
     supplied_user_id = db.StringProperty(required=False)
     # keep track of our retweets
@@ -229,7 +230,7 @@ class Tweet(db.Model):
 
     willt_url_code = db.StringProperty(indexed=True, required=True)
     tweet_text = db.StringProperty(indexed=False)
-    user = db.ReferenceProperty(db.Model, collection_name="foo")
+    user = MemcacheReferenceProperty(db.Model, collection_name="foo")
     link = db.ReferenceProperty(db.Model, collection_name="bar")
     creation_time  = db.DateTimeProperty(auto_now_add = True)
 

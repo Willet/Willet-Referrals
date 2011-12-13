@@ -6,18 +6,20 @@ __all__ = [
 ]
 
 import logging
-from google.appengine.api import memcache
-from google.appengine.ext import db
+from google.appengine.api   import memcache
+from google.appengine.ext   import db
 
-from util.model import Model
-from util.helpers import generate_uuid
+from util.model             import Model
+from util.helpers           import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
+
 
 class Testimonial(Model):
     """Model storing the data for a client's sharing client"""
     uuid     = db.StringProperty( indexed = True )
     created  = db.DateTimeProperty(auto_now_add=True)
     message  = db.StringProperty(multiline=True)
-    user     = db.ReferenceProperty(db.Model, collection_name = 'user_testimonials')
+    user     = MemcacheReferenceProperty(db.Model, collection_name = 'user_testimonials')
     client   = db.ReferenceProperty(db.Model, collection_name = 'client_testimonials')
     link     = db.ReferenceProperty(db.Model, collection_name = 'link_testimonials')
     

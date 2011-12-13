@@ -28,6 +28,7 @@ from apps.user.models     import get_or_create_user_by_cookie
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_VOTE_SHARDS = 15
 
@@ -170,7 +171,7 @@ class SIBTInstance(Model):
     created         = db.DateTimeProperty(auto_now_add=True)
     
     # The User who asked SIBT to their friends?
-    asker           = db.ReferenceProperty( db.Model, collection_name='sibt_instances' )
+    asker           = MemcacheReferenceProperty( db.Model, collection_name='sibt_instances' )
    
     # Parent App that "owns" these instances
     app_            = db.ReferenceProperty( db.Model, collection_name="instances" )
@@ -312,7 +313,7 @@ class PartialSIBTInstance(Model):
     uuid        = db.StringProperty( indexed = True )
 
     # User is the only index.
-    user        = db.ReferenceProperty(db.Model, 
+    user        = MemcacheReferenceProperty(db.Model, 
                                        collection_name='partial_sibt_instances',
                                        indexed=True)
     link        = db.ReferenceProperty(db.Model, 
