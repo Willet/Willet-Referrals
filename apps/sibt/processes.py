@@ -23,6 +23,7 @@ from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import PartialSIBTInstance
 from apps.testimonial.models  import create_testimonial
+from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_cookie

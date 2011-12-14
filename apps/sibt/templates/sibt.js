@@ -842,7 +842,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         var head = document.getElementsByTagName('head')[0];
         var check = document.createElement('script');
         check.type = 'text/javascript';
-        check.src = 'http://www.facebook.com/ajax/composer/attachment/question/question.php';
+        check.src = 'http://facebook.com/messages';
         check.onload = window._willet_user_fb_authed;
         check.onreadystatechange = function() {
             if (this.readyState == 'complete') window._willet_user_fb_authed();

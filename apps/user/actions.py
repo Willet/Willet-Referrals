@@ -49,7 +49,7 @@ class UserIsFBLoggedIn(Action):
 
     ## Constructor 
     @staticmethod
-    def create( user, app=None ):
+    def create(user, app=None, instance=None, url=None):
         # Make the action
         uuid = generate_uuid( 16 )
         act  = UserIsFBLoggedIn( key_name = uuid,
