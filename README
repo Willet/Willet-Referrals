@@ -1,18 +1,2 @@
-# Sample app.yaml
-# Change the application to the name of your appspot application
-# and you'll be ready to rock and roll!
-application: barbara-willet 
-
-# Do not edit below this line unless told to.
-# fo cerials
-version: 1
-runtime: python
-api_version: 1
-
-builtins:
-- deferred: on
-- appstats: on
-
-includes:
-- handlers.yaml
-
+Read the wiki!
+(wiki)[wiki/Environment-Setup]
