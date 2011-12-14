@@ -121,7 +121,7 @@ class MemcacheReferenceProperty(db.Property):
     Raises:
       ReferencePropertyResolveError: if the referenced model does not exist.
     """
-    logging.info("FOOOOOO %s %s %s" % (self, model_instance, model_class))
+    #logging.info("FOOOOOO %s %s %s" % (self, model_instance, model_class))
 
     if model_instance is None:
       return self
@@ -161,7 +161,7 @@ class MemcacheReferenceProperty(db.Property):
   def __set__(self, model_instance, value):
     """Set reference."""
 
-    logging.info("SETTTGIN %s %s %s" % (self, model_instance, value))
+    #logging.info("SETTTGIN %s %s %s" % (self, model_instance, value))
 
     if self.memcache_key == None:
         if not isinstance(value, datastore.Key):

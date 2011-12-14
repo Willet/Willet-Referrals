@@ -18,6 +18,8 @@ def main():
     old_len = 0
     new_len = 0
     reload_uris = memcache.get('reload_uris')
+    import_error = False
+
     try:
         combined_uris = memcache.get('combined_uris')
     except:
@@ -43,9 +45,15 @@ def main():
                     raise Exception('url route conflict with %s' % app)
             except Exception, e:
                 logging.error('error importing %s: %s' % (app, e), exc_info=True)
+                import_error = True
+
+        if import_error:
+            reload_uris = True
+        else:
+            reload_uris = False
 
         memcache.set('combined_uris', combined_uris)
-        memcache.set('reload_uris', False)
+        memcache.set('reload_uris', reload_uris)
     else:
         logging.warn('using memcached uris!')
 

@@ -44,6 +44,7 @@ from util.consts                    import MEMCACHE_TIMEOUT
 from util.helpers                   import *
 from util.memcache_bucket_config    import MemcacheBucketConfig
 from util.memcache_bucket_config    import batch_put 
+from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model                     import Model
 
 # ------------------------------------------------------------------------------

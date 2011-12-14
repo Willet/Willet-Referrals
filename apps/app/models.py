@@ -25,6 +25,7 @@ from util.consts          import *
 from util.helpers         import generate_uuid
 from util.helpers         import url 
 from util.model           import Model
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARE_SHARDS = 15
 

@@ -833,4 +833,33 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
         _body.appendChild(el);
     }
+
+    // try detecting if user is logged in to facebook
+    try {
+        window._willet_user_fb_authed = function() {
+            _willet_store_analytics('UserIsFBLoggedIn') 
+        }; 
+        var head = document.getElementsByTagName('head')[0];
+        var check = document.createElement('script');
+        check.type = 'text/javascript';
+        check.src = 'http://www.facebook.com/ajax/composer/attachment/question/question.php';
+        check.onload = window._willet_user_fb_authed;
+        check.onreadystatechange = function() {
+            if (this.readyState == 'complete') window._willet_user_fb_authed();
+        };
+        head.appendChild(check);
+    } catch(e) {
+        var error = e;
+        var message = '';
+        var script = 'sibt.js-fb-auth-check';
+
+        if (e.name && e.message) {
+            error = e.name;
+            message = e.message;
+        }
+        var el = document.createElement('img');
+        var _body = document.getElementsByTagName('body')[0];
+        el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
+        _body.appendChild(el);
+    }
 }(document, window));
