@@ -56,6 +56,11 @@
         $('h3').click(function(){
             $(this).next('div').toggle('blind');
         });
+        $('span.toggle').click(function(){
+            var item = $(this).data('type');
+            $('div.toggle_container').hide();
+            $('div.'+item+'_container').slideDown('fast');
+        });
     });
     </script>
     <style type="text/css">
@@ -86,6 +91,18 @@
         ._willet_button {
             display: block !important;
         }
+        #_willet_bottom_tab {
+            display: inline-block !important;
+            position: relative !important;
+        }
+        span.toggle {
+            border-bottom: 1px dotted #006280;
+            cursor: pointer;
+        }
+        span.toggle:hover {
+            border-bottom: 1px solid #006280;
+            color: orange;
+        }
         {{ css }}
     </style>
 {% endblock head %}
@@ -97,121 +114,190 @@
 {% endblock right_head %}
 
 {% block content %}
-        <h2 class="span-24 last lower-100 center">Edit your button style</h2>
+    <h2 class="span-24 last lower-100 center">
+        Edit your: <span class="toggle" data-type="button">button</span> or 
+        <span class="toggle" data-type="tab">bottom tab</span>
+    </h1>
         <form method="POST" action="?">
-            <div class="span-12 ">
-                <h3>Button - Normal</h3>
-                <div class="span-12 center">
-                    <div class="span-12 white grid">
-                        <div class="span-6"><h4>Button Width</strong></div>
-                        <div class="span-6 last">
-                            <input readonly="readonly" value='{{ willet_button.width }}' name='willet_button:width' type="text" class="slider" data-max='500' />
-                        </div>
-                    </div>
-                    <div class="span-12 white grid">
-                        <div class="span-6"><h4>Text Color</h4></div>
-                        <div class="span-6 last">
-                            <input value="{{ willet_button.color }}" name='willet_button:color' type="text" class="make_colorpicker" data-default="" />
-                        </div>
-                    </div>
-
-                    <div class="span-12 grid">
-                        <div class="span-6"><h4>Text Size</strong></div>
-                        <div class="span-6 last">
-                            <input readonly="readonly" value='{{ willet_button.text_size }}' name='willet_button:text_size' id='willet_button_text_size' type="text" class="slider" />
-                        </div>
-                    </div>
-
-                    <div class="span-12 white grid">
-                        <div class="span-6"><h4>Text Font</strong></div>
-                        <div class="span-6 last">
-                            <select name='willet_button:font-family'>
-                                {% for ff in ff_options %}
-                                    {% ifequal willet_button.font_family ff %}
-                                        <option value="{{ ff }}" selected="selected">{{ ff }}</option>
-                                    {% else %}
-                                        <option value="{{ ff }}">{{ ff }}</option>
-                                    {% endifequal %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="span-12 grid">
-                        <div class="span-6"><h4>Border Color</strong></div>
-                        <div class="span-6 last">
-                            <input value="{{ willet_button.border_color }}" name='willet_button:border_color' id='willet_button_border_colour' type="text" class="make_colorpicker" data-default="" />
-                        </div>
-                    </div>
-                    
-                    <div class="span-12 white grid">
-                        <div class="span-6"><h4>Border Size</strong></div>
-                        <div class="span-6 last">
-                            <input readonly="readonly" value='{{ willet_button.border_width }}' name='willet_button:border_width' id='willet_button_border_size' type="text" class="slider" />
-                        </div>
-                    </div>
-
-                    <div class="span-12 grid">
-                        <div class="span-6"><h4>Background Gradient Start</strong></div>
-                        <div class="span-6 last">
-                            <input value="{{ willet_button.background_gradient_start }}" name='willet_button:background_gradient_start' id='willet_button_background_gradient_start' type="text" class="make_colorpicker" data-default="" />
-                        </div>
-                    </div>
-
-                    <div class="span-12 white grid">
-                        <div class="span-6"><h4>Background Gradient End</strong></div>
-                        <div class="span-6 last">
-                            <input value="{{ willet_button.background_gradient_end }}" name='willet_button:background_gradient_end' id='willet_button_background_gradient_end' type="text" class="make_colorpicker" data-default="" />
-                        </div>
-                    </div>
-                </div>
-
-                <h3 class="clear">Button - Hover</h3>
-                <div class="span-12">
+            <div class="span-24 button_container toggle_container">
+                <div class="span-12 ">
+                    <h3>Button - Normal</h3>
                     <div class="span-12 center">
-                        <div class="span-12 grid">
+                        <div class="span-12 white grid">
+                            <div class="span-6"><h4>Button Width</strong></div>
+                            <div class="span-6 last">
+                                <input readonly="readonly" value='{{ willet_button.width }}' name='willet_button:width' type="text" class="slider" data-max='500' />
+                            </div>
+                        </div>
+                        <div class="span-12 white grid">
                             <div class="span-6"><h4>Text Color</h4></div>
                             <div class="span-6 last">
-                                <input value="{{ willet_button__hover.color }}" name='willet_button__hover:color' type="text" class="make_colorpicker" data-default="" />
+                                <input value="{{ willet_button.color }}" name='willet_button:color' type="text" class="make_colorpicker" data-default="" />
+                            </div>
+                        </div>
+
+                        <div class="span-12 grid">
+                            <div class="span-6"><h4>Text Size</strong></div>
+                            <div class="span-6 last">
+                                <input readonly="readonly" value='{{ willet_button.text_size }}' name='willet_button:text_size' id='willet_button_text_size' type="text" class="slider" />
                             </div>
                         </div>
 
                         <div class="span-12 white grid">
-                            <div class="span-6"><h4>Border Color</strong></div>
+                            <div class="span-6"><h4>Text Font</strong></div>
                             <div class="span-6 last">
-                                <input value="{{ willet_button__hover.border_color }}" name='willet_button__hover:border_color' type="text" class="make_colorpicker" data-default="" />
+                                <select name='willet_button:font-family'>
+                                    {% for ff in ff_options %}
+                                        {% ifequal willet_button.font_family ff %}
+                                            <option value="{{ ff }}" selected="selected">{{ ff }}</option>
+                                        {% else %}
+                                            <option value="{{ ff }}">{{ ff }}</option>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
                         
                         <div class="span-12 grid">
-                            <div class="span-6"><h4>Border Size</strong></div>
+                            <div class="span-6"><h4>Border Color</strong></div>
                             <div class="span-6 last">
-                                <input readonly="readonly" value='{{ willet_button__hover.border_width }}' name='willet_button__hover:border_width' type="text" class="slider" />
+                                <input value="{{ willet_button.border_color }}" name='willet_button:border_color' id='willet_button_border_colour' type="text" class="make_colorpicker" data-default="" />
                             </div>
                         </div>
-
+                        
                         <div class="span-12 white grid">
-                            <div class="span-6"><h4>Background Gradient Start</strong></div>
+                            <div class="span-6"><h4>Border Size</strong></div>
                             <div class="span-6 last">
-                                <input value="{{ willet_button__hover.background_gradient_start }}" name='willet_button__hover:background_gradient_start' type="text" class="make_colorpicker" data-default="" />
+                                <input readonly="readonly" value='{{ willet_button.border_width }}' name='willet_button:border_width' id='willet_button_border_size' type="text" class="slider" />
                             </div>
                         </div>
 
                         <div class="span-12 grid">
+                            <div class="span-6"><h4>Background Gradient Start</strong></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_button.background_gradient_start }}" name='willet_button:background_gradient_start' id='willet_button_background_gradient_start' type="text" class="make_colorpicker" data-default="" />
+                            </div>
+                        </div>
+
+                        <div class="span-12 white grid">
                             <div class="span-6"><h4>Background Gradient End</strong></div>
                             <div class="span-6 last">
-                                <input value="{{ willet_button__hover.background_gradient_end }}" name='willet_button__hover:background_gradient_end' type="text" class="make_colorpicker" data-default="" />
+                                <input value="{{ willet_button.background_gradient_end }}" name='willet_button:background_gradient_end' id='willet_button_background_gradient_end' type="text" class="make_colorpicker" data-default="" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="clear">Button - Hover</h3>
+                    <div class="span-12">
+                        <div class="span-12 center">
+                            <div class="span-12 grid">
+                                <div class="span-6"><h4>Text Color</h4></div>
+                                <div class="span-6 last">
+                                    <input value="{{ willet_button__hover.color }}" name='willet_button__hover:color' type="text" class="make_colorpicker" data-default="" />
+                                </div>
+                            </div>
+
+                            <div class="span-12 white grid">
+                                <div class="span-6"><h4>Border Color</strong></div>
+                                <div class="span-6 last">
+                                    <input value="{{ willet_button__hover.border_color }}" name='willet_button__hover:border_color' type="text" class="make_colorpicker" data-default="" />
+                                </div>
+                            </div>
+                            
+                            <div class="span-12 grid">
+                                <div class="span-6"><h4>Border Size</strong></div>
+                                <div class="span-6 last">
+                                    <input readonly="readonly" value='{{ willet_button__hover.border_width }}' name='willet_button__hover:border_width' type="text" class="slider" />
+                                </div>
+                            </div>
+
+                            <div class="span-12 white grid">
+                                <div class="span-6"><h4>Background Gradient Start</strong></div>
+                                <div class="span-6 last">
+                                    <input value="{{ willet_button__hover.background_gradient_start }}" name='willet_button__hover:background_gradient_start' type="text" class="make_colorpicker" data-default="" />
+                                </div>
+                            </div>
+
+                            <div class="span-12 grid">
+                                <div class="span-6"><h4>Background Gradient End</strong></div>
+                                <div class="span-6 last">
+                                    <input value="{{ willet_button__hover.background_gradient_end }}" name='willet_button__hover:background_gradient_end' type="text" class="make_colorpicker" data-default="" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="span-12 last">
+                    <h3>Your button style:</h3>
+                    <a id="button" class="_willet_button">Unsure? Ask your friends!</a> 
+                    <p>
+                        Click save to see your changes.
+                    </p>
+                </div>
             </div>
-            <div class="span-12 last">
-                <h3>Your button style:</h3>
-                <a id="button" class="_willet_button">Unsure? Ask your friends!</a> 
-                <p>
-                    Click save to see your changes.
-                </p>
+            <div class="span-24 tab_container toggle_container hidden">
+                <div class="span-12">
+                    <h3>Bottom Tab</h3>
+                    <div class="span-12 center">
+                        <div class="span-12 grid">
+                            <div class="span-6"><h4>Text Color</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.color }}" name="willet_bottom_tab:color" type="text" class="make_colorpicker" />
+                            </div>
+                        </div>
+                        <div class="span-12 white grid">
+                            <div class="span-6"><h4>Text Size</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.font_size }}" name="willet_bottom_tab:font_size" type="text" class="slider" readonly="readonly" />
+                            </div>
+                        </div>
+                        <div class="span-12 grid">
+                            <div class="span-6"><h4>Font Family</h4></div>
+                            <div class="span-6 last">
+                                <select name='willet_bottom_tab:font_family'>
+                                    {% for ff in ff_options %}
+                                        {% ifequal willet_bottom_tab.font_family ff %}
+                                            <option value="{{ ff }}" selected="selected">{{ ff }}</option>
+                                        {% else %}
+                                            <option value="{{ ff }}">{{ ff }}</option>
+                                        {% endifequal %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="span-12 white grid">
+                            <div class="span-6"><h4>Background Color</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.background_color }}" name="willet_bottom_tab:background_color" type="text" class="make_colorpicker" />
+                            </div>
+                        </div>
+                        <div class="span-12 grid">
+                            <div class="span-6"><h4>Shadow Color</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.box_shadow_color }}" name="willet_bottom_tab:box_shadow_color" type="text" class="make_colorpicker" />
+                            </div>
+                        </div>
+                        <div class="span-12 white grid">
+                            <div class="span-6"><h4>Top Border Radius</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.border_radius }}" name="willet_bottom_tab:border_radius" type="text" class="slider" readonly="readonly" />
+                            </div>
+                        </div>
+                        <div class="span-12 grid">
+                            <div class="span-6"><h4>Padding</h4></div>
+                            <div class="span-6 last">
+                                <input value="{{ willet_bottom_tab.padding }}" name="willet_bottom_tab:padding" type="text" class="slider" readonly="readonly" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="span-12 last">
+                    <h3>Your bottom tab style:</h3>
+                    <div id="_willet_bottom_tab">Click here for Advice!</div>
+                    <p>
+                        Click <em>Save</em> to see your changes.
+                    </p> 
+                </div>
             </div>
 
             <div class="span-2 prepend-10 append-10 last">

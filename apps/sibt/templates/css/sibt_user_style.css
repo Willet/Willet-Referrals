@@ -131,7 +131,8 @@
     top:0;
     left:0;
 }
-    #_willet_sibt_bar ._willet_wrapper, #_willet_sibt_ask_bar ._willet_wrapper {
+    #_willet_sibt_bar ._willet_wrapper, 
+    #_willet_sibt_ask_bar ._willet_wrapper {
         margin-top: 4px;
         margin-bottom: 5px;
         margin-right: auto;
@@ -141,15 +142,18 @@
         text-align: center; 
         width: 75%;
     }
-    #_willet_sibt_bar div.last, #_willet_sibt_ask_bar div.last {
+    #_willet_sibt_bar div.last, 
+    #_willet_sibt_ask_bar div.last {
         margin-right: 0px;
     }
-    #_willet_sibt_bar div, #_willet_sibt_ask_bar div{
+    #_willet_sibt_bar div, 
+    #_willet_sibt_ask_bar div{
         display: inline-block;
         float: left;
     }
 
-    #_willet_sibt_bar div._button, #_willet_sibt_ask_bar div._button {
+    #_willet_sibt_bar div._button, 
+    #_willet_sibt_ask_bar div._button {
         line-height: 40px;
         
         cursor: pointer;
@@ -187,14 +191,17 @@
         -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
         -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
     }
-    #_willet_sibt_bar div._button:hover, #_willet_sibt_ask_bar div._button:hover {
+    #_willet_sibt_bar div._button:hover, 
+    #_willet_sibt_ask_bar div._button:hover {
         background-color: #4B67A1;
     }
-        #_willet_sibt_bar div._willet_button span, #_willet_sibt_ask_bar div._willet_button span {
+        #_willet_sibt_bar div._willet_button span, 
+        #_willet_sibt_ask_bar div._willet_button span {
             line-height: inherit; 
             font-size: 15px;
         }
-            #_willet_sibt_bar div._willet_button span img, #_willet_sibt_ask_bar div._willet_button span img {
+            #_willet_sibt_bar div._willet_button span img, 
+            #_willet_sibt_ask_bar div._willet_button span img {
                 position: relative;
                 top: 2px;
             }
@@ -230,7 +237,8 @@
             line-height: 17px;
             font-size: 12px;
         }
-    #_willet_sibt_bar div.message, #_willet_sibt_ask_bar div.message {
+    #_willet_sibt_bar div.message, 
+    #_willet_sibt_ask_bar div.message {
         display: inline-block;
         float: left;
         text-shadow: 0px 0px 1px black;
@@ -342,3 +350,33 @@
         font-size: 16px !important;
         margin-left: 20px; 
     }
+
+#_willet_bottom_tab {
+    position: fixed;
+    bottom: 0px;
+    right: 10px;
+    z-index: 50000;
+
+    color: #{{ willet_bottom_tab.color }};
+    background-color: #{{ willet_bottom_tab.background_color }};
+
+    font-size: {{ willet_bottom_tab.font_size }}px;
+    font-family: {{ willet_bottom_tab.font_family }};
+    font-weight: bold;
+    text-align: center;
+
+    box-shadow: 0px 0px 7px #{{ willet_bottom_tab.box_shadow_color }};
+    -moz-box-shadow: 0px 0px 7px #{{ willet_bottom_tab.box_shadow_color }};
+    -webkit-box-shadow: 0px 0px 7px #{{ willet_bottom_tab.box_shadow_color }};
+
+    -moz-border-radius-topleft: {{ willet_bottom_tab.border_radius }}px;
+    -moz-border-radius-topright: {{ willet_bottom_tab.border_radius }}px;
+    -moz-border-radius-bottomright: 0px;
+    -moz-border-radius-bottomleft: 0px;
+    -webkit-border-radius: {{ willet_bottom_tab.border_radius }}px {{ willet_bottom_tab.border_radius }}px 0px 0px;
+    border-radius: {{ willet_bottom_tab.border_radius }}px {{ willet_bottom_tab.border_radius }}px 0px 0px;
+
+    padding: {{ willet_bottom_tab.padding }}px;
+    cursor: pointer;
+    display: none;
+}

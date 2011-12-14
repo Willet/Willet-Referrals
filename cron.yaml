@@ -43,20 +43,12 @@ cron:
 #  schedule: every 5 minutes
 
 # ######################
-# Backend Analytics entity creating!
+# RUN ANALYTICS
 # ######################
 
-#- description: Generate analytics per app per hour
-#  url: /bea/run/hour/
-#  schedule: every 1 hours 
-
-#- description: GLOBAL analytics per hour
-#  url: /bea/run/hour_global/
-#  schedule: every 1 hours 
-
-#- description: GLOBAL analytics per day
-#  url: /bea/run/day_global/
-#  schedule: every 12 hours 
+- description: Generate analytics per app per hour
+  url: /bea/run/hour/
+  schedule: every day 07:00
 
 # ######################
 # ENSURE WE HAVE OBJECTS

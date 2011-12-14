@@ -9,6 +9,8 @@ from mapreduce import control
 from google.appengine.ext import webapp
 from google.appengine.ext import db
 
+from django.utils import simplejson as json
+
 from apps.analytics_backend.models import AppAnalyticsHourSlice
 from apps.analytics_backend.models import AppAnalyticsDaySlice
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice
@@ -19,36 +21,65 @@ from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
 from apps.buttons.shopify.models import *
+from apps.email.models import Email
 
-#####
-# These classes are CRON jobs that initiate the objects need for map reduce
-#####
+"""
+Analytics Backend!
+Based on:
+    http://code.google.com/appengine/articles/mr/mapper.html
+
+We use the following multi step structure for generating our analytics:
+    1. We create an "hour" time slice for EVERY hour for EVERY app
+        This is called our "ENSURE" step.
+        You'll notice that ensure_hourly_slices iterates over the App model.
+        We run ENSURE for every hour/app, and for every hour "globally".
+        The global hour is the sum of the individual app hours.
+    2. We create a "day" time slice for every day for every app
+        This is the second "ENSURE" step
+        We run ensure for every day/app and for every day "globally"
+    3. Now we are ready to do the real "counting". This is called the "RUN"
+        step, but the methods are titled build_TIMESLICE_SCOPE where
+        TIMESLICE is either hourly or daily, and SCOPE is either app or global.
+        We run stats for the APP first hour/day, and then global.
+        The global stats use the app hour stats and then build upon themselves
+        from there.
+Notes:
+    - if, in the future, traffic grows significantly, the easiest way to make
+        this analytics structure scale is to add smaller time slices as the
+        basic unit. For example, instead of counting all actions for an hour
+        slice, we instead count for every 10 minute slice.
+    - we can easily add weekly/monthly/yearly stats as required
+"""
 
 def ensure_hourly_slices(app):
-    """Makes sure the hourly app slices are there"""
+    """ENSURE we have the HOURLY APP time slices"""
     now = memcache.get('hour')
     if not now: 
-        now = datetime.datetime.now() 
+        now = datetime.datetime.now() # gets the current date and time of now. UTC. bitches. 
         now = now - datetime.timedelta(
                 minutes=now.minute, 
                 seconds=now.second, 
                 microseconds=now.microsecond)
     else:
         now = datetime.datetime.combine(now, datetime.time())
-    logging.warn('using now %s' % now)
+    logging.debug('using now %s' % now)
 
     hours = range(24)
     put_list = []
     for hour in hours:
         val = now - datetime.timedelta(hours=hour)
         ahs, created = AppAnalyticsHourSlice.get_or_create(app_=app, start=val, 
-                put=False)
-        if created:
-            logging.warn('created hour slice: %s' % ahs)
-            yield op.db.Put(ahs)     
+                put=True)
+        # Commented out the yield put because we were having issues with
+        # the combined put being too large
+        #if created:
+        #    logging.debug('created hour slice: %s' % ahs)
+        #yield op.db.Put(ahs)     
 
 def build_hourly_stats(time_slice):
-    """this is our mapper"""
+    """RUN the HOURLY APP Stats
+    This is the real 'meat' that performs a count() for all actions of a 
+    specific class within this time_slice"""
     start = time_slice.start
     end = time_slice.end
     app_ = time_slice.app_
@@ -62,7 +93,8 @@ def build_hourly_stats(time_slice):
     yield op.db.Put(time_slice)
 
 def count_action(app_, action, start, end):
-    """Returns an Integer count for this action in the time period
+    """This is a helper method for build_hourly_stats
+    Returns an Integer count for this action in the time period
     Note that with limit=None in the count() this operation will try to count
     all actions, but if it fails, it will time out."""
     return Action.all()\
@@ -70,10 +102,11 @@ def count_action(app_, action, start, end):
         .filter('class =', action)\
         .filter('created >=', start)\
         .filter('created <=', end)\
+        .filter('is_admin =', False)\
         .count(limit=None)
 
 def ensure_daily_slices(app):
-    """Makes sure the daily app slices are there"""
+    """ENSURE the DAILY APP slices are present"""
     today = memcache.get('day')
     if not today:
         today = datetime.date.today()
@@ -84,18 +117,17 @@ def ensure_daily_slices(app):
     for day in days:
         val = today - datetime.timedelta(days=day)
         ahs, created = AppAnalyticsDaySlice.get_or_create(app_=app, start=val, 
-                put=False)
-        if created:
-            yield op.db.Put(ahs)      
+                put=True)
+        # Again, commented out the yield put for now due to errors putting
+        #if created:
+        #    logging.debug('created day slice: %s' % ahs)
+        #yield op.db.Put(ahs)      
 
 def build_daily_stats(time_slice):
-    """this is our mapper"""
+    """BUILD the DAILY APP specific stats"""
     start = time_slice.start
     end = time_slice.end
     app_ = time_slice.app_
-
-    #for action in actions_to_count:
-    #    time_slice.default(action)
 
     # app engine is a fucking whore.
     hour_slices = AppAnalyticsHourSlice.all()\
@@ -104,12 +136,14 @@ def build_daily_stats(time_slice):
             .filter('start <', end)
 
     action_first_run = []
-    logging.warn('getting day stats for day: %s\nslices: %d' % (
+    logging.debug('getting day stats for day: %s\nslices: %d' % (
         start, hour_slices.count()))
 
     for hour_slice in hour_slices:
         for action in actions_to_count:
             if action not in action_first_run:
+                # because we want this to be idempotent, we default the stats
+                # to zero each time we run
                 time_slice.default(action)
                 action_first_run.append(action)
             hour_value = hour_slice.get_attr(action)
@@ -118,11 +152,9 @@ def build_daily_stats(time_slice):
     yield op.db.Put(time_slice)
 
 def build_global_hourly_stats(global_slice):
+    """BUILD the HOURLY GLOBAL stats"""
     start = global_slice.start
     end = global_slice.end
-
-    #for action in actions_to_count:
-    #    global_slice.default(action)
 
     hour_slices = AppAnalyticsHourSlice.all()\
             .filter('start >=', start)\
@@ -134,20 +166,19 @@ def build_global_hourly_stats(global_slice):
     for hour_slice in hour_slices:
         for action in actions_to_count:
             if action not in action_first_run:
+                # defaults and for idempotent
                 global_slice.default(action)
                 action_first_run.append(action)
-            logging.warn('incrementing %s from %d to %d' % (
+            logging.debug('incrementing %s from %d to %d' % (
                 action, global_slice.get_attr(action), 
                 hour_slice.get_attr(action)))
             global_slice.increment(action, hour_slice.get_attr(action))
     yield op.db.Put(global_slice)
 
 def build_global_daily_stats(global_slice):
+    """BUILD the DAILY GLOBAL stats"""
     start = global_slice.start
     end = global_slice.end
-
-    #for action in actions_to_count:
-    #    global_slice.default(action)
 
     hour_slices = GlobalAnalyticsHourSlice.all()\
             .filter('start >=', start)\
@@ -164,6 +195,20 @@ def build_global_daily_stats(global_slice):
 
 class TimeSlices(webapp.RequestHandler):
     def get(self, action, scope):
+        """Handler to run our analytics methods. Because there is a lot of
+        duplicated code, we use this convoluted options dict.
+        We break the dict up by actions and scope.
+        Actions are: ensure, run (synonymous with build)
+        Scopes are: hour, day, hour_global, day_global
+        
+        Some of the ENSURE jobs are mapreduce jobs, while the global jobs
+        are just simple db.puts.
+
+        Someone may hate how this is setup in the future, but I felt having
+        one handler method was better than having 8 very similar methods with
+        duplicated code all over the place. This has allowed me to make rapid
+        changes as I've been designing the analytics backend."""
+
         e_base = 'apps.analytics_backend.models.%s'
         f_base = 'apps.analytics_backend.processes.%s'
         options = {
@@ -172,14 +217,16 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.app.models.App'
+                        'entity': 'apps.app.models.App',
+                        'reader': 'DatastoreKeyInputReader'
                     } 
                 },
                 'day': {
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.app.models.App'
+                        'entity': 'apps.app.models.App',
+                        'reader': 'DatastoreKeyInputReader'
                     }
                 },
                 'hour_global': {
@@ -204,22 +251,26 @@ class TimeSlices(webapp.RequestHandler):
                 'hour': {
                     'name': 'Run Hourly Analytics',
                     'func': f_base % 'build_hourly_stats',
-                    'entity': e_base % 'AppAnalyticsHourSlice'
+                    'entity': e_base % 'AppAnalyticsHourSlice',
+                    'done_callback': '/bea/run/day/', 
                 },
                 'day': {
                     'name': 'Run Daily Analytics',
                     'func': f_base % 'build_daily_stats',
-                    'entity': e_base % 'AppAnalyticsDaySlice'
+                    'entity': e_base % 'AppAnalyticsDaySlice',
+                    'done_callback': '/bea/run/hour_global/', 
                 },
                 'hour_global': {
                     'name': 'Run GLOBAL Hourly Analytics',
                     'func': f_base % 'build_global_hourly_stats',
-                    'entity': e_base % 'GlobalAnalyticsHourSlice'
+                    'entity': e_base % 'GlobalAnalyticsHourSlice',
+                    'done_callback': '/bea/run/day_global/', 
                 },
                 'day_global': {
                     'name': 'Run GLOBAL Daily Analytics',
                     'func': f_base % 'build_global_daily_stats',
-                    'entity': e_base % 'GlobalAnalyticsDaySlice'
+                    'entity': e_base % 'GlobalAnalyticsDaySlice',
+                    'done_callback': '/bea/done/', 
                 },
             }
         }
@@ -246,17 +297,31 @@ class TimeSlices(webapp.RequestHandler):
                 mr = oas['mr']
         else:
             mr = options[action][scope]
+        if 'reader' in mr:
+            reader = 'mapreduce.input_readers.%s' % mr['reader']
+        else:
+            reader = 'mapreduce.input_readers.DatastoreInputReader'
+        mapreduce_parameters = {}
+        if 'done_callback' in mr:
+            mapreduce_parameters['done_callback'] = mr['done_callback']
         mapreduce_id = control.start_map(
             mr['name'],
             mr['func'],
-            'mapreduce.input_readers.DatastoreInputReader', {
+            reader, {
                 'entity_kind': mr['entity'],
                 'batch_size': 25
             },
+            mapreduce_parameters = mapreduce_parameters,
             shard_count=20
         )
-        data = {'success': True, 'mesage': "started mr: %s" % mapreduce_id}
+        data = {'success': True, 'mapreduce_id': mapreduce_id}
         self.response.out.write(json.dumps(data))
+
+class AnalyticsDone(webapp.RequestHandler):
+    def get(self):
+        Email.emailBarbara('Finished running analytics')
+        self.response.out.write(json.dumps({'success': True}))
+
 
 #class EnsureGlobalHourlySlices(webapp.RequestHandler):
 #    def get(self):

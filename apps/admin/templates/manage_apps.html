@@ -10,7 +10,7 @@
         {% endfor %}
         {% for app in apps %}
             <div class="span-9">
-                {{ app.client_name }} 
+                <a href="{{ URL }}/admin/analytics/{{ app.uuid }}/">{{ app.client_name }}</a> 
             </div>
             <div class="span-6">
                 {{ app.class_name }}

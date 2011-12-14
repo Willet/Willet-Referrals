@@ -923,8 +923,9 @@ class MemcacheConsole(URIHandler):
         if key:
             logging.info('looking up key: %s' % key)
             value = memcache.get(key)
-            if protobuf:
+            if protobuf and value:
                 value = db.model_from_protobuf(entity_pb.EntityProto(value))
+                value = to_dict(value)
             if new_value:
                 if protobuf:
                     messages.append('Not supported')
@@ -1054,6 +1055,17 @@ class AppAnalyticsRPC(URIHandler):
         }
 
         self.response.out.write(json.dumps(response))
+
+class AppAnalyticsCompare(URIHandler):
+    @admin_required
+    def get(self, admin):
+        template_values = {
+            'actions': actions_to_count,
+            'app': ''
+            }
+        self.response.out.write(
+            self.render_page('analytics.html', template_values)
+        )
 
 class GenerateOlderHourPeriods(URIHandler):
     def get(self):
