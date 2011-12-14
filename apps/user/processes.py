@@ -82,7 +82,7 @@ class FetchFacebookData(webapp.RequestHandler):
             create_email_model( result_user, email )
 
             delattr( result_user, 'fb_email' )
-            result_user.put()
+            result_user.put_later()
             
         logging.info("done updating")
 
@@ -167,7 +167,7 @@ class QueryKloutAPI( URIHandler ):
                     except:
                         pass
 
-                    user.put()
+                    user.put_later()
 
         # Now grab topics
         logging.info("Klout: Fetching topics data for %s" % twitter_handle)
@@ -186,7 +186,7 @@ class QueryKloutAPI( URIHandler ):
 
                 for u in users:
                     user.topics = u['topics']
-                    user.put()
+                    user.put_later()
 
 class QueryGoogleSocialGraphAPI( URIHandler ):
     def get( self ):
@@ -266,7 +266,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
 
                 unpacker( value['attributes'], user ) 
 
-            user.put()
+            user.put_later()
 
 class UpdateTwitterGraph(webapp.RequestHandler):
     """Updates the twitter graph with a user's latest information after

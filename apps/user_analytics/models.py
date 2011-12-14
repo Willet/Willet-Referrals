@@ -21,8 +21,9 @@ from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from util.model         import Model
-from util.helpers         import *
+from util.helpers           import *
+from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.model             import Model
 
 class UserAnalytics(Model):
     """
@@ -33,7 +34,7 @@ class UserAnalytics(Model):
     creation_time = db.DateTimeProperty(auto_now_add = True)
     period_start = db.DateTimeProperty()
     # user this is for
-    user = db.ReferenceProperty(db.Model, collection_name='users_analytics')
+    user = MemcacheReferenceProperty(db.Model, collection_name='users_analytics')
     
     # the app for which these stats are being calcualted
     app_ = db.ReferenceProperty(db.Model, collection_name='app_users_analytics')

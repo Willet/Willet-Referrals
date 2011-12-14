@@ -286,11 +286,6 @@ class DynamicLoader(webapp.RequestHandler):
         if style == '':
             style = 'shopify'
 
-        # Grab a User if we have a cookie!
-        user       = get_or_create_user_by_cookie(self)
-        user_email = user.get_attr('email') if user else ""
-        user_found = True if hasattr(user, 'fb_access_token') else False
-        
         app = None
         client = None
         referrer_link = None
@@ -308,6 +303,11 @@ class DynamicLoader(webapp.RequestHandler):
         
         if client == None:
             client = ClientShopify.get_by_id( rq_vars['store_id'] )
+        
+        # Grab a User if we have a cookie!
+        user       = get_or_create_user_by_cookie(self, app)
+        user_email = user.get_attr('email') if user else ""
+        user_found = True if hasattr(user, 'fb_access_token') else False
         
         # If they give a bogus app id, show the landing page app!
         logging.info(client)

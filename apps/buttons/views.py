@@ -35,7 +35,8 @@ class ButtonsAction(URIHandler):
             user = get_or_create_user_by_facebook(
                 rq_vars['fb_id'],
                 token = rq_vars['fb_token'],
-                request_handler = self
+                request_handler = self,
+                app = None # TODO: FIX THIS.
             )
         elif hasattr(user, 'fb_access_token') and hasattr(user, 'fb_identity'):
             # if the user already exists and has both

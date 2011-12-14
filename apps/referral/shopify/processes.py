@@ -98,7 +98,7 @@ class DoProcessOrder( URIHandler ):
                 referrer = referral_link.user
 
         # Make a User
-        user = get_or_create_user_by_email( email, referrer, self )
+        user = get_or_create_user_by_email( email, self, None )
         user.update(first_name         = first_name,
                     last_name          = last_name,
                     address1           = address1,

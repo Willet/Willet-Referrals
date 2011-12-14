@@ -14,6 +14,7 @@ from google.appengine.ext.db import polymodel
 
 from util.model              import Model, ObjectListProperty
 from util.helpers            import generate_uuid
+from util.memcache_ref_prop  import MemcacheReferenceProperty
 
 # ------------------------------------------------------------------------------
 # Order Class Definition -------------------------------------------------------
@@ -27,7 +28,7 @@ class Order( Model, polymodel.PolyModel ):
     created        = db.DateTimeProperty(auto_now_add=True)
 
     # User who completed this Order (ie. buyer)
-    user           = db.ReferenceProperty( db.Model, default = None, collection_name="purchases" )
+    user           = MemcacheReferenceProperty( db.Model, default = None, collection_name="purchases" )
     
     # Person who is selling the wareZ (ie. seller )
     client         = db.ReferenceProperty( db.Model, collection_name="orders" )

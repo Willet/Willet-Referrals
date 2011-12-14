@@ -18,7 +18,7 @@ from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions
 from apps.client.shopify.models   import ClientShopify
 from apps.email.models    import Email
 from apps.link.models     import Link
-from apps.user.models     import get_or_create_user_by_cookie
+from apps.user.actions    import UserCreate
 
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -86,6 +86,12 @@ def create_shopify_buttons_app(client, app_token):
                           button_selector = "_willet_buttons_app" ) 
     app.put()
 
+    # Client (and corresp. User) is made before App
+    # So, update the UserCreate action after
+    action = UserCreate.get_by_user( client.merchant )
+    action.app_ = app
+    action.put()
+
     app.do_install()
         
     return app
@@ -109,7 +115,10 @@ def get_or_create_buttons_shopify_app( client, token ):
             ) 
             try:
                 app.store_token = token
+                app.client      = app.old_client
+                app.old_client  = None
                 app.put()
+                
                 app.do_install()
             except:
                 logging.error('encountered error with reinstall', exc_info=True)

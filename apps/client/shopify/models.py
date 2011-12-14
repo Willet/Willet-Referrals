@@ -20,13 +20,15 @@ from google.appengine.ext.db import polymodel
 from apps.client.models     import Client
 from apps.link.models       import Link 
 from apps.product.shopify.models import ProductShopify
-from apps.user.models       import User, get_or_create_user_by_email
+from apps.user.models       import User
+from apps.user.models       import get_or_create_user_by_email
 
 from util                   import httplib2
 from util.consts            import *
 from util.helpers           import generate_uuid
 from util.helpers           import url as build_url 
 from util.shopify_helpers   import get_shopify_url
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 # ------------------------------------------------------------------------------
 # ClientShopify Class Definition -----------------------------------------------
@@ -34,7 +36,7 @@ from util.shopify_helpers   import get_shopify_url
 class ClientShopify( Client ):
     
     # User
-    merchant = db.ReferenceProperty(db.Model, collection_name = "shopify_stores")
+    merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
 
     # Store properties
     name    = db.StringProperty( indexed = False )
@@ -64,8 +66,11 @@ class ClientShopify( Client ):
         # Query the Shopify API to learn more about this store
         data = get_store_info( url_, token, app_type )
         
-        # Make the Merchant
-        merchant = get_or_create_user_by_email( email=data['email'], referrer=None, request_handler=request_handler )
+        # Make the Merchant 
+        # Note: App is attached later to the UserCreation action
+        merchant = get_or_create_user_by_email( data['email'], request_handler, None )
+        logging.info( 'MERCHANT UUID %s' % merchant.uuid )
+        logging.info( 'MERCHANT Key %s' % merchant.key() )
 
         # Now, make the store
         uuid  = generate_uuid( 16 )
@@ -94,8 +99,8 @@ class ClientShopify( Client ):
                          country    = data['country'],
                          postal_code= data['zip'],
                          phone      = data['phone'],
-                         email      = data['email'], 
                          client     = store )
+        
         # Query the Shopify API to dl all Products
         taskqueue.add(
                 url = build_url('FetchShopifyProducts'),
