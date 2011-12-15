@@ -48,11 +48,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 
 (function(document, window){
     var _willet_css = {% include stylesheet %}
-    {% ifequal stylesheet "css/facebook_style.css" %}
-        var _willet_app_css = '';
-    {% else %}
-        var _willet_app_css = '{{ app_css }}';
-    {% endifequal %}
+    var _willet_app_css = '{{ app_css }}';
     var _willet_ask_success = false;
     var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
     var _willet_show_votes = ('{{ show_votes }}' == 'True');

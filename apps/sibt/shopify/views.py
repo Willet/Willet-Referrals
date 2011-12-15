@@ -439,11 +439,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                             user = user,
                                             app  = app )
                 
-            stylesheet = ab_test( 'sibt_facebook_style', 
-                                  ['css/facebook_style.css', 'css/colorbox.css'],
-                                  user = user,
-                                  app  = app )
-
             if app.overlay_enabled:
                 overlay_style = ab_test( 'sibt_overlay_style', 
                                          ["_willet_overlay_button", "_willet_overlay_button2"],
@@ -479,7 +474,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             random.seed( datetime.now() )
             
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
-            stylesheet      = 'css/colorbox.css'
             overlay_style   = "_willet_overlay_button"
             AB_top_bar = AB_btm_tab = 1
 
@@ -515,7 +509,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'product_desc'   : product.description if product else "",
           
             'user': user,
-            'stylesheet': stylesheet,
+            'stylesheet': 'css/colorbox.css',
 
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : AB_top_bar,

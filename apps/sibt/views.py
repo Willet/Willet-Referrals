@@ -77,8 +77,6 @@ class AskDynamicLoader(webapp.RequestHandler):
             else:    
                 bingo( 'sibt_button_text6' )
             
-            bingo( 'sibt_facebook_style' )
-        
         ab_share_options = [ 
             "I'm not sure if I should buy this. What do you think?",
             "Would you buy this? I need help making a decision!",
@@ -93,7 +91,6 @@ class AskDynamicLoader(webapp.RequestHandler):
                               app  = app )
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
-
 
         # Now, tell Mixpanel
         if is_topbar_ask:
