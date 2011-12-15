@@ -833,33 +833,49 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
         _body.appendChild(el);
     }
+    
+    /*
+    window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '{{FACEBOOK_APP_ID}}', // App ID
+          status     : true, // check login status
+          cookie     : true, // enable cookies to allow the server to access the session
+          xfbml      : true  // parse XFBML
+        });
 
-    // try detecting if user is logged in to facebook
-    try {
-        window._willet_user_fb_authed = function() {
-            _willet_store_analytics('UserIsFBLoggedIn') 
-        }; 
-        var head = document.getElementsByTagName('head')[0];
-        var check = document.createElement('script');
-        check.type = 'text/javascript';
-        check.src = 'http://facebook.com/messages';
-        check.onload = window._willet_user_fb_authed;
-        check.onreadystatechange = function() {
-            if (this.readyState == 'complete') window._willet_user_fb_authed();
-        };
-        head.appendChild(check);
-    } catch(e) {
-        var error = e;
-        var message = '';
-        var script = 'sibt.js-fb-auth-check';
+        FB.getLoginStatus(function(response) {
+            alert("SD");
+            console.log("ASD");
+            if (response.status === 'connected') {
+                // the user is logged in and connected to your
+                // app, and response.authResponse supplies
+                // the user's ID, a valid access token, a signed
+                // request, and the time the access token 
+                // and signed request each expire
+                var uid = response.authResponse.userID;
+                var accessToken = response.authResponse.accessToken;
+                _willet_store_analytics('asdasd') 
+            } else if (response.status === 'not_authorized') {
+                // the user is logged in to Facebook, 
+                //but not connected to the app
+                _willet_store_analytics('UserIsFBLoggedIn') 
+              } else {
+                // the user isn't even logged in to Facebook.
+                _willet_store_analytics('Use') 
+              }
+        });
+    };
 
-        if (e.name && e.message) {
-            error = e.name;
-            message = e.message;
-        }
-        var el = document.createElement('img');
-        var _body = document.getElementsByTagName('body')[0];
-        el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
-        _body.appendChild(el);
-    }
+    // Load the SDK Asynchronously
+    (function(d){
+        var root = document.createElement( 'div' );
+        root.setAttribute( 'id', 'fb-root' );
+        d.body.appendChild( root );
+        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+        js = d.createElement('script'); js.id = id; js.async = true;
+        js.src = "//connect.facebook.net/en_US/all.js";
+        d.getElementsByTagName('head')[0].appendChild(js);
+    }(document));
+    */
+
 }(document, window));

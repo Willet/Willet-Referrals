@@ -561,7 +561,9 @@ class ShowFBThanks( URIHandler ):
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
     def get( self ):
         email       = ""
+        incentive_enabled = False
         user_cancelled = True
+        app         = None
         post_id     = self.request.get( 'post_id' ) # from FB
         user        = get_user_by_cookie( self )
         partial     = PartialSIBTInstance.get_by_user( user )
@@ -598,7 +600,7 @@ class ShowFBThanks( URIHandler ):
 
         template_values = { 'email'          : user.get_attr( 'email' ),
                             'user_cancelled' : user_cancelled,
-                            'incentive_enabled' : app.incentive_enabled }
+                            'incentive_enabled' : app.incentive_enabled if app else False }
         
         path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
