@@ -187,8 +187,6 @@ b[0]&&b[0].ownerDocument||c);var h=[],i;for(var j=0,k;(k=a[j])!=null;j++){typeof
         rm_callback = function(e) {
           if ( ( typeof source_origin === 'string' && e.origin !== source_origin )
             || ( $.isFunction( source_origin ) && source_origin( e.origin ) === FALSE ) ) {
-            alert( source_origin );
-            alert( e.origin );
             return FALSE;
           }
           callback( e );

@@ -511,6 +511,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 return;
             }
         }, 
+        /*
         {
             'name': 'jQuery',
             'url': 'http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js',
@@ -523,6 +524,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 return;
             }
         },
+        */
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/s/js/jquery.colorbox.js?' + 
