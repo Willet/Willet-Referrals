@@ -485,6 +485,33 @@ class SIBTAskIframeCancelled(ShowAction):
         action.put()
         return action
 
+class SIBTOverlayCancelled(ShowAction):
+    """ Cancelled / closed iframe by clicking on the overlay (ie. outside of iframe) """
+    @staticmethod
+    def create(user, **kwargs):
+        what = 'SIBTOverlayCancelled'
+        uuid = generate_uuid(16)
+
+        # make sure we get an instance
+        url = None
+        app = None
+        try:
+            url = kwargs['url']
+            app = kwargs['app']
+        except Exception, e:
+            logging.error('error getting url: %s' % e, exc_info=True)
+        
+        action = SIBTOverlayCancelled(
+                key_name = uuid,
+                uuid = uuid,
+                user = user,
+                url = url,
+                app_ = app,
+                what = what
+        )
+        action.put()
+        return action
+
 class SIBTShowingTopBarAsk(ShowAction):
     @staticmethod
     def create(user, **kwargs):

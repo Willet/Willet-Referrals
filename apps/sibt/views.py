@@ -604,3 +604,16 @@ class ShowFBThanks( URIHandler ):
         self.response.out.write(template.render(path, template_values))
         return
 
+class ColorboxJSServer( URIHandler ):
+    def get( self ):
+        template_values = { 'URL'           : URL,
+                            'app_uuid'      : self.request.get('app_uuid'),
+                            'user_uuid'     : self.request.get('user_uuid'),
+                            'instance_uuid' : self.request.get('instance_uuid'),
+                            'target_url'    : self.request.get('target_url') }
+       
+        path = os.path.join('apps/sibt/templates/js/', 'jquery.colorbox.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+

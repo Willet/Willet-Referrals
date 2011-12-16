@@ -5,6 +5,7 @@ from apps.sibt.processes import *
 
 urlpatterns = [
     # Views
+    (r'/s/js/jquery.colorbox.js',  ColorboxJSServer),
     (r'/s/preask.html',         PreAskDynamicLoader),
     (r'/s/ask.html',            AskDynamicLoader),
     (r'/s/vote.html',           VoteDynamicLoader),

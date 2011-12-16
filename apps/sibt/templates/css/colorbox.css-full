@@ -47,12 +47,19 @@
 
 #willet_cboxOverlay{background: rgba(255,255,255,0.75);}
 #colorbox{
-    z-index:50000000;
+    z-index: 2147483647;
     ^z-index: initial;
 }
     #willet_cboxTopLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 0;}
     #willet_cboxTopCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -50px;}
-    #willet_cboxTopRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px 0;}
+    #willet_cboxTopRight{width:35px; 
+                         height:25px;
+                         background: url({{URL}}/static/imgs/fancy_close.png) no-repeat;
+                         background-position: 0px;
+                         position: relative;
+                         right: 4px;
+                         top: 4px;
+                         cursor: pointer; }
     #willet_cboxBottomLeft{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat 0 -25px;}
     #willet_cboxBottomCenter{height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) repeat-x 0 -75px;}
     #willet_cboxBottomRight{width:25px; height:25px; background:url({{URL}}/static/colorbox/example4/images/border1.png) no-repeat -25px -25px;}

@@ -46,10 +46,10 @@
                 </button>
             </div>
 
+            <!--
             <div id="cancel">
                 <button class="cancel-btn" title="Cancel" onclick="closeIframe('SIBTAskIframeCancelled');" />Cancel</button>
             </div>
-            <!--
             <div class="willet">
                 <p>Powered by</p>
                 <a href="http://www.willetinc.com">
@@ -87,12 +87,13 @@
 
             <div id="btns">
                 <button style="width:50px;" onClick="sendMessages()">Ask</button>
-                <button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>
+                <!--<button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>-->
             </div>
         </div>
     </div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+    <script src="http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js" type="text/javascript"></script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
 
     <script type="text/javascript">
@@ -197,7 +198,7 @@
                         
                         $("#shareText").html( '<p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>' );
                         
-                        $("#btns").html( '<button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button> <button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
+                        $("#btns").html( '<button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button>' );
 
 
                     {% else %}
@@ -227,7 +228,6 @@
         };
         // Done AJAX methods
 
-
         var closeIframe = function( action ) {
             if ( action != "" ){
                 storeAnalytics( action );
@@ -240,10 +240,14 @@
         // Post to parent page that we are hosted in
         var doPostMessage = function(message) {
             var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
-            target.postMessage(
-                message,
-                '*'
-            );
+            if ( message === "close" ) {
+                target.postMessage(
+                    message,
+                    '{{target_url}}'
+                );
+            } else {
+                $.postMessage( message, '{{target_url}}', parent );
+            }
         };
 
         // Open up the FB dialog. Does not do a FB connect with us.
@@ -295,6 +299,8 @@
         var fetchFBFriends = function ( ) {
             $("#splash").hide();
             $("#friendPicker").show();
+
+            doPostMessage( 'SIBTFriendChoosingCancelled' );
 
             FB.api( '/me/friends', function(response) {
                 friends = response.data;

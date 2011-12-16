@@ -511,23 +511,25 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 return;
             }
         }, 
-        /*
         {
             'name': 'jQuery',
-            'url': '{{ URL }}/static/js/jquery.min.js',
+            'url': 'http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js',
             'dom_el': null,
             'loaded': false,
             'test': function() {
-                return (typeof jQuery == 'function');
+                return (typeof jQuery.receiveMessage == 'function');
             }, 'callback': function() {
                 $ = jQuery;
                 return;
             }
         },
-        */
         {
             'name': 'jQuery Colorbox',
-            'url': '{{ URL }}/static/js/jquery.colorbox.js',
+            'url': '{{ URL }}/s/js/jquery.colorbox.js?' + 
+                   'app_uuid={{app.uuid}}&' + 
+                   'user_uuid={{user.uuid}}&' + 
+                   'instance_uuid={{instance.uuid}}&' + 
+                   'target_url=' + window.location.href,
             'dom_el': null,
             'loaded': false,
             'test': function() {
@@ -589,6 +591,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         
         var purchase_cta = $('#_willet_shouldIBuyThisButton');
         if (purchase_cta.length > 0) {
+            
             _willet_store_analytics();
 
             // run our scripts
