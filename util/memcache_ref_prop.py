@@ -126,7 +126,6 @@ class MemcacheReferenceProperty(db.Property):
     if model_instance is None:
       return self
 
-
     if hasattr(model_instance, self.__id_attr_name()):
       reference_id = getattr(model_instance, self.__id_attr_name())
     else:
@@ -139,7 +138,7 @@ class MemcacheReferenceProperty(db.Property):
         return resolved
       else:
         # Check for instance in memcache first
-        instance = memcache.get( self.memcache_key )
+        instance = memcache.get( self.memcache_key ) if self.memcache_key != None else None
         
         if instance:
           # Convert to model from protobuf

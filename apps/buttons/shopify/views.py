@@ -61,35 +61,13 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
         """
         template_values = {}
-        target = get_target_url( self.request.headers.get('REFERER') )
         app    = ButtonsShopify.get(self.request.get('app_uuid'))
         user   = get_or_create_user_by_cookie( self, app )
 
-        # set the stylesheet we are going to use
-        style = self.request.get('style')
-        if style == '':
-            style = 'style'
-
-        # Get the link
-        willt_code = self.request.get('willt_code')
-        logging.info("Willt_code %s" % willt_code )
-        if willt_code != "":
-            link = Link.get_by_code(willt_code)
-            logging.info("Link %s" % (link.target_url ))
-        else:
-            logging.info("Making a link for %s" % target)
-            link = create_link(target, app, self.request.url, user)
-        
         template_values = {
             'app'            : app,
             'domain'         : app.client.domain if hasattr(app.client, 'domain') else app.client.url,
             'URL'            : URL,
-            'willt_code'     : link.willt_url_code,
-            'willt_url'      : link.get_willt_url(),
-            'want_text'      : 'I want this!',
-            'FACEBOOK_APP_ID': BUTTONS_FACEBOOK_APP_ID,
-            'style'          : style,
-            'user_found'     : True if hasattr(user, 'fb_access_token') else False,
         }
         
         # Finally, render the iframe
@@ -98,15 +76,9 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
         
         if input_path.find('.js') != -1:
             # If the 'buttons.js" script is loaded, store a ScriptLoadAction
-            ScriptLoadAction.create( user, app, target )
+            ScriptLoadAction.create( user, app, get_target_url(self.request.headers.get('REFERER')))
 
             self.response.headers['Content-Type'] = 'javascript'
-        else:
-            logging.info("Storing button: %s %s" % (link.willt_url_code, link.target_url))
-            # If the 'Want' button is shown, store a ButtonLoad action
-            ButtonLoadAction.create( user, app, link.target_url )
-
-            self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         
         self.response.out.write(template.render(path, template_values))
         return
