@@ -242,6 +242,8 @@ class SIBTShopify(SIBT, AppShopify):
         # Client (and corresp. User) is made before App
         # So, update the UserCreate action after
         action = UserCreate.get_by_user( client.merchant )
+        if not action:
+            logging.warn ("cannot find user %s" % client.merchant)
         action.app_ = app
         action.put()
         
