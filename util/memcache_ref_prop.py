@@ -141,6 +141,8 @@ class MemcacheReferenceProperty(db.Property):
         # Check for instance in memcache first
         instance = memcache.get( self.memcache_key )
         
+        logging.debug( "Memcache instance is %s" % instance )
+        
         if instance:
           # Convert to model from protobuf
           instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
