@@ -12,10 +12,7 @@ from google.appengine.api   import memcache
 from google.appengine.ext   import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models     import ClickAction
-from apps.action.models     import VoteAction
-from apps.action.models     import ShowAction 
-from apps.action.models     import UserAction 
+from apps.action.models     import ClickAction, VoteAction, ShowAction, UserAction 
 
 from apps.gae_bingo.gae_bingo import bingo
 
@@ -394,6 +391,12 @@ class SIBTInstanceAction(UserAction):
                 self.app_.client.domain
         )
 
+class SIBTUserStartVisit(SIBTInstanceAction):
+    '''action recording when a page visit occurs.'''
+    
+class SIBTUserEndVisit(SIBTInstanceAction):
+    '''action recording when a page visit ends.'''
+        
 class SIBTInstanceCreated(SIBTInstanceAction):
     medium = db.StringProperty( default="", indexed=True )
 

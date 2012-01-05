@@ -175,7 +175,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
         app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
         user          = User.get(self.request.get('user_uuid'))
         user_found    = 1 if hasattr(user, 'fb_access_token') else 0
-        user_is_admin = user.is_admin()
+        user_is_admin = user.is_admin() if isinstance( user , User) else False
         target        = self.request.get( 'url' )
         
         # Store 'Show' action
@@ -579,16 +579,12 @@ class ShowFBThanks( URIHandler ):
 
             # Make the Instance!
             if hasattr( product, 'images' ) and len( product.images ) >= 0:
-                wtf_image = product.images[0]
-                if wtf_image is None or wtf_image = '':
-                    wtf_image = 'http://i.imgur.com/slbyP.jpg'
-                instance = app.create_instance(user, None, link, wtf_image,
-                                               motivation=None, dialog="NoConnectFB")
-            else:
-                #blank pixel dummy
-                instance = app.create_instance(user, None, link, 'http://i.imgur.com/slbyP.jpg',
-                                               motivation=None, dialog="NoConnectFB")
-    
+                product_image = product.images[0]
+                if product_image is None or product_image == '':
+                    product_image = 'http://i.imgur.com/slbyP.jpg'    
+            #blank pixel dummy
+            instance = app.create_instance(user, None, link, product_image,
+                                           motivation=None, dialog="NoConnectFB")
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)

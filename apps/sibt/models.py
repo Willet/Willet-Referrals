@@ -310,6 +310,7 @@ class VoteCounter(db.Model):
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
+    #TODO: explain the difference between PartialSIBTInstance and SIBTInstance
     uuid        = db.StringProperty( indexed = True )
 
     # User is the only index.

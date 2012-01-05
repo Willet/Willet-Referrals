@@ -96,6 +96,10 @@ class Action(Model, polymodel.PolyModel):
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )
     
+    # Time when this action got started
+    start_time      = datetime.datetime.now()
+    logging.debug( 'start_time captured: %s' % start_time )
+    
     # Person who did the action
     user            = MemcacheReferenceProperty( db.Model, collection_name = 'user_actions' )
     
