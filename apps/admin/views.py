@@ -1095,3 +1095,35 @@ class GenerateOlderHourPeriods(URIHandler):
 
         self.response.out.write(json.dumps({'success':True}))
 
+class PersistActions (URIHandler):
+    # experimenting
+    def get (self):
+        logging.info ('Beginning PersistActions')
+        from apps.action.models import *
+        ''' mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        bucket = mbc.get_random_bucket()
+        logging.info ( bucket )        
+        list_identities = memcache.get(bucket) or []
+        logging.info ( list_identities )
+        for i in memcache.keys():
+            persist_actions (i, memcache.get(i))
+            persist_actions ('_willet_actions_bucket:%d' % i, memcache.get(i))
+        logging.info ('Finishing PersistActions') '''
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

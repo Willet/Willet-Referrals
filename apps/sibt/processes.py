@@ -288,12 +288,13 @@ class TrackSIBTShowAction(URIHandler):
         if self.request.get('instance_uuid'):
             instance = SIBTInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))         
+            app = App.get(self.request.get('app_uuid')) 
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid')) 
         what = self.request.get('evnt')
         url = self.request.get('target_url')
         try:
+            logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
             action = action_class.create(user, 
                     instance=instance, 
@@ -303,6 +304,7 @@ class TrackSIBTShowAction(URIHandler):
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
             try:
+                logging.debug ('TrackSIBTShowAction 2: user = %s, instance = %s, what = %s' % (user, instance, what))
                 action = SIBTShowAction.create(user, instance, what)
             except Exception, e:
                 logging.error('this is serious: %s' % e, exc_info=True)

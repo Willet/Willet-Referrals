@@ -391,12 +391,60 @@ class SIBTInstanceAction(UserAction):
                 self.app_.client.domain
         )
 
-class SIBTUserStartVisit(SIBTInstanceAction):
+class SIBTVisitorStartVisit(UserAction):
     '''action recording when a page visit occurs.'''
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTVisitorStartVisit'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedButtonAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+        return action
     
-class SIBTUserEndVisit(SIBTInstanceAction):
+class SIBTVisitorEndVisit(UserAction):
     '''action recording when a page visit ends.'''
-        
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTVisitorEndVisit'
+        url = None
+        app = None
+        try:
+            app = kwargs['app']
+            url = kwargs['url']
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTUserClickedButtonAsk(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what = what
+        )
+        action.put()
+
+        return action
+                
 class SIBTInstanceCreated(SIBTInstanceAction):
     medium = db.StringProperty( default="", indexed=True )
 
@@ -621,7 +669,7 @@ class SIBTUserClickedButtonAsk(UserAction):
                 what = what
         )
         action.put()
-
+        logging.info( action.key() )
         return action
 
 class SIBTUserClickedOverlayAsk(UserAction):
@@ -949,6 +997,7 @@ class SIBTUserAction(UserAction):
                                 what = what,
                                 sibt_instance = instance)
         #super(SIBTShowAction, act).create()
+        logging.info( "what am I doing today?" )
         act.put()
         return act
     

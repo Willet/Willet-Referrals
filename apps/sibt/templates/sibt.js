@@ -112,23 +112,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         document.body.appendChild( iframe );
     };
 
-    var _willet_user_analytics = function (message) {
-        // replicate of _willet_store_analytics for storing user actions
-        var message = message || '{{ evnt }}';
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
-        iframe.src = "{{ URL }}{% url TrackSIBTUserAction %}?what=" + message + 
-                    "&app_uuid={{app.uuid}}" +
-                    "&user_uuid={{user.uuid}}" +
-                    "&instance_uuid={{instance.uuid}}" +
-                    "&target_url=" + window.location.href;
-
-        document.body.appendChild( iframe );
-    };
-
-
     /**
     * Called when ask iframe is closed
     */
@@ -853,11 +836,9 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     }
     
     // analytics to record the amount of time this script has been loaded
-    var load_time = new Date ();
-    _willet_user_analytics ('SIBTUserStartVisit');
+    _willet_store_analytics ('SIBTVisitorStartVisit');
     window.onbeforeunload = function () { // register 
-        unload_time = new Date ();
-        _willet_user_analytics ('SIBTUserEndVisit');
+        _willet_store_analytics ('SIBTVisitorEndVisit');
     }
     
     /*
