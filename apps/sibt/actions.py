@@ -406,7 +406,7 @@ class SIBTVisitorStartVisit(UserAction):
             logging.error(e, exc_info=True)
 
         uuid = generate_uuid( 16 )
-        action = SIBTUserClickedButtonAsk(
+        action = SIBTVisitorStartVisit(
                 key_name = uuid,
                 uuid     = uuid,
                 user     = user,
@@ -420,6 +420,7 @@ class SIBTVisitorStartVisit(UserAction):
     
 class SIBTVisitorEndVisit(UserAction):
     '''action recording when a page visit ends.'''
+    
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -429,17 +430,47 @@ class SIBTVisitorEndVisit(UserAction):
         try:
             app = kwargs['app']
             url = kwargs['url']
+            duration = getattr( kwargs, 'duration', 0.0 )
         except Exception,e:
             logging.error(e, exc_info=True)
-
+        
+        
+        if not duration:
+            logging.debug('visit length not supplied with SIBTVisitorEndVisit\
+                ; calculating based on previous SIBTVisitorStartVisit.')
+            # get the most recently created start time...
+            try:
+                logging.info ('user = %s' % user)
+                '''start_times = SIBTVisitorStartVisit \
+                                .all() \
+                                .filter('user =', user) \
+                                .order('-created')'''
+                # start_times = SIBTVisitorStartVisit.gql('WHERE user= :us ORDER BY created DESC LIMIT 1', us = user)
+                start_times = db.GqlQuery('SELECT * FROM Action WHERE user= :1 ORDER BY created DESC', user).fetch(1)
+                logging.debug('start_times = %s' % start_times)
+                for start_time in start_times:
+                    # compute supposed visit length
+                    logging.debug('start_time.created = %s' % start_time.created)
+                    duration = float((datetime.datetime.now() - start_time.created).seconds)
+                    if duration > 86400.0:
+                        logging.warn ('previous start time Action was too far')
+                        duration = 0.0
+            except Exception, e:
+                logging.debug('failed to get a start time Action for \
+                                this user: %s' % e)
+                duration = 0.0
+        
         uuid = generate_uuid( 16 )
-        action = SIBTUserClickedButtonAsk(
+        
+        logging.debug('creating end visit Action with %f seconds' % duration)
+        action = SIBTVisitorEndVisit(
                 key_name = uuid,
                 uuid     = uuid,
                 user     = user,
                 app_     = app,
                 url      = url,
-                what = what
+                what     = what,
+                duration = duration # computed one, anyway
         )
         action.put()
 

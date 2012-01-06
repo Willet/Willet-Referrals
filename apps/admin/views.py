@@ -841,6 +841,9 @@ class ReloadURIS(URIHandler):
             template_values))
 
 class CheckMBC(URIHandler):
+    ''' /admin/check_mbc displays the current number of "memcache buckets".
+        /admin/check_mbc?num=50 sets the number of memcache buckets to 50. 
+        Default seems to be 20 or 25. '''
     @admin_required
     def get(self, admin):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')

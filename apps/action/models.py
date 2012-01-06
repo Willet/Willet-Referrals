@@ -97,9 +97,8 @@ class Action(Model, polymodel.PolyModel):
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )
     
-    # Time when this action got started
-    start_time      = datetime.datetime.now()
-    logging.debug( 'start_time captured: %s' % start_time )
+    # Length of time a compound action had persisted prior to its creation
+    duration        = db.FloatProperty( default = 0.0 )
     
     # Person who did the action
     user            = MemcacheReferenceProperty( db.Model, collection_name = 'user_actions' )
@@ -131,7 +130,7 @@ class Action(Model, polymodel.PolyModel):
         list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        super(Action, self).put() # how bout now?                                                        <===
+        defer_put (self)
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')

@@ -155,8 +155,8 @@ class getUncheckedTweets( URIHandler ):
                 link = get_link_by_willt_code(ut.willt_url_code)
 
                 if link:
-
-                    if link.user.get_attr('twitter_handle') != earliest['user']:#should never happen
+                    #should never happen
+                    if link.user.get_attr('twitter_handle') != earliest['user']:
                         tweet.delete()
                         counters['user-deleted'] += 1
                         counters['deleted'] += 1

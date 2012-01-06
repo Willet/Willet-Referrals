@@ -120,4 +120,9 @@ indexes:
   - name: class
   - name: is_admin
   - name: created
-
+  
+- kind: Action
+  properties:
+  - name: user
+  - name: created
+    direction: desc
