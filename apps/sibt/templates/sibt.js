@@ -112,13 +112,10 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         iframe.id = random_id;
         iframe.name = random_id;
         iframe.onload = function () {
-            alert (random_id);
             try {
-                document.removeChild ( document.getElementById(random_id) );
-                document.removeChild ( iframe );
-            } catch (e) {
-                alert ("thing not removed because" + e.message);
-            }
+                iframe_handle = document.getElementById(random_id);
+                iframe_handle.parentNode.removeChild ( iframe_handle );
+            } catch (e) { }
         }
         document.body.appendChild( iframe );
     };
