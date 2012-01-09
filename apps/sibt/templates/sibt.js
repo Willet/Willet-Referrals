@@ -99,23 +99,28 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 
     var _willet_store_analytics = function (message) {
         var message = message || '{{ evnt }}';
-        
-        var src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
+        var iframe = document.createElement( 'iframe' );
+        //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
+        var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
+        iframe.style.display = 'none';
+        //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
+        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
                     "&app_uuid={{app.uuid}}" +
                     "&user_uuid={{user.uuid}}" +
                     "&instance_uuid={{instance.uuid}}" +
                     "&target_url=" + window.location.href;
-        
-        if (document.getElementById( 'willet-tracker' )) {
-            var iframe = document.getElementById( 'willet-tracker' );
-        } else {
-            var iframe = document.createElement( 'iframe' );
-            iframe.id = 'willet-tracker';
-            iframe.name = 'willet-tracker';
-            document.body.appendChild( iframe );        
+        iframe.id = random_id;
+        iframe.name = random_id;
+        iframe.onload = function () {
+            alert (random_id);
+            try {
+                document.removeChild ( document.getElementById(random_id) );
+                document.removeChild ( iframe );
+            } catch (e) {
+                alert ("thing not removed because" + e.message);
+            }
         }
-        iframe.style.display = 'none';
-        iframe.src = src;
+        document.body.appendChild( iframe );
     };
 
     /**
