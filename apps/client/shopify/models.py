@@ -132,7 +132,7 @@ class ClientShopify( Client ):
     def get_or_create( store_url, store_token='', request_handler=None, app_type="" ):
         store = ClientShopify.get_by_url(store_url)
 
-        if store == None:
+        if not store:
             store = ClientShopify.create( store_url, 
                                           store_token, 
                                           request_handler,
