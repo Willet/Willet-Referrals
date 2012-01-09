@@ -700,7 +700,7 @@ class SIBTUserClickedButtonAsk(UserAction):
                 what = what
         )
         action.put()
-        logging.info( action.key() )
+
         return action
 
 class SIBTUserClickedOverlayAsk(UserAction):
@@ -1028,7 +1028,6 @@ class SIBTUserAction(UserAction):
                                 what = what,
                                 sibt_instance = instance)
         #super(SIBTShowAction, act).create()
-        logging.info( "what am I doing today?" )
         act.put()
         return act
     

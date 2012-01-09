@@ -99,17 +99,23 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 
     var _willet_store_analytics = function (message) {
         var message = message || '{{ evnt }}';
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
-        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
+        
+        var src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
                     "&app_uuid={{app.uuid}}" +
                     "&user_uuid={{user.uuid}}" +
                     "&instance_uuid={{instance.uuid}}" +
                     "&target_url=" + window.location.href;
-
-        document.body.appendChild( iframe );
+        
+        if (document.getElementById( 'willet-tracker' )) {
+            var iframe = document.getElementById( 'willet-tracker' );
+        } else {
+            var iframe = document.createElement( 'iframe' );
+            iframe.id = 'willet-tracker';
+            iframe.name = 'willet-tracker';
+            document.body.appendChild( iframe );        
+        }
+        iframe.style.display = 'none';
+        iframe.src = src;
     };
 
     /**
@@ -838,6 +844,9 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     // analytics to record the amount of time this script has been loaded
     _willet_store_analytics ('SIBTVisitorStartVisit');
     window.onbeforeunload = function () { // register 
+        _willet_store_analytics ('SIBTVisitorEndVisit');
+    }
+    window.onunload = function () { // register once more, just in case
         _willet_store_analytics ('SIBTVisitorEndVisit');
     }
     
