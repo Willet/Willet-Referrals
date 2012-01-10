@@ -27,7 +27,7 @@ class TrackCallbackError(webapp.RequestHandler):
         data    = self.request.get('data')
         msg     = self.request.get('msg')
 
-        mail.send_mail(sender="wil.lt error reporting <Barbara@wil.lt>",
+        mail.send_mail(sender="JS Error Reporter <Barbara@wil.lt>",
                        to="wil.lt tech support <support@wil.lt>",
                        subject="Javascript /t callback error",
                        body= str(payload) + "\n" + str(data) + "\n" + str(msg))
@@ -44,7 +44,7 @@ class TrackRemoteError(webapp.RequestHandler):
         stack_trace = self.request.get('st')
         mail.send_mail(
             sender = 'rf.rs error reporting <Barbara@rf.rs>',
-            to = 'barbara@getwillet.com; matt@getwillet.com',
+            to = 'barbara@getwillet.com',
             subject = 'Javascript callback error',
             body = """We encountered an error
                 Page:       %s
