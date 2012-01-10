@@ -395,80 +395,32 @@ class SIBTInstanceAction(UserAction):
                 self.app_.client.domain
         )
 
-class SIBTVisitorStartVisit(UserAction):
-    '''action recording when a page visit occurs.'''
+class SIBTVisitLength(UserAction):
+    '''action recording the length of visits (if onbeforeunload is called).'''
     @staticmethod
     def create(user, **kwargs):
         # Make the action
-        what = 'SIBTVisitorStartVisit'
+        what = 'SIBTVisitLength'
         url = None
         app = None
+        duration= 0.0
         try:
+            logging.debug ('kwargs for SIBTVisitLength: %s' % kwargs)
             app = kwargs['app']
             url = kwargs['url']
+            duration = float (kwargs['duration'])
         except Exception,e:
             logging.error(e, exc_info=True)
 
         uuid = generate_uuid( 16 )
-        action = SIBTVisitorStartVisit(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-
-        return action
-    
-class SIBTVisitorEndVisit(UserAction):
-    '''action recording when a page visit ends.'''
-    
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'SIBTVisitorEndVisit'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-            duration = getattr( kwargs, 'duration', 0.0 )
-        except Exception,e:
-            logging.error(e, exc_info=True)
-        
-        
-        if not duration:
-            logging.debug('visit length not supplied with SIBTVisitorEndVisit\
-                ; calculating based on previous SIBTVisitorStartVisit.')
-            # get the most recently created start time...
-            try:
-                logging.info ('user = %s' % user)
-                start_times = db.Query(Action).filter('user = ', user).filter('what = ', 'SIBTVisitorStartVisit').order('-created').fetch(1)
-                logging.debug('start_times = %s' % start_times)
-                for start_time in start_times:
-                    # compute supposed visit length
-                    logging.debug('start_time.created = %s' % start_time.created)
-                    duration = float((datetime.datetime.now() - start_time.created).seconds)
-                    if duration > 86400.0:
-                        logging.warn ('previous start time Action was too far')
-                        duration = 0.0
-            except Exception, e:
-                logging.debug('failed to get a start time Action for this user: %s' % e)
-                duration = 0.0
-        
-        uuid = generate_uuid( 16 )
-        
-        logging.debug('creating end visit Action with %f seconds' % duration)
-        action = SIBTVisitorEndVisit(
+        action = SIBTVisitLength(
                 key_name = uuid,
                 uuid     = uuid,
                 user     = user,
                 app_     = app,
                 url      = url,
                 what     = what,
-                duration = duration # computed one, anyway
+                duration = duration
         )
         action.put()
 

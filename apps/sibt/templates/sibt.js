@@ -844,13 +844,15 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     }
     
     // analytics to record the amount of time this script has been loaded
-    _willet_store_analytics ('SIBTVisitorStartVisit');
+    var _willet_visit_start = new Date ();
     window.onbeforeunload = function () { // register 
-        _willet_store_analytics ('SIBTVisitorEndVisit');
+        // hack a custom param into the iframe URL
+        var _willet_visit_end = new Date ();
+        _willet_store_analytics ('SIBTVisitLength&duration=' + 
+                                (_willet_visit_end - _willet_visit_start) / 1000);
     }
-    window.onunload = function () { // register once more, just in case
-        _willet_store_analytics ('SIBTVisitorEndVisit');
-    }
+    // http://code.google.com/p/chromium/issues/detail?id=4422
+    window.onunload = window.onbeforeunload;
     
     /*
     window.fbAsyncInit = function() {
