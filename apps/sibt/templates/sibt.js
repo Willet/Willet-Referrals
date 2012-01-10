@@ -113,7 +113,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         iframe.name = random_id;
         iframe.onload = function () {
             try {
-                iframe_handle = document.getElementById(random_id);
+                var iframe_handle = document.getElementById(random_id);
                 iframe_handle.parentNode.removeChild ( iframe_handle );
             } catch (e) { }
         }

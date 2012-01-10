@@ -126,3 +126,16 @@ indexes:
   - name: user
   - name: created
     direction: desc
+    
+- kind: Action
+  properties:
+  - name: user
+  - name: what
+  - name: created
+    direction: desc
+    
+- kind: Action
+  properties:
+  - name: what
+  - name: created
+    direction: desc

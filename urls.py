@@ -22,7 +22,7 @@ def main():
     new_len = 0
     reload_uris = memcache.get('reload_uris')
     import_error = False
-
+    
     try:
         combined_uris = memcache.get('combined_uris')
     except:

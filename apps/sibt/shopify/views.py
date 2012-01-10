@@ -61,7 +61,7 @@ class SIBTShopifyWelcome(URIHandler):
             
             client_email = None
             shop_owner = 'Shopify Merchant'
-            if client != None and client.merchant != None:
+            if client is not None and client.merchant is not None:
                 client_email = client.email
                 
                 shop_owner = client.merchant.get_attr('full_name')
@@ -82,7 +82,7 @@ class SIBTShopifyWelcome(URIHandler):
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
         except:
-            logging.error('wtf', exc_info=True)
+            logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
     def post(self, app_uuid):

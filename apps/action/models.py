@@ -74,14 +74,6 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
 
-def defer_put(action):
-    from apps.sibt.actions import *
-    
-    try:
-        db.put(action)
-    except Exception,e:
-        logging.error('error putting: %s' % e, exc_info=True)
-
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -130,7 +122,7 @@ class Action(Model, polymodel.PolyModel):
         list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        defer_put (self)
+        
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')

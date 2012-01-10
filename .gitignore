@@ -1,4 +1,11 @@
-.DS_Store
 .gitignore
 app.yaml
 util/local_consts.py
+*.pyc
+*.swp
+*.swo
+*#
+*.marks
+.ropeproject
+aeenv.py
+*.DS_Store

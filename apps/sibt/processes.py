@@ -482,8 +482,8 @@ class SendFBMessages( URIHandler ):
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
             user  = get_or_create_user_by_cookie(self, app)
 
-        logging.error('friends %s %r' % (ids, names))
-        logging.error( 'msg :%s '% msg )
+        logging.debug('friends %s %r' % (ids, names))
+        logging.debug('msg :%s '% msg)
 
         # Format the product's desc for FB
         try:
@@ -520,10 +520,14 @@ class SendFBMessages( URIHandler ):
             ) 
 
         try:
+            try:
+                product_image = product.images[0]
+            except:
+                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
             fb_share_ids = user.fb_post_to_friends( ids,
                                                     names,
                                                     msg,
-                                                    product.images[0],
+                                                    product_image,
                                                     product.title,
                                                     product_desc,
                                                     app.client.domain,
@@ -536,7 +540,7 @@ class SendFBMessages( URIHandler ):
                 instance = app.create_instance( user, 
                                                 None, 
                                                 link, 
-                                                product.images[0], 
+                                                product_image, 
                                                 motivation="",
                                                 dialog="ConnectFB")
                 # increment shares

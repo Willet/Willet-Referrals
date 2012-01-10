@@ -32,7 +32,7 @@ class UserCreate( Action ):
                            user     = user,
                            app_     = app )
         act.put()
-        logging.error("PUT USER CREATE ACTION")
+        logging.debug ("PUT USER CREATE ACTION") # not en error -__-"
 
     @staticmethod
     def get_by_user( user ):

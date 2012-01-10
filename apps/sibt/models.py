@@ -93,7 +93,7 @@ class SIBT(App):
 
     def create_instance(self, user, end, link, img, motivation=None, dialog=""):
         logging.info("MAKING A SIBT INSTANCE")
-        logging.error("DIALOG %s" % dialog)
+        logging.debug("DIALOG %s" % dialog)
         # Make the properties
         uuid = generate_uuid( 16 )
         
@@ -310,7 +310,18 @@ class VoteCounter(db.Model):
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
-    #TODO: explain the difference between PartialSIBTInstance and SIBTInstance
+    '''
+    https://github.com/train07/Willet-Referrals/commit/812ab6bd76b9737a1e83d84055b1fe19947e91d4#commitcomment-851293
+    Whenever someone doesn't FB connect, we start a PartialInstance and open up 
+    a FB dialog. We don't know if they actually pushed the message to FB or not,
+    right? This is why it's only a Partial Instance. When the User is redirected
+    to our "Thanks" screen, we complete the partialinstance and make a full one
+    and delete the partial one. If the person cancels, the PartialInstance is 
+    deleted. If the person closes the window, the PartialInstance stays, but
+    ... "expires".
+    Each User can have at most 1 PartialInstance.
+    '''
+    
     uuid        = db.StringProperty( indexed = True )
 
     # User is the only index.

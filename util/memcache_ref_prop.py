@@ -134,26 +134,19 @@ class MemcacheReferenceProperty(db.Property):
       reference_id = None
 
     if reference_id is not None:
-      logging.info("memcache_ref_prop REference id %s" % reference_id)
+      logging.info("REference id %s" % reference_id)
       resolved = getattr(model_instance, self.__resolved_attr_name())
       if resolved is not None:
         return resolved
       else:
         # Check for instance in memcache first
+        instance = memcache.get( self.memcache_key )
         
-        if self.memcache_key is not None:
-          instance = memcache.get( self.memcache_key )
-          logging.debug ("instance = %s" % instance )
-          if instance:
-            # Convert to model from protobuf
-            instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
-            logging.debug( "Memcache instance is %s" % instance )
-          else:
-            instance = db.get(reference_id)
-            if instance is None:
-              raise ReferencePropertyResolveError(
-                    'ReferenceProperty failed to be resolved: %s' %
-                    reference_id.to_path())# Check in DB after checking in memcache
+        if instance:
+          # Convert to model from protobuf
+          instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
+        
+        # Check in DB after checking in memcache
         else:
           instance = db.get(reference_id)
 

@@ -12,7 +12,11 @@ from google.appengine.api   import memcache
 from google.appengine.ext   import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models     import ClickAction, VoteAction, ShowAction, UserAction 
+from apps.action.models     import Action
+from apps.action.models     import ClickAction
+from apps.action.models     import ShowAction
+from apps.action.models     import UserAction
+from apps.action.models     import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
 
@@ -441,12 +445,7 @@ class SIBTVisitorEndVisit(UserAction):
             # get the most recently created start time...
             try:
                 logging.info ('user = %s' % user)
-                '''start_times = SIBTVisitorStartVisit \
-                                .all() \
-                                .filter('user =', user) \
-                                .order('-created')'''
-                # start_times = SIBTVisitorStartVisit.gql('WHERE user= :us ORDER BY created DESC LIMIT 1', us = user)
-                start_times = db.GqlQuery('SELECT * FROM Action WHERE user= :1 ORDER BY created DESC', user).fetch(1)
+                start_times = db.Query(Action).filter('user = ', user).filter('what = ', 'SIBTVisitorStartVisit').order('-created').fetch(1)
                 logging.debug('start_times = %s' % start_times)
                 for start_time in start_times:
                     # compute supposed visit length
@@ -456,8 +455,7 @@ class SIBTVisitorEndVisit(UserAction):
                         logging.warn ('previous start time Action was too far')
                         duration = 0.0
             except Exception, e:
-                logging.debug('failed to get a start time Action for \
-                                this user: %s' % e)
+                logging.debug('failed to get a start time Action for this user: %s' % e)
                 duration = 0.0
         
         uuid = generate_uuid( 16 )
@@ -475,7 +473,7 @@ class SIBTVisitorEndVisit(UserAction):
         action.put()
 
         return action
-                
+
 class SIBTInstanceCreated(SIBTInstanceAction):
     medium = db.StringProperty( default="", indexed=True )
 
