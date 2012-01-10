@@ -7,14 +7,12 @@ body {
     padding:0px;
 }
 #wrapper {
-    text-align: center;
-    font-size: 80%; 
     margin: 0 auto;
-    min-height: 215px;
-    max-height: 215px;
-    height: 215px;
-    width: 398px;
-    border: 1px solid #BDC7D8;
+    min-height: 300px;
+    max-height: 300px;
+    height: 300px;
+    width: 500px;
+    border: 1px solid #9CE6FF;
 }
 #thanks_wrapper {
     text-align: center;
@@ -353,99 +351,99 @@ textarea {
     display: inline-block;
     width: 100%;
 }
-    #motivation div {
-        display: inline-block;
-    }
-    #motivation #top-div {
-        padding: 8px;
-    }
-    #motivation #buttons {
-        position: absolute;
-        bottom: 4px;
-        width: 398px;
-        left: 1px;
-    }
-        #motivation #buttons input { -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
-            cursor: pointer;
-            display: inline-block;
-            font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
-            font-size: 11px;
-            font-weight: bold;
-            margin: 0;
-            outline: none;
-            padding: 3px 6px 4px 6px;
-            white-space: nowrap;
-            border: 1px solid #999;
-        }
-        #motivation #buttons input.post {
-            background-color: #5B74A8;
-            border-color: #29447E #29447E #1A356E;
-            color: #FFFFFF;
-        }
-        #motivation #buttons input.close {
-            background-color: #EEE;
-            border-bottom-color: #888;
-            color: #333;
-        }
-    #motivation #edit-motivation img {
-        width: 12px;
-        height: 12px;
-    }
-    #motivation #edit-motivation {
-        cursor: pointer;
-        color: #6B84B4;
-        font-size: 80%;
-        float: right;
-        margin: 0px;
-        padding: 0px;
-        line-height: 1px;
-        position: absolute;
-        top: 7px;
-        right: 30px;
-    }
-    #motivation #edit-motivation:hover {
-        text-decoration: underline;
-    }
-    #motivation #top-text {
-        margin-bottom: 10px;
-        width: 100%;
-        clear: both;
-        font-size: 12px;
-        text-align: left;
-    }
-    #motivation #share-text input {
-        border: 0px;
-        padding: 3px;
-        margin: 0px;
-        margin-right: 3px;
-        display: inline;
-        font-size: 100%;
-        border: 1px solid #C8C8C8;
-        width: 80px;
-    }
-    #motvation #share-text #m_text {
-        margin-right: 2px;
-    }
-    #motivation #share-text input.default {
-        color: #777;
-        border: 1px solid #C8C8C8;
-    }
-    #motivation #text-div {
-        text-align: left;
-        font-size: 11px;
-        line-height: 1.28;
-    }
-        #motivation #text-div span.grey {
-            color: gray;
-            margin-bottom: 5px;
-            clear: both;
-            display: block;
-        }
-        #motivation #text-div h3 {
-            color: #3B5998;
-            margin: 0;
-            font-size: 100%
-        }
+#motivation div {
+    display: inline-block;
+}
+#motivation #top-div {
+    padding: 8px;
+}
+#motivation #buttons {
+    position: absolute;
+    bottom: 4px;
+    width: 398px;
+    left: 1px;
+}
+#motivation #buttons input { -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0;
+    outline: none;
+    padding: 3px 6px 4px 6px;
+    white-space: nowrap;
+    border: 1px solid #999;
+}
+#motivation #buttons input.post {
+    background-color: #5B74A8;
+    border-color: #29447E #29447E #1A356E;
+    color: #FFFFFF;
+}
+#motivation #buttons input.close {
+    background-color: #EEE;
+    border-bottom-color: #888;
+    color: #333;
+}
+#motivation #edit-motivation img {
+    width: 12px;
+    height: 12px;
+}
+#motivation #edit-motivation {
+    cursor: pointer;
+    color: #6B84B4;
+    font-size: 80%;
+    float: right;
+    margin: 0px;
+    padding: 0px;
+    line-height: 1px;
+    position: absolute;
+    top: 7px;
+    right: 30px;
+}
+#motivation #edit-motivation:hover {
+    text-decoration: underline;
+}
+#motivation #top-text {
+    margin-bottom: 10px;
+    width: 100%;
+    clear: both;
+    font-size: 12px;
+    text-align: left;
+}
+#motivation #share-text input {
+    border: 0px;
+    padding: 3px;
+    margin: 0px;
+    margin-right: 3px;
+    display: inline;
+    font-size: 100%;
+    border: 1px solid #C8C8C8;
+    width: 80px;
+}
+#motvation #share-text #m_text {
+    margin-right: 2px;
+}
+#motivation #share-text input.default {
+    color: #777;
+    border: 1px solid #C8C8C8;
+}
+#motivation #text-div {
+    text-align: left;
+    font-size: 11px;
+    line-height: 1.28;
+}
+#motivation #text-div span.grey {
+    color: gray;
+    margin-bottom: 5px;
+    clear: both;
+    display: block;
+}
+#motivation #text-div h3 {
+    color: #3B5998;
+    margin: 0;
+    font-size: 100%
+}
 .close-button { 
     -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
     cursor: pointer;

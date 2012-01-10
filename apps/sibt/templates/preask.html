@@ -17,80 +17,81 @@
                  font-family: fb_font;
                  src: url("/static/fonts/KlavikaBold.eot"); /* For IE */
             }
-        </style>
+            </style>
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
     
     </head>
     <body>
-    <div id="wrapper">
-        <div id="splash">
-            <div id="title_bar">
-                <img width="79px" height="50px" src="/static/imgs/sibt_logo_79x50.png" />
-                <h2>Should I Buy This?</h2>
-                <p>The fastest way to get shopping advice from friends & family</p>
+        <div id="wrapper">
+            <div id="splash">
+                <div id="title_bar">
+                    <img width="79px" height="50px" src="/static/imgs/sibt_logo_79x50.png" />
+                    <h2>Ask Your Friends ( Drop down menu here | V )</h2>
+                </div>
+                <div class="message">
+                    <img width=50 height=50 src="" />
+                    <textarea></textarea>
+                </div>
+                <div class="options">
+                    <div class="option">
+                        <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()">
+                            <img src="/static/sibt/imgs/sibt_ask_all.png" />
+                            <div class="title">Ask Friends</div>
+                            <div class="subtitle">Post to Facebook</div>
+                        </button>
+                        <div class="hint">
+                            <img src="/static/imgs/sibt_little_arrow.png" width=25 height=25 />
+                            <div>easy &amp; fast</div>
+                        </div>
+                    </div>
+                    <div class="or">or</div>
+                    <div class="option">
+                        <button title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
+                            <img src="/static/imgs/sibt_choose_friends" />
+                            <div class="title">Choose Friends</div>
+                            <div class="subtitle">Get trusted advice</div>
+                        </button>
+                        <div class="hint">
+                            <img src="/static/imgs/sibt_little_arrow.png" width=25 height=25 />
+                            <div>best advice</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="fb_btns">
-                {% if incentive_enabled %}
-                    <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
-                {% endif %}
+    <!-- ---------------------------------------- -->
 
-                <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()" {%if incentive_enabled%}style="margin-top: 15px"{%endif%}>
-                    <p class="fb">f</p>
-                    <p>Ask All Friends</p>
-                </button>
-                <button style="{%if incentive_enabled%}margin-top: 15px;{%endif%}float: right;" title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
-                    <p class="fb">f</p>
-                    <p>Choose Some Friends</p>
-                </button>
-            </div>
+            <div id="friendPicker" style="display: none">
+                <div id="nameEntry">
+                    <label for="tags">Find a Friend:</label>
+                    <input id="tags" />
+                    <label id="selectionCount"> Selected: 0</label>
+                </div>
 
-            <!--
-            <div id="cancel">
-                <button class="cancel-btn" title="Cancel" onclick="closeIframe('SIBTAskIframeCancelled');" />Cancel</button>
+                <div id="chosenFriends">
+                    <p>Enter your friends' names at the top!</p>
+                </div>
+                
+                <div id="shareText">
+                    <textarea id="share-text">{{ AB_share_text }}</textarea>
+                </div>
+
+                <!--
+                <div class="willet" style="height: 32px; padding-top: 3px;">
+                    <p>Powered by</p>
+                    <a href="http://www.willetinc.com">
+                        <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                    </a>
+                </div>
+                -->
+
+                <div id="btns">
+                    <button style="width:50px;" onClick="sendMessages()">Ask</button>
+                    <!--<button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>-->
+                </div>
             </div>
-            <div class="willet">
-                <p>Powered by</p>
-                <a href="http://www.willetinc.com">
-                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
-                </a>
-            </div>
-            -->
         </div>
-
-<!-- ---------------------------------------- -->
-
-        <div id="friendPicker" style="display: none">
-            <div id="nameEntry">
-                <label for="tags">Find a Friend:</label>
-                <input id="tags" />
-                <label id="selectionCount"> Selected: 0</label>
-            </div>
-
-            <div id="chosenFriends">
-                <p>Enter your friends' names at the top!</p>
-            </div>
-            
-            <div id="shareText">
-                <textarea id="share-text">{{ AB_share_text }}</textarea>
-            </div>
-
-            <!--
-            <div class="willet" style="height: 32px; padding-top: 3px;">
-                <p>Powered by</p>
-                <a href="http://www.willetinc.com">
-                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
-                </a>
-            </div>
-            -->
-
-            <div id="btns">
-                <button style="width:50px;" onClick="sendMessages()">Ask</button>
-                <!--<button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>-->
-            </div>
-        </div>
-    </div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
     <script src="http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js" type="text/javascript"></script>
@@ -451,7 +452,6 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
     </script>
-        
 </body>
 </html>
 
