@@ -199,14 +199,14 @@ class ManageApps(URIHandler):
             try:
                 d = {
                     'uuid': app.uuid,
-                    'client_name': app.client.name,
+                    'client_name': app.client.name if app.client else '',
                     'class_name': app.class_name(),
-                    'client': app.client,
+                    'client': getattr (app, 'client'),
                     'app': app
                 }
+                apps.append(d)
             except Exception,e:
                 logging.error('error adding app: %s' % e, exc_info=True)
-            apps.append(d)
         return apps
     
     @admin_required
