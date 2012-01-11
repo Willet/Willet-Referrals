@@ -1,5 +1,5 @@
 """
-Copied from http://code.google.com/p/googleappengine/source/browse/trunk/python/google/appengine/ext/db/__init__.py#3563
+Copied from http://code.google.com/p/googleappengine/source/browse/trunk/python/google/appengine/ext/db/__init__.py#3443
 
 
 """
@@ -12,6 +12,7 @@ from google.appengine.api import datastore
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
+from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.datastore import entity_pb
 
 from util.consts import MEMCACHE_TIMEOUT
@@ -133,19 +134,26 @@ class MemcacheReferenceProperty(db.Property):
       reference_id = None
 
     if reference_id is not None:
-      logging.info("REference id %s" % reference_id)
+      logging.info("memcache_ref_prop REference id %s" % reference_id)
       resolved = getattr(model_instance, self.__resolved_attr_name())
       if resolved is not None:
         return resolved
       else:
         # Check for instance in memcache first
-        instance = memcache.get( self.memcache_key )
         
-        if instance:
-          # Convert to model from protobuf
-          instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
-        
-        # Check in DB after checking in memcache
+        if self.memcache_key is not None:
+          instance = memcache.get( self.memcache_key )
+          logging.debug ("instance = %s" % instance )
+          if instance:
+            # Convert to model from protobuf
+            instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
+            logging.debug( "Memcache instance is %s" % instance )
+          else:
+            instance = db.get(reference_id)
+            if instance is None:
+              raise ReferencePropertyResolveError(
+                    'ReferenceProperty failed to be resolved: %s' %
+                    reference_id.to_path())# Check in DB after checking in memcache
         else:
           instance = db.get(reference_id)
 
@@ -163,12 +171,16 @@ class MemcacheReferenceProperty(db.Property):
 
     #logging.info("SETTTGIN %s %s %s" % (self, model_instance, value))
 
-    if self.memcache_key == None:
-        if not isinstance(value, datastore.Key):
-            self.memcache_key = value.get_key()
-        else:
-            self.memcache_key = memcache.get( str( value ) )
-    
+    if not self.memcache_key:
+      if isinstance( value, datastore.Key ):
+        self.memcache_key = memcache.get( str( value ) )
+      elif isinstance( value, db.Model ):
+        self.memcache_key = getattr( value, '_memcache_key', None)
+      else:
+        raise TypeError( 'Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model>' )
+    if self.memcache_key is None:
+      logging.warning( 'Cannot create memcache key for %s!' % value )
+
     value = self.validate(value)
     if value is not None:
       if isinstance(value, datastore.Key):

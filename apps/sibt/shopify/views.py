@@ -55,14 +55,15 @@ class SIBTShopifyWelcome(URIHandler):
         logging.info('trying to create app')
         try:
             client = self.get_client() # May be None
-        
+            logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
             app = SIBTShopify.get_or_create(client, token=token)
             
             client_email = None
             shop_owner = 'Shopify Merchant'
-            if client != None:
+            if client != None and client.merchant != None:
                 client_email = client.email
+                
                 shop_owner = client.merchant.get_attr('full_name')
 
             # Switched to new install code on Nov. 23rd
@@ -501,7 +502,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'AB_overlay_style' : overlay_style,
 
             'store_url'      : shop_url,
-            'store_domain'   : app.client.domain,
+            'store_domain'   : getattr (app.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
             'product_uuid'   : product.uuid if product else "",
             'product_title'  : product.title if product else "",
