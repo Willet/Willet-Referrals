@@ -580,7 +580,7 @@ class ShowFBThanks( URIHandler ):
             # Make the Instance!
             if hasattr( product, 'images' ) and len( product.images ) >= 0:
                 wtf_image = product.images[0]
-                if wtf_image is None or wtf_image = '':
+                if wtf_image is None or wtf_image == '':
                     wtf_image = 'http://i.imgur.com/slbyP.jpg'
                 instance = app.create_instance(user, None, link, wtf_image,
                                                motivation=None, dialog="NoConnectFB")
