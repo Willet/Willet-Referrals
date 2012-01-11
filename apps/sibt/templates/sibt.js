@@ -119,6 +119,50 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         }
         document.body.appendChild( iframe );
     };
+    
+    /* var _willet_store_analytics_ajax = function (message) {
+        message = message || '{{ evnt }}';
+        if ($) {
+            var dummy = $.ajax({
+                url: "{{ URL }}{% url TrackSIBTShowAction %}?callback=derp",
+                data: "evnt=message&app_uuid={{app.uuid}}&user_uuid={{user.uuid}}&instance_uuid={{instance.uuid}}&target_url=" + window.location.href,
+                crossDomain: true,
+                async: false,
+                cache: false
+           });
+        }
+    };
+    
+    var _willet_store_analytics_nw = function (message) {
+        var message = message || '{{ evnt }}';
+        //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
+        window.open ("{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
+                     "&app_uuid={{app.uuid}}" +
+                     "&user_uuid={{user.uuid}}" +
+                     "&instance_uuid={{instance.uuid}}" +
+                     "&target_url=" + window.location.href,
+                     name);
+    }; */
+    
+    // analytics to record the amount of time this script has been loaded
+    // http://code.google.com/p/chromium/issues/detail?id=4422
+    // http://stackoverflow.com/questions/tagged/onunload?sort=votes&pagesize=15
+    // http://www.makemineatriple.com/2007/10/passing-parameters-to-a-function-called-with-settimeout
+    // "there is no good way of using onunload"
+    
+    var _willet_visit_start = new Date ();
+    var _willet_visit_duration = function() {
+        // hack a custom param into the iframe URL
+        var _willet_visit_end = new Date ();
+        _willet_store_analytics ('SIBTVisitLength&duration=' + 
+                                (_willet_visit_end - _willet_visit_start) / 1000);
+    };
+    if ($.browser.webkit || $.browser.chrome || $.browser.safari || $.browser.opera) {
+        // "heartbeat polling they call it"
+        setInterval (_willet_visit_duration, 2000); // arbitrary scan interval
+    } else { // other browsers have no onunload problems; hook event
+        $(window).unload(_willet_visit_duration);
+    }
 
     /**
     * Called when ask iframe is closed
@@ -842,17 +886,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
         _body.appendChild(el);
     }
-    
-    // analytics to record the amount of time this script has been loaded
-    var _willet_visit_start = new Date ();
-    window.onbeforeunload = function () { // register 
-        // hack a custom param into the iframe URL
-        var _willet_visit_end = new Date ();
-        _willet_store_analytics ('SIBTVisitLength&duration=' + 
-                                (_willet_visit_end - _willet_visit_start) / 1000);
-    }
-    // http://code.google.com/p/chromium/issues/detail?id=4422
-    window.onunload = window.onbeforeunload;
     
     /*
     window.fbAsyncInit = function() {
