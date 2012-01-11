@@ -1237,6 +1237,8 @@ class User( db.Expando ):
         return fb_share_id, plugin_response 
 
 # Gets by X
+# TODO: move Gets, Creates, & Gets or Creates to static methods of User class, update dependencies
+# Reason: any subclasses of User now get these methods too
 def get_user_by_uuid( uuid ):
     logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
     logging.info("Getting user by uuid " + str(uuid))

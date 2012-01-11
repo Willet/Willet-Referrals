@@ -24,8 +24,8 @@ info = "info@getwillet.com"
 
 barbara   = "barbara@getwillet.com"
 fraser    = 'fraser@getwillet.com'
-matt      = 'harrismc@gmail.com'
-dev_team  = '%s, %s, %s' % (fraser, barbara, matt)
+brian     = "brian@getwillet.com"
+dev_team  = '%s' % (barbara)
 team      = '%s, %s' % (fraser, barbara)
 
 from_addr = 'z4beth@gmail.com' #barbara
