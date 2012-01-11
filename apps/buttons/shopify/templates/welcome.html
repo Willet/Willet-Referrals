@@ -31,17 +31,21 @@
 {% endblock right_head %}
 
 {% block content %}
-        <h1 class="span-24 last lower-100 center">Thanks!</h1>
+        <div class="lower-75 prepend-2 span-4 append-2" style="opacity=0.6"> 1. Register Store </div>
+        <div class="lower-75 prepend-2 span-4 append-2" style=""> 2. Integrate ShopConnection </div>
+        <div class="lower-75 prepend-2 span-4 append-2 last" style="opacity=0.6"> 3. Confirm Installation </div>
+        
+        <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
             <p class="center"> 
                 Thanks for installing "ShopConnection"!  
                 There is only 1 more step!
                 <br /><br />
-                We simply need to determine where the buttons will be placed on your product pages.
+                Now, let's determine where to place the buttons on your product pages.
             </p>
 
             <br /><br />
-            <p> Open your <em>Template Editor</em> under <em>Themes</em> in Shopify.</p>
+            <p> In your Shopify administration panel, open the <em>Template Editor</em> under <a href="https://{{app.store_url}}/admin/themes/"><em>Themes</em></a>.</p>
 
             <p>
                 Under the <em>Snippets</em> section, click on <em>product.liquid</em>.

@@ -88,7 +88,9 @@ def create_shopify_buttons_app(client, app_token):
 
     # Client (and corresp. User) is made before App
     # So, update the UserCreate action after
+    logging.info("LOoking for action now. Client: %s User: %s" % ( client, client.merchant))
     action = UserCreate.get_by_user( client.merchant )
+    logging.info("Actions returned %s %r" % (action, action))
     action.app_ = app
     action.put()
 

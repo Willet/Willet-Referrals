@@ -36,6 +36,7 @@ class UserCreate( Action ):
 
     @staticmethod
     def get_by_user( user ):
+        logging.warning("Action by user: %s %r" % (user, user)
         return UserCreate.all().filter( 'user =', user ).get()
 
 class UserIsFBLoggedIn(Action):

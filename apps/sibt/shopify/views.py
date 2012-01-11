@@ -60,11 +60,12 @@ class SIBTShopifyWelcome(URIHandler):
             app = SIBTShopify.get_or_create(client, token=token)
             
             client_email = None
-            shop_owner = 'Shopify Merchant'
+            shop_owner   = 'Shopify Merchant'
+            shop_name    = 'Your Shopify Store'
             if client != None and client.merchant != None:
                 client_email = client.email
-                
-                shop_owner = client.merchant.get_attr('full_name')
+                shop_owner   = client.merchant.get_attr('full_name')
+                shop_name    = client.name
 
             # Switched to new install code on Nov. 23rd
             if app.created <= datetime( 2011, 11, 22 ):
@@ -74,6 +75,7 @@ class SIBTShopifyWelcome(URIHandler):
             
             template_values = {
                 'app': app,
+                'shop_name' : shop_name,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
                 'old_install_code' : old_install_code,

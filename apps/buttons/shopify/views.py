@@ -40,7 +40,9 @@ class ButtonsShopifyWelcome(URIHandler):
         token  = self.request.get( 't' )
 
         # Fetch the client
+        logging.info("ASDASDASDADSDAS")
         client = ClientShopify.get_by_url( shop )
+        logging.warning("Client is %s" % client )
         
         # Fetch or create the app
         app    = get_or_create_buttons_shopify_app(client, token=token)

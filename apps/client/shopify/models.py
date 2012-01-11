@@ -117,6 +117,7 @@ class ClientShopify( Client ):
     def get_by_url(store_url):
         store_url = get_shopify_url( store_url )
 
+        logging.warning ("looking for client with url: %s" % store_url)
         store = ClientShopify.all().filter( 'url =', store_url ).get()
         return store
 
