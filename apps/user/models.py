@@ -56,7 +56,7 @@ class EmailModel(Model):
     user    = MemcacheReferenceProperty( db.Model, collection_name = 'emails' )
     
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['created'] if 'created' in kwargs else None 
+        self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
         super(EmailModel, self).__init__(*args, **kwargs)
     
     @staticmethod
@@ -265,6 +265,7 @@ class User( db.Expando ):
     def is_admin( self ):
         logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
         if hasattr(self, 'user_is_admin'):
+            logging.info("%s is an ADMIN (via cached check)" % (self.uuid))
             return self.user_is_admin
         is_admin = False
 
