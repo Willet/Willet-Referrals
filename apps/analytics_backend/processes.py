@@ -88,11 +88,12 @@ def build_hourly_stats(time_slice):
         len(actions_to_count), start, end))
     for action in actions_to_count:
         if (action in actions_to_average): # divert average
-            logging.debug("Averaging for action: %s" % action)
-            value = average_action(app_, action, 'duration', start, end)            
+            value = average_action(app_, action, 'duration', start, end)
+            logging.debug("Averaging for action: %s = %d" % (action, value))
         else:
-            logging.debug("Counting for action: %s" % action)
             value = count_action(app_, action, start, end)
+            logging.debug("Counting for action: %s = %d" % (action, value))
+            
         setattr(time_slice, action, value)
 
     yield op.db.Put(time_slice)
@@ -137,9 +138,13 @@ def average_action(app_, action, prop, start, end):
             prop_sum = reduce (lambda x,y: getattr(x, prop, 0) + \
                                        getattr(y, prop, 0), actions)'''
         
-        return prop_sum / count # thus, the average
+        average = prop_sum / count
+        logging.info ("average for %s calculated to be %d" % (action, average))
+        
+        return average
     except:
         # e.g. div by 0
+        logging.info ("error calculating average for %s" % action)
         return 0
 
 def ensure_daily_slices(app):
