@@ -18,7 +18,6 @@ from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions
 from apps.client.shopify.models   import ClientShopify
 from apps.email.models    import Email
 from apps.link.models     import Link
-from apps.user.actions    import UserCreate
 
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -85,14 +84,6 @@ def create_shopify_buttons_app(client, app_token):
                           store_token = app_token,
                           button_selector = "_willet_buttons_app" ) 
     app.put()
-
-    # Client (and corresp. User) is made before App
-    # So, update the UserCreate action after
-    logging.info("LOoking for action now. Client: %s User: %s" % ( client, client.merchant))
-    action = UserCreate.get_by_user( client.merchant )
-    logging.info("Actions returned %s %r" % (action, action))
-    action.app_ = app
-    action.put()
 
     app.do_install()
         
