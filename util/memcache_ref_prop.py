@@ -164,8 +164,15 @@ class MemcacheReferenceProperty(db.Property):
 
         if not self.memcache_key:
             if isinstance( value, datastore.Key ):
-                self.memcache_key = memcache.get( str( value ) ) # db.get( value ).get_key()
-                #logging.info("1: %s" % self.memcache_key)
+                logging.info("value: %s " % value)
+                obj = db.get( value )
+                logging.info("OBJ %s" % obj)
+                if obj:
+                    self.memcache_key = obj.get_key()
+                else:
+                    self.memcache_key = memcache.get( str( value ) ) 
+
+                logging.info("1: %s" % self.memcache_key)
             elif isinstance( value, db.Model ):
                 self.memcache_key = value.get_key() #getattr( value, '_memcache_key', None)
                 #logging.info("2: %s" % self.memcache_key)
