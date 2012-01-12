@@ -39,7 +39,6 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
-
     def do_install( self ):
         # Define our script tag 
         tags = [{
@@ -56,6 +55,12 @@ class ButtonsShopify(Buttons, AppShopify):
         self.install_webhooks()
         self.install_script_tags(script_tags=tags)
 
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient( "ShopConnection", 
+                             self.client.merchant.get_attr('email'), 
+                             self.client.merchant.get_full_name(), 
+                             self.client.name )
+        
         # Email Barbara
         Email.emailBarbara(
             'ButtonsShopify Install: %s %s %s' % (
@@ -65,11 +70,6 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient( "ShopConnection", 
-                             self.client.merchant.get_attr('email'), 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name )
 
 # Constructor ------------------------------------------------------------------
 def create_shopify_buttons_app(client, app_token):
@@ -100,15 +100,14 @@ def get_or_create_buttons_shopify_app( client, token ):
         if app.store_token != token:
             # TOKEN mis match, this might be a re-install
             logging.warn(
-                'We are going to reinstall this app because the stored token \
-                does not match the request token\n%s vs %s' % (
+                'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
                     app.store_token,
                     token
                 )
             ) 
             try:
                 app.store_token = token
-                app.client      = app.old_client
+                app.client      = client
                 app.old_client  = None
                 app.put()
                 
