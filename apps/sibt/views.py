@@ -578,8 +578,16 @@ class ShowFBThanks( URIHandler ):
             product  = partial.product
 
             # Make the Instance!
-            instance = app.create_instance(user, None, link, product.images[0],
-                                           motivation=None, dialog="NoConnectFB")
+            if hasattr( product, 'images' ) and len( product.images ) >= 0:
+                wtf_image = product.images[0]
+                if wtf_image is None or wtf_image == '':
+                    wtf_image = 'http://i.imgur.com/slbyP.jpg'
+                instance = app.create_instance(user, None, link, wtf_image,
+                                               motivation=None, dialog="NoConnectFB")
+            else:
+                #blank pixel dummy
+                instance = app.create_instance(user, None, link, 'http://i.imgur.com/slbyP.jpg',
+                                               motivation=None, dialog="NoConnectFB")
     
             # increment link stuff
             link.app_.increment_shares()

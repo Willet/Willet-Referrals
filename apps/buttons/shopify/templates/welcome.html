@@ -31,41 +31,85 @@
 {% endblock right_head %}
 
 {% block content %}
-        <h1 class="span-24 last lower-100 center">Thanks!</h1>
+        <div class="lower-100 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
+        <div class="lower-100 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate ShopConnection </div>
+        <div class="lower-100 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
+        
+        <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
-            <p class="center"> 
-                Thanks for installing "ShopConnection"!  
-                There is only 1 more step!
-                <br /><br />
-                We simply need to determine where the buttons will be placed on your product pages.
-            </p>
+            <div class="center span-24 last append-bottom">
+                <p>
+                    {{shop_owner}}, thanks for installing "ShopConnection"!  
+                    <br />
+                    Now, let's determine where to place the buttons on your product pages.
+                </p>
+            </div>
 
-            <br /><br />
-            <p> Open your <em>Template Editor</em> under <em>Themes</em> in Shopify.</p>
+            <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
+                <p>1. In your <a href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
+                
+                <img class="span-18" src="/static/imgs/template_editor.png" />
+            </div>
+            
+            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
 
-            <p>
-                Under the <em>Snippets</em> section, click on <em>product.liquid</em>.
-            </p><p>
-                <strong>1. Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
-                place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;.
-            </p><p>
-                <strong>2. Once </strong>you've picked a spot, add this code:
-                <input style='font-size:13px; max-width: 515px; width: 515px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
-            </p><p>
-                <strong> 3. Click</strong> <em>save</em> near the top of the screen.
-            </p>
+            <div class="prepend-top prepend-3 span-12 append-bottom">
+                <p class="lower-50"> 
+                    2. Under the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippts</em>, try looking under
+                    <em>Templates</em>.
+                </p>
+            </div>
+            
+            <div class="prepend-top prepend-2 span-6 last append-bottom">
+                 <img src="/static/imgs/snippets_product.png" />
+            </div>
 
-            <br /><br /><br />
-            <h3 class="center">If you have any other questions, please e-mail Barbara at: barbara@getwillet.com </h3>
-            <br />
+            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            
+            <div class="prepend-3 span-18 append-3 last append-bottom">
+                <p>
+                    <strong>3. Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
+                    place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
+                </p>
+                 
+                 <img class="span-18" src="/static/imgs/form.png" />
+            </div>
+            
+            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            
+            <div class="prepend-top prepend-3 span-18 append-3 last">
+                <p>
+                    <strong>4. Once </strong>you've picked a spot, add this code:
+                    <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
+                </p>
+            </div>
+           
+            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            
+            <div class="prepend-3 span-18 append-3 last append-bottom">
+                <p>
+                    <strong>5. Click</strong> <em>save</em> near the top of the screen.
+                </p>
+                 
+                 <img class="span-18" src="/static/imgs/save.png" />
+            </div>
+            
+            <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
+                <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
+            </div>
 
-            <div class="center">
-                <button class='blue' id='go_to_shopify'>
-                    <img src="/static/imgs/shopify-bag-36.png" />
-                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                        Return to your Store 
-                    </span>
-                </button>
+            <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
+                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Email barbara@getwillet.com!</h3>
+                <br />
+
+                <div class="center">
+                    <button class='blue' id='go_to_shopify'>
+                        <img src="/static/imgs/shopify-bag-36.png" />
+                        <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                            Return to your Store 
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
 {% endblock content %}
