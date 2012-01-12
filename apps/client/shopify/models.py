@@ -116,8 +116,7 @@ class ClientShopify( Client ):
     @staticmethod
     def get_by_url(store_url):
         store_url = get_shopify_url( store_url )
-
-        logging.warning ("looking for client with url: %s" % store_url)
+        #logging.warning ("looking for client with url: %s" % store_url)
         store = ClientShopify.all().filter( 'url =', store_url ).get()
         return store
 
@@ -151,6 +150,8 @@ class ClientShopify( Client ):
             app_type = 'ReferralShopify'
         elif app_type == "sibt": 
             app_type = 'SIBTShopify'
+        elif app_type == 'buttons':
+            app_type = "ButtonsShopify"
         
         # Grab Shopify API settings
         settings = SHOPIFY_APPS[app_type]
