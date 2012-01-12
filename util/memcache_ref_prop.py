@@ -121,26 +121,26 @@ class MemcacheReferenceProperty(db.Property):
             reference_id = None
 
         if reference_id is not None:
-            logging.info("REference id %s" % reference_id)
+            #logging.info("REference id %s" % reference_id)
             resolved = getattr(model_instance, self.__resolved_attr_name())
             if resolved is not None:
-                logging.info("END: returning resolved")
-                logging.info("END: returning resolved %r" % resolved)
+                #logging.info("END: returning resolved")
+                #logging.info("END: returning resolved %r" % resolved)
                 return resolved
             else:
-                logging.info("memecache key: %s" % self.memcache_key)
+                logging.info("MemRefProp: memcache key: %s" % self.memcache_key)
 
                 # Check for instance in memcache first
                 instance = memcache.get( self.memcache_key )
                 
                 if instance:
-                    logging.info("Got instance from memcache")
+                    #logging.info("Got instance from memcache")
                     # Convert to model from protobuf
                     instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
                 
             # Check in DB after checking in memcache
             if not instance:
-                logging.info("Fidning instance in db.")
+                #logging.info("Fidning instance in db.")
                 instance = db.get(reference_id)
 
                 if instance is None:
@@ -149,13 +149,14 @@ class MemcacheReferenceProperty(db.Property):
                                 reference_id.to_path())
             
             if not instance:
-                logging.info("END: RETURNING NONE")
-            logging.info("resolved attr name being saved: %s" % (self.__resolved_attr_name()))
+                logging.error("END: THIS IS BAD. RETURNING NONE")
+
+            #logging.info("resolved attr name being saved: %s" % (self.__resolved_attr_name()))
             setattr(model_instance, self.__resolved_attr_name(), instance)
-            logging.info("END: returning instance")
+            #logging.info("END: returning instance")
             return instance
         else:
-            logging.info("END: returning none")
+            #logging.info("END: returning none")
             return None
 
     def __set__(self, model_instance, value):
@@ -164,10 +165,10 @@ class MemcacheReferenceProperty(db.Property):
         if not self.memcache_key:
             if isinstance( value, datastore.Key ):
                 self.memcache_key = memcache.get( str( value ) ) # db.get( value ).get_key()
-                logging.info("1: %s" % self.memcache_key)
+                #logging.info("1: %s" % self.memcache_key)
             elif isinstance( value, db.Model ):
                 self.memcache_key = value.get_key() #getattr( value, '_memcache_key', None)
-                logging.info("2: %s" % self.memcache_key)
+                #logging.info("2: %s" % self.memcache_key)
             else:
                 raise TypeError( 'Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model>' )
         
