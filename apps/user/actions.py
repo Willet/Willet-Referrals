@@ -15,12 +15,12 @@ from util.helpers       import generate_uuid
 ## -----------------------------------------------------------------------------
 class UserCreate( Action ):
     """ Stored when a new User is created. """
-    
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        super(UserCreate, self).__init__(*args, **kwargs)
+
     def __str__(self):
-        return 'UserCreate: %s(%s) %s' % (
-                self.user.get_full_name(),
-                self.user.uuid,
-        )
+        return 'UserCreate'
 
     ## Constructor 
     @staticmethod
@@ -42,9 +42,9 @@ class UserIsFBLoggedIn(Action):
     """ Stored when a new User is created. """
     
     def __str__(self):
-        return 'UserCreate: %s(%s) %s' % (
+        return 'UserCreate: %s(%s)' % (
                 self.user.get_full_name(),
-                self.user.uuid,
+                self.user.uuid
         )
 
     ## Constructor 
