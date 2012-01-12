@@ -276,6 +276,11 @@ class SIBTShopify(SIBT, AppShopify):
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
+        else:
+            # if token is None
+            pass
+        
+        logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
         return app
 
     @staticmethod

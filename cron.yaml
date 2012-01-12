@@ -70,8 +70,8 @@ cron:
   url: /bea/ensure/day_global/
   schedule: every 12 hours 
 
-# SOME SIBT SHIT WE DONT CARE ABOUT
+# SOME SIBT SHIT WE DONT CARE ABOUT (was 5 minutes)
 - description: scan for expired SIBT votes
   url: /s/getExpired
-  schedule: every 5 minutes
+  schedule: every 30 minutes
 

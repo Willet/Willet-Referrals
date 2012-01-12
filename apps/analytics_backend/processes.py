@@ -16,6 +16,7 @@ from apps.analytics_backend.models import AppAnalyticsDaySlice
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice
 from apps.analytics_backend.models import GlobalAnalyticsDaySlice
 from apps.analytics_backend.models import actions_to_count
+from apps.analytics_backend.models import actions_to_average
 from apps.action.models import Action
 from apps.app.models import *
 from apps.app.shopify.models import *
@@ -86,8 +87,12 @@ def build_hourly_stats(time_slice):
     logging.debug("Counting %d actions from %s to %s" % (
         len(actions_to_count), start, end))
     for action in actions_to_count:
-        logging.debug("Counting for action: %s" % action)
-        value = count_action(app_, action, start, end)
+        if (action in actions_to_average): # divert average
+            logging.debug("Averaging for action: %s" % action)
+            value = average_action(app_, action, 'duration', start, end)            
+        else:
+            logging.debug("Counting for action: %s" % action)
+            value = count_action(app_, action, start, end)
         setattr(time_slice, action, value)
 
     yield op.db.Put(time_slice)
@@ -104,6 +109,38 @@ def count_action(app_, action, start, end):
         .filter('created <=', end)\
         .filter('is_admin =', False)\
         .count(limit=None)
+
+def average_action(app_, action, prop, start, end):
+    """This is a helper method for build_hourly_stats
+    Returns an Integer average for this action in the time period
+    Note that with limit=None in the fetch() this operation will try to fetch
+    all actions, but if it fails, it will time out.
+    
+    input: prop (str)"""
+    
+    prop_sum = 0
+    
+    try:
+        actions = Action.all()\
+                    .filter('app_ =', app_)\
+                    .filter('class =', action)\
+                    .filter('created >=', start)\
+                    .filter('created <=', end)\
+                    .filter('is_admin =', False)\
+                    .fetch(limit=None)
+        
+        count = actions.count()
+        for action in actions: # no reducing on objects, right?
+            prop_sum += action.prop
+        
+        ''' #reduce() of empty sequence with no initial value
+            prop_sum = reduce (lambda x,y: getattr(x, prop, 0) + \
+                                       getattr(y, prop, 0), actions)'''
+        
+        return prop_sum / count # thus, the average
+    except:
+        # e.g. div by 0
+        return 0
 
 def ensure_daily_slices(app):
     """ENSURE the DAILY APP slices are present"""
@@ -125,6 +162,7 @@ def ensure_daily_slices(app):
 
 def build_daily_stats(time_slice):
     """BUILD the DAILY APP specific stats"""
+    logging.info ("/bea/run/day: trigger build_daily_stats")
     start = time_slice.start
     end = time_slice.end
     app_ = time_slice.app_
@@ -209,6 +247,8 @@ class TimeSlices(webapp.RequestHandler):
         duplicated code all over the place. This has allowed me to make rapid
         changes as I've been designing the analytics backend."""
 
+
+        logging.info ("TimeSlices is called.")
         e_base = 'apps.analytics_backend.models.%s'
         f_base = 'apps.analytics_backend.processes.%s'
         options = {
@@ -275,6 +315,7 @@ class TimeSlices(webapp.RequestHandler):
             }
         }
         oas = options[action][scope]
+        logging.info ("oas = %s" % oas)
         if action == 'ensure':
             if 'mr' not in oas:
                 today = oas['today']

@@ -54,7 +54,7 @@ class SIBTShopifyWelcome(URIHandler):
     def get(self):
         logging.info('trying to create app')
         try:
-            client = self.get_client() # May be None
+            client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
             app = SIBTShopify.get_or_create(client, token=token)

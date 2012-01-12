@@ -122,7 +122,7 @@ class Action(Model, polymodel.PolyModel):
         list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        
+        # super (Model, self).put(); # DEBUG: HARDPUT.
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
