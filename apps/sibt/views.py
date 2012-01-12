@@ -578,12 +578,14 @@ class ShowFBThanks( URIHandler ):
             product  = partial.product
 
             # Make the Instance!
+
             try:
                 product_image = product.images[0]
             except:
-                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
+                product_image = '%s/static/imgs/blank.png' % URL # blank
             instance = app.create_instance(user, None, link, product_image,
                                            motivation=None, dialog="NoConnectFB")
+
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)

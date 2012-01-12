@@ -22,7 +22,6 @@ from apps.client.models     import Client
 from apps.sibt.models     import SIBT 
 from apps.email.models    import Email
 from apps.user.models import get_user_by_cookie
-from apps.user.actions    import UserCreate
 from util                 import httplib2
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -238,15 +237,7 @@ class SIBTShopify(SIBT, AppShopify):
         app.put()
         
         app.do_install()
-
-        # Client (and corresp. User) is made before App
-        # So, update the UserCreate action after
-        action = UserCreate.get_by_user( client.merchant )
-        if not action:
-            logging.warn ("user %s not found; no action available" % client.merchant)
-        action.app_ = app
-        action.put()
-        
+       
         return app
 
     @staticmethod
