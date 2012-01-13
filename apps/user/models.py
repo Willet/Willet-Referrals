@@ -265,7 +265,7 @@ class User( db.Expando ):
     def is_admin( self ):
         logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
         if hasattr(self, 'user_is_admin'):
-            logging.info("%s might be ADMIN (via cached check) %s" % (self.uuid, self.user_is_admin)))
+            logging.info("%s might be ADMIN (via cached check) %s" % (self.uuid, self.user_is_admin))
             return self.user_is_admin
         is_admin = False
 
