@@ -102,7 +102,7 @@ class Action(Model, polymodel.PolyModel):
     # True iff this Action's User is an admin
     is_admin        = db.BooleanProperty( default = False )
     
-    # The Action that this Action is for
+    # The App that this Action is for
     app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
     
     def __init__(self, *args, **kwargs):
@@ -115,6 +115,9 @@ class Action(Model, polymodel.PolyModel):
     
     def put(self):
         """Override util.model.put with some custom shizzbang"""
+        # Not the best spot for this, but I can't think of a better spot either ..
+        self.is_admin = self.user.is_admin() 
+        
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
