@@ -54,12 +54,12 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
 
-class LoadButtonsScriptAndIframe(webapp.RequestHandler):
+class LoadButtonsScript(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self, input_path):
         """
-        {{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
+        {{ URL }}/b/shopify/load/buttons.js?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
         """
         template_values = {}
         app    = ButtonsShopify.get(self.request.get('app_uuid'))
@@ -71,7 +71,7 @@ class LoadButtonsScriptAndIframe(webapp.RequestHandler):
             'URL'            : URL,
         }
         
-        # Finally, render the iframe
+        # Finally, render it
         path = os.path.join('apps/buttons/templates/', input_path)
         self.response.headers.add_header('P3P', P3P_HEADER)
         
