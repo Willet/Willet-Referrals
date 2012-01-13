@@ -48,19 +48,20 @@ def to_dict(something, recursion=0):
     return output
 
 def get_target_url(referrer):
-    target = None
-    try:
-        page_url = urlparse( referrer )
-        target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-        return target
-    except Exception, e:
-        logging.warn('error parsing referer %s: %s' % (
-                referrer,
-                e
-            ),
-            exc_info=True
-        )
-        return ""
+    if referrer is not None:
+        target = None
+        try:
+            page_url = urlparse( referrer )
+            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+            return target
+        except Exception, e:
+            logging.warn('error parsing referer %s: %s' % (
+                    referrer,
+                    e
+                ),
+                exc_info=True
+            )
+    return ""
 
 def isGoodURL(url):
     if len(url) < 11:

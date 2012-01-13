@@ -18,7 +18,6 @@ from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions
 from apps.client.shopify.models   import ClientShopify
 from apps.email.models    import Email
 from apps.link.models     import Link
-from apps.user.actions    import UserCreate
 
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -40,7 +39,6 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
-
     def do_install( self ):
         # Define our script tag 
         tags = [{
@@ -57,6 +55,12 @@ class ButtonsShopify(Buttons, AppShopify):
         self.install_webhooks()
         self.install_script_tags(script_tags=tags)
 
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient( "ShopConnection", 
+                             self.client.merchant.get_attr('email'), 
+                             self.client.merchant.get_full_name(), 
+                             self.client.name )
+        
         # Email Barbara
         Email.emailBarbara(
             'ButtonsShopify Install: %s %s %s' % (
@@ -66,11 +70,6 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient( "ShopConnection", 
-                             self.client.merchant.get_attr('email'), 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name )
 
 # Constructor ------------------------------------------------------------------
 def create_shopify_buttons_app(client, app_token):
@@ -85,12 +84,6 @@ def create_shopify_buttons_app(client, app_token):
                           store_token = app_token,
                           button_selector = "_willet_buttons_app" ) 
     app.put()
-
-    # Client (and corresp. User) is made before App
-    # So, update the UserCreate action after
-    action = UserCreate.get_by_user( client.merchant )
-    action.app_ = app
-    action.put()
 
     app.do_install()
         
@@ -107,15 +100,14 @@ def get_or_create_buttons_shopify_app( client, token ):
         if app.store_token != token:
             # TOKEN mis match, this might be a re-install
             logging.warn(
-                'We are going to reinstall this app because the stored token \
-                does not match the request token\n%s vs %s' % (
+                'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
                     app.store_token,
                     token
                 )
             ) 
             try:
                 app.store_token = token
-                app.client      = app.old_client
+                app.client      = client
                 app.old_client  = None
                 app.put()
                 

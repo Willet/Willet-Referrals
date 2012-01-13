@@ -36,6 +36,8 @@ class URIHandler( webapp.RequestHandler ):
         logging.info("GETTING EMAIL: %s" % email)
         
         self.db_client = get_client_by_email( email )
+        
+        logging.debug ("self.db_client = (%s) %s" % (type (self.db_client), self.db_client))
             
         if not self.db_client:
             pass

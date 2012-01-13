@@ -104,6 +104,7 @@ class OrderWebhookNotification(URIHandler):
                 elif k == 'token':
                     token = v
             
+<<<<<<< HEAD
                 # Grab the purchased items and save some information about them.
                 elif k == 'line_items':
                     for j in v:
@@ -138,7 +139,7 @@ class OrderWebhookNotification(URIHandler):
             # Fetch the order if we hve it.
             o = OrderShopify.get_by_token( token )
             if o == None:
-                user = get_or_create_user_by_email( email, self, client.app_ )
+                user = get_or_create_user_by_email( email, self, client.apps.get() )
             else:
                 user = o.user
      
@@ -183,6 +184,8 @@ class OrderWebhookNotification(URIHandler):
             # Store the purchased items in the order
             o.products.extend( items )
             o.put()
+
         except Exception, e:
             return
+
 
