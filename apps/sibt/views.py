@@ -622,7 +622,7 @@ class ColorboxJSServer( URIHandler ):
         self.response.out.write(template.render(path, template_values))
         return
 
-class ShowActionRelay( URIHandler ):
+class ShowOnUnloadHook( URIHandler ):
     ''' Creates a local-domain iframe that allows SJAX requests to be served
         when the window unloads. (Typically, webkit browsers do not complete 
         onunload functions unless a synchronous AJAX is sent onbeforeunload, and
@@ -637,7 +637,7 @@ class ShowActionRelay( URIHandler ):
                             'evnt'          : self.request.get('evnt')
                           }
         
-        path = os.path.join('apps/sibt/templates/', 'remote.html')
+        path = os.path.join('apps/sibt/templates/', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
