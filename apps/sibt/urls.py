@@ -11,6 +11,7 @@ urlpatterns = [
     (r'/s/vote.html',           VoteDynamicLoader),
     (r'/s/results.html',        ShowResults),
     (r'/s/fb_thanks.html',      ShowFBThanks),
+    (r'/s/track/relay',         ShowActionRelay),
 
     # Processes
     (r'/s/doVote',                  DoVote),
