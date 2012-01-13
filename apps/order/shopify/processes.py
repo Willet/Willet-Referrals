@@ -104,7 +104,6 @@ class OrderWebhookNotification(URIHandler):
                 elif k == 'token':
                     token = v
             
-<<<<<<< HEAD
                 # Grab the purchased items and save some information about them.
                 elif k == 'line_items':
                     for j in v:
