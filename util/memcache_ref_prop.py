@@ -8,7 +8,6 @@ import time
 from datetime import timedelta
 from google.appengine.api import datastore
 from google.appengine.api import memcache, datastore_errors, taskqueue
-from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 from google.appengine.ext.db import ReferencePropertyResolveError
