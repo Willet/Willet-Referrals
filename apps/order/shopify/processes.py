@@ -69,7 +69,8 @@ class OrderWebhookNotification(URIHandler):
         return self.post()
 
     def post(self):
-        try: 
+        # Try/catch around whole thing so we never return a 500 error to Shopify.
+        try:
             logging.info("HEADERS : %s %r" % (
                 self.request.headers,
                 self.request.headers
@@ -183,8 +184,6 @@ class OrderWebhookNotification(URIHandler):
             # Store the purchased items in the order
             o.products.extend( items )
             o.put()
-
         except Exception, e:
-            return
-
+            logging.error("Error occurred during Order processing: %s" % e)
 
