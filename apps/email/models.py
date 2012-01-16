@@ -38,7 +38,7 @@ class Email():
 #### Dev Team Emails ####
     @staticmethod
     def emailBarbara(msg):
-        to_addr = dev_team #barbara
+        to_addr = team #barbara
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
