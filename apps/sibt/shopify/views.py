@@ -72,14 +72,22 @@ class SIBTShopifyWelcome(URIHandler):
                 old_install_code = 1
             else:
                 old_install_code = 0
+
+            # Switched to new order tracking code on Jan 16
+            if app.created > datetime( 2012, 01, 16 ):
+                new_order_code = 1
+            else:
+                new_order_code = 0
             
             template_values = {
                 'app': app,
+                'URL' : URL,
                 'shop_name' : shop_name,
                 'shop_owner': shop_owner,
                 'client_email': client_email,
+                'client_uuid' : client.uuid,
                 'old_install_code' : old_install_code,
-                #'install_code': "<div id='_willet_shouldIBuyThisButton'></div>" #{% include 'willet_sibt' %}"
+                'new_order_code' : new_order_code
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
