@@ -175,7 +175,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
         app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
         user          = User.get(self.request.get('user_uuid'))
         user_found    = 1 if hasattr(user, 'fb_access_token') else 0
-        user_is_admin = user.is_admin()
+        user_is_admin = user.is_admin() if isinstance( user , User) else False
         target        = self.request.get( 'url' )
         
         # Store 'Show' action
@@ -578,17 +578,14 @@ class ShowFBThanks( URIHandler ):
             product  = partial.product
 
             # Make the Instance!
-            if hasattr( product, 'images' ) and len( product.images ) >= 0:
-                wtf_image = product.images[0]
-                if wtf_image is None or wtf_image == '':
-                    wtf_image = 'http://i.imgur.com/slbyP.jpg'
-                instance = app.create_instance(user, None, link, wtf_image,
-                                               motivation=None, dialog="NoConnectFB")
-            else:
-                #blank pixel dummy
-                instance = app.create_instance(user, None, link, 'http://i.imgur.com/slbyP.jpg',
-                                               motivation=None, dialog="NoConnectFB")
-    
+
+            try:
+                product_image = product.images[0]
+            except:
+                product_image = '%s/static/imgs/blank.png' % URL # blank
+            instance = app.create_instance(user, None, link, product_image,
+                                           motivation=None, dialog="NoConnectFB")
+
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)
@@ -625,3 +622,22 @@ class ColorboxJSServer( URIHandler ):
         self.response.out.write(template.render(path, template_values))
         return
 
+class ShowOnUnloadHook( URIHandler ):
+    ''' Creates a local-domain iframe that allows SJAX requests to be served
+        when the window unloads. (Typically, webkit browsers do not complete 
+        onunload functions unless a synchronous AJAX is sent onbeforeunload, and
+        in order to send synced requests, the request must be sent to the same
+        domain.)'''
+    def get( self ):
+        template_values = { 'URL'           : URL,
+                            'app_uuid'      : self.request.get('app_uuid'),
+                            'user_uuid'     : self.request.get('user_uuid'),
+                            'instance_uuid' : self.request.get('instance_uuid'),
+                            'target_url'    : self.request.get('target_url'),
+                            'evnt'          : self.request.get('evnt')
+                          }
+        
+        path = os.path.join('apps/sibt/templates/', 'onunloadhook.html')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return

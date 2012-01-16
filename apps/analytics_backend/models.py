@@ -32,6 +32,7 @@ actions_to_count = [
     'SIBTUserClickedOverlayAsk',
     'SIBTUserClickedTabAsk',
     'SIBTAskUserClickedShare',
+    'SIBTVisitLength',
 
     'SIBTShowingTopBarAsk',
     'SIBTShowingButton',
@@ -58,6 +59,12 @@ actions_to_count = [
 ]
 # removing duplicates for the lazy
 actions_to_count = list(set(actions_to_count))
+
+actions_to_average = [
+    'SIBTVisitLength',
+]
+# removing duplicates for the lazy
+actions_to_average = list(set(actions_to_average))
 
 class AnalyticsTimeSlice(db.Expando):
     start = db.DateTimeProperty()

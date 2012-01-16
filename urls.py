@@ -22,7 +22,7 @@ def main():
     new_len = 0
     reload_uris = memcache.get('reload_uris')
     import_error = False
-
+    
     try:
         combined_uris = memcache.get('combined_uris')
     except:
@@ -33,7 +33,7 @@ def main():
         # if we have no uris, or if we are rewriting
         logging.info('reloading uris %s %s' % (reload_uris, combined_uris))
         combined_uris = []
-        for app in INSTALLED_APPS:
+        for app in INSTALLED_APPS: # INSTALLED_APPS came from consts.py
             try:
                 import_str = 'apps.%s.urls' % app
                 __import__(import_str, globals(), locals(), [], -1)
