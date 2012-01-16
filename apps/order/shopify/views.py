@@ -24,7 +24,7 @@ class OrderJSLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        user     = get_user_by_cookie( self )
+        user = get_user_by_cookie( self )
         
         # Grab shop URL from params
         shop_url = self.request.get('shop')
@@ -37,8 +37,8 @@ class OrderJSLoader(webapp.RequestHandler):
         # Grab all template values
         template_values = {
                 'SECURE_URL' : SECURE_URL,
-                'user': user,
-                'client' : client
+                'user'       : user,
+                'client'     : client
         }
 
         # Finally, render the JS!

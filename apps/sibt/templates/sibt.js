@@ -345,8 +345,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 "</div>" +
                 "<div class='message'>" + message + "</div>" +
                 "<div class='vote last' style='display: none'>" +
-                "    <button id='yesBtn' class='yes'>Buy it</button> "+
-                "    <button id='noBtn' class='no'>Skip it</button> "+
+                "    <button id='yesBtn' class='yes'>Yes</button> "+
+                "    <button id='noBtn' class='no'>No</button> "+
                 "</div> "+
                 "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
                 "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+ 
