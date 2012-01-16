@@ -216,7 +216,6 @@ def create_click_action( user, app, link ):
                         user     = user,
                         app_     = app,
                         link     = link )
-    super(ClickAction, act).create()
 
     act.put()
 """
@@ -271,7 +270,6 @@ def create_vote_action( user, app, link, vote ):
                        app_     = app,
                        link     = link,
                        vote     = vote )
-    super(VoteAction, act).create()
 
     act.put() 
 """
@@ -322,8 +320,6 @@ class ScriptLoadAction( LoadAction ):
                                  app_     = app,
                                  url      = url )
 
-        super(ScriptLoadAction, act).create()
-        
         act.put()
 
     @staticmethod
@@ -355,8 +351,6 @@ class ButtonLoadAction( LoadAction ):
                                  user     = user,
                                  app_     = app,
                                  url      = url )
-        
-        super(ButtonLoadAction, act).create()
         
         act.put()
 
@@ -401,8 +395,6 @@ class ShowAction(Action):
                 url = url
         )
         
-        super(ShowAction, action).create()
-        
         action.put()
         return action
 
@@ -436,8 +428,6 @@ class UserAction(Action):
                 what = what,
                 url = url
         )
-        
-        super(UserAction, action).create()
         
         action.put()
         return action
