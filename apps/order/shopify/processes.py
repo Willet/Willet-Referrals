@@ -184,6 +184,6 @@ class OrderWebhookNotification(URIHandler):
             # Store the purchased items in the order
             o.products.extend( items )
             o.put()
-    except Exception, e:
-        logging.error("Error occurred during Order processing: %s" % e)
+        except Exception, e:
+            logging.error("Error occurred during Order processing: %s" % e)
 
