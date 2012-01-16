@@ -103,13 +103,14 @@ def count_action(app_, action, start, end):
     Returns an Integer count for this action in the time period
     Note that with limit=None in the count() this operation will try to count
     all actions, but if it fails, it will time out."""
-    return Action.all()\
+    count = Action.all()\
         .filter('app_ =', app_)\
         .filter('class =', action)\
         .filter('created >=', start)\
         .filter('created <=', end)\
         .filter('is_admin =', False)\
         .count(limit=None)
+    return count
 
 def average_action(app_, action, prop, start, end):
     """This is a helper method for build_hourly_stats
@@ -119,7 +120,7 @@ def average_action(app_, action, prop, start, end):
     
     input: prop (str)"""
     
-    prop_sum = 0
+    prop_sum = 0.0
     
     try:
         actions = Action.all()\
@@ -129,23 +130,34 @@ def average_action(app_, action, prop, start, end):
                     .filter('created <=', end)\
                     .filter('is_admin =', False)\
                     .fetch(limit=None)
-        
-        count = actions.count()
+        count = len(actions)
+        logging.info ("found count to be %d" % count)
         for action in actions: # no reducing on objects, right?
-            prop_sum += action.prop
-        
-        ''' #reduce() of empty sequence with no initial value
-            prop_sum = reduce (lambda x,y: getattr(x, prop, 0) + \
-                                       getattr(y, prop, 0), actions)'''
-        
+            prop_sum += action.duration     # float (getattr (action, prop, 0.0))
+                
+        logging.info ("found sum to be %f" % prop_sum)
         average = prop_sum / count
         logging.info ("average for %s calculated to be %d" % (action, average))
         
-        return average
-    except:
+        return int (average)
+    except Exception, e:
         # e.g. div by 0
-        logging.info ("error calculating average for %s" % action)
+        logging.error("error calculating average for %s: %s" % (action, e), exc_info=True)
         return 0
+
+#class derp_count (webapp.RequestHandler):
+#    def get (self):
+#        # remove
+#        prop_sum = 0.0
+#        actions = Action.all()\
+#                    .filter('what =', 'SIBTVisitLength')\
+#                    .filter('created >=', datetime.datetime(2012,1,15))\
+#                    .filter('created <=', datetime.datetime(2012,1,17))\
+#                    .fetch(limit=None)
+#        count = len(actions)
+#        for action in actions: # no reducing on objects, right?
+#            prop_sum += action.duration     # float (getattr (action, prop, 0.0))
+#        self.response.out.write('%d, %f' % (count, prop_sum))
 
 def ensure_daily_slices(app):
     """ENSURE the DAILY APP slices are present"""
@@ -497,6 +509,4 @@ class AnalyticsDone(webapp.RequestHandler):
 #            shard_count=10
 #        )
 #        self.response.out.write('started: %s' % mapreduce_id)
-
-
 

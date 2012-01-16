@@ -191,7 +191,7 @@ def admin_required( fn ):
             fn(self, client)
         else:
             logging.info('not admin\nemail: %s\nip: %s' % (
-                client.email,
+                getattr (client, 'email', ''),
                 self.request.remote_addr
             ))
             self.redirect ( '/' )

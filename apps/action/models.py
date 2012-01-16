@@ -21,7 +21,6 @@ from util.consts             import *
 from util.helpers            import generate_uuid
 from util.model              import Model
 from util.memcache_bucket_config import MemcacheBucketConfig
-from util.memcache_bucket_config    import batch_put 
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 """Helper method to persist actions to datastore"""
@@ -74,6 +73,14 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
 
+def defer_put(action):
+    from apps.sibt.actions import *
+    
+    try:
+        db.put(action)
+    except Exception,e:
+        logging.error('error putting: %s' % e, exc_info=True)
+
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -113,15 +120,14 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket') # select relevant buckets
-        bucket = mbc.get_random_bucket() # select one of them
+        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        bucket = mbc.get_random_bucket()
         logging.info('bucket: %s' % bucket)
 
         list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        # super (Model, self).put(); # DEBUG: HARDPUT.
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
@@ -216,7 +222,6 @@ def create_click_action( user, app, link ):
                         user     = user,
                         app_     = app,
                         link     = link )
-    super(ClickAction, act).create()
 
     act.put()
 """
@@ -271,7 +276,6 @@ def create_vote_action( user, app, link, vote ):
                        app_     = app,
                        link     = link,
                        vote     = vote )
-    super(VoteAction, act).create()
 
     act.put() 
 """
@@ -322,8 +326,6 @@ class ScriptLoadAction( LoadAction ):
                                  app_     = app,
                                  url      = url )
 
-        super(ScriptLoadAction, act).create()
-        
         act.put()
 
     @staticmethod
@@ -355,8 +357,6 @@ class ButtonLoadAction( LoadAction ):
                                  user     = user,
                                  app_     = app,
                                  url      = url )
-        
-        super(ButtonLoadAction, act).create()
         
         act.put()
 
@@ -401,8 +401,6 @@ class ShowAction(Action):
                 url = url
         )
         
-        super(ShowAction, action).create()
-        
         action.put()
         return action
 
@@ -436,8 +434,6 @@ class UserAction(Action):
                 what = what,
                 url = url
         )
-        
-        super(UserAction, action).create()
         
         action.put()
         return action
