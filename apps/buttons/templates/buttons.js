@@ -84,7 +84,7 @@ var _willet_run_scripts = function() {
             if (button_div &&  window.iframe_loaded == undefined) {
                 $(button_div).css( {"float"   : "left",
                                     "height"  : "30px",
-                                    "width"   : "275px",
+                                    "width"   : "282px",
                                     "padding" : "5px"} );
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
@@ -101,6 +101,12 @@ var _willet_run_scripts = function() {
                 console.log('fb_iframe inserted');
                 */
         
+                // Grab the photo
+                var photo = '';
+                if ( data.product.images[0] != null ) {
+                    photo = data.product.images[0].src;
+                }
+
                 // Tumblr
                 var d = document.createElement( 'div' );
                 $(d).attr('style', 'float: left; margin-right: 5px; width: 61px !important;' );
@@ -117,34 +123,34 @@ var _willet_run_scripts = function() {
                 d.appendChild( a );
                 button_div.appendChild( d );
 
-                // The Fancy Button 
+                // The Fancy Button
                 var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 90px !important;' );
+                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 97px !important;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://www.thefancy.com/fancyit?" +
-                        "ItemURL=" + window.location.href + 
-                        "&Title="+ data.product.title +
-                        "&Category=Other" + 
-                        "&ImageURL=" + photo;
+                        "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                        "&Title="  + encodeURIComponent( data.product.title ) +
+                        "&Category=Other";
+                if ( photo.length > 0 ) {
+                    u += "&ImageURL=" + encodeURIComponent( photo );
+                } else { // If no image on page, submit blank image.
+                    u += "&ImageURL=" + encodeURIComponent( '{{URL}}/static/imgs/noimage.png' );
+                }
+
                 $(a).attr( 'href', u );
                 $(a).attr( 'id', 'FancyButton' );
                 d.appendChild( a );
                 button_div.appendChild( d ); 
 
                 // Pinterest
-                var photo = '';
-                if ( data.product.images[0] != null ) {
-                    photo = data.product.images[0].src;
-                }
-
                 var d = document.createElement( 'div' );
                 $(d).attr('style', 'float: left;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + window.location.href + 
-                        "&media=" + photo + 
+                        "url=" + encodeURIComponent( window.location.href ) + 
+                        "&media=" + encodeURIComponent( photo ) + 
                         "&description=" + "Found on {{domain}}!";
                 $(a).attr( 'href', u );
                 $(a).attr( 'class', 'pin-it-button' );
@@ -152,8 +158,6 @@ var _willet_run_scripts = function() {
                 $(a).html = "Pin It";
                 d.appendChild( a );
                 button_div.appendChild( d );
-
-
             }
         }
     );
