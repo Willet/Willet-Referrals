@@ -98,19 +98,18 @@ class Action(Model, polymodel.PolyModel):
     # True iff this Action's User is an admin
     is_admin        = db.BooleanProperty( default = False )
     
-    # The Action that this Action is for
+    # The App that this Action is for
     app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        if 'user' in kwargs:
-            if hasattr(kwargs['user'], 'is_admin'):
-                if kwargs['user'].is_admin():
-                    self.is_admin = True
         super(Action, self).__init__(*args, **kwargs)
     
     def put(self):
         """Override util.model.put with some custom shizzbang"""
+        # Not the best spot for this, but I can't think of a better spot either ..
+        self.is_admin = self.user.is_admin() 
+        
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
@@ -149,10 +148,6 @@ class Action(Model, polymodel.PolyModel):
         # Subclasses should override this
         pass
     
-    def create( self ):
-        if self.user.is_admin():
-            self.is_admin = True
-            
     ## Accessors 
     @staticmethod
     def count( admins_too = False ):

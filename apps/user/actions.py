@@ -32,7 +32,6 @@ class UserCreate( Action ):
                            user     = user,
                            app_     = app )
         act.put()
-        logging.debug ("PUT USER CREATE ACTION") # not en error -__-"
 
     @staticmethod
     def get_by_user( user ):
@@ -57,7 +56,7 @@ class UserIsFBLoggedIn(Action):
                            user     = user,
                            app_     = app )
         act.put()
-        logging.error("PUT USER can haz facebooks")
+        logging.debug("PUT USER can haz facebooks")
 
     @staticmethod
     def get_by_user( user ):

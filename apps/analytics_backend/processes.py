@@ -237,6 +237,12 @@ def build_global_daily_stats(global_slice):
     yield op.db.Put(global_slice)
 
 class TimeSlices(webapp.RequestHandler):
+    """ Funnily enough, sometimes GET or POST is called. 
+        Thanks for being consistent, mapreduce. """
+
+    def post(self, action, scope):
+        return self.get( action, scope )
+
     def get(self, action, scope):
         """Handler to run our analytics methods. Because there is a lot of
         duplicated code, we use this convoluted options dict.
