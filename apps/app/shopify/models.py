@@ -75,12 +75,9 @@ class AppShopify(Model):
         #logging.info('%s %s' % (resp, content))
 
         # See what we've already installed and flag it so we don't double install
-        order_create = product_create = product_delete = product_update = True
+        product_create = product_delete = product_update = True
         for w in data['webhooks']:
             #logging.info("checking %s"% w['address'])
-            if w['address'] == '%s/o/shopify/webhook/create' % URL or \
-               w['address'] == '%s/o/shopify/webhook/create/' % URL:
-                order_create = False
             if w['address'] == '%s/product/shopify/webhook/create' % URL or \
                w['address'] == '%s/product/shopify/webhook/create/' % URL:
                 product_create = False
@@ -103,17 +100,6 @@ class AppShopify(Model):
             }
         }
         webhooks.append(data)
-        
-        # Install the "Order Creation" webhook
-        data = {
-            "webhook": {
-                "address": "%s/o/shopify/webhook/create" % ( URL ),
-                "format" : "json",
-                "topic"  : "orders/create"
-            }
-        }
-        if order_create:
-            webhooks.append(data)
 
         # Install the "Product Creation" webhook
         data = {
@@ -182,18 +168,6 @@ class AppShopify(Model):
         
         h.add_credentials(username, password)
         
-        # Install the 'Order Confirmation Screen' script
-        data = {
-            "script_tag": {
-                "src": "%s/o/shopify/order.js?store=%s" % (
-                    SECURE_URL,
-                    self.store_url 
-                ),
-                "event": "onload"
-            }
-        }      
-        script_tags.append(data)
-        
         for script_tag in script_tags:
             logging.info("POSTING to %s %r " % (url, script_tag) )
             resp, content = h.request(
@@ -214,7 +188,7 @@ class AppShopify(Model):
         logging.info('installed %d script_tags' % len(script_tags))
 
     def install_assets(self, assets=None):
-        """Installs our assets on the clients store
+        """Installs our assets on the client's store
             Must first get the `main` template in use"""
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
