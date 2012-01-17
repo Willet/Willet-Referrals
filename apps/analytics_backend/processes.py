@@ -92,8 +92,7 @@ def build_hourly_stats(time_slice):
             logging.debug("Averaging for action: %s = %d" % (action, value))
         else:
             value = count_action(app_, action, start, end)
-            logging.debug("Counting for action: %s = %d" % (action, value))
-            
+            logging.debug("Counting for action: %s = %d" % (action, value))    
         setattr(time_slice, action, value)
 
     yield op.db.Put(time_slice)
@@ -137,27 +136,13 @@ def average_action(app_, action, prop, start, end):
                 
         logging.info ("found sum to be %f" % prop_sum)
         average = prop_sum / count
-        logging.info ("average for %s calculated to be %d" % (action, average))
+        logging.info ("average for %s calculated to be %f" % (action, average))
         
-        return int (average)
+        return average
     except Exception, e:
         # e.g. div by 0
         logging.error("error calculating average for %s: %s" % (action, e), exc_info=True)
         return 0
-
-#class derp_count (webapp.RequestHandler):
-#    def get (self):
-#        # remove
-#        prop_sum = 0.0
-#        actions = Action.all()\
-#                    .filter('what =', 'SIBTVisitLength')\
-#                    .filter('created >=', datetime.datetime(2012,1,15))\
-#                    .filter('created <=', datetime.datetime(2012,1,17))\
-#                    .fetch(limit=None)
-#        count = len(actions)
-#        for action in actions: # no reducing on objects, right?
-#            prop_sum += action.duration     # float (getattr (action, prop, 0.0))
-#        self.response.out.write('%d, %f' % (count, prop_sum))
 
 def ensure_daily_slices(app):
     """ENSURE the DAILY APP slices are present"""

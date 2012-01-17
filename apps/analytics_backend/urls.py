@@ -5,5 +5,4 @@ urlpatterns = [
     # Processes
     (r'/bea/done/', AnalyticsDone),
     (r'/bea/(.*)/(.*)/', TimeSlices),
-    # (r'/derp/', derp_count),
 ]
