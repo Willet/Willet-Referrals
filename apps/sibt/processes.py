@@ -300,7 +300,7 @@ class TrackSIBTShowAction(URIHandler):
             action = action_class.create(user, 
                     instance = instance, 
                     url = url,
-                    app = app,
+                    app_ = app,
                     duration = duration
             )
         except Exception,e:
@@ -342,10 +342,10 @@ class TrackSIBTUserAction(URIHandler):
         try:
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance=instance, 
-                    url=url,
-                    app=app,
-                    duration=duration
+                    instance = instance, 
+                    url = url,
+                    app_ = app,
+                    duration = duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
