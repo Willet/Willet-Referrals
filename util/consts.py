@@ -120,7 +120,8 @@ TEMPLATE_DIRS = (
 ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
                  'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
-                 'harrismc@gmail.com', 'fraser.harris@gmail.com' ]
+                 'harrismc@gmail.com', 'fraser.harris@gmail.com',
+                 'b2lai@uwaterloo.ca', 'brian@getwillet.com' ]
 ADMIN_IPS = [ #'70.83.160.171',      # Notman House
               #'173.177.235.110',    # Montreal apartment
               #'70.31.244.131',      # Montreal apartment x2
@@ -164,9 +165,9 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
 

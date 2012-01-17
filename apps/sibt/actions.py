@@ -12,10 +12,11 @@ from google.appengine.api   import memcache
 from google.appengine.ext   import db
 from google.appengine.datastore import entity_pb
 
+from apps.action.models     import Action
 from apps.action.models     import ClickAction
+from apps.action.models     import ShowAction
+from apps.action.models     import UserAction
 from apps.action.models     import VoteAction
-from apps.action.models     import ShowAction 
-from apps.action.models     import UserAction 
 
 from apps.gae_bingo.gae_bingo import bingo
 
@@ -393,6 +394,37 @@ class SIBTInstanceAction(UserAction):
                 self.what,
                 self.app_.client.domain
         )
+
+class SIBTVisitLength(UserAction):
+    '''action recording the length of visits (if onbeforeunload is called).'''
+    @staticmethod
+    def create(user, **kwargs):
+        # Make the action
+        what = 'SIBTVisitLength'
+        url = None
+        app = None
+        duration= 0.0
+        try:
+            logging.debug ('kwargs for SIBTVisitLength: %s' % kwargs)
+            app = kwargs['app']
+            url = kwargs['url']
+            duration = float (kwargs['duration'])
+        except Exception,e:
+            logging.error(e, exc_info=True)
+
+        uuid = generate_uuid( 16 )
+        action = SIBTVisitLength(
+                key_name = uuid,
+                uuid     = uuid,
+                user     = user,
+                app_     = app,
+                url      = url,
+                what     = what,
+                duration = duration
+        )
+        action.put()
+
+        return action
 
 class SIBTInstanceCreated(SIBTInstanceAction):
     medium = db.StringProperty( default="", indexed=True )

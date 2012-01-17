@@ -54,7 +54,7 @@ class SIBTShopifyWelcome(URIHandler):
     def get(self):
         logging.info('trying to create app')
         try:
-            client = self.get_client() # May be None
+            client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
             app = SIBTShopify.get_or_create(client, token=token)
@@ -62,7 +62,7 @@ class SIBTShopifyWelcome(URIHandler):
             client_email = None
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
-            if client != None and client.merchant != None:
+            if client is not None and client.merchant is not None:
                 client_email = client.email
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
@@ -92,7 +92,7 @@ class SIBTShopifyWelcome(URIHandler):
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
         except:
-            logging.error('wtf', exc_info=True)
+            logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
     def post(self, app_uuid):
@@ -316,8 +316,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live  = is_asker  = show_votes = has_voted  = show_top_bar_ask = False
-        instance = share_url = link       = asker_name = asker_pic = product = None
+        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
         shop_url    = get_shopify_url(self.request.get('store_url'))
@@ -329,10 +329,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             target = get_target_url(self.request.headers.get('REFERER'))
 
-        #user = User.get(self.request.get('user_uuid'))
-        #if not user:
-        #    logging.info('could not get user by request user_uuid: %s' %
-        #            self.request.get('user_uuid'))
         user = get_or_create_user_by_cookie( self, app )
 
         # Try to find an instance for this { url, user }
@@ -384,7 +380,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
-                    asker_name = 'I'
+                    asker_name = 'I' # what?
             except:
                 logging.warn('error splitting the asker name')
 
@@ -432,7 +428,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 ab_test_options = [ "Not sure? Let friends vote! Save $5!",
                                     "Earn $5! Ask your friends what they think!",
                                     "Need advice? Ask your friends! Earn $5!",
-                                    "Save $5 by getting advice from friends!" ]
+                                    "Save $5 by getting advice from friends!",
+                                    # Muck with visitors' intrinsic motivation:
+                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
+                                    # (enable if you like)
+                                    # "Not sure? Ask your friends.", 
+                                  ]
                 cta_button_text = ab_test( 'sibt_incentive_text', 
                                             ab_test_options, 
                                             user = user,

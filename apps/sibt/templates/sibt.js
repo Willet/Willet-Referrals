@@ -100,7 +100,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var _willet_store_analytics = function (message) {
         var message = message || '{{ evnt }}';
         var iframe = document.createElement( 'iframe' );
-
+        //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
+        var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
         iframe.style.display = 'none';
         //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
         iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
@@ -108,10 +109,17 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                     "&user_uuid={{user.uuid}}" +
                     "&instance_uuid={{instance.uuid}}" +
                     "&target_url=" + window.location.href;
-
+        iframe.id = random_id;
+        iframe.name = random_id;
+        iframe.onload = function () {
+            try {
+                var iframe_handle = document.getElementById(random_id);
+                iframe_handle.parentNode.removeChild ( iframe_handle );
+            } catch (e) { }
+        }
         document.body.appendChild( iframe );
     };
-
+    
     /**
     * Called when ask iframe is closed
     */
@@ -794,6 +802,17 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                     }
                 }
             } 
+            
+            // analytics to record the amount of time this script has been loaded
+            var iframe = document.createElement( 'iframe' );
+            iframe.style.display = 'none';
+            iframe.src = "{{ URL }}{% url ShowOnUnloadHook %}?evnt=SIBTVisitLength" + 
+                             "&app_uuid={{app.uuid}}" +
+                             "&user_uuid={{user.uuid}}" +
+                             "&instance_uuid={{instance.uuid}}" +
+                             "&target_url=" + window.location.href;
+            document.body.appendChild( iframe );
+            
         }
     };
 

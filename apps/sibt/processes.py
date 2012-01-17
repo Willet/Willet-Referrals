@@ -288,21 +288,25 @@ class TrackSIBTShowAction(URIHandler):
         if self.request.get('instance_uuid'):
             instance = SIBTInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))         
+            app = App.get(self.request.get('app_uuid')) 
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid')) 
+        duration = self.request.get('duration') or 0.0
         what = self.request.get('evnt')
         url = self.request.get('target_url')
         try:
+            logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance=instance, 
-                    url=url,
-                    app=app
+                    instance = instance, 
+                    url = url,
+                    app = app,
+                    duration = duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
             try:
+                logging.debug ('TrackSIBTShowAction 2: user = %s, instance = %s, what = %s' % (user, instance, what))
                 action = SIBTShowAction.create(user, instance, what)
             except Exception, e:
                 logging.error('this is serious: %s' % e, exc_info=True)
@@ -480,8 +484,8 @@ class SendFBMessages( URIHandler ):
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
             user  = get_or_create_user_by_cookie(self, app)
 
-        logging.error('friends %s %r' % (ids, names))
-        logging.error( 'msg :%s '% msg )
+        logging.debug('friends %s %r' % (ids, names))
+        logging.debug('msg :%s '% msg)
 
         # Format the product's desc for FB
         try:
@@ -518,10 +522,14 @@ class SendFBMessages( URIHandler ):
             ) 
 
         try:
+            try:
+                product_image = product.images[0]
+            except:
+                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
             fb_share_ids = user.fb_post_to_friends( ids,
                                                     names,
                                                     msg,
-                                                    product.images[0],
+                                                    product_image,
                                                     product.title,
                                                     product_desc,
                                                     app.client.domain,
@@ -534,7 +542,7 @@ class SendFBMessages( URIHandler ):
                 instance = app.create_instance( user, 
                                                 None, 
                                                 link, 
-                                                product.images[0], 
+                                                product_image, 
                                                 motivation="",
                                                 dialog="ConnectFB")
                 # increment shares

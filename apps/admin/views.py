@@ -199,14 +199,14 @@ class ManageApps(URIHandler):
             try:
                 d = {
                     'uuid': app.uuid,
-                    'client_name': app.client.name,
+                    'client_name': app.client.name if app.client else '',
                     'class_name': app.class_name(),
-                    'client': app.client,
+                    'client': getattr (app, 'client'),
                     'app': app
                 }
+                apps.append(d)
             except Exception,e:
                 logging.error('error adding app: %s' % e, exc_info=True)
-            apps.append(d)
         return apps
     
     @admin_required
@@ -841,6 +841,9 @@ class ReloadURIS(URIHandler):
             template_values))
 
 class CheckMBC(URIHandler):
+    ''' /admin/check_mbc displays the current number of "memcache buckets".
+        /admin/check_mbc?num=50 sets the number of memcache buckets to 50. 
+        Default seems to be 20 or 25. '''
     @admin_required
     def get(self, admin):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')

@@ -18,6 +18,7 @@ from google.appengine.datastore import entity_pb
 from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
+from apps.client.models     import Client
 from apps.sibt.models     import SIBT 
 from apps.email.models    import Email
 from apps.user.models import get_user_by_cookie
@@ -33,7 +34,7 @@ class SIBTShopify(SIBT, AppShopify):
     
     # Shopify's ID for this store
     #store_id    = db.StringProperty( indexed = True )
-
+    
     # Shopify's token for this store
     #store_token = db.StringProperty( indexed = True )
     button_css = db.TextProperty(default=None,required=False)
@@ -236,13 +237,15 @@ class SIBTShopify(SIBT, AppShopify):
         app.put()
         
         app.do_install()
-        
+       
         return app
 
     @staticmethod
     def get_or_create(client, token=None):
+        logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = SIBTShopify.get_by_store_url(client.url)
         if app is None:
+            logging.debug ("app not found; creating one.")
             app = SIBTShopify.create(client, token)
         elif token != None and token != '':
             if app.store_token != token:
@@ -256,6 +259,7 @@ class SIBTShopify(SIBT, AppShopify):
                 ) 
                 try:
                     app.store_token = token
+                    logging.debug ("app.old_client was %s" % app.old_client)
                     app.client      = app.old_client
                     app.old_client  = None
                     app.put()
@@ -263,6 +267,11 @@ class SIBTShopify(SIBT, AppShopify):
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
+        else:
+            # if token is None
+            pass
+        
+        logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
         return app
 
     @staticmethod
