@@ -3,65 +3,95 @@
  */
 
 /**
+* quick helper function to add scripts to dom
+*/
+var _willet_load_remote_script = function(script) {
+    var dom_el  = document.createElement('script'); 
+    dom_el.src  = script;
+    dom_el.type = 'text/javascript'; 
+    document.getElementsByTagName('head')[0].appendChild(dom_el); 
+    return dom_el;
+};
+
+var scripts = [
+/**
+* Scripts to load into the dom
+*   name - name of the script
+*   url - url of script
+*   dom_el - dom element once inserted
+*   loaded - script has been loaded
+*   test - method to test if it has been loaded
+*   callback - callback after test is success
+*/
+    {
+        'name': 'jQuery',
+        'url': 'http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js',
+        'dom_el': null,
+        'loaded': false,
+        'test': function() {
+            return (typeof jQuery == 'function')
+        }, 'callback': function() {
+            // HACKETY HACK HACK
+            $ = jQuery;
+        }
+    }
+];
+
+var _willet_check_scripts = function() {
+    /**
+    * checkScripts checks the scripts var and uses
+    * the defined `test` and `callack` methods to tell
+    * when a script has been loaded and is ready to be
+    * used
+    */    
+    var all_loaded = true;
+
+    for (i = 0; i < scripts.length; i++) {
+        var row  = scripts[i];
+        if (row.dom_el == null) {
+            // insert the script into the dom
+            if (row.test()) {
+                // script is already loaded!
+                row.callback();
+                row.loaded = true;
+                row.dom_el = true;
+            } else {
+                row.dom_el = _willet_load_remote_script(row.url);
+            }
+        }
+        if (row.loaded == false) {
+            if (row.test()) {
+                // script is now loaded!
+                row.callback();
+                row.loaded = true;
+            } else {
+                all_loaded = false;
+            }
+        }   
+    }
+
+    if (all_loaded) {
+        // let's actually get this party started 
+        _willet_run_scripts();
+    } else {
+        window.setTimeout(_willet_check_scripts,100);
+    }
+};
+
+/**
  * body of code to run when all scripts have been injected
  */
 var _willet_run_scripts = function() {
     // get the button where we are going to insert
     var here = window.location + '.json';
-    var $ = jQuery;
+    var $    = jQuery;
 
     jQuery.getJSON (
         here,
         function(data) {
             // callback function
-            
-            /*
-            // Used to add meta tags to head
-            var addEl = function(head, el, property, content) {
-                var dom_el = document.createElement(el);
-                dom_el.setAttribute('property', property);
-                dom_el.content = content;
-                head.appendChild(dom_el);
-            };
-
-            // META tags we are going to inject
-            var meta_tags = [
-                {
-                    'property': "fb:app_id",
-                    'content': "{{ FACEBOOK_APP_ID }}",
-                }, {
-                    'property': "og:type",
-                    'content': "shopify_buttons:product"
-                }, {
-                    'property': "og:title",
-                    'content': data.product.title, 
-                },  {
-                    'property': "og:description",
-                    'content': data.product.body_html, 
-                }, 
-                {
-                    'property': "og:url",
-                    'content': "{{URL}}/{{ willt_code }}"
-                }
-            ];
-            
-            if  (data.product.images[0] != null ) {
-                meta_tags.push({'property': "og:image", 'content': data.product.images[0].src});
-            } else {
-                meta_tags.push({'property': "og:image", 'content': '{{URL}}/static/imgs/ShopConnectionLogo.png'});
-            }
-
-            // add all those meta tags
-            for (i = 0; i < meta_tags.length; i++) {
-                addEl(head, 'meta', meta_tags[i].property, meta_tags[i].content);
-            }
-            head.setAttribute('prefix', "og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# shopify_buttons: http://ogp.me/ns/fb/shopify_buttons#" );
-            console.log('got meta tags', meta_tags); 
-            
-            */
-
             var head = document.getElementsByTagName('head')[0];
-            var tmp = document.createElement( 'script' );
+            var tmp  = document.createElement( 'script' );
             $(tmp).attr( 'type', 'text/javascript' );
             $(tmp).attr( 'src', 'http://assets.pinterest.com/js/pinit.js' );
             head.appendChild( tmp );
@@ -81,26 +111,20 @@ var _willet_run_scripts = function() {
              */
             var button_div = document.getElementById('{{ app.button_selector }}');
 
-            if (button_div &&  window.iframe_loaded == undefined) {
+            if (button_div && window.iframe_loaded == undefined) {
                 $(button_div).css( {"float"   : "left",
                                     "height"  : "30px",
-                                    "width"   : "275px",
+                                    "width"   : "282px",
                                     "padding" : "5px"} );
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
-                /*
-                console.log('loading fb_iframe');
-                var fb_iframe      = document.createElement('iframe');
-                fb_iframe.setAttribute('allowtransparency', 'true');
-                fb_iframe.setAttribute('frameborder', '0');
-                fb_iframe.setAttribute('scrolling', 'no');
-                fb_iframe.setAttribute('style', 'margin-top: 3px; margin-right: 5px; width:80px; height:18px; float: left; border: 1px solid #cad4e7; border-radius: 2px;');
-                fb_iframe.setAttribute('src', '{{ URL }}/b/shopify/load/iframe.html?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
-
-                button_div.appendChild( fb_iframe );
-                console.log('fb_iframe inserted');
-                */
         
+                // Grab the photo
+                var photo = '';
+                if ( data.product.images[0] != null ) {
+                    photo = data.product.images[0].src;
+                }
+
                 // Tumblr
                 var d = document.createElement( 'div' );
                 $(d).attr('style', 'float: left; margin-right: 5px; width: 61px !important;' );
@@ -117,34 +141,34 @@ var _willet_run_scripts = function() {
                 d.appendChild( a );
                 button_div.appendChild( d );
 
-                // The Fancy Button 
+                // The Fancy Button
                 var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 90px !important;' );
+                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 97px !important;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://www.thefancy.com/fancyit?" +
-                        "ItemURL=" + window.location.href + 
-                        "&Title="+ data.product.title +
-                        "&Category=Other" + 
-                        "&ImageURL=" + photo;
+                        "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                        "&Title="  + encodeURIComponent( data.product.title ) +
+                        "&Category=Other";
+                if ( photo.length > 0 ) {
+                    u += "&ImageURL=" + encodeURIComponent( photo );
+                } else { // If no image on page, submit blank image.
+                    u += "&ImageURL=" + encodeURIComponent( '{{URL}}/static/imgs/noimage.png' );
+                }
+
                 $(a).attr( 'href', u );
                 $(a).attr( 'id', 'FancyButton' );
                 d.appendChild( a );
                 button_div.appendChild( d ); 
 
                 // Pinterest
-                var photo = '';
-                if ( data.product.images[0] != null ) {
-                    photo = data.product.images[0].src;
-                }
-
                 var d = document.createElement( 'div' );
                 $(d).attr('style', 'float: left;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + window.location.href + 
-                        "&media=" + photo + 
+                        "url=" + encodeURIComponent( window.location.href ) + 
+                        "&media=" + encodeURIComponent( photo ) + 
                         "&description=" + "Found on {{domain}}!";
                 $(a).attr( 'href', u );
                 $(a).attr( 'class', 'pin-it-button' );
@@ -152,13 +176,11 @@ var _willet_run_scripts = function() {
                 $(a).html = "Pin It";
                 d.appendChild( a );
                 button_div.appendChild( d );
-
-
             }
         }
     );
 };
 
-// let's get this party started 
-_willet_run_scripts();
+// let's start to get this party started 
+_willet_check_scripts();
 
