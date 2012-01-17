@@ -30,7 +30,12 @@
         <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
         <!-- End Mixpanel -->
         
-        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+        </script>
         <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script> 
 
        <!-- Google Analytics -->
