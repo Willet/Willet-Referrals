@@ -114,7 +114,7 @@ var _willet_run_scripts = function() {
             if (button_div && window.iframe_loaded == undefined) {
                 $(button_div).css( {"float"   : "left",
                                     "height"  : "30px",
-                                    "width"   : "225px",
+                                   // "width"   : "225px",
                                     "padding" : "5px"} );
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
@@ -159,7 +159,7 @@ var _willet_run_scripts = function() {
 
                 // The Fancy Button
                 var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left; margin-top: 3px; width: 97px !important;' );
+                $(d).attr('style', 'float: left; margin-top: 3px;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://www.thefancy.com/fancyit?" +
