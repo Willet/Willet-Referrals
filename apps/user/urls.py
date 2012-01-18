@@ -12,9 +12,7 @@ urlpatterns = [
     (r'/updateEmailAddress', UpdateEmailAddress),
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),
-    (r'/klout', QueryKloutAPI),
     (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
-    (r'/tweet', UpdateTwitterGraph),  
     (r'/u/updateFBAccessToken', UpdateFBAccessToken),  
 ]
 

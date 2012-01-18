@@ -32,7 +32,7 @@ from apps.sibt.actions import *
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
-from apps.user.models import User, get_user_by_twitter, get_or_create_user_by_twitter, get_user_by_uuid
+from apps.user.models import User, get_user_by_uuid
 from apps.analytics_backend.models import *
 
 from util                 import httplib2
@@ -45,59 +45,6 @@ from util.memcache_bucket_config import MemcacheBucketConfig
 class Admin( URIHandler ):
     @admin_required
     def get(self, admin):
-        """
-        links = Link.all()
-
-        for l in links:
-            if l.target_url != 'http://www.wil.lt' and l.target_url != "http://www.vidyard.com":
-                c = l.count_clicks()
-
-                if c > 0:
-                    if l.user:
-                        # Tell Mixplanel that we got a click
-                        taskqueue.add( queue_name = 'mixpanel', 
-                                       url        = '/mixpanel', 
-                                       params     = {'event' : 'Clicks', 'num' : c, 'campaign_uuid' : l.campaign.uuid, 'twitter_handle' : l.user.get_attr('twitter_handle')} )
-
-        return
-        str = ""
-        for c in Client.all():
-            e  = c.email
-            pw = c.passphrase != None
-
-            others = Client.all().filter( 'email =', e )
-            for o in others:
-                if o.key() == c.key():
-                    continue
-                
-                if o.campaigns.count() == 0:
-                    str += "<p> Deleting %s (%s). %s (%d) is in here.</p>" % (o.email, o.passphrase, e, c.campaigns.count())
-                    o.delete()
-            for o in clients:
-                if o.key() == c.key():
-                    continue
-
-                if o.email == e:
-                    #for camps in o.campaigns:
-                        #str += "<p> Reassigning %s to %s</p>" % (camps.title, c.email)
-                        #camps.client = c
-                        #camps.put()
-                    
-                    if o.campaigns.count() == 0:
-                        str += "<p> Deleting %s (%s). %s is in here.</p>" % (o.email, o.passphrase, e)
-                        #o.delete()
-        self.response.out.write( str )
-        campaigns = Campaign.all()
-
-        str = ""
-        for c in campaigns:
-            clicks = c.count_clicks()
-
-            if clicks != 0 and c.client.email != 'z4beth@gmail.com' and c.client.email != 'sy@sayedkhader.com':
-                str += "<p> Campaign: '%s' URL: %s Owner: %s Tweets: %d Clicks: %d </p>" % (c.title, c.target_url, c.client.email, c.get_shares_count(), clicks)
-        
-        self.response.out.write( str )
-        """
         links = Link.all()
         str = " Bad Links "
         for l in links:
