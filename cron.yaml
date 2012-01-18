@@ -1,14 +1,5 @@
 cron:
 
-# App Crons
-#- description: compute weekly analytics for all apps
-#  url: /a/triggerAppAnalytics
-#  schedule: every monday 01:00
-
-#- description: compute monthly analytics for all apps
-#  url: /a/triggerAppAnalytics?scope=month
-#  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
-
 # Referral App Crons
 #- description: Email results out
 #  url: /r/emailerCron

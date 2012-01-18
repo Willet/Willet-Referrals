@@ -10,7 +10,6 @@ urlpatterns = [
     (r'/admin/routes', ShowRoutes),
     (r'/admin/renamefb', RenameFacebookData),
     (r'/admin/renameinit', InitRenameFacebookData),
-    (r'/admin/trackErr', TrackCallbackError),
     (r'/admin/apps', ManageApps),
     (r'/admin/ithinkiateacookie', TrackRemoteError),
     (r'/admin/sibt', SIBTInstanceStats),

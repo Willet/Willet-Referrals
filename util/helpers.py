@@ -5,7 +5,7 @@ import sys
 from urlparse import urlparse
 
 from google.appengine.ext import db
-from google.appengine.ext        import webapp
+from google.appengine.ext import webapp
 
 from util.consts  import *
 from util.cookies import LilCookies
@@ -182,19 +182,15 @@ def login_required( fn ):
 
 def admin_required( fn ):
     def check(self, param=None):
-        client = self.get_client()
+        pass
+        """
+        from apps.user.models import User
+        user = User.get(read_user_cookie(request_handler))
 
-        logging.info('checking admin for client: %s' % client)
-        if client and client.email in ADMIN_EMAILS: 
-            fn(self, client)
-        elif self.request.remote_addr in ADMIN_IPS:
-            fn(self, client)
-        else:
-            logging.info('not admin\nemail: %s\nip: %s' % (
-                client.email,
-                self.request.remote_addr
-            ))
+        if not user.is_admin():
             self.redirect ( '/' )
+        """
+            
     return check
 
 #

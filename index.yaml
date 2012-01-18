@@ -12,12 +12,6 @@ indexes:
   - name: created
     direction: desc
 
-- kind: AppAnalytics
-  properties:
-  - name: app_uuid
-  - name: scope
-  - name: start_time
-
 - kind: ShopifyOrder
   properties:
   - name: campaign

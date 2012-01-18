@@ -15,7 +15,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from apps.email.models import *
 from apps.app.models import get_app_by_id
 from apps.link.models import create_link, get_link_by_willt_code
-from apps.oauth.models import OAuthClient
 from apps.testimonial.models import create_testimonial
 from apps.user.models import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
