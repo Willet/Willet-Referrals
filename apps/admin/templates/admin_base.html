@@ -25,7 +25,12 @@
         <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
 
         <!-- Scripts -->
-        <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+        </script>
         <script src="/static/js/jrumble.1.1.min.js" type="text/javascript" charset="utf-8"></script>
 
        <!-- Google Analytics -->
