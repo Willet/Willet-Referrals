@@ -114,11 +114,11 @@ var _willet_run_scripts = function() {
             if (button_div && window.iframe_loaded == undefined) {
                 $(button_div).css( {"float"   : "left",
                                     "height"  : "30px",
-                                    "width"   : "282px",
+                                   // "width"   : "225px",
                                     "padding" : "5px"} );
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
-        
+                      
                 // Grab the photo
                 var photo = '';
                 if ( data.product.images[0] != null ) {
@@ -127,7 +127,7 @@ var _willet_run_scripts = function() {
 
                 // Tumblr
                 var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left; margin-right: 5px; width: 61px !important;' );
+                $(d).attr('style', 'float: left; margin-right: 5px; width: 62px !important;' );
                 
                 var a = document.createElement( 'a' );
                 var style = "display:inline-block; text-indent:-9999px; " +
@@ -141,9 +141,25 @@ var _willet_run_scripts = function() {
                 d.appendChild( a );
                 button_div.appendChild( d );
 
+                // Pinterest
+                var d = document.createElement( 'div' );
+                $(d).attr('style', 'float: left; margin-right: 5px; overflow:hidden; width: 49px !important;' );
+
+                a = document.createElement( 'a' );
+                var u = "http://pinterest.com/pin/create/button/?" +
+                        "url=" + encodeURIComponent( window.location.href ) + 
+                        "&media=" + encodeURIComponent( photo ) + 
+                        "&description=" + "Found on {{domain}}!";
+                $(a).attr( 'href', u );
+                $(a).attr( 'class', 'pin-it-button' );
+                $(a).attr( 'count-layout', "horizontal" );
+                $(a).html = "Pin It";
+                d.appendChild( a );
+                button_div.appendChild( d );
+
                 // The Fancy Button
                 var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left; margin-top: 3px; margin-right: 5px; width: 97px !important;' );
+                $(d).attr('style', 'float: left; margin-top: 3px;' );
 
                 a = document.createElement( 'a' );
                 var u = "http://www.thefancy.com/fancyit?" +
@@ -161,22 +177,7 @@ var _willet_run_scripts = function() {
                 d.appendChild( a );
                 button_div.appendChild( d ); 
 
-                // Pinterest
-                var d = document.createElement( 'div' );
-                $(d).attr('style', 'float: left;' );
-
-                a = document.createElement( 'a' );
-                var u = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + encodeURIComponent( window.location.href ) + 
-                        "&media=" + encodeURIComponent( photo ) + 
-                        "&description=" + "Found on {{domain}}!";
-                $(a).attr( 'href', u );
-                $(a).attr( 'class', 'pin-it-button' );
-                $(a).attr( 'count-layout', "horizontal" );
-                $(a).html = "Pin It";
-                d.appendChild( a );
-                button_div.appendChild( d );
-            }
+                            }
         }
     );
 };
