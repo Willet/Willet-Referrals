@@ -28,10 +28,6 @@ class ShowProfilePage(URIHandler):
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()
-            #user_analytics = user.get_analytics_for_app(app, 'day')
-            #results = user_analytics.fetch(user_analytics.count())
-            #logging.info("got %d results" % user_analytics.count())
-            #logging.info(results)
             if hasattr(user, 'user_testimonials'):
                 testies = user.user_testimonials.filter('app =', app)
             else:
