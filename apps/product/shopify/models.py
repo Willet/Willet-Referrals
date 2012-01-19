@@ -91,7 +91,9 @@ class ProductShopify(Product):
     @staticmethod
     def get_or_fetch(url, client):
         product = ProductShopify.get_by_url(url)
-        if product == None:
+        # force product object to update if 'variants' property is <missing>
+        # (compatibility with existing Products in DB; ok if variants = [])
+        if product is None or not hasattr(product, 'variants'):
             logging.warn('Could not get product for url: %s' % url)
             try:
                 result = urlfetch.fetch(
