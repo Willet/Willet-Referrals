@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <!-- Mixpanel -->
-        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
-        <!-- End Mixpanel -->
-        
         <!-- Google Analytics -->
         <script type="text/javascript">
             var _gaq = _gaq || [];
@@ -115,26 +111,6 @@
                     return ret;
                 }
             
-                mixpanelTrack = function( event ) {
-                    var user_id = {% if user %}
-                                    "{{user.uuid}}"
-                                  {% else %} 
-                                    document.getElementById( 'from-email' );
-                                  {% endif %}
-            
-                    // Track for the Client
-                    mpq.push(['track', event + "{{app_uuid}}", 
-                                      {'user'     : user_id, 
-                                       'app' : "{{app_uuid}}",
-                                       'bucket'   : "{{app_uuid}}"}]);
-                
-                    // Track for us
-                    mpq.push(['track', event, {'user'     : user_id, 
-                                               'app' : "{{app_uuid}}",
-                                               'bucket'   : "{{app_uuid}}"}]);
-                
-                }
-        
                 sendEmailVia = function( who ){
                     var to_addrs  = document.getElementById( 'to-emails' ).value,
                         from_addr = document.getElementById( 'from-email' ).value,
@@ -154,8 +130,6 @@
                               '&body=' + msg.replace(/\n/g,'%0A') + 
                               '&ui=2&tf=1';
 
-                        mixpanelTrack( 'Gmail' );
-
                     } else if (who === 'yahoo') {
                         // Make a Yahoo string
                         str = "http://us.mc1216.mail.yahoo.com/mc/compose?.rand=1915749995" + 
@@ -163,22 +137,17 @@
                               "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
 
-                        mixpanelTrack( 'Yahoo' );
-
                     } else if (who === 'hotmail') {
                         str = 'http://by156w.bay156.mail.live.com/default.aspx?rru=compose' + 
                               "&to=" + to_addrs +
                               "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
                 
-                        mixpanelTrack( 'Hotmail' );
                     } else if (who === 'aol') {
                         str = "http://mail.aol.com/34007-211/aol-6/en-us/mail/compose-message.aspx?" + 
                               "&to=" + to_addrs +
                               "&subject=" + "I've Given You a Gift!" + 
                               '&body=' + msg.replace(/\n/g,'%0A');
-                
-                        mixpanelTrack( 'AOL' );
                     }
                     window.open( str );
                 };
@@ -210,11 +179,6 @@
                         }
                     });// end ajax
             
-                    // Track 'email' event
-                    mixpanelTrack( 'Email' );
-                    // Also track more general 'share' event
-                    mixpanelTrack( 'Share' );
-
                     return true;
                 };
  
@@ -298,8 +262,6 @@
                                             fbData.fb_token = lr.authResponse.accessToken;
                                             fbData.fb_id = lr.authResponse.userID;
                                             fb_share_handler(fbData);
-                                            mixpanelTrack( 'Facebook' );
-                                            mixpanelTrack( 'Share' );
                                         }
                                     }, {scope: 'publish_stream,offline_access,user_about_me,email'}
                                 );
