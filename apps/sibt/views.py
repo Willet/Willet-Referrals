@@ -92,12 +92,9 @@ class AskDynamicLoader(webapp.RequestHandler):
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
-        # Now, tell Mixpanel
         if is_topbar_ask:
-            #app.storeAnalyticsDatum( 'SIBTShowingTBAskIframe', user, target )
             SIBTShowingAskTopBarIframe.create(user, url=target, app=app)
         else:
-            #app.storeAnalyticsDatum( 'SIBTShowingAskIframe', user, target )
             SIBTShowingAskIframe.create(user, url=target, app=app)
 
         # User stats
@@ -342,11 +339,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
             else:
                 SIBTShowingVote.create(user=user, instance=instance)
 
-
-            # Now, tell Mixpanel
-            # ... NOPE, I don't wanna!
-            #app.storeAnalyticsDatum( event, user, target )
-
             product = ProductShopify.get_or_fetch(target, app.client)
 
             template_values = {
@@ -507,9 +499,6 @@ class ShowResults(webapp.RequestHandler):
                 vote_percentage = None
             else:
                 vote_percentage = str(int(float(float(yesses)/float(total))*100))
-
-            # Now, tell Mixpanel
-            #app.storeAnalyticsDatum(event, user, target)
 
             product = ProductShopify.get_or_fetch(target, app.client)
 

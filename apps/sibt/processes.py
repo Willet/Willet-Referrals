@@ -266,14 +266,6 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
 
 class StoreAnalytics( URIHandler ):
     def get( self ):
-        user = get_user_by_uuid( self.request.get('user_uuid') )
-
-        event  = self.request.get('evnt')
-        target = self.request.get( 'target_url' )
-        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
-
-        # Now, tell Mixpanel
-        app.storeAnalyticsDatum( event, user, target )
         logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
 
 class TrackSIBTShowAction(URIHandler):

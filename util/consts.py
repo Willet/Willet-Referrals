@@ -39,7 +39,7 @@ BUTTONS_FACEBOOK_APP_SECRET = '1f8e4c81de61de9dc054685bddf8b50f'
 FACEBOOK_APP_ID     = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
     
-# Mixpanel Stuff
+# Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
 MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
 MIXPANEL_SECRET  = 'd1c0a8833b32d0922f6ef91704925b5f'
@@ -128,7 +128,6 @@ INSTALLED_APPS = [
     'email',
     'feedback',
     'homepage',
-    'mixpanel',
     'order',
     'order.shopify',
     'product',

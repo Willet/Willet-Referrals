@@ -25,10 +25,6 @@
         <link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
 
         <!-- Scripts -->
-        <!-- Mixpanel -->
-        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
-        <!-- End Mixpanel -->
-        
         <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
        
        <!-- Google Analytics -->
@@ -141,7 +137,6 @@
                     </div>
                     <div class="prepend-2 span-6 lower-75 last center" style="margin-top: 5px;">
                         <p>Copyright &copy; 2011 <a href='http://www.getwillet.com'>Willet Inc</a></p>
-                        <a  href="http://mixpanel.com/f/partner"><img style="margin-top: -25px" src="http://mixpanel.com/site_media/images/partner/badge_blue.png" alt="Web Analytics" /></a>
                     </div>
                 </div>
             </div>
@@ -168,14 +163,6 @@
         <script src="/static/db/js/jquery/jquery.visualize.js"></script>
         <script src="/static/db/js/jquery/jquery.visualize.tooltip.js"></script>
         <script src="/static/db/js/script.js"></script>
-        <script>
-        // Tell Mixpanel who this person is!
-        {% if client %} 
-            mpq.push(['name_tag', '{{client.email}}']);
-            mpq.push(['identify', '{{client.email}}']);
-        {% endif %}
-        {% block mixpanelTracking %} {% endblock mixpanelTracking %}
-        </script>
      
          <!-- Late loading scripts -->
         {% block lazyload %}{% endblock %}

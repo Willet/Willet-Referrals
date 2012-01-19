@@ -26,10 +26,6 @@
         <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css" media="screen" />
 
         <!-- Scripts -->
-        <!-- Mixpanel -->
-        <script type="text/javascript"> var mpq = []; mpq.push(["init", "{{MIXPANEL_TOKEN}}"]); (function() { var mp = document.createElement("script"); mp.type = "text/javascript"; mp.async = true; mp.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + "//api.mixpanel.com/site_media/js/api/mixpanel.js"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(mp, s); })(); </script>
-        <!-- End Mixpanel -->
-        
         <script src="/static/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script> 
 
@@ -121,15 +117,6 @@
         <div class='hidden'>
         {% block hidden %}{% endblock %}
         </div>
-     
-        <script>
-        // Tell Mixpanel who this person is!
-        {% if client %} 
-            mpq.push(['name_tag', '{{client.email}}']);
-            mpq.push(['identify', '{{client.email}}']);
-        {% endif %}
-        {% block mixpanelTracking %} {% endblock mixpanelTracking %}
-        </script>
      
          <!-- Late loading scripts -->
         {% block lazyload %}{% endblock %}
