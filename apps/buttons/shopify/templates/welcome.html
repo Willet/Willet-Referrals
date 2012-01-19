@@ -24,16 +24,18 @@
     </style>
 {% endblock head %}
 
-{% block right_head %}
-    {% if analytics %}
-        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
-    {% endif %}
-{% endblock right_head %}
+
 
 {% block content %}
-        <div class="lower-100 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
-        <div class="lower-100 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate ShopConnection </div>
-        <div class="lower-100 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
+        <div class="lower-15 span-24 last right_col">
+            <div id="right_header" class="span-24 last">
+                <p><a target="_blank" href="/s/shopify/beta">Check Out Our Other Shopify App!</a></p>
+            </div>
+        </div>
+
+        <div class="lower-50 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
+        <div class="lower-50 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate ShopConnection </div>
+        <div class="lower-50 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
         
         <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
@@ -46,7 +48,7 @@
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <p>1. In your <a href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
+                <p>1. In your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
                 
                 <img class="span-18" src="/static/imgs/template_editor.png" />
             </div>
@@ -96,6 +98,8 @@
             
             <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
                 <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
+                <br />
+                <p>Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">

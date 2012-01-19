@@ -77,7 +77,7 @@ class ShowJSONPage( URIHandler ):
             
             # Gather info to display
             total_clicks = app.count_clicks()
-            results, foo = app.get_results( total_clicks )
+            results, foo = True,{} #app.get_results( total_clicks )
             has_results  = len(results) != 0
             
             logging.info('results :%s' % results)

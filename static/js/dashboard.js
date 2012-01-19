@@ -52,12 +52,8 @@ var showUserToast = function(obj) {
         user = users[user_id];
         html = '<div align="right" style="float:right;"><img class="pic" src="'+ user.pic +'" />';
         html += '<br /><span class="services">Accounts:&nbsp;'; 
-        if (user.has_twitter)
-            html += '<img src="/static/imgs/db_twitter_small.png" />&nbsp;';
         if (user.has_facebook)
             html += '<img src="/static/imgs/fb-logo-small.png" />&nbsp;';
-        if (user.has_linkedin)
-            html += '<img src="/static/imgs/linkedin-logo-small.png" />&nbsp;';
         if (user.has_email)
             html += '<img src="/static/imgs/email_logo_small.png" />&nbsp;';
         
@@ -65,7 +61,6 @@ var showUserToast = function(obj) {
         html += '<h3>'+user.name+'</h3>';
         html += '<strong><em>'+user.handle+'</em></strong><br />';
         html += '<strong>Created: </strong>' + user.created + '<br />';
-        html += '<strong>KScore: </strong>' + user.kscore + '<br />';
         html += '<strong>Reach: </strong>' + user.reach + '</div>';
         //html += '<a href="/user/'+app_id+'/'+user_id+'/" class="button">Profile</button>';
         
