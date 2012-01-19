@@ -34,12 +34,22 @@ NUM_VOTE_SHARDS = 15
 # Button Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
 class ButtonsShopify(Buttons, AppShopify):
+    billing_enabled = db.BooleanProperty( indexed=False, default=False )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
     def do_install( self ):
+        # Define recurring billing settings
+        billing_settings = {
+            "recurring_application_charge": {
+                "price": 0.99,
+                "name": "ShopConnection",
+                "return_url": "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, self.uuid)
+              }
+        }    
+
         # Define our script tag 
         tags = [{
             "script_tag": {
@@ -54,6 +64,7 @@ class ButtonsShopify(Buttons, AppShopify):
         # Install yourself in the Shopify store
         self.install_webhooks()
         self.install_script_tags(script_tags=tags)
+        confirm_url = self.setup_recurring_billing(settings=billing_settings)
 
         # Fire off "personal" email from Fraser
         Email.welcomeClient( "ShopConnection", 
@@ -70,6 +81,8 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
+        return confirm_url
+
 
 # Constructor ------------------------------------------------------------------
 def create_shopify_buttons_app(client, app_token):
@@ -85,16 +98,17 @@ def create_shopify_buttons_app(client, app_token):
                           button_selector = "_willet_buttons_app" ) 
     app.put()
 
-    app.do_install()
+    confirm_url = app.do_install()
         
-    return app
+    return app, confirm_url
 
 # Accessors --------------------------------------------------------------------
 def get_or_create_buttons_shopify_app( client, token ):
+    confirm_url = None
     app = get_shopify_buttons_by_url( client.url )
     
     if app is None:
-        app = create_shopify_buttons_app(client, token)
+        app, confirm_url = create_shopify_buttons_app(client, token)
     
     elif token != None and token != '':
         if app.store_token != token:
@@ -111,10 +125,10 @@ def get_or_create_buttons_shopify_app( client, token ):
                 app.old_client  = None
                 app.put()
                 
-                app.do_install()
+                confirm_url = app.do_install()
             except:
                 logging.error('encountered error with reinstall', exc_info=True)
-    return app
+    return app, confirm_url
 
 def get_shopify_buttons_by_url( store_url ):
     """ Fetch a Shopify obj from the DB via the store's url"""

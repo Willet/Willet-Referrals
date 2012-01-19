@@ -33,6 +33,42 @@ class ButtonsShopifyBeta(URIHandler):
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
+class ButtonsShopifyBillingCallback(URIHandler):
+    def get(self):
+        app = App.get_by_uuid( self.request.get('app_uuid') )
+        app.billing_enabled = True
+
+        url      = '%s/admin/recurring_application_charges.json' % app.store_url
+        username = app.settings['api_key'] 
+        password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
+        # First fetch webhooks that already exist
+        resp, content = h.request( url, "GET", headers = header )
+        data = json.loads( content ) # there will be a list.
+
+        id = data['recurring_application_charges']['id']
+
+        url      = '%s/admin/recurring_application_charges/#{id}/activate.json' % (app.store_url, id)
+        username = app.settings['api_key'] 
+        password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
+        # First fetch webhooks that already exist
+        resp, content = h.request( url, "GET", headers = header )
+        data = json.loads( content ) 
+
+
+        self.response.out.write(self.render_page('beta.html', template_values))
+
 class ButtonsShopifyWelcome(URIHandler):
     def get( self ):
         # TODO: put this somewhere smarter
@@ -43,8 +79,13 @@ class ButtonsShopifyWelcome(URIHandler):
         client = ClientShopify.get_by_url( shop )
     
         # Fetch or create the app
-        app    = get_or_create_buttons_shopify_app(client, token=token)
+        app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
         
+        # If we're setting up billing
+        if confirm_url:
+            self.redirect( confirm_url )
+            return
+
         # Render the page
         template_values = {
             'app'        : app,
