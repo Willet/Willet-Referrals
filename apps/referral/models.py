@@ -59,12 +59,6 @@ class Referral( App ):
             # Add to clicks count
             link.increment_clicks()
             
-            # Tell Mixplanel that we got a click
-            taskqueue.add( queue_name = 'mixpanel', 
-                           url        = '/mixpanel', 
-                           params     = {'event'    : 'Clicks', 
-                                         'app_uuid' : self.uuid } )
-
         # Set the referral cookie in all cases
         set_referral_cookie(urihandler.response.headers, code)
 

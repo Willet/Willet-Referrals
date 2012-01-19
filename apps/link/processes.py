@@ -48,54 +48,6 @@ class TrackWilltURL( webapp.RequestHandler ):
 
         return
             
-class DynamicLinkLoader(webapp.RequestHandler):
-    """Generates a customized javascript source file pre-loaded
-       with a unique URL to share. A 'link' model is created in the
-       datastore and will be deleted by cron if the associated tweet
-       is not found in the tweeting user's stream"""
-
-    def get(self):
-        template_values = {}
-        app_id = self.request.get('ca_id')
-        user_id = self.request.get('uid')
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-
-        logging.info(origin_domain)
-        app = get_app_by_id(app_id)
-        
-        # If they give a bogus app id, show the landing page app!
-        if app == None:
-            template_values = {
-                'text': "",
-                'willt_url' : URL,
-                'willt_code': "",
-                'app_uuid' : "",
-                'target_url' : URL
-            }
-        else:
-            link = create_link(app.target_url, app, origin_domain, user_id)
-            logging.info("link created is %s" % link.willt_url_code)
-
-            if app.target_url in app.share_text:
-                share_text = app.share_text.replace( app.target_url, link.get_willt_url() )
-            else:
-                share_text = app.share_text + " " + link.get_willt_url()
-
-            template_values = {
-                'text': share_text.replace("\"", "'"),
-                'willt_url': link.get_willt_url(),
-                'willt_code': link.willt_url_code,
-                'app_uuid': app.uuid,
-                'target_url': app.target_url,
-                'redirect_url': app.redirect_url if app.redirect_url else "",
-                'MIXPANEL_TOKEN': MIXPANEL_TOKEN
-            }
-        
-        path = os.path.join(os.path.dirname(__file__), 'templates/willet.html')
-        self.response.out.write(template.render(path, template_values))
-        return
-
 class InitCodes(webapp.RequestHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""

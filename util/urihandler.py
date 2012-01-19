@@ -53,7 +53,6 @@ class URIHandler( webapp.RequestHandler ):
             'logout_url' : '/client/logout',
             'URL'        : URL,
             'NAME'       : NAME,
-            'MIXPANEL_TOKEN' : MIXPANEL_TOKEN,
             'client'     : client
         }
         merged_values = dict(template_values)

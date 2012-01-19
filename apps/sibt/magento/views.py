@@ -273,8 +273,6 @@ class DynamicLoader(webapp.RequestHandler):
                     event = 'SIBTShowingVote'
                     asker_name = instance.asker.get_name_or_handle()
 
-            app.storeAnalyticsDatum( event, user, target )
-
         template_values = {
                 'URL' : URL,
                 'is_asker' : is_asker,

@@ -78,28 +78,6 @@ class App(Model, polymodel.PolyModel):
     def get_by_client( client ):
         return App.all().filter( 'client =', client )
 
-    def storeAnalyticsDatum( self, event, user, target ):
-        if 'social-referral.appspot.com' not in URL:
-            return
-
-        if not user.is_admin():
-            logging.info("Queuing up task to store '%s' to Mixpanel." % event )
-            
-            taskqueue.add(
-                queue_name = 'mixpanel',
-                url = url('SendActionToMixpanel'), 
-                params = {
-                    'event'     : event, 
-                    'target_url': target,
-                    
-                    'app'       : self.uuid,
-                    'client'    : self.client.email,
-                    
-                    'user'      : user.get_name_or_handle(),
-                    'user_uuid' : user.uuid,
-                }
-            )
-
     def count_clicks( self ):
         # Get an updated value by putting this on a queue
         taskqueue.add(
