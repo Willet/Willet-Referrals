@@ -277,13 +277,15 @@ class TrackSIBTShowAction(URIHandler):
         """So javascript can track a sibt specific show actions"""
         success = False
         instance = app = user = action = None
+        duration = 0.0
         if self.request.get('instance_uuid'):
             instance = SIBTInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
             app = App.get(self.request.get('app_uuid')) 
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid')) 
-        duration = self.request.get('duration') or 0.0
+        if self.request.get('duration'):
+            duration = self.request.get('duration')
         what = self.request.get('evnt')
         url = self.request.get('target_url')
         try:
