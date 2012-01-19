@@ -867,15 +867,19 @@ class MemcacheConsole(URIHandler):
     def post(self, admin):
         key = self.request.get('key')
         value = None
-        new_value = self.request.get('value')
-        protobuf = self.request.get('protobuf')
-        messages = []
+        clear_value = self.request.get('clear')
+        new_value   = self.request.get('value')
+        protobuf    = self.request.get('protobuf')
+        messages    = []
         if key:
             logging.info('looking up key: %s' % key)
             value = memcache.get(key)
             if protobuf and value:
                 value = db.model_from_protobuf(entity_pb.EntityProto(value))
                 value = to_dict(value)
+            if clear_value:
+                memcache.set(key, '')
+                messages.append("Cleared %s"% key)
             if new_value:
                 if protobuf:
                     messages.append('Not supported')
