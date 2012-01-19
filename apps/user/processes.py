@@ -73,17 +73,16 @@ class FetchFacebookData(webapp.RequestHandler):
         # HACK to fix email. 
         # We cannot run queries in this transaction on EmailModel class.
         # If we want to setup the email correctly, we have to fix it here.
-        logging.info("ASDHKASHDKLASDLASD")
-        logging.info(result_user.get_attr('fb_email') )
-
         if hasattr( result_user, 'fb_email' ):
-            logging.info("DOING EMAIL STUFF" )
+            logging.info("DOING EMAIL STUFF: %s" % result_user.get_attr('fb_email'))
             email = result_user.fb_email
             create_email_model( result_user, email )
 
             delattr( result_user, 'fb_email' )
             result_user.put_later()
-            
+        elif result_user is None:
+            logging.debug ("result_user is None!")
+        
         logging.info("done updating")
 
 class FetchFacebookFriends(webapp.RequestHandler):

@@ -126,3 +126,9 @@ indexes:
   - name: what
   - name: created
     direction: desc
+
+- kind: Action
+  properties:
+  - name: is_admin
+  - name: what
+  - name: created

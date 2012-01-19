@@ -21,7 +21,6 @@ from util.consts             import *
 from util.helpers            import generate_uuid
 from util.model              import Model
 from util.memcache_bucket_config import MemcacheBucketConfig
-from util.memcache_bucket_config    import batch_put 
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 """Helper method to persist actions to datastore"""
@@ -74,6 +73,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
 
+
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -113,15 +113,14 @@ class Action(Model, polymodel.PolyModel):
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket') # select relevant buckets
-        bucket = mbc.get_random_bucket() # select one of them
+        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+        bucket = mbc.get_random_bucket()
         logging.info('bucket: %s' % bucket)
 
         list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
         logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        # super (Model, self).put(); # DEBUG: HARDPUT.
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
