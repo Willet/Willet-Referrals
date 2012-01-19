@@ -42,8 +42,6 @@ class ShowAccountPage( URIHandler ):
             'has_apps' : has_apps,
             'current': 'dashboard',
             'BASE_URL': URL,
-            'api_key': MIXPANEL_API_KEY,
-            'platform_secret': hashlib.md5(MIXPANEL_SECRET + '1234').hexdigest(),
             'num_apps': num_apps
         }
         

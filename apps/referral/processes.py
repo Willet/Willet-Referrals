@@ -62,14 +62,6 @@ class PostConversion( URIHandler ):
                 logging.error("Conversion POST failed: %s (%s referred %s)" % (app.webhook_url, link.supplied_user_id, referree_uid) )
                 return
 
-            # Tell Mixplanel a client has a conversion
-            taskqueue.add( queue_name = 'mixpanel', 
-                           url        = '/mixpanel', 
-                           params     = {'event'            : 'Conversion', 
-                                         'app_uuid'    : app_uuid,
-                                         'supplied_user_id' : link.supplied_user_id} ) 
-
-
 class EmailerCron( URIHandler ):
     def get( self ):
         apps = App.all()
