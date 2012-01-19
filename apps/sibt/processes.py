@@ -338,7 +338,7 @@ class TrackSIBTUserAction(URIHandler):
             action = action_class.create(user, 
                     instance = instance, 
                     url = url,
-                    app = app,
+                    app_ = app,
                     duration = duration
             )
         except Exception,e:
