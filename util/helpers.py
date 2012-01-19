@@ -182,15 +182,14 @@ def login_required( fn ):
 
 def admin_required( fn ):
     def check(self, param=None):
-        pass
-        """
         from apps.user.models import User
-        user = User.get(read_user_cookie(request_handler))
+        user = User.get(read_user_cookie(self))
 
         if not user.is_admin():
             self.redirect ( '/' )
-        """
-            
+            return
+        else:   
+            fn( self, param )
     return check
 
 #
