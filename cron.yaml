@@ -15,19 +15,6 @@ cron:
 #  url: /link/cleanBadLinks
 #  schedule: every 30 minutes
 
-# User Crons
-#- description: compute daily analytics for users 
-#  url: /user_analytics/trigger
-#  schedule: every 24 hours 
-
-#- description: compute weekly analytics for users 
-#  url: /user_analytics/trigger?scope=week
-#  schedule: every monday 01:00
-
-#- description: compute monthly analytics for users 
-#  url: /user_analytics/trigger?scope=month
-#  schedule: 1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 00:00
-
 # App Engine Bingo Crons
 #- description: persist gae bingo experiments to datastore
 #  url: /gae_bingo/persist
