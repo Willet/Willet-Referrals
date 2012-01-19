@@ -22,13 +22,6 @@ indexes:
   - name: user
   - name: creation_time
 
-- kind: UserAnalytics
-  properties:
-  - name: campaign
-  - name: scope
-  - name: user
-  - name: period_start
-
 - kind: Action
   properties:
   - name: class
