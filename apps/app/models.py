@@ -19,7 +19,6 @@ from google.appengine.ext.db import polymodel
 
 from apps.link.models     import Link, get_link_by_willt_code 
 from apps.user.models     import User
-from apps.user_analytics.models import UserAnalytics, UserAnalyticsServiceStats
 
 from util.consts          import *
 from util.helpers         import generate_uuid
