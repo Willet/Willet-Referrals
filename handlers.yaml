@@ -4,9 +4,6 @@ handlers:
   script: mapreduce/main.py
   login: admin
 
-- url: /(fbShare|fbCallback|sendEmailInvites|widget|willt|share|oauth.*)
-  script: plugin/plugin.py
-
 # Google App Engine Bingo
 #- url: /gae_bingo/static
 #  static_dir: apps/gae_bingo/static

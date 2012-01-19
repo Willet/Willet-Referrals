@@ -23,17 +23,3 @@ class AppClicksCounter( webapp.RequestHandler ):
 
         app.put()
 
-class TriggerAppAnalytics(webapp.RequestHandler):
-    def get(self):
-        scope = self.request.get('scope', 'week')
-        apps  = App.all()
-        for c in apps:
-            taskqueue.add( url    = '/a/computeAppAnalytics',
-                           params = { 'ca_key' : c.key(), 
-                                      'scope'  : scope, } )
-
-class ComputeAppAnalytics(webapp.RequestHandler):
-    def post(self):
-        rq_vars = get_request_variables(['ca_key', 'scope'], self)
-        ca = db.get(rq_vars['ca_key'])
-        ca.compute_analytics(rq_vars['scope'])

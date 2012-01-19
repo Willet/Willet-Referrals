@@ -13,6 +13,8 @@ from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 from google.appengine.api import memcache
 
+from apps.user.models import User
+
 from util.model import Model
 from util.helpers import encode_base62
 from util.helpers import url
@@ -199,7 +201,7 @@ def get_links_by_user(user):
     TODO: In the future this method will have to analyze user to determine 
           which social media providers we have their identifiers for OR it
           will need to be passed more information."""
-    return Link.all().filter('user_id =', user.get_attr('twitter_handle'))
+    return Link.all().filter('user =', user)
 
 def get_unchecked_links():
     """Return all unchecked links that are older than a minute"""

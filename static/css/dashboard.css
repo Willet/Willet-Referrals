@@ -38,14 +38,8 @@
     border-radius: 3px;
     cursor: pointer;
 }
-#results div.details_toggle div.twitter {
-    background: rgba(87, 213, 255, 0.15) url(/static/imgs/db_twitter.png) no-repeat 40px 12px !important;
-}
 #results div.details_toggle div.facebook {
     background: rgba(59, 89, 153, 0.15) url(/static/imgs/db_facebook.png) no-repeat 45px 12px !important;
-}
-#results div.details_toggle div.linkedin {
-    background: rgba(39, 144, 189, 0.15) url(/static/imgs/linkedin-logo.png) no-repeat 45px 12px !important;
 }
 #results div.details_toggle div.email {
     background: rgba(174, 6, 0, 0.15) url(/static/imgs/email_logo.png) no-repeat 42px 12px !important;

@@ -10,7 +10,7 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from models.user import User, get_user_by_twitter, get_or_create_user_by_twitter
+from models.user import User
 from models.campaign import Campaign, ShareCounter, get_campaign_by_id
 from models.link import *
 from util.helpers import *

@@ -18,22 +18,6 @@ from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
-class TrackCallbackError(webapp.RequestHandler):
-    """Notifies us via email of errors when trying to update our twitter
-       graph with data from the @anywhere callback"""
-
-    def post(self):
-        payload = self.request.get('payload')
-        data    = self.request.get('data')
-        msg     = self.request.get('msg')
-
-        mail.send_mail(sender="JS Error Reporter <Barbara@wil.lt>",
-                       to="wil.lt tech support <support@wil.lt>",
-                       subject="Javascript /t callback error",
-                       body= str(payload) + "\n" + str(data) + "\n" + str(msg))
-        
-        self.response.out.write("Error emailed")
-
 class TrackRemoteError(webapp.RequestHandler):
     def get(self):
         referer = self.request.headers.get('referer')
