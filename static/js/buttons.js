@@ -109,7 +109,7 @@ var _willet_run_scripts = function() {
             /**
              * INSERT IFRAME WITH DATA
              */
-            var button_div = document.getElementById('{{ app.button_selector }}');
+            var button_div = document.getElementById('_willet_buttons_app');
 
             if (button_div && window.iframe_loaded == undefined) {
                 $(button_div).css( {"float"   : "left",
@@ -118,7 +118,8 @@ var _willet_run_scripts = function() {
                                     "padding" : "5px"} );
 
                 window.iframe_loaded = "teh fb_iframe haz been loaded";
-                      
+                var domain = /:\/\/([^\/]+)/.exec(window.location.href)[1];
+
                 // Grab the photo
                 var photo = '';
                 if ( data.product.images[0] != null ) {
@@ -149,7 +150,7 @@ var _willet_run_scripts = function() {
                 var u = "http://pinterest.com/pin/create/button/?" +
                         "url=" + encodeURIComponent( window.location.href ) + 
                         "&media=" + encodeURIComponent( photo ) + 
-                        "&description=" + "Found on {{domain}}!";
+                        "&description=" + "Found on " + domain + "!";
                 $(a).attr( 'href', u );
                 $(a).attr( 'class', 'pin-it-button' );
                 $(a).attr( 'count-layout', "horizontal" );
@@ -169,15 +170,14 @@ var _willet_run_scripts = function() {
                 if ( photo.length > 0 ) {
                     u += "&ImageURL=" + encodeURIComponent( photo );
                 } else { // If no image on page, submit blank image.
-                    u += "&ImageURL=" + encodeURIComponent( '{{URL}}/static/imgs/noimage.png' );
+                    u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
                 }
 
                 $(a).attr( 'href', u );
                 $(a).attr( 'id', 'FancyButton' );
                 d.appendChild( a );
                 button_div.appendChild( d ); 
-
-                            }
+            }
         }
     );
 };

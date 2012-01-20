@@ -54,33 +54,3 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html', template_values)) 
 
-class LoadButtonsScript(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
-    def get(self, input_path):
-        """
-        {{ URL }}/b/shopify/load/buttons.js?app_uuid={{app.uuid}}&willt_code={{willt_code}}');
-        """
-        template_values = {}
-        app    = ButtonsShopify.get(self.request.get('app_uuid'))
-        user   = get_or_create_user_by_cookie( self, app )
-
-        template_values = {
-            'app'            : app,
-            'domain'         : app.client.domain if hasattr(app.client, 'domain') else app.client.url,
-            'URL'            : URL,
-        }
-        
-        # Finally, render it
-        path = os.path.join('apps/buttons/templates/', input_path)
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        
-        if input_path.find('.js') != -1:
-            # If the 'buttons.js" script is loaded, store a ScriptLoadAction
-            ScriptLoadAction.create( user, app, get_target_url(self.request.headers.get('REFERER')))
-
-            self.response.headers['Content-Type'] = 'javascript'
-        
-        self.response.out.write(template.render(path, template_values))
-        return
-
