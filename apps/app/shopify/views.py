@@ -35,7 +35,7 @@ class ShopifyRedirect( URIHandler ):
     def get(self):
         # Request varZ from us
         app          = self.request.get( 'app' )
-        
+
         # Request varZ from Shopify
         shopify_url  = self.request.get( 'shop' )
         shopify_sig  = self.request.get( 'signature' )
@@ -44,16 +44,16 @@ class ShopifyRedirect( URIHandler ):
 
         # Get the store or create a new one
         client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
-        
+
         # initialize session
         session = get_current_session()
         session.regenerate_id()
-        
+
         # remember form values
         session['correctEmail'] = client.email
         session['email']        = client.email
         session['reg-errors']   = []
-        
+
         logging.info("CLIENT: %s" % client.email)
 
         # Cache the client!
@@ -63,17 +63,6 @@ class ShopifyRedirect( URIHandler ):
         # the app name has to corespond to AppnameWelcome view
         redirect_url = url('%sWelcome' % app)
 
-        # TODO(Barbara): Remove these catches. Our code should just work.
-        if redirect_url != None:
-            redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
-        elif app == 'referral':
-            redirect_url = '/r/shopify?%s' % self.request.query_string
-        elif app == 'sibt':
-            redirect_url = '/s/shopify?%s' % self.request.query_string
-        elif app == 'buttons':
-            redirect_url = '/b/shopify/welcome?%s' % self.request.query_string
-        else:
-            redirect_url = '/'
         logging.info("redirecting app %s to %s" % (app, redirect_url))
         self.redirect(redirect_url)
 
@@ -82,12 +71,11 @@ class DoDeleteApp( URIHandler ):
     def post( self ):
         client   = self.get_client()
         app_uuid = self.request.get( 'app_uuid' )
-        
+
         logging.info('app id: %s' % app_uuid)
         app = get_app_by_id( app_uuid )
         if app.client.key() == client.key():
             logging.info('deelting')
             app.delete()
-        
-        self.redirect( '/client/account' )
 
+        self.redirect( '/client/account' )

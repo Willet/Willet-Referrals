@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+        $(document).ready(function() {
+            $('#go_to_shopify').click(function() {
+                window.location = "{{app.store_url}}/admin";
+            });
+            SnapABug.setUserEmail('{{ client_email }}');
+            SnapABug.startChat('Hi, can we help you with the installation?');
+        });
+    </script>
+{% endblock head %}
+
+{% block right_head %}
+    {% if analytics %}
+        <p>NO ANALYTICS FOR YOU</p>
+    {% endif %}
+    <p><a href="{% url WOSIBShopifyEditStyle app.uuid %}">Edit App Style</a></p>
+{% endblock right_head %}
+
+{% block content %}
+    <div>Good job. You installed the app.</div>
+{% endblock content %}
+
+{% block mixpanelTracking %}
+{% endblock mixpanelTracking %}
