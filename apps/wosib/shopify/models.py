@@ -50,7 +50,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                     document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' %3E%3C/script%3E"));
                 }
                 var _willet_no_image = "http://cdn.shopify.com/s/images/admin/no-image-thumb.gif";
-                var _willet_wosib_script = "http://%s%s";
+                var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
                     {% for item in cart.items %}
                         { "id" : "{{ item.id }}",

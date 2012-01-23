@@ -58,8 +58,8 @@ class SIBTShopifyWelcome(URIHandler):
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
-            app = SIBTShopify.get_or_create(client, token=token)
-            app2 = WOSIBShopify.get_or_create(client, token=token)
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
             client_email = None
             shop_owner   = 'Shopify Merchant'

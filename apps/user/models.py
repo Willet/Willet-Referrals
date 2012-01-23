@@ -743,7 +743,13 @@ def get_user_by_facebook_for_taskqueue(fb_id):
 def get_user_by_email( email ):
     logging.info("Getting user by email: " + email)
     email_model = EmailModel.all().filter( 'address = ', email ).get()
-    return email_model.user if email_model else None
+    # fix throwing error on lagging memcache
+    #return email_model.user if email_model else None
+    try:
+        return email_model.user
+    except:
+        return None
+
 
 def create_user_by_facebook(fb_id, first_name, last_name, name, email, token, would_be, friends, app):
     """Create a new User object with the given attributes"""

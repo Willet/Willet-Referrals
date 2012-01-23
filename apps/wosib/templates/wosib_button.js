@@ -147,7 +147,7 @@ jQuery(document).ready (function () {
 
         // add the button onto the page.
         var button_script = $('<a />', {
-            text: "Need help deciding?"
+            text: "Need help deciding?",
             'id': "show_wosib",
             'class': "button"
         });
