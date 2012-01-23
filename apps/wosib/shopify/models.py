@@ -74,7 +74,9 @@ class WOSIBShopify(WOSIB, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
+        logging.debug ("installing webhooks")
         self.install_webhooks()
+        logging.debug ("installing assets")
         self.install_assets(assets=liquid_assets)
 
     def put(self):
@@ -85,7 +87,7 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     def memcache_by_store_url(self):
         return memcache.set(
-                self.store_url, 
+                "WOSIB-%s" % self.store_url, # url collides with SIBT memcache
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     @staticmethod
@@ -99,6 +101,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                         store_url   = client.url, # Store url
                         store_id    = client.id, # Store id
                         store_token = token)
+        logging.debug ("app %s ready to put" % app)
         app.put()
         
         app.do_install()
@@ -113,6 +116,7 @@ class WOSIBShopify(WOSIB, AppShopify):
             logging.debug ("app not found; creating one.")
             app = WOSIBShopify.create(client, token)
         elif token != None and token != '':
+            logging.debug("WOSIB: Have both app and token")
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
                 logging.warn(
@@ -132,8 +136,11 @@ class WOSIBShopify(WOSIB, AppShopify):
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
+            else:
+                logging.debug("WOSIB: token matches")
         else:
             # if token is None
+            logging.debug("token is None")
             pass
         logging.debug ("WOSIBShopify::get_or_create.app is now %s" % app)
         return app
@@ -144,7 +151,7 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
-        data = memcache.get(url)
+        data = memcache.get("WOSIB-%s" % url)
         if data:
             app = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
@@ -153,7 +160,8 @@ class WOSIBShopify(WOSIB, AppShopify):
                 .get()
             if app:
                 app.memcache_by_store_url()
-
+        if app is None:
+            logging.warn ("store is Nothing, memcache and DB!")
         return app
 
 

@@ -30,6 +30,7 @@ from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
+from apps.sibt.shopify.models import SIBTShopify
 from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
@@ -45,7 +46,11 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') # deprecated?
         shop_url    = get_shopify_url(self.request.get('store_url'))
+        if not shop_url: # backup (most probably hit)
+            shop_url    = get_target_url(self.request.headers.get('REFERER')) # probably ok
+        logging.debug ("shop_url = %s" % shop_url)
         app         = WOSIBShopify.get_by_store_url(shop_url)
+        app_sibt_cp = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
         event       = 'WOSIBShowingButton'
 
         # A tad meaningless, as target will always be store.com/cart
@@ -58,6 +63,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
         # Try to find an instance for this { url, user }
         try:
+            logging.debug ("trying app = %s" % app)
             assert(app != None)
             try:
                 # Is User an asker for this URL?
@@ -126,30 +132,18 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             except Exception,e:
                 logging.error("could not get share_url: %s" % e, exc_info=True)
 
-        elif app:
-            logging.info('could not get an instance, check page views')
-
-            tracked_urls = WOSIBShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked urls')
-            logging.info(tracked_urls)
-            if tracked_urls.count(target) >= app.num_shows_before_tb:
-                #if view_actions >= 1:# or user.is_admin():
-                # user has viewed page more than once
-                # show top-bar-ask
-                show_top_bar_ask = True 
-            product = ProductShopify.get_or_fetch(target, app.client)
         else:
-            logging.warn("no app and no instance!")
+            logging.warn("no instance!")
 
         # this should only happen once, can be removed at a later date
         # TODO remove this code
         if not hasattr(app, 'button_enabled'):
-            app.button_enabled = True
-            app.put()
+            app_sibt_cp.button_enabled = True
+            app_sibt_cp.put()
     
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-            if app.incentive_enabled:
+            if app_sibt_cp.incentive_enabled:
                 ab_test_options = [ "Which one should I buy? Let friends vote! Save $5!",
                                     "Earn $5! Ask your friends what they think!",
                                     "Need advice? Ask your friends! Earn $5!",
@@ -176,7 +170,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
                                             user = user,
                                             app  = app )
                 
-            if app.overlay_enabled:
+            if app_sibt_cp.overlay_enabled:
                 overlay_style = ab_test( 'sibt_overlay_style', 
                                          ["_willet_overlay_button", "_willet_overlay_button2"],
                                          user = user,
@@ -186,7 +180,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
             # If subsequent page viewing and we should prompt user:
             if show_top_bar_ask:
-                if app.top_bar_enabled and app.btm_tab_enabled:
+                if app_sibt_cp.top_bar_enabled and app_sibt_cp.btm_tab_enabled:
                     bar_or_tab = ab_test( 'sibt_bar_or_tab',
                                           ['bar', 'tab'],
                                           user = user,
@@ -196,10 +190,10 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
                     AB_top_bar = 1 if bar_or_tab == "bar" else 0
                     AB_btm_tab = int(not AB_top_bar)
 
-                elif not app.top_bar_enabled and app.btm_tab_enabled:
+                elif not app_sibt_cp.top_bar_enabled and app_sibt_cp.btm_tab_enabled:
                     AB_top_bar = 1 
                     AB_btm_tab = 0
-                elif app.top_bar_enabled and not app.btm_tab_enabled:
+                elif app_sibt_cp.top_bar_enabled and not app_sibt_cp.btm_tab_enabled:
                     AB_top_bar = 0 
                     AB_btm_tab = 1
                 else:  # both False
@@ -217,7 +211,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         # a whole bunch of css bullshit!
         if app:
             logging.info("got app button css")
-            app_css = app.get_css()
+            app_css = app_sibt_cp.get_css()
         else:
             app_css = WOSIBShopify.get_default_css()
         
@@ -238,7 +232,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'AB_overlay_style' : overlay_style,
 
             'store_url'      : shop_url,
-            'store_domain'   : getattr (app.client, 'domain', ''),
+            'store_domain'   : getattr (app_sibt_cp.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
             'product_uuid'   : product.uuid if product else "",
             'product_title'  : product.title if product else "",
@@ -251,21 +245,17 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : AB_top_bar,
             'AB_btm_tab'  : AB_btm_tab,
-            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
+            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app_sibt_cp.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
             'heart_img' : 0,
             
-            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'FACEBOOK_APP_ID': app_sibt_cp.settings['facebook']['app_id'],
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else "",
             'app_css': app_css,
         }
-
-        # Store a script load action.
-        ButtonLoadAction.create( user, app, target )
-
 
 
 

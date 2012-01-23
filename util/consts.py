@@ -60,6 +60,8 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         }
+    }, 'SIBTShopify': {
+        # nothing, but AppShopify wanted one of these keys
     }, 'ReferralShopify': {
         'api_key': 'c46f84fb6458a72c774504ba372757f1',
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',

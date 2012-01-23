@@ -24,9 +24,9 @@ cron:
 # RUN ANALYTICS
 # ######################
 
-- description: Generate analytics per app per hour
-  url: /bea/run/hour/
-  schedule: every day 07:00
+#- description: Generate analytics per app per hour
+#  url: /bea/run/hour/
+#  schedule: every day 07:00
 
 # ######################
 # ENSURE WE HAVE OBJECTS
