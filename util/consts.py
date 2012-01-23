@@ -128,7 +128,6 @@ INSTALLED_APPS = [
     'client',
     'client.shopify',
     'email',
-    'feedback',
     'gae_bingo',
     'gae_bingo.tests',
     'homepage',
