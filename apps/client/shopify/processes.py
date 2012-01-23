@@ -9,7 +9,7 @@ class FetchShopifyProducts( URIHandler ):
     """ Query the Shopify API to fetch all Products. """
 
     def post( self ):
-        logging.info("RUNNING")
+        logging.info("RUNNING client.shopify.processes::FetchShopifyProducts")
         client   = ClientShopify.get_by_uuid( self.request.get('client') )
         app_type = self.request.get( 'app_type' )
 

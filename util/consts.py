@@ -140,6 +140,8 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'wosib',
+    'wosib.shopify',
     'stats',
     'testimonial',
     'user',
@@ -148,9 +150,9 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
 
