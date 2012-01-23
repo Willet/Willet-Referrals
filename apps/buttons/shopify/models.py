@@ -52,8 +52,8 @@ class ButtonsShopify(Buttons, AppShopify):
         }]
 
         # Install yourself in the Shopify store
-        self.install_webhooks()
-        self.install_script_tags(script_tags=tags)
+        self.install_webhooks( product_hooks_too = False )
+        self.install_script_tags( script_tags = tags )
 
         # Fire off "personal" email from Fraser
         Email.welcomeClient( "ShopConnection", 

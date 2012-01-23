@@ -10,7 +10,7 @@ class FetchShopifyProducts( URIHandler ):
 
     def post( self ):
         logging.info("RUNNING")
-        client   = ClientShopify.get_by_uuid( self.request.get('client') )
+        client   = ClientShopify.get_by_uuid( self.request.get('client_uuid') )
         app_type = self.request.get( 'app_type' )
 
         client.get_products( app_type )
