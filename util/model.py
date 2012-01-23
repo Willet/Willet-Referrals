@@ -29,7 +29,9 @@ class Model(db.Model):
         if self.key():
             logging.debug('setting new memcache entity: %s' % key)
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-            
+        
+        self.hardPut() # BRIAN: DEBUG
+        
         return True
 
     def hardPut( self ):

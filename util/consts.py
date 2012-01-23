@@ -60,14 +60,6 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         }
-    }, 'WOSIBShopify': {
-        'api_key': '', # fill this in when we have an app
-        'api_secret': '',
-        'class_name': 'WOSIBShopify',
-        'facebook': { # fill this in when we have an app
-            'app_id': '',
-            'app_secret': ''
-        }
     }, 'ReferralShopify': {
         'api_key': 'c46f84fb6458a72c774504ba372757f1',
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
@@ -120,9 +112,10 @@ ADMIN_IPS = [ #'70.83.160.171',      # Notman House
               #'173.177.235.110',    # Montreal apartment
               #'70.31.244.131',      # Montreal apartment x2
               #'76.65.157.73',       # Montreal apartment( BELL)
-              '24.150.35.66',       # Barbara's Burlington House
-              '184.175.46.107',     # Barbara's Kitchener House
-              '69.166.16.20'        # VeloCity @ Hub
+              '24.150.35.66',        # Barbara's Burlington House
+              '184.175.46.107',      # Barbara's Kitchener House
+              '69.166.16.20',        # VeloCity @ Hub
+              '216.16.232.86'        # VeloCity @ Hub (2)
             ]
 
 # the apps we are using
@@ -156,9 +149,9 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
 

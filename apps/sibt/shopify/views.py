@@ -32,6 +32,7 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
+from apps.wosib.shopify.models import WOSIBShopify
 from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
@@ -44,9 +45,11 @@ from util.consts              import *
 
 class ShowBetaPage(URIHandler):
     def get(self):
-        logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['SIBTShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
+        # logging.info(SHOPIFY_APPS)
+        # logging.info(SHOPIFY_APPS['SIBTShopify'] )
+        template_values = { 
+            'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key']
+        }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -56,17 +59,25 @@ class SIBTShopifyWelcome(URIHandler):
         try:
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
-            token = self.request.get('t') # token
+            token = client.token
+            if not token:
+                token = self.request.get('t') # token
+            logging.debug("SIBTShopifyWelcome token = %s" % token)
             app = SIBTShopify.get_or_create(client, token=token)
+            app2 = WOSIBShopify.get_or_create(client, token=token) #WOSIB
             
             client_email = None
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
-            if client is not None and client.merchant is not None:
+            try: # previous method does not trap memcache exceptions
                 client_email = client.email
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
-
+                logging.info ('shop_owner = %s, shop_name = %s' % (shop_owner, shop_name))
+            except:
+                logging.error ('either client or client.merchant has no memkey')
+                pass # use default values
+            
             # Switched to new install code on Nov. 23rd
             if app.created <= datetime( 2011, 11, 22 ):
                 old_install_code = 1

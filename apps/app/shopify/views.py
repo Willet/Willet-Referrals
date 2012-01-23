@@ -41,10 +41,13 @@ class ShopifyRedirect( URIHandler ):
         shopify_sig  = self.request.get( 'signature' )
         store_token  = self.request.get( 't' )
         shopify_timestamp = self.request.get( 'timestamp' )
+        logging.debug("shopify_url = %s, shopify_sig = %s, store_token = %s, shopify_timestamp = %s" % (shopify_url,shopify_sig,store_token,shopify_timestamp))
 
         # Get the store or create a new one
         client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
-
+        logging.debug ("ShopifyRedirect: client is now %s" % client)
+        logging.debug (dir (client))
+        
         # initialize session
         session = get_current_session()
         session.regenerate_id()

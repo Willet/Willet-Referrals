@@ -37,65 +37,18 @@ from util.helpers             import *
 from util.urihandler          import URIHandler
 from util.consts              import *
 
-class WOSIBShopifyWelcome (URIHandler):
-    # class name is locked by a class/func called ShopifyRedirect
-    def get(self):
-        logging.info('trying to create app')
-        try:
-            client = self.get_client() # May be None if not authenticated
-            logging.debug ('client is %s' % client)        
-            token = self.request.get('t') # token
-            app = WOSIBShopify.get_or_create(client, token=token)
-
-            client_email = None
-            shop_owner   = 'Shopify Merchant'
-            shop_name    = 'Your Shopify Store'
-            if client is not None and client.merchant is not None:
-                client_email = client.email
-                shop_owner   = client.merchant.get_attr('full_name')
-                shop_name    = client.name
-
-            template_values = {
-                'app': app,
-                'URL' : URL,
-                'shop_name' : shop_name,
-                'shop_owner': shop_owner,
-                'client_email': client_email,
-                'client_uuid' : client.uuid,
-            }
-
-            self.response.out.write( self.render_page( 'welcome.html', template_values)) 
-        except:
-            logging.error('wtf: (apps/wosib/shopify)', exc_info=True)
-
-class WOSIBShowBetaPage (URIHandler):
-    def get(self):
-        logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['WOSIBShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['WOSIBShopify']['api_key'] }
-        
-        self.response.out.write(self.render_page('beta.html', template_values))
-
-class SIBTShopifyEditStyle (URIHandler):
-    def get(self):
-        # later
-        pass
-
-class WOSIBShowFinishedPage (URIHandler):
-    def get(self):
-        # what does it do?
-        pass
-
 class WOSIBShopifyServeScript (webapp.RequestHandler):
     # chucks out a javascript that helps detect events and show wizards.
     def get(self):
-        shop_url = app = None
-        template_values = {}
+        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        instance = share_url = link = asker_name = asker_pic = product = None
+        target   = bar_or_tab = ''
+        willet_code = self.request.get('willt_code') # deprecated?
+        shop_url    = get_shopify_url(self.request.get('store_url'))
+        app         = WOSIBShopify.get_by_store_url(shop_url)
+        event       = 'WOSIBShowingButton'
 
-        if self.request.get('store_url'):
-            shop_url    = get_shopify_url(self.request.get('store_url'))
-            app         = WOSIBShopify.get_by_store_url(shop_url)
-
+        # A tad meaningless, as target will always be store.com/cart
         if self.request.get('page_url'):
             target = get_target_url(self.request.get('page_url'))
         else:
@@ -103,11 +56,223 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
         user = get_or_create_user_by_cookie( self, app )
 
+        # Try to find an instance for this { url, user }
+        try:
+            assert(app != None)
+            try:
+                # Is User an asker for this URL?
+                logging.info('trying to get instance for url: %s' % target)
+                instance = WOSIBInstance.get_by_asker_for_url(user, target)
+                assert(instance != None)
+                event = 'WOSIBShowingResults'
+                logging.info('got instance by user/target: %s' % instance.uuid)
+            except Exception, e:
+                try:
+                    logging.info('trying willet_code: %s' % e)
+                    link = get_link_by_willt_code(willet_code)
+                    instance = link.wosib_instance.get()
+                    assert(instance != None)
+                    event = 'WOSIBShowingResults'
+                    logging.info('got instance by willet_code: %s' % instance.uuid)
+                except Exception, e:
+                    try:
+                        logging.info('trying actions: %s' % e)
+                        instances = WOSIBInstance.all(keys_only=True)\
+                            .filter('url =', target)\
+                            .fetch(100)
+                        key_list = [key.id_or_name() for key in instances]
+                        action = WOSIBClickAction.get_for_instance(app, user, target, key_list)
+                        
+                        if action:
+                            instance = action.wosib_instance
+                            assert(instance != None)
+                            logging.info('got instance by action: %s' % instance.uuid)
+                            event = 'WoSIBShowingVote'
+                    except Exception, e:
+                        logging.info('no instance available: %s' % e)
+        except:
+            logging.info('no app')
+
+        # If we have an instance, figure out if 
+        # a) Is User asker?
+        # b) Has this User voted?
+        if instance:
+            is_live    = instance.is_live
+            asker_name = instance.asker.get_first_name()
+            asker_pic  = instance.asker.get_attr('pic')
+            show_votes = True
+
+            try:
+                asker_name = asker_name.split(' ')[0]
+                if not asker_name:
+                    asker_name = 'I' # what?
+            except:
+                logging.warn('error splitting the asker name')
+
+            is_asker = (instance.asker.key() == user.key()) 
+            if not is_asker:
+                logging.info('not asker, check for vote ...')
+                
+                vote_action = WOSIBVoteAction.get_by_app_and_instance_and_user(app, instance, user)
+                
+                logging.info('got a vote action? %s' % vote_action)
+                
+                has_voted = (vote_action != None)
+
+            try:
+                if link == None: 
+                    link = instance.link
+                share_url = link.get_willt_url()
+            except Exception,e:
+                logging.error("could not get share_url: %s" % e, exc_info=True)
+
+        elif app:
+            logging.info('could not get an instance, check page views')
+
+            tracked_urls = WOSIBShowingButton.get_tracking_by_user_and_app(user, app)
+            logging.info('got tracked urls')
+            logging.info(tracked_urls)
+            if tracked_urls.count(target) >= app.num_shows_before_tb:
+                #if view_actions >= 1:# or user.is_admin():
+                # user has viewed page more than once
+                # show top-bar-ask
+                show_top_bar_ask = True 
+            product = ProductShopify.get_or_fetch(target, app.client)
+        else:
+            logging.warn("no app and no instance!")
+
+        # this should only happen once, can be removed at a later date
+        # TODO remove this code
+        if not hasattr(app, 'button_enabled'):
+            app.button_enabled = True
+            app.put()
+    
+        # AB-Test or not depending on if the admin is testing.
+        if not user.is_admin():
+            if app.incentive_enabled:
+                ab_test_options = [ "Which one should I buy? Let friends vote! Save $5!",
+                                    "Earn $5! Ask your friends what they think!",
+                                    "Need advice? Ask your friends! Earn $5!",
+                                    "Save $5 by getting advice from friends!",
+                                    # Muck with visitors' intrinsic motivation:
+                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
+                                    # (enable if you like)
+                                    # "Not sure? Ask your friends.", 
+                                  ]
+                cta_button_text = ab_test( 'sibt_incentive_text', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+            else:
+                ab_test_options = [ "Not sure? Start a vote!",
+                                    "Not sure? Let friends vote!",
+                                    "Need advice? Ask your friends to vote",
+                                    "Need advice? Ask your friends!",
+                                    "Unsure? Get advice from friends!",
+                                    "Unsure? Get your friends to vote!",
+                                    ]
+                cta_button_text = ab_test( 'sibt_button_text6', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+                
+            if app.overlay_enabled:
+                overlay_style = ab_test( 'sibt_overlay_style', 
+                                         ["_willet_overlay_button", "_willet_overlay_button2"],
+                                         user = user,
+                                         app  = app )
+            else:
+                overlay_style = "_willet_overlay_button"
+
+            # If subsequent page viewing and we should prompt user:
+            if show_top_bar_ask:
+                if app.top_bar_enabled and app.btm_tab_enabled:
+                    bar_or_tab = ab_test( 'sibt_bar_or_tab',
+                                          ['bar', 'tab'],
+                                          user = user,
+                                          app  = app )
+                    logging.info("BAR TAB? %s" % bar_or_tab )
+
+                    AB_top_bar = 1 if bar_or_tab == "bar" else 0
+                    AB_btm_tab = int(not AB_top_bar)
+
+                elif not app.top_bar_enabled and app.btm_tab_enabled:
+                    AB_top_bar = 1 
+                    AB_btm_tab = 0
+                elif app.top_bar_enabled and not app.btm_tab_enabled:
+                    AB_top_bar = 0 
+                    AB_btm_tab = 1
+                else:  # both False
+                    AB_top_bar = 0 
+                    AB_btm_tab = 0
+            else:
+                AB_top_bar = AB_btm_tab = 0
+        else:
+            random.seed( datetime.now() )
+            
+            cta_button_text = "ADMIN: Unsure? Ask your friends!"
+            overlay_style   = "_willet_overlay_button"
+            AB_top_bar = AB_btm_tab = 1
+
+        # a whole bunch of css bullshit!
+        if app:
+            logging.info("got app button css")
+            app_css = app.get_css()
+        else:
+            app_css = WOSIBShopify.get_default_css()
+        
+        # Grab all template values
         template_values = {
-            'evnt' : '', #TODO
-            'app' : app,
-            'URL': URL,
+            'URL' : URL,
+            'is_asker' : is_asker,
+            'show_votes' : show_votes,
+            'has_voted': has_voted,
+            'is_live': is_live,
+            'show_top_bar_ask': show_top_bar_ask,
+            
+            'app'            : app,
+            'instance'       : instance,
+            'asker_name'     : asker_name, 
+            'asker_pic'      : asker_pic,
+
+            'AB_overlay_style' : overlay_style,
+
+            'store_url'      : shop_url,
+            'store_domain'   : getattr (app.client, 'domain', ''),
+            'store_id'       : self.request.get('store_id'),
+            'product_uuid'   : product.uuid if product else "",
+            'product_title'  : product.title if product else "",
+            'product_images' : product.images if product else "",
+            'product_desc'   : product.description if product else "",
+          
+            'user': user,
+            'stylesheet': 'css/colorbox.css',
+
+            'AB_CTA_text' : cta_button_text,
+            'AB_top_bar'  : AB_top_bar,
+            'AB_btm_tab'  : AB_btm_tab,
+            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
+
+            'evnt' : event,
+            'img_elem_selector' : "#image img", #app.img_selector,
+            'heart_img' : 0,
+            
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'willt_code' : link.willt_url_code if link else "",
+            'app_css': app_css,
         }
+
+        # Store a script load action.
+        ButtonLoadAction.create( user, app, target )
+
+
+
+
+
+
+
+
 
 
         # Try to find an instance for this { url, user }
@@ -127,4 +292,4 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         return
     
     def post (self):
-        self.get() # because post.
+        self.get() # because money.

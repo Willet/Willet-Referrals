@@ -4,7 +4,7 @@
 # Extends from "Referral", which extends from "App"
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import hashlib
 import logging
@@ -60,7 +60,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                         },
                     {% endfor %}
                 ];
-                
+
                 var _willet_st = document.createElement( 'script' );
                 _willet_st.type = 'text/javascript';
                 _willet_st.src = _willet_wosib_script;
@@ -76,20 +76,6 @@ class WOSIBShopify(WOSIB, AppShopify):
         # Install yourself in the Shopify store
         self.install_webhooks()
         self.install_assets(assets=liquid_assets)
-
-        Email.emailBarbara( # Doesn't email just Barbara
-            'WOSIB Install: %s %s %s' % (
-                self.uuid, 
-                self.client.name, 
-                self.store_url 
-            )
-        )
-
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient( "Which One Should I Buy", 
-                             self.client.merchant.get_attr('email'), 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name )
 
     def put(self):
         """So we memcache by the store_url as well"""

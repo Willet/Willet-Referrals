@@ -27,6 +27,8 @@ from util.consts          import *
 from util.helpers         import generate_uuid
 from util.helpers import url as reverse_url
 
+from apps.wosib.shopify.models import WOSIBShopify
+
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
