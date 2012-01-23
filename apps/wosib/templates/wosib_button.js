@@ -11,7 +11,6 @@ jQuery(document).ready (function () {
         'app_uuid': '{{app.uuid}}',
         'user_uuid': '{{user.uuid}}',
         'instance_uuid': '{{instance.uuid}}',
-        
     };
 
     // detect just safari: http://api.jquery.com/jQuery.browser/
@@ -147,17 +146,16 @@ jQuery(document).ready (function () {
         // TODO: everything
 
         // add the button onto the page.
-        var button_script = $('<input />', {
-            'type': "button",
-            'value': "Button",
-            'id': "btn_show_wosib",
+        var button_script = $('<a />', {
+            text: "Need help deciding?"
+            'id': "show_wosib",
             'class': "button"
         });
         button_script.insertAfter (
             $('form[name="cartform"] table')
         );
         _willet_store_analytics ("WOSIBShowingButton"); // log show button
-        $('#btn_show_wosib').click (function () {
+        $('#show_wosib').click (function () {
             _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
             // iframe for asker to set up voting page
             $.willet_colorbox({
