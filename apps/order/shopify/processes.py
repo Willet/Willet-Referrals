@@ -80,6 +80,8 @@ class OrderIframeNotification(webapp.RequestHandler):
         notify us here so that we can score a sale for this User"""
     
     def get( self ):
+        return # turning this off for a bit
+
         client = get_client_by_uuid( self.request.get('client_uuid') )
         user   = User.get( self.request.get('user_uuid') )
         if user is None:
@@ -121,6 +123,8 @@ class OrderWebhookNotification(URIHandler):
         return self.post()
 
     def post(self):
+        return
+
         # Try/catch around whole thing so we never return a 500 error to Shopify.
         try:
             logging.info("HEADERS : %s %r" % (

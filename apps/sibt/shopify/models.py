@@ -122,7 +122,7 @@ class SIBTShopify(SIBT, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        self.install_webhooks()
+        self.install_webhooks( product_hooks_too = True )
         #self.install_script_tags(script_tags=data)
         self.install_assets(assets=liquid_assets)
 
