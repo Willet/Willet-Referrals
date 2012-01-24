@@ -300,7 +300,7 @@ class TrackWOSIBShowAction(URIHandler):
             action = action_class.create(user, 
                     instance = instance, 
                     url = url,
-                    app_ = app,
+                    app = app,
                     duration = duration
             )
         except Exception,e:
@@ -332,7 +332,7 @@ class TrackWOSIBUserAction(URIHandler):
         if self.request.get('instance_uuid'):
             instance = WOSIBInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))         
+            app = App.get(self.request.get('app_uuid'))
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid'))
         what = self.request.get('what')
@@ -344,7 +344,7 @@ class TrackWOSIBUserAction(URIHandler):
             action = action_class.create(user, 
                     instance = instance, 
                     url = url,
-                    app_ = app,
+                    app = app,
                     duration = duration
             )
         except Exception,e:

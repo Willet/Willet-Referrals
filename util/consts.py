@@ -60,6 +60,15 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         }
+    }, 'WOSIBShopify': {
+        # repeat keys in SIBT
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'SIBTShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        }
     }, 'ReferralShopify': {
         'api_key': 'c46f84fb6458a72c774504ba372757f1',
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
@@ -112,10 +121,9 @@ ADMIN_IPS = [ #'70.83.160.171',      # Notman House
               #'173.177.235.110',    # Montreal apartment
               #'70.31.244.131',      # Montreal apartment x2
               #'76.65.157.73',       # Montreal apartment( BELL)
-              '24.150.35.66',        # Barbara's Burlington House
-              '184.175.46.107',      # Barbara's Kitchener House
-              '69.166.16.20',        # VeloCity @ Hub
-              '216.16.232.86'        # VeloCity @ Hub (2)
+              '24.150.35.66',       # Barbara's Burlington House
+              '184.175.46.107',     # Barbara's Kitchener House
+              '69.166.16.20'        # VeloCity @ Hub
             ]
 
 # the apps we are using
@@ -141,6 +149,8 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'wosib',
+    'wosib.shopify',
     'stats',
     'testimonial',
     'user',

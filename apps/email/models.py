@@ -20,14 +20,13 @@ from util.consts import *
 #### Addresses ####
 ###################
 
-info = 'info@getwillet.com'
+info = "info@getwillet.com"
 
-barbara   = 'barbara@getwillet.com'
+barbara   = "barbara@getwillet.com"
 fraser    = 'fraser@getwillet.com'
-brian     = 'brian@getwillet.com'
-
-dev_team  = ', '.join([barbara, brian])
-team      = ', '.join([fraser, barbara, brian])
+brian     = "brian@getwillet.com"
+dev_team  = '%s' % (barbara)
+team      = '%s, %s' % (fraser, barbara)
 
 from_addr = 'z4beth@gmail.com' #barbara
 

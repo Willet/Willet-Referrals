@@ -39,7 +39,7 @@ def put_link(memcache_key):
             link.put()
             logging.info('deferred link put: %s' % link)
         else:
-            logging.info('put_link no data for key: %s' % memcache_key)
+            logging.info('no data for key: %s' % memcache_key)
     except Exception, e:
         logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
 
@@ -148,7 +148,7 @@ class Link(Model):
             if data:
                 link = db.model_from_protobuf(entity_pb.EntityProto(data))
             else:
-                logging.info('get_by_code no data for key: %s' % memcache_key)
+                logging.info('no data for key: %s' % memcache_key)
         except Exception, e:
             logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
         if not link:

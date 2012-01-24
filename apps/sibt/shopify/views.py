@@ -45,11 +45,9 @@ from util.consts              import *
 
 class ShowBetaPage(URIHandler):
     def get(self):
-        # logging.info(SHOPIFY_APPS)
-        # logging.info(SHOPIFY_APPS['SIBTShopify'] )
-        template_values = { 
-            'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key']
-        }
+        logging.info(SHOPIFY_APPS)
+        logging.info(SHOPIFY_APPS['SIBTShopify'] )
+        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -59,25 +57,18 @@ class SIBTShopifyWelcome(URIHandler):
         try:
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
-            token = client.token
-            if not token:
-                token = self.request.get('t') # token
-            logging.debug("SIBTShopifyWelcome token = %s" % token)
-            app = SIBTShopify.get_or_create(client, token=token)
-            app2 = WOSIBShopify.get_or_create(client, token=token) #WOSIB
+            token = self.request.get('t') # token
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
             client_email = None
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
-            try: # previous method does not trap memcache exceptions
+            if client is not None and client.merchant is not None:
                 client_email = client.email
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
-                logging.info ('shop_owner = %s, shop_name = %s' % (shop_owner, shop_name))
-            except:
-                logging.error ('either client or client.merchant has no memkey')
-                pass # use default values
-            
+
             # Switched to new install code on Nov. 23rd
             if app.created <= datetime( 2011, 11, 22 ):
                 old_install_code = 1

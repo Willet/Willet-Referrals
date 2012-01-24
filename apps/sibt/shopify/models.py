@@ -27,8 +27,6 @@ from util.consts          import *
 from util.helpers         import generate_uuid
 from util.helpers import url as reverse_url
 
-from apps.wosib.shopify.models import WOSIBShopify
-
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -124,7 +122,7 @@ class SIBTShopify(SIBT, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        self.install_webhooks()
+        self.install_webhooks( product_hooks_too = True )
         #self.install_script_tags(script_tags=data)
         self.install_assets(assets=liquid_assets)
 
@@ -151,7 +149,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def memcache_by_store_url(self):
         return memcache.set(
-                self.store_url, 
+                "SIBT-%s" % self.store_url, 
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     def reset_css(self):
@@ -282,7 +280,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
-        data = memcache.get(url)
+        data = memcache.get("SIBT-%s" % url) # other apps used the same url
         if data:
             app = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:

@@ -11,7 +11,6 @@ jQuery(document).ready (function () {
         'app_uuid': '{{app.uuid}}',
         'user_uuid': '{{user.uuid}}',
         'instance_uuid': '{{instance.uuid}}',
-        
     };
 
     // detect just safari: http://api.jquery.com/jQuery.browser/
@@ -62,7 +61,7 @@ jQuery(document).ready (function () {
             'dom_el': null,
             'loaded': false,
             'test': function() {
-                return (typeof jQuery == 'function' && typeof jQuery.willet_colorbox == 'function')
+                return typeof $.willet_colorbox == 'function';
             }, 'callback': function() {
                 $.willet_colorbox.init ();
             }
@@ -147,17 +146,15 @@ jQuery(document).ready (function () {
         // TODO: everything
 
         // add the button onto the page.
-        var button_script = $('<input />', {
-            'type': "button",
-            'value': "Button",
-            'id': "btn_show_wosib",
-            'class': "button"
+        var button_script = $('<a />', {
+            text: "Need help deciding?",
+            'id': "show_wosib",
         });
         button_script.insertAfter (
             $('form[name="cartform"] table')
         );
         _willet_store_analytics ("WOSIBShowingButton"); // log show button
-        $('#btn_show_wosib').click (function () {
+        $('#show_wosib').click (function () {
             _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
             // iframe for asker to set up voting page
             $.willet_colorbox({

@@ -52,14 +52,13 @@ class AppShopify(Model):
             )
 
     # Shopify API Calls ------------------------------------------------------------
-    def install_webhooks(self, webhooks=None):
+    def install_webhooks(self, product_hooks_too=True, webhooks=None):
         """ Install the webhooks into the Shopify store """
         # pass extra webhooks as a list
         if webhooks == None:
             webhooks = []
 
         logging.info("TOKEN %s" % self.store_token )
-
         url      = '%s/admin/webhooks.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
@@ -69,24 +68,30 @@ class AppShopify(Model):
         # Auth the http lib
         h.add_credentials(username, password)
         
-        # First fetch webhooks that already exist
-        resp, content = h.request( url, "GET", headers = header)
-        data = json.loads( content ) 
-        #logging.info('%s %s' % (resp, content))
-
         # See what we've already installed and flag it so we don't double install
-        product_create = product_delete = product_update = True
-        for w in data['webhooks']:
-            #logging.info("checking %s"% w['address'])
-            if w['address'] == '%s/product/shopify/webhook/create' % URL or \
-               w['address'] == '%s/product/shopify/webhook/create/' % URL:
-                product_create = False
-            if w['address'] == '%s/product/shopify/webhook/delete' % URL or \
-               w['address'] == '%s/product/shopify/webhook/delete/' % URL:
-                product_delete = False
-            if w['address'] == '%s/product/shopify/webhook/update' % URL or \
-               w['address'] == '%s/product/shopify/webhook/update/' % URL:
-                product_update = False
+        if product_hooks_too:
+            # First fetch webhooks that already exist
+            resp, content = h.request( url, "GET", headers = header)
+            data = json.loads( content ) 
+            #logging.info('%s %s' % (resp, content))
+
+            product_create = product_delete = product_update = True
+            for w in data['webhooks']:
+                #logging.info("checking %s"% w['address'])
+                if w['address'] == '%s/product/shopify/webhook/create' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/create/' % URL:
+                    product_create = False
+                if w['address'] == '%s/product/shopify/webhook/delete' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/delete/' % URL:
+                    product_delete = False
+                if w['address'] == '%s/product/shopify/webhook/update' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/update/' % URL:
+                    product_update = False
+        
+        # If we don't want to install the product webhooks, 
+        # flag all as "already installed"
+        else:
+            product_create = product_delete = product_update = False
 
         # Install the "App Uninstall" webhook
         data = {
