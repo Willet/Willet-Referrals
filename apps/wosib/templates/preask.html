@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <!-- borrow CSS from SIBT -->
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+    </head>
+    <body>
+    <div id="wrapper">
+        <div id="splash">
+            <div id="title_bar">
+                <img width="79px" height="50px" src="/static/imgs/sibt_logo_79x50.png" />
+                <h2>Should I Buy This?</h2>
+                <p>The fastest way to get shopping advice from friends & family</p>
+            </div>
+
+            <div id="fb_btns">
+                {% if incentive_enabled %}
+                    <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
+                {% endif %}
+
+                <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()" {%if incentive_enabled%}style="margin-top: 15px"{%endif%}>
+                    <p class="fb">f</p>
+                    <p>Ask All Friends</p>
+                </button>
+                <button style="{%if incentive_enabled%}margin-top: 15px;{%endif%}float: right;" title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
+                    <p class="fb">f</p>
+                    <p>Choose Some Friends</p>
+                </button>
+            </div>
+        </div>
+
+<!-- ---------------------------------------- -->
+
+        <div id="friendPicker" style="display: none">
+            <div id="nameEntry">
+                <label for="tags">Find a Friend:</label>
+                <input id="tags" />
+                <label id="selectionCount"> Selected: 0</label>
+            </div>
+
+            <div id="chosenFriends">
+                <p>Enter your friends' names at the top!</p>
+            </div>
+            
+            <div id="shareText">
+                <textarea id="share-text">{{ AB_share_text }}</textarea>
+            </div>
+
+            <!--
+            <div class="willet" style="height: 32px; padding-top: 3px;">
+                <p>Powered by</p>
+                <a href="http://www.willetinc.com">
+                    <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
+                </a>
+            </div>
+            -->
+
+            <div id="btns">
+                <button style="width:50px;" onClick="sendMessages()">Ask</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    if (typeof jQuery == 'undefined'){
+        document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+    }
+    </script>
+    <script src="http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js" type="text/javascript"></script>
+    <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        var friends        = []; // List of { id, name } from FB
+        var friendNames    = []; // List of names to use in autocomplete (sorted)
+        var selectionCount = 0;  // Number of friends selected to msg
+        var fbAccessToken  = "";
+        var fbIdentity     = "";
+        
+        // AJAX methods
+        var storeAnalytics = function( evnt ) {
+            var payload = { what          : evnt,
+                            instance_uuid : '',
+                            app_uuid      : '{{ app_uuid }}',
+                            user_uuid     : '{{ user_uuid }}',
+                            target_url    : '{{ target_url }}'
+                          };
+            $.ajax({
+                url      : "{{ URL }}{% url TrackWOSIBUserAction %}",
+                dataType : 'json',
+                data     : payload,
+                type     : 'post',
+                success  : function (response) {
+                    return;
+                }
+            });
+        };
+        
+        var updateServerUser = function( accessToken, userId ) {
+            payload = { user_uuid   : "{{user_uuid}}",
+                        accessToken : accessToken,
+                        fbUserId    : userId 
+                      };
+            $.ajax({
+                url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    return;
+                }
+            });
+
+            fbAccessToken = accessToken;
+            fbIdentity    = userId;
+        };
+
+        var startPartialInstance = function() {
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuid : "{{product_uuid}}",
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    return;
+                }
+            });
+        };
+
+        var sendMessages = function() {
+            var ids   = [];
+            var names = [];
+            var msg   = $("#share-text").val();
+
+            // Clean up UI to show loader gif
+            $("#nameEntry").html('<p>Asking ...</p>');
+            $("#chosenFriends").html( '<img src="/static/imgs/ajax-loader.gif" id="loader" />' );
+            $("#shareText").html('');
+            $("#btns").html('');
+
+            $.each( $("input[type='checkbox']:checked"), function( i ) { 
+                ids.push( $($("input[type='checkbox']:checked")[i]).attr('value') ); 
+                names.push( $($("input[type='checkbox']:checked")[i]).attr('name') ); 
+                } );
+
+            payload = { user_uuid : "{{user_uuid}}",
+                        app_uuid  : "{{app_uuid}}",
+                        product_uuid    : "{{product_uuid}}",
+                        fb_access_token : fbAccessToken,
+                        fb_id     : fbIdentity,
+                        ids       : JSON.stringify( ids ),
+                        names     : JSON.stringify( names ),
+                        msg       : msg,
+                        willt_code: "{{willt_code}}"
+                      };
+            $.ajax({
+                url      : "{{ URL }}{% url SendFBMessages %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+
+                    $("#nameEntry").hide();
+                    $("#chosenFriends").height('135px');
+
+                    {% if incentive_enabled %}
+                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label><input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input> ' );
+                        
+                        $("#shareText").html( '<p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>' );
+                        
+                        $("#btns").html( '<button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button>' );
+
+
+                    {% else %}
+                        
+                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p> ' );
+                        
+                        $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
+                        
+                        $("#btns").html( '<button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
+                    {% endif %}
+                }
+            });
+        };
+
+        var updateEmailAddress = function() {
+            var addr = document.getElementById( 'email-field' ).value;
+                
+            $.ajax({
+                url: "/updateEmailAddress",
+                type: 'post',
+                data: { email : addr },
+                success: function (tr) {
+                    doPostMessage('close');
+                    window.close();
+                }
+            });
+        };
+        // Done AJAX methods
+
+        var closeIframe = function( action ) {
+            if ( action != "" ){
+                storeAnalytics( action );
+            }
+
+            doPostMessage('close');
+            window.close();
+        };
+
+        // Post to parent page that we are hosted in
+        var doPostMessage = function(message) {
+            var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+            if ( message === "close" ) {
+                target.postMessage(
+                    message,
+                    '{{target_url}}'
+                );
+            } else {
+                $.postMessage( message, '{{target_url}}', parent );
+            }
+        };
+
+        // Open up the FB dialog. Does not do a FB connect with us.
+        var postOnWall = function () {
+            startPartialInstance();
+
+            FB.ui({ method:  'feed',
+                    display: 'popup',
+                    link:    '{{share_url}}',
+                    picture: '{{product_images|first}}',
+                    name:    "{{product_title|escape}}",
+                    caption: '{{store_domain}}',
+                    description: "{{ product_desc|striptags|escape }}",
+                    redirect_uri: '{{fb_redirect}}' });
+            
+            closeIframe( 'WOSIBNoConnectFBDialog' );
+        };
+
+        var runFriendPicker = function () {
+            storeAnalytics('WOSIBConnectFBDialog');
+            
+            // If the user hasn't connected with us,
+            // if ( !{{user_has_fb_token}} ) {
+                $("#fb_btns").html( '<h3>Login to Facebook<br />so you can select your friends!</h3>' );
+
+               FB.login(function(response) {
+                        var authResp = response.authResponse;
+
+                        if (!authResp) {
+                            // we weren't given permission
+                            closeIframe( 'WOSIBConnectFBCancelled' );
+                        } else { 
+                            storeAnalytics('WOSIBFBConnected');
+
+                            // Store FB data in the server.
+                            updateServerUser( authResp.accessToken, authResp.userID );
+
+                            fetchFBFriends( );
+                        }
+                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+                );
+           // } else {
+                // User is logged in AND connected (in theory)
+           //     fetchFBFriends( );
+           // }
+        };
+        
+        // Query FB api to grab logged-in user's friends
+        var fetchFBFriends = function ( ) {
+            $("#splash").hide();
+            $("#friendPicker").show();
+
+            doPostMessage( 'WOSIBFriendChoosingCancelled' );
+
+            FB.api( '/me/friends', function(response) {
+                friends = response.data;
+                friends.sort();
+
+                $.each( response.data, function( i ) { friendNames.push( friends[i].name ); } );
+                
+                $( "#tags" ).autocomplete({
+                    source: friendNames,
+                    select: friendSelectedByAutocomplete,
+                    close:  clearNameEntry
+                });  
+
+                // Start by showing some friends
+                //if ( friends.length <= 125 ) {
+                var lim = Math.min( 125, friends.length );
+                    for( var i = 0; i < lim; i ++ ) {
+                        selectFriend( friends[i].name, friends[i].id );
+                        deselectFriend( friends[i].id );
+                    }
+                //}
+           });
+        };
+
+        var clearNameEntry = function() {
+            $("#tags").attr( 'value', '' );
+        };
+
+        var friendSelectedByAutocomplete = function( event, ui ) {
+            // ui.item is friend
+            
+            var i = friendNames.indexOf( ui.item.value );
+            selectFriend( ui.item.value, friends[i].id );
+        };
+
+        var selectFriend = function ( name, fb_id ) {
+            // Clean up UI
+            var p = $("#chosenFriends p");
+            if ( p.length != 0 ) {
+                p.remove();
+            }
+            
+            // Have we added a checkbox for this yet?
+            var div = $('#check' + fb_id);
+            if ( div.length == 0 ) {
+                var div = $(document.createElement( 'input' ));
+                div.attr( 'id', 'check' + fb_id );
+                div.attr( 'type', 'checkbox' );
+                div.attr( 'value', fb_id );
+                div.attr( 'name', name );
+                div.hide();
+                $("body").append(div);
+            } 
+            
+            div.attr( 'checked', 'checked' );
+
+            // Have we added img for friend yet?
+            var tmp = $("#img" + fb_id);
+            if( tmp.length == 0 ) {
+                var tmp = $(document.createElement( 'img' ));
+                tmp.attr( 'src', 'http://graph.facebook.com/' + fb_id + '/picture' );
+                tmp.attr( 'id', 'img' + fb_id );
+                tmp.attr( 'title', name );
+                tmp.attr( 'alt', name );
+                tmp.attr( 'style', 'width:52px; height:52px;' );
+                tmp.attr( 'onclick', 'friendClick(this)' );
+                $('#chosenFriends').append( tmp );
+            } 
+            
+            tmp.attr( 'class', 'selectedFriend' );
+            
+            // Update selection counter
+            selectionCount += 1;
+            $("#selectionCount").html( "Selected: " + selectionCount );
+        };
+
+        var deselectFriend = function ( fb_id ) {
+            $('#check' + fb_id ).remove();
+            $('#img' + fb_id ).attr( 'class', 'notSelectedFriend' );
+
+            selectionCount -= 1;
+            $("#selectionCount").html( "Selected: " + selectionCount );
+        };
+
+        var friendClick = function( elem ) {
+            var fb_id = $(elem).attr( 'id' );
+            if ( $(elem).attr('class') == "selectedFriend" ) {
+                deselectFriend( fb_id.substring( 3 ) );
+            } else {
+                selectFriend( $(elem).attr('alt'), fb_id.substring( 3 ) );
+            }
+        };
+           
+        $(document).ready(function() {
+            $('.cancel-btn').click(function() {
+                doPostMessage('close');
+            });
+
+            // Take THAT IE!
+            if(!Array.indexOf){
+                Array.prototype.indexOf = function(obj){
+                    for(var i=0; i<this.length; i++){
+                        if(this[i]==obj){
+                            return i;
+                        }
+                    }
+                    return -1;
+                }
+            }
+        });
+
+    </script>
+
+    <div id="fb-root"></div>
+    <script>
+        window.fbAsyncInit = function() {
+            // see: http://stackoverflow.com/questions/7655352
+            //FB._https = true;
+            FB.init({
+                appId : '{{FACEBOOK_APP_ID}}', // App ID
+                //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                oauth : true, // enable OAuth 2.0
+                xfbml : true  // parse XFBML
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s);
+            js.id = id;
+            js.async = true;
+            js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-23764505-9']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+        
+</body>
+</html>
+

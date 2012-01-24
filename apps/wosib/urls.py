@@ -6,6 +6,11 @@ from apps.wosib.processes import *
 urlpatterns = [
     # Views
     (r'/w/js/jquery.colorbox.js',   WOSIBColorboxJSServer),
+    (r'/w/preask.html',             WOSIBPreAskDynamicLoader),
+    (r'/w/ask.html',                WOSIBAskDynamicLoader),
+    (r'/w/vote.html',               WOSIBVoteDynamicLoader),
+    (r'/w/results.html',            WOSIBShowResults),
+    (r'/w/fb_thanks.html',          WOSIBShowFBThanks),
     (r'/w/track/unload',            ShowWOSIBUnloadHook),
     (r'/w/instance',                ShowWOSIBInstancePage), # query: id (instance ID)
 
