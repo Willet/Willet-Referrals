@@ -35,6 +35,7 @@ from util.consts                    import ADMIN_EMAILS
 from util.consts                    import ADMIN_IPS
 from util.consts                    import FACEBOOK_QUERY_URL
 from util.consts                    import MEMCACHE_TIMEOUT
+from util.consts                    import USING_DEV_SERVER
 from util.helpers                   import *
 from util.memcache_bucket_config    import MemcacheBucketConfig
 from util.memcache_bucket_config    import batch_put 
@@ -163,10 +164,19 @@ class User( db.Expando ):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         logging.info("GETTING USER FROM DB")
-        return User.all().filter('uuid =', uuid).get()
+        db_user = User.all().filter('uuid =', uuid).get()
+        if not db_user:
+            logging.warn ("User does not exist in DB. Not authenticated...")
+        return db_user
 
     def put_later(self):
         """Memcaches and defers the put"""
+        
+        if USING_DEV_SERVER:
+            logging.debug("dev mode, putting user now...")
+            self.put()
+            return
+        
         key = self.get_key()
 
         mbc    = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
@@ -208,6 +218,7 @@ class User( db.Expando ):
             logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
                 self.hardPut() # Will validate the instance.
+                logging.debug("user has been hardput().")
             except datastore_errors.Timeout:
                 thread.sleep(timeout_ms)
                 timeout_ms *= 2
@@ -215,6 +226,7 @@ class User( db.Expando ):
                 break
         # Memcache *after* model is given datastore key
         if self.key():
+            logging.debug("user exists in DB, and is stored in memcache.")
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
             memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
             

@@ -61,7 +61,7 @@ jQuery(document).ready (function () {
             'dom_el': null,
             'loaded': false,
             'test': function() {
-                return (typeof jQuery == 'function' && typeof jQuery.willet_colorbox == 'function')
+                return typeof $.willet_colorbox == 'function';
             }, 'callback': function() {
                 $.willet_colorbox.init ();
             }
@@ -149,7 +149,6 @@ jQuery(document).ready (function () {
         var button_script = $('<a />', {
             text: "Need help deciding?",
             'id': "show_wosib",
-            'class': "button"
         });
         button_script.insertAfter (
             $('form[name="cartform"] table')

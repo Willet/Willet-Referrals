@@ -63,6 +63,17 @@ class ShopifyRedirect( URIHandler ):
         # the app name has to corespond to AppnameWelcome view
         redirect_url = url('%sWelcome' % app)
 
+        # DON'T REMOVE
+        if redirect_url != None:
+            redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
+        elif app == 'referral':
+            redirect_url = '/r/shopify?%s' % self.request.query_string
+        elif app == 'sibt':
+            redirect_url = '/s/shopify?%s' % self.request.query_string
+        elif app == 'buttons':
+            redirect_url = '/b/shopify/welcome?%s' % self.request.query_string
+        else:
+            redirect_url = '/'
         logging.info("redirecting app %s to %s" % (app, redirect_url))
         self.redirect(redirect_url)
 

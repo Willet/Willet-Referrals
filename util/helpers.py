@@ -192,6 +192,7 @@ def admin_required( fn ):
             else:   
                 fn( self, param )
         except: # most likely "user not found"
+            logging.warn ("User does not exist in DB. Not authenticated...")
             self.redirect ( '/' )
             return
     return check
