@@ -184,12 +184,16 @@ def admin_required( fn ):
     def check(self, param=None):
         from apps.user.models import User
         user = User.get(read_user_cookie(self))
-
-        if not user.is_admin():
+        # user not found if cookie references lost user
+        try:
+            if not user.is_admin():
+                self.redirect ( '/' )
+                return
+            else:   
+                fn( self, param )
+        except: # most likely "user not found"
             self.redirect ( '/' )
             return
-        else:   
-            fn( self, param )
     return check
 
 #
