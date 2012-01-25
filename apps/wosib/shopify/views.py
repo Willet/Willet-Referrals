@@ -50,7 +50,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             shop_url    = get_target_url(self.request.headers.get('REFERER')) # probably ok
         logging.debug ("shop_url = %s" % shop_url)
         app         = WOSIBShopify.get_by_store_url(shop_url)
-        app_sibt_cp = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
+        app_sibt    = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
         event       = 'WOSIBShowingButton'
 
         # A tad meaningless, as target will always be store.com/cart
@@ -138,12 +138,12 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         # this should only happen once, can be removed at a later date
         # TODO remove this code
         if not hasattr(app, 'button_enabled'):
-            app_sibt_cp.button_enabled = True
-            app_sibt_cp.put()
+            app_sibt.button_enabled = True
+            app_sibt.put()
     
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-            if app_sibt_cp.incentive_enabled:
+            if app_sibt.incentive_enabled:
                 ab_test_options = [ "Which one should I buy? Let friends vote! Save $5!",
                                     "Earn $5! Ask your friends what they think!",
                                     "Need advice? Ask your friends! Earn $5!",
@@ -170,7 +170,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
                                             user = user,
                                             app  = app )
                 
-            if app_sibt_cp.overlay_enabled:
+            if app_sibt.overlay_enabled:
                 overlay_style = ab_test( 'sibt_overlay_style', 
                                          ["_willet_overlay_button", "_willet_overlay_button2"],
                                          user = user,
@@ -180,7 +180,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
             # If subsequent page viewing and we should prompt user:
             if show_top_bar_ask:
-                if app_sibt_cp.top_bar_enabled and app_sibt_cp.btm_tab_enabled:
+                if app_sibt.top_bar_enabled and app_sibt.btm_tab_enabled:
                     bar_or_tab = ab_test( 'sibt_bar_or_tab',
                                           ['bar', 'tab'],
                                           user = user,
@@ -190,10 +190,10 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
                     AB_top_bar = 1 if bar_or_tab == "bar" else 0
                     AB_btm_tab = int(not AB_top_bar)
 
-                elif not app_sibt_cp.top_bar_enabled and app_sibt_cp.btm_tab_enabled:
+                elif not app_sibt.top_bar_enabled and app_sibt.btm_tab_enabled:
                     AB_top_bar = 1 
                     AB_btm_tab = 0
-                elif app_sibt_cp.top_bar_enabled and not app_sibt_cp.btm_tab_enabled:
+                elif app_sibt.top_bar_enabled and not app_sibt.btm_tab_enabled:
                     AB_top_bar = 0 
                     AB_btm_tab = 1
                 else:  # both False
@@ -211,7 +211,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         # a whole bunch of css bullshit!
         if app:
             logging.info("got app button css")
-            app_css = app_sibt_cp.get_css()
+            app_css = app_sibt.get_css()
         else:
             app_css = WOSIBShopify.get_default_css()
         
@@ -232,7 +232,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'AB_overlay_style' : overlay_style,
 
             'store_url'      : shop_url,
-            'store_domain'   : getattr (app_sibt_cp.client, 'domain', ''),
+            'store_domain'   : getattr (app_sibt.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
             'product_uuid'   : product.uuid if product else "",
             'product_title'  : product.title if product else "",
@@ -245,13 +245,13 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'AB_CTA_text' : cta_button_text,
             'AB_top_bar'  : AB_top_bar,
             'AB_btm_tab'  : AB_btm_tab,
-            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app_sibt_cp.overlay_enabled else 0,
+            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app_sibt.overlay_enabled else 0,
 
             'evnt' : event,
             'img_elem_selector' : "#image img", #app.img_selector,
             'heart_img' : 0,
             
-            'FACEBOOK_APP_ID': app_sibt_cp.settings['facebook']['app_id'],
+            'FACEBOOK_APP_ID': app_sibt.settings['facebook']['app_id'],
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code' : link.willt_url_code if link else "",
             'app_css': app_css,

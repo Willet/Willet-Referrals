@@ -28,7 +28,9 @@ class ProductShopify(Product):
     
     # Array of IDs of the variants of the product
     # (get from shopify API: /admin/products.json)
-    variants = db.ListProperty(int, indexed = False)
+    # Do NOT change to any number-based data type. This is an UNKNOWN indexing 
+    # issue with non-string lists.
+    variants = db.StringListProperty(indexed = True)
     
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
@@ -49,7 +51,7 @@ class ProductShopify(Product):
                 # otherwise, store an empty list.
                 logging.debug ('%d variants for this product found; adding to \
                     ProductShopify object.' % len(data['variants']))
-                variants = [variant['id'] for variant in data['variants']]
+                variants = [str(variant['id']) for variant in data['variants']]
             logging.info ('variants = %s' % variants)
             
             # Make the product

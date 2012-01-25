@@ -12,6 +12,7 @@ from google.appengine.api       import taskqueue
 from google.appengine.ext       import webapp
 from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
+# from google.appengine.ext       import db
 from time                       import time
 from urlparse                   import urlparse
 
@@ -90,14 +91,36 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
-        template_values = {
-        }
+        try:
+            variant_ids = map(lambda x: long(x), self.request.get('variants').split(','))
+        except: # if user throws in random crap in the query string, no biggie
+            variant_ids = []
+        
+        if variant_ids: # only if variants are valid, render the page
+            logging.debug ("variant_ids = %s" % variant_ids)
+            variants = []
+            for variant_id in variant_ids:
+                its_product = ProductShopify.all().filter ('variants = ', str(variant_id)).get()
+                # its_product = db.GqlQuery("SELECT * FROM Product WHERE variants = :1", variant_id)[0]
+                if its_product: # could be None of Product is somehow not in DB
+                    variants.append({
+                        'id' : its_product.shopify_id,
+                        'image' : 'http://fraser-willet.appspot.com/static/sibt/imgs/temp_product.jpg', # its_product.images[0],
+                        'title' : its_product.title,
+                        'variant_id' : variant_id,
+                    })
+                else:
+                    logging.debug ("Product for variant %s not found in DB" % variant_id)
+            
+            template_values = {
+                'variants' : variants
+            }
 
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'preask.html')
+            # Finally, render the HTML!
+            path = os.path.join('apps/wosib/templates/', 'preask.html')
 
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+            self.response.headers.add_header('P3P', P3P_HEADER)
+            self.response.out.write(template.render(path, template_values))
         return
 
 
@@ -144,6 +167,15 @@ class WOSIBShowFBThanks( URIHandler ):
         self.response.out.write(template.render(path, template_values))
         return
 
+class ShowWOSIBButtonCSS (URIHandler):
+    def get( self ):
+        template_values = { 'URL'           : URL,
+                            'app_uuid'      : self.request.get('app_uuid')}
+       
+        path = os.path.join('apps/wosib/templates/css/', 'wosib_user_style.css')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
 
 class WOSIBColorboxJSServer( URIHandler ):
     def get( self ):

@@ -64,7 +64,7 @@ SHOPIFY_APPS = {
         # repeat keys in SIBT
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
         'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
-        'class_name': 'SIBTShopify',
+        'class_name': 'WOSIBShopify',
         'facebook': {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
