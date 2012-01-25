@@ -11,7 +11,7 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.sibt.actions        import *
+from apps.wosib.actions        import *
 from apps.action.models       import UserAction
 from apps.app.models          import App
 from apps.app.models          import get_app_by_id
@@ -20,8 +20,8 @@ from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
 from apps.user.models         import User
-from apps.sibt.models         import SIBTInstance
-from apps.sibt.models         import PartialSIBTInstance
+from apps.wosib.models         import WOSIBInstance
+from apps.wosib.models         import PartialWOSIBInstance
 from apps.testimonial.models  import create_testimonial
 from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models         import User
@@ -35,9 +35,9 @@ from util.helpers             import remove_html_tags
 from util.urihandler          import URIHandler
 from util.strip_html import strip_html
 
-class ShareSIBTInstanceOnFacebook(URIHandler):
+class ShareWOSIBInstanceOnFacebook(URIHandler):
     def post(self):
-        logging.info("SHARESIBTONFACEBOOK")
+        logging.info("SHAREWOSIBONFACEBOOK")
 
         app  = get_app_by_id(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
@@ -148,14 +148,14 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
-class StartSIBTInstance(URIHandler):
+class StartWOSIBInstance(URIHandler):
     def post(self):
         app  = get_app_by_id(self.request.get('app_uuid'))
         user = get_or_create_user_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         
-        logging.info("Starting SIBT instance for %s" % link.target_url )
+        logging.info("Starting WOSIB instance for %s" % link.target_url )
 
         # defaults
         response = {
@@ -187,11 +187,11 @@ class DoVote( URIHandler ):
 
         which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
-        instance = SIBTInstance.get( instance_uuid )
+        instance = WOSIBInstance.get( instance_uuid )
         app = instance.app_
 
         # Make a Vote action for this User
-        action = SIBTVoteAction.create( user, instance, which )
+        action = WOSIBVoteAction.create( user, instance, which )
 
         # Count the vote.
         if which.lower() == "yes":
@@ -202,7 +202,7 @@ class DoVote( URIHandler ):
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
         if email != "":
-            Email.SIBTVoteNotification(
+            Email.WOSIBVoteNotification(
                 email, 
                 instance.asker.get_full_name(), 
                 which, 
@@ -214,45 +214,45 @@ class DoVote( URIHandler ):
 
         self.response.out.write('ok')
 
-class GetExpiredSIBTInstances(URIHandler):
+class GetExpiredWOSIBInstances(URIHandler):
     def post(self):
         return self.get()
     
     def get(self):
-        """Gets a list of SIBT instances to be expired and emails to be sent"""
+        """Gets a list of WOSIB instances to be expired and emails to be sent"""
         from datetime import datetime
         right_now = datetime.now()
-        expired_instances = SIBTInstance.all()\
+        expired_instances = WOSIBInstance.all()\
                 .filter('is_live =', True)\
                 .filter('end_datetime <=', right_now) 
 
         for instance in expired_instances:
             taskqueue.add(
-                url = url('RemoveExpiredSIBTInstance'),
+                url = url('RemoveExpiredWOSIBInstance'),
                 params = {
                     'instance_uuid': instance.uuid    
                 }
             )
         logging.info('expiring %d instances' % expired_instances.count())
 
-class RemoveExpiredSIBTInstance(webapp.RequestHandler):
+class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
     def post(self):
         return self.get()
     
     def get(self):
-        """Updates the SIBT instance in a transaction and then emails the user"""
+        """Updates the WOSIB instance in a transaction and then emails the user"""
         def txn(instance):
             instance.is_live = False
             instance.put()
             return instance
         
         instance_uuid = self.request.get('instance_uuid')
-        instance = SIBTInstance.get(instance_uuid)
+        instance = WOSIBInstance.get(instance_uuid)
         if instance != None:
             result_instance = db.run_in_transaction(txn, instance)
             email = instance.asker.get_attr('email')
             if email != "":
-                Email.SIBTVoteCompletion(
+                Email.WOSIBVoteCompletion(
                     email,
                     result_instance.asker.get_full_name(),
                     result_instance.link.get_willt_url(),
@@ -266,30 +266,36 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
 
 class StoreAnalytics( URIHandler ):
     def get( self ):
+        user = get_user_by_uuid( self.request.get('user_uuid') )
+
+        event  = self.request.get('evnt')
+        target = self.request.get( 'target_url' )
+        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
+
+        # Now, tell Mixpanel
+        app.storeAnalyticsDatum( event, user, target )
         logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
 
-class TrackSIBTShowAction(URIHandler):
+class TrackWOSIBShowAction(URIHandler):
     def get(self):
         """Compatibility with iframe shizz"""
         self.post()
 
     def post(self):
-        """So javascript can track a sibt specific show actions"""
-        success  = False
+        """So javascript can track a wosib specific show actions"""
+        success = False
         instance = app = user = action = None
-        duration = 0.0
         if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid')) 
+            instance = WOSIBInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
             app = App.get(self.request.get('app_uuid')) 
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid')) 
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+        duration = self.request.get('duration') or 0.0
         what = self.request.get('evnt')
         url = self.request.get('target_url')
         try:
-            logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
+            logging.debug ('TrackWOSIBShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
             action = action_class.create(user, 
                     instance = instance, 
@@ -300,8 +306,8 @@ class TrackSIBTShowAction(URIHandler):
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
             try:
-                logging.debug ('TrackSIBTShowAction 2: user = %s, instance = %s, what = %s' % (user, instance, what))
-                action = SIBTShowAction.create(user, instance, what)
+                logging.debug ('TrackWOSIBShowAction 2: user = %s, instance = %s, what = %s' % (user, instance, what))
+                action = WOSIBShowAction.create(user, instance, what)
             except Exception, e:
                 logging.error('this is serious: %s' % e, exc_info=True)
             else:
@@ -313,27 +319,25 @@ class TrackSIBTShowAction(URIHandler):
 
         self.response.out.write('')
 
-class TrackSIBTUserAction(URIHandler):
+class TrackWOSIBUserAction(URIHandler):
     """ For actions WITH AN INSTANCE """
     def get(self):
         """Compatibility with iframe shizz"""
         self.post()
 
     def post(self):
-        """So javascript can track a sibt specific show actions"""
-        success  = False
-        duration = 0.0
+        """So javascript can track a wosib specific show actions"""
+        success = False
         instance = app = user = action = None
         if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid')) 
+            instance = WOSIBInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))         
+            app = App.get(self.request.get('app_uuid'))
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid'))
         what = self.request.get('what')
         url = self.request.get('target_url')
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+        duration = float(self.request.get('duration')) or 0.0
         action = None
         try:
             action_class = globals()[what]
@@ -346,7 +350,7 @@ class TrackSIBTUserAction(URIHandler):
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
             try:
-                action = SIBTUserAction.create(user, instance, what)
+                action = WOSIBUserAction.create(user, instance, what)
             except Exception, e:
                 logging.error('this is serious: %s' % e, exc_info=True)
             else:
@@ -358,37 +362,37 @@ class TrackSIBTUserAction(URIHandler):
 
         self.response.out.write('')
 
-class StartPartialSIBTInstance( URIHandler ):
+class StartPartialWOSIBInstance( URIHandler ):
     def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
         link    = Link.get_by_code( self.request.get( 'willt_code' ) )
         product = Product.get( self.request.get( 'product_uuid' ) )
         user    = User.get( self.request.get( 'user_uuid' ) )
 
-        PartialSIBTInstance.create( user, app, link, product )
+        PartialWOSIBInstance.create( user, app, link, product )
 
-class StartSIBTAnalytics(URIHandler):
+class StartWOSIBAnalytics(URIHandler):
     def get(self):
         things = {
             'tb': {
-                'action': 'SIBTUserClickedTopBarAsk',
-                'show_action': 'SIBTShowingTopBarAsk',
+                'action': 'WOSIBUserClickedTopBarAsk',
+                'show_action': 'WOSIBShowingTopBarAsk',
                 'l': [],
                 'counts': {},
             },
             'b': {
-                'action': 'SIBTUserClickedButtonAsk',
-                'show_action': 'SIBTShowingButton',
+                'action': 'WOSIBUserClickedButtonAsk',
+                'show_action': 'WOSIBShowingButton',
                 'l': [],
                 'counts': {},
-            }
+            }        
         }
         actions_to_check = [
-            'SIBTShowingAskIframe',
-            'SIBTAskUserClickedEditMotivation',
-            'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare',
-            'SIBTInstanceCreated',
+            'WOSIBShowingAskIframe',
+            'WOSIBAskUserClickedEditMotivation',
+            'WOSIBAskUserClosedIframe',
+            'WOSIBAskUserClickedShare',
+            'WOSIBInstanceCreated',
         ]
         for t in things:
             things[t]['counts'][things[t]['show_action']] = Action\
@@ -405,7 +409,7 @@ class StartSIBTAnalytics(URIHandler):
                             .filter('user =', click.user)\
                             .filter('created >', click.created)\
                             .filter('app_ =', click.app_)\
-                            .filter('class =', 'SIBTShowingButton')\
+                            .filter('class =', 'WOSIBShowingButton')\
                             .get()
 
                     for action in actions_to_check:
@@ -465,8 +469,8 @@ class StartSIBTAnalytics(URIHandler):
 
 class SendFBMessages( URIHandler ):
     def post( self ):
-        logging.info("TARGETTED_SHARESIBTONFACEBOOK")
-        
+        logging.info("TARGETTED_SHAREWOSIBONFACEBOOK")
+
         # Fetch arguments 
         ids       = json.loads( self.request.get( 'ids' ) )
         names     = json.loads( self.request.get( 'names' ) )
@@ -474,7 +478,7 @@ class SendFBMessages( URIHandler ):
         app       = App.get( self.request.get('app_uuid') )
         product   = Product.get( self.request.get( 'product_uuid' ) )
         link      = Link.get_by_code( self.request.get( 'willt_code' ) )
-        
+
         user      = User.get( self.request.get( 'user_uuid' ) )
         fb_token  = self.request.get('fb_access_token')
         fb_id     = self.request.get('fb_id')

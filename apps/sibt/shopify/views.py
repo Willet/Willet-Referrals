@@ -32,6 +32,7 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
+from apps.wosib.shopify.models import WOSIBShopify
 from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
@@ -57,7 +58,8 @@ class SIBTShopifyWelcome(URIHandler):
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
-            app = SIBTShopify.get_or_create(client, token=token)
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
             client_email = None
             shop_owner   = 'Shopify Merchant'

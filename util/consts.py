@@ -60,6 +60,15 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         }
+    }, 'WOSIBShopify': {
+        # repeat keys in SIBT
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'SIBTShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        }
     }, 'ReferralShopify': {
         'api_key': 'c46f84fb6458a72c774504ba372757f1',
         'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
@@ -139,6 +148,8 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'wosib',
+    'wosib.shopify',
     'stats',
     'testimonial',
     'user',
@@ -147,9 +158,9 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
 
