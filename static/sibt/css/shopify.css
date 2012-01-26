@@ -1,19 +1,11 @@
 body {
-    text-align: center;
     overflow: hidden;
     background-color: white;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
     margin:0px;
     padding:0px;
 }
-#wrapper {
-    margin: 0 auto;
-    min-height: 300px;
-    max-height: 300px;
-    height: 300px;
-    width: 500px;
-    border: 1px solid #9CE6FF;
-}
+
 #thanks_wrapper {
     text-align: center;
     font-size: 80%; 
@@ -252,19 +244,7 @@ body {
     background-color: #F2F2F2;
     padding: 8px 0;
 }
-textarea {
-    background: #fff url("/static/inputshadow.gif") repeat-x top; 
-    border-style: none solid solid;
-    vertical-align: middle; 
-    border: 1px solid #aaa; 
-    padding: 4px; 
-    color: black;
-    margin: 0px 10px 0px 0px;
-    width: 370px;
-    height: 40px;
-    font: 1.1em "Lucida Grande", Helvetica, Arial, sans-serif;
-    overflow-x: hidden;
-}
+
 #chars-left {
     font-size: 0.8em;
     text-align: right;

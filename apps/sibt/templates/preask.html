@@ -23,74 +23,118 @@
     
     </head>
     <body>
-        <div id="wrapper">
-            <div id="splash">
-                <div id="title_bar">
-                    <img width="79px" height="50px" src="/static/imgs/sibt_logo_79x50.png" />
-                    <h2>Ask Your Friends ( Drop down menu here | V )</h2>
+        <div class="wrapper" id="wrapper">
+
+            <!---------------------------- Splash Screen ------------------------------>
+
+            <div id="splash" style="display: none">
+                <div class="title_bar">
+                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Ask Your Friends</div>
+                    <div class="drop_bar" id="questionOptions">
+                        <div class="grey_bar" onclick="toggleShowQuestionOptions();">
+                            Should I buy this?
+                        </div>
+                        <img width=29 height=29 src="/static/sibt/imgs/drop_arrow_29x29.png" onclick="toggleShowQuestionOptions();" />
+                        <ul>
+                            <li onclick="selectQuestionOption(0);">Should I buy this?</li>
+                            <li onclick="selectQuestionOption(1);">Does anyone own this?</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="message">
-                    <img width=50 height=50 src="" />
-                    <textarea></textarea>
+                <div class="message" id="message">
+                    <img width=100 height=100 src="/static/sibt/imgs/temp_product.jpg" />
+                    <textarea>I need help!  Should I buy this? Please tell me here:</textarea>
                 </div>
                 <div class="options">
-                    <div class="option">
-                        <button title="Post to your wall" value="Ask All Friends" onclick="postOnWall()">
-                            <img src="/static/sibt/imgs/sibt_ask_all.png" />
+                    <div class="option left">
+                        <div class="button" title="Post to your wall" onclick="postOnWall();">
+                            <img src="/static/sibt/imgs/sibt_ask_all.png" width=40 height=40 />
                             <div class="title">Ask Friends</div>
                             <div class="subtitle">Post to Facebook</div>
-                        </button>
+                        </div>
                         <div class="hint">
-                            <img src="/static/imgs/sibt_little_arrow.png" width=25 height=25 />
+                            <img src="/static/sibt/imgs/little_arrow.png" width=25 height=25 />
                             <div>easy &amp; fast</div>
                         </div>
                     </div>
                     <div class="or">or</div>
-                    <div class="option">
-                        <button title="Post to your friends' walls" value="Choose Some Friends" onclick="runFriendPicker()">
-                            <img src="/static/imgs/sibt_choose_friends" />
+                    <div class="option right">
+                        <div class="button" title="Post to your friends' walls" onclick="showScreen('choose');">
+                            <img src="/static/sibt/imgs/sibt_choose_friends.png" width=40 height=40 />
                             <div class="title">Choose Friends</div>
                             <div class="subtitle">Get trusted advice</div>
-                        </button>
+                        </div>
                         <div class="hint">
-                            <img src="/static/imgs/sibt_little_arrow.png" width=25 height=25 />
+                            <img src="/static/sibt/imgs/little_arrow.png" width=25 height=25 />
                             <div>best advice</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-    <!-- ---------------------------------------- -->
+            <!---------------------- Choose Friends Screen ------------------------------>
 
-            <div id="friendPicker" style="display: none">
-                <div id="nameEntry">
-                    <label for="tags">Find a Friend:</label>
-                    <input id="tags" />
-                    <label id="selectionCount"> Selected: 0</label>
+            <div id="choose" style="display: none">
+                <div class="title_bar">
+                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Choose Friends To Ask For Advice</div>
                 </div>
-
-                <div id="chosenFriends">
-                    <p>Enter your friends' names at the top!</p>
+                <ul class="friends" id="friends">
+                    <!-- Friends appended when document ready -->
+                </ul>
+                <div class="grey_bar add_friend" onclick="addFriend();">
+                    <img width=29 height=29 src="/static/sibt/imgs/add_cross_29x29.png" />
+                    Add Another Friend
                 </div>
-                
-                <div id="shareText">
-                    <textarea id="share-text">{{ AB_share_text }}</textarea>
-                </div>
-
-                <!--
-                <div class="willet" style="height: 32px; padding-top: 3px;">
-                    <p>Powered by</p>
-                    <a href="http://www.willetinc.com">
-                        <img width="27px" height="20px" src="/static/imgs/logo_27x20.png" />
-                    </a>
-                </div>
-                -->
-
-                <div id="btns">
-                    <button style="width:50px;" onClick="sendMessages()">Ask</button>
-                    <!--<button onclick="closeIframe('SIBTFriendChoosingCancelled');" title="Cancel">Cancel</button>-->
+                <div class="ask button" onclick='sendMessages();'>
+                    <img src="/static/sibt/imgs/sibt_choose_friends.png" width=40 height=40 />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
                 </div>
             </div>
+
+            <!--------------------------- Asking Screen -------------------------------->
+
+            <div id="asking" style="display: none">
+                <div class="title_bar">
+                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Choose Friends To Ask For Advice</div>
+                </div>
+                <p id="#nameEntry">Asking...</p>
+                <p><img src="/static/imgs/ajax-loader.gif" id="loader" /></p>
+            </div>
+
+            <!-------------------------- Success Screen -------------------------------->
+
+            <div id="success" style="display: none">
+                <div class="title_bar">
+                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Asks Away!</div>
+                </div>
+                <div>
+                    {% if incentive_enabled %}
+
+                    <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label>
+                    <input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input>
+                    
+                    <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
+                    
+                    <button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button>
+
+
+                    {% else %}
+                    
+                    <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
+                    <p>We\'ll email you when someone votes!</p>' );
+                    
+                    <button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>
+
+                    {% endif %}
+                </div>
+
+            <!------------------------------- End Screens -------------------------------->
+
         </div>
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
@@ -98,13 +142,283 @@
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
 
     <script type="text/javascript">
-        var friends        = []; // List of { id, name } from FB
+        "use strict";
+        
+        var friends        = []; // List of Friend instances in Choose Friend screen
+        var fb_friends     = []; // List of { id, name } from FB
         var friendNames    = []; // List of names to use in autocomplete (sorted)
         var selectionCount = 0;  // Number of friends selected to msg
         var fbAccessToken  = "";
         var fbIdentity     = "";
+
+        // ----------------------------  CLASSES  ----------------------------------
+
+        // Widget class
+        // Base widget, same basic functionality
+        var LiWidget = function (name) {
+            var elem = this.elem = document.createElement('li');
+            elem.id = elem.name = name || '';
+        };
+        LiWidget.prototype = {
+            getElement: function () {
+            // Returns HTML element
+                return this.elem;
+            },
+            getName: function () {
+            // Returns widget name
+                return this.name;
+            },
+            setVisible: function (i) {
+            // sets widget HTML element display
+            // true - visible, false - invisible
+                if (i) {
+                    this.elem.style.display = 'block';
+                }
+                else {
+                    this.elem.style.display = 'none';
+                }
+            } 
+        };
+
+        // A Friend entry in Choose Friends
+        // Friend elements are complicated beasts, with much functionality & states
+        // For ease, we contain it in this class
+        var Friend = function (name) {
+            LiWidget.call(this, name);
+            this.selected = 'none';
+            
+            var that = this,
+                $elem = $(this.elem);
+            
+            // Set up DOM
+            $elem.addClass('friend').append(" \
+                <div class='portrait'> \
+                    <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
+                </div> \
+                <div class='friend_options'> \
+                    <div class='fb_option'> \
+                    </div> \
+                    <div class='or'>or</div> \
+                    <div class='email_option'> \
+                        <div class='helpful'>Enter a friend's email address</div> \
+                        <input></input> \
+                    </div> \
+                </div> \
+            ").find('.email_option input')
+                .blur(function () {
+                    that._chooseEmailFriendSelect();
+                })
+                .keypress(function (e) {
+                    if (e.which === 13) {
+                        that._chooseEmailFriendSelect();
+                    }
+                });
+
+            $('.email_option input').blur(function () {
+                that._chooseEmailFriendSelect();
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    that._chooseEmailFriendSelect();
+                }
+            });
+            
+            // Handle two Facebook cases: logged in & no logged in
+            var $fb_option = $elem.find('.fb_option');
+            if (fbAccessToken !== "" && fbIdentity !== "") {
+                $fb_option.append(" \
+                    <div class='helpful'>Find a friend using Facebook</div> \
+                    <input></input> \
+                ").children('input')
+                .autocomplete({
+                    source: friendNames,
+                    // Must use function scope, or else this becomes input element
+                    select: this.selectFBFriend,
+                    close: function () {
+                        that._chooseFBFriendSelect();
+                    }
+                })
+                .keypress(function (e) {
+                    if (e.which === 13) {
+                        that._chooseFBFriendSelect();
+                    }
+                });
+            } else {
+                $fb_option.append(" \
+                    <div class='helpful'>The best way to get advice</div> \
+                    <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
+                ").children('.fb_connect').click( function () {
+                    runFBConnect();
+                });
+            }
+        };
+        Friend.prototype = new LiWidget();
+        Friend.prototype.getFriendInfo = function () {
+            var $elem = $(this.elem);
+            // Returns array containing friend info if it exists, else null
+
+            //#### VALIDATE BEFORE DOING THIS STUFF:
+
+            if (this.selected === 'fb') {
+                // return name & fb_id
+                return [ 'fb',
+                         $elem.find('fb_friend input').value, 
+                         fb_friends[ $.inArray(name, friendNames) ].id ];
+            } else if (this.selected === 'email') {
+                // return name & email
+                return [ 'email',
+                         $elem.find('email_friend input.name').value,
+                         $elem.find('email_friend input.email').value ];
+            } else {
+                return null;
+            }
+        }
+        Friend.prototype._validateFriendEmail = function (el) {
+            // Simple validation of friend email in Choose Friend's screen
+            if (/^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/.test(el.value)) {
+                // No error
+                $(el).css('color','black').siblings('.error').hide();
+                $(this.elem).find('.portrait>img').attr('src','/static/sibt/imgs/happy_face.png');
+                return true;
+            } else {
+                // Invalid email address format
+                $(el).css('color','red').siblings('.error').show();
+                $(this.elem).find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                return false;
+            }
+        };
+        Friend.prototype._validateFriendName = function (el) {
+            // Validation of friend name in Choose Friend's screen
+            if (/^[A-Za-z. ]+$/.test(el.value)) {
+                // No error
+                $(el).css('color','black').siblings('.error').hide();
+                $(this.elem).find('.portrait>img').attr('src','/static/sibt/imgs/happy_face.png');
+                return true;
+            } else {
+                // Invalid name format
+                $(el).css('color','red').siblings('.error').show();
+                $(this.elem).find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                return false;
+            }
+        };
+        Friend.prototype._validateFriendFB = function (el) {
+            // Do a lookup of the Facebook name to check that its valid
+            return true;
+        };
+        Friend.prototype.validateFriendInput = function (el) {
+            // Validation of inputs in Choose Friend's screen
+            if (el.name === 'email') {
+                return this._validateFriendEmail(el);
+            } else if (el.name === 'name') {
+                return this._validateFriendName(el);
+            } else if (el.name === 'fb') {
+                return this._validateFriendFB(el);
+            } else {
+                return false;
+            }
+        };
+        Friend.prototype.selectFBFriend = function(event, ui) {
+            // Save selection and change portrait to person
+            // ui.item is object
+            // this is input element
+            var name = ui.item.value,
+                i = $.inArray(name, friendNames),
+                fb_id = fb_friends[i].id;
+            
+            $(this).parents('.friend').find('.portrait>img')
+                .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
+                .attr( 'title', name )
+                .attr( 'alt', name );
+        };
+        Friend.prototype._chooseFBFriendSelect = function () {
+            // Change friend select to FB specific in Choose Friend's screen
+            var that = this,
+                $elem = $(this.elem),
+                name = $elem.find('.fb_option input').val();
+
+            this.selected = 'fb';
+
+            // Only do something if there is something in the input field
+            if (name !== '') {
+                $elem.children('.friend_options').remove();
+                $elem.append("\
+                    <div class='fb_friend'> \
+                        <div> \
+                            <label>Name:</label> \
+                            <input name='fb' type='text' value='"+name+"'></input> \
+                        </div> \
+                    </div> \
+                ").find('input').autocomplete({
+                    source: friendNames,
+                    select: this.selectFBFriend
+                });
+            }
+        };
+        Friend.prototype._chooseEmailFriendSelect = function () {
+            // Change friend select to Email specific in Choose Friend's screen
+            var that = this,
+                $elem = $(this.elem),
+                email = $elem.find('.email_option input').val(),
+                name = email.split('@')[0].split('.').join(' ');
+            
+            this.selected = 'email';
+
+            // Only do something if there is something in the input field
+            if (email !== '') {
+                $elem.children('.friend_options').remove();
+                $elem.append("\
+                    <div class='email_friend'> \
+                        <div> \
+                            <label>Name:</label> \
+                            <input class='name' name='name' type='text' value='"+name+"' /> \
+                            <div class='error'>Oops, are you sure that's right?</div> \
+                        </div> \
+                        <div> \
+                            <label>Email:</label> \
+                            <input class='email' name='email' type='text' value='"+email+"' /> \
+                            <div class='error'>Oops, are you sure that's right?</div> \
+                        </div> \
+                    </div> \
+                ").find('input')
+                    .blur(function () {
+                        that.validateFriendInput(this);
+                    })
+                    .keypress(function (e) {
+                        if (e.which === 13) {
+                            that.validateFriendInput(this);
+                        }
+                    })
+                    .each(function () {
+                        that.validateFriendInput(this);
+                    });
+            }
+        };
+        Friend.prototype.FBLoggedIn = function () {
+            var that = this,
+                $fb_option = $(this.elem).find('.fb_option');
+            $fb_option.children().remove();
+            $fb_option.append(" \
+                    <div class='helpful'>Find friend using Facebook</div> \
+                    <input></input> \
+                ").children('input')
+                .autocomplete({
+                    source: friendNames,
+                    select: this.selectFBFriend,
+                    close: function () {
+                        that._chooseFBFriendSelect();
+                    }
+                })
+                .keypress(function (e) {
+                    if (e.which === 13) {
+                        that._chooseFBFriendSelect();
+                    }
+                });
+        };
+
         
-        // AJAX methods
+        // ------------------------------   AJAX methods  ------------------------------
+
+
         var storeAnalytics = function( evnt ) {
             var payload = { what          : evnt,
                             instance_uuid : '',
@@ -124,7 +438,7 @@
         };
         
         var updateServerUser = function( accessToken, userId ) {
-            payload = { user_uuid   : "{{user_uuid}}",
+            var payload = { user_uuid   : "{{user_uuid}}",
                         accessToken : accessToken,
                         fbUserId    : userId 
                       };
@@ -159,57 +473,36 @@
         };
 
         var sendMessages = function() {
-            var ids   = [];
-            var names = [];
+            var friend_info = [];
             var msg   = $("#share-text").val();
 
             // Clean up UI to show loader gif
-            $("#nameEntry").html('<p>Asking ...</p>');
-            $("#chosenFriends").html( '<img src="/static/imgs/ajax-loader.gif" id="loader" />' );
-            $("#shareText").html('');
-            $("#btns").html('');
+            showScreen('asking');
 
-            $.each( $("input[type='checkbox']:checked"), function( i ) { 
-                ids.push( $($("input[type='checkbox']:checked")[i]).attr('value') ); 
-                names.push( $($("input[type='checkbox']:checked")[i]).attr('name') ); 
-                } );
+            // Gather up friend info
+            $.each( friends, function (i) { 
+                friend_info.push( friends[i].getFriendInfo() );
+            });
 
-            payload = { user_uuid : "{{user_uuid}}",
-                        app_uuid  : "{{app_uuid}}",
-                        product_uuid    : "{{product_uuid}}",
-                        fb_access_token : fbAccessToken,
-                        fb_id     : fbIdentity,
-                        ids       : JSON.stringify( ids ),
-                        names     : JSON.stringify( names ),
-                        msg       : msg,
-                        willt_code: "{{willt_code}}"
-                      };
+            payload = { 
+                user_uuid       : "{{user_uuid}}",
+                app_uuid        : "{{app_uuid}}",
+                product_uuid    : "{{product_uuid}}",
+                fb_access_token : fbAccessToken,
+                fb_id           : fbIdentity,
+                friend_info     : friend_info,
+                msg             : msg,
+                willt_code      : "{{willt_code}}"
+            };
+
             $.ajax({
                 url      : "{{ URL }}{% url SendFBMessages %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
                 success  : function (tr) {
-
-                    $("#nameEntry").hide();
-                    $("#chosenFriends").height('135px');
-
-                    {% if incentive_enabled %}
-                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label><input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input> ' );
-                        
-                        $("#shareText").html( '<p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>' );
-                        
-                        $("#btns").html( '<button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button>' );
-
-
-                    {% else %}
-                        
-                        $("#chosenFriends").html( '<h3>Asks Away!</h3> <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p> ' );
-                        
-                        $("#shareText").html( '<p>We\'ll email you when someone votes!</p>' );
-                        
-                        $("#btns").html( '<button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>' );
-                    {% endif %}
+                    // Change to success screen
+                    showScreen('success');
                 }
             });
         };
@@ -227,7 +520,10 @@
                 }
             });
         };
-        // Done AJAX methods
+        
+
+        // ------------------------------ PAGE methods ---------------------------------
+
 
         var closeIframe = function( action ) {
             if ( action != "" ){
@@ -267,150 +563,124 @@
             closeIframe( 'SIBTNoConnectFBDialog' );
         };
 
-        var runFriendPicker = function () {
+        // Add blank friend entry to Choose Friend's screen
+        var addFriend = function () { 
+            var friend = new Friend();
+            friends.push(friend);
+            $('#friends').append(friend.getElement())
+                .scrollTo('max', 200, { axis: 'y' });
+        };
+
+        // Show or hide list of question options on Splash screen
+        // opt - true = show, false = hide
+        var toggleShowQuestionOptions = function (opt) {
+            $('#questionOptions>ul').toggle(opt);
+        };
+
+        // Question to ask has been selected.  Change button text and 
+        // close list of options on Splash screen
+        var selectQuestionOption = function (num) {
+            var options = [
+                {
+                    title: 'Should I buy this?',
+                    text: 'I need help!  Should I buy this? Let me know here:'
+                },
+                {
+                    title: 'Does anyone own this?',
+                    text: 'I need help!  Does anyone own this? Let me know here:'
+                }
+            ];
+            $('#questionOptions>div').text(options[num].title);
+            $('#message>textarea').text(options[num].text);
+            toggleShowQuestionOptions();
+        };
+
+        // Connect with FB and fetch FB friends, on Choose Friends screen
+        var runFBConnect = function () {
             storeAnalytics('SIBTConnectFBDialog');
-            
-            // If the user hasn't connected with us,
-            // if ( !{{user_has_fb_token}} ) {
-                $("#fb_btns").html( '<h3>Login to Facebook<br />so you can select your friends!</h3>' );
 
-               FB.login(function(response) {
-                        var authResp = response.authResponse;
+            FB.login( function(response) {
+                var authResp = response.authResponse;
 
-                        if (!authResp) {
-                            // we weren't given permission
-                            closeIframe( 'SIBTConnectFBCancelled' );
-                        } else { 
-                            storeAnalytics('SIBTFBConnected');
+                if (!authResp) {
+                    // We weren't given permission, do nothing
+                    return;
+                } else { 
+                    storeAnalytics('SIBTFBConnected');
 
-                            // Store FB data in the server.
-                            updateServerUser( authResp.accessToken, authResp.userID );
+                    // Store FB data in the server.
+                    updateServerUser(authResp.accessToken, authResp.userID);
+                    fetchFBFriends();
+                }
+            }, {scope: 'publish_stream,offline_access,user_about_me,email'});
+            // } else {
+            // User is logged in AND connected (in theory)
+            //     fetchFBFriends( );
+            // }
+        };
 
-                            fetchFBFriends( );
-                        }
-                    }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-                );
-           // } else {
-                // User is logged in AND connected (in theory)
-           //     fetchFBFriends( );
-           // }
+        var showScreen = function (id) {
+            $('#wrapper').children().hide();
+            $('#wrapper>#'+id).show();
         };
         
         // Query FB api to grab logged-in user's friends
-        var fetchFBFriends = function ( ) {
-            $("#splash").hide();
-            $("#friendPicker").show();
+        var fetchFBFriends = function () {
+            FB.api( '/me/friends', function (response) {
+                fb_friends = response.data;
+                fb_friends.sort();
 
-            doPostMessage( 'SIBTFriendChoosingCancelled' );
+                $.each( response.data, function (i) {
+                    friendNames.push(fb_friends[i].name); 
+                });
 
-            FB.api( '/me/friends', function(response) {
-                friends = response.data;
-                friends.sort();
-
-                $.each( response.data, function( i ) { friendNames.push( friends[i].name ); } );
-                
-                $( "#tags" ).autocomplete({
-                    source: friendNames,
-                    select: friendSelectedByAutocomplete,
-                    close:  clearNameEntry
-                });  
-
-                // Start by showing some friends
-                //if ( friends.length <= 125 ) {
-                var lim = Math.min( 125, friends.length );
-                    for( var i = 0; i < lim; i ++ ) {
-                        selectFriend( friends[i].name, friends[i].id );
-                        deselectFriend( friends[i].id );
-                    }
-                //}
+                // Code here changes all FB Connect options into FB Friend Select options
+                var i = friends.length;
+                while ( i-- ) {
+                    friends[i].FBLoggedIn();
+                }
            });
         };
 
-        var clearNameEntry = function() {
-            $("#tags").attr( 'value', '' );
-        };
-
-        var friendSelectedByAutocomplete = function( event, ui ) {
-            // ui.item is friend
-            
-            var i = friendNames.indexOf( ui.item.value );
-            selectFriend( ui.item.value, friends[i].id );
-        };
-
-        var selectFriend = function ( name, fb_id ) {
-            // Clean up UI
-            var p = $("#chosenFriends p");
-            if ( p.length != 0 ) {
-                p.remove();
-            }
-            
-            // Have we added a checkbox for this yet?
-            var div = $('#check' + fb_id);
-            if ( div.length == 0 ) {
-                var div = $(document.createElement( 'input' ));
-                div.attr( 'id', 'check' + fb_id );
-                div.attr( 'type', 'checkbox' );
-                div.attr( 'value', fb_id );
-                div.attr( 'name', name );
-                div.hide();
-                $("body").append(div);
-            } 
-            
-            div.attr( 'checked', 'checked' );
-
-            // Have we added img for friend yet?
-            var tmp = $("#img" + fb_id);
-            if( tmp.length == 0 ) {
-                var tmp = $(document.createElement( 'img' ));
-                tmp.attr( 'src', 'http://graph.facebook.com/' + fb_id + '/picture' );
-                tmp.attr( 'id', 'img' + fb_id );
-                tmp.attr( 'title', name );
-                tmp.attr( 'alt', name );
-                tmp.attr( 'style', 'width:52px; height:52px;' );
-                tmp.attr( 'onclick', 'friendClick(this)' );
-                $('#chosenFriends').append( tmp );
-            } 
-            
-            tmp.attr( 'class', 'selectedFriend' );
-            
-            // Update selection counter
-            selectionCount += 1;
-            $("#selectionCount").html( "Selected: " + selectionCount );
-        };
-
-        var deselectFriend = function ( fb_id ) {
-            $('#check' + fb_id ).remove();
-            $('#img' + fb_id ).attr( 'class', 'notSelectedFriend' );
-
-            selectionCount -= 1;
-            $("#selectionCount").html( "Selected: " + selectionCount );
-        };
-
-        var friendClick = function( elem ) {
-            var fb_id = $(elem).attr( 'id' );
-            if ( $(elem).attr('class') == "selectedFriend" ) {
-                deselectFriend( fb_id.substring( 3 ) );
-            } else {
-                selectFriend( $(elem).attr('alt'), fb_id.substring( 3 ) );
-            }
-        };
+        /**
+         * jQuery.ScrollTo - Easy element scrolling using jQuery.
+         * Copyright (c) 2007-2009 Ariel Flesler - aflesler(at)gmail(dot)com | http://flesler.blogspot.com
+         * Dual licensed under MIT and GPL.
+         * Date: 5/25/2009
+         * @author Ariel Flesler
+         * @version 1.4.2
+         *
+         * http://flesler.blogspot.com/2007/10/jqueryscrollto.html
+         */
+        (function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
            
         $(document).ready(function() {
+
+            /**********************  ATTACH EVENTS TO DOM HERE  **************************/
+
             $('.cancel-btn').click(function() {
                 doPostMessage('close');
             });
+            
+            // Close drop down bar if it loses focus
+            // Hack because div's dont have blur
+            $("body").click(function (evt) {
+                 var target = evt.target;
+                 if ($(target).parents("#questionOptions").length === 0)  {
+                     toggleShowQuestionOptions(false);
+                 }
+            });
 
-            // Take THAT IE!
-            if(!Array.indexOf){
-                Array.prototype.indexOf = function(obj){
-                    for(var i=0; i<this.length; i++){
-                        if(this[i]==obj){
-                            return i;
-                        }
-                    }
-                    return -1;
-                }
-            }
+            // Add two Friend instances to Choose Friends screen
+            (function () {
+                var friend1 = new Friend(),
+                    friend2 = new Friend();
+                friends.push(friend1, friend2);
+                $('#friends').append(friend1.getElement(), friend2.getElement());
+            })();
+
+            // OK READY TO GO!
+            showScreen('splash');
         });
 
     </script>
