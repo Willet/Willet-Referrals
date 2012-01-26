@@ -26,6 +26,7 @@ textarea {
 .wrapper>div {
     width: 100%;
     height: 100%;
+    display: none;
 }
 .left {
     float: left;
@@ -91,6 +92,7 @@ textarea {
 }
 .title_bar>img {
     height: 50px;
+    width: 79px;
     margin: 0px 0px 0px 6px;
     padding: 0px;
 }
@@ -167,6 +169,8 @@ textarea {
     position: absolute;
     top: 1px;
     right: 3px;
+    width: 29px;
+    height: 29px;
 }
 .drop_bar>ul {
     display: none;
@@ -287,15 +291,17 @@ li.friend {
     border: 1px solid #BBB;
     background-color: white;
 }
-.add_friend {
+#addFriend {
     font-size: 14px;
     margin: 15px 0 0 15px;
     padding-left: 15px;
     text-align: center;
 }
-.add_friend>img {
+#addFriend>img {
     float: left;
     margin-left: -13px;
+    width: 29px;
+    height: 29px;
 }
 .friend_options {
     text-align: center;
@@ -357,7 +363,7 @@ li.friend {
     cursor: hand;
     cursor: pointer;
 }
-.ask {
+#askButton {
     position: absolute;
     bottom: 15px;
     right: 15px;

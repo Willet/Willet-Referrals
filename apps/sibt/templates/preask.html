@@ -82,11 +82,11 @@
                 <ul class="friends" id="friends">
                     <!-- Friends appended when document ready -->
                 </ul>
-                <div class="grey_bar" id="add_friend">
+                <div class="grey_bar" id="addFriend">
                     <img src="/static/sibt/imgs/add_cross_29x29.png" />
                     Add Another Friend
                 </div>
-                <div class="ask button" onclick='sendMessages();'>
+                <div id="askButton" class="button">
                     <img src="/static/sibt/imgs/sibt_choose_friends.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
@@ -127,7 +127,7 @@
                     <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
                     <p>We\'ll email you when someone votes!</p>' );
                     
-                    <button onclick="doPostMessage(\'close\');" class="cancel-btn" title="Close">Close</button>
+                    <button onclick="doPostMessage('close');" class="cancel-btn" title="Close">Close</button>
 
                     {% endif %}
                 </div>
@@ -678,9 +678,12 @@
                  }
             });
 
-            $('#questionOptions>.grey_bar').click(toggleShowQuestionOptions);
+            $('#questionOptions>.grey_bar').click(function () {toggleShowQuestionOptions();
+            });
 
-            $('#questionOptions>img').click(toggleShowQuestionOptions);
+            $('#questionOptions>img').click(function () {
+                toggleShowQuestionOptions();
+            });
 
             $('#postOnWall').click(postOnWall);
 
@@ -688,16 +691,17 @@
                 showScreen('choose');
             });
 
-            $('#add_friend').click(addFriend);
+            $('#addFriend').click(addFriend);
+
+            $('#askButton').click(sendMessages);
 
             // Load up options
             (function () {
-                $ul = $('#questionOptions>ul');
+                var $ul = $('#questionOptions>ul');
                 $.each(options, function (i, opt) {
-                    $ul.append("<li onclick='selectQuestionOption("+i+"); >' \
-                    "+opt.title+"</li>")
+                    $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
                 });
-            });
+            })();
 
             // Add two Friend instances to Choose Friends screen
             (function () {
