@@ -13,7 +13,7 @@ from util.helpers           import *
 from util.urihandler        import URIHandler
 from util.consts            import *
 
-class DoUninstalledApp( URIHandler ):
+class DoUninstalledApp(URIHandler):
     def post(self, app_name):
         # Grab the ShopifyApp
         store_url = self.request.headers['X-Shopify-Shop-Domain']
@@ -21,6 +21,15 @@ class DoUninstalledApp( URIHandler ):
         app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
 
         client = ClientShopify.get_by_url(store_url)
+
+        # Remove email from MailChimp
+        email_list_id = SHOPIFY_APPS[app_name]['email_list_id']
+        if email_list_id:
+            MailChimp(MAILCHIMP_API_KEY).listUnsubscribe(id=email_list_id,
+                                                         email_address=self.client.email,
+                                                         delete_member=False,
+                                                         send_notify=False,
+                                                         send_goodbye=False)
 
         Email.emailDevTeam("Uninstall app: %s\n%r %s" % (
                 app_class_name,
