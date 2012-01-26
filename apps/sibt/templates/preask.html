@@ -27,46 +27,45 @@
 
             <!---------------------------- Splash Screen ------------------------------>
 
-            <div id="splash" style="display: none">
+            <div id="splash">
                 <div class="title_bar">
-                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Ask Your Friends</div>
                     <div class="drop_bar" id="questionOptions">
-                        <div class="grey_bar" onclick="toggleShowQuestionOptions();">
+                        <div class="grey_bar">
                             Should I buy this?
                         </div>
-                        <img width=29 height=29 src="/static/sibt/imgs/drop_arrow_29x29.png" onclick="toggleShowQuestionOptions();" />
+                        <img src="/static/sibt/imgs/drop_arrow_29x29.png" />
                         <ul>
-                            <li onclick="selectQuestionOption(0);">Should I buy this?</li>
-                            <li onclick="selectQuestionOption(1);">Does anyone own this?</li>
+                            <!-- Question options appended when document ready -->
                         </ul>
                     </div>
                 </div>
                 <div class="message" id="message">
-                    <img width=100 height=100 src="/static/sibt/imgs/temp_product.jpg" />
-                    <textarea>I need help!  Should I buy this? Please tell me here:</textarea>
+                    <img src="{{ product_image }}" />
+                    <textarea>{{ share_text }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
-                        <div class="button" title="Post to your wall" onclick="postOnWall();">
-                            <img src="/static/sibt/imgs/sibt_ask_all.png" width=40 height=40 />
+                        <div class="button" id="postOnWall" title="Post to your wall">
+                            <img src="/static/sibt/imgs/sibt_ask_all.png" />
                             <div class="title">Ask Friends</div>
                             <div class="subtitle">Post to Facebook</div>
                         </div>
                         <div class="hint">
-                            <img src="/static/sibt/imgs/little_arrow.png" width=25 height=25 />
+                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
                             <div>easy &amp; fast</div>
                         </div>
                     </div>
                     <div class="or">or</div>
                     <div class="option right">
-                        <div class="button" title="Post to your friends' walls" onclick="showScreen('choose');">
-                            <img src="/static/sibt/imgs/sibt_choose_friends.png" width=40 height=40 />
+                        <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                            <img src="/static/sibt/imgs/sibt_choose_friends.png" />
                             <div class="title">Choose Friends</div>
                             <div class="subtitle">Get trusted advice</div>
                         </div>
                         <div class="hint">
-                            <img src="/static/sibt/imgs/little_arrow.png" width=25 height=25 />
+                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
                             <div>best advice</div>
                         </div>
                     </div>
@@ -75,20 +74,20 @@
 
             <!---------------------- Choose Friends Screen ------------------------------>
 
-            <div id="choose" style="display: none">
+            <div id="choose">
                 <div class="title_bar">
-                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <ul class="friends" id="friends">
                     <!-- Friends appended when document ready -->
                 </ul>
-                <div class="grey_bar add_friend" onclick="addFriend();">
-                    <img width=29 height=29 src="/static/sibt/imgs/add_cross_29x29.png" />
+                <div class="grey_bar" id="add_friend">
+                    <img src="/static/sibt/imgs/add_cross_29x29.png" />
                     Add Another Friend
                 </div>
                 <div class="ask button" onclick='sendMessages();'>
-                    <img src="/static/sibt/imgs/sibt_choose_friends.png" width=40 height=40 />
+                    <img src="/static/sibt/imgs/sibt_choose_friends.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
                 </div>
@@ -96,9 +95,9 @@
 
             <!--------------------------- Asking Screen -------------------------------->
 
-            <div id="asking" style="display: none">
+            <div id="asking">
                 <div class="title_bar">
-                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <p id="#nameEntry">Asking...</p>
@@ -107,9 +106,9 @@
 
             <!-------------------------- Success Screen -------------------------------->
 
-            <div id="success" style="display: none">
+            <div id="success">
                 <div class="title_bar">
-                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Asks Away!</div>
                 </div>
                 <div>
@@ -137,7 +136,14 @@
 
         </div>
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript" 
+               src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        // In case the Goog goes down   
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+    </script>
     <script src="http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js" type="text/javascript"></script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
 
@@ -150,6 +156,17 @@
         var selectionCount = 0;  // Number of friends selected to msg
         var fbAccessToken  = "";
         var fbIdentity     = "";
+        var options = [
+            // Could use template here
+            {
+                title: 'Should I buy this?',
+                text: 'I need help!  Should I buy this? Let me know here:'
+            },
+            {
+                title: 'Does anyone own this?',
+                text: 'I need help!  Does anyone own this? Let me know here:'
+            }
+        ];
 
         // ----------------------------  CLASSES  ----------------------------------
 
@@ -580,16 +597,6 @@
         // Question to ask has been selected.  Change button text and 
         // close list of options on Splash screen
         var selectQuestionOption = function (num) {
-            var options = [
-                {
-                    title: 'Should I buy this?',
-                    text: 'I need help!  Should I buy this? Let me know here:'
-                },
-                {
-                    title: 'Does anyone own this?',
-                    text: 'I need help!  Does anyone own this? Let me know here:'
-                }
-            ];
             $('#questionOptions>div').text(options[num].title);
             $('#message>textarea').text(options[num].text);
             toggleShowQuestionOptions();
@@ -669,6 +676,27 @@
                  if ($(target).parents("#questionOptions").length === 0)  {
                      toggleShowQuestionOptions(false);
                  }
+            });
+
+            $('#questionOptions>.grey_bar').click(toggleShowQuestionOptions);
+
+            $('#questionOptions>img').click(toggleShowQuestionOptions);
+
+            $('#postOnWall').click(postOnWall);
+
+            $('#showChooseScreen').click(function () {
+                showScreen('choose');
+            });
+
+            $('#add_friend').click(addFriend);
+
+            // Load up options
+            (function () {
+                $ul = $('#questionOptions>ul');
+                $.each(options, function (i, opt) {
+                    $ul.append("<li onclick='selectQuestionOption("+i+"); >' \
+                    "+opt.title+"</li>")
+                });
             });
 
             // Add two Friend instances to Choose Friends screen
