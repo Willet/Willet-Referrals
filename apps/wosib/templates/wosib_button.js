@@ -42,7 +42,7 @@ jQuery(document).ready (function () {
             return "app_uuid=" + srv_data.app_uuid + 
                   "&user_uuid=" + srv_data.user_uuid + 
                   "&instance_uuid=" + srv_data.instance_uuid + 
-                  "&target_url=" + window.location.href,
+                  "&target_url=" + window.location.href;
         };
 
         // Add scripts to DOM
@@ -154,7 +154,7 @@ jQuery(document).ready (function () {
                 'style': 'display:none',
                 'src': "{{ URL }}{% url TrackWOSIBShowAction %}?" + 
                        "evnt=" + message + 
-                       "&" + _willet_metadata();
+                       "&" + _willet_metadata(),
                 'id': random_id
             }));
             $('#' + random_id).load(function () {

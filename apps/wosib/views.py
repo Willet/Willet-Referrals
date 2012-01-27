@@ -19,6 +19,9 @@ from urlparse                   import urlparse
 from apps.wosib.actions         import *
 from apps.app.models            import *
 from apps.client.shopify.models import *
+from apps.link.models           import Link
+from apps.link.models           import create_link
+from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.wosib.models           import WOSIBInstance
@@ -110,7 +113,32 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                     })
                 else:
                     logging.debug ("Product for variant %s not found in DB" % variant_id)
+            
+            store_domain  = self.request.get('store_url')
+            app           = WOSIBShopify.get_by_store_url(self.request.get('store_url'))
+            user          = User.get(self.request.get('user_uuid'))
+            user_found    = 1 if hasattr(user, 'fb_access_token') else 0
+            user_is_admin = user.is_admin() if isinstance( user , User) else False
+            target        = self.request.get( 'url' )
+            
+            origin_domain = os.environ['HTTP_REFERER'] if\
+            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+    
+            logging.debug('target: %s' % target)
+            logging.info("APP: %r" % app)# Make a new Link
+            
+            link = Link.create(target, app, origin_domain, user)
+            
             template_values = {
+                'URL' : URL,
+                'app_uuid' : self.request.get('app_uuid'),
+                'user_uuid' : self.request.get('user_uuid'),
+                'instance_uuid' : self.request.get('instance_uuid'),
+                'target_url' : self.request.get('target_url'),
+                'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+                'app': app,
+                'willt_url': link.get_willt_url(),
+                'willt_code': link.willt_url_code,
                 'variants' : variants
             }
 
