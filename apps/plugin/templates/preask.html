@@ -17,66 +17,19 @@
                  font-family: fb_font;
                  src: url("/static/fonts/KlavikaBold.eot"); /* For IE */
             }
-            </style>
+        </style>
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
-    
+
+        <!-- Add styles here! Try to reuse as much of ask.css as possible -->
+        {% block styles %}{% endblock styles %}
+
     </head>
     <body>
         <div class="wrapper" id="wrapper">
 
-            <!---------------------------- Splash Screen ------------------------------>
-
-            <div id="splash">
-                <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
-                    <div>Ask Your Friends</div>
-                    <div class="drop_bar" id="questionOptions">
-                        <div class="grey_bar">
-                            Should I buy this?
-                        </div>
-                        <img alt="arrow" src="/static/sibt/imgs/drop_arrow_29x29.png" />
-                        <ul>
-                            <!-- Question options appended when document ready -->
-                        </ul>
-                    </div>
-                </div>
-                <!-- 
-                // Enable when styling complete
-                {% if incentive_enabled %}
-                <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
-                {% endif %}
-                -->
-                <div class="message" id="message">
-                    <img alt="product" src="{{ product_image }}" />
-                    <textarea>{{ AB_share_text }}</textarea>
-                </div>
-                <div class="options">
-                    <div class="option left">
-                        <div class="button" id="postOnWall" title="Post to your wall">
-                            <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
-                            <div class="title">Ask Friends</div>
-                            <div class="subtitle">Post to Facebook</div>
-                        </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>easy &amp; fast</div>
-                        </div>
-                    </div>
-                    <div class="or">or</div>
-                    <div class="option right">
-                        <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                            <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
-                            <div class="title">Choose Friends</div>
-                            <div class="subtitle">Get trusted advice</div>
-                        </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>best advice</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Add your screens here.  Use Choose Friends as template-->
+            {% block screens %}{% endblock screens %}
 
             <!---------------------- Choose Friends Screen ------------------------------>
 
@@ -149,8 +102,9 @@
             document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
         }
     </script>
-    <script src="http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js" type="text/javascript"></script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+
+    {% block scripts %}{% endblock scripts %}
 
     <script type="text/javascript">
         "use strict";
@@ -172,6 +126,9 @@
                 text: 'I need help!  Does anyone own this? Let me know here:'
             }
         ];
+
+        // Any global variables you want
+        {% block js_globals %}{% endblock js_globals %}
 
         // ----------------------------  CLASSES  ----------------------------------
 
@@ -489,27 +446,11 @@
             });
         };
 
+        // Add classes here.  Any questions about js classes? Ask Fraser
+        {% block js_classes %}{% endblock js_classes %}
+
         
         // ------------------------------   AJAX methods  ------------------------------
-
-
-        var storeAnalytics = function( evnt ) {
-            var payload = { what          : evnt,
-                            instance_uuid : '',
-                            app_uuid      : '{{ app_uuid }}',
-                            user_uuid     : '{{ user_uuid }}',
-                            target_url    : '{{ target_url }}'
-                          };
-            $.ajax({
-                url      : "{{ URL }}{% url TrackSIBTUserAction %}",
-                dataType : 'json',
-                data     : payload,
-                type     : 'post',
-                success  : function (response) {
-                    return;
-                }
-            });
-        };
         
         var updateServerUser = function( accessToken, userId ) {
             var payload = { user_uuid   : "{{user_uuid}}",
@@ -530,73 +471,6 @@
             fbIdentity    = userId;
         };
 
-        var startPartialInstance = function() {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuid : "{{product_uuid}}",
-                            willt_code   : "{{willt_code}}" };
-            $.ajax({
-                url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    return;
-                }
-            });
-        };
-
-        var sendMessages = function() {
-            var i,j,
-                friend_info = [],
-                msg   = $("#share-text").val(),
-                error = false;
-
-            // Clean up UI to show loader gif
-            showScreen('asking');
-
-            // Gather up friend info
-            i = friends.length;
-            while (i--) {
-                j = friends[i].getFriendInfo(); // Can be [...], [] or null
-                if (j === null) {
-                    error = true; // Don't submit
-                } else if (j !== []) {
-                    friend_info.push(j);
-                } else {
-                    continue; // Don't add []
-                }
-            }
-            if (console && console.log) {
-                console.log('Friends: '+friend_info+' Error:'+error);
-            }
-            
-            if (!error) {
-                // No errors with friends, submit!
-                payload = { 
-                    user_uuid       : "{{user_uuid}}",
-                    app_uuid        : "{{app_uuid}}",
-                    product_uuid    : "{{product_uuid}}",
-                    fb_access_token : fbAccessToken,
-                    fb_id           : fbIdentity,
-                    friend_info     : friend_info,
-                    msg             : msg,
-                    willt_code      : "{{willt_code}}"
-                };
-
-                $.ajax({
-                    url      : "{{ URL }}{% url SendFBMessages %}",
-                    type     : 'post',
-                    dataType : 'json',
-                    data     : payload,
-                    success  : function (tr) {
-                        // Change to success screen
-                        showScreen('success');
-                    }
-                });
-            }
-        };
-
         var updateEmailAddress = function() {
             var addr = document.getElementById( 'email-field' ).value;
                 
@@ -610,10 +484,32 @@
                 }
             });
         };
+
+        var storeAnalytics = function( evnt ) {
+            // Stub function!
+            throw new Error("Attemp to use stub function 'storeAnalytics'");
+        };
+
+        var startPartialInstance = function() {
+            // Stub function!
+            throw new Error("Attemp to use stub function 'startPartialInstance'");
+        };
+        
+        var sendMessages = function() {
+            // Stub function!
+            throw new Error("Attemp to use stub function 'sendMessages'");
+        };
+        
+        // Add AJAX methods here.  Your app should replace function stub sendMessages
+        {% block ajax_methods %}{% endblock ajax_methods %}
         
 
         // ------------------------------ PAGE methods ---------------------------------
 
+        var showScreen = function (id) {
+            $('#wrapper').children().hide();
+            $('#wrapper>#'+id).show();
+        };
 
         var closeIframe = function( action ) {
             if ( action != "" ){
@@ -661,20 +557,6 @@
                 .scrollTo('max', 200, { axis: 'y' });
         };
 
-        // Show or hide list of question options on Splash screen
-        // opt - true = show, false = hide
-        var toggleShowQuestionOptions = function (opt) {
-            $('#questionOptions>ul').toggle(opt);
-        };
-
-        // Question to ask has been selected.  Change button text and 
-        // close list of options on Splash screen
-        var selectQuestionOption = function (num) {
-            $('#questionOptions>div').text(options[num].title);
-            $('#message>textarea').text(options[num].text);
-            toggleShowQuestionOptions();
-        };
-
         // Connect with FB and fetch FB friends, on Choose Friends screen
         var runFBConnect = function () {
             storeAnalytics('SIBTConnectFBDialog');
@@ -698,11 +580,6 @@
             //     fetchFBFriends( );
             // }
         };
-
-        var showScreen = function (id) {
-            $('#wrapper').children().hide();
-            $('#wrapper>#'+id).show();
-        };
         
         // Query FB api to grab logged-in user's friends
         var fetchFBFriends = function () {
@@ -722,6 +599,9 @@
            });
         };
 
+        // Add global js functions here
+        {% block js_functions %}{% block %}
+
         /**
          * jQuery.ScrollTo - Easy element scrolling using jQuery.
          * Copyright (c) 2007-2009 Ariel Flesler - aflesler(at)gmail(dot)com | http://flesler.blogspot.com
@@ -732,7 +612,17 @@
          *
          * http://flesler.blogspot.com/2007/10/jqueryscrollto.html
          */
-        (function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
+        ;(function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
+
+        /*!
+           jQuery postMessage - v0.5 - 9/11/2009
+           http://benalman.com/projects/jquery-postmessage-plugin/
+          
+           Copyright (c) 2009 "Cowboy" Ben Alman
+           Dual licensed under the MIT and GPL licenses.
+           http://benalman.com/about/license/
+         */
+        ;(function($){'$:nomunge';var interval_id,last_hash,cache_bust=1,rm_callback,window=this,FALSE=!1,postMessage='postMessage',addEventListener='addEventListener',p_receiveMessage,has_postMessage=window[postMessage]&&!$.browser.opera;$[postMessage]=function(message,target_url,target){if(!target_url){return;}message=typeof message==='string'?message:$.param(message);target=target||parent;if(has_postMessage){target[postMessage](message,target_url.replace(/([^:]+:\/\/[^\/]+).*/,'$1'));}else if(target_url){target.location=target_url.replace(/#.*$/,'')+'#'+(+new Date)+(cache_bust++)+'&'+message;}};$.receiveMessage=p_receiveMessage=function(callback,source_origin,delay){if(has_postMessage){if(callback){rm_callback&&p_receiveMessage();rm_callback=function(e){if((typeof source_origin==='string'&&e.origin!==source_origin)||($.isFunction(source_origin)&&source_origin(e.origin)===FALSE)){return FALSE;}callback(e);};}if(window[addEventListener]){window[callback?addEventListener:'removeEventListener']('message',rm_callback,FALSE);}else{window[callback?'attachEvent':'detachEvent']('onmessage',rm_callback);}}else{interval_id&&clearInterval(interval_id);interval_id=null;if(callback){delay=typeof source_origin==='number'?source_origin:typeof delay==='number'?delay:100;interval_id=setInterval(function(){var hash=document.location.hash,re=/^#?\d+&/;if(hash!==last_hash&&re.test(hash)){last_hash=hash;callback({data:hash.replace(re,'')});}},delay);}}};})(jQuery);var is={ie:navigator.appName=='Microsoft Internet Explorer',java:navigator.javaEnabled(),ns:navigator.appName=='Netscape',ua:navigator.userAgent.toLowerCase(),version:parseFloat(navigator.appVersion.substr(21))||parseFloat(navigator.appVersion),win:navigator.platform=='Win32'}is.mac=is.ua.indexOf('mac')>=0;if(is.ua.indexOf('opera')>=0){is.ie=is.ns=false;is.opera=true;}if(is.ua.indexOf('gecko')>=0){is.ie=is.ns=false;is.gecko=true;}
            
         $(document).ready(function() {
 
@@ -740,25 +630,6 @@
 
             $('.cancel-btn').click(function() {
                 doPostMessage('close');
-            });
-            
-            // Close drop down bar if it loses focus
-            // Hack because div's dont have blur
-            $("body").click(function (evt) {
-                 var target = evt.target;
-                 if ($(target).parents("#questionOptions").length === 0)  {
-                     toggleShowQuestionOptions(false);
-                 }
-            });
-
-            // Don't change this - click passes values into toggle,
-            // which will trigger an animation we don't want. So
-            // we wrap in function to block pass-through.
-            $('#questionOptions>.grey_bar').click(function () {toggleShowQuestionOptions();
-            });
-
-            $('#questionOptions>img').click(function () {
-                toggleShowQuestionOptions();
             });
 
             $('#postOnWall').click(postOnWall);
@@ -771,14 +642,6 @@
 
             $('#askButton').click(sendMessages);
 
-            // Load up options
-            (function () {
-                var $ul = $('#questionOptions>ul');
-                $.each(options, function (i, opt) {
-                    $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
-                });
-            })();
-
             // Add two Friend instances to Choose Friends screen
             (function () {
                 var friend1 = new Friend(),
@@ -787,8 +650,9 @@
                 $('#friends').append(friend1.getElement(), friend2.getElement());
             })();
 
-            // OK READY TO GO!
-            showScreen('splash');
+            // Add your js initialization code here!
+            // Remember to add: showScreen('__screen_id__');
+            {% block js_init %}{% endblock js_init %}
         });
 
     </script>
