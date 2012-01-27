@@ -281,6 +281,7 @@ class User( db.Expando ):
             if e.address in ADMIN_EMAILS:
                 logging.info("%s is an ADMIN (via email check)" % (self.uuid))
                 is_admin = True
+                break
 
         # Filter by IP
         if not is_admin:
@@ -290,6 +291,7 @@ class User( db.Expando ):
                     if i in ADMIN_IPS:
                         logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
                         is_admin = True
+                        break
 
         self.user_is_admin = is_admin
         return is_admin 

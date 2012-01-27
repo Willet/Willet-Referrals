@@ -417,8 +417,8 @@ class Barbara(URIHandler):
                     pass
                 else:
                     for p in client.products:
-                        logging.info("D")
                         p.delete()
+        logging.info("DONE")
 
 class ShowActions(URIHandler):
     @admin_required

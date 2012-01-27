@@ -61,9 +61,7 @@ class ShowMorePage(URIHandler):
 class ShowAboutPage( URIHandler ):
     # Renders the main template
     def get(self):
-        thx = self.request.get('thx')
-        
-        template_values = { 'thanks' : True if thx == '1' else False }
+        template_values = { }
         
         self.response.out.write(self.render_page('about.html', template_values))
 

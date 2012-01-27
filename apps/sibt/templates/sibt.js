@@ -199,8 +199,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             iframe: true, 
             initialWidth: 0, 
             initialHeight: 0, 
-            innerWidth: '400px',
-            innerHeight: '220px', 
+            innerWidth: '600px',
+            innerHeight: '400px', 
             fixed: true,
             href: url,
             onClosed: _willet_ask_callback
