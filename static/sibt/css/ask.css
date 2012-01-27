@@ -1,57 +1,374 @@
+/* ---------------------   DEFAULTS   ------------------------------- */
+
 html, body {
     background-color: white;
     color: #383f41;
 }
-#fb_btns button {
-    background: rgba(59,89,151,1); /* Old browsers */
-    /* IE9 SVG, needs conditional override of 'filter' to 'none' */
-    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2JhZDFlMiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzYjU5OTciIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-    background: -moz-linear-gradient(top,  rgba(186,209,226,1) 0%, rgba(59,89,151,1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(186,209,226,1)), color-stop(100%,rgba(59,89,151,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* IE10+ */
-    background: linear-gradient(top,  rgba(186,209,226,1) 0%,rgba(59,89,151,1) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bad1e2', endColorstr='#3b5997',GradientType=0 ); /* IE6-8 */
-    color: white;
-    font-family: fb_font;
-    font-size: 16px;
+textarea {
+    display: block;
+    background: #fff url("/static/inputshadow.gif") repeat-x top; 
+    border-style: none solid solid;
+    border: 1px solid #aaa; 
+    padding: 8px; 
+    color: black;
+    font: 13px "Lucida Grande", Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+}
 
-    border: 1px solid #1C4596;
-    border-radius: 5px;
+/* ----------------------   USEFUL CLASSES   ------------------------ */
 
-    padding: 0px 10px 0px 10px;
-    margin: 45px 5px 10px 5px;
+.wrapper {
+    margin: 0 auto;
+    height: 400px;
+    width: 600px;
+    border: none;
+}
+.wrapper>div {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+.left {
     float: left;
-    height: 45px;
-
-    -webkit-box-shadow:0 1px 2px #999;
-    -moz-box-shadow:0 1px 2px #999;
-    box-shadow:0 1px 2px #999;
-
-    -moz-user-select: -moz-none;
-    -webkit-user-select: none;
-    user-select: none;
-    -moz-user-drag: -moz-none;
-    -webkit-user-drag: none;
-    user-drag: none;
+}
+.right {
+    float: right;
+}
+.clear {
+    clear: both;
+}
+.bigger {
+    font-size: 150%;
+}
+.error {
+    display: none;
+    color: red;
+    font-style: italic;
+}
+.grey_bar {
+    border-radius: 15px;
+    padding: 1px 15px 0 20px;
+    line-height: 28px;
+    width: 200px;
+    color: #333;
+    background-color: #D1D1D1;
+    text-shadow: 1px 1px 1px #EEE;
+    /* CSS 3 */
+    border-radius: 15px;
+    background-image: linear-gradient(top, #E3E3E3, #D1D1D1);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Firefox */
+    -moz-border-radius: 15px;
+    background-image: -moz-linear-gradient(top, #E3E3E3, #D1D1D1);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Webkit */
+    -webkit-border-radius: 15px;
+    background-image: -webkit-linear-gradient(top, #E3E3E3, #D1D1D1);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    /* For IE 9+ */
+    background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
+    /* For IE 8- */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#E3E3E3", EndColorStr="#D1D1D1");
+}
+.grey_bar:hover {
+    cursor: hand;
     cursor: pointer;
 }
-#fb_btns button:hover {
-    background: rgba(59,89,151,1); /* Old browsers */
+.grey_bar:active {
+    background: #CCC;
 }
-#fb_btns button:focus {
-    outline: 0;
-    background: rgba(59,89,151,1); /* Old browsers */
+
+/* --------------------   REUSABLE CLASSES   -------------------- */
+
+.title_bar {
+    width: 100%;
+    height: 55px;
+    font-size: 18px;
+    padding: 0 0 8px 0;
+    border-bottom: 1px solid #BBB;
 }
-button:active {
-    -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
-    -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
-    box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+.title_bar>* {
+    float: left;
+}
+.title_bar>img {
+    height: 50px;
+    width: 79px;
+    margin: 0px 0px 0px 6px;
+    padding: 0px;
+}
+.title_bar>div {
+    line-height: 30px;
+    margin: 14px 0 0 15px;
+}
+
+.button {
+    height: 50px;
+    padding: 6px;
+    background-color: #C1F0F5;
+    text-align: center;
+    border: 1px solid #999;
+    /* CSS 3 */
+    border-radius: 10px;
+    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Firefox */
+    -moz-border-radius: 10px;
+    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Webkit */
+    -webkit-border-radius: 10px;
+    background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    /* For IE 9+ */
+    background-image: -ms-linear-gradient(top, #CFF6FA, #C1F0F5);
+    /* For IE 8- */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#D9F7FA", EndColorStr="#C1F0F5");
+}
+.button:hover {
+    cursor: pointer;
+    cursor: hand;
+    -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+    box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+}
+.button>img {
+    float: left;
+    margin: 5px 10px 5px 10px;
+    width: 40px;
+    height: 40px;
+}
+.button>.title, .button>.subtitle {
+    white-space: nowrap;
+    margin-left: 60px;
+    min-width: 170px;
+}
+.button>.title {
+    padding-top: 3px;
+    font-size: 18px;
+    line-height: 28px;
+}
+.button>.subtitle {
+    font-size: 12px;
+    line-height: 22px;
+}
+
+
+/* ---------------------   PAGES   ----------------------- */
+
+/* ---------------------   Splash  ----------------------- */ 
+
+.drop_bar {
     position: relative;
-    top: 1px;   
+    z-index: 5;
+    font-size: 16px;
 }
-ul {
+.drop_bar>.grey_bar {
+    line-height: 30px;
+}
+.drop_bar>img {
+    position: absolute;
+    top: 1px;
+    right: 3px;
+    width: 29px;
+    height: 29px;
+}
+.drop_bar>ul {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    padding: 30px 0 10px 0;
+    list-style-type: none;
+    background-color: #E3E3E3;
+    border-radius: 0 0 10px 10px;
+    -moz-border-radius: 0 0 10px 10px;
+    -webkit-border-radius: 0 0 10px 10px;
+}
+.drop_bar li {
+    width: 100%;
+    color: #333;
+    text-shadow: 1px 1px 1px #EEE;
+    text-indent: 10px;
+    padding: 5px 0;
+}
+.drop_bar li:hover {
+    background-color: #CCC;
+    cursor: pointer;
+    cursor: hand;
+}
+.message {
+    height: 77px;
+    margin: 40px 30px 0 30px;
+}
+.message>img {
+    float: left;
+    border: 1px solid grey;
+    width: 100px;
+    height:100px;
+}
+.message>textarea {
+    float: right;
+    width: 70%;
+    height: 86px; /* textarea has 16px of outer stuff */
+}
+.options {
+    position: absolute;
+    left: 0;
+    bottom: 30px;
+    margin: 0;
+    height: 100px;
+    width: 100%;
+    text-align: center;
+}
+.option {
+    margin: 0 15px;
+}
+.or {
+    line-height: 60px;
+    display: inline;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin: 0 auto;
+}
+.hint>img {
+    float: left;
+    margin: 8px 0 5px 60px;
+    width: 25px;
+    height: 25px;
+}
+.hint>div {
+    text-align: left;
+    padding-top: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* ---------------------   Choose Friends  ----------------------- */ 
+
+ul.friends {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    max-height: 255px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+li.friend {
+    display: block;
+    padding: 10px 0;
+    margin-right: 10px;
+    border-bottom: 1px solid #BBB;
+}
+.friend input {
+    font-size: 14px;
+    line-height: 17px;
+    padding: 3px;
+    color: #333;
+    width: 200px;
+}
+.friend label {
+    float: left;
+    width: 60px;
+    margin: 3px 0;
+    line-height: 24px;
+    font-size: 13px;
+    color: #666;
+}
+.friend .error {
+    float: right;
+    font-size: 13px;
+    line-height: 30px;
+}
+.portrait {
+    float: left;
+    width: 40px;
+    height: 40px;
+    margin: 7px 37px 7px 7px;
+    padding: 2px;
+    border: 1px solid #BBB;
+    background-color: white;
+}
+#addFriend {
+    font-size: 14px;
+    margin: 15px 0 0 15px;
+    padding-left: 15px;
+    text-align: center;
+}
+#addFriend>img {
+    float: left;
+    margin-left: -13px;
+    width: 29px;
+    height: 29px;
+}
+.friend_options {
+    text-align: center;
+}
+.fb_option {
+    float: left;
+    width: 220px;
+}
+.email_option {
+    float: right;
+    width: 220px;
+}
+.email_friend, .fb_friend {
+    height: 60px;
+}
+.email_friend>div {
+    height: 30px;
+}
+.fb_friend>div {
+    height: 30px;
+    padding: 15px 0;
+}
+.email_friend input, .fb_friend input {
+    border: none;
+    margin: 3px 2px;
+}
+.email_friend input:hover, .fb_friend input:hover {
+    border: 2px inset;
+    margin: 1px 0;
+}
+.helpful {
+    text-align: left;
+    font-size: 14px;
+    color: #666;
+}
+.fb_connect {
+    border-radius: 6px;
+    padding: 1px 10px 0 10px;
+    font-size: 14px;
+    line-height: 28px;
+    color: #FFF;
+    background-color: #3b5998;
+    text-shadow: 1px 1px 1px #000;
+    /* CSS 3 */
+    border-radius: 8px;
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Firefox */
+    -moz-border-radius: 8px;
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    /* For Webkit */
+    -webkit-border-radius: 8px;
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    /* For IE 9+ */
+    
+    /* For IE 8- */
+
+}
+.fb_connect:hover {
+    cursor: hand;
+    cursor: pointer;
+}
+#askButton {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+ul.ui-autocomplete {
     list-style-type: none;
     text-indent: 0px;
     left: 408px;
@@ -59,18 +376,6 @@ ul {
     padding: 0px;
     border: 1px solid #383f41;
     border-radius: 2px;
-}
-li {
-    margin: 0px 0px 0px -30px;
-    padding: 0px 0px 0px 32px;
-    width: 135px;
-    font-size: 11px;
-    text-align: left;
-    text-indent: 0px;
-    height: 20px;
-    background-color: white;
-}
-.ui-autocomplete {
     max-height: 100px;
     overflow-y: auto;
     /* prevent horizontal scrollbar */
@@ -79,87 +384,28 @@ li {
     padding-right: 20px;
     background-color: white;
 }
+li.ui-menu-item {
+    margin: 0px 0px 0px -30px;
+    padding: 0px 0px 0px 32px;
+    width: 185px;
+    font-size: 14px;
+    line-height: 17px;
+    text-align: left;
+    text-indent: 2px;
+    height: 20px;
+    background-color: white;
+    overflow-x: hidden;
+}
+li.ui-menu-item:hover {
+    background-color: #E0F0F8;
+}
+
+/* ---------------------   Barbara's CSS  ----------------------- */ 
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
  */
 * html .ui-autocomplete {
     height: 100px;
-}
-button .fb {
-    font-family: fb_font;
-    font-size: 40px;
-    padding: 0px 8px 0px 0px;
-    margin: 6px 0px 0px 0px;
-    float: left;
-    border-right: 1px solid #1C4596;
-    line-height: 25px;
-}
-button p {
-    float: left;
-    margin: 15px 0px 0px 10px;
-    padding: 0px;
-}
-#title_bar {
-    width: 100%;
-    height: 55px;
-    border-bottom: 1px solid #616262;
-}
-#title_bar img {
-    float: left;
-    height: 50px;
-    margin: 0px 0px 0px 6px;
-    padding: 0px;
-}
-#title_bar h2 {
-    font-size: 25px;
-    margin: 0px -20px 0px 0px;
-    padding: 10px;
-}
-#title_bar p {
-    font-size: 10px;
-    padding: 0px;
-    margin: -10px 0px 0px 94px;
-}
-#title_bar p {
-    font-size: 10px;
-    padding: 0px;
-    margin: -10px 0px 0px 0px;
-    padding-left: 93px;
-    text-align: left;
-}
-#fb_btns {
-    height: 159px;
-    color: #616262;
-    background-color: #e9f0f0;
-}
-#fb_btns h3 {
-    margin: 0px;
-    padding: 30px 10px 0px 10px;
-}
-#fb_btns > p {
-    margin: 0px;
-    padding: 10px 10px 0px 10px;
-    margin-top: 0px;
-}
-
-.willet {
-    float: left;
-    width: 50%;
-    height: 35px;
-    background-color: #e9f0f0;
-    text-decoration: none;
-}
-.willet p {
-    float: left;
-    font-size: 10px;
-    margin-left: 10px;
-}
-.willet a img {
-    border: none;
-    vertical-align: top;
-    float: left;
-    height: 20px;
-    margin: 5px 10px 5px 3px;
 }
 #nameEntry {
     text-align: left;
@@ -172,151 +418,6 @@ button p {
     margin: 0px;
     padding: 0px;
 }
-#tags {
-    width: 160px;
-    margin-left: 2px;
-}
-#selectionCount {
-    float: right;
-    margin-right: 15px;
-}
-#chosenFriends {
-    height: 112px;
-    overflow-y: auto;
-    text-align: left;
-    padding: 0px 5px 0px 5px;
-    background-color: #e9f0f0;
-}
-#chosenFriends p {
-    padding-left: 10px;
-    margin-top: 5px;
-    text-align: center;
-}
-#chosenFriends h3 {
-    margin-top: 0px;
-    text-align: center;
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-#chosenFriends label {
-    margin-left: 10px;
-    margin-right: 10px;
-}
-.selectedFriend {
-    margin: 5px 5px 0px 5px;
-    padding: 5px;
-    border: 1px solid #3B5997;
-    border-radius: 5px;
-    background-color: #526EA6;
-}
-.notSelectedFriend {
-    border: 1px solid #383f41;
-    border-radius: 5px;
-    padding: 0px;
-    margin: 10px 10px 5px 10px;
-    opacity: 0.75;
-}
-.notSelectedFriend:hover {
-    opacity: 1.0;
-}
-#shareText {
-    padding: 2px 10px 0px 10px;
-    background-color: #e9f0f0;
-    height: 42px;
-}
-#shareText p {
-    text-align: center;
-    margin-top: 0px;
-}
-#share-text {
-    font-size: 11px;
-    margin-top: 5px;
-    height: 27px;
-    max-height: 30px;
-}
-#btns {
-    text-align: right;
-    font-size: 11px;
-    background-color: #e9f0f0;
-    margin: 0px;
-    padding: 6px 7px 2px 10px;
-    height: 27px;
-}
-#btns button, #cancel button {
-    -webkit-appearance: none;
-    -webkit-border-horizontal-spacing: 0px;
-    -webkit-border-vertical-spacing: 0px;
-    -webkit-box-align: center;
-    -webkit-box-shadow:0 1px 2px #999;
-    -moz-box-shadow:0 1px 2px #999;
-    box-shadow:0 1px 2px #999;
-    -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
-    background-attachment: scroll;
-    background-clip: border-box;
-    background-color: #EEE;
-    background-image: none;
-    background-origin: padding-box;
-    background-position: 0% 0%;
-    background-repeat: repeat;
-    border-bottom-color: #888;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-collapse: collapse;
-    border-left-color: #999;
-    border-left-style: solid;
-    border-left-width: 1px;
-    border-right-color: #999;
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-top-color: #999;
-    border-top-style: solid;
-    border-top-width: 1px;
-    box-sizing: border-box;
-    color: #333;
-    cursor: pointer;
-    direction: ltr;
-    display: inline-block;
-    float: none;
-    font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
-    font-size: 13px;
-    font-style: normal;
-    font-variant: normal;
-    font-weight: bold;
-    letter-spacing: normal;
-    line-height: normal;
-    margin-bottom: 0px;
-    margin-left: 10px;
-    margin-right: 0px;
-    margin-top: 0px;
-    outline-color: #333;
-    outline-style: none;
-    outline-width: 0px;
-    padding: 3px 7px 3px 7px;
-    text-align: center;
-    text-decoration: none;
-    text-indent: 0px;
-    text-shadow: none;
-    text-transform: none;
-    unicode-bidi: normal;
-    vertical-align: baseline;
-    white-space: nowrap;
-    word-spacing: 0px;
-}
-#cancel {
-    float: right;
-    width: 100%;
-    height: 35px;
-    background-color: #e9f0f0;
-}
-#cancel button {
-    margin: 5px 10px 0px 0px;
-    float: right;
-}
-
 #loader {
     margin: 50px 0px 0px 80px;
-}
-#email-field {
-    width: 270px;
 }

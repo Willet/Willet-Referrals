@@ -38,6 +38,7 @@ from util.helpers               import *
 from util.urihandler            import URIHandler
 from util.strip_html import strip_html
 
+
 class AskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
@@ -162,8 +163,9 @@ class AskDynamicLoader(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class PreAskDynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
+    """Serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
     # TODO: THis code is Shopify specific. Refactor.
@@ -256,8 +258,9 @@ class PreAskDynamicLoader(webapp.RequestHandler):
 
 
 class VoteDynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
+    """Serves a plugin where people can vote on a purchase"""
+    #TODO: Using asserts to force try/except code paths is unpythonic & only works if
+    #      __debug__ is True.  Replace with if/else blocks.
     def get(self):
         template_values = {}
         user   = User.get(self.request.get('user_uuid'))
@@ -268,7 +271,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
         try:
             # get instance by instance_uuid
-            assert(instance != None)
+            assert(instance is not None)
         except:
             try:
                 # get instance by link
@@ -279,7 +282,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
                 link = get_link_by_willt_code(self.request.get('willt_code'))
                 
-                if link == None:
+                if link is None:
                     # no willt code, asker probably came back to page with
                     # no hash code
                     link = Link.all()\
@@ -289,12 +292,12 @@ class VoteDynamicLoader(webapp.RequestHandler):
                             .get()
                     logging.info('got link by page_url %s: %s' % (target, link))
                 instance = link.sibt_instance.get()
-                assert(instance != None)
+                assert(instance is not None)
             except:
                 try:
                     # get instance by asker
                     instance = SIBTInstance.get_by_asker_for_url(user, target)
-                    assert(instance != None)
+                    assert(instance is not None)
                 except:
                     try:
                         # ugh, get the instance by actions ...
@@ -307,7 +310,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                         if action:
                             instance = action.sibt_instance
                             logging.info('no link, got action %s and instance %s' % (action, instance))
-                        assert(instance != None)
+                        assert(instance is not None)
                     except:
                         logging.error('failed to get instance', exc_info=True)
 
@@ -377,8 +380,9 @@ class VoteDynamicLoader(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class ShowResults(webapp.RequestHandler):
-    """Shows the results of a 'should I buy this'"""
+    """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         template_values = {}
         user   = User.get(self.request.get('user_uuid'))
@@ -540,9 +544,10 @@ class ShowResults(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class ShowFBThanks( URIHandler ):
     """ Called to show fb_thanks.html. 
-        We know the user jsut shared on FB, so create an instance etc. """
+        We know the user just shared on FB, so create an instance etc. """
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
     def get( self ):
@@ -598,7 +603,10 @@ class ShowFBThanks( URIHandler ):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class ColorboxJSServer( URIHandler ):
+    """ Called to load Colorbox.js
+    """
     def get( self ):
         template_values = { 'URL'           : URL,
                             'app_uuid'      : self.request.get('app_uuid'),
