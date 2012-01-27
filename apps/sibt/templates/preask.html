@@ -226,15 +226,16 @@
                         <input></input> \
                     </div> \
                 </div> \
-            ").find('.email_option input')
-                .blur(function () {
+            ")
+            .find('.email_option input')
+            .blur(function () {
+                that._chooseEmailFriendSelect();
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
                     that._chooseEmailFriendSelect();
-                })
-                .keypress(function (e) {
-                    if (e.which === 13) {
-                        that._chooseEmailFriendSelect();
-                    }
-                });
+                }
+            });
 
             $('.email_option input').blur(function () {
                 that._chooseEmailFriendSelect();
@@ -251,7 +252,9 @@
                 $fb_option.append(" \
                     <div class='helpful'>Find a friend using Facebook</div> \
                     <input></input> \
-                ").children('input')
+                    <div class='error'>Oops, are you sure that's right?</div> \
+                ")
+                .children('input')
                 .autocomplete({
                     source: friendNames,
                     // Must use function scope, or else this becomes input element
@@ -276,27 +279,34 @@
         };
         Friend.prototype = new LiWidget();
         Friend.prototype.getFriendInfo = function () {
-            var $elem = $(this.elem);
-            // Returns array containing friend info if it exists, else null
-
-            //#### VALIDATE BEFORE DOING THIS STUFF:
-
-            if (this.selected === 'fb') {
-                // return name & fb_id
-                return [ 'fb',
-                         $elem.find('fb_friend input').value, 
-                         fb_friends[ $.inArray(name, friendNames) ].id ];
-            } else if (this.selected === 'email') {
-                // return name & email
-                return [ 'email',
-                         $elem.find('email_friend input.name').value,
-                         $elem.find('email_friend input.email').value ];
+            // Gets the stored friend info if valid
+            // Returns: 
+            //      - valid: [ <string> 'email', <string> name, <string> email address ] | [ <string> 'fb', <string> name, <string> fb id ]
+            //      - empty: []
+            //      - invalid: null
+            var $elem = $(this.elem),
+                name;
+            if (this.validateFriend()) {
+                if (this.selected === 'fb') {
+                    // return name & fb_id
+                    name = $elem.find('.fb_friend input').val();
+                    return [ 'fb',
+                             name, 
+                             fb_friends[ $.inArray(name, friendNames) ].id ];
+                } else if (this.selected === 'email') {
+                    // return name & email
+                    return [ 'email',
+                             $elem.find('.email_friend input.name').val(),
+                             $elem.find('.email_friend input.email').val() ];
+                } else {
+                    return []; // empty friend
+                }
             } else {
                 return null;
             }
         }
         Friend.prototype._validateFriendEmail = function (el) {
-            // Simple validation of friend email in Choose Friend's screen
+            // Simple validation of friend email
             if (/^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/.test(el.value)) {
                 // No error
                 $(el).css('color','black').siblings('.error').hide();
@@ -310,7 +320,7 @@
             }
         };
         Friend.prototype._validateFriendName = function (el) {
-            // Validation of friend name in Choose Friend's screen
+            // Validation of friend name
             if (/^[A-Za-z. ]+$/.test(el.value)) {
                 // No error
                 $(el).css('color','black').siblings('.error').hide();
@@ -325,9 +335,18 @@
         };
         Friend.prototype._validateFriendFB = function (el) {
             // Do a lookup of the Facebook name to check that its valid
-            return true;
+            if ($.inArray(el.value, friendNames) !== -1) {
+                // No error
+                $(el).css('color','black').siblings('.error').hide();
+                return true;
+            } else {
+                // Not a friend
+                $(el).css('color','red').siblings('.error').show();
+                $(this.elem).find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                return true;
+            }
         };
-        Friend.prototype.validateFriendInput = function (el) {
+        Friend.prototype._validateFriendInput = function (el) {
             // Validation of inputs in Choose Friend's screen
             if (el.name === 'email') {
                 return this._validateFriendEmail(el);
@@ -339,10 +358,25 @@
                 return false;
             }
         };
+        Friend.prototype.validateFriend = function () {
+            // Validate data friend contains
+            // Returns: true / false
+            // Note: An empty friend is true
+            var $elem = $(this.elem),
+                selected = this.selected;
+            if (selected === 'fb') {
+                return this._validateFriendFB($elem.find('input')[0]);
+            } else if (selected === 'email') {
+                return this._validateFriendName($elem.find('input.name')[0]) 
+                    && this._validateFriendEmail($elem.find('input.email')[0]);
+            } else {
+                return true;
+            }
+        };
         Friend.prototype.selectFBFriend = function(event, ui) {
             // Save selection and change portrait to person
-            // ui.item is object
-            // this is input element
+            // ui.item is object containing data
+            // *** this = input element when called by autocomplete ***
             var name = ui.item.value,
                 i = $.inArray(name, friendNames),
                 fb_id = fb_friends[i].id;
@@ -368,15 +402,24 @@
                         <div> \
                             <label>Name:</label> \
                             <input name='fb' type='text' value='"+name+"'></input> \
+                            <div class='error'>Oops, are you sure that's right?</div> \
                         </div> \
                     </div> \
                 ")
+                .find('input')
                 .blur(function () {
                     that.validateFriendInput(this);
                 })
-                .find('input').autocomplete({
+                .autocomplete({
                     source: friendNames,
-                    select: this.selectFBFriend
+                    select: this.selectFBFriend,
+                    close: function () {
+                        that._validateFriendInput(this);
+                    }
+                })
+                .each(function () {
+                    // Validate right now
+                    that._validateFriendInput(this);
                 });
             }
         };
@@ -406,17 +449,18 @@
                         </div> \
                     </div> \
                 ").find('input')
-                    .blur(function () {
-                        that.validateFriendInput(this);
-                    })
-                    .keypress(function (e) {
-                        if (e.which === 13) {
-                            that.validateFriendInput(this);
-                        }
-                    })
-                    .each(function () {
-                        that.validateFriendInput(this);
-                    });
+                .blur(function () {
+                    that._validateFriendInput(this);
+                })
+                .keypress(function (e) {
+                    if (e.which === 13) {
+                        that._validateFriendInput(this);
+                    }
+                })
+                .each(function () {
+                    // Validate right now
+                    that._validateFriendInput(this);
+                });
             }
         };
         Friend.prototype.FBLoggedIn = function () {
@@ -424,24 +468,25 @@
                 $fb_option = $(this.elem).find('.fb_option');
             $fb_option.children().remove();
             $fb_option.append(" \
-                    <div class='helpful'>Find friend using Facebook</div> \
-                    <input></input> \
-                ").children('input')
-                .blur(function () {
-                    that.validateFriendInput(this);
-                })
-                .autocomplete({
-                    source: friendNames,
-                    select: this.selectFBFriend,
-                    close: function () {
-                        that._chooseFBFriendSelect();
-                    }
-                })
-                .keypress(function (e) {
-                    if (e.which === 13) {
-                        that._chooseFBFriendSelect();
-                    }
-                });
+                <div class='helpful'>Find friend using Facebook</div> \
+                <input></input> \
+            ")
+            .children('input')
+            .blur(function () {
+                that.validateFriendInput(this);
+            })
+            .autocomplete({
+                source: friendNames,
+                select: this.selectFBFriend,
+                close: function () {
+                    that._chooseFBFriendSelect();
+                }
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    that._chooseFBFriendSelect();
+                }
+            });
         };
 
         
@@ -502,38 +547,54 @@
         };
 
         var sendMessages = function() {
-            var friend_info = [];
-            var msg   = $("#share-text").val();
+            var i,j,
+                friend_info = [],
+                msg   = $("#share-text").val(),
+                error = false;
 
             // Clean up UI to show loader gif
             showScreen('asking');
 
             // Gather up friend info
-            $.each( friends, function (i) { 
-                friend_info.push( friends[i].getFriendInfo() );
-            });
-
-            payload = { 
-                user_uuid       : "{{user_uuid}}",
-                app_uuid        : "{{app_uuid}}",
-                product_uuid    : "{{product_uuid}}",
-                fb_access_token : fbAccessToken,
-                fb_id           : fbIdentity,
-                friend_info     : friend_info,
-                msg             : msg,
-                willt_code      : "{{willt_code}}"
-            };
-
-            $.ajax({
-                url      : "{{ URL }}{% url SendFBMessages %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    // Change to success screen
-                    showScreen('success');
+            i = friends.length;
+            while (i--) {
+                j = friends[i].getFriendInfo(); // Can be [...], [] or null
+                if (j === null) {
+                    error = true; // Don't submit
+                } else if (j !== []) {
+                    friend_info.push(j);
+                } else {
+                    continue; // Don't add []
                 }
-            });
+            }
+            if (console && console.log) {
+                console.log('Friends: '+friend_info+' Error:'+error);
+            }
+            
+            if (!error) {
+                // No errors with friends, submit!
+                payload = { 
+                    user_uuid       : "{{user_uuid}}",
+                    app_uuid        : "{{app_uuid}}",
+                    product_uuid    : "{{product_uuid}}",
+                    fb_access_token : fbAccessToken,
+                    fb_id           : fbIdentity,
+                    friend_info     : friend_info,
+                    msg             : msg,
+                    willt_code      : "{{willt_code}}"
+                };
+
+                $.ajax({
+                    url      : "{{ URL }}{% url SendFBMessages %}",
+                    type     : 'post',
+                    dataType : 'json',
+                    data     : payload,
+                    success  : function (tr) {
+                        // Change to success screen
+                        showScreen('success');
+                    }
+                });
+            }
         };
 
         var updateEmailAddress = function() {
