@@ -35,20 +35,26 @@
                         <div class="grey_bar">
                             Should I buy this?
                         </div>
-                        <img src="/static/sibt/imgs/drop_arrow_29x29.png" />
+                        <img alt="arrow" src="/static/sibt/imgs/drop_arrow_29x29.png" />
                         <ul>
                             <!-- Question options appended when document ready -->
                         </ul>
                     </div>
                 </div>
+                <!-- 
+                // Enable when styling complete
+                {% if incentive_enabled %}
+                <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
+                {% endif %}
+                -->
                 <div class="message" id="message">
-                    <img src="{{ product_image }}" />
-                    <textarea>{{ share_text }}</textarea>
+                    <img alt="product" src="{{ product_image }}" />
+                    <textarea>{{ AB_share_text }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
                         <div class="button" id="postOnWall" title="Post to your wall">
-                            <img src="/static/sibt/imgs/sibt_ask_all.png" />
+                            <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
                             <div class="title">Ask Friends</div>
                             <div class="subtitle">Post to Facebook</div>
                         </div>
@@ -60,7 +66,7 @@
                     <div class="or">or</div>
                     <div class="option right">
                         <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                            <img src="/static/sibt/imgs/sibt_choose_friends.png" />
+                            <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
                             <div class="title">Choose Friends</div>
                             <div class="subtitle">Get trusted advice</div>
                         </div>
@@ -83,11 +89,11 @@
                     <!-- Friends appended when document ready -->
                 </ul>
                 <div class="grey_bar" id="addFriend">
-                    <img src="/static/sibt/imgs/add_cross_29x29.png" />
+                    <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
                     Add Another Friend
                 </div>
                 <div id="askButton" class="button">
-                    <img src="/static/sibt/imgs/sibt_choose_friends.png" />
+                    <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
                 </div>
@@ -101,7 +107,7 @@
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <p id="#nameEntry">Asking...</p>
-                <p><img src="/static/imgs/ajax-loader.gif" id="loader" /></p>
+                <p><img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" /></p>
             </div>
 
             <!-------------------------- Success Screen -------------------------------->
@@ -160,7 +166,7 @@
             // Could use template here
             {
                 title: 'Should I buy this?',
-                text: 'I need help!  Should I buy this? Let me know here:'
+                text: '{{ AB_share_text }}'
             },
             {
                 title: 'Does anyone own this?',
@@ -678,6 +684,9 @@
                  }
             });
 
+            // Don't change this - click passes values into toggle,
+            // which will trigger an animation we don't want. So
+            // we wrap in function to block pass-through.
             $('#questionOptions>.grey_bar').click(function () {toggleShowQuestionOptions();
             });
 
