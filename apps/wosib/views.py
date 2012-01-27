@@ -122,6 +122,21 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
             self.response.headers.add_header('P3P', P3P_HEADER)
             self.response.out.write(template.render(path, template_values))
         return
+    
+    def post(self):
+        ''' preask.html actually POSTS to itself.
+            HTML forms do not submit values of unchecked checkboxes, so all the
+            IDs you get from the POST request will be the items the users
+            selected for creating an instance. '''
+        items = self.request.arguments()
+        # checkbox IDs on preask.html have this pattern
+        item_name_pattern = re.compile("^item[0-9]{5,}$")
+        # keep the ones looking like an item ID, and then trim the 'item' part
+        variant_ids = [x[4:] for x in filter (lambda x: bool (item_name_pattern.match (x)), items)]
+        
+        # do something with them... example.
+        self.response.out.write(', '.join(variant_ids))
+        pass
 
 
 class WOSIBVoteDynamicLoader(webapp.RequestHandler):
@@ -173,6 +188,16 @@ class ShowWOSIBButtonCSS (URIHandler):
                             'app_uuid'      : self.request.get('app_uuid')}
        
         path = os.path.join('apps/wosib/templates/css/', 'wosib_user_style.css')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+
+class ShowWOSIBColorboxCSS (URIHandler):
+    def get( self ):
+        template_values = { 'URL'           : URL,
+                            'app_uuid'      : self.request.get('app_uuid')}
+       
+        path = os.path.join('apps/wosib/templates/css/', 'colorbox.css')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return

@@ -677,4 +677,14 @@
     cursor: pointer;
     display: none;
 }
+
+#_willet_close_button {
+    line-height: 30px;
+    font-size: 30px;
+    height: 30px;
+    width: 30px;
+
+}
+
 ';
+

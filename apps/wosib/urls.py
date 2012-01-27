@@ -12,7 +12,8 @@ urlpatterns = [
     (r'/w/results.html',            WOSIBShowResults),
     (r'/w/fb_thanks.html',          WOSIBShowFBThanks),
     (r'/w/track/unload',            ShowWOSIBUnloadHook),
-    (r'/w/button_css',              ShowWOSIBButtonCSS),
+    (r'/w/button.css',              ShowWOSIBButtonCSS),
+    (r'/w/colorbox.css',            ShowWOSIBColorboxCSS),
     (r'/w/instance',                ShowWOSIBInstancePage), # query: id (instance ID)
 
     # Processes

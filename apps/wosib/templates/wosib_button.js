@@ -12,7 +12,10 @@ jQuery(document).ready (function () {
             'app_uuid': '{{app.uuid}}',
             'user_uuid': '{{user.uuid}}',
             'instance_uuid': '{{instance.uuid}}',
+            'store_url': 'http://' + document.domain,
         };
+        var _willet_css = {% include stylesheet %} // pre-quoted
+        var _willet_app_css = '{{ app_css }}';
 
         // detect just safari: http://api.jquery.com/jQuery.browser/
         $.browser.safari = ( $.browser.safari && 
@@ -33,6 +36,45 @@ jQuery(document).ready (function () {
 	            return res;
 	        };
         }
+
+        // Add scripts to DOM
+        var _willet_load_script = function (script) {
+            var dom_el = document.createElement('script'); 
+            dom_el.type = 'text/javascript'; 
+            dom_el.src = script;
+            return _willet_insert_head_element (dom_el);
+        };
+
+        var _willet_load_css = function (script) {
+            var dom_el = document.createElement('link'); 
+            dom_el.type = 'text/css'; 
+            dom_el.rel = 'stylesheet';
+            dom_el.href = script;
+            return _willet_insert_head_element (dom_el);
+        };
+
+        var _willet_insert_head_element = function (element) {
+            document.getElementsByTagName('head')[0].appendChild(element); 
+            return element;
+        }
+
+        // load the cockamamy CSS ASAP
+        var _willet_style = document.createElement('style');
+            var _willet_head  = document.getElementsByTagName('head')[0];
+            _willet_style.type = 'text/css';
+            _willet_style.setAttribute('charset','utf-8');
+            _willet_style.setAttribute('media','all');
+            if (_willet_style.styleSheet) {
+                _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
+            } else {
+                var rules = document.createTextNode(_willet_css + _willet_app_css);
+                _willet_style.appendChild(rules);
+            }
+            document.getElementsByTagName('head')[0].appendChild(_willet_style);
+
+        /*  NO
+            _willet_load_css ("{{ URL }}/w/button.css?app_uuid=" + srv_data.app_uuid);
+            _willet_load_css ("{{ URL }}/w/colorbox.css?app_uuid=" + srv_data.app_uuid);*/
 
         var scripts = [
             /**
@@ -98,27 +140,6 @@ jQuery(document).ready (function () {
                 window.setTimeout (_willet_check_scripts, 100);
             }
         };
-
-        // Add scripts to DOM
-        var _willet_load_script = function (script) {
-            var dom_el = document.createElement('script'); 
-            dom_el.type = 'text/javascript'; 
-            dom_el.src = script;
-            return _willet_insert_head_element (dom_el);
-        };
-
-        var _willet_load_css = function (script) {
-            var dom_el = document.createElement('link'); 
-            dom_el.type = 'text/css'; 
-            dom_el.rel = 'stylesheet';
-            dom_el.src = script;
-            return _willet_insert_head_element (dom_el);
-        };
-        
-        var _willet_insert_head_element = function (element) {
-            document.getElementsByTagName('head')[0].appendChild(element); 
-            return element;
-        }
         
         // Send action to server.
         var _willet_store_analytics = function (message) {
@@ -141,6 +162,30 @@ jQuery(document).ready (function () {
                 } catch (e) {} // do nothing
             });
         };
+        
+        var _willet_show_ask = function () {
+            var url = "{{URL}}/w/preask?store_url=" + encodeURI(srv_data.store_url) + 
+                      "&variants=" +
+                      _willet_cart_items.map(function (x) {
+                          // func collects all variant IDs for the cart items.
+                          return x.variant_id;
+                      }).join(',');
+            $.willet_colorbox({
+                href: url,
+                transition: 'fade',
+                close: '',
+                scrolling: false,
+                iframe: true, 
+                initialWidth: 0, 
+                initialHeight: 0, 
+                innerWidth: '790px',
+                innerHeight: '490px', 
+                fixed: true,
+                onClosed: function () {
+                    // derp
+                }
+            });
+        };
 
         var run = function () {
             // add the button onto the page right now
@@ -148,7 +193,7 @@ jQuery(document).ready (function () {
                 'type': "button",
                 'value': "Need help deciding?",
                 'id': "show_wosib",
-                'class': "button _willet_button"
+                // 'class': "button _willet_button",
             });
             button_script.insertAfter (
                 $('form[name="cartform"] table')
@@ -156,13 +201,7 @@ jQuery(document).ready (function () {
             $('#show_wosib').click (function () {
                 _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
                 // iframe for asker to set up voting page
-                newWindow = window.open(
-                    "{{URL}}/w/preask?variants=" +
-                    _willet_cart_items.map(function (x) {
-                        // func collects all variant IDs for the cart items.
-                        return x.variant_id;
-                    }).join(',')
-                );
+                _willet_show_ask ();
             });
             _willet_store_analytics ("WOSIBShowingButton"); // log show button
             
@@ -170,14 +209,13 @@ jQuery(document).ready (function () {
             $("body").append($('<iframe />',{
                 'style': 'display:none',
                 'src': "{{ URL }}{% url ShowWOSIBUnloadHook %}?evnt=WOSIBVisitLength" + 
-                             "&app_uuid=" + srv_data.app_uuid + 
-                             "&user_uuid=" + srv_data.user_uuid + 
-                             "&instance_uuid=" + srv_data.instance_uuid + 
-                             "&target_url=" + window.location.href
+                         "&app_uuid=" + srv_data.app_uuid + 
+                         "&user_uuid=" + srv_data.user_uuid + 
+                         "&instance_uuid=" + srv_data.instance_uuid + 
+                         "&target_url=" + window.location.href
             }));
         };
 
-        _willet_load_css ("{{ URL }}/w/button_css?app_uuid=" + srv_data.app_uuid);
         _willet_check_scripts (); // eventually run()s it
     }
 });

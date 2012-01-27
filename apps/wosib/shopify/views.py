@@ -31,6 +31,7 @@ from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.sibt.shopify.models import SIBTShopify
+from apps.wosib.models        import WOSIBInstance
 from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
@@ -225,36 +226,16 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'show_top_bar_ask': show_top_bar_ask,
             
             'app'            : app,
+            'app_css'        : app_sibt.get_css(),
             'instance'       : instance,
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
-
-            'AB_overlay_style' : overlay_style,
-
             'store_url'      : shop_url,
             'store_domain'   : getattr (app_sibt.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
-            'product_uuid'   : product.uuid if product else "",
-            'product_title'  : product.title if product else "",
-            'product_images' : product.images if product else "",
-            'product_desc'   : product.description if product else "",
-          
             'user': user,
             'stylesheet': 'css/colorbox.css',
-
-            'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : AB_top_bar,
-            'AB_btm_tab'  : AB_btm_tab,
-            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app_sibt.overlay_enabled else 0,
-
             'evnt' : event,
-            'img_elem_selector' : "#image img", #app.img_selector,
-            'heart_img' : 0,
-            
-            'FACEBOOK_APP_ID': app_sibt.settings['facebook']['app_id'],
-            'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else "",
-            'app_css': app_css,
         }
 
 
@@ -276,7 +257,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
         path = os.path.join('apps/wosib/templates/', 'wosib_button.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        self.response.headers['Content-Type'] = 'application/javascript'
         self.response.out.write(template.render(path, template_values))
         
         return

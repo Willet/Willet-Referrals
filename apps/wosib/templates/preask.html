@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
-        <script type="text/javascript" 
-                src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-        <script type="text/javascript">
-            if (typeof jQuery == 'undefined'){
-                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
-            }
-        </script>
         <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
         <style type="text/css">
             #cart_items_display {
@@ -16,26 +9,35 @@
                 padding: 0;
             }
             #cart_items_display li {
+                border: 1px transparent solid;
                 display: inline-block;
-                border: 1px silver solid;
-                border-radius: 5px;
+                font-size: small;
                 margin: 10px 5px;
                 padding: 10px;
                 width: 200px;
                 height: 324px;
-                background-color: #fcfcfc;
                 vertical-align: bottom;
             }
             #cart_items_display li:hover {
+                border: 1px silver solid;
+                border-radius: 5px;
                 background-color: #fcfcff;
             }
             #cart_items_display img, #cart_items_display input, #cart_items_display label {
-                clear:both;
-                display:block;
+                clear: both;
+                display: block;
                 margin: 0 auto;
             }
+            #cart_items_display input {
+                display: none;
+            }
             #cart_items_display img {
-                max-height: 200px;
+                max-height: 196px;
+                margin-bottom: 12px;
+            }
+            .dialog_button_area {
+                background-color: #f0f0f0;
+                padding: 10px;
             }
         </style>
     </head>
@@ -43,50 +45,65 @@
         <div class="wrapper">
             <div id="splash">
                 <div class="title_bar">
-                    <img width=79 height=50 src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Select items to display in your survey.</div>
                 </div>
-                <form method="POST">
+                <form method="POST" action="">
                     <ul id="cart_items_display">
                         <!-- JS -->
                     </ul>
+                    <div class="dialog_button_area">
+                        <input type="submit" value="Ask friends on Facebook">
+                        <input type="submit" value="Ask friends by email">
+                    </div>
                 </form>
             </div>
         </div>
+        <!-- 
+             Optimize Javascript Placement
+             http://betterexplained.com/articles/speed-up-your-javascript-load-time/
+        -->
+        <script type="text/javascript" 
+                src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
-            // controller guarantees there to be 1+ variants
-            var _willet_cart_variants = [ {% for variant in variants %}
-                {   "id": "{{variant.id}}",
-                    "title": "{{variant.title}}",
-                     // deprecated... try /cart.js.
-                    "image": "{{variant.image}}",
-                    "variant_id": "{{variant.variant_id}}",
-                },
-            {% endfor %} ];
-            
-            for (x in _willet_cart_variants) {
-                // add products onto page.
-                $('#cart_items_display').append(
-                    '<li>' + 
-                        '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
-                        '<label for="item' + _willet_cart_variants[x].variant_id + '">' +
-                            _willet_cart_variants[x].title + 
-                        '</label>' + 
-                        '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
-                               'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
-                               'class="variant_select" type="checkbox" checked="checked" />' +
-                    '</li>'
-                );
-                
-                // add product selection events onto checkbox.
-                $('.variant_select').click(function () {
-                    if (this.checked) { // fade in
-                        $(this).parent().fadeTo(400, 1.0);
-                    } else { // fade out
-                        $(this).parent().fadeTo(400, 0.3);
-                    }
-                });
+            if (typeof jQuery == 'undefined'){
+                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
             }
+        </script>
+        <script type="text/javascript">
+            $(document).ready (function () {
+                // controller guarantees there to be > 0 variants
+                var _willet_cart_variants = [ {% for variant in variants %}
+                    {   "id": "{{variant.id}}",
+                        "title": "{{variant.title}}",
+                        "image": "{{variant.image}}", // deprecated... try /cart.js.
+                        "variant_id": "{{variant.variant_id}}",
+                    },
+                {% endfor %} ];
+                
+                for (x in _willet_cart_variants) {
+                    // add products onto page.
+                    $('#cart_items_display').append(
+                        '<li>' + 
+                            '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
+                            '<label>' +
+                                '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                                       'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                                       'class="variant_select" type="checkbox" checked="checked" />' +
+                                _willet_cart_variants[x].title + 
+                            '</label>' + 
+                        '</li>'
+                    );
+                }
+                // add product selection events onto checkbox.
+                $('#cart_items_display li').each (function () {
+                    $(this).bind('click', function () {
+                        var checkbox = $(this).find('input')[0];
+                        checkbox.checked = !checkbox.checked;
+                        $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                    });
+                });
+            });
         </script>
     </body>
 </html>
