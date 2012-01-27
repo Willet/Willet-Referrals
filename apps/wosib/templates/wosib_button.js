@@ -36,6 +36,14 @@ jQuery(document).ready (function () {
 	            return res;
 	        };
         }
+        
+        // The usual things. Does NOT include first amperssand.
+        var _willet_metadata = function () {
+            return "app_uuid=" + srv_data.app_uuid + 
+                  "&user_uuid=" + srv_data.user_uuid + 
+                  "&instance_uuid=" + srv_data.instance_uuid + 
+                  "&target_url=" + window.location.href,
+        };
 
         // Add scripts to DOM
         var _willet_load_script = function (script) {
@@ -96,11 +104,7 @@ jQuery(document).ready (function () {
                     return;
                 }
             },{ 'name': 'jQuery Colorbox',
-                'url': '{{ URL }}/w/js/jquery.colorbox.js?' + 
-                         "app_uuid=" + srv_data.app_uuid + 
-                         "&user_uuid=" + srv_data.user_uuid + 
-                         "&instance_uuid=" + srv_data.instance_uuid + 
-                         "&target_url=" + window.location.href,
+                'url': '{{ URL }}/w/js/jquery.colorbox.js?' + _willet_metadata(),
                 'dom_el': null,
                 'loaded': false,
                 'test': function() {
@@ -148,11 +152,9 @@ jQuery(document).ready (function () {
             var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
             $("body").append($('<iframe />',{
                 'style': 'display:none',
-                'src': "{{ URL }}{% url TrackWOSIBShowAction %}?evnt=" + message + 
-                             "&app_uuid=" + srv_data.app_uuid + 
-                             "&user_uuid=" + srv_data.user_uuid + 
-                             "&instance_uuid=" + srv_data.instance_uuid + 
-                             "&target_url=" + window.location.href,
+                'src': "{{ URL }}{% url TrackWOSIBShowAction %}?" + 
+                       "evnt=" + message + 
+                       "&" + _willet_metadata();
                 'id': random_id
             }));
             $('#' + random_id).load(function () {
@@ -169,7 +171,8 @@ jQuery(document).ready (function () {
                       _willet_cart_items.map(function (x) {
                           // func collects all variant IDs for the cart items.
                           return x.variant_id;
-                      }).join(',');
+                      }).join(',') +
+                      "&" + _willet_metadata();
             $.willet_colorbox({
                 href: url,
                 transition: 'fade',
@@ -209,10 +212,7 @@ jQuery(document).ready (function () {
             $("body").append($('<iframe />',{
                 'style': 'display:none',
                 'src': "{{ URL }}{% url ShowWOSIBUnloadHook %}?evnt=WOSIBVisitLength" + 
-                         "&app_uuid=" + srv_data.app_uuid + 
-                         "&user_uuid=" + srv_data.user_uuid + 
-                         "&instance_uuid=" + srv_data.instance_uuid + 
-                         "&target_url=" + window.location.href
+                         "&" + _willet_metadata ()
             }));
         };
 

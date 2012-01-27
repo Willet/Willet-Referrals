@@ -37,7 +37,7 @@ from util.strip_html import strip_html
 
 class ShareWOSIBInstanceOnFacebook(URIHandler):
     def post(self):
-        logging.info("SHAREWOSIBONFACEBOOK")
+        logging.info("SHARE WOSIB ON FACEBOOK")
 
         app  = get_app_by_id(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
@@ -61,8 +61,6 @@ class ShareWOSIBInstanceOnFacebook(URIHandler):
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
         try:
-            #product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
-            #product_desc = remove_html_tags(product_desc)
             ex = '[!\.\?]+'
             product_desc = strip_html(product.description)
             parts = re.split(ex, product_desc[:150])

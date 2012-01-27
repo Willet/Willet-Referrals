@@ -110,7 +110,6 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                     })
                 else:
                     logging.debug ("Product for variant %s not found in DB" % variant_id)
-            
             template_values = {
                 'variants' : variants
             }
