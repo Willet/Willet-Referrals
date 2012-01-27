@@ -370,7 +370,11 @@
                             <input name='fb' type='text' value='"+name+"'></input> \
                         </div> \
                     </div> \
-                ").find('input').autocomplete({
+                ")
+                .blur(function () {
+                    that.validateFriendInput(this);
+                })
+                .find('input').autocomplete({
                     source: friendNames,
                     select: this.selectFBFriend
                 });
@@ -423,6 +427,9 @@
                     <div class='helpful'>Find friend using Facebook</div> \
                     <input></input> \
                 ").children('input')
+                .blur(function () {
+                    that.validateFriendInput(this);
+                })
                 .autocomplete({
                     source: friendNames,
                     select: this.selectFBFriend,
