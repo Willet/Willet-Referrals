@@ -101,11 +101,10 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
             variants = []
             for variant_id in variant_ids:
                 its_product = ProductShopify.all().filter ('variants = ', str(variant_id)).get()
-                # its_product = db.GqlQuery("SELECT * FROM Product WHERE variants = :1", variant_id)[0]
                 if its_product: # could be None of Product is somehow not in DB
                     variants.append({
                         'id' : its_product.shopify_id,
-                        'image' : 'http://fraser-willet.appspot.com/static/sibt/imgs/temp_product.jpg', # its_product.images[0],
+                        'image' : '/static/imgs/noimage.png', # its_product.images[0],
                         'title' : its_product.title,
                         'variant_id' : variant_id,
                     })
@@ -136,6 +135,9 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
         
         # do something with them... example.
         self.response.out.write(', '.join(variant_ids))
+        
+        # if posted action is "post to facebook", create full WOSIBInstance
+        # else, create PartialWOSIBInstance (to do what?)
         pass
 
 
