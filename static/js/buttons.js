@@ -49,7 +49,7 @@
         if (button_div && window._willet_iframe_loaded == undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
 
-            button_div.setAttribute('style',"float: left; height: 30px; padding: 5px;");
+            button_div.setAttribute('style',"float: left; height: 30px; padding: 5px; width: 240px;");
 
             window._willet_iframe_loaded = "teh fb_iframe haz been loaded";
             var domain = /:\/\/([^\/]+)/.exec(window.location.href)[1];
@@ -65,7 +65,6 @@
             d.setAttribute('style', 'float: left; margin-right: 5px; width: 62px !important;' );
             
             var a = document.createElement( 'a' );
-            var style = 
             a.href = 'http://www.tumblr.com/share';
             a.title = "Share on Tumblr";
             a.setAttribute('style', "display:inline-block; text-indent:-9999px; \
@@ -79,25 +78,24 @@
             console.log('Buttons: Tumblr attached');
 
             // Pinterest
-            var d = document.createElement( 'div' );
+            d = document.createElement( 'div' );
             d.setAttribute('style', 'float: left; margin-right: 5px; overflow:hidden; width: 49px !important;');
 
             a = document.createElement( 'a' );
-            var u = 
             a.href = "http://pinterest.com/pin/create/button/?" +
                     "url=" + encodeURIComponent( window.location.href ) + 
                     "&media=" + encodeURIComponent( photo ) + 
                     "&description=" + "Found on " + domain + "!";
             a.className = 'pin-it-button';
             a.setAttribute('count-layout', "horizontal");
-            a.innterHTML = "Pin It";
+            a.innerHTML = "Pin It";
             d.appendChild( a );
             button_div.appendChild( d );
             
             console.log("Buttons: Pinterest attached");
 
             // The Fancy Button
-            var d = document.createElement( 'div' );
+            d = document.createElement( 'div' );
             d.setAttribute('style', 'float: left; margin-top: 3px;' );
 
             a = document.createElement( 'a' );
@@ -149,7 +147,8 @@
             var req = new XMLHttpRequest();
             req.open('GET', here, true);
             req.onreadystatechange = function () {  
-                if (req.readyState === 4) {  
+                if (req.readyState === 4) {
+                    // 4 means something has been returned by the request
                     if (req.status === 200) {
                         console.log("Buttons: recieved product.json request");
                         var data;
