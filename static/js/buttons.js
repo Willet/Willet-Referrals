@@ -49,7 +49,10 @@
         if (button_div && window._willet_iframe_loaded == undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
 
-            button_div.setAttribute('style',"float: left; height: 30px; padding: 5px; width: 240px;");
+            button_div.style.float = 'left';
+            button_div.style.width = '240px';
+            button_div.style.height = '30px';
+            button_div.style.padding = '5px';
 
             window._willet_iframe_loaded = "teh fb_iframe haz been loaded";
             var domain = /:\/\/([^\/]+)/.exec(window.location.href)[1];
@@ -62,15 +65,22 @@
 
             // Tumblr
             var d = document.createElement( 'div' );
-            d.setAttribute('style', 'float: left; margin-right: 5px; width: 62px !important;' );
+            d.style.float = 'left';
+            d.style.marginRight = '5px';
+            d.style.width = '62px !important';
             
             var a = document.createElement( 'a' );
             a.href = 'http://www.tumblr.com/share';
             a.title = "Share on Tumblr";
-            a.setAttribute('style', "display:inline-block; text-indent:-9999px; \
-                        overflow:hidden; width:63px; height:20px; \
-                        background:url('http://platform.tumblr.com/v1/share_2.png') \
-                        top left no-repeat transparent; float: left; margin-right: 5px; margin-top: 3px;");
+            a.style.display = 'inline-block';
+            a.style.textIndent = '-9999px';
+            a.style.overflow = 'hidden';
+            a.style.width = '63px';
+            a.style.height = '20px';
+            a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
+            a.style.float = 'left';
+            a.style.marginRight = '5px';
+            a.style.marginTop = '3px';
             a.innerHTML = "Share on Tumblr";
             d.appendChild( a );
             button_div.appendChild( d );
@@ -79,7 +89,10 @@
 
             // Pinterest
             d = document.createElement( 'div' );
-            d.setAttribute('style', 'float: left; margin-right: 5px; overflow:hidden; width: 49px !important;');
+            d.style.float = 'left';
+            d.style.marginRight = '5px';
+            d.style.overflow = 'hidden'; 
+            d.style.width: '49px !important';
 
             a = document.createElement( 'a' );
             a.href = "http://pinterest.com/pin/create/button/?" +
@@ -96,7 +109,8 @@
 
             // The Fancy Button
             d = document.createElement( 'div' );
-            d.setAttribute('style', 'float: left; margin-top: 3px;' );
+            d.style.float = 'left'; 
+            d.style.marginTop = '3px';
 
             a = document.createElement( 'a' );
             var u = "http://www.thefancy.com/fancyit?" +
