@@ -132,3 +132,13 @@ indexes:
   - name: is_admin
   - name: what
   - name: created
+
+- kind: Product
+  properties:
+  - name: shopify_id
+  - name: variants
+
+- kind: ProductShopify
+  properties:
+  - name: shopify_id
+  - name: variants

@@ -101,6 +101,11 @@ class ClientShopify( Client ):
                          phone      = data['phone'],
                          client     = store )
         
+        logging.info({
+            'client_uuid': uuid,
+            'app_type'   : app_type
+        })
+        
         # Query the Shopify API to dl all Products
         taskqueue.add(
                 url = build_url('FetchShopifyProducts'),

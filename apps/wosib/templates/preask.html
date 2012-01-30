@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" 
+              rel="stylesheet" 
+              type="text/css" />
+        <style type="text/css">
+            @font-face {
+                 font-family: fb_font;
+                 src: url("/static/fonts/KlavikaBold.otf");
+            }
+            @font-face {
+                 font-family: fb_font;
+                 src: url("/static/fonts/KlavikaBold.eot"); /* For IE */
+            }
+        </style>
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+        <style type="text/css">
+            #cart_items_display {
+                display: block;
+                margin: 0 auto;
+                padding: 0;
+            }
+            #cart_items_display li {
+                border: 1px transparent solid;
+                display: inline-block;
+                font-size: small;
+                margin: 10px 5px;
+                padding: 10px;
+                width: 200px;
+                height: 324px;
+                vertical-align: bottom;
+            }
+            #cart_items_display li:hover {
+                border: 1px silver solid;
+                border-radius: 5px;
+                background-color: #fcfcff;
+            }
+            #cart_items_display img, #cart_items_display input, #cart_items_display label {
+                clear: both;
+                display: block;
+                margin: 0 auto;
+            }
+            #cart_items_display input {
+                display: none;
+            }
+            #cart_items_display img {
+                max-height: 196px;
+                margin-bottom: 12px;
+            }
+            .dialog_button_area {
+                background-color: #f0f0f0;
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div id="splash">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Select items to display in your survey.</div>
+                </div>
+                <form method="POST" action="">
+                    <ul id="cart_items_display">
+                        <!-- JS -->
+                    </ul>
+                    <div class="dialog_button_area">
+                        <input type="hidden" name="app_uuid" value="{{app_uuid}}">
+                        <input type="hidden" name="user_uuid" value="{{user_uuid}}">
+                        <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
+                        <input type="hidden" name="target_url" value="{{target_url}}">
+                        
+                        <input name="postOnWall_btn" id="postOnWall_btn" 
+                               type="button" value="Ask friends on Facebook">
+                        <input name="runFriendPicker_btn" id="runFriendPicker_btn" 
+                               type="button" value="Ask friends by email">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- 
+             Optimize Javascript Placement
+             http://betterexplained.com/articles/speed-up-your-javascript-load-time/
+        -->
+        <script type="text/javascript" 
+                src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+            if (typeof jQuery == 'undefined'){
+                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+            }
+        </script>
+        <script type="text/javascript">
+            $(document).ready (function () {
+                // controller guarantees there to be > 0 variants
+                var _willet_cart_variants = [ {% for variant in variants %}
+                    {   "id": "{{variant.id}}",
+                        "title": "{{variant.title}}",
+                        "image": "{{variant.image}}", // deprecated... try /cart.js.
+                        "variant_id": "{{variant.variant_id}}",
+                    },
+                {% endfor %} ];
+                
+                for (x in _willet_cart_variants) {
+                    // add products onto page.
+                    $('#cart_items_display').append(
+                        '<li>' + 
+                            '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
+                            '<label>' +
+                                '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                                       'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                                       'class="variant_select" type="checkbox" checked="checked" />' +
+                                _willet_cart_variants[x].title + 
+                            '</label>' + 
+                        '</li>'
+                    );
+                }
+                
+                // add product selection events onto checkbox.
+                $('#cart_items_display li').each (function () {
+                    $(this).bind('click', function () {
+                        var checkbox = $(this).find('input')[0];
+                        checkbox.checked = !checkbox.checked;
+                        $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                    });
+                });
+                
+                
+                
+                // FROM SIBT
+                
+                var startPartialInstance = function() {
+                    var payload = { app_uuid     : "{{app_uuid}}",
+                                    user_uuid    : "{{user_uuid}}",
+                                    product_uuid : "{{product_uuid}}",
+                                    willt_code   : "{{willt_code}}" };
+                    $.ajax({
+                        url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+                        type     : 'post',
+                        dataType : 'json',
+                        data     : payload,
+                        success  : function (tr) {
+                            return;
+                        }
+                    });
+                };
+                
+                // Open up the FB dialog. Does not do a FB connect with us.
+                var postOnWall = function () {
+                    startPartialInstance ();
+                    // derp
+                };
+                $('#postOnWall_btn').click (postOnWall);
+
+                var runFriendPicker = function () {
+                    // derp
+                };
+                $('#runFriendPicker_btn').click (runFriendPicker);
+            });
+        </script>
+        
+        <!-- the lame stuff -->
+        <div id="fb-root"></div>
+        <script>
+            window.fbAsyncInit = function() {
+                // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+                //FB._https = true;
+                FB.init({
+                    appId : '{{FACEBOOK_APP_ID}}', // App ID
+                    //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                    status: true, // check login status
+                    cookie: true, // enable cookies to allow the server to access the session
+                    oauth : true, // enable OAuth 2.0
+                    xfbml : true  // parse XFBML
+                });
+            };
+
+            (function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) {return;}
+                js = d.createElement(s);
+                js.id = id;
+                js.async = true;
+                js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
+
+        <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
+</html>
