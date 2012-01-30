@@ -50,7 +50,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                 if (typeof jQuery == 'undefined'){ // if it is STILL undefined, load our own
                     document.write(unescape("%%3Cscript src='/static/js/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
                 }
-                var _willet_no_image = "http://cdn.shopify.com/s/images/admin/no-image-thumb.gif";
+                var _willet_no_image = "http://%s/static/imgs/noimage.png";
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
                     {%% for item in cart.items %%}
@@ -66,7 +66,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                 _willet_st.type = 'text/javascript';
                 _willet_st.src = _willet_wosib_script;
                 $(document).prepend(_willet_st);
-            </script>''' % (DOMAIN, reverse_url('WOSIBShopifyServeScript'))
+            </script>''' % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
 
         liquid_assets = [{
             'asset': {

@@ -49,7 +49,6 @@ class WOSIBClickAction(ClickAction):
                 url = link.target_url,
                 wosib_instance = link.wosib_instance.get()
         )
-        #super(WOSIBClickAction, act).create()
 
         action.put()
 
@@ -191,6 +190,8 @@ class WOSIBVoteAction(VoteAction):
                 .get()
 
 class WOSIBShowAction(ShowAction):
+    ''' Class for storing WOSIB actions - whenever a UI component is shown or hidden. 
+        If a user is detected, the WOSIBUserAction class is recommended instead. '''
     wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_show_actions" )
 
     ## Constructor
@@ -206,7 +207,6 @@ class WOSIBShowAction(ShowAction):
                                 url      = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
-        #super(WOSIBShowAction, act).create()
         act.put()
         return act
     
@@ -236,7 +236,8 @@ class WOSIBShowAction(ShowAction):
         return WOSIBVoteAction.all().filter('app_ =', app)\
                                    .filter('wosib_instance =', instance).get()
 
-class WOSIBShowingButton(ShowAction):
+class WOSIBShowingButton(WOSIBShowAction):
+    #TODO: check what this is all about
     @staticmethod
     def create(user, **kwargs):
         app = None
@@ -541,89 +542,6 @@ class WOSIBOverlayCancelled(ShowAction):
         action.put()
         return action
 
-class WOSIBShowingTopBarAsk(ShowAction):
-    @staticmethod
-    def create(user, **kwargs):
-        what = 'WOSIBTopBarAsk'
-        uuid = generate_uuid(16)
-
-        # make sure we get an instance
-        url = None
-        app = None
-        try:
-            url = kwargs['url']
-            app = kwargs['app']
-        except Exception, e:
-            logging.error('error getting url: %s' % e, exc_info=True)
-        
-        action = WOSIBShowingTopBarAsk(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                url = url,
-                app_ = app,
-                what = what
-        )
-        #super(WOSIBShowingAskIframe, action).create()
-        action.put()
-        return action
-        
-class WOSIBShowingAskTopBarIframe(ShowAction):
-    @staticmethod
-    def create(user, **kwargs):
-        what = 'WOSIBAskTopBarIframe'
-        uuid = generate_uuid(16)
-
-        # make sure we get an instance
-        url = None
-        app = None
-        try:
-            url = kwargs['url']
-            app = kwargs['app']
-        except Exception, e:
-            logging.error('error getting url: %s' % e, exc_info=True)
-        
-        action = WOSIBShowingAskTopBarIframe(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                url = url,
-                app_ = app,
-                what = what
-        )
-        #super(WOSIBShowingAskTopBarIframe, action).create()
-        action.put()
-        return action
-
-class WOSIBUserClickedTopBarAsk(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBUserClickedTopBarAsk'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBUserClickedTopBarAsk(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-
-        # Score bingo for bar or button
-        bingo( 'wosib_bar_or_tab' )
-        
-        return action
-
 class WOSIBUserClickedButtonAsk(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -648,114 +566,6 @@ class WOSIBUserClickedButtonAsk(UserAction):
         )
         action.put()
 
-        return action
-
-class WOSIBUserClickedOverlayAsk(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBUserClickedOverlayAsk'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBUserClickedOverlayAsk(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-
-        # Score bingo for bar or button
-        bingo( 'wosib_overlay_style' )
-        
-        return action 
-
-class WOSIBUserClickedTabAsk(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBUserClickedOverlayAsk'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBUserClickedOverlayAsk(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-        
-        # Score bingo for bar or button
-        bingo( 'wosib_bar_or_tab' )
-
-        return action 
-
-class WOSIBUserClosedTopBar(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBUserClosedTopBar'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBUserClosedTopBar(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
-        return action
-
-class WOSIBUserReOpenedTopBar(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBUserReOpenedTopBar'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBUserReOpenedTopBar(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
         return action
 
 class WOSIBAskUserClickedEditMotivation(UserAction):

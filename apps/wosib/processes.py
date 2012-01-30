@@ -364,10 +364,23 @@ class StartPartialWOSIBInstance( URIHandler ):
     def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
         link    = Link.get_by_code( self.request.get( 'willt_code' ) )
-        product = Product.get( self.request.get( 'product_uuid' ) )
+        prod_ids = self.request.get( 'product_uuids' )
+        if prod_ids:
+            prod_ids = prod_ids.split (',') # same variable! 1,2,3 -> [1,2,3]
+            logging.info ("prod_ids = %r" % prod_ids)
+            prods = Product.all().filter ('uuid IN', prod_ids).fetch (len (prod_ids))
+            logging.info ("prods = %r" % prods)
+            prods_filtered = [x.uuid for x in Product.all().filter ('uuid IN', prod_ids).fetch (len (prod_ids))]
+            logging.info ("prods_filtered = %r" % prods_filtered)
+            products = ','.join(prods_filtered)
+            logging.info ("products = %r" % products)
+        else:
+            products = '' # get products fail? got no products.
+            logging.warn ("products not received")
+            
         user    = User.get( self.request.get( 'user_uuid' ) )
 
-        PartialWOSIBInstance.create( user, app, link, product )
+        PartialWOSIBInstance.create( user, app, link, products )
 
 class StartWOSIBAnalytics(URIHandler):
     def get(self):
@@ -383,7 +396,7 @@ class StartWOSIBAnalytics(URIHandler):
                 'show_action': 'WOSIBShowingButton',
                 'l': [],
                 'counts': {},
-            }        
+            }
         }
         actions_to_check = [
             'WOSIBShowingAskIframe',

@@ -110,6 +110,7 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                         'image' : '/static/imgs/noimage.png', # its_product.images[0],
                         'title' : its_product.title,
                         'variant_id' : variant_id,
+                        'product_uuid' : its_product.uuid,
                     })
                 else:
                     logging.debug ("Product for variant %s not found in DB" % variant_id)
@@ -141,7 +142,7 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                 'app': app,
                 'willt_url': link.get_willt_url(),
                 'willt_code': link.willt_url_code,
-                'variants' : variants
+                'variants' : variants,
             }
 
             # Finally, render the HTML!

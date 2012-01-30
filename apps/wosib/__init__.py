@@ -5,5 +5,4 @@ Copyright 2010
 """
 
 __all__ = [
-    'api_wrapper',
 ]

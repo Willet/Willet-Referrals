@@ -214,7 +214,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             logging.info("got app button css")
             app_css = app_sibt.get_css()
         else:
-            app_css = WOSIBShopify.get_default_css()
+            app_css = ''
         
         # Grab all template values
         template_values = {

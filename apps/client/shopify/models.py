@@ -149,6 +149,7 @@ class ClientShopify( Client ):
 
         # Construct the API URL
         url      = '%s/admin/products.json' % (self.url)
+        logging.info ("url = %s" % url)
         
         # Fix inputs ( legacy )
         if app_type == "referral":
@@ -162,13 +163,16 @@ class ClientShopify( Client ):
         settings = SHOPIFY_APPS[app_type]
 
         username = settings['api_key'] 
+        logging.info ("username = %s" % username)
         password = hashlib.md5(settings['api_secret'] + self.token).hexdigest()
+        logging.info ("password = %s" % password)
 
         # this creates a password manager
         passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
         # because we have put None at the start it will always
         # use this username/password combination for  urls
         # for which `url` is a super-url
+        # warning: password is truncated if site runs on SDK.
         passman.add_password(None, url, username, password)
 
         # create the AuthHandler

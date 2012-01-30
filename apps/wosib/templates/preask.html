@@ -56,7 +56,7 @@
         </style>
     </head>
     <body>
-        <div class="wrapper">
+        <div id="wrapper">
             <div id="splash">
                 <div class="title_bar">
                     <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
@@ -99,6 +99,7 @@
                         "title": "{{variant.title}}",
                         "image": "{{variant.image}}", // deprecated... try /cart.js.
                         "variant_id": "{{variant.variant_id}}",
+                        "product_uuid": "{{variant.product_uuid}}",
                     },
                 {% endfor %} ];
                 
@@ -109,6 +110,7 @@
                             '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
                             '<label>' +
                                 '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                                       'data-uuid="' + _willet_cart_variants[x].product_uuid + '" ' + 
                                        'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
                                        'class="variant_select" type="checkbox" checked="checked" />' +
                                 _willet_cart_variants[x].title + 
@@ -126,15 +128,13 @@
                     });
                 });
                 
-                
-                
                 // FROM SIBT
                 
                 var startPartialInstance = function() {
-                    var payload = { app_uuid     : "{{app_uuid}}",
-                                    user_uuid    : "{{user_uuid}}",
-                                    product_uuid : "{{product_uuid}}",
-                                    willt_code   : "{{willt_code}}" };
+                    var payload = { app_uuid      : "{{app_uuid}}",
+                                    user_uuid     : "{{user_uuid}}",
+                                    product_uuids : get_selected_objects (),
+                                    willt_code    : "{{willt_code}}" };
                     $.ajax({
                         url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
                         type     : 'post',
@@ -157,6 +157,15 @@
                     // derp
                 };
                 $('#runFriendPicker_btn').click (runFriendPicker);
+                
+                var get_selected_objects = function () {
+                    var uuids = [];
+                    $('#cart_items_display input').each (function (i, e) {
+                        uuids.push ($(e).data('uuid'));
+                    });
+                    console.log(uuids);
+                    return uuids.join(',');
+                }
             });
         </script>
         

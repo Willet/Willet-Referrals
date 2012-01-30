@@ -186,9 +186,10 @@ class PartialWOSIBInstance(Model):
     link        = db.ReferenceProperty(db.Model, 
                                        collection_name='link_partial_wosib_instances',
                                        indexed=False)
-    product     = db.ReferenceProperty(db.Model, 
-                                       collection_name='product_partial_wosib_instances',
-                                       indexed=False)
+    
+    # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
+    products     = db.StringProperty(db.Text, indexed=True)
+    
     app_        = db.ReferenceProperty( db.Model,
                                        collection_name='app_partial_wosib_instances',
                                        indexed=False)
@@ -202,12 +203,12 @@ class PartialWOSIBInstance(Model):
         If they already have one, update it.
         Otherwise, make a new one. """
     @staticmethod
-    def create( user, app, link, product ):
+    def create( user, app, link, products ):
 
         instance = PartialWOSIBInstance.get_by_user( user )
         if instance:
             instance.link    = link
-            instance.product = product
+            # instance.product = product
             instance.app_    = app
         else: 
             uuid = generate_uuid( 16 )
@@ -216,7 +217,7 @@ class PartialWOSIBInstance(Model):
                                             uuid     = uuid,
                                             user     = user,
                                             link     = link, 
-                                            product  = product,
+                                            products  = products, # type str
                                             app_     = app )
         instance.put()
         return instance
