@@ -119,13 +119,15 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
             user          = User.get(self.request.get('user_uuid'))
             user_found    = 1 if hasattr(user, 'fb_access_token') else 0
             user_is_admin = user.is_admin() if isinstance( user , User) else False
-            target        = self.request.get( 'url' )
+            target        = self.request.get( 'target_url' )
             
             origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
     
-            logging.debug('target: %s' % target)
+            logging.info('target: %s' % target)
             logging.info("APP: %r" % app)# Make a new Link
+            logging.info("origin_domain: %r" % origin_domain)# Make a new Link
+            logging.info("user: %r" % user)# Make a new Link
             
             link = Link.create(target, app, origin_domain, user)
             
