@@ -49,7 +49,8 @@
         if (button_div && window._willet_iframe_loaded == undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
 
-            button_div.style.float = 'left';
+            button_div.style.styleFloat = 'left'; // IE
+            button_div.style.cssFloat = 'left'; // FF, Webkit
             button_div.style.width = '240px';
             button_div.style.height = '30px';
             button_div.style.padding = '5px';
@@ -65,9 +66,10 @@
 
             // Tumblr
             var d = document.createElement( 'div' );
-            d.style.float = 'left';
+            d.style.styleFloat = 'left'; // IE
+            d.style.cssFloat = 'left'; // FF, Webkit
             d.style.marginRight = '5px';
-            d.style.width = '62px !important';
+            d.style.width = '62px';
             
             var a = document.createElement( 'a' );
             a.href = 'http://www.tumblr.com/share';
@@ -78,7 +80,8 @@
             a.style.width = '63px';
             a.style.height = '20px';
             a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
-            a.style.float = 'left';
+            a.style.styleFloat = 'left'; // IE
+            a.style.cssFloat = 'left'; // FF, Webkit
             a.style.marginRight = '5px';
             a.style.marginTop = '3px';
             a.innerHTML = "Share on Tumblr";
@@ -89,10 +92,11 @@
 
             // Pinterest
             d = document.createElement( 'div' );
-            d.style.float = 'left';
+            d.style.styleFloat = 'left'; // IE
+            d.style.cssFloat = 'left'; // FF, Webkit
             d.style.marginRight = '5px';
             d.style.overflow = 'hidden'; 
-            d.style.width: '49px !important';
+            d.style.width = '49px';
 
             a = document.createElement( 'a' );
             a.href = "http://pinterest.com/pin/create/button/?" +
@@ -109,7 +113,8 @@
 
             // The Fancy Button
             d = document.createElement( 'div' );
-            d.style.float = 'left'; 
+            d.style.styleFloat = 'left'; // IE
+            d.style.cssFloat = 'left'; // FF, Webkit
             d.style.marginTop = '3px';
 
             a = document.createElement( 'a' );
