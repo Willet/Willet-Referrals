@@ -84,12 +84,6 @@ class WOSIBShopify(WOSIB, AppShopify):
         """So we memcache by the store_url as well"""
         logging.info('enhanced WOSIBShopify put')
         super(WOSIBShopify, self).put()
-        self.memcache_by_store_url()
-
-    def memcache_by_store_url(self):
-        return memcache.set(
-                "WOSIB-%s" % self.store_url, # url collides with SIBT memcache
-                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     @staticmethod
     def create(client, token):
@@ -159,8 +153,6 @@ class WOSIBShopify(WOSIB, AppShopify):
             app = WOSIBShopify.all()\
                 .filter('store_url =', url)\
                 .get()
-            if app:
-                app.memcache_by_store_url()
         if app is None:
             logging.warn ("store is Nothing, memcache and DB!")
         return app

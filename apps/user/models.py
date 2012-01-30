@@ -171,7 +171,12 @@ class User( db.Expando ):
 
     def put_later(self):
         """Memcaches and defers the put"""
-                
+        
+        if USING_DEV_SERVER:
+            logging.debug("dev mode, putting user now...")
+            self.put()
+            return
+        
         key = self.get_key()
 
         mbc    = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)

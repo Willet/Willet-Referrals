@@ -53,7 +53,7 @@ class ShowBetaPage(URIHandler):
 
 class SIBTShopifyWelcome(URIHandler):
     def get(self):
-        logging.info('trying to create app')
+        logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
