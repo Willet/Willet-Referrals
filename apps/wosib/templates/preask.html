@@ -161,7 +161,11 @@
                 var get_selected_objects = function () {
                     var uuids = [];
                     $('#cart_items_display input').each (function (i, e) {
-                        uuids.push ($(e).data('uuid'));
+                        var $e = $(e);
+                        // if ($e.checked) {
+                        if (e.checked) {
+                            uuids.push ($e.data('uuid'));
+                        }
                     });
                     console.log(uuids);
                     return uuids.join(',');

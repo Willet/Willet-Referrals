@@ -207,8 +207,9 @@ class PartialWOSIBInstance(Model):
 
         instance = PartialWOSIBInstance.get_by_user( user )
         if instance:
+            logging.info ("Updating existing PartialWOSIBInstance.")
             instance.link    = link
-            # instance.product = product
+            instance.products = products
             instance.app_    = app
         else: 
             uuid = generate_uuid( 16 )
