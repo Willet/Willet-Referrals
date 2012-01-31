@@ -166,7 +166,7 @@ jQuery(document).ready (function () {
         };
         
         var _willet_show_ask = function () {
-            var url = "{{URL}}/w/preask?store_url=" + encodeURI(srv_data.store_url) + 
+            var url = "{{URL}}/w/ask.html?store_url=" + encodeURI(srv_data.store_url) + 
                       "&variants=" +
                       _willet_cart_items.map(function (x) {
                           // func collects all variant IDs for the cart items.

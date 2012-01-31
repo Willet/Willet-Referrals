@@ -105,60 +105,6 @@ class WOSIBInstance(Model):
     def get_by_uuid(uuid, only_live=True):
         return WOSIBInstance.get(uuid)
 
-    def get_yesses_count(self):
-        """Count this instance's yes count"""
-        total = memcache.get(self.uuid+"VoteCounter_yesses")
-        if total is None:
-            total = 0
-            for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
-                total += counter.yesses
-            memcache.add(key=self.uuid+"VoteCounter_yesses", value=total)
-        
-        return total
-
-    def get_nos_count(self):
-        """Count this instance's no count"""
-        total = memcache.get(self.uuid+"VoteCounter_nos")
-        if total is None:
-            total = 0
-            for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
-                total += counter.nos
-            memcache.add(key=self.uuid+"VoteCounter_nos", value=total)
-        
-        return total
-    
-    def increment_yesses(self):
-        """Increment this instance's votes (yes) counter"""
-        def txn():
-            index = random.randint(0, NUM_VOTE_SHARDS-1)
-            shard_name = self.uuid + str(index)
-            counter = VoteCounter.get_by_key_name(shard_name)
-            if counter is None:
-                counter = VoteCounter(key_name      =shard_name, 
-                                      instance_uuid=self.uuid)
-            counter.yesses += 1
-            counter.put()
-
-        db.run_in_transaction(txn)
-        memcache.incr(self.uuid+"VoteCounter_yesses")
-    
-    def increment_nos(self):
-        """Increment this instance's votes (no) counter"""
-        def txn():
-            index = random.randint(0, NUM_VOTE_SHARDS-1)
-            shard_name = self.uuid + str(index)
-            counter = VoteCounter.get_by_key_name(shard_name)
-            if counter is None:
-                counter = VoteCounter(key_name      =shard_name, 
-                                      instance_uuid=self.uuid)
-            counter.nos += 1
-            counter.put()
-
-        db.run_in_transaction(txn)
-        memcache.incr(self.uuid+"VoteCounter_nos")
-
 # ------------------------------------------------------------------------------
 # VoteCounter Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------

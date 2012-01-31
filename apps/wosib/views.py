@@ -74,23 +74,7 @@ class ShowWOSIBInstancePage (URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-
 class WOSIBAskDynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
-    def get(self):
-        template_values = {
-        }
-
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'ask.html')
-
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
-        return
-
-
-class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
@@ -107,7 +91,7 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                 if its_product: # could be None of Product is somehow not in DB
                     variants.append({
                         'id' : its_product.shopify_id,
-                        'image' : '/static/imgs/noimage.png', # its_product.images[0],
+                        'image' : '/static/imgs/noimage-willet.png', # its_product.images[0],
                         'title' : its_product.title,
                         'variant_id' : variant_id,
                         'product_uuid' : its_product.uuid,
@@ -138,6 +122,7 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
                 'user_uuid' : self.request.get('user_uuid'),
                 'instance_uuid' : self.request.get('instance_uuid'),
                 'target_url' : self.request.get('target_url'),
+                'evnt' : self.request.get('evnt'),
                 'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                 'app': app,
                 'willt_url': link.get_willt_url(),
@@ -146,45 +131,128 @@ class WOSIBPreAskDynamicLoader(webapp.RequestHandler):
             }
 
             # Finally, render the HTML!
-            path = os.path.join('apps/wosib/templates/', 'preask.html')
+            path = os.path.join('apps/wosib/templates/', 'ask.html')
 
             self.response.headers.add_header('P3P', P3P_HEADER)
             self.response.out.write(template.render(path, template_values))
         return
-    
-    def post(self):
-        ''' preask.html actually POSTS to itself.
-            HTML forms do not submit values of unchecked checkboxes, so all the
-            IDs you get from the POST request will be the items the users
-            selected for creating an instance. '''
-        items = self.request.arguments()
-        # checkbox IDs on preask.html have this pattern
-        item_name_pattern = re.compile("^item[0-9]{5,}$")
-        # keep the ones looking like an item ID, and then trim the 'item' part
-        variant_ids = [x[4:] for x in filter (lambda x: bool (item_name_pattern.match (x)), items)]
-        
-        # do something with them... example.
-        self.response.out.write(', '.join(variant_ids))
-        
-        # if posted action is "post to facebook", create full WOSIBInstance
-        # else, create PartialWOSIBInstance (to do what?)
-        pass
-
 
 class WOSIBVoteDynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
+    """Serves a plugin where people can vote on a purchase"""
     def get(self):
-        template_values = {
-        }
+        template_values = {}
+        user   = User.get(self.request.get('user_uuid'))
+        products = [] # if no products... what render?
+        link   = None
+        app    = None
 
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'vote.html')
+        instance = WOSIBInstance.get_by_uuid(self.request.get('instance_uuid'))
+        try:
+            # get instance by instance_uuid
+            assert(instance is not None)
+        except:
+            try:
+                logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
+                app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+                link = get_link_by_willt_code(self.request.get('willt_code'))
+                
+                if link is None:
+                    # no willt code, asker probably came back to page with
+                    # no hash code
+                    link = Link.all()\
+                            .filter('user =', user)\
+                            .filter('target_url =', target)\
+                            .filter('app_ =', app)\
+                            .get()
+                    logging.info('got link by page_url %s: %s' % (target, link))
+                instance = link.sibt_instance.get()
+                assert(instance is not None)
+            except:
+                try:
+                    # get instance by asker
+                    instance = SIBTInstance.get_by_asker_for_url(user, target)
+                    assert(instance is not None)
+                except:
+                    try:
+                        # ugh, get the instance by actions ...
+                        instances = SIBTInstance.all(key_onlys=True)\
+                            .filter('url =', target)\
+                            .filter('is_live =', True)\
+                            .fetch(100)
+                        key_list = [instance.id_or_name() for instance in instances]
+                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
+                        if action:
+                            instance = action.sibt_instance
+                            logging.info('no link, got action %s and instance %s' % (action, instance))
+                        assert(instance is not None)
+                    except:
+                        logging.error('failed to get instance', exc_info=True)
+
+        logging.info("Did we get an instance? %s" % instance.uuid)
+        
+        if instance:
+            if app == None:
+                app = instance.app_
+
+            name = instance.asker.get_full_name()
+            is_asker = (instance.asker.key() == user.key())
+            vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
+            
+            logging.info('got vote action: %s' % vote_action)
+            has_voted = (vote_action != None)
+            if not instance.is_live:
+                has_voted = True
+
+            if link == None: 
+                link = instance.link
+            share_url = link.get_willt_url()
+
+            if is_asker:
+                SIBTShowingResultsToAsker.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToAsker'
+            elif has_voted:
+                SIBTShowingResults.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToFriend'
+            else:
+                SIBTShowingVote.create(user=user, instance=instance)
+
+            product = ProductShopify.get_or_fetch(target, app.client)
+
+            template_values = {
+                    'evnt' : event,
+
+                    'product_img': product.images,
+                    'app' : app,
+                    'URL': URL,
+                    
+                    'user': user,
+                    'asker_name' : name if name != '' else "your friend",
+                    'asker_pic' : instance.asker.get_attr('pic'),
+                    'target_url' : target,
+                    #'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                    'fb_comments_url' : '%s' % (link.get_willt_url()),
+
+                    'share_url': share_url,
+                    'is_asker' : is_asker,
+                    'instance' : instance,
+                    'has_voted': has_voted,
+
+                    'yesses': instance.get_yesses_count(),
+                    'noes': instance.get_nos_count()
+            }
+
+            # Finally, render the HTML!
+            path = os.path.join('apps/sibt/templates/', 'vote.html')
+        else:
+            event = 'SIBTEventOverClosingIframe'
+            template_values = {
+                'output': 'Vote is over'        
+            }
+            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
-
 
 class WOSIBShowResults(webapp.RequestHandler):
     """ Shows the results of an instance """
