@@ -195,13 +195,13 @@ jQuery(document).ready (function () {
             var button_script = $('<input />', {
                 'type': "button",
                 'value': "Need help deciding?",
-                'id': "show_wosib",
-                // 'class': "button _willet_button",
+                'id': "_willet_button",
+                'class': "button _willet_button willet_reset",
             });
             button_script.insertAfter (
                 $('form[name="cartform"] table')
             );
-            $('#show_wosib').click (function () {
+            $('#_willet_button').click (function () {
                 _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
                 // iframe for asker to set up voting page
                 _willet_show_ask ();

@@ -14,12 +14,13 @@
         }
         #cart_items_display li {
             border: 1px transparent solid;
+            cursor:pointer;
             display: inline-block;
             font-size: small;
             margin: 10px 5px;
             padding: 10px;
             width: 200px;
-            height: 324px;
+            height: 252px;
             vertical-align: bottom;
         }
         #cart_items_display li:hover {
@@ -45,6 +46,8 @@
         }
     </style>
 {% endblock styles %}
+
+
 
 {% block screens %}
 <!---------------------------- Splash Screen ------------------------------>
@@ -99,23 +102,146 @@
     </div>
 {% endblock screens %}
 
-{% block js_globals %} {% endblock js_globals %}
+
+
+{% block js_globals %}
+{% endblock js_globals %}
+
+
 
 {% block ajax_methods %}
     var storeAnalytics = function( evnt ) {
-        // do nothing
+        var payload = { what          : evnt,
+                        instance_uuid : '',
+                        app_uuid      : '{{ app_uuid }}',
+                        user_uuid     : '{{ user_uuid }}',
+                        target_url    : '{{ target_url }}'
+                      };
+        $.ajax({
+            url      : "{{ URL }}{% url TrackWOSIBUserAction %}",
+            dataType : 'json',
+            data     : payload,
+            type     : 'post',
+            success  : function (response) {
+                return;
+            }
+        });
+    };
+    
+    var updateServerUser = function( accessToken, userId ) {
+        var payload = { user_uuid   : "{{user_uuid}}",
+                    accessToken : accessToken,
+                    fbUserId    : userId 
+                  };
+        $.ajax({
+            url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                return;
+            }
+        });
+
+        fbAccessToken = accessToken;
+        fbIdentity    = userId;
     };
 
     var startPartialInstance = function() {
-        // do nothing
+        var payload = { app_uuid     : "{{app_uuid}}",
+                        user_uuid    : "{{user_uuid}}",
+                        product_uuids : get_selected_objects (),
+                        willt_code   : "{{willt_code}}" };
+        $.ajax({
+            url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                return;
+            }
+        });
     };
-    
+
     var sendMessages = function() {
-        // do nothing
+        var friend_info = [];
+        var msg   = $("#share-text").val();
+
+        // Clean up UI to show loader gif
+        showScreen('asking');
+
+        // Gather up friend info
+        $.each( friends, function (i) { 
+            friend_info.push( friends[i].getFriendInfo() );
+        });
+
+        payload = { 
+            user_uuid       : "{{user_uuid}}",
+            app_uuid        : "{{app_uuid}}",
+            product_uuids   : get_selected_objects (),
+            fb_access_token : fbAccessToken,
+            fb_id           : fbIdentity,
+            friend_info     : friend_info,
+            msg             : msg,
+            willt_code      : "{{willt_code}}"
+        };
+
+        $.ajax({
+            url      : "{{ URL }}{% url SendFBMessages %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                // Change to success screen
+                showScreen('success');
+            }
+        });
     };
+
+    var updateEmailAddress = function() {
+        var addr = document.getElementById( 'email-field' ).value;
+            
+        $.ajax({
+            url: "/updateEmailAddress",
+            type: 'post',
+            data: { email : addr },
+            success: function (tr) {
+                doPostMessage('close');
+                window.close();
+            }
+        });
+    };
+
 {% endblock ajax_methods %}
 
-{% block js_functions %} {% endblock js_functions %}
+
+
+{% block js_functions %}
+    // Open up the FB dialog. Does not do a FB connect with us.
+    var postOnWall = function () {
+        startPartialInstance ();
+        // derp
+    };
+
+    var runFriendPicker = function () {
+        // derp
+    };
+    
+    var get_selected_objects = function () {
+        var uuids = [];
+        $('#cart_items_display input').each (function (i, e) {
+            var $e = $(e);
+            // if ($e.checked) {
+            if (e.checked) {
+                uuids.push ($e.data('uuid'));
+            }
+        });
+        console.log(uuids);
+        return uuids.join(',');
+    }
+{% endblock js_functions %}
+
+
 
 {% block js_init %}
     $(document).ready (function () {
@@ -173,30 +299,8 @@
             });
         };
         
-        // Open up the FB dialog. Does not do a FB connect with us.
-        var postOnWall = function () {
-            startPartialInstance ();
-            // derp
-        };
-        $('#postOnWall_btn').click (postOnWall);
-
-        var runFriendPicker = function () {
-            // derp
-        };
+        $('#postOnWall').click (postOnWall);
         $('#runFriendPicker_btn').click (runFriendPicker);
-        
-        var get_selected_objects = function () {
-            var uuids = [];
-            $('#cart_items_display input').each (function (i, e) {
-                var $e = $(e);
-                // if ($e.checked) {
-                if (e.checked) {
-                    uuids.push ($e.data('uuid'));
-                }
-            });
-            console.log(uuids);
-            return uuids.join(',');
-        }
     });
     showScreen('splash');
 {% endblock js_init %}
