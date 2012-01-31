@@ -192,16 +192,13 @@ jQuery(document).ready (function () {
 
         var run = function () {
             // add the button onto the page right now
-            var button_script = $('<input />', {
+            $('#_willet_WOSIB_Button').prop({
                 'type': "button",
                 'value': "Need help deciding?",
-                'id': "_willet_button",
                 'class': "button _willet_button willet_reset",
-            });
-            button_script.insertAfter (
-                $('form[name="cartform"] table')
-            );
-            $('#_willet_button').click (function () {
+            }).fadeIn(250, function() {
+                $(this).css('display', 'inline-block'); 
+            }).click (function () {
                 _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
                 // iframe for asker to set up voting page
                 _willet_show_ask ();

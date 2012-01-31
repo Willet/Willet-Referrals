@@ -1,9 +1,141 @@
 <!DOCTYPE html>
 <html lang='en'>
     <head>
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
-       <!-- Google Analytics -->
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+        </script>
+        <style type="text/css">
+            #wrapper, .wrapper { /* overrides ask.css defaults */
+                height: auto;
+                width: auto;
+                display: auto;
+            }
+            #cart_items_display {
+                display: block;
+                margin: 0 auto;
+                padding: 0;
+                text-align: center;
+            }
+            #cart_items_display li {
+                border: 1px transparent solid;
+                cursor:pointer;
+                display: inline-block;
+                font-size: small;
+                margin: 10px 5px;
+                padding: 10px;
+                width: 200px;
+                height: 252px;
+                vertical-align: bottom;
+            }
+            #cart_items_display li:hover {
+                border: 1px silver solid;
+                border-radius: 5px;
+                background-color: #fcfcff;
+            }
+            #cart_items_display img, #cart_items_display input, #cart_items_display label {
+                clear: both;
+                display: block;
+                margin: 0 auto;
+            }
+            #cart_items_display input {
+                display: none;
+            }
+            #cart_items_display img {
+                max-height: 196px;
+                margin-bottom: 12px;
+            }
+            .dialog_button_area {
+                background-color: #f0f0f0;
+                padding: 10px;
+            }
+        </style>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Vote on stuff</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="splash">            
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Which one would you get, out of the items below?</div>
+                    <!-- text should not mention 'buy' -->                    
+                </div>
+                <form method="POST" action="">
+                    <ul id="cart_items_display">
+                        <!-- JS -->
+                    </ul>
+                </form>
+                <div class="dialog_button_area">
+                    <input type="hidden" name="app_uuid" value="{{app_uuid}}">
+                    <input type="hidden" name="user_uuid" value="{{user_uuid}}">
+                    <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
+                    <input type="hidden" name="target_url" value="{{target_url}}">
+                    
+                    <input name="postOnWall_btn" id="postOnWall_btn" 
+                           type="button" value="Done">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(document).ready (function () {
+                // controller guarantees there to be > 0 variants
+                var _willet_cart_products = [ {% for product in products %}
+                    {   "id": "{{product.shopify_id}}",
+                        "title": "{{product.title}}",
+                        "image": "{{product.image}}", // deprecated... try /cart.js.
+                        "product_uuid": "{{product.uuid}}",
+                    },
+                {% endfor %} ];
+                
+                var x = null;
+                for (x in _willet_cart_products) {
+                    // add products onto page.
+                    $('#cart_items_display').append(
+                        '<li>' + 
+                            '<img class="product_image" src="' + _willet_cart_products[x].image + '" />' +
+                            '<label>' +
+                                '<input name="item' + _willet_cart_products[x].product_id + '" ' + 
+                                       'data-uuid="' + _willet_cart_products[x].product_uuid + '" ' + 
+                                       'id="item' + _willet_cart_products[x].product_id + '" ' + 
+                                       'class="product_select" type="checkbox" checked="checked" />' +
+                                _willet_cart_products[x].title + 
+                            '</label>' + 
+                        '</li>'
+                    );
+                }
+                
+                // add product selection events onto checkbox.
+                $('#cart_items_display li').click (function (e) {
+                    $('#cart_items_display input').prop('checked', false);
+                    var checkbox = $(this).find('input')[0];
+                    checkbox.checked = true;
+                    $('#cart_items_display li').each (function () {
+                        var checkbox = $(this).find('input')[0];
+                        $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                    });
+                });
+                
+                var showScreen = function (id) {
+                    $('#wrapper').children().hide();
+                    $('#wrapper>#'+id).show();
+                };
+                                
+                // $('#postOnWall').click (postOnWall);
+                // $('#runFriendPicker_btn').click (runFriendPicker);
+                $('#cart_items_display li').css('opacity', 0.2); // default, choose no product
+                showScreen('splash');
+            });
+        </script>
+        <!-- Google Analytics -->
         <script type="text/javascript">
             var _gaq = _gaq || [];
             _gaq.push(['_setAccount', 'UA-23764505-9']);
@@ -14,55 +146,5 @@
                 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
             })();
         </script>
-        
-        <!-- Favicon -->
-        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
-        
-        <meta http-equiv="X-UA-Compatible" content="IE=8" />
-        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Should I Buy This?</title>
-        
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-        <script type="text/javascript">
-        if (typeof jQuery == 'undefined'){
-            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
-        }
-        </script>
-    </head>
-    <body>
-    
-    <div id="wrapper">
-        <div id="top-div">
-            <div id="img-div">
-                {% for image in images %}
-                
-                {% endfor %}
-            </div>
-            <div id="top-right">
-                <div id="asker_title">
-                    {% if asker_pic %}
-                        <img align="left" src="{{ asker_pic }}"  />
-                    {% endif %}
-                    <div>
-                        <span>{{asker_name}}</span>   
-                        <p id="title">
-                            Should I Buy This?
-                        </p>
-                    </div>
-                </div>
-                
-                <div id="result" style="display: none">
-                    <h1><span></span>%</h1>
-                    say buy it!
-                </div>
-            </div>
-        </div>
-
-        <div id="comments-div">
-            <h2 id="BAR" class="hidden">
-                Tell {{asker_name}} why you voted that?
-            </h2>
-        </div>
-    </div>
     </body>
 </html>

@@ -23,7 +23,8 @@ from apps.link.models           import Link
 from apps.link.models           import create_link
 from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
-from apps.product.shopify.models import ProductShopify
+from apps.product.models         import Product
+from apps.product.shopify.models import ProductShopify # shouldn't be here?
 from apps.wosib.models           import WOSIBInstance
 from apps.wosib.models           import PartialWOSIBInstance
 from apps.wosib.shopify.models   import WOSIBShopify
@@ -53,25 +54,29 @@ class ShowWOSIBButton (webapp.RequestHandler):
         return
 
 
-class ShowWOSIBInstancePage (URIHandler):
+class WOSIBVoteDynamicLoader (URIHandler):
     ''' Unlike the Should I Buy This app, voters do not vote on the same page
         as the asker's cart. This renders a voting page for voters to vote on
         the cart's items, stored in a "WOSIBInstance". '''
     def get (self):
-        variants = [] # populate this to show product variants on design page.
-        variants = ProductShopify.all().filter('variant =', 0).get()
-        template_values = { 'URL'           : URL,
-                            'app_uuid'      : self.request.get('app_uuid'),
-                            'user_uuid'     : self.request.get('user_uuid'),
-                            'instance_uuid' : self.request.get('instance_uuid'),
-                            'target_url'    : self.request.get('target_url'),
-                            'evnt'          : self.request.get('evnt'),
-                            'variants'      : variants
-                          }
-        
-        path = os.path.join('apps/wosib/templates/', 'vote.html')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
+        products = [] # populate this to show product variants on design page.
+        try:
+            instance_uuid = self.request.get('instance_uuid')
+            wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
+            if not wosib_instance:
+                wosib_instance = PartialWOSIBInstance.get_by_uuid (instance_uuid)
+            instance_product_uuids = [x for x in wosib_instance.products.split(',')] # as # ["id","id","id"]
+            # no sane man would compare more than 1000 products from his cart
+            products = Product.all().filter('uuid IN', instance_product_uuids).fetch(1000)
+            template_values = { 'instance_uuid' : instance_uuid,
+                                'products'      : products
+                              }
+            
+            path = os.path.join('apps/wosib/templates/', 'vote.html')
+            self.response.headers.add_header('P3P', P3P_HEADER)
+            self.response.out.write(template.render(path, template_values))
+        except:
+            logging.error ('ono', exc_info = True)
         return
 
 class WOSIBAskDynamicLoader(webapp.RequestHandler):
@@ -108,7 +113,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             
             origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-    
+
             logging.info('target: %s' % target)
             logging.info("APP: %r" % app)# Make a new Link
             logging.info("origin_domain: %r" % origin_domain)# Make a new Link

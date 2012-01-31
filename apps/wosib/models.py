@@ -34,6 +34,8 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 class WOSIB(App):
     """Model storing the data for a client's WOSIB app"""
+    
+    # stored as App
 
     store_name    = db.StringProperty( indexed = True )
 
@@ -105,13 +107,9 @@ class WOSIBInstance(Model):
     def get_by_uuid(uuid, only_live=True):
         return WOSIBInstance.get(uuid)
 
-# ------------------------------------------------------------------------------
-# VoteCounter Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
-class WOSIBVoteCounter(VoteCounter):
-    """product-specific votes"""
-
-    product_uuid = db.StringProperty(indexed=True, required=True)
+    @staticmethod 
+    def _get_from_datastore(uuid):
+        return db.Query(WOSIBInstance).filter('uuid =', uuid).get()
 
 # ------------------------------------------------------------------------------
 # PartialWOSIBInstance Class Definition -----------------------------------------
@@ -172,3 +170,11 @@ class PartialWOSIBInstance(Model):
     @staticmethod
     def get_by_user( user ):
         return PartialWOSIBInstance.all().filter( 'user =', user ).get()
+
+    @staticmethod
+    def get_by_uuid(uuid, only_live=True):
+        return PartialWOSIBInstance.get(uuid)
+
+    @staticmethod 
+    def _get_from_datastore(uuid):
+        return db.Query(PartialWOSIBInstance).filter('uuid =', uuid).get()
