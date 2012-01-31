@@ -43,6 +43,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
         script_src = '''<!-- START willet wosib for Shopify -->
+            <input id="_willet_WOSIB_Button" style="display:none" />
             <script type="text/javascript">
                 if (typeof jQuery == 'undefined' || jQuery.fn.jquery < "1.6.0"){ // if page has no jQuery, load from CDN; apparently, string version comparison works even if its casted value has two decimal points.
                     document.write(unescape("%%3Cscript src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
