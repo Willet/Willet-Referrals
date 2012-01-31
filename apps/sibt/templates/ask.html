@@ -28,7 +28,7 @@
                 -->
                 <div class="message" id="message">
                     <img alt="product" src="{{ product_image }}" />
-                    <textarea>{{ AB_CTA_text }}</textarea>
+                    <textarea>{{ AB_share_text|escape }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
@@ -59,11 +59,12 @@
 {% endblock screens %}
 
 {% block js_globals %}
+        {% if falsy %}<script>{% endif %}
         var options = [
             // Could use template here
             {
                 title: 'Should I buy this?',
-                text: '{{ AB_CTA_text }}'
+                text: '{{ AB_share_text|escape }}'
             },
             {
                 title: 'Does anyone own this?',
@@ -122,17 +123,18 @@
                 j = friends[i].getFriendInfo(); // Can be [...], [] or null
                 if (j === null) {
                     error = true; // Don't submit
+                    break;
                 } else if (j !== []) {
                     friend_info.push(j);
                 } else {
                     continue; // Don't add []
                 }
             }
-            if (console && console.log) {
+            if (window.console && window.console.log) {
                 console.log('Friends: '+friend_info+' Error:'+error);
             }
             
-            if (!error) {
+            if (!error && friend_info.length > 0) {
                 // No errors with friends, submit!
                 payload = { 
                     user_uuid       : "{{user_uuid}}",

@@ -400,6 +400,17 @@ li.ui-menu-item:hover {
     background-color: #E0F0F8;
 }
 
+/* --------------------   Asking Screen ----------------------------- */
+
+#loader {
+    position: absolute;
+    left: 50%;
+    margin-left: -110px;
+    width: 220px;
+    height: 19px;
+}
+
+
 /* ---------------------   Barbara's CSS  ----------------------- */ 
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
