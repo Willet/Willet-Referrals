@@ -56,9 +56,8 @@ class WOSIB(App):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance(self, user, end, link, img, motivation=None, dialog=""):
+    def create_instance(self, user, end, link, img):
         logging.info("MAKING A WOSIB INSTANCE")
-        logging.debug("DIALOG %s" % dialog)
         # Make the properties
         uuid = generate_uuid( 16 )
         
@@ -69,7 +68,6 @@ class WOSIB(App):
                                 app_         = self,
                                 link         = link,
                                 product_img  = img,
-                                motivation   = motivation,
                                 url          = link.target_url)
         # set end if None
         if end == None:
@@ -78,8 +76,6 @@ class WOSIB(App):
         instance.end_datetime = end
         instance.special_put()
             
-        # Now, make an action
-        WOSIBInstanceCreated.create(user, instance=instance, medium=dialog)
         return instance
 
         @staticmethod
@@ -102,6 +98,9 @@ class WOSIBInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
+
+    def special_put(self):
+        super(WOSIBInstance, self).put()
 
     @staticmethod
     def get_by_uuid(uuid, only_live=True):

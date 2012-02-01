@@ -684,6 +684,79 @@ class User( db.Expando ):
             
         return fb_share_ids
     
+    def fb_post_multiple_products_to_friends (self, ids, names, msg, img, store_domain, link):
+
+        # First, fetch the user's data.
+        taskqueue.add( url    = url('FetchFacebookData'),
+                       params = { 'user_uuid' : self.uuid, 
+                                  'fb_id'     : self.fb_identity } )
+
+        # Then, first off messages to friends.
+        try:
+            """ We try to build the params, utf8 encode them"""
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'caption'      : store_domain.encode('utf8')
+            }
+
+        except Exception, e:
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'caption'      : 'e-commerce store'
+            }
+            pass
+        
+        # For each person, share the message
+        fb_share_ids = []
+        for i in range( 0, len( ids ) ):
+            id   = ids[i]
+            name = names[i]
+
+            # Update the params - personalize the msg
+            params.update( { 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) } )
+            payload = urllib.urlencode( params )
+
+            facebook_share_url = "https://graph.facebook.com/%s/feed" % id
+
+            fb_response, plugin_response, fb_share_id = None, None, None
+            try:
+                #logging.info(facebook_share_url + params)
+                fb_response = urlfetch.fetch( facebook_share_url, 
+                                              payload,
+                                              method   = urlfetch.POST,
+                                              deadline = 7 )
+            except urlfetch.DownloadError, e: 
+                logging.error('error sending fb request: %s' % e)
+                return [], 'fail'
+                # No response from facebook
+                
+            if fb_response is not None:
+                fb_results = simplejson.loads(fb_response.content)
+                
+                if fb_results.has_key('id'):
+                    
+                    fb_share_ids.append( fb_results['id'] )
+                    
+                    """
+                    taskqueue.add(
+                        url    = url('FetchFriendFacebookData'),
+                        params = { 'fb_id' : id }
+                    )
+                    """
+                else:
+                    fb_share_ids.append( 'fail' )
+                    logging.info(fb_results)
+
+            else:
+                # we are assuming a nil response means timeout and success
+                pass
+            
+        return fb_share_ids
+    
     
     def facebook_action(self, action, obj, obj_link):
         """Does an ACTION on OBJECT on users timeline"""

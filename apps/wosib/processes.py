@@ -126,9 +126,7 @@ class ShareWOSIBInstanceOnFacebook(URIHandler):
             else:
                 # create the instance!
                 # Make the Instance!
-                instance = app.create_instance(user, 
-                        None, link, img, motivation=motivation, 
-                        dialog="ConnectFB")
+                instance = app.create_instance(user, None, link)
         
                 # increment link stuff
                 link.app_.increment_shares()
@@ -166,8 +164,7 @@ class StartWOSIBInstance(URIHandler):
 
         try:
             # Make the Instance!
-            instance = app.create_instance(user, None, link, img, 
-                                           motivation=None, dialog="ConnectFB")
+            instance = app.create_instance(user, None, link)
         
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
@@ -177,28 +174,22 @@ class StartWOSIBInstance(URIHandler):
 
         self.response.out.write(json.dumps(response))
 
-class DoVote( URIHandler ):
+class DoWOSIBVote( URIHandler ):
     def post(self):
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
             user = User.all().filter('uuid =', user_uuid).get() 
 
-        which = self.request.get( 'which' )
         instance_uuid = self.request.get( 'instance_uuid' )
+        product_uuid = self.request.get( 'product_uuid' )
         instance = WOSIBInstance.get( instance_uuid )
         app = instance.app_
 
         # Make a Vote action for this User
-        action = WOSIBVoteAction.create( user, instance, which )
-
-        # Count the vote.
-        if which.lower() == "yes":
-            instance.increment_yesses()
-        else:
-            instance.increment_nos()
+        action = WOSIBVoteAction.create( user, instance, product_uuid )
 
         # Tell the Asker they got a vote!
-        email = instance.asker.get_attr('email')
+        ''' email = instance.asker.get_attr('email')
         if email != "":
             Email.WOSIBVoteNotification(
                 email, 
@@ -208,7 +199,7 @@ class DoVote( URIHandler ):
                 instance.product_img,
                 app.client.name,
                 app.client.domain
-            ) 
+            ) '''
 
         self.response.out.write('ok')
 
@@ -264,14 +255,6 @@ class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
 
 class StoreAnalytics( URIHandler ):
     def get( self ):
-        user = get_user_by_uuid( self.request.get('user_uuid') )
-
-        event  = self.request.get('evnt')
-        target = self.request.get( 'target_url' )
-        app    = get_app_by_id( self.request.get( 'app_uuid' ) )
-
-        # Now, tell Mixpanel
-        app.storeAnalyticsDatum( event, user, target )
         logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
 
 class TrackWOSIBShowAction(URIHandler):
@@ -468,7 +451,7 @@ class StartWOSIBAnalytics(URIHandler):
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
-class SendFBMessages( URIHandler ):
+class SendWOSIBFBMessages( URIHandler ):
     def post( self ):
         logging.info("TARGETTED_SHAREWOSIBONFACEBOOK")
 
@@ -504,7 +487,7 @@ class SendFBMessages( URIHandler ):
         # Check formatting of share msg
         try:
             if len( msg ) == 0:
-                msg = "I'm not sure if I should buy this. What do you think?"
+                msg = "I'm not sure which one I should buy. What do you think?"
             if isinstance(msg, str):
                 message = unicode(msg, errors='ignore')
         except:
@@ -529,25 +512,18 @@ class SendFBMessages( URIHandler ):
                 product_image = product.images[0]
             except:
                 product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
-            fb_share_ids = user.fb_post_to_friends( ids,
-                                                    names,
-                                                    msg,
-                                                    product_image,
-                                                    product.title,
-                                                    product_desc,
-                                                    app.client.domain,
-                                                    link )
+            fb_share_ids = user.fb_post_multiple_products_to_friends (  ids,
+                                                                        names,
+                                                                        msg,
+                                                                        product_image,
+                                                                        app.client.domain,
+                                                                        link )
             logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
             if len(fb_share_ids) > 0:
                 # create the instance!
                 # Make the Instance!
-                instance = app.create_instance( user, 
-                                                None, 
-                                                link, 
-                                                product_image, 
-                                                motivation="",
-                                                dialog="ConnectFB")
+                instance = app.create_instance( user, None, link )
                 # increment shares
                 for i in ids:
                     app.increment_shares()

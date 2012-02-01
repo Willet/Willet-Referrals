@@ -127,7 +127,7 @@ class WOSIBVoteAction(VoteAction):
 
     ## Constructor
     @staticmethod
-    def create(user, instance, vote, product):
+    def create(user, instance, product):
         # Make the action
         uuid = generate_uuid( 16 )
         action = WOSIBVoteAction(  key_name = uuid,
@@ -137,8 +137,7 @@ class WOSIBVoteAction(VoteAction):
                                 link     = instance.link,
                                 url      = instance.link.target_url,
                                 product_uuid = product,
-                                wosib_instance = instance,
-                                vote     = vote )
+                                wosib_instance = instance )
         #super(WOSIBVoteAction, act).create()
         action.put()
         

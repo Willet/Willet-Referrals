@@ -6,6 +6,7 @@
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
+        <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
         if (typeof jQuery == 'undefined'){
@@ -17,44 +18,6 @@
                 height: auto;
                 width: auto;
                 display: auto;
-            }
-            #cart_items_display {
-                display: block;
-                margin: 0 auto;
-                padding: 0;
-                text-align: center;
-            }
-            #cart_items_display li {
-                border: 1px transparent solid;
-                cursor:pointer;
-                display: inline-block;
-                font-size: small;
-                margin: 10px 5px;
-                padding: 10px;
-                width: 200px;
-                height: 252px;
-                vertical-align: bottom;
-            }
-            #cart_items_display li:hover {
-                border: 1px silver solid;
-                border-radius: 5px;
-                background-color: #fcfcff;
-            }
-            #cart_items_display img, #cart_items_display input, #cart_items_display label {
-                clear: both;
-                display: block;
-                margin: 0 auto;
-            }
-            #cart_items_display input {
-                display: none;
-            }
-            #cart_items_display img {
-                max-height: 196px;
-                margin-bottom: 12px;
-            }
-            .dialog_button_area {
-                background-color: #f0f0f0;
-                padding: 10px;
             }
         </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -80,7 +43,7 @@
                     <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
                     <input type="hidden" name="target_url" value="{{target_url}}">
                     
-                    <input name="postOnWall_btn" id="postOnWall_btn" 
+                    <input name="vote_btn" id="vote_btn" 
                            type="button" value="Done">
                 </div>
             </div>
@@ -91,7 +54,8 @@
                 var _willet_cart_products = [ {% for product in products %}
                     {   "id": "{{product.shopify_id}}",
                         "title": "{{product.title}}",
-                        "image": "{{product.image}}", // deprecated... try /cart.js.
+                        // "image": "{{product.image}}", // deprecated... try /cart.js.
+                        "image" : "{{product.image}}" || "/static/imgs/noimage-willet.png",
                         "product_uuid": "{{product.uuid}}",
                     },
                 {% endfor %} ];
@@ -120,7 +84,7 @@
                     checkbox.checked = true;
                     $('#cart_items_display li').each (function () {
                         var checkbox = $(this).find('input')[0];
-                        $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                        $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
                     });
                 });
                 
@@ -128,10 +92,33 @@
                     $('#wrapper').children().hide();
                     $('#wrapper>#'+id).show();
                 };
-                                
-                // $('#postOnWall').click (postOnWall);
-                // $('#runFriendPicker_btn').click (runFriendPicker);
-                $('#cart_items_display li').css('opacity', 0.2); // default, choose no product
+                
+                var vote = function () {
+                    var product_uuid = $('#cart_items_display input:checked').data('uuid');
+                    if (product_uuid) {
+                        var payload = {
+                            "user_uuid" : "{{ user_uuid }}",
+                            "instance_uuid" : "{{ instance_uuid }}",
+                            "product_uuid" : product_uuid
+                        };
+                        $.ajax({
+                            url      : "{{ URL }}{% url DoWOSIBVote %}",
+                            type     : 'post',
+                            data     : payload,
+                            success  : function () {
+                                alert ("Thanks for voting!");
+                            },
+                            error    : function () {
+                                alert ("Cannot register vote!");
+                            }
+                        });
+                    } else {
+                        alert ("Please select a product :)");
+                    }
+                }
+                $('#vote_btn').click(vote);
+                
+                $('#cart_items_display input').prop('checked', false);
                 showScreen('splash');
             });
         </script>

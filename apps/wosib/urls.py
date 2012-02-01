@@ -15,9 +15,11 @@ urlpatterns = [
     (r'/w/colorbox.css',            ShowWOSIBColorboxCSS),
 
     # Processes
+    (r'/w/doVote',                  DoWOSIBVote),
     (r'/w/getExpired',              GetExpiredWOSIBInstances),
     (r'/w/instance/share/facebook', ShareWOSIBInstanceOnFacebook),
     (r'/w/instance/start',          StartWOSIBInstance),
+    (r'/s/sendFBMessages',          SendWOSIBFBMessages),
     (r'/w/removeExpired',           RemoveExpiredWOSIBInstance),
     (r'/w/startPartialInstance',    StartPartialWOSIBInstance),
     (r'/w/track/showaction',        TrackWOSIBShowAction),

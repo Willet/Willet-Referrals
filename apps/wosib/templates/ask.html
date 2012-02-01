@@ -1,50 +1,7 @@
 {% extends "../../plugin/templates/ask.html" %}
 
 {% block styles %}
-    <style type="text/css">
-        .wrapper { /* overrides ask.css defaults */
-            height: auto;
-            width: auto;
-        }
-        #cart_items_display {
-            display: block;
-            margin: 0 auto;
-            padding: 0;
-            text-align: center;
-        }
-        #cart_items_display li {
-            border: 1px transparent solid;
-            cursor:pointer;
-            display: inline-block;
-            font-size: small;
-            margin: 10px 5px;
-            padding: 10px;
-            width: 200px;
-            height: 252px;
-            vertical-align: bottom;
-        }
-        #cart_items_display li:hover {
-            border: 1px silver solid;
-            border-radius: 5px;
-            background-color: #fcfcff;
-        }
-        #cart_items_display img, #cart_items_display input, #cart_items_display label {
-            clear: both;
-            display: block;
-            margin: 0 auto;
-        }
-        #cart_items_display input {
-            display: none;
-        }
-        #cart_items_display img {
-            max-height: 196px;
-            margin-bottom: 12px;
-        }
-        .dialog_button_area {
-            background-color: #f0f0f0;
-            padding: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
 {% endblock styles %}
 
 
@@ -187,7 +144,7 @@
         };
 
         $.ajax({
-            url      : "{{ URL }}{% url SendFBMessages %}",
+            url      : "{{ URL }}{% url SendWOSIBFBMessages %}",
             type     : 'post',
             dataType : 'json',
             data     : payload,
@@ -220,7 +177,6 @@
     // Open up the FB dialog. Does not do a FB connect with us.
     var postOnWall = function () {
         startPartialInstance ();
-        // derp
     };
 
     var runFriendPicker = function () {
@@ -281,9 +237,8 @@
             });
         });
         
-        // FROM SIBT
-        
         var startPartialInstance = function() {
+            // its success in creating the instance is assumed
             var payload = { app_uuid      : "{{app_uuid}}",
                             user_uuid     : "{{user_uuid}}",
                             product_uuids : get_selected_objects (),
