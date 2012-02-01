@@ -13,6 +13,7 @@ jQuery(document).ready (function () {
             'user_uuid': '{{user.uuid}}',
             'instance_uuid': '{{instance.uuid}}',
             'store_url': 'http://' + document.domain,
+            'finished': {{finished}}, // true || false
         };
         var _willet_css = {% include stylesheet %} // pre-quoted
         var _willet_app_css = '{{ app_css }}';
@@ -190,6 +191,28 @@ jQuery(document).ready (function () {
             });
         };
 
+        var _willet_show_results = function () {
+            // show results if results are done.
+            // this can be detected if a srv_data.finished flag is raised.
+            var url = "{{URL}}/w/results.html" + 
+                      "?" + _willet_metadata();
+            $.willet_colorbox({
+                href: url,
+                transition: 'fade',
+                close: '',
+                scrolling: false,
+                iframe: true, 
+                initialWidth: 0, 
+                initialHeight: 0, 
+                innerWidth: '790px',
+                innerHeight: '490px', 
+                fixed: true,
+                onClosed: function () {
+                    // derp
+                }
+            });
+        };
+
         var run = function () {
             // add the button onto the page right now
             $('#_willet_WOSIB_Button').prop({
@@ -211,6 +234,10 @@ jQuery(document).ready (function () {
                 'src': "{{ URL }}{% url ShowWOSIBUnloadHook %}?evnt=WOSIBVisitLength" + 
                          "&" + _willet_metadata ()
             }));
+            
+            if (srv_data.finished) {
+                _willet_show_results ();
+            }
         };
 
         _willet_check_scripts (); // eventually run()s it

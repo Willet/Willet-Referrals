@@ -1,50 +1,7 @@
 {% extends "../../plugin/templates/ask.html" %}
 
 {% block styles %}
-    <style type="text/css">
-        .wrapper { /* overrides ask.css defaults */
-            height: auto;
-            width: auto;
-        }
-        #cart_items_display {
-            display: block;
-            margin: 0 auto;
-            padding: 0;
-            text-align: center;
-        }
-        #cart_items_display li {
-            border: 1px transparent solid;
-            cursor:pointer;
-            display: inline-block;
-            font-size: small;
-            margin: 10px 5px;
-            padding: 10px;
-            width: 200px;
-            height: 252px;
-            vertical-align: bottom;
-        }
-        #cart_items_display li:hover {
-            border: 1px silver solid;
-            border-radius: 5px;
-            background-color: #fcfcff;
-        }
-        #cart_items_display img, #cart_items_display input, #cart_items_display label {
-            clear: both;
-            display: block;
-            margin: 0 auto;
-        }
-        #cart_items_display input {
-            display: none;
-        }
-        #cart_items_display img {
-            max-height: 196px;
-            margin-bottom: 12px;
-        }
-        .dialog_button_area {
-            background-color: #f0f0f0;
-            padding: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
 {% endblock styles %}
 
 
@@ -61,22 +18,10 @@
             <ul id="cart_items_display">
                 <!-- JS -->
             </ul>
-            <!-- keep here for reference --
-             div class="dialog_button_area">
-                <input type="hidden" name="app_uuid" value="{{app_uuid}}">
-                <input type="hidden" name="user_uuid" value="{{user_uuid}}">
-                <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
-                <input type="hidden" name="target_url" value="{{target_url}}">
-                
-                <input name="postOnWall_btn" id="postOnWall_btn" 
-                       type="button" value="Ask friends on Facebook">
-                <input name="runFriendPicker_btn" id="runFriendPicker_btn" 
-                       type="button" value="Ask friends by email">
-            </div -->
         </form>
         <div class="options">
             <div class="option left">
-                <div class="button" id="postOnWall" title="Post to your wall">
+                <div class="button" id="postWosibOnWall" title="Post to your wall">
                     <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
                     <div class="title">Ask Friends</div>
                     <div class="subtitle">Post to Facebook</div>
@@ -163,6 +108,32 @@
         });
     };
 
+    var fb_share_handler = function(payload) {
+        $.ajax({
+            url: '{% url ShareWOSIBInstanceOnFacebook %}',
+            type: 'post',
+            dataType: 'json',
+            data: payload,
+            success: function (response) {
+                console.log('got response', response);
+                if (response.success) {
+                    shareComplete('facebook');
+                } else {
+                    if (userFound) {
+                        // we tried to use an existing user
+                        // but the share failed!
+                        userFound = false; // dont do this twice
+                        fb_login_and_share();
+                    } else {
+                        console.log("Facebook post failure", response);
+                        $("#loading").hide();
+                        $("#error").fadeIn(300);
+                    }
+                }
+            }
+        });
+    };
+
     var sendMessages = function() {
         var friend_info = [];
         var msg   = $("#share-text").val();
@@ -187,7 +158,7 @@
         };
 
         $.ajax({
-            url      : "{{ URL }}{% url SendFBMessages %}",
+            url      : "{{ URL }}{% url SendWOSIBFBMessages %}",
             type     : 'post',
             dataType : 'json',
             data     : payload,
@@ -218,15 +189,81 @@
 
 {% block js_functions %}
     // Open up the FB dialog. Does not do a FB connect with us.
-    var postOnWall = function () {
-        startPartialInstance ();
-        // derp
+    var postWosibOnWall = function () {
+        // if (typeof (FB) == "function") { // detect adblock
+            startPartialInstance();
+            FB.ui({ method:  'feed',
+                    display: 'popup',
+                    link:    '{{share_url}}',
+                    picture: '{{images|first}}',
+                    name:    "{{title|escape}}",
+                    caption: "{{store_domain}}",
+                    description: "{{ product_desc|striptags|escape }}",
+                    redirect_uri: "{{fb_redirect}}" });
+        } /* else {
+            window.open('http://www.facebook.com/dialog/feed?link=' + 
+                encodeURIComponent ('{{share_url}}') + 
+                '&picture=' + encodeURIComponent ('{{images|first}}') + 
+                '&name=Facebook%20Dialogs' + 
+                '&caption=' + encodeURIComponent ('{{title|escape}}') + 
+                '&name=' + encodeURIComponent ('{{title|escape}}') + 
+                '&description=' + encodeURIComponent ('{{ product_desc|striptags|escape }}') + 
+                '&redirect_uri=' + encodeURIComponent ('{{fb_redirect}}'));
+        }*/
+        closeIframe( 'WOSIBNoConnectFBDialog' );
     };
 
     var runFriendPicker = function () {
         // derp
     };
+
+    var share = function() {
+        storeAnalytics('WOSIBAskUserClickedShare');
+
+        fbData.msg = message; 
+        fbData.motivation = motivation_text;
+        FB.login(function(lr) {
+                if (!lr.authResponse) {
+                    // we weren't given permission
+                    storeAnalytics('SIBTFBConnectCancelled');
+                    window.close();
+                } else { 
+                    // TODO: need to support new authresponse
+                    fbData.fb_token = lr.authResponse.accessToken;
+                    fbData.fb_id = lr.authResponse.userID;
+                    fb_share_handler(fbData);
+                }
+            }, {scope: 'publish_stream,offline_access,user_about_me,email'}
+        );
+        return;
+    };
     
+    var fb_share_handler = function(payload) {
+        $.ajax({
+            url: '{% url ShareWOSIBInstanceOnFacebook %}',
+            type: 'post',
+            dataType: 'json',
+            data: payload,
+            success: function (response) {
+                console.log('got response', response);
+                if (response.success) {
+                    shareComplete('facebook');
+                } else {
+                    if (userFound) {
+                        // we tried to use an existing user
+                        // but the share failed!
+                        userFound = false; // dont do this twice
+                        fb_login_and_share();
+                    } else {
+                        console.log("Facebook post failure", response);
+                        $("#loading").hide();
+                        $("#error").fadeIn(300);
+                    }
+                }
+            }
+        });
+    };
+
     var get_selected_objects = function () {
         var uuids = [];
         $('#cart_items_display input').each (function (i, e) {
@@ -239,6 +276,44 @@
         console.log(uuids);
         return uuids.join(',');
     }
+
+    // Connect with FB and fetch FB friends, on Choose Friends screen
+    var runFBConnect = function () {
+        storeAnalytics('WOSIBConnectFBDialog');
+
+        FB.login( function(response) {
+            var authResp = response.authResponse;
+
+            if (!authResp) {
+                // We weren't given permission, do nothing
+                return;
+            } else { 
+                storeAnalytics('WOSIBFBConnected');
+
+                // Store FB data in the server.
+                updateServerUser(authResp.accessToken, authResp.userID);
+                fetchFBFriends();
+            }
+        }, {scope: 'publish_stream,offline_access,user_about_me,email'});
+    };
+    
+    // Query FB api to grab logged-in user's friends
+    var fetchFBFriends = function () {
+        FB.api( '/me/friends', function (response) {
+            fb_friends = response.data;
+            fb_friends.sort();
+
+            $.each( response.data, function (i) {
+                friendNames.push(fb_friends[i].name); 
+            });
+
+            // Code here changes all FB Connect options into FB Friend Select options
+            var i = friends.length;
+            while ( i-- ) {
+                friends[i].FBLoggedIn();
+            }
+       });
+    };
 {% endblock js_functions %}
 
 
@@ -281,9 +356,8 @@
             });
         });
         
-        // FROM SIBT
-        
         var startPartialInstance = function() {
+            // its success in creating the instance is assumed
             var payload = { app_uuid      : "{{app_uuid}}",
                             user_uuid     : "{{user_uuid}}",
                             product_uuids : get_selected_objects (),
@@ -299,7 +373,7 @@
             });
         };
         
-        $('#postOnWall').click (postOnWall);
+        $('#postWosibOnWall').click (postWosibOnWall);
         $('#runFriendPicker_btn').click (runFriendPicker);
     });
     showScreen('splash');

@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
@@ -29,6 +30,7 @@ from apps.wosib.models           import WOSIBInstance
 from apps.wosib.models           import PartialWOSIBInstance
 from apps.wosib.shopify.models   import WOSIBShopify
 from apps.stats.models          import Stats
+from apps.user.models           import get_user_by_cookie
 
 from util.consts                import *
 from util.helpers               import *
@@ -64,6 +66,7 @@ class WOSIBVoteDynamicLoader (URIHandler):
             instance_uuid = self.request.get('instance_uuid')
             wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
             if not wosib_instance:
+                # it could be in memcache still
                 wosib_instance = PartialWOSIBInstance.get_by_uuid (instance_uuid)
             instance_product_uuids = [x for x in wosib_instance.products.split(',')] # as # ["id","id","id"]
             # no sane man would compare more than 1000 products from his cart
@@ -111,15 +114,8 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             user_is_admin = user.is_admin() if isinstance( user , User) else False
             target        = self.request.get( 'target_url' )
             
-            origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-
-            logging.info('target: %s' % target)
-            logging.info("APP: %r" % app)# Make a new Link
-            logging.info("origin_domain: %r" % origin_domain)# Make a new Link
-            logging.info("user: %r" % user)# Make a new Link
-            
-            link = Link.create(target, app, origin_domain, user)
+            refer_url = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
+            link = Link.create(target, app, refer_url, user)
             
             template_values = {
                 'URL' : URL,
@@ -130,9 +126,14 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'evnt' : self.request.get('evnt'),
                 'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                 'app': app,
-                'willt_url': link.get_willt_url(),
-                'willt_code': link.willt_url_code,
+                'willt_url': refer_url, # link.get_willt_url(),
+                'willt_code': '',
                 'variants' : variants,
+                'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
+                'store_domain' : self.request.get( 'store_url' ),
+                'title'  : "Which one should I buy?",
+                'images' : ['%s/static/imgs/blank.png' % URL], # blank
+                'share_url' : refer_url, # link.get_willt_url(),
             }
 
             # Finally, render the HTML!
@@ -145,11 +146,24 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
 class WOSIBShowResults(webapp.RequestHandler):
     """ Shows the results of an instance """
     def get(self):
+        instance_uuid = self.request.get( 'instance_uuid' )
+        wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
+        instance_products = wosib_instance.products.split(',') # uuid,uuid,uuid
+        instance_product_votes = [WOSIBVoteAction.all().filter('instance_uuid =', instance_uuid).filter('product_uuid =', product_uuid).count() for product_uuid in instance_products] # [votes,votes,votes]
+        instance_product_dict = dict (zip (instance_products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
+        
+        winning_product_uuid = instance_products[instance_product_votes.index(max(instance_product_votes))]
+        
         template_values = {
+            'product'  : Product._get_from_datastore (winning_product_uuid),
         }
+        
+        logging.info("instance_product_dict = %r" % instance_product_dict)
+        logging.info("instance_products = %r" % instance_products)
+        logging.info("instance_product_votes = %r" % instance_product_votes)
 
         # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'results.js')
+        path = os.path.join('apps/wosib/templates/', 'results.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -157,15 +171,55 @@ class WOSIBShowResults(webapp.RequestHandler):
 
 
 class WOSIBShowFBThanks( URIHandler ):
-    """ Called to show fb_thanks.html. 
-        We know the user jsut shared on FB, so create an instance etc. """
-    def get(self):
-        template_values = {
-        }
 
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'thanks.html')
+    # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
+    def get( self ):
+        email       = ""
+        user_cancelled = True
+        app         = None
+        post_id     = self.request.get( 'post_id' ) # from FB
+        user        = get_user_by_cookie( self )
+        partial     = PartialWOSIBInstance.get_by_user( user )
+        
+        if post_id != "":
+            user_cancelled = False
 
+            # Grab stuff from PartialWOSIBInstance
+            app      = partial.app_
+            link     = partial.link
+            products = partial.products # is "id,id,id", not object!
+
+            # Make the Instance!
+
+            try:
+                # given all those products, get one of them, and use its image
+                product = Product.get_by_uuid (products.split(',')[0])
+                product_image = product.images[0]
+            except:
+                # either no products, no images in products, or... 
+                product_image = '%s/static/imgs/blank.png' % URL # blank
+            instance = app.create_instance(user, None, link, products)
+            #                              user, end,  link, products
+            
+            # increment link stuff
+            link.app_.increment_shares()
+            link.add_user(user)
+            logging.info('incremented link and added user')
+        
+        elif partial != None:
+            # Create cancelled action
+            WOSIBNoConnectFBCancelled.create( user, 
+                                             url=partial.link.target_url,
+                                             app=partial.app_ )
+
+        if partial:
+            # Now, remove the PartialInstance. We're done with it!
+            partial.delete()
+
+        template_values = { 'email'          : user.get_attr( 'email' ),
+                            'user_cancelled' : user_cancelled }
+        
+        path = os.path.join('apps/wosib/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
