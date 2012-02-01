@@ -117,13 +117,17 @@ class WOSIBVoteAction(VoteAction):
         Currently used for 'WOSIB' App """
 
     wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_vote_actions" )
-
+    
+    # because WOSIB contains more than one product, we have to record which
+    # product to which this vote corresponds
+    product_uuid = db.StringProperty(indexed=True, required=True)
+    
     # URL that was voted on
     url           = db.LinkProperty( indexed = True )
 
     ## Constructor
     @staticmethod
-    def create(user, instance, vote):
+    def create(user, instance, vote, product):
         # Make the action
         uuid = generate_uuid( 16 )
         action = WOSIBVoteAction(  key_name = uuid,
@@ -132,6 +136,7 @@ class WOSIBVoteAction(VoteAction):
                                 app_     = instance.app_,
                                 link     = instance.link,
                                 url      = instance.link.target_url,
+                                product_uuid = product,
                                 wosib_instance = instance,
                                 vote     = vote )
         #super(WOSIBVoteAction, act).create()
