@@ -13,7 +13,7 @@
         }
         </script>
         <style type="text/css">
-            .wrapper { /* overrides ask.css defaults */
+            #wrapper, .wrapper { /* overrides ask.css defaults */
                 height: auto;
                 width: auto;
                 display: auto;
@@ -61,12 +61,80 @@
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
         <title>Vote on stuff</title>
     </head>
-    <body>    
-        <ul>
-            {% for product in products %}
-                <li>{{ product.uuid }}</li>
-            {% endfor %}
-        </ul>
+    <body>
+        <div id="wrapper">
+            <div id="splash">            
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Which one would you get, out of the items below?</div>
+                    <!-- text should not mention 'buy' -->                    
+                </div>
+                <form method="POST" action="">
+                    <ul id="cart_items_display">
+                        <!-- JS -->
+                    </ul>
+                </form>
+                <div class="dialog_button_area">
+                    <input type="hidden" name="app_uuid" value="{{app_uuid}}">
+                    <input type="hidden" name="user_uuid" value="{{user_uuid}}">
+                    <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
+                    <input type="hidden" name="target_url" value="{{target_url}}">
+                    
+                    <input name="postOnWall_btn" id="postOnWall_btn" 
+                           type="button" value="Done">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(document).ready (function () {
+                // controller guarantees there to be > 0 variants
+                var _willet_cart_products = [ {% for product in products %}
+                    {   "id": "{{product.shopify_id}}",
+                        "title": "{{product.title}}",
+                        "image": "{{product.image}}", // deprecated... try /cart.js.
+                        "product_uuid": "{{product.uuid}}",
+                    },
+                {% endfor %} ];
+                
+                var x = null;
+                for (x in _willet_cart_products) {
+                    // add products onto page.
+                    $('#cart_items_display').append(
+                        '<li>' + 
+                            '<img class="product_image" src="' + _willet_cart_products[x].image + '" />' +
+                            '<label>' +
+                                '<input name="item' + _willet_cart_products[x].product_id + '" ' + 
+                                       'data-uuid="' + _willet_cart_products[x].product_uuid + '" ' + 
+                                       'id="item' + _willet_cart_products[x].product_id + '" ' + 
+                                       'class="product_select" type="checkbox" checked="checked" />' +
+                                _willet_cart_products[x].title + 
+                            '</label>' + 
+                        '</li>'
+                    );
+                }
+                
+                // add product selection events onto checkbox.
+                $('#cart_items_display li').click (function (e) {
+                    $('#cart_items_display input').prop('checked', false);
+                    var checkbox = $(this).find('input')[0];
+                    checkbox.checked = true;
+                    $('#cart_items_display li').each (function () {
+                        var checkbox = $(this).find('input')[0];
+                        $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                    });
+                });
+                
+                var showScreen = function (id) {
+                    $('#wrapper').children().hide();
+                    $('#wrapper>#'+id).show();
+                };
+                                
+                // $('#postOnWall').click (postOnWall);
+                // $('#runFriendPicker_btn').click (runFriendPicker);
+                $('#cart_items_display li').css('opacity', 0.2); // default, choose no product
+                showScreen('splash');
+            });
+        </script>
         <!-- Google Analytics -->
         <script type="text/javascript">
             var _gaq = _gaq || [];
