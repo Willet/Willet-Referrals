@@ -11,7 +11,7 @@
         <script type="text/javascript">
         if (typeof jQuery == 'undefined'){
             document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
-        }
+        }   
         </script>
         <style type="text/css">
             #wrapper, .wrapper { /* overrides ask.css defaults */
@@ -26,11 +26,11 @@
     </head>
     <body>
         <div id="wrapper">
-            <div id="splash">            
+            <div id="splash">
                 <div class="title_bar">
                     <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
-                    <div>Which one would you get, out of the items below?</div>
-                    <!-- text should not mention 'buy' -->                    
+                    <div>Which one would you buy?</div>
+                    <!-- text should not mention 'buy' -->
                 </div>
                 <form method="POST" action="">
                     <ul id="cart_items_display">
@@ -45,6 +45,34 @@
                     
                     <input name="vote_btn" id="vote_btn" 
                            type="button" value="Done">
+                </div>
+                <div id="fb-root"></div>
+            </div>
+            <div id="wosib_thanks_for_vote">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Thank you!</div>
+                    <!-- text should not mention 'buy' -->
+                </div>
+                <div>Thanks man, you're awesome! <br />
+                    We'll email your friend the result in a couple of hours.
+                </div>
+                <div class="fb-comments" data-href="{{ DOMAIN }}" data-num-posts="2" data-width="470"></div>
+                <div class="dialog_button_area">
+                    <input type="button" value="Close">
+                </div>
+            </div>
+            <div id="wosib_error">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Doh!</div>
+                    <!-- text should not mention 'buy' -->
+                </div>
+                <div>Something went wrong, and your vote was not counted! <br />
+                    Sorry, man. Please tell us about it.
+                </div>
+                <div class="dialog_button_area">
+                    <input type="button" value="Close">
                 </div>
             </div>
         </div>
@@ -93,6 +121,11 @@
                     $('#wrapper>#'+id).show();
                 };
                 
+                var closeWindow = function () {
+                    self.close();
+                };
+                $('[value="Close"]').click (closeWindow);
+                
                 var vote = function () {
                     var product_uuid = $('#cart_items_display input:checked').data('uuid');
                     if (product_uuid) {
@@ -106,10 +139,12 @@
                             type     : 'post',
                             data     : payload,
                             success  : function () {
-                                alert ("Thanks for voting!");
+                                // alert ("Thanks for voting!");
+                                showScreen('wosib_thanks_for_vote');
                             },
                             error    : function () {
-                                alert ("Cannot register vote!");
+                                // alert ("Cannot register vote!");
+                                showScreen('wosib_error');
                             }
                         });
                     } else {
@@ -122,6 +157,13 @@
                 showScreen('splash');
             });
         </script>
+        <script>(function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = "//connect.facebook.net/en_GB/all.js#xfbml=1";
+          fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));</script>
         <!-- Google Analytics -->
         <script type="text/javascript">
             var _gaq = _gaq || [];

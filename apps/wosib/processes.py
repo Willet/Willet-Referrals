@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
 
@@ -176,11 +176,16 @@ class StartWOSIBInstance(URIHandler):
 
 class DoWOSIBVote( URIHandler ):
     def post(self):
+        # since WOSIBInstances contain more than one product, clients
+        # just call DoWOSIBVote multiple time to vote on each product
+        # they select. (right now, the UI permits selection of only 
+        # product per vote anyway)
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
             user = User.all().filter('uuid =', user_uuid).get() 
 
         instance_uuid = self.request.get( 'instance_uuid' )
+        logging.info ("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get( 'product_uuid' )
         instance = WOSIBInstance.get( instance_uuid )
         app = instance.app_
@@ -201,6 +206,7 @@ class DoWOSIBVote( URIHandler ):
                 app.client.domain
             ) '''
 
+        # client just cares if it was HTTP 200 or 500.
         self.response.out.write('ok')
 
 class GetExpiredWOSIBInstances(URIHandler):

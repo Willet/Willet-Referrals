@@ -56,7 +56,7 @@ class WOSIB(App):
         # Flag it so we know they came from the short link
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
-    def create_instance(self, user, end, link, img):
+    def create_instance(self, user, end, link, products):
         logging.info("MAKING A WOSIB INSTANCE")
         # Make the properties
         uuid = generate_uuid( 16 )
@@ -67,7 +67,7 @@ class WOSIB(App):
                                 asker        = user,
                                 app_         = self,
                                 link         = link,
-                                product_img  = img,
+                                products     = products,
                                 url          = link.target_url)
         # set end if None
         if end == None:
@@ -94,12 +94,24 @@ class WOSIBInstance(Model):
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty(auto_now_add=True)
 
+    # The User who asked WOSIB to their friends?
+    asker           = MemcacheReferenceProperty( db.Model, collection_name='wosib_instances' )
+
+    # Parent App that "owns" these instances
+    app_            = db.ReferenceProperty( db.Model, collection_name="wosib_app_instances" )
+
+    link        = db.ReferenceProperty(db.Model, collection_name='link_wosib_instances', indexed=False)
+
+    # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
+    products     = db.StringProperty(db.Text, indexed=True)
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
 
     def special_put(self):
+        # what's so special about it?
         super(WOSIBInstance, self).put()
 
     @staticmethod
@@ -109,6 +121,13 @@ class WOSIBInstance(Model):
     @staticmethod 
     def _get_from_datastore(uuid):
         return db.Query(WOSIBInstance).filter('uuid =', uuid).get()
+
+    @staticmethod
+    def get_by_link(link, only_live=True):
+        return WOSIBInstance.all()\
+                .filter('is_live =', only_live)\
+                .filter('link =', link)\
+                .get()
 
 # ------------------------------------------------------------------------------
 # PartialWOSIBInstance Class Definition -----------------------------------------
