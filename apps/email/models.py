@@ -160,6 +160,10 @@ class Email():
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
+    @staticmethod
+    def WOSIBVoteCompletion():
+        pass #TODO:
+
     ### MAILOUTS ###
     @staticmethod
     def Mailout_Nov28(to_addr, name, app_uuid):

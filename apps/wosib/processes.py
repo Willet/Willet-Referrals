@@ -180,10 +180,6 @@ class DoWOSIBVote( URIHandler ):
         # just call DoWOSIBVote multiple time to vote on each product
         # they select. (right now, the UI permits selection of only 
         # product per vote anyway)
-        user_uuid = self.request.get('user_uuid')
-        if user_uuid != None:
-            user = User.all().filter('uuid =', user_uuid).get() 
-
         instance_uuid = self.request.get( 'instance_uuid' )
         logging.info ("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get( 'product_uuid' )
@@ -191,7 +187,7 @@ class DoWOSIBVote( URIHandler ):
         app = instance.app_
 
         # Make a Vote action for this User
-        action = WOSIBVoteAction.create( user, instance, product_uuid )
+        action = WOSIBVoteAction.create( instance, product_uuid )
 
         # Tell the Asker they got a vote!
         ''' email = instance.asker.get_attr('email')

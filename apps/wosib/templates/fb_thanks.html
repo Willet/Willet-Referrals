@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>        
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Should I Buy This?</title>
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+        </script>
+
+        <script type="text/javascript">
+            var updateEmailAddress = function() {
+                var addr = document.getElementById( 'email-field' ).value;
+                    
+                $.ajax({
+                    url: "/updateEmailAddress",
+                    type: 'post',
+                    data: { email : addr },
+                    success: function (tr) {
+                        window.close();
+                        /*
+                        document.getElementById('email-field').style.display = 'none';
+                        document.getElementById('email-btn').style.display = 'none';
+                        document.getElementById('email-conf').style.display = 'inline';
+                       $('#cancel-btn').html("Close");
+                       $('#top_text').hide();
+                       */
+                    }
+                });
+            };
+
+            var storeAnalytics = function( evnt ) {
+                $.ajax({
+                    //url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
+                    url: "{{ URL }}{% url TrackWOSIBUserAction %}",
+                    data: {
+                        what: evnt,
+                        instance_uuid: '',
+                        app_uuid: '{{ app.uuid }}',
+                        user_uuid: '{{ user.uuid }}',
+                        target_url: '{{ target_url }}'
+                    }, type: 'get',
+                    success: function (response) {
+                        return;
+                    }
+                });
+            };
+
+    
+            $(document).ready(function() {
+                {% if user_cancelled %}
+                    window.close();
+                {% endif %}
+            });
+        </script>
+        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
+
+    </head>
+    <body>
+    <div id="thanks_wrapper">
+        <div id="fb_header"> 
+            <img src="/static/imgs/wosib_logo.png" />
+            <h2>Thanks!</h2>
+        </div>
+        <div id="thanks" class="willt">
+            <h1 style="margin-top: 0.75em">Asking your friends ...</h1>
+
+            <div id="email-wrapper">
+                <p id="top_text">
+                        Leave your e-mail so we can notify you when your friends give feedback:
+                </p>
+                
+                <input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input>
+                <p id="email-conf" style="display:none">Thanks! We'll be in touch!</p>
+            </div>
+        </div>
+        <div id="fb_footer"> 
+            <button id="email-btn" onClick="updateEmailAddress();">Submit</button>
+            <button id="cancel-btn" onClick="window.close();">Cancel</button>
+        </div>
+    </div>
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-23764505-9']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+</body>
+</html>
