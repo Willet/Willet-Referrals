@@ -134,6 +134,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'title'  : "Which one should I buy?",
                 'images' : ['%s/static/imgs/blank.png' % URL], # blank
                 'share_url' : refer_url, # link.get_willt_url(),
+                'finished' : 'false', 
             }
 
             # Finally, render the HTML!

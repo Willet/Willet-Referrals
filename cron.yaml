@@ -52,3 +52,7 @@ cron:
 #- description: scan for expired SIBT votes
 #  url: /s/getExpired
 #  schedule: every 5 minutes 
+
+#- description: scan for expired WOSIB votes
+#  url: /w/getExpired
+#  schedule: every 5 minutes 

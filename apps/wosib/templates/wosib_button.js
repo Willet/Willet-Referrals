@@ -13,7 +13,7 @@ jQuery(document).ready (function () {
             'user_uuid': '{{user.uuid}}',
             'instance_uuid': '{{instance.uuid}}',
             'store_url': 'http://' + document.domain,
-            'finished': {{finished}}, // true || false
+            'finished': {{finished|default:"false"}}, // true || false
         };
         var _willet_css = {% include stylesheet %} // pre-quoted
         var _willet_app_css = '{{ app_css }}';
