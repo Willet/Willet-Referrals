@@ -22,6 +22,7 @@ from apps.email.models    import Email
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
 from apps.sibt.models     import VoteCounter
+from apps.wosib.actions   import *
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.model           import Model
@@ -50,7 +51,7 @@ class WOSIB(App):
         user = get_or_create_user_by_cookie( urihandler, self )
 
         # Create a ClickAction
-        act = WOSIBClickAction.create( user, self, link )
+        # act = WOSIBClickAction.create( user, self, link )
 
         # Go to where the link points
         # Flag it so we know they came from the short link

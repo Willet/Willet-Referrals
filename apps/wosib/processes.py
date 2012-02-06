@@ -145,36 +145,6 @@ class ShareWOSIBInstanceOnFacebook(URIHandler):
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
-class StartWOSIBInstance(URIHandler):
-    def post(self):
-        app  = get_app_by_id(self.request.get('app_uuid'))
-        user = get_or_create_user_by_cookie(self, app)
-        link = Link.get_by_code(self.request.get('willt_code'))
-        img = self.request.get('product_img')
-        
-        logging.info("Starting WOSIB instance for %s" % link.target_url )
-
-        # defaults
-        response = {
-            'success': False,
-            'data': {
-                'instance_uuid': None,
-                'message': None
-            }
-        }
-
-        try:
-            # Make the Instance!
-            instance = app.create_instance(user, None, link)
-        
-            response['success'] = True
-            response['data']['instance_uuid'] = instance.uuid
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error creating the instnace', exc_info=True)
-
-        self.response.out.write(json.dumps(response))
-
 class DoWOSIBVote( URIHandler ):
     def post(self):
         # since WOSIBInstances contain more than one product, clients
@@ -362,6 +332,38 @@ class StartPartialWOSIBInstance( URIHandler ):
         logging.info ('products = %s' % products)
         user    = User.get( self.request.get( 'user_uuid' ) )
         PartialWOSIBInstance.create( user, app, link, products )
+
+class StartWOSIBInstance(URIHandler):
+    # WIP
+    def post(self):
+        app  = App.get (self.request.get('app_uuid'))
+        link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
+        products = self.request.get( 'product_uuids' )
+        logging.info ('products = %s' % products)
+        user    = User.get( self.request.get( 'user_uuid' ) )
+
+        logging.info("Starting WOSIB instance for %s" % link.target_url )
+
+        # defaults
+        response = {
+            'success': False,
+            'data': {
+                'instance_uuid': None,
+                'message': None
+            }
+        }
+
+        try:
+            # Make the Instance!
+            instance = app.create_instance(user, None, link)
+        
+            response['success'] = True
+            response['data']['instance_uuid'] = instance.uuid
+        except Exception,e:
+            response['data']['message'] = str(e)
+            logging.error('we had an error creating the instnace', exc_info=True)
+
+        self.response.out.write(json.dumps(response))
 
 class StartWOSIBAnalytics(URIHandler):
     def get(self):

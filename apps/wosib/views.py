@@ -97,9 +97,13 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             for variant_id in variant_ids:
                 its_product = ProductShopify.all().filter ('variants = ', str(variant_id)).get()
                 if its_product: # could be None of Product is somehow not in DB
+                    if len(its_product.images) > 0:
+                        image = its_product.images[0] # can't catch LIOOR w/try
+                    else:
+                        image = '/static/imgs/noimage-willet.png'
                     variants.append({
                         'id' : its_product.shopify_id,
-                        'image' : '/static/imgs/noimage-willet.png', # its_product.images[0],
+                        'image' : image,
                         'title' : its_product.title,
                         'variant_id' : variant_id,
                         'product_uuid' : its_product.uuid,
@@ -112,10 +116,11 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             user          = User.get(self.request.get('user_uuid'))
             user_found    = 1 if hasattr(user, 'fb_access_token') else 0
             user_is_admin = user.is_admin() if isinstance( user , User) else False
-            target        = self.request.get( 'target_url' )
+            target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
             
-            refer_url = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
-            link = Link.create(target, app, refer_url, user)
+            refer_url = self.request.get( 'refer_url' )
+            logging.info ("refer_url = %s" % refer_url)
+            link = Link.create (target, app, refer_url, user)
             
             template_values = {
                 'URL' : URL,
@@ -126,14 +131,13 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'evnt' : self.request.get('evnt'),
                 'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                 'app': app,
-                'willt_url': refer_url, # link.get_willt_url(),
-                'willt_code': '',
+                'willt_code': link.willt_url_code, # probably meant to be accessed
                 'variants' : variants,
                 'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                 'store_domain' : self.request.get( 'store_url' ),
                 'title'  : "Which one should I buy?",
                 'images' : ['%s/static/imgs/blank.png' % URL], # blank
-                'share_url' : refer_url, # link.get_willt_url(),
+                'share_url' : link.get_willt_url(), # refer_url
                 'finished' : 'false', 
             }
 
@@ -187,7 +191,7 @@ class WOSIBShowFBThanks( URIHandler ):
 
             # Grab stuff from PartialWOSIBInstance
             app      = partial.app_
-            link     = partial.link
+            link     = partial.link 
             products = partial.products # is "id,id,id", not object!
 
             # Make the Instance!
@@ -202,9 +206,15 @@ class WOSIBShowFBThanks( URIHandler ):
             instance = app.create_instance(user, None, link, products)
             #                              user, end,  link, products
             
+            # partial's link is actually bogus (points to vote.html without an instance_uuid)
+            # this adds the full WOSIB instance_uuid to the URL, so that the vote page can
+            # be served.
+            link.target_url = "%s//%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)
+            link.save () # save the new url
             logging.info('incremented link and added user')
         
         elif partial != None:

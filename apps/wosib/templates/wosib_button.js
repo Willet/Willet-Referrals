@@ -43,7 +43,7 @@ jQuery(document).ready (function () {
             return "app_uuid=" + srv_data.app_uuid + 
                   "&user_uuid=" + srv_data.user_uuid + 
                   "&instance_uuid=" + srv_data.instance_uuid + 
-                  "&target_url=" + window.location.href;
+                  "&refer_url=" + window.location.href;
         };
 
         // Add scripts to DOM
@@ -227,13 +227,6 @@ jQuery(document).ready (function () {
                 _willet_show_ask ();
             });
             _willet_store_analytics ("WOSIBShowingButton"); // log show button
-            
-            // analytics to record the amount of time this script has been loaded
-            $("body").append($('<iframe />',{
-                'style': 'display:none',
-                'src': "{{ URL }}{% url ShowWOSIBUnloadHook %}?evnt=WOSIBVisitLength" + 
-                         "&" + _willet_metadata ()
-            }));
             
             if (srv_data.finished) {
                 _willet_show_results ();

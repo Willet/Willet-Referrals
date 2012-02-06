@@ -53,6 +53,12 @@ class ProductShopify(Product):
                     ProductShopify object.' % len(data['variants']))
                 variants = [str(variant['id']) for variant in data['variants']]
             logging.info ('variants = %s' % variants)
+
+            images = []
+            if 'images' in data:
+                logging.debug ('%d images for this product found; adding to \
+                    ProductShopify object.' % len(data['images']))
+                images = [str(image['src']) for image in data['images']]
             
             # Make the product
             product = ProductShopify(
@@ -60,6 +66,7 @@ class ProductShopify(Product):
                     uuid         = uuid,
                     client       = client,
                     resource_url = url,
+                    images       = images,
                     variants     = variants
             )
 

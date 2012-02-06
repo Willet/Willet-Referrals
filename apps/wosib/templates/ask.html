@@ -103,7 +103,23 @@
             dataType : 'json',
             data     : payload,
             success  : function (tr) {
-                return;
+                window._willet_wosib_partial_instance_uuid = tr;
+            }
+        });
+    };
+
+    var startFullInstance = function() {
+        var payload = { app_uuid     : "{{app_uuid}}",
+                        user_uuid    : "{{user_uuid}}",
+                        product_uuids : get_selected_objects (),
+                        willt_code   : "{{willt_code}}" };
+        $.ajax({
+            url      : "{{ URL }}{% url StartWOSIBInstance %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                window._willet_wosib_partial_instance_uuid = tr;
             }
         });
     };
@@ -115,7 +131,7 @@
             dataType: 'json',
             data: payload,
             success: function (response) {
-                console.log('got response', response);
+                // console.log('got response', response);
                 if (response.success) {
                     shareComplete('facebook');
                 } else {
@@ -125,7 +141,7 @@
                         userFound = false; // dont do this twice
                         fb_login_and_share();
                     } else {
-                        console.log("Facebook post failure", response);
+                        // console.log("Facebook post failure", response);
                         $("#loading").hide();
                         $("#error").fadeIn(300);
                     }
@@ -190,8 +206,7 @@
 {% block js_functions %}
     // Open up the FB dialog. Does not do a FB connect with us.
     var postWosibOnWall = function () {
-        startPartialInstance();
-        // if (typeof (FB) == "function") { // detect adblock
+        try { // detect adblock
             startPartialInstance();
             FB.ui({ method:  'feed',
                     display: 'popup',
@@ -201,16 +216,9 @@
                     caption: "{{store_domain}}",
                     description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: "{{fb_redirect}}" });
-        /* } else {
-            window.open('http://www.facebook.com/dialog/feed?link=' + 
-                encodeURIComponent ('{{share_url}}') + 
-                '&picture=' + encodeURIComponent ('{{images|first}}') + 
-                '&name=Facebook%20Dialogs' + 
-                '&caption=' + encodeURIComponent ('{{title|escape}}') + 
-                '&name=' + encodeURIComponent ('{{title|escape}}') + 
-                '&description=' + encodeURIComponent ('{{ product_desc|striptags|escape }}') + 
-                '&redirect_uri=' + encodeURIComponent ('{{fb_redirect}}'));
-        }*/
+        } catch (e) {
+            alert ('Oops... AdBlock is probably blocking facebook!');
+        }
         closeIframe( 'WOSIBNoConnectFBDialog' );
     };
 
@@ -246,7 +254,7 @@
             dataType: 'json',
             data: payload,
             success: function (response) {
-                console.log('got response', response);
+                // console.log('got response', response);
                 if (response.success) {
                     shareComplete('facebook');
                 } else {
@@ -256,7 +264,7 @@
                         userFound = false; // dont do this twice
                         fb_login_and_share();
                     } else {
-                        console.log("Facebook post failure", response);
+                        // console.log("Facebook post failure", response);
                         $("#loading").hide();
                         $("#error").fadeIn(300);
                     }
@@ -274,7 +282,7 @@
                 uuids.push ($e.data('uuid'));
             }
         });
-        console.log(uuids);
+        // console.log(uuids);
         return uuids.join(',');
     }
 
