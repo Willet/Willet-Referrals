@@ -397,37 +397,6 @@ class WOSIBInstanceAction(UserAction):
                 self.app_.client.domain
         )
 
-class WOSIBVisitLength(UserAction):
-    '''action recording the length of visits (if onbeforeunload is called).'''
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBVisitLength'
-        url = None
-        app = None
-        duration= 0.0
-        try:
-            logging.debug ('kwargs for WOSIBVisitLength: %s' % kwargs)
-            app = kwargs['app']
-            url = kwargs['url']
-            duration = float (kwargs['duration'])
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBVisitLength(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what     = what,
-                duration = duration
-        )
-        action.put()
-
-        return action
-
 class WOSIBInstanceCreated(WOSIBInstanceAction):
     medium = db.StringProperty( default="", indexed=True )
 

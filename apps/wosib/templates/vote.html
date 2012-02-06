@@ -46,7 +46,6 @@
                     <input name="vote_btn" id="vote_btn" 
                            type="button" value="Done">
                 </div>
-                <div id="fb-root"></div>
             </div>
             <div id="wosib_thanks_for_vote">
                 <div class="title_bar">
@@ -57,7 +56,6 @@
                 <div>Thanks man, you're awesome! <br />
                     We'll email your friend the result in a couple of hours.
                 </div>
-                <div class="fb-comments" data-href="{{ DOMAIN }}" data-num-posts="2" data-width="470"></div>
                 <div class="dialog_button_area">
                     <input type="button" value="Close">
                 </div>
@@ -157,13 +155,6 @@
                 showScreen('splash');
             });
         </script>
-        <script>(function(d, s, id) {
-          var js, fjs = d.getElementsByTagName(s)[0];
-          if (d.getElementById(id)) return;
-          js = d.createElement(s); js.id = id;
-          js.src = "//connect.facebook.net/en_GB/all.js#xfbml=1";
-          fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));</script>
         <!-- Google Analytics -->
         <script type="text/javascript">
             var _gaq = _gaq || [];

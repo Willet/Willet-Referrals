@@ -209,9 +209,10 @@ class WOSIBShowFBThanks( URIHandler ):
         
         elif partial != None:
             # Create cancelled action
-            WOSIBNoConnectFBCancelled.create( user, 
-                                             url=partial.link.target_url,
-                                             app=partial.app_ )
+            #WOSIBNoConnectFBCancelled.create( user, 
+            #                                  url=partial.link.target_url,
+            #                                  app=partial.app_ )
+            pass # worry about analytics later
 
         if partial:
             # Now, remove the PartialInstance. We're done with it!
@@ -254,26 +255,6 @@ class WOSIBColorboxJSServer( URIHandler ):
                             'target_url'    : self.request.get('target_url') }
        
         path = os.path.join('apps/wosib/templates/js/', 'jquery.colorbox.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
-        return
-
-class ShowWOSIBUnloadHook (URIHandler):
-    ''' Creates a local-domain iframe that allows SJAX requests to be served
-        when the window unloads. (Typically, webkit browsers do not complete 
-        onunload functions unless a synchronous AJAX is sent onbeforeunload, and
-        in order to send synced requests, the request must be sent to the same
-        domain.)'''
-    def get (self):
-        template_values = { 'URL'           : URL,
-                            'app_uuid'      : self.request.get('app_uuid'),
-                            'user_uuid'     : self.request.get('user_uuid'),
-                            'instance_uuid' : self.request.get('instance_uuid'),
-                            'target_url'    : self.request.get('target_url'),
-                            'evnt'          : self.request.get('evnt')
-                          }
-        
-        path = os.path.join('apps/wosib/templates/', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return

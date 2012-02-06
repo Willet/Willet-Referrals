@@ -27,6 +27,7 @@ from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_cookie
+from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_uuid
 
 from util.consts              import *
@@ -185,10 +186,11 @@ class DoWOSIBVote( URIHandler ):
         product_uuid = self.request.get( 'product_uuid' )
         
         user_uuid = self.request.get( 'user_uuid' )
-        user = get_user_by_cookie (self)
+        # user = get_user_by_cookie (self)
         
         instance = WOSIBInstance.get( instance_uuid )
         app = instance.app_
+        user = get_or_create_user_by_cookie (self, app)
 
         # Make a Vote action for this User
         action = WOSIBVoteAction.create( user, instance, product_uuid )
