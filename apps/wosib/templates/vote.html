@@ -80,39 +80,86 @@
                 var _willet_cart_products = [ {% for product in products %}
                     {   "id": "{{product.shopify_id}}",
                         "title": "{{product.title}}",
-                        // "image": "{{product.image}}", // deprecated... try /cart.js.
                         "image" : "{{product.image}}" || "/static/imgs/noimage-willet.png",
                         "product_uuid": "{{product.uuid}}",
                     },
                 {% endfor %} ];
-                
-                var x = null;
-                for (x in _willet_cart_products) {
-                    // add products onto page.
-                    $('#cart_items_display').append(
-                        '<li>' + 
-                            '<img class="product_image" src="' + _willet_cart_products[x].image + '" />' +
-                            '<label>' +
-                                '<input name="item' + _willet_cart_products[x].product_id + '" ' + 
-                                       'data-uuid="' + _willet_cart_products[x].product_uuid + '" ' + 
-                                       'id="item' + _willet_cart_products[x].product_id + '" ' + 
-                                       'class="product_select" type="checkbox" checked="checked" />' +
-                                _willet_cart_products[x].title + 
-                            '</label>' + 
-                        '</li>'
-                    );
-                }
-                
-                // add product selection events onto checkbox.
-                $('#cart_items_display li').click (function (e) {
-                    $('#cart_items_display input').prop('checked', false);
-                    var checkbox = $(this).find('input')[0];
-                    checkbox.checked = true;
-                    $('#cart_items_display li').each (function () {
+
+
+                // Widget class
+                // Base widget, same basic functionality
+                var LiWidget = function (name) {
+                    var elem = this.elem = document.createElement('li');
+                    elem.id = elem.name = name || '';
+                };
+                LiWidget.prototype = {
+                    getElement: function () {
+                        return this.elem;
+                    },
+                    getName: function () {
+                        return this.name;
+                    },
+                    setVisible: function (i) {
+                        this.elem.style.display = i ? 'block' : 'none';
+                    }
+                };
+
+                var Product = function (uuid, title, image_src, shopify_id) {
+                    LiWidget.call(this, "item" + shopify_id);
+
+                    var that = this,
+                        $elem = $(this.elem);
+                    
+                    $elem.click (function (e) {
+                        // add product selection events onto checkbox.
+                        $('#cart_items_display input').prop('checked', false);
                         var checkbox = $(this).find('input')[0];
-                        $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
+                        checkbox.checked = true;
+                        
+                        // cancel select for all other checkboxes
+                        $('#cart_items_display li').each (function () {
+                            var checkbox = $(this).find('input')[0];
+                            $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
+                        });
                     });
-                });
+                    
+                    var image = this.image = document.createElement('img');
+                    image.src = image_src || "/static/imgs/noimage-willet.png";
+
+                    var input = this.input = document.createElement('input');
+                    input.id = "item" + shopify_id;
+                    input.name = "item" + shopify_id;
+                    input.className = "product_select";
+                    input.type = "checkbox";
+                    input.dataset.uuid = uuid;
+                    
+                    var label = this.label = document.createElement('label');
+                    label.appendChild (input);
+                    label.innerHTML += title;
+                    
+                    $elem.append ([image, label]);
+                    
+                };
+                
+                Product.prototype = new LiWidget();
+                
+                Product.prototype.getProductUuid = function () {
+                    return $elem.data('uuid');
+                };
+
+                Product.prototype.attach = function () {
+                    $('#cart_items_display').append(this.elem);
+                };
+
+                
+                for (var x in _willet_cart_products) {
+                    // add products onto page.
+                    var prod = new Product (_willet_cart_products[x].product_uuid, 
+                                            _willet_cart_products[x].title, 
+                                            _willet_cart_products[x].image,
+                                            _willet_cart_products[x].product_id);
+                    prod.attach ();
+                }
                 
                 var showScreen = function (id) {
                     $('#wrapper').children().hide();
