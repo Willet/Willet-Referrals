@@ -581,13 +581,35 @@ class SendFriendMessages( URIHandler ):
         fb_id     = self.request.get('fb_id')
         
         if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user  = get_or_create_user_by_cookie(self, app)
+            logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            # TODO: Should return a useful error message in the response here
+            self.error(500)
 
-        logging.debug('friends %s' % friends)
-        logging.debug('msg :%s '% msg)
+        logging.debug('friends: %s' % friends)
+        logging.debug('msg: %s '% msg)
 
-        # Format the product's desc for FB
+        ### Split up friends into FB and email
+
+        fb_friends = []
+        email_friends = []
+
+        for friend in friends:
+            if friend[0] == 'fb':
+                # Validation can be added here if necessary
+                fb_friends.append(friend)
+            elif friend[0] == 'email';
+                # Validation can be added here if necessary
+                email_friends.append(friend)
+            else:
+                pass
+                # Should add a warning to response that there were invalid friends
+                # But still complete the operation to the best of our ability
+        
+        # Add spam warning if there are > 5 email friends
+        if len(email_friends) > 5:
+            logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
+
+        # Format the product's desc for sharing
         try:
             ex = '[!\.\?]+'
             product_desc = strip_html(product.description)
@@ -596,7 +618,7 @@ class SendFriendMessages( URIHandler ):
             if product_desc[:-1] not in ex:
                 product_desc += '.'
         except:
-            logging.info('could not get product description')
+            logging.warning('could not get product description')
         
         # Check formatting of share msg
         try:
@@ -605,7 +627,7 @@ class SendFriendMessages( URIHandler ):
             if isinstance(msg, str):
                 message = unicode(msg, errors='ignore')
         except:
-            logging.info('error transcoding to unicode', exc_info=True)
+            logging.warrning('error transcoding to unicode', exc_info=True)
 
         # defaults
         response = {
@@ -613,7 +635,8 @@ class SendFriendMessages( URIHandler ):
             'data': {}
         }
 
-        # first do sharing on facebook
+        ### Start with sharing to FB friends
+
         if fb_token and fb_id:
             logging.info('token and id set, updating user')
             user.update(
@@ -649,7 +672,7 @@ class SendFriendMessages( URIHandler ):
                 for i in ids:
                     app.increment_shares()
 
-                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
+                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' % (ids, names, len(fb_share_ids), msg, instance.uuid))
 
                 response['success'] = True
             
@@ -661,6 +684,10 @@ class SendFriendMessages( URIHandler ):
         except Exception,e:
             response['data']['message'] = str(e)
             logging.error('we had an error sharing on facebook', exc_info=True)
+        
+        ### Second do email friends
+
+        ### ...
 
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
