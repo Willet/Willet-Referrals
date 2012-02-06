@@ -402,33 +402,21 @@ li.ui-menu-item:hover {
 
 /* --------------------   Asking Screen ----------------------------- */
 
-#loader {
+div.middled {
     position: absolute;
     left: 50%;
     margin-left: -110px;
+    margin-top: 20px;
     width: 220px;
-    height: 19px;
+    margin-top: 20%;
 }
-
-
-/* ---------------------   Barbara's CSS  ----------------------- */ 
-/* IE 6 doesn't support max-height
- * we use height instead, but this forces the menu to always be this tall
- */
-* html .ui-autocomplete {
-    height: 100px;
-}
-#nameEntry {
-    text-align: left;
-    padding-left: 15px;
-    border-bottom: 1px solid #616262;
-    height: 23px;
-}
-#nameEntry p {
+div.middled p {
+    width: 100%;
     text-align: center;
-    margin: 0px;
-    padding: 0px;
+    font-size: 23px;
+    line-height: 30px;
 }
 #loader {
-    margin: 50px 0px 0px 80px;
+    width: 220px;
+    height: 19px;
 }

@@ -27,7 +27,7 @@
                 {% endif %}
                 -->
                 <div class="message" id="message">
-                    <img alt="product" src="{{ product_image }}" />
+                    <img alt="product" src="{{ product_images }}" />
                     <textarea>{{ AB_share_text|escape }}</textarea>
                 </div>
                 <div class="options">
@@ -59,7 +59,7 @@
 {% endblock screens %}
 
 {% block js_globals %}
-        {% if falsy %}<script>{% endif %}
+        {% if falsy %}<script>/* this is only for text editor coloring */{% endif %}
         var options = [
             // Could use template here
             {
@@ -109,15 +109,12 @@
         };
 
         var sendMessages = function() {
-            var i,j,
+            var i,j,payload,
                 friend_info = [],
                 msg   = $("#share-text").val(),
                 error = false;
 
-            // Clean up UI to show loader gif
-            showScreen('asking');
-
-            // Gather up friend info
+            // Gather up friend info, recording if a friend has an error
             i = friends.length;
             while (i--) {
                 j = friends[i].getFriendInfo(); // Can be [...], [] or null
@@ -135,6 +132,9 @@
             }
             
             if (!error && friend_info.length > 0) {
+                // Clean up UI to show loader gif
+                showScreen('asking');
+
                 // No errors with friends, submit!
                 payload = { 
                     user_uuid       : "{{user_uuid}}",
@@ -142,7 +142,7 @@
                     product_uuid    : "{{product_uuid}}",
                     fb_access_token : fbAccessToken,
                     fb_id           : fbIdentity,
-                    friend_info     : friend_info,
+                    friends         : friend_info,
                     msg             : msg,
                     willt_code      : "{{willt_code}}"
                 };

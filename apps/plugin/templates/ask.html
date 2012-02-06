@@ -59,8 +59,10 @@
                     <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
-                <p id="#nameEntry">Asking...</p>
-                <p><img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" /></p>
+                <div class="middled">
+                    <p>Asking...</p>
+                    <img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" />
+                </div>
             </div>
 
             <!-------------------------- Success Screen -------------------------------->
@@ -70,7 +72,7 @@
                     <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Asks Away!</div>
                 </div>
-                <div>
+                <div class="middled">
                     {% if incentive_enabled %}
 
                     <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label>
@@ -84,7 +86,7 @@
                     {% else %}
                     
                     <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
-                    <p>We\'ll email you when someone votes!</p>' );
+                    <p>We\'ll email you when someone votes!</p>
                     
                     <button onclick="doPostMessage('close');" class="cancel-btn" title="Close">Close</button>
 
@@ -250,29 +252,33 @@
             } else {
                 return null;
             }
-        }
+        };
         Friend.prototype._validateFriendEmail = function (el) {
+            // Validates email address at input element 'el'
             if (/^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/.test(el.value)) {
                 return true;
             } else {
                 return false;
             }
-        }
+        };
         Friend.prototype._validateFriendName = function (el) {
+            // Validates name at input element 'el'
             if (/^[A-Za-z. '-]+$/.test(el.value)) {
                 return true;
             } else {
                 return false;
             }
-        }
+        };
         Friend.prototype._validateFriendFB = function (el) {
+            // Validates FB friend at input element 'el'
             if ($.inArray(el.value, friendNames) !== -1) {
                 return true;
             } else {
                 return false;
             }
-        }
+        };
         Friend.prototype._validateFriendInput = function(el) {
+            // Validates input element 'el'
             if (el.name === 'email') {
                 return this._validateFriendEmail(el);
             } else if (el.name === 'name') {
@@ -282,7 +288,7 @@
             } else {
                 return false;
             }
-        }
+        };
         Friend.prototype.validateFriend = function () {
             // Validate data friend contains
             // Returns: true / false
@@ -453,6 +459,7 @@
             }
         };
         Friend.prototype.FBLoggedIn = function () {
+            // After FB connect success, enable choosing FB friends
             var that = this,
                 $fb_option = $(this.elem).find('.fb_option');
             $fb_option.children().remove();
