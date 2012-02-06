@@ -95,8 +95,9 @@
             d.style.styleFloat = 'left'; // IE
             d.style.cssFloat = 'left'; // FF, Webkit
             d.style.marginRight = '5px';
+            d.style.marginTop = '3px';
             d.style.overflow = 'hidden'; 
-            d.style.width = '49px';
+            d.style.width = '43px';
 
             a = document.createElement( 'a' );
             a.href = "http://pinterest.com/pin/create/button/?" +
