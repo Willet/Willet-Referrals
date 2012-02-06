@@ -191,16 +191,26 @@
     // Open up the FB dialog. Does not do a FB connect with us.
     var postWosibOnWall = function () {
         startPartialInstance();
-
-        FB.ui({ method:  'feed',
-                display: 'popup',
-                link:    '{{share_url}}',
-                picture: '{{images|first}}',
-                name:    "{{title|escape}}",
-                caption: "{{store_domain}}",
-                description: "{{ product_desc|striptags|escape }}",
-                redirect_uri: "{{fb_redirect}}" });
-        
+        // if (typeof (FB) == "function") { // detect adblock
+            startPartialInstance();
+            FB.ui({ method:  'feed',
+                    display: 'popup',
+                    link:    '{{share_url}}',
+                    picture: '{{images|first}}',
+                    name:    "{{title|escape}}",
+                    caption: "{{store_domain}}",
+                    description: "{{ product_desc|striptags|escape }}",
+                    redirect_uri: "{{fb_redirect}}" });
+        /* } else {
+            window.open('http://www.facebook.com/dialog/feed?link=' + 
+                encodeURIComponent ('{{share_url}}') + 
+                '&picture=' + encodeURIComponent ('{{images|first}}') + 
+                '&name=Facebook%20Dialogs' + 
+                '&caption=' + encodeURIComponent ('{{title|escape}}') + 
+                '&name=' + encodeURIComponent ('{{title|escape}}') + 
+                '&description=' + encodeURIComponent ('{{ product_desc|striptags|escape }}') + 
+                '&redirect_uri=' + encodeURIComponent ('{{fb_redirect}}'));
+        }*/
         closeIframe( 'WOSIBNoConnectFBDialog' );
     };
 

@@ -183,11 +183,15 @@ class DoWOSIBVote( URIHandler ):
         instance_uuid = self.request.get( 'instance_uuid' )
         logging.info ("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get( 'product_uuid' )
+        
+        user_uuid = self.request.get( 'user_uuid' )
+        user = get_user_by_cookie (self)
+        
         instance = WOSIBInstance.get( instance_uuid )
         app = instance.app_
 
         # Make a Vote action for this User
-        action = WOSIBVoteAction.create( instance, product_uuid )
+        action = WOSIBVoteAction.create( user, instance, product_uuid )
 
         # Tell the Asker they got a vote!
         ''' email = instance.asker.get_attr('email')

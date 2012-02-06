@@ -142,3 +142,8 @@ indexes:
   properties:
   - name: shopify_id
   - name: variants
+
+- kind: WOSIBInstance
+  properties:
+  - name: is_live
+  - name: end_datetime

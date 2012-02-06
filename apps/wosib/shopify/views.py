@@ -233,9 +233,10 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'store_url'      : shop_url,
             'store_domain'   : getattr (app_sibt.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
-            'user': user,
-            'stylesheet': 'css/colorbox.css',
-            'evnt' : event,
+            'user'           : user,
+            'stylesheet'     : 'css/colorbox.css',
+            'evnt'           : event,
+            'finished'       : 'false',
         }
 
 
