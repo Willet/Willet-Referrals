@@ -45,12 +45,6 @@ class SIBT(App):
     # if the top bar is enabled for this app 
     top_bar_enabled = db.BooleanProperty(default=True)
 
-    # if the bottom tab is enabled for this app 
-    #btm_tab_enabled = db.BooleanProperty(default=False)
-
-    # if the img overlay is enabled for this app 
-    #overlay_enabled = db.BooleanProperty(default=False)
-
     # if incentivized asks is enabled
     incentive_enabled = db.BooleanProperty(default=False)
 
@@ -59,7 +53,6 @@ class SIBT(App):
     num_shows_before_tb = db.IntegerProperty(default=1)
 
     store_name    = db.StringProperty( indexed = True )
-    #store_url     = db.LinkProperty( indexed = False, default = None, required = False )
 
     # Div IDs or class names
     buy_btn_id    = db.StringProperty( indexed = True )
