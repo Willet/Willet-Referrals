@@ -117,7 +117,7 @@ class WOSIBInstance(Model):
         super(WOSIBInstance, self).put()
 
     @staticmethod
-    def get_by_uuid(uuid, only_live=True):
+    def get_by_uuid(uuid):
         return WOSIBInstance.get(uuid)
 
     @staticmethod 
@@ -131,6 +131,13 @@ class WOSIBInstance(Model):
                 .filter('link =', link)\
                 .get()
 
+    @staticmethod
+    def get_by_user(user):
+        # returns only the most recent instance.
+        return WOSIBInstance.all()\
+                .filter('asker =', user)\
+                .order('-created')\
+                .get()
 # ------------------------------------------------------------------------------
 # PartialWOSIBInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------

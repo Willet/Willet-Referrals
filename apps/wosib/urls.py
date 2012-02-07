@@ -10,7 +10,6 @@ urlpatterns = [
     (r'/w/vote.html',               WOSIBVoteDynamicLoader),
     (r'/w/results.html',            WOSIBShowResults),
     (r'/w/fb_thanks.html',          WOSIBShowFBThanks),
-    (r'/w/button.css',              ShowWOSIBButtonCSS),
     (r'/w/colorbox.css',            ShowWOSIBColorboxCSS),
 
     # Processes

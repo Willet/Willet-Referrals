@@ -2,7 +2,7 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import re, urllib
 
@@ -36,24 +36,6 @@ from util.consts                import *
 from util.helpers               import *
 from util.urihandler            import URIHandler
 from util.strip_html import strip_html
-
-
-class ShowWOSIBButton (webapp.RequestHandler):
-    """ """
-    
-    def get(self):
-        url = self.request.get('url')
-
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'wosib_button.js')
-        
-        template_values = {
-            
-        }
-        
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
-        return
 
 
 class WOSIBVoteDynamicLoader (URIHandler):
@@ -139,7 +121,6 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'product_desc' : "I have enough money to buy only one of those. Which One Should I Buy?",
                 'images' : ['%s/static/imgs/blank.png' % URL], # blank
                 'share_url' : link.get_willt_url(), # refer_url
-                'has_results' : 'false', # for now
             }
 
             # Finally, render the HTML!
@@ -154,6 +135,9 @@ class WOSIBShowResults(webapp.RequestHandler):
     def get(self):
         instance_uuid = self.request.get( 'instance_uuid' )
         wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
+        if not wosib_instance:
+            raise Exception ('instance not found')
+        
         instance_products = wosib_instance.products.split(',') # uuid,uuid,uuid
         logging.info ("instance_products = %r" % instance_products)
         
@@ -250,16 +234,6 @@ class WOSIBShowFBThanks( URIHandler ):
                             'user_cancelled' : user_cancelled }
         
         path = os.path.join('apps/wosib/templates/', 'fb_thanks.html')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
-        return
-
-class ShowWOSIBButtonCSS (URIHandler):
-    def get( self ):
-        template_values = { 'URL'           : URL,
-                            'app_uuid'      : self.request.get('app_uuid')}
-       
-        path = os.path.join('apps/wosib/templates/css/', 'wosib_user_style.css')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return

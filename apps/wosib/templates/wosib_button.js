@@ -81,10 +81,6 @@ jQuery(document).ready (function () {
             }
             document.getElementsByTagName('head')[0].appendChild(_willet_style);
 
-        /*  NO
-            _willet_load_css ("{{ URL }}/w/button.css?app_uuid=" + srv_data.app_uuid);
-            _willet_load_css ("{{ URL }}/w/colorbox.css?app_uuid=" + srv_data.app_uuid);*/
-
         var scripts = [
             /**
             * Scripts to load into the dom
@@ -233,8 +229,10 @@ jQuery(document).ready (function () {
             if (srv_data.has_results) {
                 $('<input />', {
                     'type': "button",
-                    'value': "Your friends voted!",
+                    'value': "Check results",
                     'class': "button _willet_button willet_reset",
+                }).css({
+                    'margin-left': '8px !important'
                 }).insertAfter(
                     '#_willet_WOSIB_Button'
                 ).fadeIn(250, function() {

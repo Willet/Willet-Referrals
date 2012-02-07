@@ -147,3 +147,9 @@ indexes:
   properties:
   - name: is_live
   - name: end_datetime
+
+- kind: WOSIBInstance
+  properties:
+  - name: asker
+  - name: created
+    direction: desc

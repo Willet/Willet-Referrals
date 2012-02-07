@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import datetime
 import random
@@ -31,6 +31,7 @@ from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.sibt.shopify.models import SIBTShopify
+from apps.wosib.actions       import WOSIBVoteAction
 from apps.wosib.models        import WOSIBInstance
 from apps.wosib.shopify.models import WOSIBShopify
 
@@ -42,9 +43,9 @@ from util.consts              import *
 class WOSIBShopifyServeScript (webapp.RequestHandler):
     # chucks out a javascript that helps detect events and show wizards.
     def get(self):
-        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        is_asker = show_votes = has_voted= show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
-        target   = bar_or_tab = ''
+        instance_uuid = target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') # deprecated?
         shop_url    = get_shopify_url(self.request.get('store_url'))
         if not shop_url: # backup (most probably hit)
@@ -67,36 +68,12 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             logging.debug ("trying app = %s" % app)
             assert(app != None)
             try:
-                # Is User an asker for this URL?
-                logging.info('trying to get instance for url: %s' % target)
-                instance = WOSIBInstance.get_by_asker_for_url(user, target)
+                # WOSIBInstances record the user. Find the user's most recent instance.
+                logging.info('trying to get instance for user: %r' % user)
+                instance = WOSIBInstance.get_by_user(user)
                 assert(instance != None)
-                event = 'WOSIBShowingResults'
-                logging.info('got instance by user/target: %s' % instance.uuid)
             except Exception, e:
-                try:
-                    logging.info('trying willet_code: %s' % e)
-                    link = get_link_by_willt_code(willet_code)
-                    instance = link.wosib_instance.get()
-                    assert(instance != None)
-                    event = 'WOSIBShowingResults'
-                    logging.info('got instance by willet_code: %s' % instance.uuid)
-                except Exception, e:
-                    try:
-                        logging.info('trying actions: %s' % e)
-                        instances = WOSIBInstance.all(keys_only=True)\
-                            .filter('url =', target)\
-                            .fetch(100)
-                        key_list = [key.id_or_name() for key in instances]
-                        action = WOSIBClickAction.get_for_instance(app, user, target, key_list)
-                        
-                        if action:
-                            instance = action.wosib_instance
-                            assert(instance != None)
-                            logging.info('got instance by action: %s' % instance.uuid)
-                            event = 'WoSIBShowingVote'
-                    except Exception, e:
-                        logging.info('no instance available: %s' % e)
+                logging.info('no instance available: %s' % e)
         except:
             logging.info('no app')
 
@@ -104,7 +81,12 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         # a) Is User asker?
         # b) Has this User voted?
         if instance:
-            is_live    = instance.is_live
+            instance_uuid = instance.uuid
+            
+            # number of votes, not the votes objects.
+            votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
+            logging.info ("votes_count = %s" % votes_count)
+            
             asker_name = instance.asker.get_first_name()
             asker_pic  = instance.asker.get_attr('pic')
             show_votes = True
@@ -136,12 +118,6 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         else:
             logging.warn("no instance!")
 
-        # this should only happen once, can be removed at a later date
-        # TODO remove this code
-        if not hasattr(app, 'button_enabled'):
-            app_sibt.button_enabled = True
-            app_sibt.put()
-    
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
             if app_sibt.incentive_enabled:
@@ -222,7 +198,6 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'is_asker' : is_asker,
             'show_votes' : show_votes,
             'has_voted': has_voted,
-            'is_live': is_live,
             'show_top_bar_ask': show_top_bar_ask,
             
             'app'            : app,
@@ -234,9 +209,12 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'store_domain'   : getattr (app_sibt.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
             'user'           : user,
+            'instance_uuid'  : instance_uuid,
             'stylesheet'     : 'css/colorbox.css',
             'evnt'           : event,
-            'finished'       : 'false',
+            
+            # this thing tells client JS if the user had created an instance
+            'has_results'    : 'true' if votes_count else 'false',
         }
 
 
