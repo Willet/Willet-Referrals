@@ -17,7 +17,7 @@ from apps.app.models      import App
 from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import set_clicked_cookie, set_referral_cookie, set_referrer_cookie
-
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 # ------------------------------------------------------------------------------
 # Referral Class Definition ----------------------------------------------------
@@ -81,3 +81,42 @@ def get_referral_app_by_url( url ):
     """ Fetch a Referral obj from the DB via the url """
     logging.info("Referral: Looking for %s" % url )
     return Referral.all().filter( 'target_url =', url ).get()
+
+
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+class Conversion(Model):
+    """Model storing conversion data"""
+    uuid     = db.StringProperty( indexed = True )
+    created  = db.DateTimeProperty(auto_now_add=True)
+    link     = db.ReferenceProperty( db.Model, collection_name="link_conversions" )
+    referrer = MemcacheReferenceProperty( db.Model, collection_name="users_referrals" )
+    referree = MemcacheReferenceProperty( db.Model, default = None, collection_name="users_been_referred" )
+    referree_uid = db.StringProperty()
+    app      = db.ReferenceProperty( db.Model, collection_name="app_conversions" )
+    order    = db.StringProperty()
+
+    def __init__(self, *args, **kwargs):
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        super(Conversion, self).__init__(*args, **kwargs)
+    
+    @staticmethod
+    def _get_from_dataapp( uuid ):
+        """Dataapp retrieval using memcache_key"""
+        return db.Query(Conversion).filter('uuid =', uuid).get()
+
+def create_conversion( link, app, referree_uid, referree, order_num ):
+    uuid = generate_uuid(16)
+    
+    c = Conversion( key_name     = uuid,
+                    uuid         = uuid,
+                    link         = link,
+                    referrer     = link.user,
+                    referree     = referree,
+                    referree_uid = referree_uid,
+                    app          = app,
+                    order        = order_num )
+    c.put()
+
+    return c # return incase the caller wants it
