@@ -35,9 +35,8 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 # SIBT Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class SIBT(App):
+class SIBT(App, db.Expando):
     """Model storing the data for a client's 'Should I Buy This?' app"""
-    emailed_at_10 = db.BooleanProperty( default = False )
     
     # if the button is enabled for this app
     button_enabled = db.BooleanProperty(default=True)
@@ -52,16 +51,8 @@ class SIBT(App):
     # we show the top bar
     num_shows_before_tb = db.IntegerProperty(default=1)
 
+    # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
-
-    # Div IDs or class names
-    buy_btn_id    = db.StringProperty( indexed = True )
-    
-    # DOM id of product image on a product page
-    img_selector  = db.StringProperty( indexed = True )
-
-    # DOM selector of product image on a product page
-    img_selector  = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
