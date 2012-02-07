@@ -176,7 +176,6 @@ class ShowEditPage( URIHandler ):
 
 class ShowCodePage( URIHandler ):
     # Renders a app page
-    @login_required
     def get(self, client):
         app_id = self.request.get( 'id' )
         template_values = { 'app' : None }
