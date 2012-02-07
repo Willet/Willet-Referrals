@@ -16,7 +16,7 @@ from time import time
 from apps.app.models import *
 from apps.order.models import *
 from apps.link.models import Link, get_link_by_willt_code
-from apps.referrals.models import create_conversion
+from apps.referral.models import create_conversion
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
 
 from util.helpers import *

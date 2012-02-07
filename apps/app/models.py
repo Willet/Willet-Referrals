@@ -44,9 +44,6 @@ class App(Model, polymodel.PolyModel):
     # Defaults to None, only set if this App has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
     
-    # Analytics for this App
-    analytics       = db.ReferenceProperty( db.Model, collection_name = "APPS" )
-    
     # For Apps that use a click counter, this is the cached amount
     cached_clicks_count = db.IntegerProperty( default = 0 )
     

@@ -18,6 +18,7 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import set_clicked_cookie, set_referral_cookie, set_referrer_cookie
 from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.model           import Model
 
 # ------------------------------------------------------------------------------
 # Referral Class Definition ----------------------------------------------------

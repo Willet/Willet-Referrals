@@ -410,24 +410,20 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = SIBT.all()
+        apps = App.all()
+        count = 0
         for a in apps:
-            logging.info("Checkng %s %s %s" % (a.store_name, a.btm_tab_enabled, a.overlay_enabled))
-
             changed = False
 
-            if hasattr( a, 'btm_tab_enabled' ):
-                delattr( a, 'btm_tab_enabled' )
-                changed = True
-            if hasattr( a, 'overlay_enabled' ):
-                delattr( a, 'overlay_enabled' )
+            if hasattr( a, 'analytics' ):
+                delattr( a, 'analytics' )
                 changed = True
             
             if changed:
-                logging.info("changing")
+                count += 1
                 a.put()
        
-        logging.info("DONE")
+        logging.info("DONE: %d" % count)
 
 class ShowActions(URIHandler):
     @admin_required
