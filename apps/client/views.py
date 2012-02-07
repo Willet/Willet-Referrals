@@ -2,7 +2,6 @@
 import cgi
 
 from apps.client.models import Client, authenticate 
-from apps.stats.models  import Stats
 from apps.user.models   import get_user_by_cookie
 
 from util.urihandler    import URIHandler
@@ -219,7 +218,6 @@ class ShowLoginPage( URIHandler ):
             return
         
         else:
-            stats      = Stats.all().get()
             registered = self.request.cookies.get('willt-registered', False)
             clientEmail = session.get('correctEmail', '')
             authErrors = session.get('auth-errors', [])
@@ -231,8 +229,7 @@ class ShowLoginPage( URIHandler ):
                                  'loggedIn': False,
                                  'registered': str(registered).lower(),
                                  'url' : url,
-                                 'stats' : stats,
-                                 'total_users' : stats.total_clients + stats.total_users if stats else 'Unavailable' }
+                              }
                                  
             self.response.out.write(self.render_page('login.html', template_values))
 

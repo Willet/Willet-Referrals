@@ -29,7 +29,6 @@ from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
-from apps.stats.models          import Stats
 from apps.user.models           import User
 from apps.user.models           import get_user_by_cookie
 

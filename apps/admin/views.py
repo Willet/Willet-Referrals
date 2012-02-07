@@ -32,7 +32,6 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_uuid
 from apps.analytics_backend.models import *
 
@@ -237,16 +236,6 @@ class ManageApps(URIHandler):
 
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
-        stats = Stats.get_stats()
-        str = "<h1>Stats</h1>"
-        str += "<p># Instances: %d </p>" % stats.total_instances
-        str += "<p># Clickthroughs: %d </p>" % stats.total_clicks
-        str += "<p># Votes: %d </p>" % stats.total_votes
-
-        if stats.total_instances != 0:
-            str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
-            str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
-
         str += "<h1> Live Instances </h1>"
         live_instances = SIBTInstance.all().filter( 'is_live =', True )
         for l in live_instances:
