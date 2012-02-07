@@ -154,13 +154,29 @@ class WOSIBShowResults(webapp.RequestHandler):
         instance_uuid = self.request.get( 'instance_uuid' )
         wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
         instance_products = wosib_instance.products.split(',') # uuid,uuid,uuid
-        instance_product_votes = [WOSIBVoteAction.all().filter('instance_uuid =', instance_uuid).filter('product_uuid =', product_uuid).count() for product_uuid in instance_products] # [votes,votes,votes]
+        logging.info ("instance_products = %r" % instance_products)
+        
+        # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
+        instance_product_votes = [Action.all().filter('wosib_instance =', wosib_instance).filter('product_uuid =', product_uuid).count() for product_uuid in instance_products] # [votes,votes,votes]
+        logging.info ("instance_product_votes = %r" % instance_product_votes)
+        
         instance_product_dict = dict (zip (instance_products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
+        logging.info ("instance_product_dict = %r" % instance_product_dict)
         
         winning_product_uuid = instance_products[instance_product_votes.index(max(instance_product_votes))]
+        logging.info ("winning_product_uuid = %r" % winning_product_uuid)
+        
+        winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
+        
+        try:
+            product_image = winning_product.images[0]
+        except:
+            # "no oh"
+            product_image = '/static/imgs/noimage-willet.png' # no image default
         
         template_values = {
-            'product'  : Product._get_from_datastore (winning_product_uuid),
+            'product'  : winning_product,
+            'product_image' : product_image
         }
         
         logging.info("instance_product_dict = %r" % instance_product_dict)
@@ -209,12 +225,13 @@ class WOSIBShowFBThanks( URIHandler ):
             # partial's link is actually bogus (points to vote.html without an instance_uuid)
             # this adds the full WOSIB instance_uuid to the URL, so that the vote page can
             # be served.
-            link.target_url = "%s//%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
-
+            link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+            logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)
-            link.save () # save the new url
+            link.memcache_by_code()
+            
             logging.info('incremented link and added user')
         
         elif partial != None:

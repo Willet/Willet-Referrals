@@ -55,6 +55,7 @@ class WOSIB(App):
 
         # Go to where the link points
         # Flag it so we know they came from the short link
+        logging.info ("%s = %s" % ('handleLinkClick' ,link.target_url))
         urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
 
     def create_instance(self, user, end, link, products):
