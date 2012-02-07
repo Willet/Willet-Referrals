@@ -22,7 +22,6 @@ from apps.product.models      import Product
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import PartialSIBTInstance
-from apps.testimonial.models  import create_testimonial
 from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
@@ -136,9 +135,6 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
                 link.app_.increment_shares()
                 link.add_user(user)
                 logging.info('incremented link and added user')
-
-                # add testimonial
-                create_testimonial(user=user, message=message, link=link)
 
                 response['success'] = True
         except Exception,e:
