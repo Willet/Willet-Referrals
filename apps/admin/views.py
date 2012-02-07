@@ -29,6 +29,7 @@ from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
+from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
 from apps.stats.models import Stats
@@ -409,15 +410,23 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = ButtonsShopify.all()
+        apps = SIBT.all()
         for a in apps:
-            if a.client:
-                client = a.client
-                if client.apps.count() > 1:
-                    pass
-                else:
-                    for p in client.products:
-                        p.delete()
+            logging.info("Checkng %s %s %s" % (a.store_name, a.btm_tab_enabled, a.overlay_enabled))
+
+            changed = False
+
+            if hasattr( a, 'btm_tab_enabled' ):
+                delattr( a, 'btm_tab_enabled' )
+                changed = True
+            if hasattr( a, 'overlay_enabled' ):
+                delattr( a, 'overlay_enabled' )
+                changed = True
+            
+            if changed:
+                logging.info("changing")
+                a.put()
+       
         logging.info("DONE")
 
 class ShowActions(URIHandler):

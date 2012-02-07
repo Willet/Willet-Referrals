@@ -61,9 +61,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
-    var sibt_tb_enabled   = {{AB_top_bar}};
-    var imgOverlayEnabled = {{AB_overlay}};
-    var bottomTabEnabled  = {{AB_btm_tab}};
     var $ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
@@ -137,30 +134,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
     };
 
-    /**
-    * Onclick event handler for the 'sibt' overlay button
-    */
-    var _willet_overlay_onclick = function(e) {
-        _willet_button_onclick(e, 'SIBTUserClickedOverlayAsk');
-    };
-
-    /**
-    * Onclick event handler for the 'sibt' bottom tab button
-    */
-    var _willet_tab_onclick = function(e) {
-        _willet_button_onclick(e, 'SIBTUserClickedTabAsk');
-    };
-
-    var _willet_button_mouseenter = function(e) {
-        if ( imgOverlayEnabled ){
-            $("#overlayImgDiv").fadeIn('fast', function() { $("#overlayImgDiv").mouseleave(_willet_button_mouseleave).unbind('mouseenter'); } );
-        }
-    };
-
-    var _willet_button_mouseleave = function(e) {
-        $("#overlayImgDiv").fadeOut('fast', function() { $("#overlayImgDiv").mouseenter(_willet_button_mouseenter); });
-    };
-
     var _willet_button_onclick = function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         try {
@@ -176,12 +149,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             _willet_store_analytics(message);
             _willet_show_ask();        
         }
-
-        // Turn off image overlay if it was on
-        _willet_button_mouseleave();
-        imgOverlayEnabled = false;
-        
-        $('#_willet_bottom_tab').slideUp('fast');
     };
 
     /**
@@ -205,8 +172,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             href: url,
             onClosed: _willet_ask_callback
         });
-
-        _willet_button_mouseleave();
     };
 
     /**
@@ -642,7 +607,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 var button_html = '';
 
                 // check if we are showing top bar ask too
-                if (sibt_tb_enabled && show_top_bar_ask) {
+                if (show_top_bar_ask) {
                     if (cookie_topbar_closed) {
                         // user has hidden the top bar
                         _willet_topbar_hide_button.slideDown('fast');
@@ -691,116 +656,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                     }
                 });
                 
-                if ( bottomTabEnabled ) {
-                    var tab = $(document.createElement( 'div' ));
-                    tab.attr( 'id', "_willet_bottom_tab" );
-                    tab.attr( 'class', "willet_reset" );
-                    tab.html( '<p>Can\'t decide?<br />{{AB_CTA_text}}</p>' );
-                    tab.click( _willet_tab_onclick );
-
-                    $('body').append( tab );
-                    tab.slideDown( 'slow' );
-                }
-
-                if ( imgOverlayEnabled ) {
-                    // Walk events on image div and make sure there are no
-                    // mouse ones.
-                    var imgElem = $('{{img_elem_selector}}');
-                    if ( imgElem.length > 0 ) {
-                        var imgWidth  = imgElem.width();
-                        var imgHeight = imgElem.height();
-                        var foo = $.data( imgElem.get(0), 'events' );
-                        var noImgMouseEvent = true;
-                        if ( foo != null ) {
-                            $.each( foo, function(i,o) {
-                                if( i=="hover" || i=="mouseover" || i=="mouseenter" || i=="mouseleave" || i=="mouseoff"  || i=="focus" || i=="blur" ) {
-                                    noImgMouseEvent = false;
-                                }
-                            });
-                        }
-                        
-                        // Image overlay stuff
-                        if ( noImgMouseEvent ){
-                            // Set up the Button
-                            var btn  = $( document.createElement('button') );
-                            btn.html('Get advice!')
-                               .attr('title', 'Ask your friends if you should buy this!')
-                               .attr('id','_willet_overlay_button')
-                               .attr('class','{{AB_overlay_style}}')
-                               .click(_willet_overlay_onclick);
-
-                            // Middle bit
-                            var midShadowDiv = $(document.createElement( 'div' ));
-                            midShadowDiv.attr( 'id', 'willet_shadow_content' );
-                            
-                            var mlDiv = $(document.createElement( 'div' ));
-                            mlDiv.attr( 'id', 'willet_shadow_ml' );
-                            mlDiv.css( 'height', imgHeight + "px" );
-                            var mrDiv = $(document.createElement( 'div' ));
-                            mrDiv.attr( 'id', 'willet_shadow_mr' );
-                            mrDiv.css( 'height', imgHeight + "px" );
-                            midShadowDiv.append( mlDiv );
-                            midShadowDiv.append( btn );
-                            midShadowDiv.append( mrDiv );
-
-                            // Top Shadows
-                            var topShadowDiv = $(document.createElement( 'div' ));
-                            topShadowDiv.css( 'height', '12px' );
-                            var tlDiv = $(document.createElement( 'div' ));
-                            tlDiv.attr( 'id', 'willet_shadow_tl' );
-                            var tcDiv = $(document.createElement( 'div' ));
-                            tcDiv.css( 'width', imgWidth + "px" );
-                            tcDiv.attr( 'id', 'willet_shadow_tc' );
-                            var trDiv = $(document.createElement( 'div' ));
-                            trDiv.attr( 'id', 'willet_shadow_tr' );
-
-                            topShadowDiv.append( tlDiv );
-                            topShadowDiv.append( tcDiv );
-                            topShadowDiv.append( trDiv );
-
-                            // Bottom Shadows
-                            var btmShadowDiv = $(document.createElement( 'div' ));
-                            btmShadowDiv.css( 'height', '12px' );
-                            var blDiv = $(document.createElement( 'div' ));
-                            blDiv.attr( 'id', 'willet_shadow_bl' );
-                            blDiv.css( 'bottom', "-" + (imgHeight-24) + "px" );
-                            var bcDiv = $(document.createElement( 'div' ));
-                            bcDiv.css( 'width', imgWidth + "px" );
-                            bcDiv.attr( 'id', 'willet_shadow_bc' );
-                            var brDiv = $(document.createElement( 'div' ));
-                            brDiv.attr( 'id', 'willet_shadow_br' );
-
-                            btmShadowDiv.append( blDiv );
-                            btmShadowDiv.append( bcDiv );
-                            btmShadowDiv.append( brDiv );
-
-                            // Set up encapsulating div
-                            var imgDiv = $(document.createElement( 'div' ));
-                            imgDiv.attr( 'id', 'overlayImgDiv' );
-                            imgDiv.css({"display" : "none", 
-                                        "width"   : imgWidth + "px", 
-                                        "height"  : imgHeight + "px" });
-                            
-                            imgDiv.mouseenter(_willet_button_mouseenter);
-                            imgElem.mouseenter(_willet_button_mouseenter);
-                            
-                            imgDiv.append( topShadowDiv );
-                            imgDiv.append( midShadowDiv );
-                            imgDiv.append( btmShadowDiv );
-                            imgDiv.insertBefore( imgElem );
-                            
-                            imgDiv.css('left', imgElem.offset().left+parseInt(imgElem.css('padding-left'))+'px');
-                            imgDiv.css('top', imgElem.offset().top+parseInt(imgElem.css('padding-top'))+'px');
-                            /*
-                            var heartImg = $(document.createElement( 'img' ));
-                            heartImg.attr( 'id', 'imgOverlaySpan' );
-                            heartImg.attr( 'src', 'http://barbara-willet.appspot.com/static/imgs/heart_q.png' );
-                            heartImg.css({ "filter" : "alpha(opacity=50)", "-moz-opacity" : "0.5", "-khtml-opacity" : "0.5", "opacity" : "0.5", "width" : imgWidth + "px", "height" : imgHeight + "px", "position" : "absolute" });
-                            imgDiv.append( heartImg );
-                            */
-                        }
-                    }
-                }
             } 
             
             // analytics to record the amount of time this script has been loaded

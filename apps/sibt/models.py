@@ -46,10 +46,10 @@ class SIBT(App):
     top_bar_enabled = db.BooleanProperty(default=True)
 
     # if the bottom tab is enabled for this app 
-    btm_tab_enabled = db.BooleanProperty(default=False)
+    #btm_tab_enabled = db.BooleanProperty(default=False)
 
     # if the img overlay is enabled for this app 
-    overlay_enabled = db.BooleanProperty(default=False)
+    #overlay_enabled = db.BooleanProperty(default=False)
 
     # if incentivized asks is enabled
     incentive_enabled = db.BooleanProperty(default=False)
