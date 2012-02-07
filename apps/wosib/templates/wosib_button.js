@@ -13,7 +13,7 @@ jQuery(document).ready (function () {
             'user_uuid': '{{user.uuid}}',
             'instance_uuid': '{{instance.uuid}}',
             'store_url': 'http://' + document.domain,
-            'finished': {{finished|default:"false"}}, // true || false
+            'has_results': {{has_results|default:"false"}}, // true || false
         };
         var _willet_css = {% include stylesheet %} // pre-quoted
         var _willet_app_css = '{{ app_css }}';
@@ -183,7 +183,7 @@ jQuery(document).ready (function () {
                 initialWidth: 0, 
                 initialHeight: 0, 
                 innerWidth: '790px',
-                innerHeight: '490px', 
+                innerHeight: '520px', 
                 fixed: true,
                 onClosed: function () {
                     // derp
@@ -205,7 +205,7 @@ jQuery(document).ready (function () {
                 initialWidth: 0, 
                 initialHeight: 0, 
                 innerWidth: '790px',
-                innerHeight: '490px', 
+                innerHeight: '520px', 
                 fixed: true,
                 onClosed: function () {
                     // derp
@@ -228,8 +228,18 @@ jQuery(document).ready (function () {
             });
             _willet_store_analytics ("WOSIBShowingButton"); // log show button
             
-            if (srv_data.finished) {
-                _willet_show_results ();
+            // if server sends a flag that indicates "results available"
+            // (not necessarily "finished") then show finished button
+            if (srv_data.has_results) {
+                $('<input />', {
+                    'type': "button",
+                    'value': "Your friends voted!",
+                    'class': "button _willet_button willet_reset",
+                }).insertAfter(
+                    '#_willet_WOSIB_Button'
+                ).fadeIn(250, function() {
+                    $(this).css('display', 'inline-block'); 
+                }).click (_willet_show_results);
             }
         };
 

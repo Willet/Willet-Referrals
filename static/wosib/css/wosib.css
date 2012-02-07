@@ -2,9 +2,18 @@
     height: auto;
     width: auto;
 }
+#cart_items_display_container {
+    width:100%;
+    height: 310px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+}
 #cart_items_display {
     display: block;
     margin: 0 auto;
+    /* width must adjusted by JS (by #items) */
+    height: 310px;
     padding: 0;
     text-align: center;
 }

@@ -136,9 +136,10 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                 'store_domain' : self.request.get( 'store_url' ),
                 'title'  : "Which one should I buy?",
+                'product_desc' : "I have enough money to buy only one of those. Which One Should I Buy?",
                 'images' : ['%s/static/imgs/blank.png' % URL], # blank
                 'share_url' : link.get_willt_url(), # refer_url
-                'finished' : 'false', 
+                'has_results' : 'false', # for now
             }
 
             # Finally, render the HTML!

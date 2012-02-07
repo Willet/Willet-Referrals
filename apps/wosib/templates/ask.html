@@ -15,9 +15,11 @@
             <div>Select items to display in your survey.</div>
         </div>
         <form method="POST" action="">
-            <ul id="cart_items_display">
-                <!-- JS -->
-            </ul>
+            <div id="cart_items_display_container">
+                <ul id="cart_items_display">
+                    <!-- JS -->
+                </ul>
+            </div>
         </form>
         <div class="options">
             <div class="option left">
@@ -93,35 +95,45 @@
     };
 
     var startPartialInstance = function() {
-        var payload = { app_uuid     : "{{app_uuid}}",
-                        user_uuid    : "{{user_uuid}}",
-                        product_uuids : get_selected_objects (),
-                        willt_code   : "{{willt_code}}" };
-        $.ajax({
-            url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
-            type     : 'post',
-            dataType : 'json',
-            data     : payload,
-            success  : function (tr) {
-                window._willet_wosib_partial_instance_uuid = tr;
-            }
-        });
+        if (get_selected_objects ()) {
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_wosib_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
     };
 
     var startFullInstance = function() {
-        var payload = { app_uuid     : "{{app_uuid}}",
-                        user_uuid    : "{{user_uuid}}",
-                        product_uuids : get_selected_objects (),
-                        willt_code   : "{{willt_code}}" };
-        $.ajax({
-            url      : "{{ URL }}{% url StartWOSIBInstance %}",
-            type     : 'post',
-            dataType : 'json',
-            data     : payload,
-            success  : function (tr) {
-                window._willet_wosib_partial_instance_uuid = tr;
-            }
-        });
+        if (get_selected_objects ()) {        
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartWOSIBInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_wosib_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
     };
 
     var fb_share_handler = function(payload) {
@@ -207,15 +219,18 @@
     // Open up the FB dialog. Does not do a FB connect with us.
     var postWosibOnWall = function () {
         try { // detect adblock
-            startPartialInstance();
-            FB.ui({ method:  'feed',
-                    display: 'popup',
-                    link:    '{{share_url}}',
-                    picture: '{{images|first}}',
-                    name:    "{{title|escape}}",
-                    caption: "{{store_domain}}",
-                    description: "{{ product_desc|striptags|escape }}",
-                    redirect_uri: "{{fb_redirect}}" });
+            if (!startPartialInstance ()) {
+                alert ("Please select at least one item!");
+            } else {
+                FB.ui({ method:  "feed",
+                        display: "popup",
+                        link:    "{{share_url}}",
+                        picture: "{{images|first}}",
+                        name:    "{{title|escape}}",
+                        caption: "{{store_domain}}",
+                        description: "{{ product_desc|striptags|escape }}",
+                        redirect_uri: "{{fb_redirect}}" });
+            }
         } catch (e) {
             alert ('Oops... AdBlock is probably blocking facebook!');
         }
@@ -355,6 +370,9 @@
                 '</li>'
             );
         }
+        
+        // adjust box width.
+        $('#cart_items_display').width(240 * _willet_cart_variants.length);
         
         // add product selection events onto checkbox.
         $('#cart_items_display li').each (function () {

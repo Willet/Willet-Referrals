@@ -250,7 +250,7 @@ class TrackWOSIBShowAction(URIHandler):
             app = App.get(self.request.get('app_uuid')) 
         if self.request.get('user_uuid'):
             user = User.get(self.request.get('user_uuid')) 
-        duration = self.request.get('duration') or 0.0
+
         what = self.request.get('evnt')
         url = self.request.get('target_url')
         try:
@@ -296,7 +296,7 @@ class TrackWOSIBUserAction(URIHandler):
             user = User.get(self.request.get('user_uuid'))
         what = self.request.get('what')
         url = self.request.get('target_url')
-        duration = float(self.request.get('duration')) or 0.0
+
         action = None
         try:
             action_class = globals()[what]
