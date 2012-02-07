@@ -44,9 +44,6 @@ class App(Model, polymodel.PolyModel):
     # Defaults to None, only set if this App has been deleted
     old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
     
-    # Analytics for this App
-    analytics       = db.ReferenceProperty( db.Model, collection_name = "APPS" )
-    
     # For Apps that use a click counter, this is the cached amount
     cached_clicks_count = db.IntegerProperty( default = 0 )
     
@@ -136,40 +133,3 @@ class ShareCounter(db.Model):
     app_id = db.StringProperty(indexed=True, required=True)
     count  = db.IntegerProperty(indexed=False, required=True, default=0)
 
-## -----------------------------------------------------------------------------
-## -----------------------------------------------------------------------------
-## -----------------------------------------------------------------------------
-class Conversion(Model):
-    """Model storing conversion data"""
-    uuid     = db.StringProperty( indexed = True )
-    created  = db.DateTimeProperty(auto_now_add=True)
-    link     = db.ReferenceProperty( db.Model, collection_name="link_conversions" )
-    referrer = MemcacheReferenceProperty( db.Model, collection_name="users_referrals" )
-    referree = MemcacheReferenceProperty( db.Model, default = None, collection_name="users_been_referred" )
-    referree_uid = db.StringProperty()
-    app      = db.ReferenceProperty( db.Model, collection_name="app_conversions" )
-    order    = db.StringProperty()
-
-    def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        super(Conversion, self).__init__(*args, **kwargs)
-    
-    @staticmethod
-    def _get_from_dataapp( uuid ):
-        """Dataapp retrieval using memcache_key"""
-        return db.Query(Conversion).filter('uuid =', uuid).get()
-
-def create_conversion( link, app, referree_uid, referree, order_num ):
-    uuid = generate_uuid(16)
-    
-    c = Conversion( key_name     = uuid,
-                    uuid         = uuid,
-                    link         = link,
-                    referrer     = link.user,
-                    referree     = referree,
-                    referree_uid = referree_uid,
-                    app          = app,
-                    order        = order_num )
-    c.put()
-
-    return c # return incase the caller wants it
