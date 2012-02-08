@@ -31,7 +31,7 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.user.models import User, get_user_by_uuid
+from apps.user.models import User
 from apps.analytics_backend.models import *
 
 from util                 import httplib2
@@ -73,7 +73,7 @@ class RenameFacebookData(webapp.RequestHandler):
 
     def post(self):
         rq_vars = get_request_variables(['uuid'], self)
-        user = get_user_by_uuid(rq_vars['uuid'])
+        user = User.get( rq_vars['uuid'] )
         if user:
             if hasattr(user, 'facebook_access_token'):
                 user.fb_access_token = user.facebook_access_token

@@ -111,7 +111,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
     def get( self ):
         id   = self.request.get( 'id' )
         uuid = self.request.get( 'uuid' )
-        user = get_user_by_uuid( uuid )
+        user = User.get( uuid )
 
         if user == None:
             return # Bad data, just exit

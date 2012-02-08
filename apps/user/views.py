@@ -8,7 +8,7 @@ from util.urihandler import URIHandler
 class ShowProfilePage(URIHandler):
     def get(self, app_id = None, user_id = None):
         app = get_app_by_id(app_id)
-        user = get_user_by_uuid(user_id)
+        user = User.get( user_id )
 
         if not app:
             logging.error("""Tried to get user profile without defining
@@ -60,7 +60,7 @@ class ShowProfilePage(URIHandler):
 
 class ShowProfileJSON (URIHandler):
     def get(self, user_id = None):
-        user = get_user_by_uuid(user_id)
+        user = User.get( user_id )
         response = {}
         success = False
         if user:

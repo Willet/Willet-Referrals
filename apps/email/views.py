@@ -1,26 +1,22 @@
-#!/usr/bin/env python
+e!/usr/bin/env python
 
 __author__      = "Sy Khader"
 __copyright__   = "Copyright 2011, The Willet Corporation"
 
+import logging
 
-import os, logging, urllib, simplejson
-
-from google.appengine.api import taskqueue, urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from apps.email.models import *
-from apps.app.models import get_app_by_id
-from apps.link.models import Link
-from apps.user.models import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
+from apps.email.models  import *
+from apps.link.models   import Link
+from apps.user.models   import get_or_create_user_by_email
 
 # helpers
 from apps.referral.shopify.api_wrapper import add_referrer_gift_to_shopify_order
-from util.consts import *
-from util.helpers import read_user_cookie, generate_uuid, get_request_variables
+from util.consts        import *
 
 class SendEmailInvites( webapp.RequestHandler ):
     def post( self ):
