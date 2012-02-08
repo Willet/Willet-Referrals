@@ -404,8 +404,14 @@ class Barbara(URIHandler):
         for a in apps:
             changed = False
 
-            if hasattr( a, 'analytics' ):
-                delattr( a, 'analytics' )
+            if hasattr( a, 'emailed_at_10' ):
+                delattr( a, 'emailed_at_10' )
+                changed = True
+            if hasattr( a, 'buy_btn_id' ):
+                delattr( a, 'buy_btn_id' )
+                changed = True
+            if hasattr( a, 'img_selector' ):
+                delattr( a, 'img_selector' )
                 changed = True
             
             if changed:
