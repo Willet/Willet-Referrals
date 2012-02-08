@@ -11,8 +11,12 @@ textarea {
     border: 1px solid #aaa; 
     padding: 8px; 
     color: black;
-    font: 13px "Lucida Grande", Helvetica, Arial, sans-serif;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     overflow-x: hidden;
+}
+p {
+    text-align: justify;
+    font-size: 14px;
 }
 
 /* ----------------------   USEFUL CLASSES   ------------------------ */
@@ -45,6 +49,20 @@ textarea {
     color: red;
     font-style: italic;
 }
+.error_message {
+    border: 1px solid #DB5667;
+    background-color: #FCE3E7;
+    padding: 10px;
+    line-height: 1em;
+}
+.corner {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+/* --------------------   REUSABLE CLASSES   -------------------- */
+
 .grey_bar {
     border-radius: 15px;
     padding: 1px 15px 0 20px;
@@ -77,9 +95,6 @@ textarea {
 .grey_bar:active {
     background: #CCC;
 }
-
-/* --------------------   REUSABLE CLASSES   -------------------- */
-
 .title_bar {
     width: 100%;
     height: 55px;
@@ -100,7 +115,9 @@ textarea {
     line-height: 30px;
     margin: 14px 0 0 15px;
 }
-
+.center_col {
+        margin: 40px 20% 0 40px;
+}
 .button {
     height: 50px;
     padding: 6px;
@@ -248,7 +265,7 @@ textarea {
 
 /* ---------------------   Choose Friends  ----------------------- */ 
 
-ul.friends {
+ul.friends, ul.asker {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -256,7 +273,7 @@ ul.friends {
     overflow-x: hidden;
     overflow-y: scroll;
 }
-li.friend {
+ul.friends li, ul.asker li {
     display: block;
     padding: 10px 0;
     margin-right: 10px;
@@ -281,6 +298,7 @@ li.friend {
     float: right;
     font-size: 13px;
     line-height: 30px;
+    margin-right: 20px;
 }
 .portrait {
     float: left;
@@ -363,11 +381,6 @@ li.friend {
     cursor: hand;
     cursor: pointer;
 }
-#askButton {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-}
 ul.ui-autocomplete {
     list-style-type: none;
     text-indent: 0px;
@@ -410,7 +423,7 @@ div.middled {
     width: 220px;
     margin-top: 20%;
 }
-div.middled p {
+div.middled div {
     width: 100%;
     text-align: center;
     font-size: 23px;

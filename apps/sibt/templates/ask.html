@@ -28,7 +28,7 @@
                 -->
                 <div class="message" id="message">
                     <img alt="product" src="{{ product_images }}" />
-                    <textarea>{{ AB_share_text|escape }}</textarea>
+                    <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
@@ -111,7 +111,7 @@
         var sendMessages = function() {
             var i,j,payload,
                 friend_info = [],
-                msg   = $("#share-text").val(),
+                msg   = $("#shareText").val(),
                 error = false;
 
             // Gather up friend info, recording if a friend has an error
@@ -121,7 +121,7 @@
                 if (j === null) {
                     error = true; // Don't submit
                     break;
-                } else if (j !== []) {
+                } else if (j && j.length && j.length === 3) { // Valid friend is 3 valued array
                     friend_info.push(j);
                 } else {
                     continue; // Don't add []
@@ -136,25 +136,48 @@
                 showScreen('asking');
 
                 // No errors with friends, submit!
-                payload = { 
+                payload = {
+                    user_name       : "{{user_name}}",
                     user_uuid       : "{{user_uuid}}",
                     app_uuid        : "{{app_uuid}}",
                     product_uuid    : "{{product_uuid}}",
                     fb_access_token : fbAccessToken,
                     fb_id           : fbIdentity,
-                    friends         : friend_info,
+                    friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                     msg             : msg,
                     willt_code      : "{{willt_code}}"
                 };
 
                 $.ajax({
-                    url      : "{{ URL }}{% url SendFBMessages %}",
+                    url      : "{{ URL }}{% url SendFriendAsks %}",
                     type     : 'post',
                     dataType : 'json',
                     data     : payload,
-                    success  : function (tr) {
-                        // Change to success screen
-                        showScreen('success');
+                    statusCode : {
+                        200: function () {
+                            // Success
+                            showScreen('success');
+                        },
+                        400: function (resp, status) {
+                            // Bad Request
+                            if (resp && resp.data && resp.data.message) {
+                                $('.error_message').innerHTML("400 "+resp.data.message);
+                            }
+                            showScreen('failure');
+                            
+                        },
+                        401: function (resp, status) {
+                            // Unauthorized
+                            if (resp && resp.data && resp.data.message) {
+                                $('.error_message').innerHTML("401 "+resp.data.message);
+                            }
+                            showScreen('failure');
+                            
+                        },
+                        500: function () {
+                            // Internal server error
+                            showScreen('failure');
+                        }
                     }
                 });
             }

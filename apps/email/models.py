@@ -108,20 +108,49 @@ class Email():
         
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
+    
+    @staticmethod
+    def SIBTAsk(to_addr, name, message, vote_url, product_img,
+                product_title,client_name, client_domain):
+        to_addr = to_addr
+        subject = "Can I get your advice?"
+
+        # Grab first name only
+        try:
+            name = name.split(' ')[0]
+        except:
+            pass
+        
+        body = template.render(Email.template_path('sibt_ask.html'),
+            {
+                'name'          : name.title(),
+                'message'       : message,
+                'vote_url'      : vote_url,
+                'product_title' : product_title,
+                'product_img'   : product_img,
+                'client_name'   : client_name,
+                'client_domain' : client_domain
+            }
+        )
+        
+        logging.info("Emailing %s" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, message, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
             name = "Savvy Shopper"
         body = template.render(Email.template_path('sibt_voteNotification.html'),
             {
-                'name'        : name.title(),
-                'vote_type'   : vote_type,
-                'vote_url'    : vote_url,
-                'product_img' : product_img,
-                'client_name' : client_name,
+                'name'          : name.title(),
+                'vote_type'     : vote_type,
+                'vote_url'      : vote_url,
+                'message'       : message,
+                'product_img'   : product_img,
+                'product_title' : product_title,
+                'client_name'   : client_name,
                 'client_domain' : client_domain 
             }
         )

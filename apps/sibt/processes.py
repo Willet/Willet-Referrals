@@ -23,7 +23,7 @@ from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import PartialSIBTInstance
 from apps.testimonial.models  import create_testimonial
-from apps.user.actions import UserIsFBLoggedIn
+from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_cookie
@@ -33,7 +33,8 @@ from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
 from util.urihandler          import URIHandler
-from util.strip_html import strip_html
+from util.strip_html          import strip_html
+
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
@@ -148,6 +149,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
+
 class StartSIBTInstance(URIHandler):
     def post(self):
         app  = get_app_by_id(self.request.get('app_uuid'))
@@ -178,6 +180,7 @@ class StartSIBTInstance(URIHandler):
             logging.error('we had an error creating the instnace', exc_info=True)
 
         self.response.out.write(json.dumps(response))
+
 
 class DoVote( URIHandler ):
     def post(self):
@@ -214,6 +217,7 @@ class DoVote( URIHandler ):
 
         self.response.out.write('ok')
 
+
 class GetExpiredSIBTInstances(URIHandler):
     def post(self):
         return self.get()
@@ -234,6 +238,7 @@ class GetExpiredSIBTInstances(URIHandler):
                 }
             )
         logging.info('expiring %d instances' % expired_instances.count())
+
 
 class RemoveExpiredSIBTInstance(webapp.RequestHandler):
     def post(self):
@@ -264,9 +269,11 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
 
+
 class StoreAnalytics( URIHandler ):
     def get( self ):
         logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
+
 
 class TrackSIBTShowAction(URIHandler):
     def get(self):
@@ -313,6 +320,7 @@ class TrackSIBTShowAction(URIHandler):
 
         self.response.out.write('')
 
+
 class TrackSIBTUserAction(URIHandler):
     """ For actions WITH AN INSTANCE """
     def get(self):
@@ -358,6 +366,7 @@ class TrackSIBTUserAction(URIHandler):
 
         self.response.out.write('')
 
+
 class StartPartialSIBTInstance( URIHandler ):
     def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
@@ -366,6 +375,7 @@ class StartPartialSIBTInstance( URIHandler ):
         user    = User.get( self.request.get( 'user_uuid' ) )
 
         PartialSIBTInstance.create( user, app, link, product )
+
 
 class StartSIBTAnalytics(URIHandler):
     def get(self):
@@ -462,6 +472,7 @@ class StartSIBTAnalytics(URIHandler):
         }
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
+
 
 class SendFBMessages( URIHandler ):
     # Posts messages to FB friends walls
@@ -564,7 +575,8 @@ class SendFBMessages( URIHandler ):
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
-class SendFriendMessages( URIHandler ):
+
+class SendFriendAsks( URIHandler ):
     # Sends messages to email & FB friends
     def post( self ):
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
@@ -579,89 +591,135 @@ class SendFriendMessages( URIHandler ):
         user      = User.get( self.request.get( 'user_uuid' ) )
         fb_token  = self.request.get('fb_access_token')
         fb_id     = self.request.get('fb_id')
-        
-        if not user:
-            logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            # TODO: Should return a useful error message in the response here
-            self.error(500)
 
-        logging.debug('friends: %s' % friends)
-        logging.debug('msg: %s '% msg)
-
-        ### Split up friends into FB and email
-
-        fb_friends = []
+        fb_friends    = []
         email_friends = []
-
-        for friend in friends:
-            if friend[0] == 'fb':
-                # Validation can be added here if necessary
-                fb_friends.append(friend)
-            elif friend[0] == 'email';
-                # Validation can be added here if necessary
-                email_friends.append(friend)
-            else:
-                pass
-                # Should add a warning to response that there were invalid friends
-                # But still complete the operation to the best of our ability
+        email_share_counter = 0
+        fb_share_counter = 0
         
-        # Add spam warning if there are > 5 email friends
-        if len(email_friends) > 5:
-            logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
-
-        # Format the product's desc for sharing
-        try:
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.warning('could not get product description')
-        
-        # Check formatting of share msg
-        try:
-            if len( msg ) == 0:
-                msg = "I'm not sure if I should buy this. What do you think?"
-            if isinstance(msg, str):
-                message = unicode(msg, errors='ignore')
-        except:
-            logging.warrning('error transcoding to unicode', exc_info=True)
-
-        # defaults
+        # Default response
         response = {
             'success': False,
-            'data': {}
+            'data': {
+                'message': "",
+                'warnings': []
+            }
         }
 
-        ### Start with sharing to FB friends
+        logging.debug('friends: %r' % friends)
+        logging.debug('msg: %s '% msg)
 
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            ) 
+        if not user:
+            logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            self.response.set_status(401) # Unauthorized
+            response['data']['message'] = 'Unauthorized: Could not find user by supplied id'
+        
+        elif not friends:
+            logging.error('no friends included')
+            self.response.set_status(400) # Bad Request
+            response['data']['message'] = 'Bad Request: no friends included'
+        
+        else:
+            # Request appears valid, proceed!
 
-        try:
+            # Split up friends into FB and email
+            for friend in friends:
+                if friend[0] == 'fb':
+                    # Validation can be added here if necessary
+                    fb_friends.append(friend)
+                elif friend[0] == 'email':
+                    # Validation can be added here if necessary
+                    email_friends.append(friend)
+                else:
+                    response['data']['warnings'].append('Invalid friend entry: %s' % friend)
+            
+            # Add spam warning if there are > 5 email friends
+            if len(email_friends) > 5:
+                logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
+
+            # Format the product's desc for sharing
+            try:
+                ex = '[!\.\?]+'
+                product_desc = strip_html(product.description)
+                parts = re.split(ex, product_desc[:150])
+                product_desc = '.'.join(parts[:-1])
+                if product_desc[:-1] not in ex:
+                    product_desc += '.'
+            except:
+                logging.warning('could not get product description')
+                response['data']['warnings'].append('Could not get product description')
+            
+            # Check formatting of share message
+            try:
+                if len( msg ) == 0:
+                    msg = "I'm not sure if I should buy this. What do you think?"
+                if isinstance(msg, str):
+                    message = unicode(msg, errors='ignore')
+            except:
+                logging.warrning('error transcoding to unicode', exc_info=True)
+
+            # Get product image
             try:
                 product_image = product.images[0]
             except:
                 product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
-            fb_share_ids = user.fb_post_to_friends( ids,
-                                                    names,
-                                                    msg,
-                                                    product_image,
-                                                    product.title,
-                                                    product_desc,
-                                                    app.client.domain,
-                                                    link )
-            logging.info('shared on facebook, got share id %s' % fb_share_ids)
+                response['data']['warnings'].append('Could not get product image')
 
-            if len(fb_share_ids) > 0:
+            #--- Start with sharing to FB friends ---#
+
+            if fb_token and fb_id:
+                logging.info('token and id set, updating user')
+                user.update(
+                    fb_identity = fb_id,
+                    fb_access_token = fb_token
+                ) 
+            
+            if fb_friends: # [] is falsy
+                ids = []
+                names = []
+                
+                for (_, fname, fid) in fb_friends:
+                    ids.append(fid)
+                    names.append(fname)
+                try:            
+                    fb_share_ids = user.fb_post_to_friends( ids,
+                                                            names,
+                                                            msg,
+                                                            product_image,
+                                                            product.title,
+                                                            product_desc,
+                                                            app.client.domain,
+                                                            link )
+                    fb_share_counter += len(fb_share_ids)
+                    logging.info('shared on facebook, got share id %s' % fb_share_ids)
+
+                except Exception,e:
+                    # Should still do email friends
+                    response['data']['warnings'].append('Error sharing on Facebook: %s' % str(e))
+                    logging.error('we had an error sharing on facebook', exc_info=True)
+
+            #--- Second do email friends ---#
+
+            if email_friends: # [] is falsy
+                for (_, fname, femail) in email_friends:
+                    try:
+                        Email.SIBTAsk(to_addr=       femail,
+                                      name=          fname,
+                                      vote_url=      link,
+                                      message=       msg,
+                                      product_img=   product_image,
+                                      product_title= product.title,
+                                      client_name=   app.client.name,
+                                      client_domain= app.client.domain )
+                        email_share_counter += 1
+                    except Exception,e:
+                        response['data']['warnings'].append('Error sharing via email: %s' % str(e))
+                        logging.error('we had an error sharing via email', exc_info=True)
+            
+            friend_share_counter = fb_share_counter + email_share_counter
+
+            if friend_share_counter > 0:
                 # create the instance!
-                # Make the Instance!
                 instance = app.create_instance( user, 
                                                 None, 
                                                 link, 
@@ -669,26 +727,27 @@ class SendFriendMessages( URIHandler ):
                                                 motivation="",
                                                 dialog="ConnectFB")
                 # increment shares
-                for i in ids:
+                for _ in range(friend_share_counter):
                     app.increment_shares()
-
-                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' % (ids, names, len(fb_share_ids), msg, instance.uuid))
-
+                
                 response['success'] = True
+
+                if friend_share_counter == len(friends):
+                    response['data']['message'] = 'Messages sent to every friend'
+                else:
+                    response['data']['message'] = 'Messages sent to some friends'
+            else:
+                response['data']['message'] = 'Could not successfully contact any friends'
             
-            # if it wasn't successful ...
-            if len(fb_share_ids) != len(ids):
-                # posting failed!
-                response['data']['message'] = 'Could not post to Facebook'
-
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
+            if not response['data']['warnings']:
+                del response['data']['warnings']
+            
+            Email.emailBarbara('<p>Friends: %s</p> \
+                <p>Successful shares on FB: #%d</p> \
+                <p>Successful shares via email: #%d</p> \
+                <p>Message: %s</p> \
+                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))                
         
-        ### Second do email friends
-
-        ### ...
-
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 

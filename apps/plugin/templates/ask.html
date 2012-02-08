@@ -45,7 +45,25 @@
                     <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
                     Add Another Friend
                 </div>
-                <div id="askButton" class="button">
+                <div id="chosenButton" class="button corner">
+                    <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                    <div class="title">Ask Chosen Friends</div>
+                    <div class="subtitle">Giving advice is fun</div>
+                </div>
+            </div>
+
+            <!------------------------- Asker Info Screen ------------------------------>
+
+            <div id="asker_info">
+                <div class="title_bar">
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Choose Friends To Ask For Advice</div>
+                </div>
+                    <div class="center_col">Your friends need to know who is asking:</div>
+                <ul class="asker" id="asker">
+                    <!-- Asker appended when document ready -->
+                </ul>
+                <div id="askButton" class="button corner">
                     <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
@@ -60,7 +78,7 @@
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <div class="middled">
-                    <p>Asking...</p>
+                    <div>Asking...</div>
                     <img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" />
                 </div>
             </div>
@@ -70,32 +88,46 @@
             <div id="success">
                 <div class="title_bar">
                     <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
-                    <div>Asks Away!</div>
+                    <div>Your Question Has Been Sent</div>
                 </div>
-                <div class="middled">
+                <div class="center_col">
                     {% if incentive_enabled %}
 
                     <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label>
-                    <input class="fb_textinput" id="email-field" type="text" value="{{email}}"> </input>
+                    <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
                     
                     <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
-                    
-                    <button onclick="updateEmailAddress();" class="cancel-btn" title="Submit PayPal email address">Submit</button>
-
 
                     {% else %}
                     
                     <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
-                    <p>We\'ll email you when someone votes!</p>
-                    
-                    <button onclick="doPostMessage('close');" class="cancel-btn" title="Close">Close</button>
+                    <p>We'll email you when someone votes!</p>
 
                     {% endif %}
                 </div>
+                <div id="cancelButton" class="button corner">
+                    <div class="title">Close</div>
+                </div>
+            </div>
+
+            <!-------------------------- Failure Screen -------------------------------->
+
+            <div id="failure">
+                <div class="title_bar">
+                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Sorry, But Something Went Wrong...</div>
+                </div>
+                <div class="center_col">
+                    <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
+                    <p class='error_message'>An error happened.</p>
+                    <p>We know you were so excited to get advice, and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
+                </div>
+                <div id="cancelButton" class="button corner">
+                    <div class="title">Close</div>
+                </div>
+            </div>
 
             <!------------------------------- End Screens -------------------------------->
-
-        </div>
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
     <script type="text/javascript">
@@ -105,31 +137,71 @@
         }
     </script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+    <script>
+        /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
+        var JSON;if(!JSON){JSON={};}
+        (function(){'use strict';function f(n){return n<10?'0'+n:n;}
+        if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
+        f(this.getUTCMonth()+1)+'-'+
+        f(this.getUTCDate())+'T'+
+        f(this.getUTCHours())+':'+
+        f(this.getUTCMinutes())+':'+
+        f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
+        var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
+        function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
+        if(typeof rep==='function'){value=rep.call(holder,key,value);}
+        switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
+        gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
+        v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
+        if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
+        v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
+        if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
+        rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
+        return str('',{'':value});};}
+        if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
+        return reviver.call(holder,key,value);}
+        text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
+        ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
+        if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
+        throw new SyntaxError('JSON.parse');};}}());
+
+               /**
+         * jQuery.ScrollTo - Easy element scrolling using jQuery.
+         * Copyright (c) 2007-2009 Ariel Flesler - aflesler(at)gmail(dot)com | http://flesler.blogspot.com
+         * Dual licensed under MIT and GPL.
+         * Date: 5/25/2009
+         * @author Ariel Flesler
+         * @version 1.4.2
+         *
+         * http://flesler.blogspot.com/2007/10/jqueryscrollto.html
+         */
+        ;(function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
+
+        /*
+         * jQuery postMessage - v0.5 - 9/11/2009
+         * http://benalman.com/projects/jquery-postmessage-plugin/
+         * 
+         * Copyright (c) 2009 "Cowboy" Ben Alman
+         * Dual licensed under the MIT and GPL licenses.
+         * http://benalman.com/about/license/
+         */
+        ;(function($){var g,d,j=1,a,b=window,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
+    </script>
 
     {% block scripts %}{% endblock scripts %}
 
     <script type="text/javascript">
-        "use strict"; //Until postMessage is fixed, can't be in strict mode
-        
-        var friends        = []; // List of Friend instances in Choose Friend screen
-        var fb_friends     = []; // List of { id, name } from FB
-        var friendNames    = []; // List of names to use in autocomplete (sorted)
-        var selectionCount = 0;  // Number of friends selected to msg
-        var fbAccessToken  = "";
-        var fbIdentity     = "";
-
-        // Any global variables you want
-        {% block js_globals %}{% endblock js_globals %}
+        "use strict";
 
         // ----------------------------  CLASSES  ----------------------------------
 
         // Widget class
         // Base widget, same basic functionality
-        var LiWidget = function (name) {
-            var elem = this.elem = document.createElement('li');
+        var Widget = function (tag, name) {
+            var elem = this.elem = document.createElement(tag);
             elem.id = elem.name = name || '';
         };
-        LiWidget.prototype = {
+        Widget.prototype = {
             getElement: function () {
             // Returns HTML element
                 return this.elem;
@@ -151,16 +223,28 @@
         };
 
         // A Friend entry in Choose Friends
-        // Friend elements are complicated beasts, with much functionality & states
-        // For ease, we contain it in this class
+        // Friend elements are complicated beasts, with much 
+        // functionality & states. For ease, we contain it in
+        // this class
+        //
+        // A Friend has 4 states:
+        //  - NI!FB: no input, FB not logged in
+        //  - NIFB: no input, FB logged in
+        //  - EC: email chosen (+ error state)
+        //  - FBC: Facebook chosen (+ error state)
+        //
+        // and 3 state changes:
+        //  - NI!FB + FB log in -> NIFB
+        //  - NI!FB || NIFB + email input -> EC
+        //  - NIFB + FB input -> FBC
         var Friend = function (name) {
-            LiWidget.call(this, name);
+            Widget.call(this, 'li', name);
             this.selected = 'none';
             
             var that = this,
                 $elem = $(this.elem);
             
-            // Set up DOM
+            // Set up DOM in No Input state
             $elem.addClass('friend').append(" \
                 <div class='portrait'> \
                     <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
@@ -199,7 +283,7 @@
             // Handle two Facebook cases: logged in & not logged in
             var $fb_option = $elem.find('.fb_option');
             if (fbAccessToken !== "" && fbIdentity !== "") {
-                // Logged into Facebook
+                // Logged into Facebook, set up NIFB state
                 $fb_option.append(" \
                     <div class='helpful'>Find a friend using Facebook</div> \
                     <input></input> \
@@ -221,16 +305,16 @@
                     }
                 });
             } else {
-                // Not logged into Facebook
+                // Not logged into Facebook, set up NI!FB state
                 $fb_option.append(" \
                     <div class='helpful'>The best way to get advice</div> \
                     <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
                 ").children('.fb_connect').click( function () {
-                    runFBConnect();
+                    runFBConnect(fetchFBFriends);
                 });
             }
         };
-        Friend.prototype = new LiWidget();
+        Friend.prototype = new Widget();
         Friend.prototype.getFriendInfo = function () {
             // Gets the stored friend info if valid
             // Returns: 
@@ -258,6 +342,8 @@
                 return null;
             }
         };
+        // Validation functions are strictly checks, have no
+        // side-effects
         Friend.prototype._validateFriendEmail = function (el) {
             // Validates email address at input element 'el'
             // Returns: <boolean> true = valid, false = invalid
@@ -313,6 +399,8 @@
                 return true;
             }
         };
+        // Review functions will change the element to indicate
+        // to the user if inputted friend information is good
         Friend.prototype._reviewFriendNameAndEmail = function () {
             // Provides feedback to user if friend with email
             // selected is invalid
@@ -395,7 +483,9 @@
                 .attr( 'title', name )
                 .attr( 'alt', name );
         };
+        // *** STATE CHANGE METHODS ***
         Friend.prototype._chooseFBFriendSelect = function () {
+            // NIFB -> FBC
             // When someone has used the email input, change friend 
             // select to FB specific in Choose Friend's screen
             // Returns: n/a
@@ -435,6 +525,7 @@
             }
         };
         Friend.prototype._chooseEmailFriendSelect = function () {
+            // NIFB || NI!FB -> EC
             // When someone has used the email input, change friend 
             // select to Email specific in Choose Friend's screen
             // Returns: n/a
@@ -478,6 +569,7 @@
             }
         };
         Friend.prototype.FBLoggedIn = function () {
+            // NI!FB -> NIFB
             // After FB connect success, enable choosing FB friends
             // with autocomplete
             // Returns: n/a
@@ -507,8 +599,199 @@
             });
         };
 
+        // Asker gets & stores required information from the user
+        //
+        // An Asker has 2 states:
+        //  - NI!FB: no input, FB not logged in
+        //  - I: showing inputed data (+ error state)
+        //
+        // and 2 state changes:
+        //  - NI!FB + logging into FB -> I
+        //  - NI!FB + entering email -> I
+        var Asker = function (name) {
+            Widget.call(this, 'li', name);
+            
+            var that = this,
+                $elem = $(this.elem);
+            
+            this.name  = ''; // Name of asker
+            this.pic   = ''; // Picture of asker
+            this.email = ''; // Email of asker
+
+            // Set up DOM, show state NI!FB
+            $elem.addClass('friend').append(" \
+                <div class='portrait'> \
+                    <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
+                </div> \
+                <div class='friend_options'> \
+                    <div class='fb_option'> \
+                        <div class='helpful'>The easiest way to ask</div> \
+                        <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
+                    </div> \
+                    <div class='or'>or</div> \
+                    <div class='email_option'> \
+                        <div class='helpful'>Enter your email address</div> \
+                        <input></input> \
+                    </div> \
+                </div> \
+                ")
+            .find('.email_option input')
+            .blur(function () {
+                that._chooseEmailSelect();
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    // 13 -> Enter
+                    that._chooseEmailSelect();
+                }
+            });
+            $elem.find('.fb_connect').click( function () {
+                runFBConnect();
+            });
+        };
+        Asker.prototype = new Widget();
+        Asker.prototype.getAskerInfo = function () {
+            // Gets the stored asker info if valid
+            // Returns: 
+            //      - valid: [ <string> name, <string> email address ]
+            //      - invalid: null
+            var $elem = $(this.elem),
+                name;
+            if (this.reviewAsker()) {
+                // return name & email
+                return [ 
+                    $elem.find('input.name').val(),
+                    $elem.find('input.email').val() ];
+            } else {
+                return null;
+            }
+        };
+        // Validation functions are strictly checks, have no
+        // side-effects
+        Asker.prototype._validateEmail = Friend.prototype._validateFriendEmail;
+        Asker.prototype._validateName = Friend.prototype._validateFriendName;
+        Asker.prototype._validateInput = function (el) {
+            // Validates input element 'el'
+            // Returns: <boolean> true = valid, false = invalid
+            if (el.name === 'email') {
+                return this._validateEmail(el);
+            } else if (el.name === 'name') {
+                return this._validateName(el);
+            } else {
+                return false;
+            }
+        };
+        // Review functions will change the element to indicate
+        // to the user if inputted friend information is good
+        Asker.prototype.reviewAsker = function () {
+            // Provides feedback to asker if info is valid
+            // Returns: <boolen> true = valid, false = invalid
+            var $elem = $(this.elem),
+                that = this,
+                error = false,
+                good_face = (this.pic !== '') ? this.pic : '/static/sibt/imgs/happy_face.png';
+            
+            // Validate each input and set sad face if any are in error
+            $elem.find('input').each(function () {
+                if (that._validateInput(this)) {
+                    // No error
+                    $(this).css('color','black').siblings('.error').hide();
+                } else {
+                    $(this).css('color','red').siblings('.error').show();
+                    error = true;
+                }
+            });
+
+            if (error) {
+                // Error! Set sad face on portrait
+                $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                return false;
+            } else {
+                // Set asker face or happy face on portrait
+
+                $elem.find('.portrait>img').attr('src',good_face);
+                return true;
+            }
+        };
+        Asker.prototype._showUserInfo = function () {
+            // Helper function that sets up show input state DOM
+            var $elem = $(this.elem),
+                that = this,
+                good_face = (this.pic !== '') ? this.pic : '/static/sibt/imgs/happy_face.png';
+            
+            // Set portrait
+            $elem.find('.portrait>img').attr('src',good_face);
+
+            $elem.children('.friend_options').remove();
+            $elem.append("\
+                <div class='email_friend'> \
+                    <div> \
+                        <label>Name:</label> \
+                        <input class='name' name='name' type='text' value='"+this.name+"' /> \
+                        <div class='error'>Oops, are you sure that's right?</div> \
+                    </div> \
+                    <div> \
+                        <label>Email:</label> \
+                        <input class='email' name='email' type='text' value='"+this.email+"' /> \
+                        <div class='error'>Oops, are you sure that's right?</div> \
+                    </div> \
+                </div> \
+            ").find('input')
+            .blur(function () {
+                that.reviewAsker();
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    // 13 -> enter
+                    that.reviewAsker();
+                }
+            })
+            .each(function () {
+                // review right now
+                that.reviewAsker();
+            });
+        };
+        // *** STATE CHANGE METHODS ***
+        Asker.prototype._chooseEmailSelect = function () {
+            // NI!FB -> I
+            // When someone has used the email input, show inputted data to asker
+            // Returns: n/a
+            var that = this,
+                $elem = $(this.elem);
+            this.email = $elem.find('.email_option input').val();
+            this.name = email.split('@')[0].split('.').join(' ');
+
+            // Only do something if there is something in the input field
+            if (email !== '') {
+                this._showUserInfo();
+            }
+        };
+        Asker.prototype.FBLoggedIn = function (name, email, pic) {
+            // NI!FB -> I
+            // After FB connect success, show user inputted data
+            // Returns: n/a
+            this.name = name;
+            this.email = email;
+            this.pic = pic;
+            this._showUserInfo();
+        };
+
         // Add classes here.  Any questions about js classes? Ask Fraser
         {% block js_classes %}{% endblock js_classes %}
+
+
+        // ---------------------------- Global Variables ----------------------
+
+        var asker          = new Asker('ask_user'); // Asker info
+        var friends        = []; // List of Friend instances in Choose Friend screen
+        var fb_friends     = []; // List of { id, name } from FB
+        var friendNames    = []; // List of names to use in autocomplete (sorted)
+        var selectionCount = 0;  // Number of friends selected to msg
+        var fbAccessToken  = "";
+        var fbIdentity     = "";
+
+        // Any global variables you want
+        {% block js_globals %}{% endblock js_globals %}
 
         
         // ------------------------------   AJAX methods  ------------------------------
@@ -619,7 +902,7 @@
         };
 
         // Connect with FB and fetch FB friends, on Choose Friends screen
-        var runFBConnect = function () {
+        var runFBConnect = function (success_callback) {
             storeAnalytics('SIBTConnectFBDialog');
 
             FB.login( function(response) {
@@ -630,12 +913,21 @@
                     return;
                 } else { 
                     storeAnalytics('SIBTFBConnected');
-
-                    // Store FB data in the server.
+                    
+                    // Store FB data in the server
                     updateServerUser(authResp.accessToken, authResp.userID);
-                    fetchFBFriends();
+
+                    // Get user info & then run callback
+                    FB.api('/me', function (r) {
+                        asker.FBLoggedIn(r.name, r.email, 'graph.facebook.com/'+r.username+'/picture');
+
+                        // Good to go!
+                        if (success_callback) {
+                            success_callback();
+                        }
+                    });
                 }
-            }, {scope: 'publish_stream,offline_access,user_about_me,email'});
+            }, {scope: 'publish_stream, offline_access, user_about_me, email'});
             // } else {
             // User is logged in AND connected (in theory)
             //     fetchFBFriends( );
@@ -660,36 +952,43 @@
            });
         };
 
+        // Ensures we have all information before asking friends
+        var reviewFriendsThenGetInfo = function () {
+            // Review friends
+            var i = friends.length,
+                error = false;
+            while (i--) {
+                if (!friends[i].reviewFriend()) {
+                    error = true;
+                }
+            }
+            if (!error) {
+                // Proceed to verifying name
+                showScreen('asker_info');
+            } else {
+                // TODO: Add feedback why button didn't work
+            }
+        };
+
+        // Review askers inputed name & email address before asking friends
+        var reviewThenAsk = function () {
+            var info = asker.getAskerInfo();
+            if (info) {
+                // Good to go!
+                sendMessages();
+            } else {
+                // TODO: Add feedback why button didn't work
+            }
+        };
+
         // Add global js functions here
         {% block js_functions %}{% endblock js_functions %}
-
-        /**
-         * jQuery.ScrollTo - Easy element scrolling using jQuery.
-         * Copyright (c) 2007-2009 Ariel Flesler - aflesler(at)gmail(dot)com | http://flesler.blogspot.com
-         * Dual licensed under MIT and GPL.
-         * Date: 5/25/2009
-         * @author Ariel Flesler
-         * @version 1.4.2
-         *
-         * http://flesler.blogspot.com/2007/10/jqueryscrollto.html
-         */
-        ;(function(d){var k=d.scrollTo=function(a,i,e){d(window).scrollTo(a,i,e)};k.defaults={axis:'xy',duration:parseFloat(d.fn.jquery)>=1.3?0:1};k.window=function(a){return d(window)._scrollable()};d.fn._scrollable=function(){return this.map(function(){var a=this,i=!a.nodeName||d.inArray(a.nodeName.toLowerCase(),['iframe','#document','html','body'])!=-1;if(!i)return a;var e=(a.contentWindow||a).document||a.ownerDocument||a;return d.browser.safari||e.compatMode=='BackCompat'?e.body:e.documentElement})};d.fn.scrollTo=function(n,j,b){if(typeof j=='object'){b=j;j=0}if(typeof b=='function')b={onAfter:b};if(n=='max')n=9e9;b=d.extend({},k.defaults,b);j=j||b.speed||b.duration;b.queue=b.queue&&b.axis.length>1;if(b.queue)j/=2;b.offset=p(b.offset);b.over=p(b.over);return this._scrollable().each(function(){var q=this,r=d(q),f=n,s,g={},u=r.is('html,body');switch(typeof f){case'number':case'string':if(/^([+-]=)?\d+(\.\d+)?(px|%)?$/.test(f)){f=p(f);break}f=d(f,this);case'object':if(f.is||f.style)s=(f=d(f)).offset()}d.each(b.axis.split(''),function(a,i){var e=i=='x'?'Left':'Top',h=e.toLowerCase(),c='scroll'+e,l=q[c],m=k.max(q,i);if(s){g[c]=s[h]+(u?0:l-r.offset()[h]);if(b.margin){g[c]-=parseInt(f.css('margin'+e))||0;g[c]-=parseInt(f.css('border'+e+'Width'))||0}g[c]+=b.offset[h]||0;if(b.over[h])g[c]+=f[i=='x'?'width':'height']()*b.over[h]}else{var o=f[h];g[c]=o.slice&&o.slice(-1)=='%'?parseFloat(o)/100*m:o}if(/^\d+$/.test(g[c]))g[c]=g[c]<=0?0:Math.min(g[c],m);if(!a&&b.queue){if(l!=g[c])t(b.onAfterFirst);delete g[c]}});t(b.onAfter);function t(a){r.animate(g,j,b.easing,a&&function(){a.call(this,n,b)})}}).end()};k.max=function(a,i){var e=i=='x'?'Width':'Height',h='scroll'+e;if(!d(a).is('html,body'))return a[h]-d(a)[e.toLowerCase()]();var c='client'+e,l=a.ownerDocument.documentElement,m=a.ownerDocument.body;return Math.max(l[h],m[h])-Math.min(l[c],m[c])};function p(a){return typeof a=='object'?a:{top:a,left:a}}})(jQuery);
-
-        /*
-         * jQuery postMessage - v0.5 - 9/11/2009
-         * http://benalman.com/projects/jquery-postmessage-plugin/
-         * 
-         * Copyright (c) 2009 "Cowboy" Ben Alman
-         * Dual licensed under the MIT and GPL licenses.
-         * http://benalman.com/about/license/
-         */
-        ;(function($){var g,d,j=1,a,b=window,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
            
         $(document).ready(function() {
 
             /**********************  ATTACH EVENTS TO DOM HERE  **************************/
 
-            $('.cancel-btn').click(function() {
+            $('#cancelButton').click(function() {
                 doPostMessage('close');
             });
 
@@ -701,7 +1000,11 @@
 
             $('#addFriend').click(addFriend);
 
-            $('#askButton').click(sendMessages);
+            $('#chosenButton').click(reviewFriendsThenGetInfo);
+
+            $('#askButton').click(reviewThenAsk);
+
+            $('#asker').append(asker.getElement());
 
             // Add two Friend instances to Choose Friends screen
             (function () {
