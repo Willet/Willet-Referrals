@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
-    <head>        
+    <head>
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
         <title>Should I Buy This?</title>
@@ -33,11 +33,16 @@
                     <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
                     <div>Your friends recommend this item.</div>
                 </div>
-                <div id="cart_items_display">
-                    <img src="{{product_image}}" alt="" />
-                </div>
-                <p>{{product.title}}</p>
-                <p>{{product.description|striptags}}</p>
+                <ul id="product_image_result">
+                    <li>
+                        <img src="{{product_image}}" alt="" />
+                        <label> {{product.title}} </label>
+                    </li>
+                </ul>
+                <div id="product_desc_result">{{product.description|striptags}}</div>
+                {% if has_product_link %}
+                    <p><a class="button _willet_button" href="{{product_link}}">Get it</a></p>
+                {% endif %}
             </div>
         </div>
         <script type="text/javascript">

@@ -153,12 +153,18 @@ class WOSIBShowResults(webapp.RequestHandler):
         try:
             product_image = winning_product.images[0]
         except:
-            # "no oh"
             product_image = '/static/imgs/noimage-willet.png' # no image default
         
+        try:
+            product_link = winning_product.link
+        except:
+            product_link = '' # no image default
+
         template_values = {
             'product'  : winning_product,
-            'product_image' : product_image
+            'product_image' : product_image,
+            'has_product_link' : bool (product_link),
+            'product_link': product_link
         }
         
         logging.debug("instance_product_dict = %r" % instance_product_dict)

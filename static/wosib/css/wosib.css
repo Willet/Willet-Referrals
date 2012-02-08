@@ -45,6 +45,41 @@
     max-height: 196px;
     margin-bottom: 12px;
 }
+#product_image_result {
+    padding: 0;
+    text-align: center;
+    float: left;
+    max-width: 500px;
+}
+
+#product_image_result li {
+    border: 1px silver solid;
+    border-radius: 5px;
+    background-color: #fcfcff;
+    display: inline-block;
+    font-size: small;
+    margin: 10px 5px;
+    padding: 10px;
+    width: 200px;
+    height: 252px;
+    vertical-align: bottom;
+}
+
+#product_image_result img {
+    clear: both;
+    display: block;
+    margin: 0 auto;
+    max-height: 196px;
+    margin-bottom: 12px;
+}
+
+#product_desc_result {
+    float: right;
+    text-align: left;
+    font-size: small;
+    max-width: 535px;
+    padding-top: 25px;
+}
 .dialog_button_area {
     background-color: #f0f0f0;
     padding: 10px;
