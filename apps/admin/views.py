@@ -6,7 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, urllib, sys
 from inspect import getmodule
 from datetime import datetime
-import time
+from time import time
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -15,13 +15,13 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
+from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
 from apps.order.shopify.models import OrderShopify
@@ -398,24 +398,17 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = App.all()
+        apps = SIBTShopify.all()
         count = 0
         for a in apps:
-            changed = False
 
-            if hasattr( a, 'emailed_at_10' ):
-                delattr( a, 'emailed_at_10' )
-                changed = True
-            if hasattr( a, 'buy_btn_id' ):
-                delattr( a, 'buy_btn_id' )
-                changed = True
-            if hasattr( a, 'img_selector' ):
-                delattr( a, 'img_selector' )
-                changed = True
-            
-            if changed:
-                count += 1
-                a.put()
+            # Switched to new install code on Nov. 23rd
+            if a.created <= datetime.datetime( 2011, 11, 22 ):
+                a.version = '1'
+            else:
+                a.version = '2'
+
+            a.put()
        
         logging.info("DONE: %d" % count)
 
