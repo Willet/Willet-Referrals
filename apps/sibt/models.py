@@ -37,19 +37,12 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 class SIBT(App):
     """Model storing the data for a client's 'Should I Buy This?' app"""
-    emailed_at_10 = db.BooleanProperty( default = False )
     
     # if the button is enabled for this app
     button_enabled = db.BooleanProperty(default=True)
     
     # if the top bar is enabled for this app 
     top_bar_enabled = db.BooleanProperty(default=True)
-
-    # if the bottom tab is enabled for this app 
-    btm_tab_enabled = db.BooleanProperty(default=False)
-
-    # if the img overlay is enabled for this app 
-    overlay_enabled = db.BooleanProperty(default=False)
 
     # if incentivized asks is enabled
     incentive_enabled = db.BooleanProperty(default=False)
@@ -58,17 +51,8 @@ class SIBT(App):
     # we show the top bar
     num_shows_before_tb = db.IntegerProperty(default=1)
 
+    # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
-    #store_url     = db.LinkProperty( indexed = False, default = None, required = False )
-
-    # Div IDs or class names
-    buy_btn_id    = db.StringProperty( indexed = True )
-    
-    # DOM id of product image on a product page
-    img_selector  = db.StringProperty( indexed = True )
-
-    # DOM selector of product image on a product page
-    img_selector  = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

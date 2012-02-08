@@ -14,8 +14,6 @@ from google.appengine.api import urlfetch, memcache
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
-from apps.stats.models import Stats
-
 from util.helpers    import *
 from util.urihandler import URIHandler
 from util.consts     import *

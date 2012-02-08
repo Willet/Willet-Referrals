@@ -17,7 +17,6 @@ from apps.link.models import Link, get_link_by_willt_code
 from apps.user.models import get_user_by_cookie, User
 from apps.client.models import Client
 from apps.order.models import *
-from apps.stats.models import Stats
 
 from util.gaesessions import get_current_session
 from util.helpers     import *

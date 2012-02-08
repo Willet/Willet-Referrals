@@ -223,7 +223,7 @@ class Email():
                 "html"     : body,
                 "from"     : info,
                 "fromname" : "Willet",
-                "bcc"      : barbara
+                "bcc"      : fraser
             }
 
             #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)

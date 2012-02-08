@@ -29,9 +29,9 @@ from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
+from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.stats.models import Stats
 from apps.user.models import User, get_user_by_uuid
 from apps.analytics_backend.models import *
 
@@ -236,16 +236,6 @@ class ManageApps(URIHandler):
 
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
-        stats = Stats.get_stats()
-        str = "<h1>Stats</h1>"
-        str += "<p># Instances: %d </p>" % stats.total_instances
-        str += "<p># Clickthroughs: %d </p>" % stats.total_clicks
-        str += "<p># Votes: %d </p>" % stats.total_votes
-
-        if stats.total_instances != 0:
-            str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
-            str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
-
         str += "<h1> Live Instances </h1>"
         live_instances = SIBTInstance.all().filter( 'is_live =', True )
         for l in live_instances:
@@ -409,16 +399,26 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = ButtonsShopify.all()
+        apps = App.all()
+        count = 0
         for a in apps:
-            if a.client:
-                client = a.client
-                if client.apps.count() > 1:
-                    pass
-                else:
-                    for p in client.products:
-                        p.delete()
-        logging.info("DONE")
+            changed = False
+
+            if hasattr( a, 'emailed_at_10' ):
+                delattr( a, 'emailed_at_10' )
+                changed = True
+            if hasattr( a, 'buy_btn_id' ):
+                delattr( a, 'buy_btn_id' )
+                changed = True
+            if hasattr( a, 'img_selector' ):
+                delattr( a, 'img_selector' )
+                changed = True
+            
+            if changed:
+                count += 1
+                a.put()
+       
+        logging.info("DONE: %d" % count)
 
 class ShowActions(URIHandler):
     @admin_required

@@ -10,8 +10,6 @@ from google.appengine.ext import webapp
 from util.consts  import *
 from util.cookies import LilCookies
 
-
-
 def to_dict(something, recursion=0):
     import datetime
     import time
@@ -98,7 +96,6 @@ def encode_base62(num):
     ret.reverse()
     return ''.join(ret)
 
-
 def get_request_variables(targets, rh):
     """Grab 'targets' from the request headers if present. Return
        a dictionary"""
@@ -157,7 +154,6 @@ def set_referral_cookie(headers, code):
     
     headers.add_header('Set-Cookie', cookieUtil.output())
 
-
 def set_visited_cookie(headers):
     """Sets the approcity visited cookie so that registereud
        users are not presented with the 'register' tab again"""
@@ -169,17 +165,6 @@ def set_visited_cookie(headers):
     headers['Set-Cookie'] = appCookie.output()
 
 # Decorators
-def login_required( fn ):
-    def check(self, param=None):
-        client = self.get_client()
-
-        if client: 
-            fn(self, client)
-        else:
-            self.redirect ( '/login?u=%s' % self.request.url )
-
-    return check
-
 def admin_required( fn ):
     def check(self, param=None):
         from apps.user.models import User
@@ -224,7 +209,6 @@ def is_blacklisted( header ):
         return True
     else:
         return header in user_agent_blacklist
-
 
 def getURIForView(l, index, value):
     """ gets index of value in tuple"""

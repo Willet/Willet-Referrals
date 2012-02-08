@@ -33,7 +33,6 @@ from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.wosib.shopify.models import WOSIBShopify
-from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
@@ -452,44 +451,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                                             ab_test_options, 
                                             user = user,
                                             app  = app )
-                
-            if app.overlay_enabled:
-                overlay_style = ab_test( 'sibt_overlay_style', 
-                                         ["_willet_overlay_button", "_willet_overlay_button2"],
-                                         user = user,
-                                         app  = app )
-            else:
-                overlay_style = "_willet_overlay_button"
-
-            # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask:
-                if app.top_bar_enabled and app.btm_tab_enabled:
-                    bar_or_tab = ab_test( 'sibt_bar_or_tab',
-                                          ['bar', 'tab'],
-                                          user = user,
-                                          app  = app )
-                    logging.info("BAR TAB? %s" % bar_or_tab )
-
-                    AB_top_bar = 1 if bar_or_tab == "bar" else 0
-                    AB_btm_tab = int(not AB_top_bar)
-
-                elif not app.top_bar_enabled and app.btm_tab_enabled:
-                    AB_top_bar = 1 
-                    AB_btm_tab = 0
-                elif app.top_bar_enabled and not app.btm_tab_enabled:
-                    AB_top_bar = 0 
-                    AB_btm_tab = 1
-                else:  # both False
-                    AB_top_bar = 0 
-                    AB_btm_tab = 0
-            else:
-                AB_top_bar = AB_btm_tab = 0
         else:
-            random.seed( datetime.now() )
-            
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
-            overlay_style   = "_willet_overlay_button"
-            AB_top_bar = AB_btm_tab = 1
 
         # a whole bunch of css bullshit!
         if app:
@@ -500,19 +463,17 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         
         # Grab all template values
         template_values = {
-            'URL' : URL,
-            'is_asker' : is_asker,
-            'show_votes' : show_votes,
-            'has_voted': has_voted,
-            'is_live': is_live,
-            'show_top_bar_ask': show_top_bar_ask,
+            'URL'            : URL,
+            'is_asker'       : is_asker,
+            'show_votes'     : show_votes,
+            'has_voted'      : has_voted,
+            'is_live'        : is_live,
+            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
             
             'app'            : app,
             'instance'       : instance,
             'asker_name'     : asker_name, 
             'asker_pic'      : asker_pic,
-
-            'AB_overlay_style' : overlay_style,
 
             'store_url'      : shop_url,
             'store_domain'   : getattr (app.client, 'domain', ''),
@@ -526,13 +487,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'stylesheet': 'css/colorbox.css',
 
             'AB_CTA_text' : cta_button_text,
-            'AB_top_bar'  : AB_top_bar,
-            'AB_btm_tab'  : AB_btm_tab,
-            'AB_overlay'  : int(not(bar_or_tab == "bar" or bar_or_tab =="tab")) if app.overlay_enabled else 0,
 
             'evnt' : event,
-            'img_elem_selector' : "#image img", #app.img_selector,
-            'heart_img' : 0,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
