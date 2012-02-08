@@ -6,7 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, urllib, sys
 from inspect import getmodule
 from datetime import datetime
-import time
+from time import time
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -14,7 +14,6 @@ from google.appengine.ext import webapp
 from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-
 
 from apps.email.models import Email
 from apps.app.models import App
@@ -399,18 +398,17 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = Client.all()
+        apps = SIBTShopify.all()
         count = 0
         for a in apps:
-            changed = False
 
-            if hasattr( a, 'passphrase' ):
-                delattr( a, 'passphrase' )
-                changed = True
-            
-            if changed:
-                count += 1
-                a.put()
+            # Switched to new install code on Nov. 23rd
+            if a.created <= datetime.datetime( 2011, 11, 22 ):
+                a.version = '1'
+            else:
+                a.version = '2'
+
+            a.put()
        
         logging.info("DONE: %d" % count)
 
