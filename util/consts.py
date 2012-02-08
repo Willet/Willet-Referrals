@@ -139,8 +139,6 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
-    'stats',
-    'testimonial',
     'user',
     # LINK MUST ALWAYS BE LAST
     'link',
