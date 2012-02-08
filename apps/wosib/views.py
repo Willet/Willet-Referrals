@@ -29,7 +29,6 @@ from apps.product.shopify.models import ProductShopify # shouldn't be here?
 from apps.wosib.models           import WOSIBInstance
 from apps.wosib.models           import PartialWOSIBInstance
 from apps.wosib.shopify.models   import WOSIBShopify
-from apps.stats.models          import Stats
 from apps.user.models           import get_user_by_cookie
 
 from util.consts                import *

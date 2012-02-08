@@ -150,8 +150,6 @@ INSTALLED_APPS = [
     'sibt.shopify',
     'wosib',
     'wosib.shopify',
-    'stats',
-    'testimonial',
     'user',
     # LINK MUST ALWAYS BE LAST
     'link',

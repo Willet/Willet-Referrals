@@ -22,7 +22,6 @@ from apps.product.models      import Product
 from apps.user.models         import User
 from apps.wosib.models         import WOSIBInstance
 from apps.wosib.models         import PartialWOSIBInstance
-from apps.testimonial.models  import create_testimonial
 from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie

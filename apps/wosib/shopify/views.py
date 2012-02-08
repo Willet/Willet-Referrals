@@ -26,7 +26,6 @@ from apps.link.models         import get_link_by_willt_code
 from apps.link.models         import create_link
 from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
-from apps.stats.models        import Stats
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
