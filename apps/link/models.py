@@ -23,13 +23,6 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARDS = 25
 
-__all__ = [
-    'Link',
-    'LinkCounter',
-    'Tweet',
-    'CodeCounter'
-]
-
 def put_link(memcache_key):
     """Deferred task to put a link to datastore"""
     try:
@@ -43,6 +36,9 @@ def put_link(memcache_key):
     except Exception, e:
         logging.error('error saving link %s: %s' % (memcache_key, e), exc_info=True)
 
+# ------------------------------------------------------------------------------
+# Link Class    ----------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class Link(Model):
     """A tracking link that will be shared by our future Users. A Link keeps 
        track of how many unique clicks it receives"""
@@ -179,42 +175,9 @@ class Link(Model):
         return link
 
 
-def create_link(targetURL, app, domain, user=None, usr=""):
-    """Produces a Link containing a unique wil.lt url that will be tracked"""
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    logging.debug('called create_link')
-    return Link.create(targetURL, app, domain, user, usr) 
-
-def get_link_by_url( url_arg ):
-    return Link.all().filter( 'target_url =', url_arg ).get()
-
-def get_link_by_willt_code(code):
-    #return Link.all().filter('willt_url_code =', code).get()
-    logging.warn('get_link_by_willt_code has been deprecated')
-    return Link.get_by_code(code)
-
-def get_link_by_supplied_user_id( uid ):
-    return Link.all().filter('supplied_user_id =', uid)
-
-def get_links_by_user(user):
-    """Return all links owned by user. 
-    
-    TODO: In the future this method will have to analyze user to determine 
-          which social media providers we have their identifiers for OR it
-          will need to be passed more information."""
-    return Link.all().filter('user =', user)
-
-def get_unchecked_links():
-    """Return all unchecked links that are older than a minute"""
-    datetime_interval = datetime.datetime.now()-datetime.timedelta(minutes=1)
-    # need datetime object of correct time for GAE compatibility
-    check_interval = datetime.datetime.combine(datetime_interval,datetime_interval.time())
-    return Link.all().filter('tweet_id =','').filter('creation_time <',check_interval)
-
-def get_active_links_by_app( app ):
-    """Return tweets we've confirmed on the Twitter graph"""
-    return Link.all().filter( 'app_ =', app).filter('tweet_id !=','')
-
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class LinkCounter(db.Model):
     """Sharded counter for link click-throughs"""
 
@@ -227,41 +190,9 @@ def delete_counters(willt_url_code):
     return True
 
 
-class Tweet(db.Model):
-    """This model holds tweets that were returned by the @anywhere callback
-       they are used to query the Twitter API and lookup the tweet ID"""
-
-    willt_url_code = db.StringProperty(indexed=True, required=True)
-    tweet_text = db.StringProperty(indexed=False)
-    user = MemcacheReferenceProperty(db.Model, collection_name="foo")
-    link = db.ReferenceProperty(db.Model, collection_name="bar")
-    creation_time  = db.DateTimeProperty(auto_now_add = True)
-
-    def get_willt_url(self):
-        return 'www.wil.lt/' + self.willt_url_code
-     
-    def __init__(self, *args, **kwargs):
-       self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 
-       super(Tweet, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def _get_from_datastore(willt_url_code):
-       """Datastore retrieval using memcache_key"""
-       return db.Query(Tweet).filter('willt_url_code =', willt_url_code).get() 
-    
-
-def save_tweet(code, text, user, link):
-    t = Tweet(key_name=willt_url_code, willt_url_code=code,
-              tweet_text=text, user=user, link=link)
-    t.put()
-    return t
-
-def get_some_tweets():
-    """This will return 12 tweets, if called by Twitter/tweets then the twitter
-       API should get queried 144 times every hour"""
-    return Tweet.all().fetch(2)
-
-
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 class CodeCounter(Model):
     """This is a counter we use to generate random, short URLs"""
     # the current count
@@ -303,3 +234,4 @@ def get_a_willt_code():
 def increase_counters(n):
     """Increase the total number of code counters"""
     pass
+

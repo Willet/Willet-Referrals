@@ -24,7 +24,6 @@ from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
-from apps.link.models import get_link_by_willt_code
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.referral.shopify.models import ReferralShopify
@@ -263,7 +262,7 @@ class SIBTInstanceStats( URIHandler ):
             self.response.out.write( self.no_code( ) )
             return
 
-        link = get_link_by_willt_code( willt_code )
+        link = Link.get_by_code( willt_code )
 
         instance = link.sibt_instance.get()
         asker    = instance.asker

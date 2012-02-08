@@ -11,7 +11,8 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
-from apps.link.models import Link, get_link_by_willt_code, CodeCounter
+from apps.link.models import CodeCounter
+from apps.link.models import Link
 from apps.app.models import get_app_by_id, App
 
 # helpers

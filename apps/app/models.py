@@ -17,7 +17,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.link.models     import Link, get_link_by_willt_code 
+from apps.link.models     import Link
 from apps.user.models     import User
 
 from util.consts          import *

@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from apps.email.models import *
 from apps.app.models import get_app_by_id
-from apps.link.models import create_link, get_link_by_willt_code
+from apps.link.models import Link
 from apps.user.models import get_user_by_cookie, get_or_create_user_by_email, get_or_create_user_by_facebook, get_user_by_uuid, get_or_create_user_by_cookie
 
 # helpers
@@ -39,7 +39,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         referrer = None
         logging.info(referrer_code)
         if referrer_code:
-            referral_link = get_link_by_willt_code(referrer_code)
+            referral_link = Link.get_by_code(referrer_code)
             if referral_link and referral_link.user:
                 referrer = referral_link.user
         
@@ -47,7 +47,7 @@ class SendEmailInvites( webapp.RequestHandler ):
         user = get_or_create_user_by_email(from_addr, self, None)
         
         # Get the Link & update it
-        link = get_link_by_willt_code(willt_url_code)
+        link = Link.get_by_code(willt_url_code)
         if link:
             link.user = user
             link.email_sent = True
