@@ -45,9 +45,6 @@ class ClientShopify( Client ):
     token   = db.StringProperty( default = '' )
     id      = db.StringProperty( indexed = True )
 
-    # Store product img URLs and do something useful with them
-    product_imgs  = db.StringListProperty( indexed = False )
-    
     def __init__(self, *args, **kwargs):
         """ Initialize this obj """
         super(ClientShopify, self).__init__(*args, **kwargs)
@@ -221,41 +218,4 @@ def get_store_info(store_url, store_token, app_type):
     logging.info('shop: %s' % (shop))
     
     return shop
-
-def get_product_imgs(store_url, store_token, app_type):
-    """ Fetch images for all the products in this store """
-    # Fix inputs ( legacy )
-    if app_type == "referral":
-        app_type = 'ReferralShopify'
-    elif app_type == "sibt": 
-        app_type = 'SIBTShopify'
-    
-    # Grab Shopify API settings
-    settings = SHOPIFY_APPS[app_type]
-    
-    # Construct the API URL
-    url      = '%s/admin/products.json' % (store_url)
-    username = settings['api_key'] 
-    password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
-    header   = {'content-type':'application/json'}
-    h        = httplib2.Http()
-    
-    # Auth the http lib
-    h.add_credentials(username, password)
-    
-    logging.info("Querying %s" % url )
-    resp, content = h.request( url, "GET", headers = header)
-
-    # Grab the data about the order from Shopify
-    details  = json.loads( content ) #['orders'] # Fetch the order
-    products = details['products']
-
-    ret = []
-    for p in products:
-        for k, v in p.iteritems():
-            if 'images' in k:
-                if len(v) != 0:
-                    img = v[0]['src'].split('?')[0]
-                    ret.append( img )   
-    return ret
 
