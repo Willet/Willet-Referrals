@@ -15,7 +15,7 @@ from time import time
 
 from apps.app.models import *
 from apps.order.models import *
-from apps.link.models import Link, get_link_by_willt_code
+from apps.link.models import Link
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
 from apps.referral.shopify.models import get_shopify_app_by_store_id
 from apps.email.models       import Email
@@ -93,7 +93,7 @@ class DoProcessOrder( URIHandler ):
         referrer = None
         logging.info(referrer_code)
         if referrer_code:
-            referral_link = get_link_by_willt_code(referrer_code)
+            referral_link = Link.get_by_code(referrer_code)
             if referral_link and referral_link.user:
                 referrer = referral_link.user
 

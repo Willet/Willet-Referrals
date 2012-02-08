@@ -23,8 +23,6 @@ from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
-from apps.link.models         import get_link_by_willt_code
-from apps.link.models         import create_link
 from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
 from apps.sibt.actions        import SIBTClickAction
@@ -343,7 +341,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             except Exception, e:
                 try:
                     logging.info('trying willet_code: %s' % e)
-                    link = get_link_by_willt_code(willet_code)
+                    link = Link.get_by_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'

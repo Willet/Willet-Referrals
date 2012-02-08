@@ -293,15 +293,6 @@ class LoadAction( Action ):
     def get_by_user_and_url(user, url):
         return LoadAction.all().filter( 'user = ', user ).filter( 'url =', url )
 
-## Accessors -------------------------------------------------------------------
-def get_loads_by_url( url ):
-    logging.warn('get_loads_by_url deprecated, use static method LoadAction.get_by_url')
-    return LoadAction.all().filter( 'url =', url )
-
-def get_loads_by_user_and_url( user, url ):
-    logging.warn('get_loads_by_user_and_url deprecated, use static method LoadAction.get_by_user_and_url')
-    return LoadAction.all().filter( 'user = ', user ).filter( 'url =', url )
-
 ## -----------------------------------------------------------------------------
 ## ScriptLoadAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -325,11 +316,6 @@ class ScriptLoadAction( LoadAction ):
     def get_by_app(app):
         """docstring for get_by_app"""
         return ScriptLoadAction.all().filter( 'app_ =', app )
-
-## Accessors -------------------------------------------------------------------
-def get_scriptloads_by_app( app ):
-    logging.warn('get_scriptloads_by_app deprecated, use staticmethod')
-    return ScriptLoadAction.all().filter( 'app_ =', app )
 
 ## -----------------------------------------------------------------------------
 ## ButtonLoadAction Subclass ---------------------------------------------------
@@ -360,15 +346,6 @@ class ButtonLoadAction( LoadAction ):
     @staticmethod
     def get_by_user_and_url(user, url):
         return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)
-
-## Accessors -------------------------------------------------------------------
-def get_buttonloads_by_app( app ):
-    logging.warn('get_buttonloads_by_app deprecated')
-    return ButtonLoadAction.all().filter( 'app_ =', app )
-
-def get_buttonloads_by_user_and_url( user, url ):
-    logging.warn('get_buttonloads_by_user_and_url deprecated')
-    return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)
 
 ## -----------------------------------------------------------------------------
 ## ShowAction Subclass ---------------------------------------------------

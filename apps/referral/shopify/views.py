@@ -16,7 +16,7 @@ from apps.app.models import *
 from apps.referral.models import get_referral_app_by_url
 from apps.referral.shopify.api_wrapper import add_referree_gift_to_shopify_order
 from apps.referral.shopify.models import ReferralShopify, get_shopify_app_by_uuid, create_referral_shopify_app
-from apps.link.models import Link, get_link_by_willt_code, create_link
+from apps.link.models import Link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.shopify.models import ClientShopify
 from apps.order.models import *
@@ -330,7 +330,7 @@ class DynamicLoader(webapp.RequestHandler):
                 app = ReferralShopify.all().filter('client =', client).get()
 
             # Make a new Link
-            link = create_link(app.target_url, app, origin_domain, user)
+            link = Link.create(app.target_url, app, origin_domain, user)
             logging.info("link created is %s" % link.willt_url_code)
 
             # Fetch the Shopify Order
@@ -364,7 +364,7 @@ class DynamicLoader(webapp.RequestHandler):
             # Determine if they were referred
             referrer_cookie = self.request.cookies.get(app.uuid, False)
             logging.info('cookie %s' % referrer_cookie )
-            referrer_link   = get_link_by_willt_code( referrer_cookie )
+            referrer_link   = Link.get_by_code( referrer_cookie )
             logging.info('link %s' % referrer_link )
 
             if referrer_link:
