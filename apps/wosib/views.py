@@ -21,8 +21,6 @@ from apps.wosib.actions         import *
 from apps.app.models            import *
 from apps.client.shopify.models import *
 from apps.link.models           import Link
-from apps.link.models           import create_link
-from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.models         import Product
 from apps.product.shopify.models import ProductShopify # shouldn't be here?

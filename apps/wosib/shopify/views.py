@@ -22,8 +22,6 @@ from apps.app.models          import *
 from apps.client.models       import *
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
-from apps.link.models         import get_link_by_willt_code
-from apps.link.models         import create_link
 from apps.product.shopify.models import ProductShopify
 from apps.order.models        import *
 from apps.user.models         import get_user_by_cookie
