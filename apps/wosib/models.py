@@ -91,18 +91,23 @@ class WOSIB(App):
 # ------------------------------------------------------------------------------
 class WOSIBInstance(Model):
     # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
+    uuid = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty(auto_now_add=True)
+    created = db.DateTimeProperty(auto_now_add=True)
 
     # The User who asked WOSIB to their friends?
-    asker           = MemcacheReferenceProperty( db.Model, collection_name='wosib_instances' )
+    asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances' )
 
     # Parent App that "owns" these instances
-    app_            = db.ReferenceProperty( db.Model, collection_name="wosib_app_instances" )
+    app_ = db.ReferenceProperty(db.Model, collection_name="wosib_app_instances" )
 
-    link        = db.ReferenceProperty(db.Model, collection_name='link_wosib_instances', indexed=False)
+    link = db.ReferenceProperty(db.Model, collection_name='link_wosib_instances', indexed=False)
+
+    # the number of times this instance had received votes
+    # (less accurate than WOSIBVoteAction.all().filter('wosib_instance =', instance).count(),
+    # but saves DB reads. See DoWOSIBVote for property incrementation.)
+    votes = db.IntegerProperty (default = 0, indexed = False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
     products     = db.StringProperty(db.Text, indexed=True)
@@ -125,9 +130,8 @@ class WOSIBInstance(Model):
         return db.Query(WOSIBInstance).filter('uuid =', uuid).get()
 
     @staticmethod
-    def get_by_link(link, only_live=True):
+    def get_by_link(link):
         return WOSIBInstance.all()\
-                .filter('is_live =', only_live)\
                 .filter('link =', link)\
                 .get()
 
@@ -150,18 +154,18 @@ class PartialWOSIBInstance(Model):
     
     uuid        = db.StringProperty( indexed = True )
 
-    # User is the only index.
     user        = MemcacheReferenceProperty(db.Model, 
                                        collection_name='partial_wosib_instances',
                                        indexed=True)
+    
     link        = db.ReferenceProperty(db.Model, 
                                        collection_name='link_partial_wosib_instances',
                                        indexed=False)
     
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
-    products     = db.StringProperty(db.Text, indexed=True)
+    products     = db.StringProperty(db.Text, indexed=False)
     
-    app_        = db.ReferenceProperty( db.Model,
+    app_        = db.ReferenceProperty(db.Model,
                                        collection_name='app_partial_wosib_instances',
                                        indexed=False)
 
@@ -182,7 +186,8 @@ class PartialWOSIBInstance(Model):
             instance.link    = link
             instance.products = products
             instance.app_    = app
-        else: 
+        else:
+            # make a new one (user doesn't have an existing partial instance).
             uuid = generate_uuid( 16 )
 
             instance = PartialWOSIBInstance( key_name = uuid,

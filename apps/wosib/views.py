@@ -139,17 +139,17 @@ class WOSIBShowResults(webapp.RequestHandler):
             raise Exception ('instance not found')
         
         instance_products = wosib_instance.products.split(',') # uuid,uuid,uuid
-        logging.info ("instance_products = %r" % instance_products)
+        logging.debug ("instance_products = %r" % instance_products)
         
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
         instance_product_votes = [Action.all().filter('wosib_instance =', wosib_instance).filter('product_uuid =', product_uuid).count() for product_uuid in instance_products] # [votes,votes,votes]
-        logging.info ("instance_product_votes = %r" % instance_product_votes)
+        logging.debug ("instance_product_votes = %r" % instance_product_votes)
         
         instance_product_dict = dict (zip (instance_products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
-        logging.info ("instance_product_dict = %r" % instance_product_dict)
+        logging.debug ("instance_product_dict = %r" % instance_product_dict)
         
         winning_product_uuid = instance_products[instance_product_votes.index(max(instance_product_votes))]
-        logging.info ("winning_product_uuid = %r" % winning_product_uuid)
+        logging.debug ("winning_product_uuid = %r" % winning_product_uuid)
         
         winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
         
@@ -164,9 +164,9 @@ class WOSIBShowResults(webapp.RequestHandler):
             'product_image' : product_image
         }
         
-        logging.info("instance_product_dict = %r" % instance_product_dict)
-        logging.info("instance_products = %r" % instance_products)
-        logging.info("instance_product_votes = %r" % instance_product_votes)
+        logging.debug("instance_product_dict = %r" % instance_product_dict)
+        logging.debug("instance_products = %r" % instance_products)
+        logging.debug("instance_product_votes = %r" % instance_product_votes)
 
         # Finally, render the HTML!
         path = os.path.join('apps/wosib/templates/', 'results.html')
@@ -254,7 +254,7 @@ class WOSIBColorboxJSServer( URIHandler ):
                             'app_uuid'      : self.request.get('app_uuid'),
                             'user_uuid'     : self.request.get('user_uuid'),
                             'instance_uuid' : self.request.get('instance_uuid'),
-                            'target_url'    : self.request.get('target_url') }
+                            'refer_url'     : self.request.get('refer_url') }
        
         path = os.path.join('apps/wosib/templates/js/', 'jquery.colorbox.js')
         self.response.headers.add_header('P3P', P3P_HEADER)

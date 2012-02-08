@@ -161,6 +161,26 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
+    def WOSIBVoteNotification( to_addr, name, vote_url, client_name, client_domain ):
+        # similar to SIBTVoteNotification, except because you can't vote 'no',
+        # you are just told someone voted on one of your product choices.
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('wosib_voteNotification.html'),
+            {
+                'name'        : name.title(),
+                'vote_url'    : vote_url,
+                'client_name' : client_name,
+                'client_domain' : client_domain 
+            }
+        )
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+    
+    @staticmethod
     def WOSIBVoteCompletion():
         pass #TODO:
 

@@ -215,13 +215,22 @@ class WOSIBShowAction(ShowAction):
         return act
     
     def __str__(self):
-        return 'Showing %s to %s(%s) for wosib instance %s on site %s' % (
-                self.what,
-                self.user.get_full_name(), 
-                self.user.uuid,
-                self.wosib_instance.uuid,
-                self.wosib_instance.app_.client.domain
-        )
+        try:
+            return 'Showing %s to %s(%s) for wosib instance %s on site %s' % (
+                    self.what,
+                    self.user.get_full_name(), 
+                    self.user.uuid,
+                    self.wosib_instance.uuid,
+                    self.wosib_instance.app_.client.domain
+            )
+        except AttributeError: # typically 'instance is null'
+            return 'Showing %s to %s(%s)' % (
+                    self.what,
+                    self.user.get_full_name(), 
+                    self.user.uuid
+            )
+        else: # best I can do.
+            return ''
 
     ## Accessors 
     @staticmethod

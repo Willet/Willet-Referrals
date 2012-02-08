@@ -181,9 +181,7 @@ jQuery(document).ready (function () {
                 innerWidth: '790px',
                 innerHeight: '520px', 
                 fixed: true,
-                onClosed: function () {
-                    // derp
-                }
+                onClosed: function () { }
             });
         };
 
@@ -203,9 +201,7 @@ jQuery(document).ready (function () {
                 innerWidth: '790px',
                 innerHeight: '520px', 
                 fixed: true,
-                onClosed: function () {
-                    // derp
-                }
+                onClosed: function () { }
             });
         };
 
@@ -228,11 +224,13 @@ jQuery(document).ready (function () {
             // (not necessarily "finished") then show finished button
             if (srv_data.has_results) {
                 $('<input />', {
+                    'id': "_willet_WOSIB_results",
+                    'name': "_willet_WOSIB_results",
                     'type': "button",
                     'value': "Check results",
                     'class': "button _willet_button willet_reset",
                 }).css({
-                    'margin-left': '8px !important'
+                    'margin-left': '8px !important' // aesthetic spacing
                 }).insertAfter(
                     '#_willet_WOSIB_Button'
                 ).fadeIn(250, function() {

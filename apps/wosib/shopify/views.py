@@ -43,6 +43,7 @@ from util.consts              import *
 class WOSIBShopifyServeScript (webapp.RequestHandler):
     # chucks out a javascript that helps detect events and show wizards.
     def get(self):
+        votes_count = 0
         is_asker = show_votes = has_voted= show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
         instance_uuid = target   = bar_or_tab = ''
@@ -55,11 +56,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         app_sibt    = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
         event       = 'WOSIBShowingButton'
 
-        # A tad meaningless, as target will always be store.com/cart
-        if self.request.get('page_url'):
-            target = get_target_url(self.request.get('page_url'))
-        else:
-            target = get_target_url(self.request.headers.get('REFERER'))
+        target = get_target_url(self.request.headers.get('REFERER'))
 
         user = get_or_create_user_by_cookie( self, app )
 
@@ -84,7 +81,8 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             instance_uuid = instance.uuid
             
             # number of votes, not the votes objects.
-            votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
+            # votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
+            votes_count = instance.votes or 0
             logging.info ("votes_count = %s" % votes_count)
             
             asker_name = instance.asker.get_first_name()
@@ -120,67 +118,11 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
-            if app_sibt.incentive_enabled:
-                ab_test_options = [ "Which one should I buy? Let friends vote! Save $5!",
-                                    "Earn $5! Ask your friends what they think!",
-                                    "Need advice? Ask your friends! Earn $5!",
-                                    "Save $5 by getting advice from friends!",
-                                    # Muck with visitors' intrinsic motivation:
-                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
-                                    # (enable if you like)
-                                    # "Not sure? Ask your friends.", 
-                                  ]
-                cta_button_text = ab_test( 'sibt_incentive_text', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
-            else:
-                ab_test_options = [ "Not sure? Start a vote!",
-                                    "Not sure? Let friends vote!",
-                                    "Need advice? Ask your friends to vote",
-                                    "Need advice? Ask your friends!",
-                                    "Unsure? Get advice from friends!",
-                                    "Unsure? Get your friends to vote!",
-                                    ]
-                cta_button_text = ab_test( 'sibt_button_text6', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
-                
-            if app_sibt.overlay_enabled:
-                overlay_style = ab_test( 'sibt_overlay_style', 
-                                         ["_willet_overlay_button", "_willet_overlay_button2"],
-                                         user = user,
-                                         app  = app )
-            else:
-                overlay_style = "_willet_overlay_button"
-
-            # If subsequent page viewing and we should prompt user:
-            if show_top_bar_ask:
-                if app_sibt.top_bar_enabled and app_sibt.btm_tab_enabled:
-                    bar_or_tab = ab_test( 'sibt_bar_or_tab',
-                                          ['bar', 'tab'],
-                                          user = user,
-                                          app  = app )
-                    logging.info("BAR TAB? %s" % bar_or_tab )
-
-                    AB_top_bar = 1 if bar_or_tab == "bar" else 0
-                    AB_btm_tab = int(not AB_top_bar)
-
-                elif not app_sibt.top_bar_enabled and app_sibt.btm_tab_enabled:
-                    AB_top_bar = 1 
-                    AB_btm_tab = 0
-                elif app_sibt.top_bar_enabled and not app_sibt.btm_tab_enabled:
-                    AB_top_bar = 0 
-                    AB_btm_tab = 1
-                else:  # both False
-                    AB_top_bar = 0 
-                    AB_btm_tab = 0
-            else:
-                AB_top_bar = AB_btm_tab = 0
+            cta_button_text = "Need advice? Ask your friends!"
+            overlay_style   = "_willet_overlay_button"
+            AB_top_bar = AB_btm_tab = 0
         else:
             random.seed( datetime.now() )
-            
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
             overlay_style   = "_willet_overlay_button"
             AB_top_bar = AB_btm_tab = 1

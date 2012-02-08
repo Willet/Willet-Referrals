@@ -145,38 +145,38 @@ class ShareWOSIBInstanceOnFacebook(URIHandler):
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
 
-class DoWOSIBVote( URIHandler ):
+class DoWOSIBVote(URIHandler):
     def post(self):
         # since WOSIBInstances contain more than one product, clients
         # just call DoWOSIBVote multiple time to vote on each product
         # they select. (right now, the UI permits selection of only 
         # product per vote anyway)
-        instance_uuid = self.request.get( 'instance_uuid' )
+        instance_uuid = self.request.get('instance_uuid')
         logging.info ("instance_uuid = %s" % instance_uuid)
-        product_uuid = self.request.get( 'product_uuid' )
+        product_uuid = self.request.get('product_uuid')
         
-        user_uuid = self.request.get( 'user_uuid' )
+        user_uuid = self.request.get('user_uuid')
         # user = get_user_by_cookie (self)
         
-        instance = WOSIBInstance.get( instance_uuid )
+        instance = WOSIBInstance.get(instance_uuid)
         app = instance.app_
-        user = get_or_create_user_by_cookie (self, app)
+        user = get_or_create_user_by_cookie(self, app)
 
         # Make a Vote action for this User
-        action = WOSIBVoteAction.create( user, instance, product_uuid )
+        action = WOSIBVoteAction.create(user, instance, product_uuid)
+        instance.votes += 1 # increase instance vote counter
+        instance.special_put()
 
         # Tell the Asker they got a vote!
-        ''' email = instance.asker.get_attr('email')
+        email = instance.asker.get_attr('email')
         if email != "":
             Email.WOSIBVoteNotification(
                 email, 
                 instance.asker.get_full_name(), 
-                which, 
                 instance.link.get_willt_url(), 
-                instance.product_img,
                 app.client.name,
                 app.client.domain
-            ) '''
+        )
 
         # client just cares if it was HTTP 200 or 500.
         self.response.out.write('ok')
@@ -252,7 +252,11 @@ class TrackWOSIBShowAction(URIHandler):
             user = User.get(self.request.get('user_uuid')) 
 
         what = self.request.get('evnt')
-        url = self.request.get('target_url')
+        url = self.request.get('refer_url')
+        if not url:
+            # WOSIB doesn't have a target URL, but if refer is missing and target exists, use it
+            url = self.request.get('target_url')
+
         try:
             logging.debug ('TrackWOSIBShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
@@ -260,7 +264,6 @@ class TrackWOSIBShowAction(URIHandler):
                     instance = instance, 
                     url = url,
                     app = app,
-                    duration = duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
@@ -304,7 +307,6 @@ class TrackWOSIBUserAction(URIHandler):
                     instance = instance, 
                     url = url,
                     app = app,
-                    duration = duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
@@ -367,99 +369,7 @@ class StartWOSIBInstance(URIHandler):
 
 class StartWOSIBAnalytics(URIHandler):
     def get(self):
-        things = {
-            'tb': {
-                'action': 'WOSIBUserClickedTopBarAsk',
-                'show_action': 'WOSIBShowingTopBarAsk',
-                'l': [],
-                'counts': {},
-            },
-            'b': {
-                'action': 'WOSIBUserClickedButtonAsk',
-                'show_action': 'WOSIBShowingButton',
-                'l': [],
-                'counts': {},
-            }
-        }
-        actions_to_check = [
-            'WOSIBShowingAskIframe',
-            'WOSIBAskUserClickedEditMotivation',
-            'WOSIBAskUserClosedIframe',
-            'WOSIBAskUserClickedShare',
-            'WOSIBInstanceCreated',
-        ]
-        for t in things:
-            things[t]['counts'][things[t]['show_action']] = Action\
-                    .all(keys_only=True)\
-                    .filter('class =', things[t]['show_action'])\
-                    .count(999999)
-            
-            for click in Action.all().filter('what =', things[t]['action']).order('created'):
-                try:
-                    # we want to get the askiframe event
-                    # but we have to make sure there wasn't ANOTHER click after this
-
-                    next_show_button = Action.all()\
-                            .filter('user =', click.user)\
-                            .filter('created >', click.created)\
-                            .filter('app_ =', click.app_)\
-                            .filter('class =', 'WOSIBShowingButton')\
-                            .get()
-
-                    for action in actions_to_check:
-                        if action not in things[t]['counts']:
-                            things[t]['counts'][action] = 0
-
-                        a = Action.all()\
-                                .filter('user =', click.user)\
-                                .filter('created >', click.created)\
-                                .filter('app_ =', click.app_)\
-                                .filter('class =', action)\
-                                .get()
-                        if a:
-                            logging.info(a)
-                            if next_show_button:
-                                if a.created > next_show_button.created:
-                                    logging.info('ignoring %s over %s' % (
-                                        a,
-                                        next_show_button
-                                    ))
-                                    continue
-                            things[t]['counts'][action] += 1
-                            logging.info('%s + 1' % action)
-
-                    client = ''
-                    if click.app_.client:
-                        if hasattr(click.app_.client, 'name'):
-                            client = click.app_.client.name
-                        elif hasattr(click.app_.client, 'domain'):
-                            client = click.app_.client.domain
-                        elif hasattr(click.app_.client, 'email'):
-                            client = click.app_.client.email
-                        else:
-                            client = click.app_.client.uuid
-                    else:
-                        client = 'No client'
-
-                    things[t]['l'].append({
-                        'created': '%s' % click.created,
-                        'uuid': click.uuid,
-                        'user': click.user.name,
-                        'client': client
-                    })
-                except Exception, e:
-                    logging.warn('had to ignore one: %s' % e, exc_info=True)
-            things[t]['counts'][things[t]['action']] = len(things[t]['l'])
-            
-            l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
-            l = sorted(l, key=lambda item: item['value'], reverse=True)
-            things[t]['counts'] = l
-        template_values = {
-            'tb_counts': things['tb']['counts'],
-            'b_counts': things['b']['counts'],
-        }
-
-        self.response.out.write(self.render_page('action_stats.html', template_values))
+        self.response.out.write("No analytics yet")
 
 class SendWOSIBFBMessages( URIHandler ):
     def post( self ):

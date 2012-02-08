@@ -653,7 +653,7 @@
     };
 
     publicMethod.overlayClose = function( ) {
-        publicMethod.storeAnalytics( "SIBTOverlayCancelled" );
+        publicMethod.storeAnalytics( "WOSIBOverlayCancelled" );
         publicMethod.close();
     };
 
@@ -662,11 +662,11 @@
         var iframe = document.createElement( 'iframe' );
 
         iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
+        iframe.src = "{{ URL }}{% url TrackWOSIBShowAction %}?evnt=" + message + 
                     "&app_uuid={{app_uuid}}" +
                     "&user_uuid={{user_uuid}}" +
                     "&instance_uuid={{instance_uuid}}" +
-                    "&target_url={{target_url}}";
+                    "&refer_url={{refer_url}}";
 
         document.body.appendChild( iframe );
     };
@@ -1096,7 +1096,7 @@
 
 	publicMethod.settings = defaults;
 
-    publicMethod.closeState = "SIBTAskIframeCancelled";
+    publicMethod.closeState = "WOSIBAskIframeCancelled";
     
 	// Bind the live event before DOM-ready for maximum performance in IE6 & 7.
     handler = function (e) {
