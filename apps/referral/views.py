@@ -14,7 +14,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
 from apps.app.models import * 
-from apps.link.models import Link, get_link_by_willt_code
+from apps.link.models import Link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
 from apps.order.models import *

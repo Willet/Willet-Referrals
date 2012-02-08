@@ -21,8 +21,6 @@ from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
 from apps.client.shopify.models import *
 from apps.link.models           import Link
-from apps.link.models           import create_link
-from apps.link.models           import get_link_by_willt_code
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.models           import SIBTInstance
@@ -278,7 +276,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
                 app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
-                link = get_link_by_willt_code(self.request.get('willt_code'))
+                link = Link.get_by_code( self.request.get('willt_code') )
                 
                 if link is None:
                     # no willt code, asker probably came back to page with
@@ -404,7 +402,7 @@ class ShowResults(webapp.RequestHandler):
                 # get instance by link
                 app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
                 code = self.request.get('willt_code')
-                link = get_link_by_willt_code(code)
+                link = Link.get_by_code(code)
                 
                 if link == None:
                     # no willt code, asker probably came back to page with
