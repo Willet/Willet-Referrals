@@ -33,6 +33,13 @@ from util.helpers            import url as reverse_url
 class SIBTShopify(SIBT, AppShopify):
     # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
+
+    # Version number of the app
+    # Version 1 = [Beginning, Nov. 22, 2011]
+    # Version 2 = [Nov. 23, 2011, Present]
+    # Differences between versions: version 1 uses script_tags API to install scripts
+    # version 2 uses asset api to include liquid
+    version    = db.StringProperty(default='2', indexed=False)
     
     defaults = {
         'willet_button': {

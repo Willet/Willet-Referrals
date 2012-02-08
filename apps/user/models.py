@@ -803,14 +803,6 @@ class User( db.Expando ):
 
 # Gets by X
 # TODO: move Gets, Creates, & Gets or Creates to static methods of User class, update dependencies
-# Reason: any subclasses of User now get these methods too
-def get_user_by_uuid( uuid ):
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    logging.info("Getting user by uuid " + str(uuid))
-    #user = User.all().filter('uuid =', uuid).get()
-    user = User.get(uuid)
-    return user
-
 def get_user_by_facebook(fb_id):
     logging.info("Getting user by FB: " + fb_id)
     user = User.all().filter('fb_identity =', fb_id).get()
@@ -956,21 +948,6 @@ def get_or_create_user_by_email( email, request_handler, app ):
     
     return user
 
-def add_ip_to_user(user_uuid, ip):
-    """Done as a deferred task otherwise have to put a user everytime we get
-    one by cookie"""
-    logging.warn('this method is deprecated: add_ip_to_user')
-    logging.info('adding %s to user %s' % (ip, user_uuid))
-    def txn(user):
-        if user:
-            if hasattr(user, 'ips') and ip not in user.ips:
-                user.ips.append(ip)
-            else: 
-                user.ips = [ip]
-            user.save()
-    user = User.get(user_uuid)
-    db.run_in_transaction(txn, user)
-
 def get_user_by_cookie(request_handler):
     """Read a user by cookie. Update IP address if present"""
     if request_handler == None:
@@ -980,7 +957,6 @@ def get_user_by_cookie(request_handler):
     if user:
         ip = request_handler.request.remote_addr
         user.add_ip(ip)
-        #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
     return user
 
 def get_or_create_user_by_cookie( request_handler, app ): 
@@ -989,7 +965,6 @@ def get_or_create_user_by_cookie( request_handler, app ):
         user = create_user( app )
         ip = request_handler.request.remote_addr
         user.add_ip(ip)
-        #deferred.defer(add_ip_to_user, user.uuid, ip, _queue='slow-deferred')
 
     # Set a cookie to identify the user in the future
     set_user_cookie(request_handler, user.uuid)

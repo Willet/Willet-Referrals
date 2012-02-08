@@ -100,9 +100,6 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_or_fetch(url, client):
-        if url == 'http://www.mydoggieseatbelt.com/': # special case for landing page product
-            url = 'http://www.mydoggieseatbelt.com/collections/frontpage/products/copy-of-doggie-seatbelt'
-
         product = ProductShopify.get_by_url(url)
         if product == None:
             logging.warn('Could not get product for url: %s' % url)

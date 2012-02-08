@@ -11,7 +11,7 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.wosib.actions        import *
+from apps.wosib.actions       import *
 from apps.action.models       import UserAction
 from apps.app.models          import App
 from apps.app.models          import get_app_by_id
@@ -20,14 +20,13 @@ from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
 from apps.user.models         import User
-from apps.wosib.models         import WOSIBInstance
-from apps.wosib.models         import PartialWOSIBInstance
-from apps.user.actions import UserIsFBLoggedIn
+from apps.wosib.models        import WOSIBInstance
+from apps.wosib.models        import PartialWOSIBInstance
+from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import get_or_create_user_by_cookie
-from apps.user.models         import get_user_by_uuid
 
 from util.consts              import *
 from util.helpers             import url 

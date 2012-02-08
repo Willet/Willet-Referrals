@@ -66,12 +66,6 @@ class SIBTShopifyWelcome(URIHandler):
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
 
-            # Switched to new install code on Nov. 23rd
-            if app.created <= datetime( 2011, 11, 22 ):
-                old_install_code = 1
-            else:
-                old_install_code = 0
-
             # Switched to new order tracking code on Jan 16
             if app.created > datetime( 2012, 01, 16 ):
                 new_order_code = 1
@@ -85,7 +79,6 @@ class SIBTShopifyWelcome(URIHandler):
                 'shop_owner': shop_owner,
                 'client_email': client_email,
                 'client_uuid' : client.uuid,
-                'old_install_code' : old_install_code,
                 'new_order_code' : new_order_code
             }
 

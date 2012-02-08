@@ -70,7 +70,7 @@
                 <p>
                     <strong>4. Once </strong>you've picked a spot, add this code:
 
-            {% if old_install_code %}
+            {% ifequal app.version '1' %}
                 <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
             {% else %}
                 <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
