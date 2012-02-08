@@ -14,11 +14,10 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 
 from apps.app.models import * 
-from apps.link.models import Link, get_link_by_willt_code
+from apps.link.models import Link
 from apps.user.models import get_user_by_cookie, User, get_or_create_user_by_cookie
 from apps.client.models import *
 from apps.order.models import *
-from apps.stats.models import Stats
 
 from util.helpers import *
 from util.urihandler import URIHandler
@@ -177,7 +176,6 @@ class ShowEditPage( URIHandler ):
 
 class ShowCodePage( URIHandler ):
     # Renders a app page
-    @login_required
     def get(self, client):
         app_id = self.request.get( 'id' )
         template_values = { 'app' : None }

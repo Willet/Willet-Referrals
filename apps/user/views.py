@@ -8,7 +8,7 @@ from util.urihandler import URIHandler
 class ShowProfilePage(URIHandler):
     def get(self, app_id = None, user_id = None):
         app = get_app_by_id(app_id)
-        user = get_user_by_uuid(user_id)
+        user = User.get( user_id )
 
         if not app:
             logging.error("""Tried to get user profile without defining
@@ -28,11 +28,6 @@ class ShowProfilePage(URIHandler):
                             total_profit += order.subtotal_price
                     #cons = Conversion.all().filter('link =', l)
                     total_conversions += cons.count()
-            if hasattr(user, 'user_testimonials'):
-                testies = user.user_testimonials.filter('app =', app)
-            else:
-                testies = {}
-
             template_values = {
                 'valid_user': True,
                 'user': user,
@@ -48,7 +43,6 @@ class ShowProfilePage(URIHandler):
                 'total_conversions': total_conversions,
                 'total_referrals': links.count(),
                 'total_profit': total_profit,
-                'testies': testies,
                 #'results': results 
             }
         else:
@@ -66,7 +60,7 @@ class ShowProfilePage(URIHandler):
 
 class ShowProfileJSON (URIHandler):
     def get(self, user_id = None):
-        user = get_user_by_uuid(user_id)
+        user = User.get( user_id )
         response = {}
         success = False
         if user:

@@ -15,7 +15,8 @@ from time import time
 
 from apps.app.models import *
 from apps.order.models import *
-from apps.link.models import Link, get_link_by_willt_code
+from apps.link.models import Link
+from apps.referral.models import create_conversion
 from apps.user.models import User, get_or_create_user_by_email, get_user_by_cookie
 
 from util.helpers import *
@@ -39,7 +40,7 @@ class PostConversion( URIHandler ):
 
         # Only POST if they have a referrer cookie!
         if referrer_willt_url:
-            link = get_link_by_willt_code( referrer_willt_url )
+            link = Link.get_by_code( referrer_willt_url )
             logging.info('Posting a conversion notification to a Client!')
 
             # Store a 'Conversion' in our DB for tracking purposes

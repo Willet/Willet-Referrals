@@ -6,7 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, urllib, sys
 from inspect import getmodule
 from datetime import datetime
-import time
+from time import time
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -15,24 +15,23 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
 from apps.referral.models import Referral
+from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
-from apps.link.models import get_link_by_willt_code
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
+from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.stats.models import Stats
-from apps.user.models import User, get_user_by_uuid
+from apps.user.models import User
 from apps.analytics_backend.models import *
 
 from util                 import httplib2
@@ -74,7 +73,7 @@ class RenameFacebookData(webapp.RequestHandler):
 
     def post(self):
         rq_vars = get_request_variables(['uuid'], self)
-        user = get_user_by_uuid(rq_vars['uuid'])
+        user = User.get( rq_vars['uuid'] )
         if user:
             if hasattr(user, 'facebook_access_token'):
                 user.fb_access_token = user.facebook_access_token
@@ -236,16 +235,6 @@ class ManageApps(URIHandler):
 
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
-        stats = Stats.get_stats()
-        str = "<h1>Stats</h1>"
-        str += "<p># Instances: %d </p>" % stats.total_instances
-        str += "<p># Clickthroughs: %d </p>" % stats.total_clicks
-        str += "<p># Votes: %d </p>" % stats.total_votes
-
-        if stats.total_instances != 0:
-            str += "<p>Clicks/Instance: %f </p>" % float(float(stats.total_clicks)/float(stats.total_instances))
-            str += "<p>Votes/Instance: %f </p>" % float(float(stats.total_votes)/float(stats.total_instances))
-
         str += "<h1> Live Instances </h1>"
         live_instances = SIBTInstance.all().filter( 'is_live =', True )
         for l in live_instances:
@@ -273,7 +262,7 @@ class SIBTInstanceStats( URIHandler ):
             self.response.out.write( self.no_code( ) )
             return
 
-        link = get_link_by_willt_code( willt_code )
+        link = Link.get_by_code( willt_code )
 
         instance = link.sibt_instance.get()
         asker    = instance.asker
@@ -409,16 +398,19 @@ class InstallShopifyJunk( URIHandler ):
 
 class Barbara(URIHandler):
     def get( self ):
-        apps = ButtonsShopify.all()
+        apps = SIBTShopify.all()
+        count = 0
         for a in apps:
-            if a.client:
-                client = a.client
-                if client.apps.count() > 1:
-                    pass
-                else:
-                    for p in client.products:
-                        p.delete()
-        logging.info("DONE")
+
+            # Switched to new install code on Nov. 23rd
+            if a.created <= datetime.datetime( 2011, 11, 22 ):
+                a.version = '1'
+            else:
+                a.version = '2'
+
+            a.put()
+       
+        logging.info("DONE: %d" % count)
 
 class ShowActions(URIHandler):
     @admin_required
