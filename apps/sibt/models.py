@@ -35,7 +35,7 @@ NUM_VOTE_SHARDS = 15
 # ------------------------------------------------------------------------------
 # SIBT Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
-class SIBT(App, db.Expando):
+class SIBT(App):
     """Model storing the data for a client's 'Should I Buy This?' app"""
     
     # if the button is enabled for this app

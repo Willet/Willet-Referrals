@@ -28,7 +28,6 @@ from apps.product.shopify.models import ProductShopify
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
-from apps.sibt.shopify.models   import get_sibt_shopify_app_by_store_id, get_sibt_shopify_app_by_store_url
 from apps.user.models           import User
 from apps.user.models           import get_user_by_cookie
 
@@ -275,7 +274,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
 
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
-                app  = get_sibt_shopify_app_by_store_id(self.request.get('store_id'))
+                app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 link = get_link_by_willt_code(self.request.get('willt_code'))
                 
                 if link == None:

@@ -6,38 +6,34 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib
-import logging
 import datetime
+import hashlib
 import inspect
+import logging
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
-from google.appengine.api import memcache
-from google.appengine.datastore import entity_pb
-from google.appengine.ext.webapp import template
+from django.utils                   import simplejson as json
+from google.appengine.api           import memcache
+from google.appengine.datastore     import entity_pb
+from google.appengine.ext           import db
+from google.appengine.ext.webapp    import template
 
 from apps.app.shopify.models import AppShopify
-from apps.client.models     import Client
-from apps.sibt.models     import SIBT 
-from apps.email.models    import Email
-from apps.user.models import get_user_by_cookie
-from util                 import httplib2
-from util.consts          import *
-from util.helpers         import generate_uuid
-from util.helpers import url as reverse_url
+from apps.client.models      import Client
+from apps.email.models       import Email
+from apps.sibt.models        import SIBT 
+from apps.user.models        import get_user_by_cookie
+from util                    import httplib2
+from util.consts             import *
+from util.helpers            import generate_uuid
+from util.helpers            import url as reverse_url
 
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTShopify(SIBT, AppShopify):
-    
-    # Shopify's ID for this store
-    #store_id    = db.StringProperty( indexed = True )
-    
-    # Shopify's token for this store
-    #store_token = db.StringProperty( indexed = True )
+    # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
+    
     defaults = {
         'willet_button': {
             'color': '333333',
@@ -83,7 +79,6 @@ class SIBTShopify(SIBT, AppShopify):
             'box_shadow_color': '727272',
             'border_radius': '10',
             'padding': '10'
-                
         } 
     }
 
@@ -122,7 +117,6 @@ class SIBTShopify(SIBT, AppShopify):
         }]
         # Install yourself in the Shopify store
         self.install_webhooks( product_hooks_too = True )
-        #self.install_script_tags(script_tags=data)
         self.install_assets(assets=liquid_assets)
 
         # Email Barbara
@@ -298,71 +292,4 @@ class SIBTShopify(SIBT, AppShopify):
         return SIBTShopify.all()\
                 .filter('store_id =', store_id)\
                 .get()
-
-# Constructor ------------------------------------------------------------------
-def create_sibt_shopify_app(client, token):
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    uuid = generate_uuid( 16 )
-    app = SIBTShopify( key_name    = uuid,
-                       uuid        = uuid,
-                       client      = client,
-                       store_name  = client.name, # Store name
-                       store_url   = client.url, # Store url
-                       store_id    = client.id, # Store id
-                       store_token = token )
-    app.put()
-    
-    app.do_install()
-     
-    return app
-
-# Accessors --------------------------------------------------------------------
-def get_or_create_sibt_shopify_app(client, token=None):
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    #app = get_sibt_shopify_app_by_store_id( client.id )
-    app = get_sibt_shopify_app_by_store_url(client.url)
-    if app is None:
-        app = create_sibt_shopify_app(client, token)
-    elif token != None and token != '':
-        if app.store_token != token:
-            # TOKEN mis match, this might be a re-install
-            logging.warn(
-                'We are going to reinstall this app because the stored token \
-                does not match the request token\n%s vs %s' % (
-                    app.store_token,
-                    token
-                )
-            ) 
-            try:
-                app.store_token = token
-                app.put()
-                app.do_install()
-            except:
-                logging.error('encountered error with reinstall', exc_info=True)
-    return app
-
-def get_sibt_shopify_app_by_uuid(id):
-    """ Fetch a Shopify obj from the DB via the uuid"""
-    logging.info("Shopify: Looking for %s" % id)
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    return SIBTShopify.get(id)
-    #return SIBTShopify.all()\
-    #        .filter('uuid =', id)\
-    #        .get()
-
-def get_sibt_shopify_app_by_store_url(url):
-    """ Fetch a Shopify obj from the DB via the store's url"""
-    logging.info("Shopify: Looking for %s" % url)
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    return SIBTShopify.all()\
-            .filter('store_url =', url)\
-            .get()
-
-def get_sibt_shopify_app_by_store_id(id):
-    """ Fetch a Shopify obj from the DB via the store's id"""
-    logging.info("Shopify: Looking for %s" % id)
-    logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-    return SIBTShopify.all()\
-            .filter('store_id =', id)\
-            .get()
 
