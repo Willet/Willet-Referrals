@@ -136,30 +136,6 @@
         }
     };
 
-    var fb_share_handler = function(payload) {
-        $.ajax({
-            url: '{% url ShareWOSIBInstanceOnFacebook %}',
-            type: 'post',
-            dataType: 'json',
-            data: payload,
-            success: function (response) {
-                if (response.success) {
-                    shareComplete('facebook');
-                } else {
-                    if (userFound) {
-                        // we tried to use an existing user
-                        // but the share failed!
-                        userFound = false; // dont do this twice
-                        fb_login_and_share();
-                    } else {
-                        $("#loading").hide();
-                        $("#error").fadeIn(300);
-                    }
-                }
-            }
-        });
-    };
-
     var sendMessages = function() {
         var friend_info = [];
         var msg   = $("#share-text").val();
@@ -235,25 +211,6 @@
         closeIframe( 'WOSIBNoConnectFBDialog' );
     };
 
-    var share = function() {
-        storeAnalytics('WOSIBAskUserClickedShare');
-
-        fbData.msg = message; 
-        fbData.motivation = motivation_text;
-        FB.login(function(lr) {
-                if (!lr.authResponse) {
-                    // we weren't given permission
-                    window.close();
-                } else { 
-                    fbData.fb_token = lr.authResponse.accessToken;
-                    fbData.fb_id = lr.authResponse.userID;
-                    fb_share_handler(fbData);
-                }
-            }, {scope: 'publish_stream,offline_access,user_about_me,email'}
-        );
-        return;
-    };
-    
     var get_selected_objects = function () {
         var uuids = [];
         $('#cart_items_display input').each (function (i, e) {

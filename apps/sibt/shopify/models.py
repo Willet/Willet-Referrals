@@ -149,7 +149,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def memcache_by_store_url(self):
         return memcache.set(
-                "SIBT-%s" % self.store_url, 
+                self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     def reset_css(self):
@@ -280,7 +280,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
-        data = memcache.get("SIBT-%s" % url) # other apps used the same url
+        data = memcache.get(url)
         if data:
             app = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:

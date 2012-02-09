@@ -32,116 +32,9 @@ from apps.user.models         import get_or_create_user_by_cookie
 from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
+from util.strip_html          import strip_html
 from util.urihandler          import URIHandler
-from util.strip_html import strip_html
 
-class ShareWOSIBInstanceOnFacebook(URIHandler):
-    def post(self):
-        logging.info("SHARE WOSIB ON FACEBOOK")
-
-        app  = get_app_by_id(self.request.get('app_uuid'))
-        user = User.get(self.request.get('user_uuid'))
-        if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = get_or_create_user_by_cookie(self, app)
-        willt_code = self.request.get('willt_code')
-        link = Link.get_by_code(willt_code)
-        img = self.request.get('product_img')
-        product_name = self.request.get('name')
-        product_desc = None 
-        product_id = self.request.get('product_id')
-        fb_token = self.request.get('fb_token')
-        fb_id = self.request.get('fb_id')
-        message = self.request.get('msg')
-
-        product = None
-        try:
-            product = ProductShopify.get_by_shopify_id( str(product_id) )
-        except:
-            logging.info('Could not get product by id %s' % product_id, exc_info=True)
-        try:
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.info('could not get product description')
-        
-        try:
-            if isinstance(message, str):
-                message = unicode(message, errors='ignore')
-
-            if isinstance(img, str):
-                img = unicode(img, errors='ignore')
-            
-            if isinstance(product_name, str):
-                product_name = unicode(product_name, errors='ignore')
-
-            if isinstance(product_desc, str):
-                product_desc = unicode(product_desc, errors='ignore')
-        except:
-            logging.info('error transcoding to unicode', exc_info=True)
-
-        # defaults
-        response = {
-            'success': False,
-            'data': {}
-        }
-
-        # first do sharing on facebook
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            ) 
-        if not hasattr(user, 'fb_access_token') or \
-            not hasattr(user, 'fb_identity'):
-            logging.info('Setting users facebook info')    
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            ) 
-
-        try:
-            facebook_share_id, plugin_response = user.facebook_share(
-                message,
-                img,
-                product_name,
-                product_desc,
-                link
-            )
-            logging.info('shared on facebook, got share id and response %s %s' % (
-                facebook_share_id,
-                plugin_response
-            ))
-
-            # if it wasn't successful ...
-            if facebook_share_id == None or plugin_response == 'fail':
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
-            else:
-                # create the instance!
-                # Make the Instance!
-                instance = app.create_instance(user, None, link)
-        
-                # increment link stuff
-                link.app_.increment_shares()
-                link.add_user(user)
-                logging.info('incremented link and added user')
-
-                # add testimonial
-                create_testimonial(user=user, message=message, link=link)
-
-                response['success'] = True
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
-
-        logging.info('response: %s' % response)
-        self.response.out.write(json.dumps(response))
 
 class DoWOSIBVote(URIHandler):
     def post(self):
@@ -158,9 +51,10 @@ class DoWOSIBVote(URIHandler):
         user = get_or_create_user_by_cookie(self, app)
 
         # Make a Vote action for this User
+        # TODO: use VoteCounter
         action = WOSIBVoteAction.create(user, instance, product_uuid)
         instance.votes += 1 # increase instance vote counter
-        instance.special_put()
+        instance.put()
 
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
@@ -168,7 +62,7 @@ class DoWOSIBVote(URIHandler):
             Email.WOSIBVoteNotification(
                 email, 
                 instance.asker.get_full_name(), 
-                instance.link.get_willt_url(), 
+                instance.link.origin_domain, # cart url
                 app.client.name,
                 app.client.domain
         )
@@ -357,6 +251,8 @@ class StartWOSIBInstance(URIHandler):
         self.response.out.write(json.dumps(response))
 
 class StartWOSIBAnalytics(URIHandler):
+    # StartWOSIBAnalytics will eventually serve the same purpose as StartSIBTAnalytics
+    # in SIBT: tally WOSIB actions.
     def get(self):
         self.response.out.write("No analytics yet")
 

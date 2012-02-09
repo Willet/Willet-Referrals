@@ -159,36 +159,19 @@ class ClientShopify( Client ):
         # Grab Shopify API settings
         settings = SHOPIFY_APPS[app_type]
 
+        # Constuct the API URL
         username = settings['api_key'] 
-        logging.info ("username = %s" % username)
         password = hashlib.md5(settings['api_secret'] + self.token).hexdigest()
-        logging.info ("password = %s" % password)
-
-        # this creates a password manager
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        # because we have put None at the start it will always
-        # use this username/password combination for  urls
-        # for which `url` is a super-url
-        # warning: password is truncated if site runs on SDK.
-        passman.add_password(None, url, username, password)
-
-        # create the AuthHandler
-        authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-        opener = urllib2.build_opener(authhandler)
-
-        # All calls to urllib2.urlopen will now use our handler
-        # Make sure not to include the protocol in with the URL, or
-        # HTTPPasswordMgrWithDefaultRealm will be very confused.
-        # You must (of course) use it when fetching the page though.
-        urllib2.install_opener(opener)
-
-        # authentication is now handled automatically for us
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
         logging.info("Querying %s" % url )
-        result = urllib2.urlopen(url)
-
-        # Grab the data about the order from Shopify
-        details  = json.loads( result.read() ) 
+        resp, content = h.request( url, "GET", headers = header)
+        
+        details = json.loads( content ) 
         products = details['products']
 
         for p in products:

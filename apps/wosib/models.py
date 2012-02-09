@@ -76,7 +76,7 @@ class WOSIB(App):
             six_hours = timedelta(hours=6)
             end = instance.created + six_hours
         instance.end_datetime = end
-        instance.special_put()
+        instance.put()
             
         return instance
 
@@ -116,10 +116,6 @@ class WOSIBInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
-
-    def special_put(self):
-        # what's so special about it?
-        super(WOSIBInstance, self).put()
 
     @staticmethod
     def get_by_uuid(uuid):

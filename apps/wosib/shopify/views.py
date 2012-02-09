@@ -45,7 +45,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         is_asker = show_votes = has_voted= show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
         instance_uuid = target   = bar_or_tab = ''
-        willet_code = self.request.get('willt_code') # deprecated?
+        willet_code = self.request.get('willt_code')
         shop_url    = get_shopify_url(self.request.get('store_url'))
         if not shop_url: # backup (most probably hit)
             shop_url    = get_target_url(self.request.headers.get('REFERER')) # probably ok
