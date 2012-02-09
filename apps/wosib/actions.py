@@ -16,8 +16,6 @@ from apps.action.models     import ShowAction
 from apps.action.models     import UserAction
 from apps.action.models     import VoteAction
 
-from apps.gae_bingo.gae_bingo import bingo
-
 from util.helpers           import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
@@ -548,31 +546,6 @@ class WOSIBUserClickedButtonAsk(UserAction):
         )
         action.put()
 
-        return action
-
-class WOSIBAskUserClickedEditMotivation(UserAction):
-    @staticmethod
-    def create(user, **kwargs):
-        # Make the action
-        what = 'WOSIBAskUserClickedEditMotivation'
-        url = None
-        app = None
-        try:
-            app = kwargs['app']
-            url = kwargs['url']
-        except Exception,e:
-            logging.error(e, exc_info=True)
-
-        uuid = generate_uuid( 16 )
-        action = WOSIBAskUserClickedEditMotivation(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what = what
-        )
-        action.put()
         return action
 
 class WOSIBAskUserClickedShare(UserAction):

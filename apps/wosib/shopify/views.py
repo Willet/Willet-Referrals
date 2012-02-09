@@ -6,39 +6,40 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 import datetime
 import random
 
-from django.utils import simplejson as json
-from google.appengine.api import taskqueue
-from google.appengine.api import memcache
-from google.appengine.ext import webapp
-from google.appengine.ext import db 
-from google.appengine.ext.webapp import template
+from django.utils                     import simplejson as json
+from google.appengine.api             import taskqueue
+from google.appengine.api             import memcache
+from google.appengine.ext             import webapp
+from google.appengine.ext             import db 
+from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from time import time
-from urlparse import urlparse
+from time                             import time
+from urlparse                         import urlparse
 
-from apps.action.models       import ButtonLoadAction
-from apps.action.models       import ScriptLoadAction
-from apps.app.models          import *
-from apps.client.models       import *
-from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models         import Link
-from apps.product.shopify.models import ProductShopify
-from apps.order.models        import *
-from apps.user.models         import get_user_by_cookie
-from apps.user.models         import User
-from apps.user.models         import get_or_create_user_by_cookie
-from apps.sibt.shopify.models import SIBTShopify
-from apps.wosib.actions       import WOSIBVoteAction
-from apps.wosib.models        import WOSIBInstance
-from apps.wosib.shopify.models import WOSIBShopify
+from apps.action.models               import ButtonLoadAction
+from apps.action.models               import ScriptLoadAction
+from apps.app.models                  import *
+from apps.client.models               import *
+from apps.gae_bingo.gae_bingo         import ab_test
+from apps.link.models                 import Link
+from apps.order.models                import *
+from apps.product.shopify.models      import ProductShopify
+from apps.sibt.shopify.models         import SIBTShopify
+from apps.user.models                 import get_user_by_cookie
+from apps.user.models                 import User
+from apps.user.models                 import get_or_create_user_by_cookie
+from apps.wosib.actions               import WOSIBVoteAction
+from apps.wosib.models                import WOSIBInstance
+from apps.wosib.shopify.models        import WOSIBShopify
 
-from util.shopify_helpers import get_shopify_url
-from util.helpers             import *
-from util.urihandler          import URIHandler
-from util.consts              import *
+from util.consts                      import *
+from util.helpers                     import *
+from util.shopify_helpers             import get_shopify_url
+from util.urihandler                  import URIHandler
 
 class WOSIBShopifyServeScript (webapp.RequestHandler):
-    # chucks out a javascript that helps detect events and show wizards.
+    # chucks out a javascript that helps detect events and show wizards
+    # (with wands and broomsticks)
     def get(self):
         votes_count = 0
         is_asker = show_votes = has_voted= show_top_bar_ask = False
@@ -113,65 +114,27 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         else:
             logging.warn("no instance!")
 
-        # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
             cta_button_text = "Need advice? Ask your friends!"
-            overlay_style   = "_willet_overlay_button"
-            AB_top_bar = AB_btm_tab = 0
         else:
-            random.seed( datetime.now() )
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
-            overlay_style   = "_willet_overlay_button"
-            AB_top_bar = AB_btm_tab = 1
-
-        # a whole bunch of css bullshit!
-        if app:
-            logging.info("got app button css")
-            app_css = app_sibt.get_css()
-        else:
-            app_css = ''
         
         # Grab all template values
         template_values = {
-            'URL' : URL,
-            'is_asker' : is_asker,
-            'show_votes' : show_votes,
-            'has_voted': has_voted,
-            'show_top_bar_ask': show_top_bar_ask,
-            
+            'URL'            : URL,
             'app'            : app,
             'app_css'        : app_sibt.get_css(),
             'instance'       : instance,
-            'asker_name'     : asker_name, 
-            'asker_pic'      : asker_pic,
-            'store_url'      : shop_url,
             'store_domain'   : getattr (app_sibt.client, 'domain', ''),
             'store_id'       : self.request.get('store_id'),
             'user'           : user,
             'instance_uuid'  : instance_uuid,
             'stylesheet'     : 'css/colorbox.css',
             'evnt'           : event,
-            
+            'cta_button_text': cta_button_text,
             # this thing tells client JS if the user had created an instance
             'has_results'    : 'true' if votes_count else 'false',
         }
-
-
-
-
-
-
-
-
-
-        # Try to find an instance for this { url, user }
-        try:
-            assert(app != None)
-            # Is User an asker for this URL?
-            logging.info('trying to get instance for url: %s' % target)
-            instance = WOSIBInstance.get_by_asker_for_url(user, target)
-        except:
-            logging.info('no app or no instance')
 
         path = os.path.join('apps/wosib/templates/', 'wosib_button.js')
         self.response.headers.add_header('P3P', P3P_HEADER)

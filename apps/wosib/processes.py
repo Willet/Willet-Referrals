@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
 
+from datetime import datetime
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
@@ -49,7 +50,6 @@ class ShareWOSIBInstanceOnFacebook(URIHandler):
         product_name = self.request.get('name')
         product_desc = None 
         product_id = self.request.get('product_id')
-        motivation = self.request.get('motivation')
         fb_token = self.request.get('fb_token')
         fb_id = self.request.get('fb_id')
         message = self.request.get('msg')
@@ -153,9 +153,6 @@ class DoWOSIBVote(URIHandler):
         logging.info ("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get('product_uuid')
         
-        user_uuid = self.request.get('user_uuid')
-        # user = get_user_by_cookie (self)
-        
         instance = WOSIBInstance.get(instance_uuid)
         app = instance.app_
         user = get_or_create_user_by_cookie(self, app)
@@ -185,7 +182,6 @@ class GetExpiredWOSIBInstances(URIHandler):
     
     def get(self):
         """Gets a list of WOSIB instances to be expired and emails to be sent"""
-        from datetime import datetime
         right_now = datetime.now()
         expired_instances = WOSIBInstance.all()\
                 .filter('is_live =', True)\
@@ -211,8 +207,7 @@ class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
             instance.put()
             return instance
         
-        instance_uuid = self.request.get('instance_uuid')
-        instance = WOSIBInstance.get(instance_uuid)
+        instance = WOSIBInstance.get(self.request.get('instance_uuid'))
         if instance != None:
             result_instance = db.run_in_transaction(txn, instance)
             email = instance.asker.get_attr('email')
@@ -228,10 +223,6 @@ class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
-
-class StoreAnalytics( URIHandler ):
-    def get( self ):
-        logging.error('WE SHOULDNT BE DOING THIS ANYMORE, BAD PROGRAMMER')
 
 class TrackWOSIBShowAction(URIHandler):
     def get(self):
@@ -328,13 +319,13 @@ class StartPartialWOSIBInstance( URIHandler ):
     def post( self ):
         app     = App.get( self.request.get( 'app_uuid' ) )
         link    = Link.get_by_code( self.request.get( 'willt_code' ) )
+        
         products = self.request.get( 'product_uuids' )
         logging.info ('products = %s' % products)
         user    = User.get( self.request.get( 'user_uuid' ) )
         PartialWOSIBInstance.create( user, app, link, products )
 
 class StartWOSIBInstance(URIHandler):
-    # WIP
     def post(self):
         app  = App.get (self.request.get('app_uuid'))
         link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
@@ -429,7 +420,7 @@ class SendWOSIBFBMessages( URIHandler ):
             try:
                 product_image = product.images[0]
             except:
-                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
+                product_image = '%s/static/imgs/blank.png' % URL # blank
             fb_share_ids = user.fb_post_multiple_products_to_friends (  ids,
                                                                         names,
                                                                         msg,

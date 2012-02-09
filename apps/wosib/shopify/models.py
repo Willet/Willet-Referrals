@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 # WOSIBShopify model
-# Extends from "Referral", which extends from "App"
 
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
@@ -11,29 +10,26 @@ import logging
 import datetime
 import inspect
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
-from google.appengine.api import memcache
-from google.appengine.datastore import entity_pb
+from django.utils                import simplejson as json
+from google.appengine.api        import memcache
+from google.appengine.datastore  import entity_pb
+from google.appengine.ext        import db
 from google.appengine.ext.webapp import template
 
-from apps.app.shopify.models import AppShopify
-from apps.client.models     import Client
-from apps.wosib.models     import WOSIB 
-from apps.email.models    import Email
-from apps.user.models import get_user_by_cookie
-from util                 import httplib2
-from util.consts          import *
-from util.helpers         import generate_uuid
-from util.helpers import url as reverse_url
+from apps.app.shopify.models     import AppShopify
+from apps.client.models          import Client
+from apps.email.models           import Email
+from apps.user.models            import get_user_by_cookie
+from apps.wosib.models           import WOSIB 
+from util                        import httplib2
+from util.consts                 import *
+from util.helpers                import generate_uuid
+from util.helpers                import url as reverse_url
 
 # ------------------------------------------------------------------------------
 # WOSIBShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
 class WOSIBShopify(WOSIB, AppShopify):
-    
-    # Shopify's ID for this store
-    #store_id    = db.StringProperty( indexed = True )
     
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

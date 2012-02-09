@@ -706,7 +706,7 @@ class User( db.Expando ):
                 'access_token' : self.fb_access_token,
                 'picture'      : img,
                 'link'         : link.get_willt_url(),
-                'caption'      : 'e-commerce store'
+                'caption'      : ''
             }
             pass
         

@@ -20,8 +20,8 @@ from google.appengine.datastore import entity_pb
 from apps.app.models      import App
 from apps.email.models    import Email
 from apps.link.models     import Link
-from apps.user.models     import get_or_create_user_by_cookie
 from apps.sibt.models     import VoteCounter
+from apps.user.models     import get_or_create_user_by_cookie
 from apps.wosib.actions   import *
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -96,7 +96,7 @@ class WOSIBInstance(Model):
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)
 
-    # The User who asked WOSIB to their friends?
+    # The User who asked WOSIB to their friends
     asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances' )
 
     # Parent App that "owns" these instances
@@ -204,7 +204,7 @@ class PartialWOSIBInstance(Model):
         return PartialWOSIBInstance.all().filter( 'user =', user ).get()
 
     @staticmethod
-    def get_by_uuid(uuid, only_live=True):
+    def get_by_uuid(uuid):
         return PartialWOSIBInstance.get(uuid)
 
     @staticmethod 

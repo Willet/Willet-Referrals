@@ -17,7 +17,7 @@ PROTOCOL            = 'http'
 SECURE_PROTOCOL     = 'https'
 APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
-URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
+URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 

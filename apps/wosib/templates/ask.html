@@ -143,7 +143,6 @@
             dataType: 'json',
             data: payload,
             success: function (response) {
-                // console.log('got response', response);
                 if (response.success) {
                     shareComplete('facebook');
                 } else {
@@ -153,7 +152,6 @@
                         userFound = false; // dont do this twice
                         fb_login_and_share();
                     } else {
-                        // console.log("Facebook post failure", response);
                         $("#loading").hide();
                         $("#error").fadeIn(300);
                     }
@@ -237,10 +235,6 @@
         closeIframe( 'WOSIBNoConnectFBDialog' );
     };
 
-    var runFriendPicker = function () {
-        // derp
-    };
-
     var share = function() {
         storeAnalytics('WOSIBAskUserClickedShare');
 
@@ -249,10 +243,8 @@
         FB.login(function(lr) {
                 if (!lr.authResponse) {
                     // we weren't given permission
-                    storeAnalytics('SIBTFBConnectCancelled');
                     window.close();
                 } else { 
-                    // TODO: need to support new authresponse
                     fbData.fb_token = lr.authResponse.accessToken;
                     fbData.fb_id = lr.authResponse.userID;
                     fb_share_handler(fbData);
@@ -271,7 +263,6 @@
                 uuids.push ($e.data('uuid'));
             }
         });
-        // console.log(uuids);
         return uuids.join(',');
     }
 

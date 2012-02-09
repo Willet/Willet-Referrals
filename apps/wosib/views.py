@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
@@ -6,33 +5,31 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 
 import re, urllib
 
-from django.utils               import simplejson as json
-from google.appengine.api       import urlfetch
-from google.appengine.api       import memcache
-from google.appengine.api       import taskqueue 
-from google.appengine.ext       import webapp
+from django.utils                     import simplejson as json
+from google.appengine.api             import urlfetch
+from google.appengine.api             import memcache
+from google.appengine.api             import taskqueue 
+from google.appengine.ext             import webapp
 from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-# from google.appengine.ext       import db
-from time                       import time
-from urlparse                   import urlparse
+from time                             import time
+from urlparse                         import urlparse
 
-from apps.wosib.actions         import *
-from apps.app.models            import *
-from apps.client.shopify.models import *
-from apps.link.models           import Link
-from apps.order.models          import *
-from apps.product.models         import Product
-from apps.product.shopify.models import ProductShopify # shouldn't be here?
-from apps.wosib.models           import WOSIBInstance
-from apps.wosib.models           import PartialWOSIBInstance
-from apps.wosib.shopify.models   import WOSIBShopify
-from apps.user.models           import get_user_by_cookie
+from apps.app.models                  import *
+from apps.client.shopify.models       import *
+from apps.link.models                 import Link
+from apps.order.models                import *
+from apps.product.models              import Product
+from apps.user.models                 import get_user_by_cookie
+from apps.wosib.actions               import *
+from apps.wosib.models                import WOSIBInstance
+from apps.wosib.models                import PartialWOSIBInstance
+from apps.wosib.shopify.models        import WOSIBShopify
 
-from util.consts                import *
-from util.helpers               import *
-from util.urihandler            import URIHandler
-from util.strip_html import strip_html
+from util.consts                      import *
+from util.helpers                     import *
+from util.strip_html                  import strip_html
+from util.urihandler                  import URIHandler
 
 
 class WOSIBVoteDynamicLoader (URIHandler):
@@ -74,7 +71,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             logging.debug ("variant_ids = %s" % variant_ids)
             variants = []
             for variant_id in variant_ids:
-                its_product = ProductShopify.all().filter ('variants = ', str(variant_id)).get()
+                its_product = Product.all().filter ('variants = ', str(variant_id)).get()
                 if its_product: # could be None of Product is somehow not in DB
                     if len(its_product.images) > 0:
                         image = its_product.images[0] # can't catch LIOOR w/try

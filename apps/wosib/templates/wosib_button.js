@@ -24,15 +24,15 @@ jQuery(document).ready (function () {
 
         // array.map()
         if (!Array.prototype.map) {
-            Array.prototype.map = function(fun /*, thisp*/) {
+            Array.prototype.map = function(fcn /*, thisp*/) {
 	            var len = this.length;
-	            if (typeof fun != "function")
+	            if (typeof fcn != "function")
 	                throw new TypeError();
 
 	            var res = new Array(len);
 	            var thisp = arguments[1];
 	            for (var i = 0; i < len; i++) {
-	                if (i in this) res[i] = fun.call(thisp, this[i], i, this);
+	                if (i in this) res[i] = fcn.call(thisp, this[i], i, this);
 	            }
 	            return res;
 	        };
@@ -163,7 +163,7 @@ jQuery(document).ready (function () {
         };
         
         var _willet_show_ask = function () {
-            var url = "{{URL}}/w/ask.html?store_url=" + encodeURI(srv_data.store_url) + 
+            var url = "{{URL}}/w/ask.html?store_url=" + encodeURIComponent(srv_data.store_url) + 
                       "&variants=" +
                       _willet_cart_items.map(function (x) {
                           // func collects all variant IDs for the cart items.
@@ -209,7 +209,7 @@ jQuery(document).ready (function () {
             // add the button onto the page right now
             $('#_willet_WOSIB_Button').prop({
                 'type': "button",
-                'value': "Need help deciding?",
+                'value': "{{cta_button_text}}",
                 'class': "button _willet_button willet_reset",
             }).fadeIn(250, function() {
                 $(this).css('display', 'inline-block'); 
