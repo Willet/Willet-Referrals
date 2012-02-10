@@ -76,6 +76,7 @@
             a.title = "Share on Tumblr";
             a.style.display = 'inline-block';
             a.style.textIndent = '-9999px';
+            a.style.textAlign: 'left';
             a.style.overflow = 'hidden';
             a.style.width = '63px';
             a.style.height = '20px';
