@@ -195,6 +195,9 @@
     <script type="text/javascript">
         "use strict";
 
+        // ----------------------------  CONSTS ------------------------------------
+
+        var ENTER_KEY = 13;
         // ----------------------------  CLASSES  ----------------------------------
 
         // Widget class
@@ -266,8 +269,7 @@
                 that._chooseEmailFriendSelect();
             })
             .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> Enter
+                if (e.which === ENTER_KEY) {
                     that._chooseEmailFriendSelect();
                 }
             });
@@ -276,8 +278,7 @@
                 that._chooseEmailFriendSelect();
             })
             .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> enter
+                if (e.which === ENTER_KEY) {
                     that._chooseEmailFriendSelect();
                 }
             });
@@ -301,8 +302,7 @@
                     }
                 })
                 .keypress(function (e) {
-                    if (e.which === 13) {
-                        // 13 -> enter
+                    if (e.which === ENTER_KEY) {
                         that._chooseFBFriendSelect();
                     }
                 });
@@ -497,7 +497,7 @@
                 $fb_option = $(this.elem).find('.fb_option');
             $fb_option.children().remove();
             $fb_option.append(" \
-                <div class='helpful'>Find friend using Facebook</div> \
+                <div class='helpful'>Find friends using Facebook</div> \
                 <input></input> \
             ")
             .children('input')
@@ -512,8 +512,7 @@
                 }
             })
             .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> enter
+                if (e.which === ENTER_KEY) {
                     that._chooseFBFriendSelect();
                 }
             });
@@ -554,8 +553,7 @@
                     that._reviewFriendNameAndEmail();
                 })
                 .keypress(function (e) {
-                    if (e.which === 13) {
-                        // 13 -> enter
+                    if (e.which === ENTER_KEY) {
                         that._reviewFriendNameAndEmail();
                     }
                 })
@@ -641,8 +639,7 @@
                 that.reviewAsker();
             })
             .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> enter
+                if (e.which === ENTER_KEY) {
                     that.reviewAsker();
                 }
             });
@@ -792,33 +789,42 @@
                 }
             });
         };
+        
+        // Add AJAX methods here.
+        {% block ajax_methods %}
+        // Your app should replace function stubs
+        // See sibt/templates/ask.html for example implementations
 
+        // Sends analytic data point to server
         var storeAnalytics = function( evnt ) {
             // Stub function!
             throw new Error("Attemp to use stub function 'storeAnalytics'");
         };
 
+        // Initiates an instance of your app on the server
         var startPartialInstance = function() {
             // Stub function!
             throw new Error("Attemp to use stub function 'startPartialInstance'");
         };
         
+        // Sends information to server to ask friends & handles response
         var sendMessages = function() {
             // Stub function!
             throw new Error("Attemp to use stub function 'sendMessages'");
         };
-        
-        // Add AJAX methods here.  Your app should replace function stub sendMessages
-        {% block ajax_methods %}{% endblock ajax_methods %}
+        {% endblock ajax_methods %}
         
 
         // ------------------------------ PAGE methods ---------------------------------
 
+        // Show screen with given id
+        // Screens must be children of #wrapper
         var showScreen = function (id) {
             $('#wrapper').children().hide();
             $('#wrapper>#'+id).show();
         };
 
+        // Closes iframe
         var closeIframe = function( action ) {
             if ( action != "" ){
                 storeAnalytics( action );
@@ -1002,7 +1008,7 @@
             })();
 
             // Add your js initialization code here!
-            // Remember to add: showScreen('__screen_id__');
+            // Example: showScreen('splash');
             {% block js_init %}{% endblock js_init %}
         });
 

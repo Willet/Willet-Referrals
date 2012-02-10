@@ -18,7 +18,6 @@ urlpatterns = [
     (r'/s/instance/share/facebook', ShareSIBTInstanceOnFacebook),
     (r'/s/instance/start',          StartSIBTInstance),
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
-    (r'/s/sendFBMessages',          SendFBMessages),
     (r'/s/sendFriendAsks',          SendFriendAsks),
     (r'/s/startPartialInstance',    StartPartialSIBTInstance),
     (r'/s/storeAnalytics',          StoreAnalytics),

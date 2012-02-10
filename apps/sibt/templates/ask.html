@@ -27,8 +27,8 @@
                 {% endif %}
                 -->
                 <div class="message" id="message">
-                    <img alt="product" src="{{ product_images }}" />
-                    <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
+                    <img alt="product" src="{{ product_image }}" />
+                    <textarea id='shareText'>{{ AB_share_text }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
@@ -64,7 +64,7 @@
             // Could use template here
             {
                 title: 'Should I buy this?',
-                text: '{{ AB_share_text|escape }}'
+                text: '{{ AB_share_text }}'
             },
             {
                 title: 'Does anyone own this?',
@@ -74,6 +74,7 @@
 {% endblock js_globals %}
 
 {% block ajax_methods %}
+        // Sends analytic data point to server
         var storeAnalytics = function( evnt ) {
             var payload = { what          : evnt,
                             instance_uuid : '',
@@ -92,6 +93,7 @@
             });
         };
 
+        // Initiates an instance of your app on the server
         var startPartialInstance = function() {
             var payload = { app_uuid     : "{{app_uuid}}",
                             user_uuid    : "{{user_uuid}}",
@@ -108,6 +110,7 @@
             });
         };
 
+        // Sends information to server to ask friends & handles response
         var sendMessages = function() {
             var payload, friend_info, asker_info,
                 msg   = $("#shareText").val(),
