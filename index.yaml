@@ -151,5 +151,6 @@ indexes:
 - kind: WOSIBInstance
   properties:
   - name: asker
+  - name: app_
   - name: created
     direction: desc

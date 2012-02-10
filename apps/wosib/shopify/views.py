@@ -65,7 +65,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             try:
                 # WOSIBInstances record the user. Find the user's most recent instance.
                 logging.info('trying to get instance for user: %r' % user)
-                instance = WOSIBInstance.get_by_user(user)
+                instance = WOSIBInstance.get_by_user_and_app (user, app)
                 assert(instance != None)
             except Exception, e:
                 logging.info('no instance available: %s' % e)

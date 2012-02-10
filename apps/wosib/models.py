@@ -94,15 +94,15 @@ class WOSIBInstance(Model):
     uuid = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
-    created = db.DateTimeProperty(auto_now_add=True)
+    created = db.DateTimeProperty(auto_now_add = True, indexed = True)
 
     # The User who asked WOSIB to their friends
     asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances' )
 
     # Parent App that "owns" these instances
-    app_ = db.ReferenceProperty(db.Model, collection_name="wosib_app_instances" )
+    app_ = db.ReferenceProperty(db.Model, collection_name="app_wosib_instances" )
 
-    link = db.ReferenceProperty(db.Model, collection_name='link_wosib_instances', indexed=False)
+    link = db.ReferenceProperty(db.Model, collection_name='wosib_instance_links', indexed=False)
 
     # the number of times this instance had received votes
     # (less accurate than WOSIBVoteAction.all().filter('wosib_instance =', instance).count(),
@@ -132,10 +132,12 @@ class WOSIBInstance(Model):
                 .get()
 
     @staticmethod
-    def get_by_user(user):
+    def get_by_user_and_app (user, app_):
         # returns only the most recent instance.
+        # function makes sense only when one instance is active per user per store.
         return WOSIBInstance.all()\
                 .filter('asker =', user)\
+                .filter('app_ =', app_)\
                 .order('-created')\
                 .get()
 # ------------------------------------------------------------------------------
