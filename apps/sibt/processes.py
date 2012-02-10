@@ -4,6 +4,7 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re
+import hashlib
 
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
@@ -22,11 +23,9 @@ from apps.product.models      import Product
 from apps.user.models         import User
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.models         import PartialSIBTInstance
-from apps.testimonial.models  import create_testimonial
 from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
-
 from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
@@ -470,114 +469,138 @@ class StartSIBTAnalytics(URIHandler):
 
 
 class SendFBMessages( URIHandler ):
-    # Posts messages to FB friends walls
+    """ Posts messages to FB friends walls
+        DEPRECIATED """
     def post( self ):
-        logging.info("TARGETTED_SHARESIBTONFACEBOOK")
+        self.response.set_status(410) # Gone
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json.dumps({ 'success': False, 'data': { 'message': 'Depreciated: Use SendFriendAsks'} }))
+
+        # logging.info("TARGETTED_SHARESIBTONFACEBOOK")
         
-        # Fetch arguments 
-        ids       = json.loads( self.request.get( 'ids' ) )
-        names     = json.loads( self.request.get( 'names' ) )
-        msg       = self.request.get( 'msg' )
-        app       = App.get( self.request.get('app_uuid') )
-        product   = Product.get( self.request.get( 'product_uuid' ) )
-        link      = Link.get_by_code( self.request.get( 'willt_code' ) )
+        # # Fetch arguments 
+        # ids       = json.loads( self.request.get( 'ids' ) )
+        # names     = json.loads( self.request.get( 'names' ) )
+        # msg       = self.request.get( 'msg' )
+        # app       = App.get( self.request.get('app_uuid') )
+        # product   = Product.get( self.request.get( 'product_uuid' ) )
+        # link      = Link.get_by_code( self.request.get( 'willt_code' ) )
         
-        user      = User.get( self.request.get( 'user_uuid' ) )
-        fb_token  = self.request.get('fb_access_token')
-        fb_id     = self.request.get('fb_id')
-        if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user  = get_or_create_user_by_cookie(self, app)
+        # user      = User.get( self.request.get( 'user_uuid' ) )
+        # fb_token  = self.request.get('fb_access_token')
+        # fb_id     = self.request.get('fb_id')
+        # if not user:
+        #     logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
+        #     user  = get_or_create_user_by_cookie(self, app)
 
-        logging.debug('friends %s %r' % (ids, names))
-        logging.debug('msg :%s '% msg)
+        # logging.debug('friends %s %r' % (ids, names))
+        # logging.debug('msg :%s '% msg)
 
-        # Format the product's desc for FB
-        try:
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.info('could not get product description')
+        # # Format the product's desc for FB
+        # try:
+        #     ex = '[!\.\?]+'
+        #     product_desc = strip_html(product.description)
+        #     parts = re.split(ex, product_desc[:150])
+        #     product_desc = '.'.join(parts[:-1])
+        #     if product_desc[:-1] not in ex:
+        #         product_desc += '.'
+        # except:
+        #     logging.info('could not get product description')
         
-        # Check formatting of share msg
-        try:
-            if len( msg ) == 0:
-                msg = "I'm not sure if I should buy this. What do you think?"
-            if isinstance(msg, str):
-                message = unicode(msg, errors='ignore')
-        except:
-            logging.info('error transcoding to unicode', exc_info=True)
+        # # Check formatting of share msg
+        # try:
+        #     if len( msg ) == 0:
+        #         msg = "I'm not sure if I should buy this. What do you think?"
+        #     if isinstance(msg, str):
+        #         message = unicode(msg, errors='ignore')
+        # except:
+        #     logging.info('error transcoding to unicode', exc_info=True)
 
-        # defaults
-        response = {
-            'success': False,
-            'data': {}
-        }
+        # # defaults
+        # response = {
+        #     'success': False,
+        #     'data': {}
+        # }
 
-        # first do sharing on facebook
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            ) 
+        # # first do sharing on facebook
+        # if fb_token and fb_id:
+        #     logging.info('token and id set, updating user')
+        #     user.update(
+        #         fb_identity = fb_id,
+        #         fb_access_token = fb_token
+        #     ) 
 
-        try:
-            try:
-                product_image = product.images[0]
-            except:
-                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
-            fb_share_ids = user.fb_post_to_friends( ids,
-                                                    names,
-                                                    msg,
-                                                    product_image,
-                                                    product.title,
-                                                    product_desc,
-                                                    app.client.domain,
-                                                    link )
-            logging.info('shared on facebook, got share id %s' % fb_share_ids)
+        # try:
+        #     try:
+        #         product_image = product.images[0]
+        #     except:
+        #         product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
+        #     fb_share_ids = user.fb_post_to_friends( ids,
+        #                                             names,
+        #                                             msg,
+        #                                             product_image,
+        #                                             product.title,
+        #                                             product_desc,
+        #                                             app.client.domain,
+        #                                             link )
+        #     logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
-            if len(fb_share_ids) > 0:
-                # create the instance!
-                # Make the Instance!
-                instance = app.create_instance( user, 
-                                                None, 
-                                                link, 
-                                                product_image, 
-                                                motivation="",
-                                                dialog="ConnectFB")
-                # increment shares
-                for i in ids:
-                    app.increment_shares()
+        #     if len(fb_share_ids) > 0:
+        #         # create the instance!
+        #         # Make the Instance!
+        #         instance = app.create_instance( user, 
+        #                                         None, 
+        #                                         link, 
+        #                                         product_image, 
+        #                                         motivation="",
+        #                                         dialog="ConnectFB")
+        #         # increment shares
+        #         for i in ids:
+        #             app.increment_shares()
 
-                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
+        #         Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
 
-                response['success'] = True
+        #         response['success'] = True
             
-            # if it wasn't successful ...
-            if len(fb_share_ids) != len(ids):
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
+        #     # if it wasn't successful ...
+        #     if len(fb_share_ids) != len(ids):
+        #         # posting failed!
+        #         response['data']['message'] = 'Could not post to facebook'
 
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
+        # except Exception,e:
+        #     response['data']['message'] = str(e)
+        #     logging.error('we had an error sharing on facebook', exc_info=True)
 
-        logging.info('response: %s' % response)
-        self.response.out.write(json.dumps(response))
+        # logging.info('response: %s' % response)
+        # self.response.out.write(json.dumps(response))
 
 
 class SendFriendAsks( URIHandler ):
-    # Sends messages to email & FB friends
+    """ Sends messages to email & FB friends 
+
+    Expected inputs:
+        friends: JSON-encoded <Array> [ <array> [ <string> type, <string> name, <string> identifier ]
+        asker: JSON-encoded <array> [<string> name, <string> email_address [, <string> picture_url ]]
+        msg: <string> message
+        app_uuid: <string> a SIBT app uuid
+        product_uuid: <string> a <App> uuid
+        willt_code: <string> willt_code corresponding to a parital SIBT instance
+        user_uuid: <string> a <User> uuid
+        fb_access_token: <string> a Facebook API access token for this user
+        fb_id: <string> a Facebook user id for this user
+    
+    Expected output (JSON-encoded):
+        success: <Boolean> at least some friends were successfully contacted
+        data: <Dict>
+            message: <String> description of outcome
+            warnings: <Array> [ <string> explanation of any incompleted friend asks ] 
+    """
     def post( self ):
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
         
         # Fetch arguments 
-        friends   = json.loads( self.request.get( 'friends' ) )
+        friends   = json.loads( self.request.get('friends') )
+        asker     = json.loads( self.request.get('asker') )
         msg       = self.request.get( 'msg' )
         app       = App.get( self.request.get('app_uuid') )
         product   = Product.get( self.request.get( 'product_uuid' ) )
@@ -601,13 +624,20 @@ class SendFriendAsks( URIHandler ):
             }
         }
 
-        logging.debug('friends: %r' % friends)
-        logging.debug('msg: %s '% msg)
+        logging.debug('asker: %r \n\
+            friends: %r \n\
+            msg: %s \n\
+            link: %s' % (asker, friends, msg, link))
 
         if not user:
             logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
             self.response.set_status(401) # Unauthorized
             response['data']['message'] = 'Unauthorized: Could not find user by supplied id'
+        
+        elif not asker:
+            logging.error('no asker included')
+            self.response.set_status(400) # Bad Request
+            response['data']['message'] = 'Bad Request: no asker included'
         
         elif not friends:
             logging.error('no friends included')
@@ -616,16 +646,27 @@ class SendFriendAsks( URIHandler ):
         
         else:
             # Request appears valid, proceed!
+            a = {
+                'name': asker[0],
+                'email': asker[1],
+                # If asker didn't log into Facebook, test Gravatar for a profile photo
+                # s=40 -> 40px size
+                # d=mm -> defaults a grey outline of a person picture (mystery man)
+                'pic': asker[2] if len(asker) == 3 else 'http://www.gravatar.com/avatar/'+hashlib.md5(asker[1].lower()).hexdigest()+'?s=40&d=mm'
+            }
 
             # Split up friends into FB and email
             for friend in friends:
-                if friend[0] == 'fb':
-                    # Validation can be added here if necessary
-                    fb_friends.append(friend)
-                elif friend[0] == 'email':
-                    # Validation can be added here if necessary
-                    email_friends.append(friend)
-                else:
+                try:
+                    if friend[0] == 'fb':
+                        # Validation can be added here if necessary
+                        fb_friends.append(friend)
+                    elif friend[0] == 'email':
+                        # Validation can be added here if necessary
+                        email_friends.append(friend)
+                    else:
+                        raise ValueError
+                except (TypeError, IndexError, ValueError):
                     response['data']['warnings'].append('Invalid friend entry: %s' % friend)
             
             # Add spam warning if there are > 5 email friends
@@ -647,6 +688,7 @@ class SendFriendAsks( URIHandler ):
             # Check formatting of share message
             try:
                 if len( msg ) == 0:
+                    # TODO: Default message should be A/B test message
                     msg = "I'm not sure if I should buy this. What do you think?"
                 if isinstance(msg, str):
                     message = unicode(msg, errors='ignore')
@@ -656,7 +698,7 @@ class SendFriendAsks( URIHandler ):
             # Get product image
             try:
                 product_image = product.images[0]
-            except:
+            except (TypeError, IndexError):
                 product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
@@ -698,11 +740,14 @@ class SendFriendAsks( URIHandler ):
             if email_friends: # [] is falsy
                 for (_, fname, femail) in email_friends:
                     try:
-                        Email.SIBTAsk(to_addr=       femail,
-                                      name=          fname,
-                                      vote_url=      link,
+                        Email.SIBTAsk(from_name=     a['name'],
+                                      from_addr=     a['email'],
+                                      to_name=       fname,
+                                      to_addr=       femail,
                                       message=       msg,
+                                      vote_url=      link,
                                       product_img=   product_image,
+                                      asker_img=     a['pic'],
                                       product_title= product.title,
                                       client_name=   app.client.name,
                                       client_domain= app.client.domain )
@@ -737,12 +782,19 @@ class SendFriendAsks( URIHandler ):
             if not response['data']['warnings']:
                 del response['data']['warnings']
             
-            Email.emailBarbara('<p>Friends: %s</p> \
+            logging.info('Friends: %s\n \
+                Successful shares on FB: %d\n \
+                Successful shares via email: %d\n \
+                Message: %s\n \
+                Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+            
+            """Email.emailBarbara('<p>Friends: %s</p> \
                 <p>Successful shares on FB: #%d</p> \
                 <p>Successful shares via email: #%d</p> \
                 <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))                
+                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))"""
         
         logging.info('response: %s' % response)
+        self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
 

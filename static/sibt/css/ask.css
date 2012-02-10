@@ -44,6 +44,9 @@ p {
 .bigger {
     font-size: 150%;
 }
+.centered {
+    text-align: center;
+}
 .error {
     display: none;
     color: red;
@@ -116,7 +119,7 @@ p {
     margin: 14px 0 0 15px;
 }
 .center_col {
-        margin: 40px 20% 0 40px;
+        margin: 40px 20% 0 20%;
 }
 .button {
     height: 50px;
@@ -168,6 +171,11 @@ p {
     font-size: 12px;
     line-height: 22px;
 }
+.button>.simpletitle {
+    white-space: nowrap;
+    min-width: 100px;
+    line-height: 50px;
+}
 
 
 /* ---------------------   PAGES   ----------------------- */
@@ -217,7 +225,7 @@ p {
 }
 .message {
     height: 77px;
-    margin: 40px 30px 0 30px;
+    margin: 50px 30px 0 30px;
 }
 .message>img {
     float: left;
@@ -265,7 +273,7 @@ p {
 
 /* ---------------------   Choose Friends  ----------------------- */ 
 
-ul.friends, ul.asker {
+ul.friends, ul.askers {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -273,20 +281,26 @@ ul.friends, ul.asker {
     overflow-x: hidden;
     overflow-y: scroll;
 }
-ul.friends li, ul.asker li {
+ul.askers {
+    margin: 50px 0 30px 0;
+    overflow-y: hidden;
+}
+ul.friends li, ul.askers li {
     display: block;
     padding: 10px 0;
     margin-right: 10px;
+}
+ul.friends li {
     border-bottom: 1px solid #BBB;
 }
-.friend input {
+.friend input, .asker input {
     font-size: 14px;
     line-height: 17px;
     padding: 3px;
     color: #333;
     width: 200px;
 }
-.friend label {
+.friend label, .asker label {
     float: left;
     width: 60px;
     margin: 3px 0;
@@ -294,7 +308,7 @@ ul.friends li, ul.asker li {
     font-size: 13px;
     color: #666;
 }
-.friend .error {
+.friend .error, .asker .error {
     float: right;
     font-size: 13px;
     line-height: 30px;
@@ -332,10 +346,10 @@ ul.friends li, ul.asker li {
     float: right;
     width: 220px;
 }
-.email_friend, .fb_friend {
+.email_friend, .fb_friend, .email_asker {
     height: 60px;
 }
-.email_friend>div {
+.email_friend>div, .email_asker>div {
     height: 30px;
 }
 .fb_friend>div {
@@ -344,14 +358,19 @@ ul.friends li, ul.asker li {
 }
 .email_friend input, .fb_friend input {
     border: none;
+    width: 180px;
     margin: 3px 2px;
 }
 .email_friend input:hover, .fb_friend input:hover {
     border: 2px inset;
     margin: 1px 0;
 }
+.email_asker label {
+    width: 80px;
+}
 .helpful {
     text-align: left;
+    text-indent: 5px;
     font-size: 14px;
     color: #666;
 }
@@ -428,6 +447,7 @@ div.middled div {
     text-align: center;
     font-size: 23px;
     line-height: 30px;
+    margin-bottom: 20px;
 }
 #loader {
     width: 220px;

@@ -57,12 +57,14 @@
             <div id="asker_info">
                 <div class="title_bar">
                     <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
-                    <div>Choose Friends To Ask For Advice</div>
+                    <div>Let Your Friends Know Who Is Asking</div>
                 </div>
-                    <div class="center_col">Your friends need to know who is asking:</div>
-                <ul class="asker" id="asker">
+                <ul class="askers" id="askers">
                     <!-- Asker appended when document ready -->
                 </ul>
+                <div class="center_col">
+                    <p class="centered">We will email you when a friend provides advice.</p>
+                </div>
                 <div id="askButton" class="button corner">
                     <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
                     <div class="title">Ask Chosen Friends</div>
@@ -88,7 +90,7 @@
             <div id="success">
                 <div class="title_bar">
                     <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
-                    <div>Your Question Has Been Sent</div>
+                    <div>Success! Your Question Has Been Sent</div>
                 </div>
                 <div class="center_col">
                     {% if incentive_enabled %}
@@ -101,12 +103,12 @@
                     {% else %}
                     
                     <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
-                    <p>We'll email you when someone votes!</p>
+                    <p>You will receive an email when one of your trusted friends gives advice!</p>
 
                     {% endif %}
                 </div>
-                <div id="cancelButton" class="button corner">
-                    <div class="title">Close</div>
+                <div id="cancelButton" class="button middled">
+                    <div class="simpletitle">Close</div>
                 </div>
             </div>
 
@@ -120,10 +122,10 @@
                 <div class="center_col">
                     <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
                     <p class='error_message'>An error happened.</p>
-                    <p>We know you were so excited to get advice, and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
+                    <p>You were so excited to get advice, and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
                 </div>
-                <div id="cancelButton" class="button corner">
-                    <div class="title">Close</div>
+                <div id="cancelButton" class="button middled">
+                    <div class="simpletitle">Close</div>
                 </div>
             </div>
 
@@ -228,15 +230,15 @@
         // this class
         //
         // A Friend has 4 states:
-        //  - NI!FB: no input, FB not logged in
-        //  - NIFB: no input, FB logged in
-        //  - EC: email chosen (+ error state)
-        //  - FBC: Facebook chosen (+ error state)
+        //  - 1: no input, FB not logged in
+        //  - 2: no input, FB logged in
+        //  - 3: email chosen (+ error state)
+        //  - 4: Facebook chosen (+ error state)
         //
         // and 3 state changes:
-        //  - NI!FB + FB log in -> NIFB
-        //  - NI!FB || NIFB + email input -> EC
-        //  - NIFB + FB input -> FBC
+        //  - 1 + FB log in -> 2
+        //  - 1 || 2 + email input -> 3
+        //  - 2 + FB input -> 4
         var Friend = function (name) {
             Widget.call(this, 'li', name);
             this.selected = 'none';
@@ -291,7 +293,7 @@
                 ")
                 .children('input')
                 .autocomplete({
-                    source: friendNames,
+                    source: sorted_friend_names,
                     select: this._selectFBFriend,
                     // Must use function scope, or else this becomes input element
                     close: function () {
@@ -329,7 +331,7 @@
                     name = $elem.find('.fb_friend input').val();
                     return [ 'fb',
                              name, 
-                             fb_friends[ $.inArray(name, friendNames) ].id ];
+                             fb_friends[ $.inArray(name, sorted_friend_names) ].id ];
                 } else if (this.selected === 'email') {
                     // return name & email
                     return [ 'email',
@@ -365,7 +367,7 @@
         Friend.prototype._validateFriendFB = function (el) {
             // Validates FB friend at input element 'el'
             // Returns: <boolean> true = valid, false = invalid
-            if ($.inArray(el.value, friendNames) !== -1) {
+            if ($.inArray(el.value, sorted_friend_names) !== -1) {
                 return true;
             } else {
                 return false;
@@ -441,7 +443,7 @@
             if (this._validateFriendFB($input[0])) {
                 // No error
                 name = $input.val();
-                i = $.inArray(name, friendNames);
+                i = $.inArray(name, sorted_friend_names);
                 fb_id = fb_friends[i].id;
                 
                 $elem.find('input').css('color','black').siblings('.error').hide();
@@ -475,7 +477,7 @@
             // ui.item is object containing data
             // *** this = input element when called by autocomplete ***
             var name = ui.item.value,
-                i = $.inArray(name, friendNames),
+                i = $.inArray(name, sorted_friend_names),
                 fb_id = fb_friends[i].id;
             
             $(this).parents('.friend').find('.portrait>img')
@@ -483,56 +485,51 @@
                 .attr( 'title', name )
                 .attr( 'alt', name );
         };
+        //
         // *** STATE CHANGE METHODS ***
-        Friend.prototype._chooseFBFriendSelect = function () {
-            // NIFB -> FBC
-            // When someone has used the email input, change friend 
-            // select to FB specific in Choose Friend's screen
+        //
+        Friend.prototype.FBLoggedIn = function () {
+            // 1 -> 2
+            // After FB connect success, enable choosing FB friends
+            // with autocomplete
             // Returns: n/a
             var that = this,
-                $elem = $(this.elem),
-                name = $elem.find('.fb_option input').val();
-
-            this.selected = 'fb';
-
-            // Only do something if there is something in the input field
-            if (name !== '') {
-                $elem.children('.friend_options').remove();
-                $elem.append("\
-                    <div class='fb_friend'> \
-                        <div> \
-                            <label>Name:</label> \
-                            <input name='fb' type='text' value='"+name+"'></input> \
-                            <div class='error'>Oops, are you sure that's right?</div> \
-                        </div> \
-                    </div> \
-                ")
-                .find('input')
-                .blur(function () {
-                    that._reviewFriendFB();
-                })
-                .autocomplete({
-                    source: friendNames,
-                    select: this._selectFriendFB,
-                    close: function () {
-                        that._reviewFriendFB();
-                    }
-                })
-                .each(function () {
-                    // review right now
-                    that._reviewFriendFB();
-                });
-            }
+                $fb_option = $(this.elem).find('.fb_option');
+            $fb_option.children().remove();
+            $fb_option.append(" \
+                <div class='helpful'>Find friend using Facebook</div> \
+                <input></input> \
+            ")
+            .children('input')
+            .blur(function () {
+                that._reviewFriendFB();
+            })
+            .autocomplete({
+                source: sorted_friend_names,
+                select: this._selectFBFriend,
+                close: function () {
+                    that._chooseFBFriendSelect();
+                }
+            })
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    // 13 -> enter
+                    that._chooseFBFriendSelect();
+                }
+            });
         };
         Friend.prototype._chooseEmailFriendSelect = function () {
-            // NIFB || NI!FB -> EC
+            // 1 || 2 -> 3
             // When someone has used the email input, change friend 
             // select to Email specific in Choose Friend's screen
             // Returns: n/a
             var that = this,
                 $elem = $(this.elem),
                 email = $elem.find('.email_option input').val(),
-                name = email.split('@')[0].split('.').join(' ');
+                name = $.map(email.split('@')[0].split('.'), function(i) {
+                        // Capitalize 1st letter
+                        return i.charAt(0).toUpperCase() + i.slice(1);
+                    }).join(' ');
             
             this.selected = 'email';
 
@@ -544,12 +541,12 @@
                         <div> \
                             <label>Name:</label> \
                             <input class='name' name='name' type='text' value='"+name+"' /> \
-                            <div class='error'>Oops, are you sure that's right?</div> \
+                            <div class='error'>Try to stick with the alphabet</div> \
                         </div> \
                         <div> \
                             <label>Email:</label> \
                             <input class='email' name='email' type='text' value='"+email+"' /> \
-                            <div class='error'>Oops, are you sure that's right?</div> \
+                            <div class='error'>This email doesn't look right</div> \
                         </div> \
                     </div> \
                 ").find('input')
@@ -568,46 +565,50 @@
                 });
             }
         };
-        Friend.prototype.FBLoggedIn = function () {
-            // NI!FB -> NIFB
-            // After FB connect success, enable choosing FB friends
-            // with autocomplete
+        Friend.prototype._chooseFBFriendSelect = function () {
+            // 2 -> 4
+            // When someone has used the email input, change friend 
+            // select to FB specific in Choose Friend's screen
             // Returns: n/a
             var that = this,
-                $fb_option = $(this.elem).find('.fb_option');
-            $fb_option.children().remove();
-            $fb_option.append(" \
-                <div class='helpful'>Find friend using Facebook</div> \
-                <input></input> \
-            ")
-            .children('input')
-            .blur(function () {
-                that._reviewFriendFB();
-            })
-            .autocomplete({
-                source: friendNames,
-                select: this._selectFBFriend,
-                close: function () {
-                    that._chooseFBFriendSelect();
-                }
-            })
-            .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> enter
-                    that._chooseFBFriendSelect();
-                }
-            });
+                $elem = $(this.elem),
+                name = $elem.find('.fb_option input').val();
+
+            this.selected = 'fb';
+
+            // Only do something if there is something in the input field
+            if (name !== '') {
+                $elem.children('.friend_options').remove();
+                $elem.append("\
+                    <div class='fb_friend'> \
+                        <div> \
+                            <label>Name:</label> \
+                            <input name='fb' type='text' value='"+name+"'></input> \
+                            <div class='error'>We don't recognize this friend</div> \
+                        </div> \
+                    </div> \
+                ")
+                .find('input')
+                .blur(function () {
+                    that._reviewFriendFB();
+                })
+                .autocomplete({
+                    source: sorted_friend_names,
+                    select: this._selectFriendFB,
+                    close: function () {
+                        that._reviewFriendFB();
+                    }
+                })
+                .each(function () {
+                    // review right now
+                    that._reviewFriendFB();
+                });
+            }
         };
+        
 
         // Asker gets & stores required information from the user
         //
-        // An Asker has 2 states:
-        //  - NI!FB: no input, FB not logged in
-        //  - I: showing inputed data (+ error state)
-        //
-        // and 2 state changes:
-        //  - NI!FB + logging into FB -> I
-        //  - NI!FB + entering email -> I
         var Asker = function (name) {
             Widget.call(this, 'li', name);
             
@@ -618,50 +619,50 @@
             this.pic   = ''; // Picture of asker
             this.email = ''; // Email of asker
 
-            // Set up DOM, show state NI!FB
-            $elem.addClass('friend').append(" \
+            // Set up DOM
+            $elem.addClass('asker').append("\
                 <div class='portrait'> \
                     <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
                 </div> \
-                <div class='friend_options'> \
-                    <div class='fb_option'> \
-                        <div class='helpful'>The easiest way to ask</div> \
-                        <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
+                <div class='email_asker'> \
+                    <div> \
+                        <label>Your name:</label> \
+                        <input class='name' name='name' type='text' value='' /> \
+                        <div class='error'>Try to stick with the alphabet</div> \
                     </div> \
-                    <div class='or'>or</div> \
-                    <div class='email_option'> \
-                        <div class='helpful'>Enter your email address</div> \
-                        <input></input> \
+                    <div> \
+                        <label>Your email:</label> \
+                        <input class='email' name='email' type='text' value='' /> \
+                        <div class='error'>This email doesn't look right</div> \
                     </div> \
                 </div> \
-                ")
-            .find('.email_option input')
+            ").find('input')
             .blur(function () {
-                that._chooseEmailSelect();
+                that.reviewAsker();
             })
             .keypress(function (e) {
                 if (e.which === 13) {
-                    // 13 -> Enter
-                    that._chooseEmailSelect();
+                    // 13 -> enter
+                    that.reviewAsker();
                 }
-            });
-            $elem.find('.fb_connect').click( function () {
-                runFBConnect();
             });
         };
         Asker.prototype = new Widget();
         Asker.prototype.getAskerInfo = function () {
             // Gets the stored asker info if valid
             // Returns: 
-            //      - valid: [ <string> name, <string> email address ]
+            //      - valid: [ <string> name, <string> email address, [<string> picture url] ]
             //      - invalid: null
-            var $elem = $(this.elem),
-                name;
+            var info,
+                $elem = $(this.elem);
             if (this.reviewAsker()) {
-                // return name & email
-                return [ 
+                info = [ 
                     $elem.find('input.name').val(),
                     $elem.find('input.email').val() ];
+                if (this.pic !== '') {
+                    info.push(this.pic);
+                }
+                return info;
             } else {
                 return null;
             }
@@ -708,72 +709,27 @@
                 return false;
             } else {
                 // Set asker face or happy face on portrait
-
                 $elem.find('.portrait>img').attr('src',good_face);
+
+                // Save data to asker
+                this.name = $elem.find('input.name').val();
+                this.email = $elem.find('input.email').val();
                 return true;
             }
         };
-        Asker.prototype._showUserInfo = function () {
-            // Helper function that sets up show input state DOM
-            var $elem = $(this.elem),
-                that = this,
-                good_face = (this.pic !== '') ? this.pic : '/static/sibt/imgs/happy_face.png';
-            
-            // Set portrait
-            $elem.find('.portrait>img').attr('src',good_face);
-
-            $elem.children('.friend_options').remove();
-            $elem.append("\
-                <div class='email_friend'> \
-                    <div> \
-                        <label>Name:</label> \
-                        <input class='name' name='name' type='text' value='"+this.name+"' /> \
-                        <div class='error'>Oops, are you sure that's right?</div> \
-                    </div> \
-                    <div> \
-                        <label>Email:</label> \
-                        <input class='email' name='email' type='text' value='"+this.email+"' /> \
-                        <div class='error'>Oops, are you sure that's right?</div> \
-                    </div> \
-                </div> \
-            ").find('input')
-            .blur(function () {
-                that.reviewAsker();
-            })
-            .keypress(function (e) {
-                if (e.which === 13) {
-                    // 13 -> enter
-                    that.reviewAsker();
-                }
-            })
-            .each(function () {
-                // review right now
-                that.reviewAsker();
-            });
-        };
-        // *** STATE CHANGE METHODS ***
-        Asker.prototype._chooseEmailSelect = function () {
-            // NI!FB -> I
-            // When someone has used the email input, show inputted data to asker
-            // Returns: n/a
-            var that = this,
-                $elem = $(this.elem);
-            this.email = $elem.find('.email_option input').val();
-            this.name = email.split('@')[0].split('.').join(' ');
-
-            // Only do something if there is something in the input field
-            if (email !== '') {
-                this._showUserInfo();
-            }
-        };
         Asker.prototype.FBLoggedIn = function (name, email, pic) {
-            // NI!FB -> I
             // After FB connect success, show user inputted data
             // Returns: n/a
+            var $elem = $(this.elem);
+
             this.name = name;
             this.email = email;
             this.pic = pic;
-            this._showUserInfo();
+
+            $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+            $elem.find('input.name').val(name);
+            $elem.find('input.email').val(email);
+            this.reviewAsker();
         };
 
         // Add classes here.  Any questions about js classes? Ask Fraser
@@ -782,13 +738,12 @@
 
         // ---------------------------- Global Variables ----------------------
 
-        var asker          = new Asker('ask_user'); // Asker info
-        var friends        = []; // List of Friend instances in Choose Friend screen
-        var fb_friends     = []; // List of { id, name } from FB
-        var friendNames    = []; // List of names to use in autocomplete (sorted)
-        var selectionCount = 0;  // Number of friends selected to msg
-        var fbAccessToken  = "";
-        var fbIdentity     = "";
+        var asker               = new Asker('ask_user'); // Asker info
+        var friends             = []; // List of Friend instances in Choose Friend screen
+        var fb_friends          = []; // List of { id, name } from FB
+        var sorted_friend_names = []; // List of names to use in autocomplete (sorted)
+        var fbAccessToken       = "";
+        var fbIdentity          = "";
 
         // Any global variables you want
         {% block js_globals %}{% endblock js_globals %}
@@ -796,17 +751,20 @@
         
         // ------------------------------   AJAX methods  ------------------------------
         
+        // Store FB data on server
         var updateServerUser = function( accessToken, userId ) {
-            var payload = { user_uuid   : "{{user_uuid}}",
-                        accessToken : accessToken,
-                        fbUserId    : userId 
-                      };
+            var payload = { 
+                user_uuid   : "{{user_uuid}}",
+                accessToken : accessToken,
+                fbUserId    : userId 
+            };
+
             $.ajax({
                 url      : "{{ URL }}{% url UpdateFBAccessToken %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
-                success  : function (tr) {
+                success  : function () {
                     return;
                 }
             });
@@ -819,7 +777,7 @@
             var addr = document.getElementById( 'email-field' ).value;
                 
             $.ajax({
-                url: "/updateEmailAddress",
+                url: "{{ URL }}{% url UpdateEmailAddress %}",
                 type: 'post',
                 data: { email : addr },
                 success: function (tr) {
@@ -919,7 +877,7 @@
 
                     // Get user info & then run callback
                     FB.api('/me', function (r) {
-                        asker.FBLoggedIn(r.name, r.email, 'graph.facebook.com/'+r.username+'/picture');
+                        asker.FBLoggedIn(r.name, r.email, '//graph.facebook.com/'+r.username+'/picture');
 
                         // Good to go!
                         if (success_callback) {
@@ -941,7 +899,7 @@
                 fb_friends.sort();
 
                 $.each( response.data, function (i) {
-                    friendNames.push(fb_friends[i].name); 
+                    sorted_friend_names.push(fb_friends[i].name); 
                 });
 
                 // Code here changes all FB Connect options into FB Friend Select options
@@ -952,17 +910,38 @@
            });
         };
 
-        // Ensures we have all information before asking friends
-        var reviewFriendsThenGetInfo = function () {
-            // Review friends
-            var i = friends.length,
+        // Gather friends info into array
+        var getFriendsInfo = function () {
+            // Returns:
+            //   No invalid friends: [ [...], [...] ]
+            //   No friends: []
+            //   Invalid friends: null
+            var i = friends.length, j,
+                friend_info = [],
                 error = false;
+
+            // Gather up friend info, recording if a friend has an error
             while (i--) {
-                if (!friends[i].reviewFriend()) {
-                    error = true;
+                j = friends[i].getFriendInfo(); // Can be [...], [] or null
+                if (j === null) {
+                    error = true; // Don't submit
+                    break;
+                } else if (j && j.length && j.length === 3) { // Valid friend is 3 valued array
+                    friend_info.push(j);
+                } else {
+                    continue; // Don't add []
                 }
             }
-            if (!error) {
+            
+            return error ? null : friend_info;
+        }
+
+        // Ensures we have all information before asking friends
+        var reviewFriendsThenGetInfo = function () {
+            // Ensure no errors & at least 1 friend entered
+            var i = getFriendsInfo(); // either null or [...]
+
+            if (i && i.length > 0) {
                 // Proceed to verifying name
                 showScreen('asker_info');
             } else {
@@ -972,8 +951,7 @@
 
         // Review askers inputed name & email address before asking friends
         var reviewThenAsk = function () {
-            var info = asker.getAskerInfo();
-            if (info) {
+            if (asker.reviewAsker()) {
                 // Good to go!
                 sendMessages();
             } else {
@@ -1004,7 +982,7 @@
 
             $('#askButton').click(reviewThenAsk);
 
-            $('#asker').append(asker.getElement());
+            $('#askers').append(asker.getElement());
 
             // Add two Friend instances to Choose Friends screen
             (function () {

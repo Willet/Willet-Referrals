@@ -109,29 +109,21 @@
         };
 
         var sendMessages = function() {
-            var i,j,payload,
-                friend_info = [],
+            var payload, friend_info, asker_info,
                 msg   = $("#shareText").val(),
                 error = false;
 
             // Gather up friend info, recording if a friend has an error
-            i = friends.length;
-            while (i--) {
-                j = friends[i].getFriendInfo(); // Can be [...], [] or null
-                if (j === null) {
-                    error = true; // Don't submit
-                    break;
-                } else if (j && j.length && j.length === 3) { // Valid friend is 3 valued array
-                    friend_info.push(j);
-                } else {
-                    continue; // Don't add []
-                }
-            }
+            friend_info = getFriendsInfo(); // either null or [...]
+
+            // Gather asker info
+            asker_info = asker.getAskerInfo(); // either null or [...]
+
             if (window.console && window.console.log) {
-                console.log('Friends: '+friend_info+' Error:'+error);
+                console.log('Asker: '+asker_info+' Friends: '+friend_info+' Error:'+error);
             }
             
-            if (!error && friend_info.length > 0) {
+            if (friend_info && friend_info.length > 0 && asker_info && asker_info.length === 3) {
                 // Clean up UI to show loader gif
                 showScreen('asking');
 
@@ -144,6 +136,7 @@
                     fb_access_token : fbAccessToken,
                     fb_id           : fbIdentity,
                     friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                    asker           : JSON.stringify(asker_info),
                     msg             : msg,
                     willt_code      : "{{willt_code}}"
                 };
