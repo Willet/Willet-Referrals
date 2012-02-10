@@ -41,12 +41,9 @@ class WOSIBVoteDynamicLoader (URIHandler):
         try:
             instance_uuid = self.request.get('instance_uuid')
             wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
-            if not wosib_instance:
-                # it could be in memcache still
-                wosib_instance = PartialWOSIBInstance.get_by_uuid (instance_uuid)
-            instance_product_uuids = [x for x in wosib_instance.products.split(',')] # as # ["id","id","id"]
             # no sane man would compare more than 1000 products from his cart
-            products = Product.all().filter('uuid IN', instance_product_uuids).fetch(1000)
+            products = Product.all().filter('uuid IN', wosib_instance.products).fetch(1000)
+            logging.info ("products = %r" % products)
             template_values = { 'instance_uuid' : instance_uuid,
                                 'products'      : products
                               }
@@ -132,17 +129,14 @@ class WOSIBShowResults(webapp.RequestHandler):
         if not wosib_instance:
             raise Exception ('instance not found')
         
-        instance_products = wosib_instance.products.split(',') # uuid,uuid,uuid
-        logging.debug ("instance_products = %r" % instance_products)
-        
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
-        instance_product_votes = [Action.all().filter('wosib_instance =', wosib_instance).filter('product_uuid =', product_uuid).count() for product_uuid in instance_products] # [votes,votes,votes]
+        instance_product_votes = [Action.all().filter('wosib_instance =', wosib_instance).filter('product_uuid =', product_uuid).count() for product_uuid in wosib_instance.products] # [votes,votes,votes]
         logging.debug ("instance_product_votes = %r" % instance_product_votes)
         
-        instance_product_dict = dict (zip (instance_products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
+        instance_product_dict = dict (zip (wosib_instance.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
         logging.debug ("instance_product_dict = %r" % instance_product_dict)
         
-        winning_product_uuid = instance_products[instance_product_votes.index(max(instance_product_votes))]
+        winning_product_uuid = wosib_instance.products[instance_product_votes.index(max(instance_product_votes))]
         logging.debug ("winning_product_uuid = %r" % winning_product_uuid)
         
         winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
@@ -165,7 +159,6 @@ class WOSIBShowResults(webapp.RequestHandler):
         }
         
         logging.debug("instance_product_dict = %r" % instance_product_dict)
-        logging.debug("instance_products = %r" % instance_products)
         logging.debug("instance_product_votes = %r" % instance_product_votes)
 
         # Finally, render the HTML!
@@ -243,7 +236,7 @@ class ShowWOSIBColorboxCSS (URIHandler):
         template_values = { 'URL'           : URL,
                             'app_uuid'      : self.request.get('app_uuid')}
        
-        path = os.path.join('apps/wosib/templates/css/', 'colorbox.css')
+        path = os.path.join('apps/plugin/templates/css/', 'colorbox.css')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return

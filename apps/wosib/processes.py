@@ -217,7 +217,7 @@ class StartPartialWOSIBInstance( URIHandler ):
         products = self.request.get( 'product_uuids' )
         logging.info ('products = %s' % products)
         user    = User.get( self.request.get( 'user_uuid' ) )
-        PartialWOSIBInstance.create( user, app, link, products )
+        PartialWOSIBInstance.create( user, app, link, products.split(',') )
 
 class StartWOSIBInstance(URIHandler):
     def post(self):

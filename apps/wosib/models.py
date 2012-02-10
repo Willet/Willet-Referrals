@@ -110,7 +110,7 @@ class WOSIBInstance(Model):
     votes = db.IntegerProperty (default = 0, indexed = False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
-    products     = db.StringProperty(db.Text, indexed=True)
+    products     = db.StringListProperty(db.Text, indexed=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -159,7 +159,7 @@ class PartialWOSIBInstance(Model):
                                        indexed=False)
     
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
-    products     = db.StringProperty(db.Text, indexed=False)
+    products    = db.StringListProperty(db.Text, indexed=False)
     
     app_        = db.ReferenceProperty(db.Model,
                                        collection_name='app_partial_wosib_instances',
@@ -190,7 +190,7 @@ class PartialWOSIBInstance(Model):
                                             uuid     = uuid,
                                             user     = user,
                                             link     = link, 
-                                            products  = products, # type str
+                                            products  = products, # type StringList
                                             app_     = app )
         instance.put()
         return instance

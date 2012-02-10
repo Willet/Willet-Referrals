@@ -129,7 +129,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'store_id'       : self.request.get('store_id'),
             'user'           : user,
             'instance_uuid'  : instance_uuid,
-            'stylesheet'     : 'css/colorbox.css',
+            'stylesheet'     : '../../plugin/templates/css/colorbox.css',
             'evnt'           : event,
             'cta_button_text': cta_button_text,
             # this thing tells client JS if the user had created an instance

@@ -19,6 +19,10 @@
                 width: auto;
                 display: auto;
             }
+            #error_bar {
+                display:none;
+                color: #f00;
+            }
         </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
@@ -45,6 +49,7 @@
                     
                     <input name="vote_btn" id="vote_btn" 
                            type="button" value="Done">
+                    <div id="error_bar"></div>
                 </div>
             </div>
             <div id="wosib_thanks_for_vote">
@@ -80,7 +85,7 @@
                 var _willet_cart_products = [ {% for product in products %}
                     {   "id": "{{product.shopify_id}}",
                         "title": "{{product.title}}",
-                        "image" : "{{product.image}}" || "/static/imgs/noimage-willet.png",
+                        "image" : "{{product.images.0}}" || "/static/imgs/noimage-willet.png",
                         "product_uuid": "{{product.uuid}}",
                     },
                 {% endfor %} ];
@@ -171,6 +176,10 @@
                 };
                 $('[value="Close"]').click (closeWindow);
                 
+                var showError = function (msg) {
+                    $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
+                }
+                
                 var vote = function () {
                     var product_uuid = $('#cart_items_display input:checked').data('uuid');
                     if (product_uuid) {
@@ -184,16 +193,14 @@
                             type     : 'post',
                             data     : payload,
                             success  : function () {
-                                // alert ("Thanks for voting!");
                                 showScreen('wosib_thanks_for_vote');
                             },
                             error    : function () {
-                                // alert ("Cannot register vote!");
                                 showScreen('wosib_error');
                             }
                         });
                     } else {
-                        alert ("Please select a product :)");
+                        showError ("Please select a product :)");
                     }
                 }
                 $('#vote_btn').click(vote);
