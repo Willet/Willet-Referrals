@@ -602,7 +602,7 @@ class SendFriendAsks( URIHandler ):
         friends   = json.loads( self.request.get('friends') )
         asker     = json.loads( self.request.get('asker') )
         msg       = self.request.get( 'msg' )
-        app       = App.get( self.request.get('app_uuid') )
+        app       = App.get( self.request.get('app_uuid') ) # Could be <SIBT>, <SIBTShopify> or something...
         product   = Product.get( self.request.get( 'product_uuid' ) )
         link      = Link.get_by_code( self.request.get( 'willt_code' ) )
         
@@ -745,7 +745,7 @@ class SendFriendAsks( URIHandler ):
                                       to_name=       fname,
                                       to_addr=       femail,
                                       message=       msg,
-                                      vote_url=      link,
+                                      vote_url=      link.get_willt_url(),
                                       product_img=   product_image,
                                       asker_img=     a['pic'],
                                       product_title= product.title,

@@ -751,6 +751,12 @@
         
         // ------------------------------   AJAX methods  ------------------------------
         
+        // Useful logging function
+        var console = ( typeof(window.console) === 'object' 
+                 && typeof(window.console.log) === 'function' 
+                 && typeof(window.console.error) ==='function' ) 
+                    ? window.console : { log: function () {}, error: function () {} };
+
         // Store FB data on server
         var updateServerUser = function( accessToken, userId ) {
             var payload = { 
@@ -941,6 +947,7 @@
             // Ensure no errors & at least 1 friend entered
             var i = getFriendsInfo(); // either null or [...]
 
+            console.log("reviewFriendsThenGetInfo friends: "+JSON.stringify(i));
             if (i && i.length > 0) {
                 // Proceed to verifying name
                 showScreen('asker_info');
@@ -951,7 +958,9 @@
 
         // Review askers inputed name & email address before asking friends
         var reviewThenAsk = function () {
-            if (asker.reviewAsker()) {
+            var i = asker.reviewAsker();
+            console.log("reviewAsker asker: "+JSON.stringify(i));
+            if (i) {
                 // Good to go!
                 sendMessages();
             } else {

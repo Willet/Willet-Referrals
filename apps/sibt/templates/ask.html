@@ -119,11 +119,9 @@
             // Gather asker info
             asker_info = asker.getAskerInfo(); // either null or [...]
 
-            if (window.console && window.console.log) {
-                console.log('Asker: '+asker_info+' Friends: '+friend_info+' Error:'+error);
-            }
+            console.log('Asker: '+asker_info+' Friends: '+friend_info+' Error:'+error);
             
-            if (friend_info && friend_info.length > 0 && asker_info && asker_info.length === 3) {
+            if (friend_info && friend_info.length > 0 && asker_info && asker_info.length > 1) {
                 // Clean up UI to show loader gif
                 showScreen('asking');
 
