@@ -21,9 +21,9 @@ Last-Updated: Feb 13, 2012
           it's own folder.
 
           We use MVC within each app folder. 
-              M = models.py
-              V = views.py
-              C = processes.py 
+              M = models.py - db objects and fcns
+              V = views.py - GETs and HTML views
+              C = processes.py - PUTs, POSTs, and backend processing
 
           Any uri handlers need to be added to urls.py so that we can build all
           uris and memcache them! If you add a new app, you need to add it to 
