@@ -35,6 +35,7 @@ from util.consts                    import ADMIN_EMAILS
 from util.consts                    import ADMIN_IPS
 from util.consts                    import FACEBOOK_QUERY_URL
 from util.consts                    import MEMCACHE_TIMEOUT
+from util.consts                    import USING_DEV_SERVER
 from util.helpers                   import *
 from util.memcache_bucket_config    import MemcacheBucketConfig
 from util.memcache_bucket_config    import batch_put 
@@ -163,10 +164,14 @@ class User( db.Expando ):
     def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         logging.info("GETTING USER FROM DB")
-        return User.all().filter('uuid =', uuid).get()
+        db_user = User.all().filter('uuid =', uuid).get()
+        if not db_user:
+            logging.warn ("User does not exist in DB. Not authenticated...")
+        return db_user
 
     def put_later(self):
         """Memcaches and defers the put"""
+        
         key = self.get_key()
 
         mbc    = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
@@ -208,6 +213,7 @@ class User( db.Expando ):
             logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
                 self.hardPut() # Will validate the instance.
+                logging.debug("user has been hardput().")
             except datastore_errors.Timeout:
                 thread.sleep(timeout_ms)
                 timeout_ms *= 2
@@ -215,6 +221,7 @@ class User( db.Expando ):
                 break
         # Memcache *after* model is given datastore key
         if self.key():
+            logging.debug("user exists in DB, and is stored in memcache.")
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
             memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
             
@@ -672,6 +679,79 @@ class User( db.Expando ):
             
         return fb_share_ids
     
+    def fb_post_multiple_products_to_friends (self, ids, names, msg, img, store_domain, link):
+
+        # First, fetch the user's data.
+        taskqueue.add( url    = url('FetchFacebookData'),
+                       params = { 'user_uuid' : self.uuid, 
+                                  'fb_id'     : self.fb_identity } )
+
+        # Then, first off messages to friends.
+        try:
+            """ We try to build the params, utf8 encode them"""
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'caption'      : store_domain.encode('utf8')
+            }
+
+        except Exception, e:
+            params = {
+                'access_token' : self.fb_access_token,
+                'picture'      : img,
+                'link'         : link.get_willt_url(),
+                'caption'      : ''
+            }
+            pass
+        
+        # For each person, share the message
+        fb_share_ids = []
+        for i in range( 0, len( ids ) ):
+            id   = ids[i]
+            name = names[i]
+
+            # Update the params - personalize the msg
+            params.update( { 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) } )
+            payload = urllib.urlencode( params )
+
+            facebook_share_url = "https://graph.facebook.com/%s/feed" % id
+
+            fb_response, plugin_response, fb_share_id = None, None, None
+            try:
+                #logging.info(facebook_share_url + params)
+                fb_response = urlfetch.fetch( facebook_share_url, 
+                                              payload,
+                                              method   = urlfetch.POST,
+                                              deadline = 7 )
+            except urlfetch.DownloadError, e: 
+                logging.error('error sending fb request: %s' % e)
+                return [], 'fail'
+                # No response from facebook
+                
+            if fb_response is not None:
+                fb_results = simplejson.loads(fb_response.content)
+                
+                if fb_results.has_key('id'):
+                    
+                    fb_share_ids.append( fb_results['id'] )
+                    
+                    """
+                    taskqueue.add(
+                        url    = url('FetchFriendFacebookData'),
+                        params = { 'fb_id' : id }
+                    )
+                    """
+                else:
+                    fb_share_ids.append( 'fail' )
+                    logging.info(fb_results)
+
+            else:
+                # we are assuming a nil response means timeout and success
+                pass
+            
+        return fb_share_ids
+    
     
     def facebook_action(self, action, obj, obj_link):
         """Does an ACTION on OBJECT on users timeline"""
@@ -737,7 +817,13 @@ def get_user_by_facebook_for_taskqueue(fb_id):
 def get_user_by_email( email ):
     logging.info("Getting user by email: " + email)
     email_model = EmailModel.all().filter( 'address = ', email ).get()
-    return email_model.user if email_model else None
+    # fix throwing error on lagging memcache
+    #return email_model.user if email_model else None
+    try:
+        return email_model.user
+    except:
+        return None
+
 
 def create_user_by_facebook(fb_id, first_name, last_name, name, email, token, would_be, friends, app):
     """Create a new User object with the given attributes"""

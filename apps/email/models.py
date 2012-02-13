@@ -22,11 +22,12 @@ from util.consts import *
 
 info = "info@getwillet.com"
 
-barbara   = "barbara@getwillet.com"
+barbara   = 'barbara@getwillet.com'
 fraser    = 'fraser@getwillet.com'
-brian     = "brian@getwillet.com"
-dev_team  = '%s' % (barbara)
-team      = '%s, %s' % (fraser, barbara)
+brian     = 'brian@getwillet.com'
+
+dev_team  = ', '.join([barbara, brian])
+team      = ', '.join([fraser, barbara, brian])
 
 from_addr = 'z4beth@gmail.com' #barbara
 
@@ -158,6 +159,30 @@ class Email():
 
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
+
+    @staticmethod
+    def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):
+        # similar to SIBTVoteNotification, except because you can't vote 'no',
+        # you are just told someone voted on one of your product choices.
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('wosib_voteNotification.html'),
+            {
+                'name'        : name.title(),
+                'cart_url'    : cart_url,
+                'client_name' : client_name,
+                'client_domain' : client_domain 
+            }
+        )
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+    
+    @staticmethod
+    def WOSIBVoteCompletion():
+        pass #TODO:
 
     ### MAILOUTS ###
     @staticmethod

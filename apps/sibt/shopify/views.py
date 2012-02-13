@@ -30,6 +30,7 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
+from apps.wosib.shopify.models import WOSIBShopify
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
@@ -49,12 +50,13 @@ class ShowBetaPage(URIHandler):
 
 class SIBTShopifyWelcome(URIHandler):
     def get(self):
-        logging.info('trying to create app')
+        logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
-            app = SIBTShopify.get_or_create(client, token=token)
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
             client_email = None
             shop_owner   = 'Shopify Merchant'
@@ -473,7 +475,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'product_desc'   : product.description if product else "",
           
             'user': user,
-            'stylesheet': 'css/colorbox.css',
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
 
             'AB_CTA_text' : cta_button_text,
 

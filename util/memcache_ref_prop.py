@@ -163,20 +163,19 @@ class MemcacheReferenceProperty(db.Property):
 
         if not self.memcache_key:
             if isinstance( value, datastore.Key ):
-                logging.info("value: %s " % value)
+                logging.info("memcache set value: %s " % value)
                 obj = db.get( value )
-                logging.info("OBJ %s" % obj)
+                logging.info("db OBJ of value = %s" % obj)
                 if obj:
                     self.memcache_key = obj.get_key()
                 else:
                     self.memcache_key = memcache.get( str( value ) ) 
 
-                logging.info("1: %s" % self.memcache_key)
+                logging.info("self.memcache_key: %s" % self.memcache_key)
             elif isinstance( value, db.Model ):
-                self.memcache_key = value.get_key() #getattr( value, '_memcache_key', None)
-                #logging.info("2: %s" % self.memcache_key)
+                self.memcache_key = value.get_key()
             else:
-                raise TypeError( 'Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model>' )
+                raise TypeError( 'Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model> (supplied %s)' % type (value))
         
         if self.memcache_key is None or self.memcache_key == '':
             logging.error( 'Cannot create memcache key for %s!' % value )
