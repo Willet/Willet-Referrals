@@ -26,6 +26,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.buttons.actions import *
     from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
+    from apps.wosib.actions import *
     action_dict = memcache.get_multi(list_keys) 
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
