@@ -6,17 +6,13 @@ __copyright__   = "Copyright 2011, Barbara"
 import logging
 import datetime
 
-#from django.utils import simplejson as json
-#from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
-#from google.appengine.ext.webapp import template
 
 from apps.action.models import ShowAction 
 from apps.action.models import UserAction 
-from apps.user.models import User
-from apps.app.models import App
-
-from util.consts import *
+from apps.user.models   import User
+from apps.app.models    import App
+from util.consts        import *
 
 class TrackShowAction(webapp.RequestHandler):
     def post(self):
