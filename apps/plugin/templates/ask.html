@@ -232,13 +232,15 @@
         //  - 1 + FB log in -> 2
         //  - 1 || 2 + email input -> 3
         //  - 2 + FB input -> 4
-        var Friend = function (name) {
+        var Friend = function (name, page_callback) {
             Widget.call(this, 'li', name);
             this.selected = 'none';
             
             var that = this,
                 $elem = $(this.elem);
             
+            this.page_callback = page_callback || function () {};
+
             // Set up DOM in No Input state
             $elem.addClass('friend').append(" \
                 <div class='portrait'> \
@@ -321,7 +323,7 @@
                     name = $elem.find('.fb_friend input').val();
                     return [ 'fb',
                              name, 
-                             fb_friends[ $.inArray(name, sorted_friend_names) ].id ];
+                             fbFriends[ $.inArray(name, sorted_friend_names) ].id ];
                 } else if (this.selected === 'email') {
                     // return name & email
                     return [ 'email',
@@ -434,7 +436,7 @@
                 // No error
                 name = $input.val();
                 i = $.inArray(name, sorted_friend_names);
-                fb_id = fb_friends[i].id;
+                fb_id = fbFriends[i].id;
                 
                 $elem.find('input').css('color','black').siblings('.error').hide();
                 $elem.find('.portrait>img')
@@ -468,7 +470,7 @@
             // *** this = input element when called by autocomplete ***
             var name = ui.item.value,
                 i = $.inArray(name, sorted_friend_names),
-                fb_id = fb_friends[i].id;
+                fb_id = fbFriends[i].id;
             
             $(this).parents('.friend').find('.portrait>img')
                 .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
@@ -537,18 +539,18 @@
                 ").find('input')
                 .blur(function () {
                     that._reviewFriendNameAndEmail();
-                    updateChooseFriendsView(); // Update next button
+                    that.page_callback(); // Alert page that friend is updated
                 })
                 .keypress(function (e) {
                     if (e.which === ENTER_KEY) {
                         that._reviewFriendNameAndEmail();
-                        updateChooseFriendsView(); // Update next button
+                        that.page_callback(); // Alert page that friend is updated
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendNameAndEmail();
-                    updateChooseFriendsView(); // Update next button
+                    that.page_callback(); // Alert page that friend is updated
                 });
             }
         };
@@ -578,20 +580,20 @@
                 .find('input')
                 .blur(function () {
                     that._reviewFriendFB();
-                    updateChooseFriendsView(); // Update next button
+                    that.page_callback(); // Alert page that friend is updated
                 })
                 .autocomplete({
                     source: sorted_friend_names,
                     select: this._selectFriendFB,
                     close: function () {
                         that._reviewFriendFB();
-                        updateChooseFriendsView(); // Update next button
+                        that.page_callback(); // Alert page that friend is updated
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendFB();
-                    updateChooseFriendsView(); // Update next button
+                    that.page_callback(); // Alert page that friend is updated
                 });
             }
         };
@@ -599,7 +601,7 @@
 
         // Asker gets & stores required information from the user
         //
-        var Asker = function (name) {
+        var Asker = function (name, page_callback) {
             Widget.call(this, 'li', name);
             
             var that = this,
@@ -608,6 +610,9 @@
             this.name  = ''; // Name of asker
             this.pic   = ''; // Picture of asker
             this.email = ''; // Email of asker
+
+            // When Asker is updated, alert host page
+            this.page_callback = page_callback || function () {};
 
             // Set up DOM
             $elem.addClass('asker').append("\
@@ -629,12 +634,12 @@
             ").find('input')
             .blur(function () {
                 that.reviewAsker();
-                updateAskerInfoView(); // Update next button
+                that.page_callback(); // Update next button
             })
             .keypress(function (e) {
                 if (e.which === ENTER_KEY) {
                     that.reviewAsker();
-                    updateAskerInfoView(); // Update next button
+                    that.page_callback(); // Update next button
                 }
             });
         };
@@ -724,7 +729,7 @@
             $elem.find('input.email').val(this.email);
 
             this.reviewAsker();
-            updateAskerInfoView();
+            this.page_callback(); // Alert page that asker is updated
         }
         Asker.prototype.FBLoggedIn = function (name, email, pic) {
             // After FB connect success, show user inputted data
@@ -744,9 +749,9 @@
 
         // ---------------------------- Global Variables ----------------------
 
-        var asker               = new Asker('ask_user'); // Asker info
+        var asker; // Asker info
         var friends             = []; // List of Friend instances in Choose Friend screen
-        var fb_friends          = []; // List of { id, name } from FB
+        var fbFriends          = []; // List of { id, name } from FB
         var sorted_friend_names = []; // List of names to use in autocomplete (sorted)
         var fbAccessToken       = "";
         var fbIdentity          = "";
@@ -876,7 +881,7 @@
 
         // Add blank friend entry to Choose Friend's screen
         var addFriend = function () { 
-            var friend = new Friend();
+            var friend = new Friend('', updateChooseFriendsView);
             friends.push(friend);
             $('#friends').append(friend.getElement())
                 .scrollTo('max', 200, { axis: 'y' });
@@ -918,11 +923,11 @@
         // Query FB api to grab logged-in user's friends
         var fetchFBFriends = function () {
             FB.api( '/me/friends', function (response) {
-                fb_friends = response.data;
-                fb_friends.sort();
+                fbFriends = response.data;
+                fbFriends.sort();
 
                 $.each( response.data, function (i) {
-                    sorted_friend_names.push(fb_friends[i].name); 
+                    sorted_friend_names.push(fbFriends[i].name); 
                 });
 
                 // Code here changes all FB Connect options into FB Friend Select options
@@ -1014,6 +1019,7 @@
         {% block js_functions %}{% endblock js_functions %}
            
         $(document).ready(function() {
+            asker = new Asker('ask_user', updateAskerInfoView);
 
             {% if user_name %}asker.name = "{{user_name|escape}}";{% endif %}
             {% if user_pic %}asker.pic = "{{user_pic|escape}}";{% endif %}
@@ -1042,8 +1048,8 @@
 
             // Add two Friend instances to Choose Friends screen
             (function () {
-                var friend1 = new Friend(),
-                    friend2 = new Friend();
+                var friend1 = new Friend('', updateChooseFriendsView),
+                    friend2 = new Friend('', updateChooseFriendsView);
                 friends.push(friend1, friend2);
                 $('#friends').append(friend1.getElement(), friend2.getElement());
             })();
