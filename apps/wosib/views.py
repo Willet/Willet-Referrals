@@ -136,33 +136,40 @@ class WOSIBShowResults(webapp.RequestHandler):
         instance_product_dict = dict (zip (wosib_instance.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
         logging.debug ("instance_product_dict = %r" % instance_product_dict)
         
-        winning_product_uuid = wosib_instance.products[instance_product_votes.index(max(instance_product_votes))]
-        logging.debug ("winning_product_uuid = %r" % winning_product_uuid)
-        
-        winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
-        
-        try:
-            product_image = winning_product.images[0]
-        except:
-            product_image = '/static/imgs/noimage-willet.png' # no image default
-        
-        try:
-            product_link = winning_product.link
-        except:
-            product_link = '' # no image default
+        if instance_product_votes.count(instance_product_votes[0]) > 1:
+            # that is, if multiple items have the same score
+            winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], wosib_instance.products)
+            winning_products = Product\
+                                   .all()\
+                                   .filter('uuid IN', winning_products_uuids)\
+                                   .fetch(1000)
+            template_values = {
+                'products'  : winning_products,
+            }
+            # Finally, render the HTML!
+            path = os.path.join('apps/wosib/templates/', 'results-multi.html')
+        else:
+            # that is, if one product is winning the voting
+            winning_product_uuid = wosib_instance.products[instance_product_votes.index(max(instance_product_votes))]
+            winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
+            try:
+                product_image = winning_product.images[0]
+            except:
+                product_image = '/static/imgs/noimage-willet.png' # no image default
+            
+            try:
+                product_link = winning_product.link
+            except:
+                product_link = '' # no image default
 
-        template_values = {
-            'product'  : winning_product,
-            'product_image' : product_image,
-            'has_product_link' : bool (product_link),
-            'product_link': product_link
-        }
-        
-        logging.debug("instance_product_dict = %r" % instance_product_dict)
-        logging.debug("instance_product_votes = %r" % instance_product_votes)
-
-        # Finally, render the HTML!
-        path = os.path.join('apps/wosib/templates/', 'results.html')
+            template_values = {
+                'product'  : winning_product,
+                'product_image' : product_image,
+                'has_product_link' : bool (product_link),
+                'product_link': product_link
+            }
+            # Finally, render the HTML!
+            path = os.path.join('apps/wosib/templates/', 'results.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
