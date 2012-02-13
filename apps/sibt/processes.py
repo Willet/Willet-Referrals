@@ -475,6 +475,7 @@ class SendFriendAsks( URIHandler ):
         friends: JSON-encoded <Array> [ <array> [ <string> type, <string> name, <string> identifier ]
         asker: JSON-encoded <array> [<string> name, <string> email_address [, <string> picture_url ]]
         msg: <string> message
+        default_msg: <string> message before user edited it
         app_uuid: <string> a SIBT app uuid
         product_uuid: <string> a <App> uuid
         willt_code: <string> willt_code corresponding to a parital SIBT instance
@@ -492,16 +493,16 @@ class SendFriendAsks( URIHandler ):
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
         
         # Fetch arguments 
-        friends   = json.loads( self.request.get('friends') )
-        asker     = json.loads( self.request.get('asker') )
-        msg       = self.request.get( 'msg' )
-        app       = App.get( self.request.get('app_uuid') ) # Could be <SIBT>, <SIBTShopify> or something...
-        product   = Product.get( self.request.get( 'product_uuid' ) )
-        link      = Link.get_by_code( self.request.get( 'willt_code' ) )
-        
-        user      = User.get( self.request.get( 'user_uuid' ) )
-        fb_token  = self.request.get('fb_access_token')
-        fb_id     = self.request.get('fb_id')
+        friends     = json.loads( self.request.get('friends') )
+        asker       = json.loads( self.request.get('asker') )
+        msg         = self.request.get( 'msg' )
+        default_msg = self.request.get( 'default_msg' )
+        app         = App.get( self.request.get('app_uuid') ) # Could be <SIBT>, <SIBTShopify> or something...
+        product     = Product.get( self.request.get( 'product_uuid' ) )
+        link        = Link.get_by_code( self.request.get( 'willt_code' ) )
+        user        = User.get( self.request.get( 'user_uuid' ) )
+        fb_token    = self.request.get('fb_access_token')
+        fb_id       = self.request.get('fb_id')
 
         fb_friends    = []
         email_friends = []
@@ -581,8 +582,10 @@ class SendFriendAsks( URIHandler ):
             # Check formatting of share message
             try:
                 if len( msg ) == 0:
-                    # TODO: Default message should be A/B test message
-                    msg = "I'm not sure if I should buy this. What do you think?"
+                    if default_msg:
+                        msg = default_msg
+                    else:
+                        msg = "I'm not sure if I should buy this. What do you think?"
                 if isinstance(msg, str):
                     message = unicode(msg, errors='ignore')
             except:
@@ -602,7 +605,7 @@ class SendFriendAsks( URIHandler ):
                 user.update(
                     fb_identity = fb_id,
                     fb_access_token = fb_token
-                ) 
+                )
             
             if fb_friends: # [] is falsy
                 ids = []

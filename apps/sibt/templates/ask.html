@@ -8,7 +8,7 @@
 
             <div id="splash">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Ask Your Friends</div>
                     <div class="drop_bar" id="questionOptions">
                         <div class="grey_bar">
@@ -27,13 +27,13 @@
                 {% endif %}
                 -->
                 <div class="message" id="message">
-                    <img alt="product" src="{{ product_image }}" />
+                    <img alt="product" src="{{ product_images|first }}" />
                     <textarea id='shareText'>{{ AB_share_text }}</textarea>
                 </div>
                 <div class="options">
                     <div class="option left">
                         <div class="button" id="postOnWall" title="Post to your wall">
-                            <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
+                            <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
                             <div class="title">Ask Friends</div>
                             <div class="subtitle">Post to Facebook</div>
                         </div>
@@ -45,7 +45,7 @@
                     <div class="or">or</div>
                     <div class="option right">
                         <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                            <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                            <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
                             <div class="title">Choose Friends</div>
                             <div class="subtitle">Get trusted advice</div>
                         </div>
@@ -63,12 +63,12 @@
         var options = [
             // Could use template here
             {
-                title: 'Should I buy this?',
-                text: '{{ AB_share_text }}'
+                title: "Should I buy this?",
+                text: "{{ AB_share_text|escape }}"
             },
             {
-                title: 'Does anyone own this?',
-                text: 'I need help!  Does anyone own this? Let me know here:'
+                title: "Does anyone own this?",
+                text: "I need help!  Does anyone own this? Let me know here:"
             }
         ];
 {% endblock js_globals %}
@@ -139,6 +139,7 @@
                     friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                     asker           : JSON.stringify(asker_info),
                     msg             : msg,
+                    default_msg     : "{{AB_share_text|escape}}",
                     willt_code      : "{{willt_code}}"
                 };
 

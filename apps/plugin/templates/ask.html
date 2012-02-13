@@ -8,17 +8,6 @@
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
         <title>{% block title %}Should I Buy This?{% endblock title %}</title>
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-        <style>       
-            @font-face {
-                 font-family: fb_font;
-                 src: url("/static/fonts/KlavikaBold.otf");
-            }
-            @font-face {
-                 font-family: fb_font;
-                 src: url("/static/fonts/KlavikaBold.eot"); /* For IE */
-            }
-        </style>
-        <link rel="stylesheet" href="/static/sibt/css/shopify.css" type="text/css" />
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
 
         <!-- Add styles here! Try to reuse as much of ask.css as possible -->
@@ -35,7 +24,7 @@
 
             <div id="choose">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <ul class="friends" id="friends">
@@ -45,8 +34,8 @@
                     <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
                     Add Another Friend
                 </div>
-                <div id="chosenButton" class="button corner">
-                    <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                <div id="chosenButton" class="button inactive corner">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
                 </div>
@@ -56,7 +45,7 @@
 
             <div id="asker_info">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Let Your Friends Know Who Is Asking</div>
                 </div>
                 <ul class="askers" id="askers">
@@ -65,8 +54,8 @@
                 <div class="center_col">
                     <p class="centered">We will email you when a friend provides advice.</p>
                 </div>
-                <div id="askButton" class="button corner">
-                    <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                <div id="askButton" class="button inactive corner">
+                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
                     <div class="title">Ask Chosen Friends</div>
                     <div class="subtitle">Giving advice is fun</div>
                 </div>
@@ -76,7 +65,7 @@
 
             <div id="asking">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
                 <div class="middled">
@@ -89,7 +78,7 @@
 
             <div id="success">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Success! Your Question Has Been Sent</div>
                 </div>
                 <div class="center_col">
@@ -116,7 +105,7 @@
 
             <div id="failure">
                 <div class="title_bar">
-                    <img alt="logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Sorry, But Something Went Wrong...</div>
                 </div>
                 <div class="center_col">
@@ -198,6 +187,7 @@
         // ----------------------------  CONSTS ------------------------------------
 
         var ENTER_KEY = 13;
+
         // ----------------------------  CLASSES  ----------------------------------
 
         // Widget class
@@ -219,7 +209,7 @@
             // sets widget HTML element display
             // true - visible, false - invisible
                 if (i) {
-                    this.elem.style.display = 'block';
+                    this.elem.style.display = ''; // returns to default
                 }
                 else {
                     this.elem.style.display = 'none';
@@ -252,7 +242,7 @@
             // Set up DOM in No Input state
             $elem.addClass('friend').append(" \
                 <div class='portrait'> \
-                    <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
+                    <img src='/static/plugin/imgs/choose_friends.png' width=40 height=40 /> \
                 </div> \
                 <div class='friend_options'> \
                     <div class='fb_option'> \
@@ -424,11 +414,11 @@
 
             if (error) {
                 // Error! Set sad face on portrait
-                $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
                 return false;
             } else {
                 // Set happy face on portrait
-                $elem.find('.portrait>img').attr('src','/static/sibt/imgs/happy_face.png');
+                $elem.find('.portrait>img').attr('src','/static/plugin/imgs/happy_face.png');
                 return true;
             }
         };
@@ -455,7 +445,7 @@
             } else {
                 // Not a friend
                 $elem.find('input').css('color','red').siblings('.error').show();
-                $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
                 return false;
             }
         };
@@ -500,10 +490,6 @@
                 <div class='helpful'>Find friends using Facebook</div> \
                 <input></input> \
             ")
-            .children('input')
-            .blur(function () {
-                that._reviewFriendFB();
-            })
             .autocomplete({
                 source: sorted_friend_names,
                 select: this._selectFBFriend,
@@ -551,15 +537,18 @@
                 ").find('input')
                 .blur(function () {
                     that._reviewFriendNameAndEmail();
+                    updateChooseFriendsView(); // Update next button
                 })
                 .keypress(function (e) {
                     if (e.which === ENTER_KEY) {
                         that._reviewFriendNameAndEmail();
+                        updateChooseFriendsView(); // Update next button
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendNameAndEmail();
+                    updateChooseFriendsView(); // Update next button
                 });
             }
         };
@@ -589,17 +578,20 @@
                 .find('input')
                 .blur(function () {
                     that._reviewFriendFB();
+                    updateChooseFriendsView(); // Update next button
                 })
                 .autocomplete({
                     source: sorted_friend_names,
                     select: this._selectFriendFB,
                     close: function () {
                         that._reviewFriendFB();
+                        updateChooseFriendsView(); // Update next button
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendFB();
+                    updateChooseFriendsView(); // Update next button
                 });
             }
         };
@@ -620,7 +612,7 @@
             // Set up DOM
             $elem.addClass('asker').append("\
                 <div class='portrait'> \
-                    <img src='/static/sibt/imgs/sibt_choose_friends.png' width=40 height=40 /> \
+                    <img src='/static/plugin/imgs/choose_friends.png' width=40 height=40 /> \
                 </div> \
                 <div class='email_asker'> \
                     <div> \
@@ -637,10 +629,12 @@
             ").find('input')
             .blur(function () {
                 that.reviewAsker();
+                updateAskerInfoView(); // Update next button
             })
             .keypress(function (e) {
                 if (e.which === ENTER_KEY) {
                     that.reviewAsker();
+                    updateAskerInfoView(); // Update next button
                 }
             });
         };
@@ -679,6 +673,13 @@
                 return false;
             }
         };
+        Asker.prototype.validateAsker = function () {
+            // Validate data asker contains
+            // Returns: <boolean> true = valid, false = invalid
+            var $elem = $(this.elem);
+            return this._validateName($elem.find('input.name')[0]) 
+                && this._validateEmail($elem.find('input.email')[0]);
+        };
         // Review functions will change the element to indicate
         // to the user if inputted friend information is good
         Asker.prototype.reviewAsker = function () {
@@ -687,7 +688,7 @@
             var $elem = $(this.elem),
                 that = this,
                 error = false,
-                good_face = (this.pic !== '') ? this.pic : '/static/sibt/imgs/happy_face.png';
+                good_face = (this.pic !== '') ? this.pic : '/static/plugin/imgs/happy_face.png';
             
             // Validate each input and set sad face if any are in error
             $elem.find('input').each(function () {
@@ -702,7 +703,7 @@
 
             if (error) {
                 // Error! Set sad face on portrait
-                $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
+                $elem.find('.portrait>img').attr('src','/static/plugin/imgs/sad_face.png');
                 return false;
             } else {
                 // Set asker face or happy face on portrait
@@ -714,6 +715,17 @@
                 return true;
             }
         };
+
+        Asker.prototype.updateView = function () {
+            // Takes stored asker values and updates view based on them
+            var $elem = $(this.elem);
+
+            $elem.find('input.name').val(this.name);
+            $elem.find('input.email').val(this.email);
+
+            this.reviewAsker();
+            updateAskerInfoView();
+        }
         Asker.prototype.FBLoggedIn = function (name, email, pic) {
             // After FB connect success, show user inputted data
             // Returns: n/a
@@ -723,10 +735,7 @@
             this.email = email;
             this.pic = pic;
 
-            $elem.find('.portrait>img').attr('src','/static/sibt/imgs/sad_face.png');
-            $elem.find('input.name').val(name);
-            $elem.find('input.email').val(email);
-            this.reviewAsker();
+            this.updateView();
         };
 
         // Add classes here.  Any questions about js classes? Ask Fraser
@@ -777,17 +786,19 @@
         };
 
         var updateEmailAddress = function() {
-            var addr = document.getElementById( 'email-field' ).value;
-                
-            $.ajax({
-                url: "{{ URL }}{% url UpdateEmailAddress %}",
-                type: 'post',
-                data: { email : addr },
-                success: function (tr) {
-                    doPostMessage('close');
-                    window.close();
-                }
-            });
+            var addr = asker.email;
+            
+            if (asker.email !== '') {
+                $.ajax({
+                    url: "{{ URL }}{% url UpdateEmailAddress %}",
+                    type: 'post',
+                    data: { email : addr },
+                    success: function (tr) {
+                        doPostMessage('close');
+                        window.close();
+                    }
+                });
+            }
         };
         
         // Add AJAX methods here.
@@ -925,7 +936,9 @@
         // Gather friends info into array
         var getFriendsInfo = function () {
             // Returns:
-            //   No invalid friends: [ [...], [...] ]
+            //   No invalid friends: [ [...], [...] ], see
+            //                  Friend.prototype.getFriendInfo
+            //                  for array entries
             //   No friends: []
             //   Invalid friends: null
             var i = friends.length, j,
@@ -946,7 +959,30 @@
             }
             
             return error ? null : friend_info;
-        }
+        };
+
+        // Toggles next button from active / inactive for Choose Friends screen
+        var updateChooseFriendsView = function () {
+            var i = getFriendsInfo(),
+                $chosenButton = $('#chosenButton');
+            
+            if (i && i.length !== 0) {
+                $chosenButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
+            } else {
+                $chosenButton.addClass('inactive').children('img').attr('src','/static/plugin/imgs/grey_outline_logo_40x40.png');
+            }
+        };
+
+        // Toggles next button from active / inactive for Asker Info screen
+        var updateAskerInfoView = function () {
+            var $askButton = $('#askButton');
+            
+            if (asker.validateAsker()) {
+                $askButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
+            } else {
+                $askButton.addClass('inactive').children('img').attr('src','/static/plugin/imgs/grey_outline_logo_40x40.png');
+            }
+        };
 
         // Ensures we have all information before asking friends
         var reviewFriendsThenGetInfo = function () {
@@ -978,6 +1014,11 @@
         {% block js_functions %}{% endblock js_functions %}
            
         $(document).ready(function() {
+
+            {% if user_name %}asker.name = "{{user_name|escape}}";{% endif %}
+            {% if user_pic %}asker.pic = "{{user_pic|escape}}";{% endif %}
+            {% if user_email %}asker.email = "{{user_email|escape}}";{% endif %}
+            {% if user_name or user_pic or user_email %}asker.updateView();{% endif %}
 
             /**********************  ATTACH EVENTS TO DOM HERE  **************************/
 

@@ -3,6 +3,10 @@
 html, body {
     background-color: white;
     color: #383f41;
+    overflow: hidden;
+    font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
+    margin:0px;
+    padding:0px;
 }
 textarea {
     display: block;
@@ -109,9 +113,9 @@ p {
     float: left;
 }
 .title_bar>img {
-    height: 50px;
-    width: 79px;
-    margin: 0px 0px 0px 6px;
+    height: 60px;
+    width: 50px;
+    margin: 0px 0px 0px 15px;
     padding: 0px;
 }
 .title_bar>div {
@@ -138,11 +142,24 @@ p {
     /* For Webkit */
     -webkit-border-radius: 10px;
     background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
     /* For IE 9+ */
-    background-image: -ms-linear-gradient(top, #CFF6FA, #C1F0F5);
+    background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
     /* For IE 8- */
     filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#D9F7FA", EndColorStr="#C1F0F5");
+}
+.button.inactive {
+    background-color: #C1F0F5;
+    /* CSS 3 */
+    background-image: linear-gradient(top, #F7F7F7, #EEE);
+    /* For Firefox */
+    background-image: -moz-linear-gradient(top, #F7F7F7, #EEE);
+    /* For Webkit */
+    background-image: -webkit-linear-gradient(top, #F7F7F7, #EEE);
+    /* For IE 9+ */
+    background-image: -ms-linear-gradient(top, #F7F7F7, #EEE);
+    /* For IE 8- */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#F7F7F7", EndColorStr="#EEE");
 }
 .button:hover {
     cursor: pointer;
@@ -150,6 +167,14 @@ p {
     -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+}
+.button.inactive:hover {
+    cursor: auto;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
 }
 .button>img {
     float: left;
@@ -182,6 +207,9 @@ p {
 
 /* ---------------------   Splash  ----------------------- */ 
 
+#questionOptions {
+    margin-top: 12px;
+}
 .drop_bar {
     position: relative;
     z-index: 5;
@@ -229,7 +257,7 @@ p {
 }
 .message>img {
     float: left;
-    border: 1px solid grey;
+    border: 1px solid #BBB;
     width: 100px;
     height:100px;
 }
@@ -269,6 +297,18 @@ p {
     padding-top: 15px;
     font-size: 14px;
     color: #666;
+}
+#showChooseScreen>img, #postOnWall>img {
+    padding: 2px;
+    border: 1px solid #BBB;
+    background-color: white;
+    margin: 2px 7px 2px 7px;
+}
+#postOnWall>img {
+    width: 60px;
+}
+#askButton>.title, #askButton>.subtitle {
+    min-width: 150px;
 }
 
 /* ---------------------   Choose Friends  ----------------------- */ 
@@ -375,7 +415,6 @@ ul.friends li {
     color: #666;
 }
 .fb_connect {
-    border-radius: 6px;
     padding: 1px 10px 0 10px;
     font-size: 14px;
     line-height: 28px;
@@ -430,6 +469,14 @@ li.ui-menu-item {
 }
 li.ui-menu-item:hover {
     background-color: #E0F0F8;
+}
+#chosenButton>img, #askButton>img {
+    margin: 5px;
+}
+#chosenButton>.title, #chosenButton>.subtitle,
+#askButton>.title, #askButton>.subtitle {
+    margin-left: 50px;
+    min-width: 185px;
 }
 
 /* --------------------   Asking Screen ----------------------------- */

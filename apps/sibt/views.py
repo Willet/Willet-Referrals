@@ -105,13 +105,17 @@ class AskDynamicLoader(webapp.RequestHandler):
             'store_url'    : self.request.get( 'store_url' ),
             'store_domain' : self.request.get( 'store_url' ),
 
+            'user_email'   : user.email if user_found and hasattr(user, 'email') else None,
+            'user_name'    : user.name if user_found and hasattr(user, 'name') else None,
+            'user_pic'     : user.pic if user_found and hasattr(user, 'pic') else None,
+
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'user_has_fb_token' : user_found,
 
             'product_uuid'   : product.uuid,
             'product_title'  : product.title if product else "",
-            'product_images' : product.images if product else "",
+            'product_images' : product.images if product and len(product.images) > 0 else [],
             'product_desc'   : productDesc,
 
             'share_url'      : link.get_willt_url(),
@@ -218,7 +222,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             template_values = {
                     'evnt' : event,
 
-                    'product_img': product.images,
+                    'product_img': product.images if product and len(product.images) > 0 else [],
                     'app' : app,
                     'URL': URL,
                     

@@ -24,6 +24,7 @@ from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
 
+
 class FetchFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
     def post(self):
@@ -85,6 +86,7 @@ class FetchFacebookData(webapp.RequestHandler):
         
         logging.info("done updating")
 
+
 class FetchFacebookFriends(webapp.RequestHandler):
     """Fetch and save the facebook friends of a given user"""
     def get(self):
@@ -106,6 +108,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
         user = User.all().filter('fb_identity =', rq_vars['fb_id'])
         fb_response = db.run_in_transaction(txn, user)
         logging.info(fb_response)
+
 
 class QueryGoogleSocialGraphAPI( URIHandler ):
     def get( self ):
@@ -187,6 +190,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
 
             user.put_later()
 
+# Should this utility function be defined here?
 def unpacker(obj, user):
     r = []
     logging.info('v:%r'% obj)
@@ -216,11 +220,13 @@ def unpacker(obj, user):
             continue
     return r
 
+
 class UpdateEmailAddress(webapp.RequestHandler):
     def post( self ):
         user = get_user_by_cookie( self )
 
         user.update( email=self.request.get('email') )
+
 
 class UpdateFBAccessToken( URIHandler ):
     """ Store FB access token and FB id in User """
