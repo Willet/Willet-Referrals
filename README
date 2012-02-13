@@ -1,0 +1,80 @@
+Welcome to the Willet repo!
+
+#### Files ####
+ - appengine_config.py: Can't remember what this does. I'm pretty sure it's
+                        used for gaesessions.
+
+ - urls.py: Crawls the repo looking for urls.py files (only looks in dirs 
+            specified within util/consts.py). As it crawls, it builds a 
+            list of { uri -> handler } and memcaches it so we don't need
+            to build it frequently. 
+
+            If you ever need to refer to a uri within the code, you should 
+            call url( 'HANDLER_NAME' ) and it'll return a relative uri.
+
+            You can call URL within a template file too!
+
+#### Dirs ####
+ - apps/: Familiar with the Django framework? If not, wikipedia it! All code code
+          goes in here. Each bit of modularized code is a Django 'app' and has
+          it's own folder.
+
+          We use MVC within each app folder. 
+              M = models.py
+              V = views.py
+              C = processes.py 
+
+          Any uri handlers need to be added to urls.py so that we can build all
+          uris and memcache them! If you add a new app, you need to add it to 
+          util/consts.py list of apps so that the uri builder knows to grab
+          it's uris.
+
+          Every subfolder under apps/ needs to have an __init__.py.
+          Otherwise, things break!
+
+          HTML files for views are stored within each app's dir under
+          templates/. Some apps have additional files (ie. not just .html)
+          within templates/. Essentially, any file that is dynamically
+          served would go under templates.
+
+ - gaesessions/: This isn't currently in use. If you want to have server-side
+                 sessions in GAE, you'll need to use it.
+
+ - mapreduce/: This is GAE's mapreduce lib. Unfortunately, it needs to be kept
+               in a top level folder. It is used to compute the analytics.
+
+               There is svn metadata in the mapreduce folders because the project
+               is updated frequently and you can grab the updates directly
+               using svn.
+
+ - pipeline/: Future versions of mapreduce use the Pipeline lib.
+
+ - static/: All static content is served from here. Right now, it's a bit messy.
+
+ - util/: Random helpers and libs go in here.
+
+ - w3c/: Privacy policy etc stored here. You'll never need to go in here ever!
+
+##### Yamls ####
+GAE is controlled using yaml files. The syntax is really straight-forward!
+
+ - app.yaml: Controls the WHOLE APP! The most important part is 'application'
+             - this field controls the deployment location of your app.
+
+             Not much more will ever need to be changed here.
+
+ - backends.yaml: Controls GAE's backends processes. Currently only used for analytics.
+
+ - cron.yaml: Controls all cron jobs. Mostly everything is turned off right now.
+
+ - handlers.yaml: Controls the uris available for our app. 
+                  This file shouldn't ever need to edited unless you've added some
+                  special static files
+
+ - index.yaml: Tells GAE which db indexes it needs to build and serve. Only edit
+               if GAE complains about a missing index when you deploy.
+
+ - mapreduce.yaml: Controls the mapreduce settings.
+
+ - queue.yaml: Inits the task queues for running processes out-of-band.
+
