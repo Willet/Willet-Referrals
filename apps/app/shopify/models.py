@@ -150,7 +150,7 @@ class AppShopify(Model):
             )
             logging.info('%r %r' % (resp, content)) 
             if int(resp.status) == 401:
-                Email.emailBarbara(
+                Email.emailDevTeam(
                     '%s WEBHOOK INSTALL FAILED\n%s\n%s\n%s' % (
                         self.class_name(),
                         resp,
@@ -183,7 +183,7 @@ class AppShopify(Model):
             )
             logging.info('%r %r' % (resp, content))
             if int(resp.status) == 401:
-                Email.emailBarbara(
+                Email.emailDevTeam(
                     '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
                         self.class_name(),
                         resp,
@@ -239,7 +239,7 @@ class AppShopify(Model):
             )
             logging.info('%r %r' % (resp, content))
             if int(resp.status) != 200: 
-                Email.emailBarbara(
+                Email.emailDevTeam(
                     '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
                         self.class_name(),
                         resp,

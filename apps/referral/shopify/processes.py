@@ -126,4 +126,4 @@ class DoProcessOrder( URIHandler ):
 
 class DoUninstalledApp( URIHandler ):
     def post( self ):
-        Email.emailBarbara( "UNinstall %r %s" % (self.request, self.request.headers) )
+        Email.emailDevTeam( "UNinstall %r %s" % (self.request, self.request.headers) )

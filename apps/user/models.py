@@ -74,7 +74,7 @@ def create_email_model( user, email ):
 
             try:
                 if em.user.uuid != user.uuid:
-                    Email.emailBarbara( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
+                    Email.emailDevTeam( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
                     logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
                     
                     # TODO: We might need to merge Users here
