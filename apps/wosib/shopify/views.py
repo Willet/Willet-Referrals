@@ -80,7 +80,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             
             # number of votes, not the votes objects.
             # votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
-            votes_count = instance.votes or 0
+            votes_count = instance.get_votes_count() or 0
             logging.info ("votes_count = %s" % votes_count)
             
             asker_name = instance.asker.get_first_name()

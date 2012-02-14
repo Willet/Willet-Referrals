@@ -53,7 +53,8 @@ class DoWOSIBVote(URIHandler):
         # Make a Vote action for this User
         # TODO: use VoteCounter
         action = WOSIBVoteAction.create(user, instance, product_uuid)
-        instance.votes += 1 # increase instance vote counter
+        # instance.votes += 1 # increase instance vote counter
+        instance.increment_votes () # increase instance vote counter
         instance.put()
 
         # Tell the Asker they got a vote!

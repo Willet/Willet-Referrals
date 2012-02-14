@@ -23,6 +23,7 @@ from apps.link.models       import Link
 from apps.product.models    import Product
 from apps.sibt.models       import VoteCounter
 from apps.user.models       import get_or_create_user_by_cookie
+from apps.vote.models       import VoteCounter
 from apps.wosib.actions     import *
 from util.consts            import *
 from util.helpers           import generate_uuid
@@ -108,7 +109,7 @@ class WOSIBInstance(Model):
     # the number of times this instance had received votes
     # (less accurate than WOSIBVoteAction.all().filter('wosib_instance =', instance).count(),
     # but saves DB reads. See DoWOSIBVote for property incrementation.)
-    votes = db.IntegerProperty (default = 0, indexed = False)
+    # votes = db.IntegerProperty (default = 0, indexed = False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
     products     = db.StringListProperty(db.Text, indexed=True)
@@ -144,7 +145,37 @@ class WOSIBInstance(Model):
             # that is, if one product is winning the voting
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
             return [Product.all().filter('uuid =', winning_product_uuid).get()]
+    
+    def get_votes_count(self):
+        """Count this instance's votes count
+           For compatibility reasons, the field 'yesses' is used to keep count"""
+        total = memcache.get(self.uuid+"WOSIBVoteCounter_count")
+        if total is None:
+            total = 0
+            for counter in VoteCounter.all().\
+            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
+                total += counter.yesses
+            memcache.add(key=self.uuid+"WOSIBVoteCounter_count", value=total)
         
+        return total
+    
+    def increment_votes(self):
+        """Increment this instance's votes counter
+           For compatibility reasons, the field 'yesses' is used to keep count"""
+        def txn():
+            logging.info ("Running vote++ transaction")
+            index = random.randint(0, NUM_VOTE_SHARDS-1)
+            shard_name = self.uuid + str(index)
+            counter = VoteCounter.get_by_key_name(shard_name)
+            if counter is None:
+                counter = VoteCounter(key_name      =shard_name, 
+                                      instance_uuid=self.uuid)
+            counter.yesses += 1
+            counter.put()
+
+        db.run_in_transaction(txn)
+        memcache.incr(self.uuid+"WOSIBVoteCounter_count")
+    
 
     @staticmethod
     def get_by_uuid(uuid):

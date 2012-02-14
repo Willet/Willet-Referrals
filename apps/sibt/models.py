@@ -24,6 +24,7 @@ from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
+from apps.vote.models     import VoteCounter
 
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -279,16 +280,6 @@ class SIBTInstance(Model):
 
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
-
-# ------------------------------------------------------------------------------
-# VoteCounter Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
-class VoteCounter(db.Model):
-    """Sharded counter for voting counts"""
-
-    instance_uuid = db.StringProperty(indexed=True, required=True)
-    yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
-    nos           = db.IntegerProperty(indexed=False, required=True, default=0)
 
 # ------------------------------------------------------------------------------
 # PartialSIBTInstance Class Definition -----------------------------------------
