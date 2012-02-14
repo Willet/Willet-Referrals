@@ -368,7 +368,7 @@ class TimeSlices(webapp.RequestHandler):
 
 class AnalyticsDone(webapp.RequestHandler):
     def get(self):
-        Email.emailBarbara('Finished running analytics')
+        Email.emailDevTeam('Finished running analytics')
         self.response.out.write(json.dumps({'success': True}))
 
 

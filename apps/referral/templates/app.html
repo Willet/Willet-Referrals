@@ -37,8 +37,8 @@
         */
         /*
         platform.create_line_chart( 'graph_div', [
-            'Tweets_{{app.uuid}}_BarbaraEMac', 'Clicks_{{app.uuid}}_BarbaraEMac'
-        ], { 'mapping' : { 'Clicks_{{app.uuid}}_BarbaraEMac' : 'BarbaraEMac'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
+            'Tweets_{{app.uuid}}', 'Clicks_{{app.uuid}}'
+        ], { 'mapping' : { 'Clicks_{{app.uuid}}' : 'Foo'}, 'legend' : false, 'cumulative' : true, 'xlabel' : 'Date', 'ylabel' : 'Counts'} );
         */
     </script>
     <link rel="stylesheet" href="/static/css/dashboard.css" type="text/css" media="screen" />
@@ -135,9 +135,9 @@
         <div id="graph_div"></div>
         <div >
             <div id='user_box' style='display: none; position: absolute;'>
-                <h3>Barbara</h3>
-                <strong>@barbaraEMAC</strong>
-                <img src="/static/imgs/barbara.png" align="right" />
+                <h3>Fraser</h3>
+                <strong>@fjharris</strong>
+                <img src="/static/imgs/fraser.png" align="right" />
             </div>
         </div>
     {% endif %}
