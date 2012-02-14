@@ -181,21 +181,28 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
     
     @staticmethod
-    def WOSIBVoteCompletion():
-        pass #TODO:
-
-    ### MAILOUTS ###
-    @staticmethod
-    def Mailout_Nov28(to_addr, name, app_uuid):
-        subject = 'Updates About "Should I Buy This"!'
+    def WOSIBVoteCompletion(to_addr, name, products):
+        if name == "":
+            name = "Savvy Shopper"
+        subject = '%s, the votes are in!' % name
+        
+        # would have been much more elegant had django 0.96 gotten the 
+        # {% if array|length > 1 %} notation (it doesn't work in GAE)
+        product = products[0]
+        if len (products) == 1:
+            products = False
+        
         body = template.render(
-            Email.template_path('mailout_nov28.html'), {
+            Email.template_path('wosib_voteCompletion.html'), {
                 'name': name,
-                'app_uuid' : app_uuid
+                'products': products,
+                'product' : product
         })
 
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
+
+    ### MAILOUTS ###
 
     @staticmethod 
     def template_path(path):

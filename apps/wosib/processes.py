@@ -109,10 +109,7 @@ class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
                 Email.WOSIBVoteCompletion(
                     email,
                     result_instance.asker.get_full_name(),
-                    result_instance.link.get_willt_url(),
-                    result_instance.product_img,
-                    result_instance.get_yesses_count(),
-                    result_instance.get_nos_count()
+                    result_instance.get_winning_products()
                 )
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)

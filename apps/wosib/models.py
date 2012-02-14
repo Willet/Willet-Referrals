@@ -17,15 +17,16 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.app.models      import App
-from apps.email.models    import Email
-from apps.link.models     import Link
-from apps.sibt.models     import VoteCounter
-from apps.user.models     import get_or_create_user_by_cookie
-from apps.wosib.actions   import *
-from util.consts          import *
-from util.helpers         import generate_uuid
-from util.model           import Model
+from apps.app.models        import App
+from apps.email.models      import Email
+from apps.link.models       import Link
+from apps.product.models    import Product
+from apps.sibt.models       import VoteCounter
+from apps.user.models       import get_or_create_user_by_cookie
+from apps.wosib.actions     import *
+from util.consts            import *
+from util.helpers           import generate_uuid
+from util.model             import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_VOTE_SHARDS = 15
@@ -116,6 +117,34 @@ class WOSIBInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
+
+    def get_winning_products (self):
+        # returns an array of products with the most votes in the instance.
+        # array can be of one item.
+        
+        # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
+        instance_product_votes = [Action.\
+                                    all().\
+                                    filter('wosib_instance =', self).\
+                                    filter('product_uuid =', product_uuid)\
+                                    .count() for product_uuid in self.products] # [votes,votes,votes]
+        logging.debug ("instance_product_votes = %r" % instance_product_votes)
+        
+        instance_product_dict = dict (zip (self.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
+        logging.debug ("instance_product_dict = %r" % instance_product_dict)
+        
+        if instance_product_votes.count(instance_product_votes[0]) > 1:
+            # that is, if multiple items have the same score
+            winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], self.products)
+            return Product\
+                       .all()\
+                       .filter('uuid IN', winning_products_uuids)\
+                       .fetch(1000)
+        else:
+            # that is, if one product is winning the voting
+            winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
+            return [Product.all().filter('uuid =', winning_product_uuid).get()]
+        
 
     @staticmethod
     def get_by_uuid(uuid):

@@ -128,21 +128,10 @@ class WOSIBShowResults(webapp.RequestHandler):
         wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
         if not wosib_instance:
             raise Exception ('instance not found')
-        
-        # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
-        instance_product_votes = [Action.all().filter('wosib_instance =', wosib_instance).filter('product_uuid =', product_uuid).count() for product_uuid in wosib_instance.products] # [votes,votes,votes]
-        logging.debug ("instance_product_votes = %r" % instance_product_votes)
-        
-        instance_product_dict = dict (zip (wosib_instance.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
-        logging.debug ("instance_product_dict = %r" % instance_product_dict)
-        
-        if instance_product_votes.count(instance_product_votes[0]) > 1:
+            
+        winning_products = wosib_instance.get_winning_products()
+        if len(winning_products) > 1:
             # that is, if multiple items have the same score
-            winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], wosib_instance.products)
-            winning_products = Product\
-                                   .all()\
-                                   .filter('uuid IN', winning_products_uuids)\
-                                   .fetch(1000)
             template_values = {
                 'products'  : winning_products,
             }
@@ -150,20 +139,18 @@ class WOSIBShowResults(webapp.RequestHandler):
             path = os.path.join('apps/wosib/templates/', 'results-multi.html')
         else:
             # that is, if one product is winning the voting
-            winning_product_uuid = wosib_instance.products[instance_product_votes.index(max(instance_product_votes))]
-            winning_product = Product.all().filter('uuid =', winning_product_uuid).get()
             try:
-                product_image = winning_product.images[0]
+                product_image = winning_products[0].images[0]
             except:
                 product_image = '/static/imgs/noimage-willet.png' # no image default
             
             try:
-                product_link = winning_product.link
+                product_link = winning_products[0].link
             except:
                 product_link = '' # no image default
 
             template_values = {
-                'product'  : winning_product,
+                'product'  : winning_products[0],
                 'product_image' : product_image,
                 'has_product_link' : bool (product_link),
                 'product_link': product_link
