@@ -12,7 +12,6 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.wosib.actions       import *
 from apps.action.models       import UserAction
 from apps.app.models          import App
 from apps.app.models          import get_app_by_id
@@ -21,17 +20,18 @@ from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
 from apps.user.models         import User
-from apps.wosib.models        import WOSIBInstance
-from apps.wosib.models        import PartialWOSIBInstance
 from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import get_or_create_user_by_cookie
+from apps.wosib.actions       import *
+from apps.wosib.models        import WOSIBInstance
+from apps.wosib.models        import PartialWOSIBInstance
 
 from util.consts              import *
-from util.helpers             import url 
 from util.helpers             import remove_html_tags
+from util.helpers             import url 
 from util.strip_html          import strip_html
 from util.urihandler          import URIHandler
 
@@ -51,9 +51,7 @@ class DoWOSIBVote(URIHandler):
         user = get_or_create_user_by_cookie(self, app)
 
         # Make a Vote action for this User
-        # TODO: use VoteCounter
         action = WOSIBVoteAction.create(user, instance, product_uuid)
-        # instance.votes += 1 # increase instance vote counter
         instance.increment_votes () # increase instance vote counter
         instance.put()
 
@@ -237,7 +235,7 @@ class StartWOSIBInstance(URIHandler):
         }
 
         try:
-            # Make the Instance!
+            # Make the Instance! "None" sets vote time to 6 hrs
             instance = app.create_instance(user, None, link)
         
             response['success'] = True

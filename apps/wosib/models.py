@@ -9,26 +9,26 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import logging
 import random
-from datetime import datetime
-from datetime import timedelta
+from datetime                   import datetime
+from datetime                   import timedelta
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
-from google.appengine.api import memcache
+from django.utils               import simplejson as json
+from google.appengine.api       import memcache
+from google.appengine.ext       import db
 from google.appengine.datastore import entity_pb
 
-from apps.app.models        import App
-from apps.email.models      import Email
-from apps.link.models       import Link
-from apps.product.models    import Product
-from apps.sibt.models       import VoteCounter
-from apps.user.models       import get_or_create_user_by_cookie
-from apps.vote.models       import VoteCounter
-from apps.wosib.actions     import *
-from util.consts            import *
-from util.helpers           import generate_uuid
-from util.model             import Model
-from util.memcache_ref_prop import MemcacheReferenceProperty
+from apps.app.models            import App
+from apps.email.models          import Email
+from apps.link.models           import Link
+from apps.product.models        import Product
+from apps.sibt.models           import VoteCounter
+from apps.user.models           import get_or_create_user_by_cookie
+from apps.vote.models           import VoteCounter
+from apps.wosib.actions         import *
+from util.consts                import *
+from util.helpers               import generate_uuid
+from util.memcache_ref_prop     import MemcacheReferenceProperty
+from util.model                 import Model
 
 NUM_VOTE_SHARDS = 15
 
@@ -105,11 +105,6 @@ class WOSIBInstance(Model):
     app_ = db.ReferenceProperty(db.Model, collection_name="app_wosib_instances" )
 
     link = db.ReferenceProperty(db.Model, collection_name='wosib_instance_links', indexed=False)
-
-    # the number of times this instance had received votes
-    # (less accurate than WOSIBVoteAction.all().filter('wosib_instance =', instance).count(),
-    # but saves DB reads. See DoWOSIBVote for property incrementation.)
-    # votes = db.IntegerProperty (default = 0, indexed = False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
     products     = db.StringListProperty(db.Text, indexed=True)

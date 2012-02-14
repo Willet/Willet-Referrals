@@ -30,10 +30,10 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
-from apps.wosib.shopify.models import WOSIBShopify
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
+from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
 from util.helpers             import *

@@ -118,7 +118,7 @@ class WOSIBVoteAction(VoteAction):
     
     # because WOSIB contains more than one product, we have to record which
     # product to which this vote corresponds
-    product_uuid = db.StringProperty(indexed=True, required=True)
+    product_uuid = db.StringProperty( indexed = True, required = True )
     
     # URL that was voted on
     url           = db.LinkProperty( indexed = True )
@@ -136,7 +136,7 @@ class WOSIBVoteAction(VoteAction):
                                 url      = instance.link.target_url,
                                 product_uuid = product,
                                 wosib_instance = instance )
-        #super(WOSIBVoteAction, act).create()
+        
         action.put()
         
         # we memcache by classname-instance_uuid-user_uuid
@@ -248,7 +248,6 @@ class WOSIBShowAction(ShowAction):
                                    .filter('wosib_instance =', instance).get()
 
 class WOSIBShowingButton(WOSIBShowAction):
-    #TODO: check what this is all about
     @staticmethod
     def create(user, **kwargs):
         app = None
@@ -316,7 +315,6 @@ class WOSIBShowingResults(WOSIBShowAction):
                 what = what,
                 wosib_instance = instance
         )
-        #super(WOSIBShowingResults, action).create()
         action.put()
         return action
 
@@ -343,7 +341,6 @@ class WOSIBShowingResultsToAsker(WOSIBShowAction):
                 what = what,
                 wosib_instance = instance
         )
-        #super(WOSIBShowingResultsToAsker, action).create()
         action.put()
         return action
 
@@ -370,7 +367,6 @@ class WOSIBShowingVote(WOSIBShowAction):
                 what = what,
                 wosib_instance = instance
         )
-        #super(WOSIBShowingVote, action).create()
         action.put()
         return action
 
@@ -392,7 +388,6 @@ class WOSIBInstanceAction(UserAction):
                 wosib_instance = instance,
                 what = what
         )
-        #super(WOSIBVoteAction, action).create()
         action.put()
 
         return action
@@ -432,7 +427,6 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
                 medium   = medium,
                 wosib_instance = instance
         )
-        #super(WOSIBInstanceCreated, action).create()
         action.put()
         return action
 
@@ -462,7 +456,6 @@ class WOSIBShowingAskIframe(ShowAction):
                 app_ = app,
                 what = what
         )
-        #super(WOSIBShowingAskIframe, action).create()
         action.put()
         return action
 
@@ -491,7 +484,6 @@ class WOSIBAskIframeCancelled(ShowAction):
                 app_ = app,
                 what = what
         )
-        #super(WOSIBShowingAskIframe, action).create()
         action.put()
         return action
 
@@ -739,7 +731,6 @@ class WOSIBUserAction(UserAction):
                                 url      = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
-        #super(WOSIBShowAction, act).create()
         act.put()
         return act
     

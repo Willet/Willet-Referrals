@@ -194,7 +194,7 @@
     var postWosibOnWall = function () {
         try { // detect adblock
             if (!startPartialInstance ()) {
-                alert ("Please select at least one item!");
+                
             } else {
                 FB.ui({ method:  "feed",
                         display: "popup",
@@ -266,7 +266,9 @@
 
 {% block js_init %}
     $(document).ready (function () {
-        // controller guarantees there to be > 0 variants
+        /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 variants;
+            if there are 0 variants, this script is not loaded at all.
+        */
         var _willet_cart_variants = [ {% for variant in variants %}
             {   "id": "{{variant.id}}",
                 "title": "{{variant.title}}",

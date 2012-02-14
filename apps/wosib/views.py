@@ -12,6 +12,7 @@ from google.appengine.api             import taskqueue
 from google.appengine.ext             import webapp
 from google.appengine.ext.webapp      import template
 from google.appengine.ext.webapp.util import run_wsgi_app
+from random                           import choice
 from time                             import time
 from urlparse                         import urlparse
 
@@ -68,18 +69,19 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             logging.debug ("variant_ids = %s" % variant_ids)
             variants = []
             for variant_id in variant_ids:
-                its_product = Product.all().filter ('variants = ', str(variant_id)).get()
-                if its_product: # could be None of Product is somehow not in DB
-                    if len(its_product.images) > 0:
-                        image = its_product.images[0] # can't catch LIOOR w/try
+                variant_product = Product.all().filter ('variants = ', str(variant_id)).get()
+                if variant_product: # could be None of Product is somehow not in DB
+                    if len(variant_product.images) > 0:
+                        image = variant_product.images[0] # can't catch LIOOR w/try
                     else:
                         image = '/static/imgs/noimage-willet.png'
                     variants.append({
-                        'id' : its_product.shopify_id,
+                        'id' : variant_product.shopify_id,
                         'image' : image,
-                        'title' : its_product.title,
+                        'title' : variant_product.title,
                         'variant_id' : variant_id,
-                        'product_uuid' : its_product.uuid,
+                        'product_uuid' : variant_product.uuid,
+                        'product_desc' : variant_product.description,
                     })
                 else:
                     logging.debug ("Product for variant %s not found in DB" % variant_id)
@@ -95,6 +97,12 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             logging.info ("refer_url = %s" % refer_url)
             link = Link.create (target, app, refer_url, user)
             
+            random_variant = choice(variants) # pick random variant, use it for showing description
+            try:
+                random_image = random_variant.images[0]
+            except: # if our chosen variant happens to have no image
+                random_image = ['%s/static/imgs/blank.png' % URL], # blank
+            
             template_values = {
                 'URL' : URL,
                 'app_uuid' : self.request.get('app_uuid'),
@@ -109,8 +117,8 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                 'store_domain' : self.request.get( 'store_url' ),
                 'title'  : "Which one should I buy?",
-                'product_desc' : "I have enough money to buy only one of those. Which One Should I Buy?",
-                'images' : ['%s/static/imgs/blank.png' % URL], # blank
+                'product_desc' : random_variant['product_desc'],
+                'images' : random_image,
                 'share_url' : link.get_willt_url(), # refer_url
             }
 
@@ -180,13 +188,13 @@ class WOSIBShowFBThanks( URIHandler ):
             # Grab stuff from PartialWOSIBInstance
             app      = partial.app_
             link     = partial.link 
-            products = partial.products # is "id,id,id", not object!
+            products = partial.products # is ["id","id","id"], not object!
 
             # Make the Instance!
 
             try:
                 # given all those products, get one of them, and use its image
-                product = Product.get_by_uuid (products.split(',')[0])
+                product = Product.get_by_uuid (products[0])
                 product_image = product.images[0]
             except:
                 # either no products, no images in products, or... 
@@ -202,7 +210,8 @@ class WOSIBShowFBThanks( URIHandler ):
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)
-            link.memcache_by_code()
+            link.put()
+            link.memcache_by_code() # doubly memcached
             
             logging.info('incremented link and added user')
         

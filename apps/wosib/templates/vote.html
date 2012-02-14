@@ -9,9 +9,9 @@
         <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
-        if (typeof jQuery == 'undefined'){
-            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
-        }   
+            if (typeof jQuery == 'undefined'){
+                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+            }   
         </script>
         <style type="text/css">
             #wrapper, .wrapper { /* overrides ask.css defaults */
@@ -26,7 +26,7 @@
         </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        <title>Vote on stuff</title>
+        <title>Willet Vote</title>
     </head>
     <body>
         <div id="wrapper">
@@ -72,7 +72,7 @@
                     <!-- text should not mention 'buy' -->
                 </div>
                 <div>Something went wrong, and your vote was not counted! <br />
-                    Sorry! Please tell us about it.
+                    Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
                 </div>
                 <div class="dialog_button_area">
                     <input type="button" value="Close">
@@ -172,7 +172,7 @@
                 };
                 
                 var closeWindow = function () {
-                    window.self.close();
+                    window.close();
                 };
                 $('[value="Close"]').click (closeWindow);
                 
