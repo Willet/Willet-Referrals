@@ -21,20 +21,9 @@ from util.consts import *
 #### Addresses ####
 ###################
 
-<<<<<<< HEAD
-info = "info@getwillet.com"
-
-barbara   = 'barbara@getwillet.com'
-fraser    = 'fraser@getwillet.com'
-brian     = 'brian@getwillet.com'
-
-dev_team  = ', '.join([barbara, brian])
-team      = ', '.join([fraser, barbara, brian])
-=======
 info      = "info@getwillet.com"
 fraser    = 'fraser@getwillet.com'
 brian     = "brian@getwillet.com"
->>>>>>> master
 
 dev_team  = '%s' % (fraser)
 from_addr = info

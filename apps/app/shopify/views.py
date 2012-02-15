@@ -62,10 +62,6 @@ class ShopifyRedirect( URIHandler ):
         # the app name has to corespond to AppnameWelcome view
         redirect_url = url('%sWelcome' % app)
 
-<<<<<<< HEAD
-        # DON'T REMOVE
-=======
->>>>>>> master
         if redirect_url != None:
             redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
         elif app == 'referral':

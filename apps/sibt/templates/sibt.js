@@ -61,7 +61,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var _willet_topbar_hide_button = null;
     var willt_code = null;
     var hash_index = -1;
-    var $ = (typeof jQuery == 'function' ? jQuery : '');
+    var _$ = (typeof jQuery == 'function' ? jQuery : '');
 
     /**
     * quick helper function to add scripts to dom
@@ -78,7 +78,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         /**
         * Called when the vote iframe is closed
         */
-        var button = $('#_willet_button');
+        var button = _$('#_willet_button');
         var original_shadow = button.css('box-shadow');
         var glow_timeout = 400;
 
@@ -87,7 +87,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         };
         if (_willet_show_votes && !_willet_is_asker) {
             // closing box but not the asker!
-            var button = $('#_willet_button');
+            var button = _$('#_willet_button');
             button.css('box-shadow', '0px 0px 15px red');
             setTimeout(resetGlow, glow_timeout)
         }
@@ -123,7 +123,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var _willet_ask_callback = function( fb_response ) {
         if (_willet_ask_success) {
             _willet_is_asker = true;
-            $('#_willet_button').html('Refresh the page to see your results!');
+            _$('#_willet_button').html('Refresh the page to see your results!');
         }
     };
 
@@ -137,7 +137,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     var _willet_button_onclick = function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         try {
-            $('#_willet_padding').hide();
+            _$('#_willet_padding').hide();
             _willet_topbar.fadeOut('fast');
         } catch (err) {
             // pass!
@@ -159,7 +159,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         var url =  "{{URL}}/s/preask.html?user_uuid={{ user.uuid }}" + 
                                      "&store_url={{ store_url }}" +
                                      "&url=" + window.location.href;
-        $.willet_colorbox({
+        _$.willet_colorbox({
             transition: 'fade',
             close: '',
             scrolling: false,
@@ -178,12 +178,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     * Shows the voting screen
     */
     var _willet_show_vote = function() {
-        var photo_src = $('#image img').attr('src'); 
-        //var hash        = window.location.hash;
-        //var hash_search = '#code=';
-        //var hash_index  = hash.indexOf(hash_search);
-        //var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-            
+        var photo_src = _$('#image img').attr('src');
         var url = "{{URL}}/s/vote.html?willt_code=" + willt_code + 
                 "&user_uuid={{user.uuid}}" + 
                 "&is_asker={{is_asker}}&store_id={{store_id}}" + 
@@ -191,7 +186,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 "&instance_uuid={{instance.uuid}}" +
                 "&url=" + window.location.href;  
 
-        $.willet_colorbox({
+        _$.willet_colorbox({
             transition: 'fade',
             scrolling: true, 
             iframe: true,
@@ -219,7 +214,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
      * "Show" button in the top right. This handles the clicks to that
      */
     var _willet_unhide_topbar = function() {
-        $.cookie('_willet_topbar_closed', false);
+        _$.cookie('_willet_topbar_closed', false);
         _willet_topbar_hide_button.slideUp('fast');
         //_willet_padding.show();
         if (_willet_topbar == null) {
@@ -240,9 +235,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
      * Hides the top bar and padding
      */
     var _willet_close_top_bar = function() {
-        //$('#_willet_padding').hide();
-        //_willet_padding.hide();
-        $.cookie('_willet_topbar_closed', true);
+        _$.cookie('_willet_topbar_closed', true);
         _willet_topbar.slideUp('fast'); 
         _willet_topbar_hide_button.slideDown('fast');
         _willet_store_analytics('SIBTUserClosedTopBar');
@@ -336,16 +329,16 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     * Shows the vote top bar
     */
     var _willet_show_topbar = function() {
-        var body = $('body'); 
+        var body = _$('body'); 
 
         // create the padding for the top bar
         _willet_padding = document.createElement('div');
-        _willet_padding = $(_willet_padding)
+        _willet_padding = _$(_willet_padding)
             .attr('id', '_willet_padding')
             .css('display', 'none');
 
         _willet_topbar  = document.createElement('div');
-        _willet_topbar = $(_willet_topbar)
+        _willet_topbar = _$(_willet_topbar)
             .attr('id', '_willet_sibt_bar')
             .css('display', "none")
             .html(build_top_bar_html());
@@ -353,9 +346,9 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         body.prepend(_willet_topbar);
 
         // bind event handlers
-        $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
-        $('#yesBtn').click(_willet_do_vote_yes);
-        $('#noBtn').click(_willet_do_vote_no);
+        _$('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+        _$('#yesBtn').click(_willet_do_vote_yes);
+        _$('#noBtn').click(_willet_do_vote_no);
 
         _willet_padding.show(); 
         _willet_topbar.slideDown('slow');
@@ -385,23 +378,23 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         // create the padding for the top bar
         _willet_padding = document.createElement('div');
 
-        _willet_padding = $(_willet_padding)
+        _willet_padding = _$(_willet_padding)
             .attr('id', '_willet_padding')
             .css('display', 'none');
 
         _willet_topbar  = document.createElement('div');
-        _willet_topbar = $(_willet_topbar)
+        _willet_topbar = _$(_willet_topbar)
             .attr('id', '_willet_sibt_ask_bar')
             .attr('class', 'willet_reset')
             .css('display', "none")
             .html(build_top_bar_html(true));
 
-        $("body").prepend(_willet_padding).prepend(_willet_topbar);
+        _$("body").prepend(_willet_padding).prepend(_willet_topbar);
 
         var iframe = _willet_topbar.find('div.iframe iframe');
         var iframe_div = _willet_topbar.find('div.iframe');
 
-        $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+        _$('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
         
         _willet_topbar.find( '._willet_wrapper p' )
             .css('cursor', 'pointer')
@@ -415,29 +408,6 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 // let's hide the top bar as well
                 
                 _willet_topbar_onclick();
-                //_willet_button_onclick();
-                /*
-                if (iframe_div.css('display') == 'none') {
-                    if (iframe.attr('src') == undefined) {
-                        var url =  "{{URL}}/s/ask.html?store_url={{ store_url }}" +
-                            "&user_uuid={{user.uuid}} + 
-                            "&is_topbar_ask=yourmomma" + 
-                            "&url=" + window.location.href;
-                        iframe.attr('src', url)
-                        iframe.width(iframe_div.width());
-                        iframe.fadeIn('fast');
-                    } 
-                    // show the iframe div!
-                    _willet_topbar.animate({height: '337px'}, 500);
-                    iframe_div.fadeIn('fast', function() {
-                        // resize iframe once container showing
-                        iframe.width(iframe_div.width());
-                    });
-                } else {
-                    iframe_div.fadeOut('fast');
-                    _willet_topbar.animate({height: '40'}, 500); 
-                }
-                */
             }
         );
         
@@ -483,21 +453,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             }, 'callback': function() {
                 return;
             }
-        }, 
-        /*
-        {
-            'name': 'jQuery',
-            'url': 'http://github.com/cowboy/jquery-postmessage/raw/master/jquery.ba-postmessage.js',
-            'dom_el': null,
-            'loaded': false,
-            'test': function() {
-                return (typeof jQuery.receiveMessage == 'function');
-            }, 'callback': function() {
-                $ = jQuery;
-                return;
-            }
         },
-        */
         {
             'name': 'jQuery Colorbox',
             'url': '{{ URL }}/s/js/jquery.colorbox.js?' + 
@@ -511,8 +467,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 return (typeof jQuery == 'function' && typeof jQuery.willet_colorbox == 'function')
             }, 'callback': function() {
                 // HACKETY HACK HACK
-                $ = jQuery;
-                $.willet_colorbox = jQuery.willet_colorbox;
+                _$ = jQuery.noConflict();
+                _$.willet_colorbox = jQuery.willet_colorbox;
                 jQuery.willet_colorbox.init();
             }
         }
@@ -563,8 +519,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     * We have jQuery!!!!
     */
     var run = function() {
-        
-        var purchase_cta = $('#_willet_shouldIBuyThisButton');
+        var purchase_cta = _$('#_willet_shouldIBuyThisButton');
         if (purchase_cta.length > 0) {
             
             _willet_store_analytics();
@@ -574,10 +529,10 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
             var hash_search = '#code=';
             hash_index  = hash.indexOf(hash_search);
             willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
+            var cookie_topbar_closed = (_$.cookie('_willet_topbar_closed') == 'true');
 
             // create the hide button
-            _willet_topbar_hide_button = $(document.createElement('div'));
+            _willet_topbar_hide_button = _$(document.createElement('div'));
             _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
                 .css('display', 'none')
                 .click(_willet_unhide_topbar);
@@ -590,7 +545,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                 _willet_topbar_hide_button.html('Help {{ asker_name }}!');
             }
 
-            $('body').prepend(_willet_topbar_hide_button);
+            _$('body').prepend(_willet_topbar_hide_button);
 
             if (_willet_show_votes || hash_index != -1) {
                 // if we are showing votes (user has click action)
@@ -627,7 +582,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                         button_html = '{{AB_CTA_text}}';
                     }
 
-                    button = $(button)
+                    button = _$(button)
                         .html(button_html)
                         .css('display', 'none')
                         .attr('title', 'Ask your friends if you should buy this!')
@@ -635,15 +590,15 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                         .attr('class','_willet_button willet_reset')
                         .click(_willet_button_onclick);
                 
-                    $(purchase_cta).append(button);
+                    _$(purchase_cta).append(button);
                     button.fadeIn(250, function() {
-                        $(this).css('display', 'inline-block'); 
+                        _$(this).css('display', 'inline-block'); 
                     });
                 }
                 
                 // watch for message
                 // Create IE + others compatible event handler
-                $(window).bind('onmessage message', function(e) {
+                _$(window).bind('onmessage message', function(e) {
                     var message = e.originalEvent.data;
                     //console.log('parent received message: ', e.data, e);
                     if (message == 'shared') {
@@ -652,7 +607,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
                         //console.log('shared on top bar!'); 
                         _willet_topbar_ask_success();
                     } else if (message == 'close') {
-                        $.willet_colorbox.close();
+                        _$.willet_colorbox.close();
                     }
                 });
                 
@@ -708,49 +663,5 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         el.setAttribute('src', 'http://rf.rs/admin/ithinkiateacookie?error=' + error + '&st=' + message);
         _body.appendChild(el);
     }
-    
-    /*
-    window.fbAsyncInit = function() {
-        FB.init({
-          appId      : '{{FACEBOOK_APP_ID}}', // App ID
-          status     : true, // check login status
-          cookie     : true, // enable cookies to allow the server to access the session
-          xfbml      : true  // parse XFBML
-        });
-
-        FB.getLoginStatus(function(response) {
-            alert("SD");
-            console.log("ASD");
-            if (response.status === 'connected') {
-                // the user is logged in and connected to your
-                // app, and response.authResponse supplies
-                // the user's ID, a valid access token, a signed
-                // request, and the time the access token 
-                // and signed request each expire
-                var uid = response.authResponse.userID;
-                var accessToken = response.authResponse.accessToken;
-                _willet_store_analytics('asdasd') 
-            } else if (response.status === 'not_authorized') {
-                // the user is logged in to Facebook, 
-                //but not connected to the app
-                _willet_store_analytics('UserIsFBLoggedIn') 
-              } else {
-                // the user isn't even logged in to Facebook.
-                _willet_store_analytics('Use') 
-              }
-        });
-    };
-
-    // Load the SDK Asynchronously
-    (function(d){
-        var root = document.createElement( 'div' );
-        root.setAttribute( 'id', 'fb-root' );
-        d.body.appendChild( root );
-        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
-        js = d.createElement('script'); js.id = id; js.async = true;
-        js.src = "//connect.facebook.net/en_US/all.js";
-        d.getElementsByTagName('head')[0].appendChild(js);
-    }(document));
-    */
 
 }(document, window));

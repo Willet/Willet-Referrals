@@ -493,7 +493,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
 
