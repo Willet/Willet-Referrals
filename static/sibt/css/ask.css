@@ -79,21 +79,18 @@ p {
     background-color: #D1D1D1;
     text-shadow: 1px 1px 1px #EEE;
     /* CSS 3 */
-    border-radius: 15px;
-    background-image: linear-gradient(top, #E3E3E3, #D1D1D1);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 15px;
-    background-image: -moz-linear-gradient(top, #E3E3E3, #D1D1D1);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 15px;
+    border-radius: 15px;
+    background-image: -moz-linear-gradient(top, #E3E3E3, #D1D1D1);
     background-image: -webkit-linear-gradient(top, #E3E3E3, #D1D1D1);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    /* For IE 9+ */
     background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
-    /* For IE 8- */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#E3E3E3", EndColorStr="#D1D1D1");
+    -pie-background: linear-gradient(top, #E3E3E3, #D1D1D1);
+    background-image: linear-gradient(top, #E3E3E3, #D1D1D1); 
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    behavior: url(/static/js/PIE.htc)
 }
 .grey_bar:hover {
     cursor: hand;
@@ -101,6 +98,11 @@ p {
 }
 .grey_bar:active {
     background: #CCC;
+}
+/* Fixes PIE CSS3 positioning problems */
+.holder {
+    position: relative;
+    z-index: 100;
 }
 .title_bar {
     width: 100%;
@@ -131,35 +133,34 @@ p {
     background-color: #C1F0F5;
     text-align: center;
     border: 1px solid #999;
-    /* CSS 3 */
-    border-radius: 10px;
-    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 10px;
-    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
     background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For IE 9+ */
     background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
-    /* For IE 8- */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#D9F7FA", EndColorStr="#C1F0F5");
+    -pie-background: linear-gradient(top, #D9F7FA, #C1F0F5);
+    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
 }
 .button.inactive {
-    background-color: #C1F0F5;
-    /* CSS 3 */
-    background-image: linear-gradient(top, #F7F7F7, #EEE);
-    /* For Firefox */
+    background-color: #EEE;
     background-image: -moz-linear-gradient(top, #F7F7F7, #EEE);
-    /* For Webkit */
     background-image: -webkit-linear-gradient(top, #F7F7F7, #EEE);
-    /* For IE 9+ */
     background-image: -ms-linear-gradient(top, #F7F7F7, #EEE);
-    /* For IE 8- */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#F7F7F7", EndColorStr="#EEE");
+    -pie-background: linear-gradient(top, #F7F7F7, #EEE);
+    background-image: linear-gradient(top, #F7F7F7, #EEE);
+    behavior: url(/static/js/PIE.htc);
+}
+.button.close {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    margin-left: -75px;
+    width: 150px;
 }
 .button:hover {
     cursor: pointer;
@@ -167,14 +168,14 @@ p {
     -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
 }
 .button.inactive:hover {
     cursor: auto;
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
     -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
     -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
     box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
 }
 .button>img {
     float: left;
@@ -198,6 +199,7 @@ p {
 }
 .button>.simpletitle {
     white-space: nowrap;
+    font-size: 20px;
     min-width: 100px;
     line-height: 50px;
 }
@@ -215,10 +217,10 @@ p {
     z-index: 5;
     font-size: 16px;
 }
-.drop_bar>.grey_bar {
+.drop_bar .grey_bar {
     line-height: 30px;
 }
-.drop_bar>img {
+.drop_bar img {
     position: absolute;
     top: 1px;
     right: 3px;
@@ -235,9 +237,10 @@ p {
     padding: 30px 0 10px 0;
     list-style-type: none;
     background-color: #E3E3E3;
-    border-radius: 0 0 10px 10px;
     -moz-border-radius: 0 0 10px 10px;
     -webkit-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+    behavior: url(/static/js/PIE.htc);
 }
 .drop_bar li {
     width: 100%;
@@ -274,17 +277,20 @@ p {
     height: 100px;
     width: 100%;
     text-align: center;
+    z-index: 1; /* PIE shows in IE8 */
 }
 .option {
     margin: 0 15px;
 }
 .or {
+    position: absolute;
+    width: 100%;
     line-height: 60px;
-    display: inline;
     text-align: center;
     font-size: 14px;
     color: #888;
-    margin: 0 auto;
+    z-index: -1;
+    left: 0;
 }
 .hint>img {
     float: left;
@@ -327,11 +333,14 @@ ul.askers {
 }
 ul.friends li, ul.askers li {
     display: block;
-    padding: 10px 0;
+    height: 80px;
     margin-right: 10px;
 }
 ul.friends li {
     border-bottom: 1px solid #BBB;
+}
+ul.friends li>div, ul.askers li>div {
+    padding: 10px 0;
 }
 .friend input, .asker input {
     font-size: 14px;
@@ -358,7 +367,7 @@ ul.friends li {
     float: left;
     width: 40px;
     height: 40px;
-    margin: 7px 37px 7px 7px;
+    margin: 7px 34px 7px 7px;
     padding: 2px;
     border: 1px solid #BBB;
     background-color: white;
@@ -377,6 +386,11 @@ ul.friends li {
 }
 .friend_options {
     text-align: center;
+    height: 60px;
+    width: 485px;
+    float: left;
+    position: relative;
+    z-index: 1;
 }
 .fb_option {
     float: left;
@@ -388,6 +402,7 @@ ul.friends li {
 }
 .email_friend, .fb_friend, .email_asker {
     height: 60px;
+    float: left;
 }
 .email_friend>div, .email_asker>div {
     height: 30px;
@@ -421,18 +436,13 @@ ul.friends li {
     color: #FFF;
     background-color: #3b5998;
     text-shadow: 1px 1px 1px #000;
-    /* CSS 3 */
-    border-radius: 8px;
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 8px;
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 8px;
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    /* For IE 9+ */
-    
-    /* For IE 8- */
+    border-radius: 8px;  
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    behavior: url(/static/js/PIE.htc);
 
 }
 .fb_connect:hover {
@@ -485,7 +495,6 @@ div.middled {
     position: absolute;
     left: 50%;
     margin-left: -110px;
-    margin-top: 20px;
     width: 220px;
     margin-top: 20%;
 }

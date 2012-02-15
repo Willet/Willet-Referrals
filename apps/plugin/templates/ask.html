@@ -30,9 +30,11 @@
                 <ul class="friends" id="friends">
                     <!-- Friends appended when document ready -->
                 </ul>
-                <div class="grey_bar" id="addFriend">
-                    <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
-                    Add Another Friend
+                <div class="holder">
+                    <div class="grey_bar" id="addFriend">
+                        <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
+                        Add Another Friend
+                    </div>
                 </div>
                 <div id="chosenButton" class="button inactive corner">
                     <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
@@ -84,7 +86,8 @@
                 <div class="center_col">
                     {% if incentive_enabled %}
 
-                    <p>Your friends have been asked to help by <b>voting</b> on this product.</p><label for="email-field">PayPal Email:</label>
+                    <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
+                    <label for="email-field">PayPal Email:</label>
                     <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
                     
                     <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
@@ -96,7 +99,7 @@
 
                     {% endif %}
                 </div>
-                <div id="cancelButton" class="button middled">
+                <div id="cancelButton" class="button close">
                     <div class="simpletitle">Close</div>
                 </div>
             </div>
@@ -113,7 +116,7 @@
                     <p class='error_message'>An error happened.</p>
                     <p>You were so excited to get advice, and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
                 </div>
-                <div id="cancelButton" class="button middled">
+                <div id="cancelButton" class="button close">
                     <div class="simpletitle">Close</div>
                 </div>
             </div>
@@ -128,7 +131,7 @@
         }
     </script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
-    <script>
+    <script type="text/javascript">
         /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
         var JSON;if(!JSON){JSON={};}
         (function(){'use strict';function f(n){return n<10?'0'+n:n;}
@@ -232,27 +235,28 @@
         //  - 1 + FB log in -> 2
         //  - 1 || 2 + email input -> 3
         //  - 2 + FB input -> 4
-        var Friend = function (name, page_callback) {
+        var Friend = function (name, update_callback) {
             Widget.call(this, 'li', name);
             this.selected = 'none';
+            // When friend is updated, fire this callback
+            this.update_callback = update_callback || function () {};
             
             var that = this,
                 $elem = $(this.elem);
-            
-            this.page_callback = page_callback || function () {};
 
             // Set up DOM in No Input state
             $elem.addClass('friend').append(" \
-                <div class='portrait'> \
-                    <img src='/static/plugin/imgs/choose_friends.png' width=40 height=40 /> \
-                </div> \
-                <div class='friend_options'> \
-                    <div class='fb_option'> \
+                <div> \
+                    <div class='portrait'> \
+                        <img src='/static/plugin/imgs/choose_friends.png' width=40 height=40 /> \
                     </div> \
-                    <div class='or'>or</div> \
-                    <div class='email_option'> \
-                        <div class='helpful'>Enter a friend's email address</div> \
-                        <input></input> \
+                    <div class='friend_options'> \
+                        <div class='or'>or</div> \
+                        <div class='fb_option'></div> \
+                        <div class='email_option'> \
+                            <div class='helpful'>Enter a friend's email address</div> \
+                            <input></input> \
+                        </div> \
                     </div> \
                 </div> \
             ")
@@ -278,7 +282,7 @@
             // Handle two Facebook cases: logged in & not logged in
             var $fb_option = $elem.find('.fb_option');
             if (fbAccessToken !== "" && fbIdentity !== "") {
-                // Logged into Facebook, set up NIFB state
+                // Logged into Facebook, set up state 2
                 $fb_option.append(" \
                     <div class='helpful'>Find a friend using Facebook</div> \
                     <input></input> \
@@ -299,11 +303,13 @@
                     }
                 });
             } else {
-                // Not logged into Facebook, set up NI!FB state
+                // Not logged into Facebook, set up state 1
                 $fb_option.append(" \
                     <div class='helpful'>The best way to get advice</div> \
-                    <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
-                ").children('.fb_connect').click( function () {
+                    <div class='holder'> \
+                        <div class='fb_connect'>f&nbsp;&nbsp;&nbsp;Connect with Facebook</div> \
+                    </div> \
+                ").find('.fb_connect').click( function () {
                     runFBConnect(fetchFBFriends);
                 });
             }
@@ -340,27 +346,33 @@
         // side-effects
         Friend.prototype._validateFriendEmail = function (el) {
             // Validates email address at input element 'el'
-            // Returns: <boolean> true = valid, false = invalid
+            // Returns: <boolean> true = valid, false = invalid, null = empty
             if (/^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/.test(el.value)) {
                 return true;
+            } else if (el.value === '') {
+                return null;
             } else {
                 return false;
             }
         };
         Friend.prototype._validateFriendName = function (el) {
             // Validates name at input element 'el'
-            // Returns: <boolean> true = valid, false = invalid
+            // Returns: <boolean> true = valid, false = invalid, null = empty
             if (/^[A-Za-z. '-]+$/.test(el.value)) {
                 return true;
+            } else if (el.value === '') {
+                return null;
             } else {
                 return false;
             }
         };
         Friend.prototype._validateFriendFB = function (el) {
             // Validates FB friend at input element 'el'
-            // Returns: <boolean> true = valid, false = invalid
+            // Returns: <boolean> true = valid, false = invalid, null = empty
             if ($.inArray(el.value, sorted_friend_names) !== -1) {
                 return true;
+            } else if (el.value === '') {
+                return null;
             } else {
                 return false;
             }
@@ -375,7 +387,8 @@
             } else if (el.name === 'fb') {
                 return this._validateFriendFB(el);
             } else {
-                return false;
+                // This should never fire
+                throw new Error("Friend._validateFriendInput: input element with no valid name");
             }
         };
         Friend.prototype.validateFriend = function () {
@@ -390,6 +403,7 @@
                 return this._validateFriendName($elem.find('input.name')[0]) 
                     && this._validateFriendEmail($elem.find('input.email')[0]);
             } else {
+                // Empty friend
                 return true;
             }
         };
@@ -457,9 +471,9 @@
             var $elem = $(this.elem),
                 selected = this.selected;
             if (selected === 'fb') {
-                return this._reviewFriendFB($elem.find('input')[0]);
+                return this._reviewFriendFB();
             } else if (selected === 'email') {
-                return this._reviewFriendNameAndEmail($elem.find('input.name')[0])
+                return this._reviewFriendNameAndEmail();
             } else {
                 return true;
             }
@@ -492,6 +506,7 @@
                 <div class='helpful'>Find friends using Facebook</div> \
                 <input></input> \
             ")
+            .children('input')
             .autocomplete({
                 source: sorted_friend_names,
                 select: this._selectFBFriend,
@@ -517,13 +532,13 @@
                         // Capitalize 1st letter
                         return i.charAt(0).toUpperCase() + i.slice(1);
                     }).join(' ');
-            
-            this.selected = 'email';
 
             // Only do something if there is something in the input field
             if (email !== '') {
-                $elem.children('.friend_options').remove();
-                $elem.append("\
+                this.selected = 'email';
+
+                $elem.find('.friend_options').remove();
+                $elem.children('div').append("\
                     <div class='email_friend'> \
                         <div> \
                             <label>Name:</label> \
@@ -539,18 +554,18 @@
                 ").find('input')
                 .blur(function () {
                     that._reviewFriendNameAndEmail();
-                    that.page_callback(); // Alert page that friend is updated
+                    that.update_callback(); // Alert page that friend is updated
                 })
                 .keypress(function (e) {
                     if (e.which === ENTER_KEY) {
                         that._reviewFriendNameAndEmail();
-                        that.page_callback(); // Alert page that friend is updated
+                        that.update_callback(); // Alert page that friend is updated
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendNameAndEmail();
-                    that.page_callback(); // Alert page that friend is updated
+                    that.update_callback(); // Alert page that friend is updated
                 });
             }
         };
@@ -563,12 +578,12 @@
                 $elem = $(this.elem),
                 name = $elem.find('.fb_option input').val();
 
-            this.selected = 'fb';
-
             // Only do something if there is something in the input field
             if (name !== '') {
-                $elem.children('.friend_options').remove();
-                $elem.append("\
+                this.selected = 'fb';
+
+                $elem.find('.friend_options').remove();
+                $elem.children('div').append("\
                     <div class='fb_friend'> \
                         <div> \
                             <label>Name:</label> \
@@ -580,20 +595,20 @@
                 .find('input')
                 .blur(function () {
                     that._reviewFriendFB();
-                    that.page_callback(); // Alert page that friend is updated
+                    that.update_callback(); // Alert page that friend is updated
                 })
                 .autocomplete({
                     source: sorted_friend_names,
                     select: this._selectFriendFB,
                     close: function () {
                         that._reviewFriendFB();
-                        that.page_callback(); // Alert page that friend is updated
+                        that.update_callback(); // Alert page that friend is updated
                     }
                 })
                 .each(function () {
                     // review right now
                     that._reviewFriendFB();
-                    that.page_callback(); // Alert page that friend is updated
+                    that.update_callback(); // Alert page that friend is updated
                 });
             }
         };
@@ -601,8 +616,10 @@
 
         // Asker gets & stores required information from the user
         //
-        var Asker = function (name, page_callback) {
+        var Asker = function (name, update_callback) {
             Widget.call(this, 'li', name);
+            // When asker is updated, fire this callback
+            this.update_callback = update_callback || function () {};
             
             var that = this,
                 $elem = $(this.elem);
@@ -610,9 +627,6 @@
             this.name  = ''; // Name of asker
             this.pic   = ''; // Picture of asker
             this.email = ''; // Email of asker
-
-            // When Asker is updated, alert host page
-            this.page_callback = page_callback || function () {};
 
             // Set up DOM
             $elem.addClass('asker').append("\
@@ -634,12 +648,12 @@
             ").find('input')
             .blur(function () {
                 that.reviewAsker();
-                that.page_callback(); // Update next button
+                that.update_callback(); // Update next button
             })
             .keypress(function (e) {
                 if (e.which === ENTER_KEY) {
                     that.reviewAsker();
-                    that.page_callback(); // Update next button
+                    that.update_callback(); // Update next button
                 }
             });
         };
@@ -697,11 +711,16 @@
             
             // Validate each input and set sad face if any are in error
             $elem.find('input').each(function () {
-                if (that._validateInput(this)) {
+                var i = that._validateInput(this);
+                if (i) {
                     // No error
                     $(this).css('color','black').siblings('.error').hide();
-                } else {
+                } else if (i === false ) {
                     $(this).css('color','red').siblings('.error').show();
+                    error = true;
+                } else {
+                    // Input is empty, don't show error message, but don't let submit
+                    $(this).css('color','black').siblings('.error').hide();
                     error = true;
                 }
             });
@@ -729,7 +748,7 @@
             $elem.find('input.email').val(this.email);
 
             this.reviewAsker();
-            this.page_callback(); // Alert page that asker is updated
+            this.update_callback(); // Alert page that asker is updated
         }
         Asker.prototype.FBLoggedIn = function (name, email, pic) {
             // After FB connect success, show user inputted data
@@ -751,7 +770,7 @@
 
         var asker; // Asker info
         var friends             = []; // List of Friend instances in Choose Friend screen
-        var fbFriends          = []; // List of { id, name } from FB
+        var fbFriends           = []; // List of { id, name } from FB
         var sorted_friend_names = []; // List of names to use in autocomplete (sorted)
         var fbAccessToken       = "";
         var fbIdentity          = "";
@@ -818,6 +837,7 @@
         };
 
         // Initiates an instance of your app on the server
+        // Note: Only used for non-Facebook Connect (ie: using FB dialog)
         var startPartialInstance = function() {
             // Stub function!
             throw new Error("Attemp to use stub function 'startPartialInstance'");
@@ -842,7 +862,7 @@
 
         // Closes iframe
         var closeIframe = function( action ) {
-            if ( action != "" ){
+            if ( action !== "" ){
                 storeAnalytics( action );
             }
 
@@ -914,10 +934,6 @@
                     });
                 }
             }, {scope: 'publish_stream, offline_access, user_about_me, email'});
-            // } else {
-            // User is logged in AND connected (in theory)
-            //     fetchFBFriends( );
-            // }
         };
         
         // Query FB api to grab logged-in user's friends
@@ -1064,11 +1080,9 @@
     <div id="fb-root"></div>
     <script>
         window.fbAsyncInit = function() {
-            // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
-            //FB._https = true;
             FB.init({
                 appId : '{{FACEBOOK_APP_ID}}', // App ID
-                //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                channelUrl : '{{ URL }}/static/plugin/html/FBChannel.html', // Channel File
                 status: true, // check login status
                 cookie: true, // enable cookies to allow the server to access the session
                 oauth : true, // enable OAuth 2.0

@@ -105,9 +105,9 @@ class AskDynamicLoader(webapp.RequestHandler):
             'store_url'    : self.request.get( 'store_url' ),
             'store_domain' : self.request.get( 'store_url' ),
 
-            'user_email'   : user.email if user_found and hasattr(user, 'email') else None,
-            'user_name'    : user.name if user_found and hasattr(user, 'name') else None,
-            'user_pic'     : user.pic if user_found and hasattr(user, 'pic') else None,
+            'user_email'   : user.get_attr('email') if user_found else None,
+            'user_name'    : user.get_full_name() if user_found else None,
+            'user_pic'     : user.get_attr('pic') if user_found else None,
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),

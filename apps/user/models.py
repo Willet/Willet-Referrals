@@ -143,6 +143,7 @@ class User( db.Expando ):
     memcache_bucket       = db.StringProperty( indexed = False, default = "")
     twitter_access_token  = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
+  # user -> User.get_full_name
     
     # referrer is deprecated
     referrer              = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
@@ -363,9 +364,9 @@ class User( db.Expando ):
             fname = self.get_attr('email')
         
         if fname == None or fname == '':
-            fname = "User %s" % (self.uuid)
-
-        return fname
+            return None
+        else:
+            return fname
     name = property(get_full_name)
 
     def get_handle(self, service=None):

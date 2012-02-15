@@ -12,7 +12,6 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.sibt.actions        import *
 from apps.action.models       import UserAction
 from apps.app.models          import App
 from apps.app.models          import get_app_by_id
@@ -20,12 +19,11 @@ from apps.email.models        import Email
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
-from apps.user.models         import User
-from apps.sibt.models         import SIBTInstance
-from apps.sibt.models         import PartialSIBTInstance
+from apps.sibt.actions        import *
+from apps.sibt.models         import SIBTInstance, PartialSIBTInstance
 from apps.user.actions        import UserIsFBLoggedIn
-from apps.user.models         import User
-from apps.user.models         import get_or_create_user_by_cookie
+from apps.user.models         import User, get_or_create_user_by_cookie
+
 from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags

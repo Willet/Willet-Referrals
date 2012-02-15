@@ -14,11 +14,11 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.app.models import App, ShareCounter, get_app_by_id
+from apps.email.models import Email
+from apps.link.models import *
 from apps.user.models import *
 from apps.user.models import create_email_model
-from apps.app.models import App, ShareCounter, get_app_by_id
-from apps.link.models import *
-from apps.email.models import Email
 
 from util.consts import *
 from util.helpers import *
