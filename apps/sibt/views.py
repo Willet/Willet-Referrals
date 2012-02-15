@@ -36,131 +36,6 @@ from util.strip_html import strip_html
 
 
 class AskDynamicLoader(webapp.RequestHandler):
-    """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
-    
-    # TODO: THis code is Shopify specific. Refactor.
-    def get(self):
-        template_values = {}
-            
-        user   = User.get(self.request.get('user_uuid'))
-        app    = SIBTShopify.get_by_store_url(self.request.get('store_url'))
-        target = get_target_url(self.request.get('url'))
-
-        logging.debug('target: %s' % target)
-        logging.info("APP: %r" % app)
-        
-        # if this is a topbar ask
-        is_topbar_ask = (self.request.get('is_topbar_ask') != '') 
-
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
-        logging.debug('target: %s' % target)
-
-        logging.info("APP: %r" % app)
-
-        # Grab the product info
-        product = ProductShopify.get_or_fetch(target, app.client)
-
-        # Make a new Link
-        link = Link.create(target, app, origin_domain, user)
-        user_is_admin = user.is_admin()
-        
-        # GAY BINGO
-        if not user_is_admin:
-            if app.incentive_enabled:
-                bingo( 'sibt_incentive_text' )
-            else:    
-                bingo( 'sibt_button_text6' )
-            
-        ab_share_options = [ 
-            "I'm not sure if I should buy this. What do you think?",
-            "Would you buy this? I need help making a decision!",
-            "I need some shopping advice. Should I buy this? Would you?",
-            "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
-        ]
-        
-        if not user_is_admin:
-            ab_opt = ab_test('sibt_share_text3',
-                              ab_share_options,
-                              user = user,
-                              app  = app )
-        else:
-            ab_opt = "ADMIN: Should I buy this? Please let me know!"
-
-        if is_topbar_ask:
-            SIBTShowingAskTopBarIframe.create(user, url=target, app=app)
-        else:
-            SIBTShowingAskIframe.create(user, url=target, app=app)
-
-        # User stats
-        user_email = user.get_attr('email') if user else ""
-        user_found = True if hasattr(user, 'fb_access_token') else False
-
-        store_domain = ''
-        try:
-            page_url = urlparse(self.request.headers.get('referer'))
-            store_domain   = "%s://%s" % (page_url.scheme, page_url.netloc)
-        except Exception, e:
-            logging.error('error parsing referer %s' % e)
-            store_domain = self.request.get('store_url')
-
-        try:
-            #parts = product.description[:150].split('.')
-            #logging.info('got parts: %s' % parts)
-            #parts = parts[:-1]
-            #logging.info('got off last bit: %s' % parts)
-            #productDesc = '.'.join(parts) + '.'
-            
-            ex = '[!\.\?]+'
-            #logging.info('before strip html: %s' % product.description)
-            productDesc = strip_html(product.description)
-            #logging.info('stripped of html: %s' % productDesc)
-            parts = re.split(ex, productDesc[:150])
-            #logging.info('parts: %s' % parts)
-            if len(parts) > 1:
-                productDesc = '.'.join(parts[:-1])
-            else:
-                productDesc = '.'.join(parts)
-            #logging.info('cut last part: %s' % productDesc)
-            if productDesc[:-1] not in ex:
-                productDesc += '.'
-                        
-        except Exception,e:
-            productDesc = ''
-            logging.warn('Probably no product description: %s' % e, exc_info=True)
-
-        template_values = {
-            'product_uuid' : product.uuid,
-            'productImg'   : product.images[0], 
-            'productName'  : product.title, 
-            'productDesc'  : productDesc,
-            'product_id'   : product.shopify_id,
-            'productURL'   : store_domain,
-
-            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'app': app,
-            'willt_url': link.get_willt_url(),
-            'willt_code': link.willt_url_code,
-
-            'target_url' : target,
-            
-            'user': user,
-            'user_email': user_email,
-            'user_found': str(user_found).lower(),
-            'AB_share_text' : ab_opt
-        }
-
-        # Finally, render the HTML!
-        path = os.path.join('apps/sibt/templates/', 'ask.html')
-
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.out.write(template.render(path, template_values))
-        return
-
-
-class PreAskDynamicLoader(webapp.RequestHandler):
     """Serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -230,13 +105,17 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             'store_url'    : self.request.get( 'store_url' ),
             'store_domain' : self.request.get( 'store_url' ),
 
+            'user_email'   : user.get_attr('email') if user_found else None,
+            'user_name'    : user.get_full_name() if user_found else None,
+            'user_pic'     : user.get_attr('pic') if user_found else None,
+
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'user_has_fb_token' : user_found,
 
             'product_uuid'   : product.uuid,
             'product_title'  : product.title if product else "",
-            'product_images' : product.images if product else "",
+            'product_images' : product.images if product and len(product.images) > 0 else [],
             'product_desc'   : productDesc,
 
             'share_url'      : link.get_willt_url(),
@@ -246,7 +125,7 @@ class PreAskDynamicLoader(webapp.RequestHandler):
             'incentive_enabled' : app.incentive_enabled,
         }
 
-        path = os.path.join('apps/sibt/templates/', 'preask.html')
+        path = os.path.join('apps/sibt/templates/', 'ask.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -343,7 +222,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             template_values = {
                     'evnt' : event,
 
-                    'product_img': product.images,
+                    'product_img': product.images if product and len(product.images) > 0 else [],
                     'app' : app,
                     'URL': URL,
                     
@@ -614,6 +493,7 @@ class ColorboxJSServer( URIHandler ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
 
 class ShowOnUnloadHook( URIHandler ):
     ''' Creates a local-domain iframe that allows SJAX requests to be served

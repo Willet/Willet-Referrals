@@ -91,7 +91,16 @@ jQuery(document).ready (function () {
             *   test - method to test if it has been loaded
             *   callback - callback after test is success
             */
-            {   'name': 'Modernizr',
+            {   'name': 'jQuery',
+                'url': 'http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js',
+                'dom_el': null,
+                'loaded': false,
+                'test': function() {
+                    return (typeof jQuery == 'function');
+                }, 'callback': function() {
+                    return;
+                }
+            },{   'name': 'Modernizr',
                 'url': '{{ URL }}/static/js/modernizr.custom.js',
                 'dom_el': null,
                 'loaded': false,

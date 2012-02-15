@@ -45,8 +45,13 @@ class WOSIBShopify(WOSIB, AppShopify):
                     document.write(unescape("%%3Cscript src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
                 }
                 if (typeof jQuery == 'undefined'){ // if it is STILL undefined, load our own
-                    document.write(unescape("%%3Cscript src='/static/js/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
+                    document.write(unescape("%%3Cscript src='http://%s/static/js/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
                 }
+                var interval = setInterval(function() {
+                    if (typeof jQuery !== 'undefined') {
+                        clearInterval(interval);
+                    }
+                }, 1000);
                 var _willet_no_image = "http://%s/static/imgs/noimage.png";
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
@@ -62,8 +67,8 @@ class WOSIBShopify(WOSIB, AppShopify):
                 var _willet_st = document.createElement( 'script' );
                 _willet_st.type = 'text/javascript';
                 _willet_st.src = _willet_wosib_script;
-                $(document).prepend(_willet_st);
-            </script>''' % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
+                window.document.getElementsByTagName("head")[0].appendChild(_willet_st);
+            </script>''' % (DOMAIN, DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
 
         liquid_assets = [{
             'asset': {

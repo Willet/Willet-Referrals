@@ -11,7 +11,7 @@
 
     <div id="splash">
         <div class="title_bar">
-            <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
             <div>Not sure which one you should buy?</div>
         </div>
         <form method="POST" action="" style="margin-top:10px">
@@ -30,7 +30,7 @@
                 <br />
                 <div class="option left">
                     <div class="button" id="postWosibOnWall" title="Post to your wall">
-                        <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
+                        <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
                         <div class="title">Ask Friends</div>
                         <div class="subtitle">Post to Facebook</div>
                     </div>
@@ -38,7 +38,7 @@
                 <div class="or">or</div>
                 <div class="option right">
                     <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                        <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                        <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
                         <div class="title">Choose Friends...</div>
                         <div class="subtitle">Get trusted advice</div>
                     </div>
@@ -327,7 +327,6 @@
         };
         
         $('#postWosibOnWall').click (postWosibOnWall);
-        $('#runFriendPicker_btn').click (runFriendPicker);
     });
     showScreen('splash');
 {% endblock js_init %}

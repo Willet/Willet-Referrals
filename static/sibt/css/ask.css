@@ -3,6 +3,10 @@
 html, body {
     background-color: white;
     color: #383f41;
+    overflow: hidden;
+    font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
+    margin:0px;
+    padding:0px;
 }
 textarea {
     display: block;
@@ -11,8 +15,12 @@ textarea {
     border: 1px solid #aaa; 
     padding: 8px; 
     color: black;
-    font: 13px "Lucida Grande", Helvetica, Arial, sans-serif;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     overflow-x: hidden;
+}
+p {
+    text-align: justify;
+    font-size: 14px;
 }
 
 /* ----------------------   USEFUL CLASSES   ------------------------ */
@@ -40,11 +48,28 @@ textarea {
 .bigger {
     font-size: 150%;
 }
+.centered {
+    text-align: center;
+}
 .error {
     display: none;
     color: red;
     font-style: italic;
 }
+.error_message {
+    border: 1px solid #DB5667;
+    background-color: #FCE3E7;
+    padding: 10px;
+    line-height: 1em;
+}
+.corner {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+/* --------------------   REUSABLE CLASSES   -------------------- */
+
 .grey_bar {
     border-radius: 15px;
     padding: 1px 15px 0 20px;
@@ -54,21 +79,18 @@ textarea {
     background-color: #D1D1D1;
     text-shadow: 1px 1px 1px #EEE;
     /* CSS 3 */
-    border-radius: 15px;
-    background-image: linear-gradient(top, #E3E3E3, #D1D1D1);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 15px;
-    background-image: -moz-linear-gradient(top, #E3E3E3, #D1D1D1);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 15px;
+    border-radius: 15px;
+    background-image: -moz-linear-gradient(top, #E3E3E3, #D1D1D1);
     background-image: -webkit-linear-gradient(top, #E3E3E3, #D1D1D1);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    /* For IE 9+ */
     background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
-    /* For IE 8- */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#E3E3E3", EndColorStr="#D1D1D1");
+    -pie-background: linear-gradient(top, #E3E3E3, #D1D1D1);
+    background-image: linear-gradient(top, #E3E3E3, #D1D1D1); 
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    behavior: url(/static/js/PIE.htc)
 }
 .grey_bar:hover {
     cursor: hand;
@@ -77,9 +99,11 @@ textarea {
 .grey_bar:active {
     background: #CCC;
 }
-
-/* --------------------   REUSABLE CLASSES   -------------------- */
-
+/* Fixes PIE CSS3 positioning problems */
+.holder {
+    position: relative;
+    z-index: 100;
+}
 .title_bar {
     width: 100%;
     height: 55px;
@@ -91,38 +115,52 @@ textarea {
     float: left;
 }
 .title_bar>img {
-    height: 50px;
-    width: 79px;
-    margin: 0px 0px 0px 6px;
+    height: 60px;
+    width: 50px;
+    margin: 0px 0px 0px 15px;
     padding: 0px;
 }
 .title_bar>div {
     line-height: 30px;
     margin: 14px 0 0 15px;
 }
-
+.center_col {
+        margin: 40px 20% 0 20%;
+}
 .button {
     height: 50px;
     padding: 6px;
     background-color: #C1F0F5;
     text-align: center;
     border: 1px solid #999;
-    /* CSS 3 */
-    border-radius: 10px;
-    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 10px;
-    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background-image: -moz-linear-gradient(top, #D9F7FA, #C1F0F5);
     background-image: -webkit-linear-gradient(top, #D9F7FA, #C1F0F5);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    /* For IE 9+ */
-    background-image: -ms-linear-gradient(top, #CFF6FA, #C1F0F5);
-    /* For IE 8- */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#D9F7FA", EndColorStr="#C1F0F5");
+    background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
+    -pie-background: linear-gradient(top, #D9F7FA, #C1F0F5);
+    background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
+}
+.button.inactive {
+    background-color: #EEE;
+    background-image: -moz-linear-gradient(top, #F7F7F7, #EEE);
+    background-image: -webkit-linear-gradient(top, #F7F7F7, #EEE);
+    background-image: -ms-linear-gradient(top, #F7F7F7, #EEE);
+    -pie-background: linear-gradient(top, #F7F7F7, #EEE);
+    background-image: linear-gradient(top, #F7F7F7, #EEE);
+    behavior: url(/static/js/PIE.htc);
+}
+.button.close {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    margin-left: -75px;
+    width: 150px;
 }
 .button:hover {
     cursor: pointer;
@@ -130,6 +168,14 @@ textarea {
     -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
     box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
+}
+.button.inactive:hover {
+    cursor: auto;
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    behavior: url(/static/js/PIE.htc);
 }
 .button>img {
     float: left;
@@ -151,21 +197,30 @@ textarea {
     font-size: 12px;
     line-height: 22px;
 }
+.button>.simpletitle {
+    white-space: nowrap;
+    font-size: 20px;
+    min-width: 100px;
+    line-height: 50px;
+}
 
 
 /* ---------------------   PAGES   ----------------------- */
 
 /* ---------------------   Splash  ----------------------- */ 
 
+#questionOptions {
+    margin-top: 12px;
+}
 .drop_bar {
     position: relative;
     z-index: 5;
     font-size: 16px;
 }
-.drop_bar>.grey_bar {
+.drop_bar .grey_bar {
     line-height: 30px;
 }
-.drop_bar>img {
+.drop_bar img {
     position: absolute;
     top: 1px;
     right: 3px;
@@ -182,9 +237,10 @@ textarea {
     padding: 30px 0 10px 0;
     list-style-type: none;
     background-color: #E3E3E3;
-    border-radius: 0 0 10px 10px;
     -moz-border-radius: 0 0 10px 10px;
     -webkit-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+    behavior: url(/static/js/PIE.htc);
 }
 .drop_bar li {
     width: 100%;
@@ -200,11 +256,11 @@ textarea {
 }
 .message {
     height: 77px;
-    margin: 40px 30px 0 30px;
+    margin: 50px 30px 0 30px;
 }
 .message>img {
     float: left;
-    border: 1px solid grey;
+    border: 1px solid #BBB;
     width: 100px;
     height:100px;
 }
@@ -221,17 +277,20 @@ textarea {
     height: 100px;
     width: 100%;
     text-align: center;
+    z-index: 1; /* PIE shows in IE8 */
 }
 .option {
     margin: 0 15px;
 }
 .or {
+    position: absolute;
+    width: 100%;
     line-height: 60px;
-    display: inline;
     text-align: center;
     font-size: 14px;
     color: #888;
-    margin: 0 auto;
+    z-index: -1;
+    left: 0;
 }
 .hint>img {
     float: left;
@@ -245,10 +304,22 @@ textarea {
     font-size: 14px;
     color: #666;
 }
+#showChooseScreen>img, #postOnWall>img {
+    padding: 2px;
+    border: 1px solid #BBB;
+    background-color: white;
+    margin: 2px 7px 2px 7px;
+}
+#postOnWall>img {
+    width: 60px;
+}
+#askButton>.title, #askButton>.subtitle {
+    min-width: 150px;
+}
 
 /* ---------------------   Choose Friends  ----------------------- */ 
 
-ul.friends {
+ul.friends, ul.askers {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -256,20 +327,29 @@ ul.friends {
     overflow-x: hidden;
     overflow-y: scroll;
 }
-li.friend {
+ul.askers {
+    margin: 50px 0 30px 0;
+    overflow-y: hidden;
+}
+ul.friends li, ul.askers li {
     display: block;
-    padding: 10px 0;
+    height: 80px;
     margin-right: 10px;
+}
+ul.friends li {
     border-bottom: 1px solid #BBB;
 }
-.friend input {
+ul.friends li>div, ul.askers li>div {
+    padding: 10px 0;
+}
+.friend input, .asker input {
     font-size: 14px;
     line-height: 17px;
     padding: 3px;
     color: #333;
     width: 200px;
 }
-.friend label {
+.friend label, .asker label {
     float: left;
     width: 60px;
     margin: 3px 0;
@@ -277,16 +357,17 @@ li.friend {
     font-size: 13px;
     color: #666;
 }
-.friend .error {
+.friend .error, .asker .error {
     float: right;
     font-size: 13px;
     line-height: 30px;
+    margin-right: 20px;
 }
 .portrait {
     float: left;
     width: 40px;
     height: 40px;
-    margin: 7px 37px 7px 7px;
+    margin: 7px 34px 7px 7px;
     padding: 2px;
     border: 1px solid #BBB;
     background-color: white;
@@ -305,6 +386,11 @@ li.friend {
 }
 .friend_options {
     text-align: center;
+    height: 60px;
+    width: 485px;
+    float: left;
+    position: relative;
+    z-index: 1;
 }
 .fb_option {
     float: left;
@@ -314,10 +400,11 @@ li.friend {
     float: right;
     width: 220px;
 }
-.email_friend, .fb_friend {
+.email_friend, .fb_friend, .email_asker {
     height: 60px;
+    float: left;
 }
-.email_friend>div {
+.email_friend>div, .email_asker>div {
     height: 30px;
 }
 .fb_friend>div {
@@ -326,47 +413,41 @@ li.friend {
 }
 .email_friend input, .fb_friend input {
     border: none;
+    width: 180px;
     margin: 3px 2px;
 }
 .email_friend input:hover, .fb_friend input:hover {
     border: 2px inset;
     margin: 1px 0;
 }
+.email_asker label {
+    width: 80px;
+}
 .helpful {
     text-align: left;
+    text-indent: 5px;
     font-size: 14px;
     color: #666;
 }
 .fb_connect {
-    border-radius: 6px;
     padding: 1px 10px 0 10px;
     font-size: 14px;
     line-height: 28px;
     color: #FFF;
     background-color: #3b5998;
     text-shadow: 1px 1px 1px #000;
-    /* CSS 3 */
-    border-radius: 8px;
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Firefox */
     -moz-border-radius: 8px;
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    /* For Webkit */
     -webkit-border-radius: 8px;
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    /* For IE 9+ */
-    
-    /* For IE 8- */
+    border-radius: 8px;  
+    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    behavior: url(/static/js/PIE.htc);
 
 }
 .fb_connect:hover {
     cursor: hand;
     cursor: pointer;
-}
-#askButton {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
 }
 ul.ui-autocomplete {
     list-style-type: none;
@@ -399,25 +480,32 @@ li.ui-menu-item {
 li.ui-menu-item:hover {
     background-color: #E0F0F8;
 }
+#chosenButton>img, #askButton>img {
+    margin: 5px;
+}
+#chosenButton>.title, #chosenButton>.subtitle,
+#askButton>.title, #askButton>.subtitle {
+    margin-left: 50px;
+    min-width: 185px;
+}
 
-/* ---------------------   Barbara's CSS  ----------------------- */ 
-/* IE 6 doesn't support max-height
- * we use height instead, but this forces the menu to always be this tall
- */
-* html .ui-autocomplete {
-    height: 100px;
+/* --------------------   Asking Screen ----------------------------- */
+
+div.middled {
+    position: absolute;
+    left: 50%;
+    margin-left: -110px;
+    width: 220px;
+    margin-top: 20%;
 }
-#nameEntry {
-    text-align: left;
-    padding-left: 15px;
-    border-bottom: 1px solid #616262;
-    height: 23px;
-}
-#nameEntry p {
+div.middled div {
+    width: 100%;
     text-align: center;
-    margin: 0px;
-    padding: 0px;
+    font-size: 23px;
+    line-height: 30px;
+    margin-bottom: 20px;
 }
 #loader {
-    margin: 50px 0px 0px 80px;
+    width: 220px;
+    height: 19px;
 }

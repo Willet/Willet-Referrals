@@ -156,7 +156,7 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
     */
     var _willet_show_ask = function ( message ) {
 
-        var url =  "{{URL}}/s/preask.html?user_uuid={{ user.uuid }}" + 
+        var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                      "&store_url={{ store_url }}" +
                                      "&url=" + window.location.href;
         _$.willet_colorbox({

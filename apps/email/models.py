@@ -105,20 +105,63 @@ class Email():
         
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
+    
+    @staticmethod
+    def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
+                product_img, product_title, client_name, client_domain,
+                asker_img= None):
+        subject = "Can I get your advice?"
+        to_first_name = from_first_name = ''
+
+        # Grab first name only
+        try:
+            from_first_name = from_name.split(' ')[0]
+        except:
+            from_first_name = from_name
+        try:
+            to_first_name = to_name.split(' ')[0]
+        except:
+            to_first_name = to_name
+        
+        body = template.render(Email.template_path('sibt_ask.html'),
+            {
+                'from_name'         : from_name.title(),
+                'from_first_name'   : from_first_name.title(),
+                'to_name'           : to_name.title(),
+                'to_first_name'     : to_first_name.title(),
+                'message'           : message,
+                'vote_url'          : vote_url,
+                'product_title'     : product_title,
+                'product_img'       : product_img,
+                'asker_img'         : asker_img,
+                'client_name'       : client_name,
+                'client_domain'     : client_domain
+            }
+        )
+        
+        logging.info("Emailing %s" % to_addr)
+        Email.send_email(from_address=      from_addr,
+                         to_address=        to_addr,
+                         to_name=           to_name.title(),
+                         replyto_address=   from_addr,
+                         subject=           subject,
+                         body=              body )
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, message, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
             name = "Savvy Shopper"
         body = template.render(Email.template_path('sibt_voteNotification.html'),
             {
-                'name'        : name.title(),
-                'vote_type'   : vote_type,
-                'vote_url'    : vote_url,
-                'product_img' : product_img,
-                'client_name' : client_name,
+                'name'          : name.title(),
+                'vote_type'     : vote_type,
+                'vote_url'      : vote_url,
+                'message'       : message,
+                'product_img'   : product_img,
+                'product_title' : product_title,
+                'client_name'   : client_name,
                 'client_domain' : client_domain 
             }
         )
@@ -205,7 +248,8 @@ class Email():
         return os.path.join('apps/email/templates/', path)
 
     @staticmethod
-    def send_email(from_address, to_address, subject, body):
+    def send_email(from_address, to_address, subject, body,
+                   to_name= None, replyto_address= None):
         if ',' in to_address:
             try:
                 e = EmailMessage(
@@ -228,6 +272,10 @@ class Email():
                 "fromname" : "Willet",
                 "bcc"      : fraser
             }
+            if to_name:
+                params['toname'] = to_name
+            if replyto_address:
+                params['replyto'] = replyto_address
 
             #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
 

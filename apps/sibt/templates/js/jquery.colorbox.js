@@ -10,6 +10,7 @@ b[0]&&b[0].ownerDocument||c);var h=[],i;for(var j=0,k;(k=a[j])!=null;j++){typeof
 {% endblock %}
 
 {%block js_analytics %}
+
     publicMethod.topRightClose = function( ) {
         publicMethod.storeAnalytics( publicMethod.closeState );
         publicMethod.close();

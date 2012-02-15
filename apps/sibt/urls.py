@@ -5,13 +5,12 @@ from apps.sibt.processes import *
 
 urlpatterns = [
     # Views
-    (r'/s/js/jquery.colorbox.js',  ColorboxJSServer),
-    (r'/s/preask.html',         PreAskDynamicLoader),
-    (r'/s/ask.html',            AskDynamicLoader),
-    (r'/s/vote.html',           VoteDynamicLoader),
-    (r'/s/results.html',        ShowResults),
-    (r'/s/fb_thanks.html',      ShowFBThanks),
-    (r'/s/track/unload',         ShowOnUnloadHook),
+    (r'/s/js/jquery.colorbox.js',   ColorboxJSServer),
+    (r'/s/ask.html',                AskDynamicLoader),
+    (r'/s/vote.html',               VoteDynamicLoader),
+    (r'/s/results.html',            ShowResults),
+    (r'/s/fb_thanks.html',          ShowFBThanks),
+    (r'/s/track/unload',            ShowOnUnloadHook),
 
     # Processes
     (r'/s/doVote',                  DoVote),
@@ -19,7 +18,7 @@ urlpatterns = [
     (r'/s/instance/share/facebook', ShareSIBTInstanceOnFacebook),
     (r'/s/instance/start',          StartSIBTInstance),
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
-    (r'/s/sendFBMessages',          SendFBMessages),
+    (r'/s/sendFriendAsks',          SendFriendAsks),
     (r'/s/startPartialInstance',    StartPartialSIBTInstance),
     (r'/s/storeAnalytics',          StoreAnalytics),
     (r'/s/track/showaction',        TrackSIBTShowAction),

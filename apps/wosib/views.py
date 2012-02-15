@@ -253,6 +253,7 @@ class WOSIBColorboxJSServer( URIHandler ):
                             'refer_url'     : self.request.get('refer_url') }
        
         path = os.path.join('apps/wosib/templates/js/', 'jquery.colorbox.js')
+        self.response.headers['Content-Type'] = 'application/javascript'
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
