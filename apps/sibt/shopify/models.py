@@ -126,8 +126,8 @@ class SIBTShopify(SIBT, AppShopify):
         self.install_webhooks( product_hooks_too = True )
         self.install_assets(assets=liquid_assets)
 
-        # Email Barbara
-        Email.emailBarbara(
+        # Email DevTeam
+        Email.emailDevTeam(
             'SIBT Install: %s %s %s' % (
                 self.uuid, 
                 self.client.name, 

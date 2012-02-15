@@ -117,12 +117,7 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com',
                  'b2lai@uwaterloo.ca', 'brian@getwillet.com' ]
-ADMIN_IPS = [ #'70.83.160.171',      # Notman House
-              #'173.177.235.110',    # Montreal apartment
-              #'70.31.244.131',      # Montreal apartment x2
-              #'76.65.157.73',       # Montreal apartment( BELL)
-              '24.150.35.66',       # Barbara's Burlington House
-              '184.175.46.107',     # Barbara's Kitchener House
+ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20'        # VeloCity @ Hub
             ]
 

@@ -540,7 +540,7 @@ class SendFBMessages( URIHandler ):
                 for i in ids:
                     app.increment_shares()
 
-                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
+                Email.emailDevTeam( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
 
                 response['success'] = True
             

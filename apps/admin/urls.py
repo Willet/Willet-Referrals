@@ -14,7 +14,6 @@ urlpatterns = [
     (r'/admin/ithinkiateacookie', TrackRemoteError),
     (r'/admin/sibt', SIBTInstanceStats),
     (r'/admin/install', InstallShopifyJunk),
-    (r'/admin/barbara', Barbara),
     (r'/admin/actions', ShowActions),
     (r'/admin/actions/since/', GetActionsSince),
     (r'/admin/click_actions', ShowClickActions),

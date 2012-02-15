@@ -70,12 +70,11 @@
                 <p>
                     <strong>4. Once </strong>you've picked a spot, add this code:
 
-            {% ifequal app.version '1' %}
-                <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
-            {% else %}
-                <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
-            {% endifequal %}
-
+                    {% ifequal app.version '1' %}
+                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
+                    {% else %}
+                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
+                    {% endifequal %}
                 </p>
             </div>
            
@@ -190,7 +189,7 @@
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Email barbara@getwillet.com!</h3>
+                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Email fraser@getwillet.com!</h3>
                 <br />
 
                 <div class="center">

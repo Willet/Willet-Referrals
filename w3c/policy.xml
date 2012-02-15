@@ -4,7 +4,7 @@
    <ENTITY>
      <DATA-GROUP>
        <DATA ref="#business.name">Willet, Inc.</DATA>
-       <DATA ref="#business.contact-info.online.email">Barbara@getWillet.com</DATA>
+       <DATA ref="#business.contact-info.online.email">Fraser@getWillet.com</DATA>
 
      </DATA-GROUP>
    </ENTITY>
@@ -13,7 +13,7 @@
      <DISPUTES resolution-type="service"
       service="http://www.rf.rs/privacy.html"
       short-description="Please contact our customer service desk with
-                         privacy concerns by emailing Barbara@getWillet.com."/>
+                         privacy concerns by emailing Fraser@getWillet.com."/>
 
    </DISPUTES-GROUP>
    <STATEMENT>

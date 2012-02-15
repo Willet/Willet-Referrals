@@ -7,11 +7,12 @@ Date:  March 2011
 """
 import logging
 import os
-import urllib, urllib2
+import urllib
+import urllib2
 
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch
-from google.appengine.api.mail import EmailMessage
+from django.utils                import simplejson as json
+from google.appengine.api        import urlfetch
+from google.appengine.api.mail   import EmailMessage
 from google.appengine.ext.webapp import template
 
 from util.consts import *
@@ -20,6 +21,7 @@ from util.consts import *
 #### Addresses ####
 ###################
 
+<<<<<<< HEAD
 info = "info@getwillet.com"
 
 barbara   = 'barbara@getwillet.com'
@@ -28,8 +30,14 @@ brian     = 'brian@getwillet.com'
 
 dev_team  = ', '.join([barbara, brian])
 team      = ', '.join([fraser, barbara, brian])
+=======
+info      = "info@getwillet.com"
+fraser    = 'fraser@getwillet.com'
+brian     = "brian@getwillet.com"
+>>>>>>> master
 
-from_addr = 'z4beth@gmail.com' #barbara
+dev_team  = '%s' % (fraser)
+from_addr = info
 
 #####################
 #### Email Class ####
@@ -38,12 +46,11 @@ class Email():
 
 #### Dev Team Emails ####
     @staticmethod
-    def emailBarbara(msg):
-        to_addr = team #barbara
+    def emailDevTeam(msg):
+        to_addr = dev_team
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
-        logging.info("Emailing Barbara")
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
