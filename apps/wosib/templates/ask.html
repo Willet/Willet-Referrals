@@ -12,7 +12,8 @@
     <div id="splash">
         <div class="title_bar">
             <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
-            <div>Select items to display in your survey.</div>
+            <!-- div>Don't know which one you should buy? Ask your friends with a survey.</div -->
+            <div>Ask your friends with a survey, and they will tell you which one you should buy!</div>
         </div>
         <form method="POST" action="">
             <div id="cart_items_display_container">
@@ -303,7 +304,10 @@
             $(this).bind('click', function () {
                 var checkbox = $(this).find('input')[0];
                 checkbox.checked = !checkbox.checked;
-                $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                // $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                $(this).css('background-color', checkbox.checked ? '#def' : 'transparent')
+                       .css('border', checkbox.checked ? '1px #6ae solid' : '1px transparent solid')
+                       .css('box-shadow', checkbox.checked ? 'inset 0 0 3px 3px #bcf' : 'none');
             });
         });
         

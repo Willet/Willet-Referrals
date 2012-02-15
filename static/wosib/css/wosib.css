@@ -18,7 +18,6 @@
     text-align: center;
 }
 #cart_items_display li {
-    border: 1px transparent solid;
     cursor:pointer;
     display: inline-block;
     font-size: small;
@@ -27,11 +26,10 @@
     width: 200px;
     height: 252px;
     vertical-align: bottom;
-}
-#cart_items_display li:hover {
-    border: 1px silver solid;
-    border-radius: 5px;
-    background-color: #fcfcff;
+    border: 1px #6ae solid;
+    border-radius:5px;
+    background-color:#def;
+    box-shadow: inset 0 0 3px 3px #bcf;
 }
 #cart_items_display img, #cart_items_display input, #cart_items_display label {
     clear: both;
