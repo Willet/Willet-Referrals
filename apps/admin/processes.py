@@ -28,7 +28,7 @@ class TrackRemoteError(webapp.RequestHandler):
         stack_trace = self.request.get('st')
         mail.send_mail(
             sender = 'rf.rs error reporting <Barbara@rf.rs>',
-            to = 'barbara@getwillet.com',
+            to = 'fraser@getwillet.com',
             subject = 'Javascript callback error',
             body = """We encountered an error
                 Page:       %s

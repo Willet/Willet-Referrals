@@ -663,7 +663,7 @@ class SendFriendAsks( URIHandler ):
                 # increment shares
                 for _ in range(friend_share_counter):
                     app.increment_shares()
-                
+
                 response['success'] = True
 
                 if friend_share_counter == len(friends):
@@ -682,11 +682,11 @@ class SendFriendAsks( URIHandler ):
                 Message: %s\n \
                 Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
             
-            """Email.emailBarbara('<p>Friends: %s</p> \
+            Email.emailDevTeam('<p>Friends: %s</p> \
                 <p>Successful shares on FB: #%d</p> \
                 <p>Successful shares via email: #%d</p> \
                 <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))"""
+                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
         
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

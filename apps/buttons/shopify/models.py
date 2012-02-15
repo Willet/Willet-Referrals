@@ -61,8 +61,8 @@ class ButtonsShopify(Buttons, AppShopify):
                              self.client.merchant.get_full_name(), 
                              self.client.name )
         
-        # Email Barbara
-        Email.emailBarbara(
+        # Email DevTeam
+        Email.emailDevTeam(
             'ButtonsShopify Install: %s %s %s' % (
                 self.uuid,
                 self.client.name,
