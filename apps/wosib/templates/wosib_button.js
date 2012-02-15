@@ -179,7 +179,7 @@ jQuery(document).ready (function () {
                 initialWidth: 0, 
                 initialHeight: 0, 
                 innerWidth: '790px',
-                innerHeight: '520px', 
+                innerHeight: '550px', 
                 fixed: true,
                 onClosed: function () { }
             });

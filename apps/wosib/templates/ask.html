@@ -12,10 +12,10 @@
     <div id="splash">
         <div class="title_bar">
             <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
-            <!-- div>Don't know which one you should buy? Ask your friends with a survey.</div -->
-            <div>Ask your friends with a survey, and they will tell you which one you should buy!</div>
+            <div>Not sure which one you should buy?</div>
         </div>
-        <form method="POST" action="">
+        <form method="POST" action="" style="margin-top:10px">
+            <div class="step" style="margin-left:100px">1. Select items to ask.</div>
             <div id="cart_items_display_container">
                 <ul id="cart_items_display">
                     <!-- JS -->
@@ -23,27 +23,25 @@
             </div>
         </form>
         <div class="options">
-            <div class="option left">
-                <div class="button" id="postWosibOnWall" title="Post to your wall">
-                    <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
-                    <div class="title">Ask Friends</div>
-                    <div class="subtitle">Post to Facebook</div>
+            <div class="restrictedWidth">
+                <div class="step">2. Add a message:</div>
+                <!-- textarea id="fbComment" name="fbComment">{{ product_desc|striptags }}</textarea -->
+                <textarea id="fbComment" name="fbComment">Hello! Which one should I buy?</textarea>
+                <br />
+                <div class="option left">
+                    <div class="button" id="postWosibOnWall" title="Post to your wall">
+                        <img alt="friends" src="/static/sibt/imgs/sibt_ask_all.png" />
+                        <div class="title">Ask Friends</div>
+                        <div class="subtitle">Post to Facebook</div>
+                    </div>
                 </div>
-                <div class="hint">
-                    <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                    <div>easy &amp; fast</div>
-                </div>
-            </div>
-            <div class="or">or</div>
-            <div class="option right">
-                <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                    <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
-                    <div class="title">Choose Friends</div>
-                    <div class="subtitle">Get trusted advice</div>
-                </div>
-                <div class="hint">
-                    <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                    <div>best advice</div>
+                <div class="or">or</div>
+                <div class="option right">
+                    <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                        <img alt="friend" src="/static/sibt/imgs/sibt_choose_friends.png" />
+                        <div class="title">Choose Friends...</div>
+                        <div class="subtitle">Get trusted advice</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -203,7 +201,7 @@
                         picture: "{{images|first}}",
                         name:    "{{title|escape}}",
                         caption: "{{store_domain}}",
-                        description: "{{ product_desc|striptags|escape }}",
+                        description: $('#fbComment').val(),
                         redirect_uri: "{{fb_redirect}}" });
             }
         } catch (e) {
@@ -296,8 +294,8 @@
             );
         }
         
-        // adjust box width; 240px is the empirically "nice" width for the items
-        $('#cart_items_display').width(240 * _willet_cart_variants.length);
+        // adjust box width; 182px is the empirically "nice" width for the items
+        $('#cart_items_display').width(182 * _willet_cart_variants.length);
         
         // add product selection events onto checkbox.
         $('#cart_items_display li').each (function () {
