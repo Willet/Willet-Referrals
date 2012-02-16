@@ -590,6 +590,7 @@ b[0]&&b[0].ownerDocument||c);var h=[],i;for(var j=0,k;(k=a[j])!=null;j++){typeof
 		
 		$('body').prepend($overlay, $box.append($wrap, $loadingBay));
 
+		// Close button on top-right corner
         $(document.getElementById(willet_prefix + "TopRight")).click( function() { publicMethod.topRightClose(); } );
 
 		$content.children()
