@@ -97,10 +97,10 @@
         // Initiates an instance of your app on the server
         var startPartialInstance = function() {
             // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuid : "{{product_uuid}}",
-                            willt_code   : "{{willt_code}}" };
+            var payload = { app_uuid     : "{{ app_uuid }}",
+                            user_uuid    : "{{ user_uuid }}",
+                            product_uuid : "{{ product_uuid }}",
+                            willt_code   : "{{ willt_code }}" };
             $.ajax({
                 url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
                 type     : 'post',

@@ -27,8 +27,8 @@ from apps.user.models         import User, get_or_create_user_by_cookie
 from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
-from util.urihandler          import URIHandler
 from util.strip_html          import strip_html
+from util.urihandler          import URIHandler
 
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
