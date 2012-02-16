@@ -4,6 +4,7 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
+import hashlib
 
 from datetime import datetime
 from django.utils import simplejson as json
@@ -344,3 +345,191 @@ class SendWOSIBFBMessages( URIHandler ):
 
         logging.info('response: %s' % response)
         self.response.out.write(json.dumps(response))
+
+class SendWOSIBFriendAsks( URIHandler ):
+    """ Sends messages to email & FB friends 
+
+    Expected inputs:
+        friends: JSON-encoded <Array> [ <array> [ <string> type, <string> name, <string> identifier ]
+        asker: JSON-encoded <array> [<string> name, <string> email_address [, <string> picture_url ]]
+        msg: <string> message
+        default_msg: <string> message before user edited it
+        app_uuid: <string> a WOSIB app uuid
+        willt_code: <string> willt_code corresponding to a parital WOSIB instance
+        user_uuid: <string> a <User> uuid
+        fb_access_token: <string> a Facebook API access token for this user
+        fb_id: <string> a Facebook user id for this user
+    
+    Expected output (JSON-encoded):
+        success: <Boolean> at least some friends were successfully contacted
+        data: <Dict>
+            message: <String> description of outcome
+            warnings: <Array> [ <string> explanation of any incompleted friend asks ] 
+    """
+    def get (self):
+        self.post()
+    
+    def post( self ):
+        logging.info("TARGETTED_SHARE_WOSIB_EMAIL_AND_FB")
+        
+        # Fetch arguments 
+        friends     = json.loads( self.request.get('friends') )
+        asker       = json.loads( self.request.get('asker') )
+        msg         = self.request.get( 'msg' )
+        default_msg = self.request.get( 'default_msg' )
+        app         = App.get( self.request.get('app_uuid') ) # Could be <WOSIB>, <WOSIBShopify> or something...
+        link        = Link.get_by_code( self.request.get( 'willt_code' ) )
+        user        = User.get( self.request.get( 'user_uuid' ) )
+        fb_token    = self.request.get('fb_access_token')
+        fb_id       = self.request.get('fb_id')
+
+        products      = []
+        fb_friends    = []
+        email_friends = []
+        email_share_counter = 0
+        fb_share_counter = 0
+        
+        # Default response
+        response = {
+            'success': False,
+            'data': {
+                'message': "",
+                'warnings': []
+            }
+        }
+
+        
+        # Request appears valid, proceed!
+        a = {
+            'name': asker[0],
+            'email': asker[1],
+            # If asker didn't log into Facebook, test Gravatar for a profile photo
+            # s=40 -> 40px size
+            # d=mm -> defaults a grey outline of a person picture (mystery man)
+            'pic': asker[2] if len(asker) == 3 else 'http://www.gravatar.com/avatar/'+hashlib.md5(asker[1].lower()).hexdigest()+'?s=40&d=mm'
+        }
+
+        # Split up friends into FB and email
+        for friend in friends:
+            try:
+                if friend[0] == 'fb':
+                    # Validation can be added here if necessary
+                    fb_friends.append(friend)
+                elif friend[0] == 'email':
+                    # Validation can be added here if necessary
+                    email_friends.append(friend)
+                else:
+                    raise ValueError
+            except (TypeError, IndexError, ValueError):
+                response['data']['warnings'].append('Invalid friend entry: %s' % friend)
+        
+        # Add spam warning if there are > 5 email friends
+        if len(email_friends) > 5:
+            logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
+
+        # Check formatting of share message
+        try:
+            if len( msg ) == 0:
+                if default_msg:
+                    msg = default_msg
+                else:
+                    msg = "I'm not sure which one I should buy. What do you think?"
+            if isinstance(msg, str):
+                message = unicode(msg, errors='ignore')
+        except:
+            logging.warrning('error transcoding to unicode', exc_info=True)
+
+        product_image = "%s/static/imgs/blank.png" % URL # blank
+        
+        #--- Start with sharing to FB friends ---#
+
+        if fb_token and fb_id:
+            logging.info('token and id set, updating user')
+            user.update(
+                fb_identity = fb_id,
+                fb_access_token = fb_token
+            )
+        
+        if fb_friends: # [] is falsy
+            ids = []
+            names = []
+            
+            for (_, fname, fid) in fb_friends:
+                ids.append(fid)
+                names.append(fname)
+            try:            
+                fb_share_ids = user.fb_post_to_friends( ids,
+                                                        names,
+                                                        msg,
+                                                        '', # product image
+                                                        '', # product title
+                                                        product_desc,
+                                                        app.client.domain,
+                                                        link )
+                fb_share_counter += len(fb_share_ids)
+                logging.info('shared on facebook, got share id %s' % fb_share_ids)
+
+            except Exception,e:
+                # Should still do email friends
+                response['data']['warnings'].append('Error sharing on Facebook: %s' % str(e))
+                logging.error('we had an error sharing on facebook', exc_info=True)
+
+        #--- Second do email friends ---#
+
+        if email_friends: # [] is falsy
+            for (_, fname, femail) in email_friends:
+                try:
+                    Email.WOSIBAsk(from_name=     a['name'],
+                                   from_addr=     a['email'],
+                                   to_name=       fname,
+                                   to_addr=       femail,
+                                   message=       msg,
+                                   vote_url=      link.get_willt_url(),
+                                   asker_img=     a['pic'],
+                                   client_name=   app.client.name,
+                                   client_domain= app.client.domain )
+                    email_share_counter += 1
+                except Exception,e:
+                    response['data']['warnings'].append('Error sharing via email: %s' % str(e))
+                    logging.error('we had an error sharing via email', exc_info=True)
+        
+        friend_share_counter = fb_share_counter + email_share_counter
+
+        if friend_share_counter > 0:
+            # create the instance!
+            instance = app.create_instance( user, 
+                                            None, 
+                                            link, 
+                                            products)
+            # increment shares
+            for _ in range(friend_share_counter):
+                app.increment_shares()
+
+            response['success'] = True
+
+            if friend_share_counter == len(friends):
+                response['data']['message'] = 'Messages sent to every friend'
+            else:
+                response['data']['message'] = 'Messages sent to some friends'
+        else:
+            response['data']['message'] = 'Could not successfully contact any friends'
+        
+        if not response['data']['warnings']:
+            del response['data']['warnings']
+        
+        logging.info('Friends: %s\n \
+            Successful shares on FB: %d\n \
+            Successful shares via email: %d\n \
+            Message: %s\n \
+            Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+        
+        Email.emailDevTeam('<p>Friends: %s</p> \
+            <p>Successful shares on FB: #%d</p> \
+            <p>Successful shares via email: #%d</p> \
+            <p>Message: %s</p> \
+            <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+        
+        logging.info('response: %s' % response)
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json.dumps(response))
+

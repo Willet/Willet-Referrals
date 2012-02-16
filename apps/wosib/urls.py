@@ -18,6 +18,7 @@ urlpatterns = [
     (r'/s/sendFBMessages',          SendWOSIBFBMessages),
     (r'/w/removeExpired',           RemoveExpiredWOSIBInstance),
     (r'/w/instance/start',          StartWOSIBInstance),
+    (r'/w/sendFriendAsks',          SendWOSIBFriendAsks),
     (r'/w/startPartialInstance',    StartPartialWOSIBInstance),
     (r'/w/track/showaction',        TrackWOSIBShowAction),
     (r'/w/track/useraction',        TrackWOSIBUserAction),

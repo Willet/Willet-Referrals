@@ -135,39 +135,70 @@
         }
     };
 
+    // Sends information to server to ask friends & handles response
     var sendMessages = function() {
-        var friend_info = [];
-        var msg   = $("#share-text").val();
+        var payload, friend_info, asker_info,
+            msg   = $("#fbComment").val(),
+            error = false;
 
-        // Clean up UI to show loader gif
-        showScreen('asking');
+        // Gather up friend info, recording if a friend has an error
+        friend_info = getFriendsInfo(); // either null or [...]
 
-        // Gather up friend info
-        $.each( friends, function (i) { 
-            friend_info.push( friends[i].getFriendInfo() );
-        });
+        // Gather asker info
+        asker_info = asker.getAskerInfo(); // either null or [...]
 
-        payload = { 
-            user_uuid       : "{{user_uuid}}",
-            app_uuid        : "{{app_uuid}}",
-            product_uuids   : get_selected_objects (),
-            fb_access_token : fbAccessToken,
-            fb_id           : fbIdentity,
-            friend_info     : friend_info,
-            msg             : msg,
-            willt_code      : "{{willt_code}}"
-        };
+        if (friend_info && friend_info.length > 0 && asker_info && asker_info.length > 1) {
+            // Clean up UI to show loader gif
+            showScreen('asking');
 
-        $.ajax({
-            url      : "{{ URL }}{% url SendWOSIBFBMessages %}",
-            type     : 'post',
-            dataType : 'json',
-            data     : payload,
-            success  : function (tr) {
-                // Change to success screen
-                showScreen('success');
-            }
-        });
+            // No errors with friends, submit!
+            var payload = {
+                user_name       : "{{user_name}}",
+                user_uuid       : "{{user_uuid}}",
+                app_uuid        : "{{app_uuid}}",
+                product_uuid    : "{{product_uuid}}",
+                fb_access_token : fbAccessToken,
+                fb_id           : fbIdentity,
+                friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                asker           : JSON.stringify(asker_info),
+                msg             : msg,
+                default_msg     : "{{AB_share_text|escape}}",
+                willt_code      : "{{willt_code}}"
+            };
+
+            $.ajax({
+                url      : "{{ URL }}{% url SendWOSIBFriendAsks %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                statusCode : {
+                    200: function () {
+                        // Success
+                        showScreen('success');
+                    },
+                    400: function (resp, status) {
+                        // Bad Request
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("400 "+resp.data.message);
+                        }
+                        showScreen('failure');
+                        
+                    },
+                    401: function (resp, status) {
+                        // Unauthorized
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("401 "+resp.data.message);
+                        }
+                        showScreen('failure');
+                        
+                    },
+                    500: function () {
+                        // Internal server error
+                        showScreen('failure');
+                    }
+                }
+            });
+        }
     };
 
     var updateEmailAddress = function() {

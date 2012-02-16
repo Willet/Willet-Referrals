@@ -200,6 +200,45 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
+    def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
+                 client_name, client_domain,
+                 asker_img= None):
+        subject = "Which one should I buy?"
+        to_first_name = from_first_name = ''
+
+        # Grab first name only
+        try:
+            from_first_name = from_name.split(' ')[0]
+        except:
+            from_first_name = from_name
+        try:
+            to_first_name = to_name.split(' ')[0]
+        except:
+            to_first_name = to_name
+        
+        body = template.render(Email.template_path('wosib_ask.html'),
+            {
+                'from_name'         : from_name.title(),
+                'from_first_name'   : from_first_name.title(),
+                'to_name'           : to_name.title(),
+                'to_first_name'     : to_first_name.title(),
+                'message'           : message,
+                'vote_url'          : vote_url,
+                'asker_img'         : asker_img,
+                'client_name'       : client_name,
+                'client_domain'     : client_domain
+            }
+        )
+        
+        logging.info("Emailing %s" % to_addr)
+        Email.send_email(from_address=      from_addr,
+                         to_address=        to_addr,
+                         to_name=           to_name.title(),
+                         replyto_address=   from_addr,
+                         subject=           subject,
+                         body=              body )
+
+    @staticmethod
     def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
