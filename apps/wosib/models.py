@@ -128,7 +128,7 @@ class WOSIBInstance(Model):
         instance_product_dict = dict (zip (self.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
         logging.debug ("instance_product_dict = %r" % instance_product_dict)
         
-        if instance_product_votes.count(instance_product_votes[0]) > 1:
+        if instance_product_votes.count(max(instance_product_votes)) > 1:
             # that is, if multiple items have the same score
             winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], self.products)
             return Product\

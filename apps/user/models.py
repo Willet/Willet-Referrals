@@ -858,7 +858,7 @@ def create_user_by_email( email, app ):
     """Create a new User object with the given attributes"""
     user = User( key_name = email, uuid = generate_uuid(16) )
     logging.info("Putting later: %s %s" % (user.uuid, user.key()))
-    user.put_later()
+    user.put() # cannot put_later() here; app creation relies on merchant
 
     # Store email
     create_email_model( user, email )
