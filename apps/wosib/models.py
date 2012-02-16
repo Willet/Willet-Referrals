@@ -21,7 +21,6 @@ from apps.app.models            import App
 from apps.email.models          import Email
 from apps.link.models           import Link
 from apps.product.models        import Product
-from apps.sibt.models           import VoteCounter
 from apps.user.models           import get_or_create_user_by_cookie
 from apps.vote.models           import VoteCounter
 from apps.wosib.actions         import *
@@ -151,7 +150,6 @@ class WOSIBInstance(Model):
             filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
                 total += counter.yesses
             memcache.add(key=self.uuid+"WOSIBVoteCounter_count", value=total)
-        
         return total
     
     def increment_votes(self):

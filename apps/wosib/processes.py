@@ -3,8 +3,9 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
-import re
 import hashlib
+import random
+import re
 
 from datetime import datetime
 from django.utils import simplejson as json
@@ -253,98 +254,6 @@ class StartWOSIBAnalytics(URIHandler):
     def get(self):
         self.response.out.write("No analytics yet")
 
-class SendWOSIBFBMessages( URIHandler ):
-    def post( self ):
-        logging.info("TARGETTED_SHAREWOSIBONFACEBOOK")
-
-        # Fetch arguments 
-        ids       = json.loads( self.request.get( 'ids' ) )
-        names     = json.loads( self.request.get( 'names' ) )
-        msg       = self.request.get( 'msg' )
-        app       = App.get( self.request.get('app_uuid') )
-        product   = Product.get( self.request.get( 'product_uuid' ) )
-        link      = Link.get_by_code( self.request.get( 'willt_code' ) )
-
-        user      = User.get( self.request.get( 'user_uuid' ) )
-        fb_token  = self.request.get('fb_access_token')
-        fb_id     = self.request.get('fb_id')
-        if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user  = get_or_create_user_by_cookie(self, app)
-
-        logging.debug('friends %s %r' % (ids, names))
-        logging.debug('msg :%s '% msg)
-
-        # Format the product's desc for FB
-        try:
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.info('could not get product description')
-        
-        # Check formatting of share msg
-        try:
-            if len( msg ) == 0:
-                msg = "I'm not sure which one I should buy. What do you think?"
-            if isinstance(msg, str):
-                message = unicode(msg, errors='ignore')
-        except:
-            logging.info('error transcoding to unicode', exc_info=True)
-
-        # defaults
-        response = {
-            'success': False,
-            'data': {}
-        }
-
-        # first do sharing on facebook
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            ) 
-
-        try:
-            try:
-                product_image = product.images[0]
-            except:
-                product_image = '%s/static/imgs/blank.png' % URL # blank
-            fb_share_ids = user.fb_post_multiple_products_to_friends (  ids,
-                                                                        names,
-                                                                        msg,
-                                                                        product_image,
-                                                                        app.client.domain,
-                                                                        link )
-            logging.info('shared on facebook, got share id %s' % fb_share_ids)
-
-            if len(fb_share_ids) > 0:
-                # create the instance!
-                # Make the Instance!
-                instance = app.create_instance( user, None, link )
-                # increment shares
-                for i in ids:
-                    app.increment_shares()
-
-                Email.emailBarbara( '<p>Friends: %s %s</p><p>Successful Shares on FB: #%d</p><p>MESSAGE: %s</p><p>Instance: %s</p>' %(ids, names, len(fb_share_ids), msg, instance.uuid) )
-
-                response['success'] = True
-            
-            # if it wasn't successful ...
-            if len(fb_share_ids) != len(ids):
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
-
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
-
-        logging.info('response: %s' % response)
-        self.response.out.write(json.dumps(response))
 
 class SendWOSIBFriendAsks( URIHandler ):
     """ Sends messages to email & FB friends 
@@ -383,7 +292,7 @@ class SendWOSIBFriendAsks( URIHandler ):
         fb_token    = self.request.get('fb_access_token')
         fb_id       = self.request.get('fb_id')
 
-        products      = []
+        product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
         fb_friends    = []
         email_friends = []
         email_share_counter = 0
@@ -397,7 +306,9 @@ class SendWOSIBFriendAsks( URIHandler ):
                 'warnings': []
             }
         }
-
+        
+        products = [Product.get(uuid) for uuid in product_uuids] # supposedly: [Product, Product, Product]
+        random_product = random.choice(products)
         
         # Request appears valid, proceed!
         a = {
@@ -461,9 +372,9 @@ class SendWOSIBFriendAsks( URIHandler ):
                 fb_share_ids = user.fb_post_to_friends( ids,
                                                         names,
                                                         msg,
-                                                        '', # product image
-                                                        '', # product title
-                                                        product_desc,
+                                                        random_product.images[0], # product image
+                                                        random_product.title, # product title
+                                                        random_product.description,
                                                         app.client.domain,
                                                         link )
                 fb_share_counter += len(fb_share_ids)
@@ -479,6 +390,7 @@ class SendWOSIBFriendAsks( URIHandler ):
         if email_friends: # [] is falsy
             for (_, fname, femail) in email_friends:
                 try:
+                    logging.info ("sending email with link %s" % link.get_willt_url())
                     Email.WOSIBAsk(from_name=     a['name'],
                                    from_addr=     a['email'],
                                    to_name=       fname,
@@ -500,7 +412,13 @@ class SendWOSIBFriendAsks( URIHandler ):
             instance = app.create_instance( user, 
                                             None, 
                                             link, 
-                                            products)
+                                            product_uuids)
+            # change link to reflect to the vote page.
+            link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+            logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
+            link.put()
+            link.memcache_by_code() # doubly memcached
+
             # increment shares
             for _ in range(friend_share_counter):
                 app.increment_shares()

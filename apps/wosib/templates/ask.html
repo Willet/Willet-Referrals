@@ -161,6 +161,7 @@
                 fb_id           : fbIdentity,
                 friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
                 asker           : JSON.stringify(asker_info),
+                products        : get_selected_objects (),
                 msg             : msg,
                 default_msg     : "{{AB_share_text|escape}}",
                 willt_code      : "{{willt_code}}"
@@ -242,6 +243,7 @@
     };
 
     var get_selected_objects = function () {
+        // returns a comma-separated string of product uuids "id,id,id"
         var uuids = [];
         $('#cart_items_display input').each (function (i, e) {
             var $e = $(e);
@@ -339,23 +341,6 @@
                        .css('box-shadow', checkbox.checked ? 'inset 0 0 3px 3px #bcf' : 'none');
             });
         });
-        
-        var startPartialInstance = function() {
-            // its success in creating the instance is assumed
-            var payload = { app_uuid      : "{{app_uuid}}",
-                            user_uuid     : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code    : "{{willt_code}}" };
-            $.ajax({
-                url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    return;
-                }
-            });
-        };
         
         $('#postWosibOnWall').click (postWosibOnWall);
     });

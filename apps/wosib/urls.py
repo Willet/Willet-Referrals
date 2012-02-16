@@ -15,7 +15,6 @@ urlpatterns = [
     # Processes
     (r'/w/doVote',                  DoWOSIBVote),
     (r'/w/getExpired',              GetExpiredWOSIBInstances),
-    (r'/s/sendFBMessages',          SendWOSIBFBMessages),
     (r'/w/removeExpired',           RemoveExpiredWOSIBInstance),
     (r'/w/instance/start',          StartWOSIBInstance),
     (r'/w/sendFriendAsks',          SendWOSIBFriendAsks),

@@ -112,7 +112,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'evnt' : self.request.get('evnt'),
                 'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                 'app': app,
-                'willt_code': link.willt_url_code, # probably meant to be accessed
+                'willt_code': link.willt_url_code, # used to create full instances
                 'variants' : variants,
                 'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                 'store_domain' : self.request.get( 'store_url' ),

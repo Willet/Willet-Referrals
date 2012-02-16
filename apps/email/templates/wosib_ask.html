@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Which one should I buy?{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:120%; line-height: 46px; margin-bottom: 20px;">
+                    {% if asker_img %}<img alt="{{ from_first_name }}'s picture" src="{{ asker_img }}" style="height: 40px; width: 40px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />{% endif %}
+                    {{ from_name }} asks:
+                </div>
+                <div style="font-size:110%; margin-left: 50px;">
+                    <p> Hi {{ to_first_name }}, </p>
+                    <p>{{ message }}</p>
+                    <p><a href="{{ vote_url }}">Click here to provide advice</a></p>
+                    <div style="clear:both;"></div>
+                    <p>Thanks,</p>
+                    <p>{{ from_first_name }}</p>
+				</div>
+                <div>
+                    <p style="font-size: 10px; margin-bottom: 0px; margin-top: 40px;">Email sent from <a href="http://willetinc.com">Willet</a> on behalf of <a href="{{ client_domain }}">{{ client_name }}</a>.</p>
+                </div>
+			</td>
+        </tr>
+    </table>
+{% endblock %}
