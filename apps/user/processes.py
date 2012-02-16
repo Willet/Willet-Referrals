@@ -14,15 +14,16 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.app.models import App, ShareCounter, get_app_by_id
+from apps.email.models import Email
+from apps.link.models import *
 from apps.user.models import *
 from apps.user.models import create_email_model
-from apps.app.models import App, ShareCounter, get_app_by_id
-from apps.link.models import *
-from apps.email.models import Email
 
 from util.consts import *
 from util.helpers import *
 from util.urihandler import URIHandler
+
 
 class FetchFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
@@ -85,6 +86,7 @@ class FetchFacebookData(webapp.RequestHandler):
         
         logging.info("done updating")
 
+
 class FetchFacebookFriends(webapp.RequestHandler):
     """Fetch and save the facebook friends of a given user"""
     def get(self):
@@ -106,6 +108,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
         user = User.all().filter('fb_identity =', rq_vars['fb_id'])
         fb_response = db.run_in_transaction(txn, user)
         logging.info(fb_response)
+
 
 class QueryGoogleSocialGraphAPI( URIHandler ):
     def get( self ):
@@ -187,6 +190,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
 
             user.put_later()
 
+# Should this utility function be defined here?
 def unpacker(obj, user):
     r = []
     logging.info('v:%r'% obj)
@@ -216,11 +220,13 @@ def unpacker(obj, user):
             continue
     return r
 
+
 class UpdateEmailAddress(webapp.RequestHandler):
     def post( self ):
         user = get_user_by_cookie( self )
 
         user.update( email=self.request.get('email') )
+
 
 class UpdateFBAccessToken( URIHandler ):
     """ Store FB access token and FB id in User """
