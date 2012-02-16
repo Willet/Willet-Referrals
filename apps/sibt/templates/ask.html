@@ -33,7 +33,6 @@
                     <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
                 </div>
                 <div class="options">
-                    <div class="or">or</div>
                     <div class="option left">
                         <div class="button" id="postOnWall" title="Post to your wall">
                             <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
@@ -45,6 +44,7 @@
                             <div>easy &amp; fast</div>
                         </div>
                     </div>
+                    <div class="or">or</div>
                     <div class="option right">
                         <div class="button" id="showChooseScreen" title="Post to your friends' walls">
                             <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
@@ -61,7 +61,6 @@
 {% endblock screens %}
 
 {% block js_globals %}
-        {% if falsy %}<script>/* this is only for text editor coloring */{% endif %}
         var options = [
             // Could use template here
             {
@@ -98,10 +97,10 @@
         // Initiates an instance of your app on the server
         var startPartialInstance = function() {
             // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuid : "{{product_uuid}}",
-                            willt_code   : "{{willt_code}}" };
+            var payload = { app_uuid     : "{{ app_uuid }}",
+                            user_uuid    : "{{ user_uuid }}",
+                            product_uuid : "{{ product_uuid }}",
+                            willt_code   : "{{ willt_code }}" };
             $.ajax({
                 url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
                 type     : 'post',

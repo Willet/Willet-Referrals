@@ -27,8 +27,8 @@ from apps.user.models         import User, get_or_create_user_by_cookie
 from util.consts              import *
 from util.helpers             import url 
 from util.helpers             import remove_html_tags
-from util.urihandler          import URIHandler
 from util.strip_html          import strip_html
+from util.urihandler          import URIHandler
 
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
@@ -564,6 +564,10 @@ class SendFriendAsks( URIHandler ):
             # Add spam warning if there are > 5 email friends
             if len(email_friends) > 5:
                 logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
+                Email.emailDevTeam('<p>SIBT SPAMMER? Emailing %i friends</p> \
+                    <p>Asker: %s</p> \
+                    <p>Message: %s</p> \
+                    <p>Instance: %s</p>' % (email_share_counter, asker, msg, instance.uuid))
 
             # Format the product's desc for sharing
             try:
@@ -676,17 +680,20 @@ class SendFriendAsks( URIHandler ):
             if not response['data']['warnings']:
                 del response['data']['warnings']
             
-            logging.info('Friends: %s\n \
+            logging.info('Asker: %s\n \
+                Friends: %s\n \
                 Successful shares on FB: %d\n \
                 Successful shares via email: %d\n \
                 Message: %s\n \
-                Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+                Instance: %s' % (asker, friends, fb_share_counter, email_share_counter, msg, instance.uuid))
             
-            Email.emailDevTeam('<p>Friends: %s</p> \
-                <p>Successful shares on FB: #%d</p> \
-                <p>Successful shares via email: #%d</p> \
+            Email.emailDevTeam('<p>SIBT Share!\n</p> \
+                <p>Asker: %s\n</p> \
+                <p>Friends: %s</p> \
+                <p>Successful shares on FB: %d</p> \
+                <p>Successful shares via email: %d</p> \
                 <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+                <p>Instance: %s</p>' % (asker, friends, fb_share_counter, email_share_counter, msg, instance.uuid))
         
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

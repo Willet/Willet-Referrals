@@ -87,9 +87,9 @@ p {
     background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
     -pie-background: linear-gradient(top, #E3E3E3, #D1D1D1);
     background-image: linear-gradient(top, #E3E3E3, #D1D1D1); 
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
+    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;    
     behavior: url(/static/js/PIE.htc)
 }
 .grey_bar:hover {
@@ -141,9 +141,9 @@ p {
     background-image: -ms-linear-gradient(top, #D9F7FA, #C1F0F5);
     -pie-background: linear-gradient(top, #D9F7FA, #C1F0F5);
     background-image: linear-gradient(top, #D9F7FA, #C1F0F5);
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     behavior: url(/static/js/PIE.htc);
 }
 .button.inactive {
@@ -165,16 +165,16 @@ p {
 .button:hover {
     cursor: pointer;
     cursor: hand;
-    -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
-    box-shadow: 0 0 4px 2px rgba(0,0,0,.3);
+    -moz-box-shadow: 0 0 4px 1px #BBB;
+    -webkit-box-shadow: 0 0 4px 1px #BBB;
+    box-shadow: 0 0 4px 1px #BBB;
     behavior: url(/static/js/PIE.htc);
 }
 .button.inactive:hover {
     cursor: auto;
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+    -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
+    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     behavior: url(/static/js/PIE.htc);
 }
 .button>img {
@@ -235,6 +235,7 @@ p {
     z-index: -1;
     width: 100%;
     padding: 30px 0 10px 0;
+    margin: 15px 0;
     list-style-type: none;
     background-color: #E3E3E3;
     -moz-border-radius: 0 0 10px 10px;
@@ -283,14 +284,17 @@ p {
     margin: 0 15px;
 }
 .or {
-    position: absolute;
-    width: 100%;
+    float: left;
     line-height: 60px;
     text-align: center;
     font-size: 14px;
     color: #888;
-    z-index: -1;
-    left: 0;
+}
+.options .or {
+    width: 52px;
+}
+.friend_options .or {
+    width: 45px;
 }
 .hint>img {
     float: left;
@@ -313,6 +317,7 @@ p {
 #postOnWall>img {
     width: 60px;
 }
+#postOnWall>.title, #postOnWall>.subtitle,
 #askButton>.title, #askButton>.subtitle {
     min-width: 150px;
 }
@@ -343,6 +348,7 @@ ul.friends li>div, ul.askers li>div {
     padding: 10px 0;
 }
 .friend input, .asker input {
+    float: left;
     font-size: 14px;
     line-height: 17px;
     padding: 3px;
@@ -373,12 +379,14 @@ ul.friends li>div, ul.askers li>div {
     background-color: white;
 }
 #addFriend {
-    font-size: 14px;
     margin: 15px 0 0 15px;
+    font-size: 14px;
+}
+#addFriend div {
     padding-left: 15px;
     text-align: center;
 }
-#addFriend>img {
+#addFriend img {
     float: left;
     margin-left: -13px;
     width: 29px;
@@ -389,8 +397,6 @@ ul.friends li>div, ul.askers li>div {
     height: 60px;
     width: 485px;
     float: left;
-    position: relative;
-    z-index: 1;
 }
 .fb_option {
     float: left;
@@ -403,6 +409,7 @@ ul.friends li>div, ul.askers li>div {
 .email_friend, .fb_friend, .email_asker {
     height: 60px;
     float: left;
+    width: 485px;
 }
 .email_friend>div, .email_asker>div {
     height: 30px;
@@ -420,6 +427,9 @@ ul.friends li>div, ul.askers li>div {
     border: 2px inset;
     margin: 1px 0;
 }
+.email_asker input {
+    width: 180px;
+}
 .email_asker label {
     width: 80px;
 }
@@ -430,19 +440,9 @@ ul.friends li>div, ul.askers li>div {
     color: #666;
 }
 .fb_connect {
-    padding: 1px 10px 0 10px;
-    font-size: 14px;
-    line-height: 28px;
-    color: #FFF;
-    background-color: #3b5998;
-    text-shadow: 1px 1px 1px #000;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    border-radius: 8px;  
-    -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
-    box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);    
-    behavior: url(/static/js/PIE.htc);
+    width: 220px;
+    height: 30px;
+    background-image: url('/static/plugin/imgs/fb_connect.png');
 
 }
 .fb_connect:hover {
