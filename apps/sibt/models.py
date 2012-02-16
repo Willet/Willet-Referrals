@@ -107,7 +107,7 @@ class SIBT(App):
 
         if not user.is_admin() and "social-referral" in URL:
             try:
-                Email.emailBarbara("""
+                Email.emailDevTeam("""
                     SIBT INSTANCE:<br />
                     dialog = %s <br />
                     uuid= %s<br />
@@ -132,7 +132,7 @@ class SIBT(App):
                     )
                 )
             except Exception, e:
-               Email.emailBarbara('SIBT INSTANCE: error printing data: %s' % str(e))
+               Email.emailDevTeam('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
 
         @staticmethod

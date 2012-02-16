@@ -396,22 +396,6 @@ class InstallShopifyJunk( URIHandler ):
                 logging.info('install failed %d script_tags' % len(script_tags))
         logging.info('installed %d script_tags' % len(script_tags))
 
-class Barbara(URIHandler):
-    def get( self ):
-        apps = SIBTShopify.all()
-        count = 0
-        for a in apps:
-
-            # Switched to new install code on Nov. 23rd
-            if a.created <= datetime.datetime( 2011, 11, 22 ):
-                a.version = '1'
-            else:
-                a.version = '2'
-
-            a.put()
-       
-        logging.info("DONE: %d" % count)
-
 class ShowActions(URIHandler):
     @admin_required
     def get(self, admin):

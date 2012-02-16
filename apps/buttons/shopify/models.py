@@ -57,12 +57,12 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Fire off "personal" email from Fraser
         Email.welcomeClient( "ShopConnection", 
-                             self.client.merchant.get_attr('email'), 
+                             self.client.email, 
                              self.client.merchant.get_full_name(), 
                              self.client.name )
         
-        # Email Barbara
-        Email.emailBarbara(
+        # Email DevTeam
+        Email.emailDevTeam(
             'ButtonsShopify Install: %s %s %s' % (
                 self.uuid,
                 self.client.name,
@@ -79,8 +79,8 @@ def create_shopify_buttons_app(client, app_token):
                           uuid        = uuid,
                           client      = client,
                           store_name  = client.name, # Store name
-                          store_url   = client.url, # Store url
-                          store_id    = client.id, # Store id
+                          store_url   = client.url,  # Store url
+                          store_id    = client.id,   # Store id
                           store_token = app_token,
                           button_selector = "_willet_buttons_app" ) 
     app.put()
