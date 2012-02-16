@@ -3,11 +3,12 @@
  */
 (function () {
     var here = window.location + '.json';
-    var console = ( typeof(window.console) === 'object' 
-                 && typeof(window.console.log) === 'function' 
-                 && typeof(window.console.error) ==='function' ) 
-                    ? window.console 
-                    : { log: function () {}, error: function () {} };
+    var console = { log: function () {}, error: function () {} };
+        //( typeof(window.console) === 'object' 
+        // && typeof(window.console.log) === 'function' 
+        // && typeof(window.console.error) ==='function' ) 
+        // ? window.console 
+        //: { log: function () {}, error: function () {} }; // debugging
     
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
@@ -156,7 +157,7 @@
 
             console.log('Buttons: scripts attached. Done!');
         } else {
-            console.error('Buttons: could not find buttons placeholder on page');
+            console.log('Buttons: could not find buttons placeholder on page');
         }
 
     };
@@ -176,7 +177,7 @@
                         try {
                             data = JSON.parse(req.responseText);
                         } catch (e) {
-                            console.error("Buttons: JSON.parse error: "+e);
+                            console.log("Buttons: could not parse product info, stopping.");
                             return;
                         }
                         if (data) {
@@ -185,14 +186,14 @@
                         }
                     } else {  
                         // Didn't work, just silently bail
-                        console.error("Buttons: request for product.json failed");
+                        console.log("Buttons: request for product.json failed");
                     }  
                 }  
             };  
             req.send(null);
         } catch (e) {
             // Didn't work, just silently bail
-            console.error("Buttons: "+e);
+            console.log("Buttons: "+e);
         }
     })();
 })();
