@@ -51,8 +51,9 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 }
 
 
-
-$L (['{{ URL }}/static/js/modernizr.custom.js']); // two calls = parallel loading
+// two calls = parallel loading
+$L (['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
+     '{{ URL }}/static/js/modernizr.custom.js']);
 $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], function () {
     // load CSS for colorbox as soon as possible!!
     var _willet_css = {% include stylesheet %}
@@ -286,7 +287,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
         var build_top_bar_html = function (is_ask_bar) {
 
             if (is_ask_bar || false) {
-                var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. {{AB_CTA_text}}</p>" +
+                var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make." + AB_CTA_text + "</p>" +
                     "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
                     "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
                     "</div>" +
@@ -472,7 +473,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     } else if (_willet_show_votes) {
                         button_html = 'Help {{ asker_name }} by voting!';
                     } else {
-                        button_html = '{{AB_CTA_text}}';
+                        button_html = AB_CTA_text;
                     }
 
                     button = $(button)

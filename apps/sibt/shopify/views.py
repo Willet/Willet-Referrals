@@ -298,37 +298,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         if not hasattr(app, 'button_enabled'):
             app.button_enabled = True
             app.put()
-    
-        # AB-Test or not depending on if the admin is testing.
-        if not user.is_admin():
-            if app.incentive_enabled:
-                ab_test_options = [ "Not sure? Let friends vote! Save $5!",
-                                    "Earn $5! Ask your friends what they think!",
-                                    "Need advice? Ask your friends! Earn $5!",
-                                    "Save $5 by getting advice from friends!",
-                                    # Muck with visitors' intrinsic motivation:
-                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
-                                    # (enable if you like)
-                                    # "Not sure? Ask your friends.", 
-                                  ]
-                cta_button_text = ab_test( 'sibt_incentive_text', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
-            else:
-                ab_test_options = [ "Not sure? Start a vote!",
-                                    "Not sure? Let friends vote!",
-                                    "Need advice? Ask your friends to vote",
-                                    "Need advice? Ask your friends!",
-                                    "Unsure? Get advice from friends!",
-                                    "Unsure? Get your friends to vote!",
-                                    ]
-                cta_button_text = ab_test( 'sibt_button_text6', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
-        else:
-            cta_button_text = "ADMIN: Unsure? Ask your friends!"
 
         # a whole bunch of css bullshit!
         if app:
@@ -362,8 +331,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'user': user,
             'stylesheet': '../../plugin/templates/css/colorbox.css',
 
-            'AB_CTA_text' : cta_button_text,
-
             'evnt' : event,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
@@ -373,13 +340,70 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         }
 
         # Store a script load action.
-        ButtonLoadAction.create( user, app, target )
+        # ButtonLoadAction.create( user, app, target )
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
+        return
+
+class SIBTShopifyServeAB (webapp.RequestHandler):
+    """ Serve AB values for SIBTShopifyServeScript in a different JSON request.
+        Hopes are that it speeds up button rendering.
+    """
+    
+    def get(self):
+        shop_url    = get_shopify_url(self.request.get('store_url'))
+        app         = SIBTShopify.get_by_store_url(shop_url)
+        user        = get_or_create_user_by_cookie( self, app )
+        
+        # return json format if jsonp is not set
+        jsonp       = self.request.get('jsonp', False)
+        if jsonp:
+            jsonp = True # convert string to boolean
+
+        # AB-Test or not depending on if the admin is testing.
+        if not user.is_admin():
+            if app.incentive_enabled:
+                ab_test_options = [ "Not sure? Let friends vote! Save $5!",
+                                    "Earn $5! Ask your friends what they think!",
+                                    "Need advice? Ask your friends! Earn $5!",
+                                    "Save $5 by getting advice from friends!",
+                                    # Muck with visitors' intrinsic motivation:
+                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
+                                    # (enable if you like)
+                                    # "Not sure? Ask your friends.", 
+                                  ]
+                cta_button_text = ab_test( 'sibt_incentive_text', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+            else:
+                ab_test_options = [ "Not sure? Start a vote!",
+                                    "Not sure? Let friends vote!",
+                                    "Need advice? Ask your friends to vote",
+                                    "Need advice? Ask your friends!",
+                                    "Unsure? Get advice from friends!",
+                                    "Unsure? Get your friends to vote!",
+                                    ]
+                cta_button_text = ab_test( 'sibt_button_text6', 
+                                            ab_test_options, 
+                                            user = user,
+                                            app  = app )
+        else:
+            cta_button_text = "ADMIN: Unsure? Ask your friends!"
+
+       
+        # Finally, render the JS!
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        if jsonp: # JSONP
+            self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+            self.response.out.write ('var AB_CTA_text = "%s";' % cta_button_text)
+        else: # JSON
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write ('{ "AB_CTA_text": "%s" }' % cta_button_text)
         return
 
 class SIBTShopifyProductDetection(webapp.RequestHandler):
