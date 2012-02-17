@@ -17,7 +17,7 @@ PROTOCOL            = 'http'
 SECURE_PROTOCOL     = 'https'
 APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
-URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
+URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
@@ -56,6 +56,15 @@ SHOPIFY_APPS = {
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
         'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
         'class_name': 'SIBTShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        }
+    }, 'WOSIBShopify': {
+        # repeat keys in SIBT
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'WOSIBShopify',
         'facebook': {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
@@ -134,15 +143,17 @@ INSTALLED_APPS = [
     'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'wosib',
+    'wosib.shopify',
     'user',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
 

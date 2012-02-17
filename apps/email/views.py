@@ -61,4 +61,3 @@ class SendEmailInvites( webapp.RequestHandler ):
                 Email.invite( infrom_addr=from_addr, to_addrs=to_addrs, msg=msg, url=url, app=link.app_)
 
         return
-

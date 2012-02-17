@@ -25,7 +25,13 @@ class ProductShopify(Product):
 
     # The type of product
     type = db.StringProperty( indexed = False )
-
+    
+    # Array of IDs of the variants of the product
+    # (get from shopify API: /admin/products.json)
+    # Do NOT change to any number-based data type. This is an UNKNOWN indexing 
+    # issue with non-string lists.
+    variants = db.StringListProperty(indexed = True)
+    
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
 
@@ -38,13 +44,30 @@ class ProductShopify(Product):
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
         if product == None:
             uuid = generate_uuid( 16 )
+
+            variants = []
+            if 'variants' in data:
+                # if one or more variants exist, store their IDs. 
+                # otherwise, store an empty list.
+                logging.debug ('%d variants for this product found; adding to \
+                    ProductShopify object.' % len(data['variants']))
+                variants = [str(variant['id']) for variant in data['variants']]
+            logging.info ('variants = %s' % variants)
+
+            images = []
+            if 'images' in data:
+                logging.debug ('%d images for this product found; adding to \
+                    ProductShopify object.' % len(data['images']))
+                images = [str(image['src']) for image in data['images']]
             
             # Make the product
             product = ProductShopify(
                     key_name     = uuid,
                     uuid         = uuid,
                     client       = client,
-                    resource_url = url
+                    resource_url = url,
+                    images       = images,
+                    variants     = variants
             )
 
         # Now, update it with info.
@@ -91,7 +114,7 @@ class ProductShopify(Product):
                 if product:
                     product.add_url(url)
                 else:
-                    logging.warn('failed to get product for id: %s' % str(data['id']))
+                    logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
             except:
                 logging.error("error fetching and storing product for url %s" % url, exc_info=True)

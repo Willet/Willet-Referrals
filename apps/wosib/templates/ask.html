@@ -1,0 +1,348 @@
+{% extends "../../plugin/templates/ask.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+{% endblock styles %}
+
+
+
+{% block screens %}
+<!---------------------------- Splash Screen ------------------------------>
+
+    <div id="splash">
+        <div class="title_bar">
+            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+            <div>Not sure which one you should buy?</div>
+        </div>
+        <form method="POST" action="" style="margin-top:10px">
+            <div class="step" style="margin-left:100px">1. Select items to ask.</div>
+            <div id="cart_items_display_container">
+                <ul id="cart_items_display">
+                    <!-- JS -->
+                </ul>
+            </div>
+        </form>
+        <div class="options">
+            <div class="restrictedWidth">
+                <div class="step">2. Add a message:</div>
+                <!-- textarea id="fbComment" name="fbComment">{{ product_desc|striptags }}</textarea -->
+                <textarea id="fbComment" name="fbComment">Hello! Which one should I buy?</textarea>
+                <br />
+                <div class="option left">
+                    <div class="button" id="postWosibOnWall" title="Post to your wall">
+                        <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                        <div class="title">Ask Friends</div>
+                        <div class="subtitle">Post to Facebook</div>
+                    </div>
+                </div>
+                <div class="or">or</div>
+                <div class="option right">
+                    <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                        <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        <div class="title">Choose Friends...</div>
+                        <div class="subtitle">Get trusted advice</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock screens %}
+
+
+
+{% block js_globals %}
+{% endblock js_globals %}
+
+
+
+{% block ajax_methods %}
+    var storeAnalytics = function( evnt ) {
+        var payload = { what          : evnt,
+                        instance_uuid : '',
+                        app_uuid      : '{{ app_uuid }}',
+                        user_uuid     : '{{ user_uuid }}',
+                        target_url    : '{{ target_url }}'
+                      };
+        $.ajax({
+            url      : "{{ URL }}{% url TrackWOSIBUserAction %}",
+            dataType : 'json',
+            data     : payload,
+            type     : 'post',
+            success  : function (response) {
+                return;
+            }
+        });
+    };
+    
+    var updateServerUser = function( accessToken, userId ) {
+        var payload = { user_uuid   : "{{user_uuid}}",
+                    accessToken : accessToken,
+                    fbUserId    : userId 
+                  };
+        $.ajax({
+            url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                return;
+            }
+        });
+
+        fbAccessToken = accessToken;
+        fbIdentity    = userId;
+    };
+
+    var startPartialInstance = function() {
+        if (get_selected_objects ()) {
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_wosib_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    var startFullInstance = function() {
+        if (get_selected_objects ()) {        
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartWOSIBInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_wosib_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    // Sends information to server to ask friends & handles response
+    var sendMessages = function() {
+        var payload, friend_info, asker_info,
+            msg   = $("#fbComment").val(),
+            error = false;
+
+        // Gather up friend info, recording if a friend has an error
+        friend_info = getFriendsInfo(); // either null or [...]
+
+        // Gather asker info
+        asker_info = asker.getAskerInfo(); // either null or [...]
+
+        if (friend_info && friend_info.length > 0 && asker_info && asker_info.length > 1) {
+            // Clean up UI to show loader gif
+            showScreen('asking');
+
+            // No errors with friends, submit!
+            var payload = {
+                user_name       : "{{user_name}}",
+                user_uuid       : "{{user_uuid}}",
+                app_uuid        : "{{app_uuid}}",
+                product_uuid    : "{{product_uuid}}",
+                fb_access_token : fbAccessToken,
+                fb_id           : fbIdentity,
+                friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                asker           : JSON.stringify(asker_info),
+                products        : get_selected_objects (),
+                msg             : msg,
+                default_msg     : "{{AB_share_text|escape}}",
+                willt_code      : "{{willt_code}}"
+            };
+
+            $.ajax({
+                url      : "{{ URL }}{% url SendWOSIBFriendAsks %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                statusCode : {
+                    200: function () {
+                        // Success
+                        showScreen('success');
+                    },
+                    400: function (resp, status) {
+                        // Bad Request
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("400 "+resp.data.message);
+                        }
+                        showScreen('failure');
+                        
+                    },
+                    401: function (resp, status) {
+                        // Unauthorized
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("401 "+resp.data.message);
+                        }
+                        showScreen('failure');
+                        
+                    },
+                    500: function () {
+                        // Internal server error
+                        showScreen('failure');
+                    }
+                }
+            });
+        }
+    };
+
+    var updateEmailAddress = function() {
+        var addr = document.getElementById( 'email-field' ).value;
+            
+        $.ajax({
+            url: "/updateEmailAddress",
+            type: 'post',
+            data: { email : addr },
+            success: function (tr) {
+                doPostMessage('close');
+                window.close();
+            }
+        });
+    };
+
+{% endblock ajax_methods %}
+
+
+
+{% block js_functions %}
+    // Open up the FB dialog. Does not do a FB connect with us.
+    var postWosibOnWall = function () {
+        try { // detect adblock
+            if (!startPartialInstance ()) {
+                
+            } else {
+                FB.ui({ method:  "feed",
+                        display: "popup",
+                        link:    "{{share_url}}",
+                        picture: "{{images|first}}",
+                        name:    "{{title|escape}}",
+                        caption: "{{store_domain}}",
+                        description: $('#fbComment').val(),
+                        redirect_uri: "{{fb_redirect}}" });
+            }
+        } catch (e) {
+            alert ('Oops... AdBlock is probably blocking facebook!');
+        }
+        closeIframe( 'WOSIBNoConnectFBDialog' );
+    };
+
+    var get_selected_objects = function () {
+        // returns a comma-separated string of product uuids "id,id,id"
+        var uuids = [];
+        $('#cart_items_display input').each (function (i, e) {
+            var $e = $(e);
+            // if ($e.checked) {
+            if (e.checked) {
+                uuids.push ($e.data('uuid'));
+            }
+        });
+        return uuids.join(',');
+    }
+
+    // Connect with FB and fetch FB friends, on Choose Friends screen
+    var runFBConnect = function () {
+        storeAnalytics('WOSIBConnectFBDialog');
+
+        FB.login( function(response) {
+            var authResp = response.authResponse;
+
+            if (!authResp) {
+                // We weren't given permission, do nothing
+                return;
+            } else { 
+                storeAnalytics('WOSIBFBConnected');
+
+                // Store FB data in the server.
+                updateServerUser(authResp.accessToken, authResp.userID);
+                fetchFBFriends();
+            }
+        }, {scope: 'publish_stream,offline_access,user_about_me,email'});
+    };
+    
+    // Query FB api to grab logged-in user's friends
+    var fetchFBFriends = function () {
+        FB.api( '/me/friends', function (response) {
+            fb_friends = response.data;
+            fb_friends.sort();
+
+            $.each( response.data, function (i) {
+                friendNames.push(fb_friends[i].name); 
+            });
+
+            // Code here changes all FB Connect options into FB Friend Select options
+            var i = friends.length;
+            while ( i-- ) {
+                friends[i].FBLoggedIn();
+            }
+       });
+    };
+{% endblock js_functions %}
+
+
+
+{% block js_init %}
+    $(document).ready (function () {
+        /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 variants;
+            if there are 0 variants, this script is not loaded at all.
+        */
+        var _willet_cart_variants = [ {% for variant in variants %}
+            {   "id": "{{variant.id}}",
+                "title": "{{variant.title}}",
+                "image": "{{variant.image}}", // deprecated... try /cart.js.
+                "variant_id": "{{variant.variant_id}}",
+                "product_uuid": "{{variant.product_uuid}}",
+            },
+        {% endfor %} ];
+        
+        var x = null;
+        for (x in _willet_cart_variants) {
+            // add products onto page.
+            $('#cart_items_display').append(
+                '<li>' + 
+                    '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
+                    '<label>' +
+                        '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                               'data-uuid="' + _willet_cart_variants[x].product_uuid + '" ' + 
+                               'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
+                               'class="variant_select" type="checkbox" checked="checked" />' +
+                        _willet_cart_variants[x].title + 
+                    '</label>' + 
+                '</li>'
+            );
+        }
+        
+        // adjust box width; 182px is the empirically "nice" width for the items
+        $('#cart_items_display').width(182 * _willet_cart_variants.length);
+        
+        // add product selection events onto checkbox.
+        $('#cart_items_display li').each (function () {
+            $(this).bind('click', function () {
+                var checkbox = $(this).find('input')[0];
+                checkbox.checked = !checkbox.checked;
+                // $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
+                $(this).css('background-color', checkbox.checked ? '#def' : 'transparent')
+                       .css('border', checkbox.checked ? '1px #6ae solid' : '1px transparent solid')
+                       .css('box-shadow', checkbox.checked ? 'inset 0 0 3px 3px #bcf' : 'none');
+            });
+        });
+        
+        $('#postWosibOnWall').click (postWosibOnWall);
+    });
+    showScreen('splash');
+{% endblock js_init %}

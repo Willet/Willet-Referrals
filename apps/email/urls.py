@@ -9,4 +9,5 @@ urlpatterns = [
 
     # Processes
     (r'/email/sendEmailInvites', SendEmailInvites),
+
 ]

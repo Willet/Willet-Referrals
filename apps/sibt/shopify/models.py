@@ -149,7 +149,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def memcache_by_store_url(self):
         return memcache.set(
-                self.store_url, 
+                self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
     def reset_css(self):
