@@ -433,6 +433,7 @@ ul.friends li>div, ul.askers li>div {
 }
 .email_asker input {
     width: 180px;
+    margin: 0;
 }
 .email_asker label {
     width: 80px;
