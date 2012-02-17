@@ -105,7 +105,7 @@
             a.href = "http://pinterest.com/pin/create/button/?" +
                     "url=" + encodeURIComponent( window.location.href ) + 
                     "&media=" + encodeURIComponent( photo ) + 
-                    "&description=" + "Found on " + domain + "!";
+                    "&description=" + encodeURIComponent("I found this on " + domain);
             a.className = 'pin-it-button';
             a.setAttribute('count-layout', "horizontal");
             a.innerHTML = "Pin It";
