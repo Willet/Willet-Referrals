@@ -10,5 +10,6 @@ urlpatterns = [
     (r'/s/shopify/finished',    	ShowFinishedPage),
     (r'/s/shopify/sibt.js',     	SIBTShopifyProductDetection),
     (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),
+    # (r'/s/shopify/real-sibt.js',    SIBTQuickLoader),
 ]
 
