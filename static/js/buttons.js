@@ -3,14 +3,14 @@
  */
 (function () {
     var here = window.location + '.json';
-    var console = //{ log: function () {}, error: function () {} };
-        ( typeof(window.console) === 'object' 
-         && ( ( typeof(window.console.log) === 'function' 
-            && typeof(window.console.error) ==='function' )
-         || (typeof(window.console.log) === 'object' // IE 
-         && typeof(window.console.error) ==='object') ) )
-         ? window.console 
-        : { log: function () {}, error: function () {} }; // debugging
+    var console = { log: function () {}, error: function () {} };
+        //( typeof(window.console) === 'object' 
+        // && ( ( typeof(window.console.log) === 'function' 
+        //    && typeof(window.console.error) ==='function' )
+        // || (typeof(window.console.log) === 'object' // IE 
+        // && typeof(window.console.error) ==='object') ) )
+        // ? window.console 
+        //: { log: function () {}, error: function () {} }; // debugging
     
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
