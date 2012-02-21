@@ -148,7 +148,7 @@ class Email():
                          body=              body )
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, message, product_img, client_name, client_domain ):
+    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
@@ -158,16 +158,17 @@ class Email():
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
                 'vote_url'      : vote_url,
-                'message'       : message,
                 'product_img'   : product_img,
-                'product_title' : product_title,
                 'client_name'   : client_name,
                 'client_domain' : client_domain 
             }
         )
         
         logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address= from_addr,
+                         to_address= to_addr,
+                         subject= subject,
+                         body= body )
 
     @staticmethod
     def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):

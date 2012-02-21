@@ -5,8 +5,10 @@
     var here = window.location + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
-        // && typeof(window.console.log) === 'function' 
-        // && typeof(window.console.error) ==='function' ) 
+        // && ( ( typeof(window.console.log) === 'function' 
+        //    && typeof(window.console.error) ==='function' )
+        // || (typeof(window.console.log) === 'object' // IE 
+        // && typeof(window.console.error) ==='object') ) )
         // ? window.console 
         //: { log: function () {}, error: function () {} }; // debugging
     
@@ -37,7 +39,6 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
-
     var _init_buttons = function(data) {
         /* data is product json 
          */
@@ -50,112 +51,189 @@
         if (button_div && window._willet_iframe_loaded == undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
 
+            // Get options from tag
+            var i, j,
+                head = document.getElementsByTagName('head')[0],
+                domain = /:\/\/([^\/]+)/.exec(window.location.href)[1],
+                button_count = (button_div.getAttribute('button_count') === 'true'),
+                button_spacing = (button_div.getAttribute('button_spacing') ?  button_div.getAttribute('button_spacing') : '5') + 'px',
+                button_padding = (button_div.getAttribute('button_padding') ? button_div.getAttribute('button_padding') : '5') + 'px';
+
             button_div.style.styleFloat = 'left'; // IE
             button_div.style.cssFloat = 'left'; // FF, Webkit
-            button_div.style.width = '240px';
+            button_div.style.minWidth = '240px';
             button_div.style.height = '30px';
-            button_div.style.padding = '5px';
+            button_div.style.padding = button_padding;
+            button_div.style.border = 'none';
+            button_div.style.margin = '0';
 
-            window._willet_iframe_loaded = "teh fb_iframe haz been loaded";
-            var domain = /:\/\/([^\/]+)/.exec(window.location.href)[1];
+            var protocol = 'http:'; // For local testing
 
+            var createButton = function () {
+                var d = document.createElement('div');
+                d.style.styleFloat = 'left'; // IE
+                d.style.cssFloat = 'left'; // FF, Webkit
+                d.style.marginTop = '0';
+                d.style.marginLeft = '0';
+                d.style.marginBottom = '0';
+                d.style.marginRight = button_spacing;
+                d.style.paddingTop = '0';
+                d.style.paddingBottom = '0';
+                d.style.paddingLeft = '0';
+                d.style.paddingRight = '0';
+                d.style.border = 'none';
+                d.style.display = 'block';
+                d.style.visibility = 'visible';
+                d.style.height = '21px';
+                d.style.position = 'relative';
+                d.style.overflow = 'hidden';
+                d.name = 'button';
+                return d;
+            }
+
+            // Supported buttons
+            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter'];
+            var buttons = {
+                Tumblr: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = '62px';
+                        
+                        var a = document.createElement( 'a' );
+                        a.href = 'http://www.tumblr.com/share';
+                        a.title = "Share on Tumblr";
+                        a.style.display = 'inline-block';
+                        a.style.textIndent = '-9999px';
+                        a.style.textAlign = 'left';
+                        a.style.width = '63px';
+                        a.style.height = '20px';
+                        a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
+                        a.style.styleFloat = 'left'; // IE
+                        a.style.cssFloat = 'left'; // FF, Webkit
+                        a.style.marginRight = '5px';
+                        a.style.marginTop = '0';
+                        a.innerHTML = "Share on Tumblr";
+                        d.appendChild( a );
+                        return d;
+                    },
+                    script: protocol+'//platform.tumblr.com/v1/share.js'
+                },
+                Pinterest: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = button_count ? '77px' : '43px';
+
+                        var a = document.createElement( 'a' );
+                        a.href = "http://pinterest.com/pin/create/button/?" +
+                                "url=" + encodeURIComponent( window.location.href ) + 
+                                "&media=" + encodeURIComponent( photo ) + 
+                                "&description=" + encodeURIComponent("I found this on " + domain);
+                        a.className = 'pin-it-button';
+                        a.setAttribute('count-layout', "horizontal");
+                        a.innerHTML = "Pin It";
+                        d.appendChild( a );
+                        return d;
+                    },
+                    script: protocol+'//assets.pinterest.com/js/pinit.js'
+                },
+                Fancy: {
+                    create: function () {
+                        var d = createButton(0);
+                        d.style.width = button_count ? '96px' : '57px';
+
+                        var a = document.createElement( 'a' );
+                        var u = "http://www.thefancy.com/fancyit?" +
+                                "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                                "&Title="  + encodeURIComponent( data.product.title ) +
+                                "&Category=Other";
+                        if ( photo.length > 0 ) {
+                            u += "&ImageURL=" + encodeURIComponent( photo );
+                        } else { // If no image on page, submit blank image.
+                            u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
+                        }
+
+                        a.href = u;
+                        a.id = 'FancyButton';
+                        a.setAttribute('data-count', ( button_count ? 'true' : 'false' ));
+                        d.appendChild( a );
+                        return d;
+                    },
+                    script: protocol+'//www.thefancy.com/fancyit.js'
+                },
+                Facebook: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = button_count ? '90px' : '48px';
+                        d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                        return d;
+                    },
+                    script: protocol+'//connect.facebook.net/en_US/all.js#xfbml=1'
+                },
+                Twitter: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = button_count ? '98px' : '56px';
+
+                        var a = document.createElement('a');
+                        a.href = 'https://twitter.com/share';
+                        a.className = 'twitter-share-button';
+                        a.setAttribute('data-lang','en');
+                        a.setAttribute('data-count', ( button_count ? 'horizontal' : 'none' ));
+                        d.appendChild(a);
+                        return d;
+                    },
+                    script: protocol+'//platform.twitter.com/widgets.js'
+                }
+            };
+            
             // Grab the photo
             var photo = '';
             if ( data.product.images[0] != null ) {
                 photo = data.product.images[0].src;
             }
-
-            // Tumblr
-            var d = document.createElement( 'div' );
-            d.style.styleFloat = 'left'; // IE
-            d.style.cssFloat = 'left'; // FF, Webkit
-            d.style.marginRight = '5px';
-            d.style.width = '62px';
             
-            var a = document.createElement( 'a' );
-            a.href = 'http://www.tumblr.com/share';
-            a.title = "Share on Tumblr";
-            a.style.display = 'inline-block';
-            a.style.textIndent = '-9999px';
-            a.style.textAlign = 'left';
-            a.style.overflow = 'hidden';
-            a.style.width = '63px';
-            a.style.height = '20px';
-            a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
-            a.style.styleFloat = 'left'; // IE
-            a.style.cssFloat = 'left'; // FF, Webkit
-            a.style.marginRight = '5px';
-            a.style.marginTop = '3px';
-            a.innerHTML = "Share on Tumblr";
-            d.appendChild( a );
-            button_div.appendChild( d );
-
-            console.log('Buttons: Tumblr attached');
-
-            // Pinterest
-            d = document.createElement( 'div' );
-            d.style.styleFloat = 'left'; // IE
-            d.style.cssFloat = 'left'; // FF, Webkit
-            d.style.marginRight = '5px';
-            d.style.marginTop = '3px';
-            d.style.overflow = 'hidden'; 
-            d.style.width = '43px';
-
-            a = document.createElement( 'a' );
-            a.href = "http://pinterest.com/pin/create/button/?" +
-                    "url=" + encodeURIComponent( window.location.href ) + 
-                    "&media=" + encodeURIComponent( photo ) + 
-                    "&description=" + "Found on " + domain + "!";
-            a.className = 'pin-it-button';
-            a.setAttribute('count-layout', "horizontal");
-            a.innerHTML = "Pin It";
-            d.appendChild( a );
-            button_div.appendChild( d );
-            
-            console.log("Buttons: Pinterest attached");
-
-            // The Fancy Button
-            d = document.createElement( 'div' );
-            d.style.styleFloat = 'left'; // IE
-            d.style.cssFloat = 'left'; // FF, Webkit
-            d.style.marginTop = '3px';
-
-            a = document.createElement( 'a' );
-            var u = "http://www.thefancy.com/fancyit?" +
-                    "ItemURL=" + encodeURIComponent( window.location.href ) + 
-                    "&Title="  + encodeURIComponent( data.product.title ) +
-                    "&Category=Other";
-            if ( photo.length > 0 ) {
-                u += "&ImageURL=" + encodeURIComponent( photo );
-            } else { // If no image on page, submit blank image.
-                u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
+            // Get the buttons, should be children of #_willet_buttons_app
+            //      ex: <div>Facebook</div>
+            var req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+            if (button_div.childNodes.length > 0) {
+                // Search for supported buttons
+                i = button_div.childNodes.length;
+                req_buttons = [];
+                while (i--) {
+                    if (button_div.childNodes[i].nodeType === 1) {
+                        j = button_div.childNodes[i].innerHTML;
+                        for (var k in supported_buttons) {
+                            if (supported_buttons[k] === j) {
+                                req_buttons.push(j);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Now remove all children of #_willet_buttons_app
+                i = button_div.childNodes.length;
+                while (i--) {
+                    button_div.removeChild( button_div.childNodes[i]);
+                }
             }
 
-            a.href = u;
-            a.id = 'FancyButton';
-            d.appendChild( a );
-            button_div.appendChild( d );
-
-            console.log('Buttons: Fancy attached.');
-            console.log('Buttons: appending button scripts');
+            var b, t, j = req_buttons.length;
             
-            var head = document.getElementsByTagName('head')[0];
-            var tmp  = document.createElement( 'script' );
-            tmp.type = 'text/javascript';
-            tmp.src = 'http://assets.pinterest.com/js/pinit.js';
-            head.appendChild( tmp );
-            
-            tmp = document.createElement( 'script' );
-            tmp.type = 'text/javascript';
-            tmp.src = 'http://platform.tumblr.com/v1/share.js';
-            head.appendChild( tmp );
+            // Create buttons & add activating scripts!
+            while (j--) {
+                b = req_buttons[j];
+                button_div.appendChild( buttons[b].create() );
+                t  = document.createElement( 'script' );
+                t.type = 'text/javascript';
+                t.src = buttons[b].script;
+                head.appendChild(t);
+                console.log('Buttons: '+ b +' attached');
+            }
 
-            tmp = document.createElement( 'script' );
-            tmp.type = 'text/javascript';
-            tmp.src = 'http://www.thefancy.com/fancyit.js';
-            head.appendChild( tmp );
+            // Make visible if hidden
+            button_div.style.display = 'block';
 
-            console.log('Buttons: scripts attached. Done!');
+            console.log('Buttons: Done!');
         } else {
             console.log('Buttons: could not find buttons placeholder on page');
         }
@@ -196,4 +274,19 @@
             console.log("Buttons: "+e);
         }
     })();
+    /*(function() { // for local testing
+        _init_buttons({
+            product: {
+                images: [
+                    { created_at: "2012-02-03T11:42:17+09:00",
+                    id: 166600132,
+                    position: 1,
+                    product_id: 81809292,
+                    updated_at: "2012-02-03T11:42:17+09:00",
+                    src:'/static/imgs/beer_200.png' }
+                ]
+            },
+            title: "Glass of beer"
+        });
+    })();*/
 })();
