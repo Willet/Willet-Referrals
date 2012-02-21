@@ -327,7 +327,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'product_desc'   : product.description if product else "",
           
             'user': user,
-            'stylesheet': 'css/colorbox.css',
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
 
             'evnt' : event,
             
