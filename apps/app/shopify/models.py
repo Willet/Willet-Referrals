@@ -52,7 +52,27 @@ class AppShopify(Model):
             )
 
     # Shopify API Calls ------------------------------------------------------------
-    def install_webhooks(self, product_hooks_too=True, webhooks=None):
+    def setup_recurring_billing( self, settings ):
+        """ Setup store with a recurring blling charge for htis app."""
+        
+        url      = '%s/admin/recurring_application_charges.json' % self.store_url
+        username = self.settings['api_key'] 
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
+        # First fetch webhooks that already exist
+        resp, content = h.request(
+                url,
+                "POST",
+                body    = json.dumps(settings),
+                headers = header
+            )
+
+    def install_webhooks(self, webhooks=None):
         """ Install the webhooks into the Shopify store """
         # pass extra webhooks as a list
         if webhooks == None:
