@@ -260,7 +260,7 @@ class SIBTShopify(SIBT, AppShopify):
                 try:
                     app.store_token = token
                     logging.debug ("app.old_client was %s" % app.old_client)
-                    app.client      = app.old_client
+                    app.client      = app.old_client if app.old_client else client
                     app.old_client  = None
                     app.put()
 

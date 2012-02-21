@@ -680,12 +680,14 @@ class SendFriendAsks( URIHandler ):
             if not response['data']['warnings']:
                 del response['data']['warnings']
             
+            iuid = instance.uuid if instance else None
+
             logging.info('Asker: %s\n \
                 Friends: %s\n \
                 Successful shares on FB: %d\n \
                 Successful shares via email: %d\n \
                 Message: %s\n \
-                Instance: %s' % (asker, friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+                Instance: %s' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
             
             Email.emailDevTeam('<p>SIBT Share!\n</p> \
                 <p>Asker: %s\n</p> \
@@ -693,7 +695,7 @@ class SendFriendAsks( URIHandler ):
                 <p>Successful shares on FB: %d</p> \
                 <p>Successful shares via email: %d</p> \
                 <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (asker, friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+                <p>Instance: %s</p>' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
         
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

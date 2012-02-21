@@ -82,6 +82,7 @@ class SIBTShopifyWelcome(URIHandler):
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
         except:
+            ### This should redirect to an error page
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
