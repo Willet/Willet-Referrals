@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<style>
-			/*.willet_button {
+			/*#_willet_shouldIBuyThisButton {
 				width: 278px;
 				height: 88px;
 				border: 1px solid #BBB;
@@ -11,7 +11,7 @@
 				padding: 0;
 				margin: 0;
 			}
-			.willet_button p {
+			#_willet_shouldIBuyThisButton p {
 				text-align: center;
 				margin: 10px;
 				padding: 0;
@@ -19,7 +19,7 @@
 				font-size: 14px;
 				line-height: 20px;
 			}
-			.willet_button>.button {
+			#_willet_shouldIBuyThisButton>.button {
 			    height: 25px;
 			    padding: 4px 2px;
 			    margin: 8px 15px;
@@ -40,7 +40,7 @@
 			    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
 			    behavior: url(/static/js/PIE.htc);
 			}
-			.willet_button>.button:hover {
+			#_willet_shouldIBuyThisButton>.button:hover {
 			    cursor: pointer;
 			    cursor: hand;
 			    -moz-box-shadow: 0 0 4px 1px #BBB;
@@ -48,37 +48,37 @@
 			    box-shadow: 0 0 4px 1px #BBB;
 			    behavior: url(/static/js/PIE.htc);
 			}
-			.willet_button>.button>img {
+			#_willet_shouldIBuyThisButton>.button>img {
 			    float: left;
 			    margin: 0 0 0 8px;
 			    padding: 0;
 			    width: 25px;
 			    height: 25px;
 			}
-			.willet_button>.button>.title {
+			#_willet_shouldIBuyThisButton>.button>.title {
 				margin-left: 30px;
 				padding: 1px 0 0 0;
 				font-size: 16px;
 				line-height: 24px;
 				text-shadow: 1px 1px 1px #EEE;
 			}
-			.willet_button.horizontal {
+			#_willet_shouldIBuyThisButton.horizontal {
 				width: 400px;
 				height: 51px;
 				border: none;
 			}
-			.willet_button.horizontal>div {
+			#_willet_shouldIBuyThisButton.horizontal>div {
 				float: left;
 			}
-			.willet_button.horizontal>div.text {
+			#_willet_shouldIBuyThisButton.horizontal>div.text {
 				padding: 3px 0 0 0;
 				line-height: 48px;
 				font-size: 16px;
 			}
-			.willet_button.horizontal>div.button {
+			#_willet_shouldIBuyThisButton.horizontal>div.button {
 				width: 218px;
 			}*/
-			.willet_button {
+			#_willet_shouldIBuyThisButton {
 				width: 278px;
 				height: 88px;
 				border: 1px solid #BBB;
@@ -88,7 +88,7 @@
 				padding: 0;
 				margin: 0;
 			}
-			.willet_button p {
+			#_willet_shouldIBuyThisButton p {
 				text-align: center;
 				margin: 10px;
 				padding: 0;
@@ -96,7 +96,7 @@
 				font-size: 14px;
 				line-height: 20px;
 			}
-			.willet_button>.button {
+			#_willet_shouldIBuyThisButton>.button {
 			    height: 25px;
 			    padding: 4px 2px;
 			    margin: 8px 15px;
@@ -108,7 +108,7 @@
 			    box-shadow: 0 1px 0 #BBB;
 			    behavior: url(/static/js/PIE.htc);
 			}
-			.willet_button>.button:hover {
+			#_willet_shouldIBuyThisButton>.button:hover {
 			    cursor: pointer;
 			    cursor: hand;
 			    -moz-box-shadow: 0 0 4px 1px #BBB;
@@ -116,43 +116,26 @@
 			    box-shadow: 0 0 4px 1px #BBB;
 			    behavior: url(/static/js/PIE.htc);
 			}
-			.willet_button>.button>img {
+			#_willet_shouldIBuyThisButton>.button>img {
 			    float: left;
 			    margin: 0 0 0 8px;
 			    padding: 0;
 			    width: 25px;
 			    height: 25px;
 			}
-			.willet_button>.button>.title {
+			#_willet_shouldIBuyThisButton>.button>.title {
 				margin-left: 30px;
 				padding: 1px 0 0 0;
 				font-size: 16px;
 				line-height: 24px;
 				text-shadow: 1px 1px 1px #EEE;
 			}
-			.willet_button.horizontal {
-				width: 400px;
-				height: 51px;
-				border: none;
-			}
-			.willet_button.horizontal>div {
-				float: left;
-			}
-			.willet_button.horizontal>div.text {
-				/*font-family: Arial, Helvetica, sans-serif;*/
-				padding: 3px 0 0 0;
-				line-height: 48px;
-				font-size: 16px;
-			}
-			.willet_button.horizontal>div.button {
-				width: 218px;
-			}
 		</style>
 
 
 	</head>
 	<body>
-		<div class="willet_button vertical">
+		<div id="_willet_shouldIBuyThisButton">
 			<p>Should you buy this? Can't decide?</p>
 			<div class="button">
 				<img src="../imgs/logo_button_25x25.png" alt="logo" />

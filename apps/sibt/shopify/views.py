@@ -255,7 +255,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
-                    asker_name = 'I' # what?
+                    asker_name = 'I' # "should asker_name buy this?"
             except:
                 logging.warn('error splitting the asker name')
 
@@ -342,6 +342,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
+
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))

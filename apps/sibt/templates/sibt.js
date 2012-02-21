@@ -4,7 +4,7 @@
 
 // http://blog.fedecarg.com/2011/07/12/javascript-asynchronous-script-loading-and-lazy-loading/
 // $L ([js files], function () { after_code });
-$L=function(a,b){for(var c=a.length,d=c,e=function(){if(!(this.readyState&&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=this.onreadystatechange=null;--d||b()}},f=document.getElementsByTagName("head")[0],g=function(a){var b=document.createElement("script");b.async=true;b.src=a;b.onload=b.onreadystatechange=e;f.appendChild(b)};c;)g(a[--c])}
+var $L=function(a,b){b = b||function(){};for(var c=a.length,d=c,e=function(){if(!(this.readyState&&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=this.onreadystatechange=null;--d||b()}},f=document.getElementsByTagName("head")[0],g=function(a){var b=document.createElement("script");b.async=true;b.src=a;b.onload=b.onreadystatechange=e;f.appendChild(b)};c;)g(a[--c])}
 
 // Fun Safari cookie hack ... wooooo
 var firstTimeSession = 0;
@@ -413,8 +413,8 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
             });
         };
 
-        var purchase_cta = $('#_willet_shouldIBuyThisButton');
-        if (purchase_cta.length > 0) { // is the div there?
+        var button = $('#_willet_shouldIBuyThisButton');
+        if (button.length > 0) { // is the div there?
              // actually running it
             _willet_store_analytics();
 
@@ -451,9 +451,12 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     _willet_show_topbar();
                 }
             } else {
-                var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-                var button = document.createElement('a');
-                var button_html = '';
+                button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+			                    "<a class='button' " +
+			                        "title='Ask your friends if you should buy this!'>" +
+				                    "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+				                    "<span class='title'>Ask Trusted Friends</span>" +
+			                    "</a>");
 
                 // check if we are showing top bar ask too
                 if (show_top_bar_ask) {
@@ -476,19 +479,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                         button_html = AB_CTA_text;
                     }
 
-                    button = $(button)
-                        .html(button_html)
-                        // .css('display', 'none')
-                        .css('display', 'inline-block')
-                        .attr('title', 'Ask your friends if you should buy this!')
-                        .attr('id','_willet_button')
-                        .attr('class','_willet_button willet_reset')
-                        .click(_willet_button_onclick);
-                
-                    $(purchase_cta).append(button);
-                    /* button.fadeIn(250, function() {
-                        $(this).css('display', 'inline-block'); 
-                    });*/
+                    button.click(_willet_button_onclick);
                 }
                 
                 // watch for message
