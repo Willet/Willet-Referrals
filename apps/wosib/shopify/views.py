@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 import datetime
 import random
 
+from datetime                         import datetime, timedelta
 from django.utils                     import simplejson as json
 from google.appengine.api             import taskqueue
 from google.appengine.api             import memcache
@@ -119,6 +120,14 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
         
+        # determine whether to show the button thingy.
+        # code below makes button show only if vote was started less than 1 day ago.
+        has_results = False
+        if votes_count:
+            time_diff = datetime.now() - instance.created
+            if time_diff <= timedelta(days=1):
+                has_results = True
+        
         # Grab all template values
         template_values = {
             'URL'            : URL,
@@ -133,7 +142,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'evnt'           : event,
             'cta_button_text': cta_button_text,
             # this thing tells client JS if the user had created an instance
-            'has_results'    : 'true' if votes_count else 'false',
+            'has_results'    : 'true' if has_results else 'false',
         }
 
         path = os.path.join('apps/wosib/templates/', 'wosib_button.js')

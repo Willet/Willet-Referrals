@@ -164,10 +164,10 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     'id': '_willet_button_v3'
                 });
                 button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-		                     "<div class='button' " +
+		                     "<div id='_willet_button' class='button' " +
 		                         "title='Ask your friends if you should buy this!'>" +
 			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-			                     "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+			                     "<div class='title'>Ask Trusted Friends</div>" +
 		                     "</div>");
 		                     
             button.appendTo (purchase_cta).css('display', 'inline-block');
@@ -181,6 +181,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
             // if server sends a flag that indicates "results available"
             // (not necessarily "finished") then show finished button
             if (srv_data.has_results) {
+                $('#_willet_button').hide ();
                 $('<div />', {
                     'id': "_willet_WOSIB_results",
                     'class': "button",
