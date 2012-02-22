@@ -1,3 +1,72 @@
+#_willet_button_v3 {
+	width: 278px;
+	height: 88px;
+	border: 1px solid #BBB;
+	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+	color: #383f41;
+	background: white;
+	padding: 0;
+	margin: 0;
+}
+#_willet_button_v3 p {
+	text-align: center;
+	margin: 10px;
+	padding: 0;
+	margin: 12px 0 8px 0;
+	font-size: 14px;
+	line-height: 20px;
+}
+#_willet_button_v3>.button {
+    height: 25px;
+    padding: 4px 2px;
+    margin: 8px 15px;
+    width: 219px;
+    background-color: #C1F0F5;
+    text-align: center;
+    border-radius: 4px;
+    background-image: -webkit-linear-gradient(top, #C9F7FA, #A1F0F5);
+    box-shadow: 0 1px 0 #BBB;
+    behavior: url('/static/js/PIE.htc');
+}
+#_willet_button_v3>.button:hover {
+    cursor: pointer;
+    cursor: hand;
+    -moz-box-shadow: 0 0 4px 1px #BBB;
+    -webkit-box-shadow: 0 0 4px 1px #BBB;
+    box-shadow: 0 0 4px 1px #BBB;
+    behavior: url('/static/js/PIE.htc');
+}
+#_willet_button_v3>.button>img {
+    float: left;
+    margin: 0 0 0 8px;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+}
+#_willet_button_v3>.button>.title {
+	margin-left: 30px;
+	padding: 1px 0 0 0;
+	font-size: 16px;
+	line-height: 24px;
+	text-shadow: 1px 1px 1px #EEE;
+}
+#_willet_button_v3.horizontal {
+	width: 400px;
+	height: 51px;
+	border: none;
+}
+#_willet_button_v3.horizontal>div {
+	float: left;
+}
+#_willet_button_v3.horizontal>div.text {
+	padding: 3px 0 0 0;
+	line-height: 48px;
+	font-size: 16px;
+}
+#_willet_button_v3.horizontal>div.button {
+	width: 218px;
+}
+
 ._willet_button {
     min-width: 202px !important; 
     max-width: {{ willet_button.width }}px !important; 

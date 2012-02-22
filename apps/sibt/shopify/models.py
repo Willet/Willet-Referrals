@@ -39,6 +39,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Version 2 = [Nov. 23, 2011, Present]
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
+    # version 3: "sweet buttons upgrade"
     version    = db.StringProperty(default='2', indexed=False)
     
     defaults = {
@@ -95,27 +96,106 @@ class SIBTShopify(SIBT, AppShopify):
     
     def do_install(self):
         """Installs this instance"""
-        script_src = """<!-- START willet sibt for Shopify -->
-            <script type="text/javascript">
-            (function(window) {
-                var hash = window.location.hash;
-                var hash_index = hash.indexOf('#code=');
-                var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
-                var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                var src = "http://%s%s?" + params;
-                var script = window.document.createElement("script");
-                script.type = "text/javascript";
-                script.src = src;
-                window.document.getElementsByTagName("head")[0].appendChild(script);
-            }(window));
-            </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
-        willet_snippet = script_src + """
-            <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
-                data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
-                data-price="{{ product.price | money }}" data-page_source="product"
-                data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
-            <!-- END Willet SIBT for Shopify -->"""
-
+        if self.version == 3: # sweet buttons has different on-page snippet.
+            script_src = """<!-- START willet sibt for Shopify -->
+                <style>
+                    #_willet_shouldIBuyThisButton {
+	                    width: 278px;
+	                    height: 88px;
+	                    border: 1px solid #BBB;
+	                    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+	                    color: #383f41;
+	                    background: white;
+	                    padding: 0;
+	                    margin: 0;
+                    }
+                    #_willet_shouldIBuyThisButton p {
+	                    text-align: center;
+	                    margin: 10px;
+	                    padding: 0;
+	                    margin: 12px 0 8px 0;
+	                    font-size: 14px;
+	                    line-height: 20px;
+                    }
+                    #_willet_shouldIBuyThisButton>.button {
+                        height: 25px;
+                        padding: 4px 2px;
+                        margin: 8px 15px;
+                        width: 219px;
+                        background-color: #C1F0F5;
+                        text-align: center;
+                        border-radius: 4px;
+                        background-image: -webkit-linear-gradient(top, #C9F7FA, #A1F0F5);
+                        box-shadow: 0 1px 0 #BBB;
+                        behavior: url(/static/js/PIE.htc);
+                    }
+                    #_willet_shouldIBuyThisButton>.button:hover {
+                        cursor: pointer;
+                        cursor: hand;
+                        -moz-box-shadow: 0 0 4px 1px #BBB;
+                        -webkit-box-shadow: 0 0 4px 1px #BBB;
+                        box-shadow: 0 0 4px 1px #BBB;
+                        behavior: url(/static/js/PIE.htc);
+                    }
+                    #_willet_shouldIBuyThisButton>.button>img {
+                        float: left;
+                        margin: 0 0 0 8px;
+                        padding: 0;
+                        width: 25px;
+                        height: 25px;
+                    }
+                    #_willet_shouldIBuyThisButton>.button>.title {
+	                    margin-left: 30px;
+	                    padding: 1px 0 0 0;
+	                    font-size: 16px;
+	                    line-height: 24px;
+	                    text-shadow: 1px 1px 1px #EEE;
+                    }
+                </style>
+                <script type="text/javascript">
+                (function(window) {
+                    var hash = window.location.hash;
+                    var hash_index = hash.indexOf('#code=');
+                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    var src = "http://%s%s?" + params;
+                    var script = window.document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    window.document.getElementsByTagName("head")[0].appendChild(script);
+                }(window));
+                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            willet_snippet = script_src + """
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"
+                    style="width: 278px;height: 88px;border: 1px solid #BBB;padding: 0;margin: 0;">
+                
+                </div>
+                <!-- END Willet SIBT for Shopify -->"""
+        else:
+            script_src = """<!-- START willet sibt for Shopify -->
+                <script type="text/javascript">
+                (function(window) {
+                    var hash = window.location.hash;
+                    var hash_index = hash.indexOf('#code=');
+                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    var src = "http://%s%s?" + params;
+                    var script = window.document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    window.document.getElementsByTagName("head")[0].appendChild(script);
+                }(window));
+                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            willet_snippet = script_src + """
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
+                <!-- END Willet SIBT for Shopify -->"""
+        
         liquid_assets = [{
             'asset': {
                 'value': willet_snippet,

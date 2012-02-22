@@ -451,9 +451,15 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     _willet_show_topbar();
                 }
             } else {
-                var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-                var button = document.createElement('a');
-                var button_html = '';
+                var button = $("<div />", {
+                    'id': '_willet_button_v3'
+                });
+                button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+		                     "<a class='button' " +
+		                         "title='Ask your friends if you should buy this!'>" +
+			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+			                     "<span id='_willet_button' class='title'>Ask Trusted Friends</span>" +
+		                     "</a>");
 
                 // check if we are showing top bar ask too
                 if (show_top_bar_ask) {
@@ -476,19 +482,8 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                         button_html = AB_CTA_text;
                     }
 
-                    button = _$(button)
-                        .html(button_html)
-                        // .css('display', 'none')
-                        .css('display', 'inline-block')
-                        .attr('title', 'Ask your friends if you should buy this!')
-                        .attr('id','_willet_button')
-                        .attr('class','_willet_button willet_reset')
-                        .click(_willet_button_onclick);
-                
                     $(purchase_cta).append(button);
-                    /* button.fadeIn(250, function() {
-                        $(this).css('display', 'inline-block'); 
-                    });*/
+                    $('#_willet_button').click(_willet_button_onclick);
                 }
                 
                 // watch for message
