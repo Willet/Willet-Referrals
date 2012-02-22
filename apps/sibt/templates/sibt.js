@@ -455,11 +455,11 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     'id': '_willet_button_v3'
                 });
                 button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-		                     "<a class='button' " +
+		                     "<div class='button' " +
 		                         "title='Ask your friends if you should buy this!'>" +
 			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-			                     "<span id='_willet_button' class='title'>Ask Trusted Friends</span>" +
-		                     "</a>");
+			                     "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+		                     "</div>");
 
                 // check if we are showing top bar ask too
                 if (show_top_bar_ask) {
@@ -482,7 +482,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                         button_html = AB_CTA_text;
                     }
 
-                    $(purchase_cta).append(button);
+                    purchase_cta.append(button);
                     $('#_willet_button').click(_willet_button_onclick);
                 }
                 

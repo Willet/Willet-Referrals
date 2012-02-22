@@ -35,7 +35,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
 
         // if cart is empty, do nothing
         if (_willet_cart_items && _willet_cart_items.length > 0) {
-            var purchase_cta = $('#_willet_button');
+            var purchase_cta = $('#_willet_WOSIB_Button');
             
             var srv_data = {
                 'app_uuid': '{{app.uuid}}',
@@ -164,15 +164,14 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     'id': '_willet_button_v3'
                 });
                 button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-		                     "<a class='button' " +
+		                     "<div class='button' " +
 		                         "title='Ask your friends if you should buy this!'>" +
 			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-			                     "<span id='_willet_button' class='title'>Ask Trusted Friends</span>" +
-		                     "</a>");
+			                     "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+		                     "</div>");
 		                     
-            button.appendTo (purchase_cta)
-            .css('display', 'inline-block')
-            .click (function () {
+            button.appendTo (purchase_cta).css('display', 'inline-block');
+            $('#_willet_button').click (function () {
                 _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
                 // iframe for asker to set up voting page
                 _willet_show_ask ();
@@ -182,16 +181,15 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
             // if server sends a flag that indicates "results available"
             // (not necessarily "finished") then show finished button
             if (srv_data.has_results) {
-                $('<input />', {
+                $('<div />', {
                     'id': "_willet_WOSIB_results",
-                    'name': "_willet_WOSIB_results",
-                    'type': "button",
-                    'value': "Check results",
-                    'class': "button _willet_button willet_reset",
-                }).css({
+                    'class': "button",
+                }).text(
+                    "Show results"
+                ).css({
                     'margin-left': '8px !important' // aesthetic spacing
-                }).insertAfter(
-                    '#_willet_button'
+                }).appendTo(
+                    button
                 ).fadeIn(250, function() {
                     $(this).css('display', 'inline-block'); 
                 }).click (_willet_show_results);

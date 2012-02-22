@@ -2,6 +2,7 @@
 	width: 278px;
 	height: 88px;
 	border: 1px solid #BBB;
+	border-radius: 3px; /* soften the blow */
 	font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 	color: #383f41;
 	background: white;
@@ -11,15 +12,15 @@
 #_willet_button_v3 p {
 	text-align: center;
 	margin: 10px;
-	padding: 0;
+	padding: 0 !important; /* some shopify themes change this */
 	margin: 12px 0 8px 0;
-	font-size: 14px;
+	font-size: 14px !important; /* some shopify themes change this */
 	line-height: 20px;
 }
 #_willet_button_v3>.button {
     height: 25px;
     padding: 4px 2px;
-    margin: 8px 15px;
+    margin: 8px auto;
     width: 219px;
     background-color: #C1F0F5;
     text-align: center;
@@ -49,22 +50,6 @@
 	font-size: 16px;
 	line-height: 24px;
 	text-shadow: 1px 1px 1px #EEE;
-}
-#_willet_button_v3.horizontal {
-	width: 400px;
-	height: 51px;
-	border: none;
-}
-#_willet_button_v3.horizontal>div {
-	float: left;
-}
-#_willet_button_v3.horizontal>div.text {
-	padding: 3px 0 0 0;
-	line-height: 48px;
-	font-size: 16px;
-}
-#_willet_button_v3.horizontal>div.button {
-	width: 218px;
 }
 
 ._willet_button {

@@ -45,7 +45,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
         script_src = '''<!-- START willet wosib for Shopify -->
-            <div id="_willet_button" style="width:278px;height:88px;"></div>
+            <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
                 var _willet_no_image = "http://%s/static/imgs/noimage.png";
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
