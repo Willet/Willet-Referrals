@@ -149,9 +149,7 @@ class ClientShopify( Client ):
         logging.info ("url = %s" % url)
         
         # Fix inputs ( legacy )
-        if app_type == "referral":
-            app_type = 'ReferralShopify'
-        elif app_type == "sibt": 
+        if app_type == "sibt": 
             app_type = 'SIBTShopify'
         elif app_type == 'buttons':
             app_type = "ButtonsShopify"
@@ -182,9 +180,7 @@ class ClientShopify( Client ):
 def get_store_info(store_url, store_token, app_type):
     
     # Fix inputs ( legacy )
-    if app_type == "referral":
-        app_type = 'ReferralShopify'
-    elif app_type == "sibt": 
+    if app_type == "sibt": 
         app_type = 'SIBTShopify'
     elif app_type == "buttons": 
         app_type = 'ButtonsShopify'

@@ -435,17 +435,19 @@ class SendWOSIBFriendAsks( URIHandler ):
         if not response['data']['warnings']:
             del response['data']['warnings']
         
+        iuid = instance.uuid if instance else None
+        
         logging.info('Friends: %s\n \
             Successful shares on FB: %d\n \
             Successful shares via email: %d\n \
             Message: %s\n \
-            Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+            Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, iuid))
         
         Email.emailDevTeam('<p>Friends: %s</p> \
             <p>Successful shares on FB: #%d</p> \
             <p>Successful shares via email: #%d</p> \
             <p>Message: %s</p> \
-            <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, instance.uuid))
+            <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, iuid))
         
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

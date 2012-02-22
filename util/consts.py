@@ -69,10 +69,6 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         }
-    }, 'ReferralShopify': {
-        'api_key': 'c46f84fb6458a72c774504ba372757f1',
-        'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
-        'class_name': 'ReferralShopify'        
     }, 'ButtonsShopify': {
         'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
@@ -139,8 +135,6 @@ INSTALLED_APPS = [
     'order.shopify',
     'product',
     'product.shopify',
-    'referral',
-    'referral.shopify',
     'sibt',
     'sibt.shopify',
     'wosib',

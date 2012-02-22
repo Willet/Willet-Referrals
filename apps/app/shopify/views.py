@@ -64,8 +64,6 @@ class ShopifyRedirect( URIHandler ):
 
         if redirect_url != None:
             redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
-        elif app == 'referral':
-            redirect_url = '/r/shopify?%s' % self.request.query_string
         elif app == 'sibt':
             redirect_url = '/s/shopify?%s' % self.request.query_string
         elif app == 'buttons':

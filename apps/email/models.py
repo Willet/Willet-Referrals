@@ -43,16 +43,6 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def first10Shares(email_addr):
-        subject = '[Willet Referral] We Have Some Results!'
-        to_addr =  email_addr
-        body    = template.render(Email.template_path('first10.html'), {
-            'campaign_id': campaign_id
-        })
-        
-        Email.send_email(from_addr, to_addr, subject, body)
-
-    @staticmethod
     def invite(infrom_addr, to_addrs, msg, url, app):
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.

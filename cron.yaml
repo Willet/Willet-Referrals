@@ -1,10 +1,5 @@
 cron:
 
-# Referral App Crons
-#- description: Email results out
-#  url: /r/emailerCron
-#  schedule: every 2 hours
-
 # Admin Statistics
 #- description: Updating stats (counts)
 #  url: /stats/updateCounts

@@ -63,7 +63,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                 _willet_st.type = 'text/javascript';
                 _willet_st.src = _willet_wosib_script;
                 window.document.getElementsByTagName("head")[0].appendChild(_willet_st);
-            </script>''' % (DOMAIN, DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
+            </script>''' % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
 
         liquid_assets = [{
             'asset': {
@@ -120,8 +120,8 @@ class WOSIBShopify(WOSIB, AppShopify):
                 )
                 try:
                     app.store_token = token
+                    app.old_client = app.client
                     app.client = client
-                    app.old_client = None
                     app.put()
 
                     app.do_install()
