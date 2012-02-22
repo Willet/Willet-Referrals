@@ -143,7 +143,7 @@ class User( db.Expando ):
     memcache_bucket       = db.StringProperty( indexed = False, default = "")
     twitter_access_token  = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
-  # user -> User.get_full_name
+  # user -> User.get_full_name()
     
     # referrer is deprecated
     referrer              = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid

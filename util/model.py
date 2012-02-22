@@ -9,7 +9,7 @@ from google.appengine.ext import db
 from util.consts import MEMCACHE_TIMEOUT
 
 class Model(db.Model):
-    """A generic extension of db.Model"""
+    """A generic extension of db.Model which transparently supports memcaching"""
     
     def put(self):
         """Stores model instance in memcache and database"""
@@ -75,7 +75,6 @@ class Model(db.Model):
             logging.debug('Model::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 # end class
-
 
 
 class ObjectListProperty(db.ListProperty):

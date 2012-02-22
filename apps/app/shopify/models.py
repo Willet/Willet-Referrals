@@ -7,7 +7,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib
+import hashlib, datetime
 #import logging, random, urllib2, datetime
 
 from django.utils         import simplejson as json
@@ -20,13 +20,38 @@ from google.appengine.ext import db
 from apps.app.models    import App
 from apps.email.models  import Email
 
-from util.consts        import *
 from util               import httplib2
+from util.consts        import *
+from util.errors        import ShopifyAPIError, ShopifyBillingError
 from util.model         import Model
+
 
 NUM_SHARE_SHARDS = 15
 
 class AppShopify(Model):
+    """
+
+    How Shopify Charges Work:
+
+    Two options, one-time charge or recurring billing
+
+    Both work with same workflow:
+
+    a) Customer requests charging page
+    b) We make Shopify API call, specifying return_url (on our domain)
+    c) Shopify responds with confirmation_url
+    d) We redirect customer to confirmation_url (on shopify domain)
+    e) Customer decides & is sent to return_url?charge_id=### with confirmed / denied status
+    *f) We make Shopify API call to activate the charge
+    g) Shopify responds with 200 OK
+
+    *We actually hit the Shopify API 1st to get all of the charge info
+    before requesting activation.  There is a lot of junk we don't want to
+    store that needs to be included in the activation request
+
+    Note: only 1 recurring billing plan can exist for each store for each app.
+    Create a new recurring billing plan will overwrite any existing ones.
+    """
     # Shopify's ID for this store
     store_id  = db.StringProperty(indexed = True)
     
@@ -34,6 +59,23 @@ class AppShopify(Model):
 
     # Shopify's token for this store
     store_token = db.StringProperty(indexed = True)
+
+    # Recurring billing information
+    recurring_billing_id         = db.NumberProperty(indexed = False)
+    recurring_billing_name       = db.StringProperty(indexed = False)
+    recurring_billing_price      = db.StringProperty(indexed = False)
+    recurring_billing_created    = db.DateTimeProperty(indexed = False)
+    recurring_billing_status     = db.StringProperty(indexed = False)
+    recurring_billing_trial_days = db.NumberProperty(indexed = False)
+    recurring_billing_trial_ends = db.DateTimeProperty(indexed = False)
+
+    # One-time charge information
+    # Temporary while charge is being decided on
+    charge_ids = db.ListProperty(float, indexed = False)
+    charge_names = db.ListProperty(str, indexed = False)
+    charge_prices = db.ListProperty(str, indexed = False)
+    charge_createds = db.ListProperty(datetime.datetime, indexed = False)
+    charge_statuses = db.ListProperty(str, indexed = False)
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
@@ -50,12 +92,42 @@ class AppShopify(Model):
                     e
                 )
             )
-
+    
+    @staticmethod
+    def _Shopify_str_to_datetime(dt):
+        # Removes colon at 3rd to last character
+        # Shopify format: YYYY-MM-DDTHH:MM:mmSHH:MM
+        #                 2012-02-15T15:12:21-05:00
+        # where SHH:MM is signed UTC offset hours : minutes
+        return datetime.datetime.strptime( dt[::-1].replace(':','',1)[::-1] )
+    
+    @staticmethod
+    def __to_Shopify_str_datetime(dt):
+        # Adds colon as 3rd to last character
+        # UTC format: YYYY-MM-DDTHH:MM:mmSHHMM
+        # where SHHMM is signed UTC offset in hours minutes
+        dts = dt.isoformat()
+        return dts[:-2] + ':' + dts[-2:]
+    
     # Shopify API Calls ------------------------------------------------------------
-    def setup_recurring_billing( self, settings ):
-        """ Setup store with a recurring blling charge for htis app."""
+    def _call_Shopify_API(self, verb, call, payload= None):
+        """ Calls Shopify API
+
+        Inputs:
+            verb - <String> one of GET, POST, PUT, DELETE
+            call - <String> api call
+            payload - <Object> Data to send with request
         
-        url      = '%s/admin/recurring_application_charges.json' % self.store_url
+        Returns:
+            <Object> response data
+
+            or raises ShopifyAPIError
+        """
+        if verb not in ['GET', 'get', 'POST', 'post',
+                    'PUT', 'put', 'DELETE', 'delete']:
+            raise ValueError('verb must be one of GET, POST, PUT, DELETE')
+        
+        url      = '%s/admin/%s' % (self.store_url, call)
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -64,15 +136,231 @@ class AppShopify(Model):
         # Auth the http lib
         h.add_credentials(username, password)
         
-        # First fetch webhooks that already exist
+        # Make request
         resp, content = h.request(
                 url,
-                "POST",
-                body    = json.dumps(settings),
+                method,
+                body    = json.dumps(payload),
                 headers = header
             )
+        
+        # Good responses
+        if int(resp.status) == 200 or int(resp.status) == 201:
+            data = json.loads( content )
+            return content
+        
+        # Bad responses
+        else:
+            data = None
+            if content:
+                try:
+                    data = json.loads(content)
+                except:
+                    pass
 
-    def install_webhooks(self, webhooks=None):
+            Email.emailDevTeam(
+                '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
+                    self.class_name(),
+                    resp.status,
+                    resp.reason,
+                    self.store_url,
+                    data if data else content
+                )        
+            )
+            raise ShopifyAPIError(resp.status, resp.reason, data)
+    
+    def setup_application_charge(self, settings):
+        """ Setup one-time charge for store
+
+        Inputs:
+            settings = {
+                    "price": <Number>,
+                    "name": <String> app name / name on invoice,
+                    "return_url": <String> redirect after store owner has confirmed/denied charges
+                    ["test": <Boolean> true or false ]
+                }
+            Example: settings = {
+                    "name": "Super Duper Expensive action",
+                    "price": 100.0,
+                    "return_url": "http://super-duper.shopifyapps.com",
+                    "test": true
+                }
+        
+        Returns:
+            url where store owner should be redirected to confirm / deny charges
+        """
+
+        data = _call_Shopify_API('POST', 'application_charges.json',
+                                { "application_charge": settings })
+        
+        if data.status is not 'pending':
+            raise ShopifyBillingError("Setup of application charge was denied", data)
+        
+        self.charge_ids.append( data.id )
+        self.charge_names.append( data.name )
+        self.charge_prices.append( data.price )
+        self.charge_createds.append( _Shopify_str_to_datetime(data.created_at) )
+        self.charge_statuses.append('pending')
+
+        return data.confirmation_url
+    
+    def _retrieve_application_charge(self):
+        """ Retrieve billing info for customer
+
+        Returns: <Object> charge info
+        """
+        return _call_Shopify_API('GET', 
+            'application_charges/#%s.json' % self.charge_id)
+    
+    def activate_application_charge(self, settings):
+        """ Activate charge for customer that has approved it
+
+        Note:
+            First setup charge, then redirect to confirmation_url.
+            Store owner's confirmation/denial hits the return_url.  return_url
+            handler should activate for confirmed charge.
+        
+        Inputs:
+            settings = {
+                    "charge_id": <int> Shopify charge id,
+                    "return_url": <str> url customer redirected to (this url)
+                    "test": None or "true"
+                }
+            
+            Example: settings = {
+                    "charge_id": 675931192
+                    "return_url": "YOUR_URL?charge_id=675931192",
+                    "test": null
+                }
+           
+        Returns:
+            None
+        """
+
+        charge_data = self._retrieve_application_charge()
+
+        if charge_data is 'pending':
+            # Update status
+            charge_data.update({
+                "status":"accepted"
+            })
+            charge_data.update(settings)
+        
+            data = _call_Shopify_API('POST',
+                        'application_charges/#%s/activate.json' % settings.charge_id,
+                        { "application_charge": charge_data })
+            
+            if data.status is 'accepted':
+                for i, cid in enumerate(self.charge_ids):
+                    if cid = settings.charge_id:
+                        self.charge_statuses[i] = "accepted"
+                        break
+            else:
+                raise ShopifyBillingError('Charge activation denied', data)
+        else:
+            raise ShopifyBillingError('Charge cancelled before activation request', recurring_billing_data)
+        
+        return
+        
+
+    def setup_recurring_billing(self, settings):
+        """ Setup store with a recurring blling charge for this app.
+
+        Note: 
+            A Shopify store can only have 1 recuring billing plan per app.
+            Setting up a new recurring billing plan will replace the older one.
+
+        Inputs:
+            settings = {
+                    "price": <Number>,
+                    "name": <String> app name / name on invoice,
+                    "return_url": <String> redirect after store owner has confirmed/denied charges
+                    ["test": <Boolean> true or false,
+                     "trial_days: <Number> ]
+                }
+            Example: settings = {
+                    "name": "Super Duper Plan",
+                    "price": 10.0,
+                    "return_url": "http://super-duper.shopifyapps.com",
+                    "trial_days": 5,
+                    "test": false
+                }
+        
+        Returns:
+            url where store owner should be redirected to confirm / deny charges
+        """
+        
+        data = _call_Shopify_API('POST', 'recurring_application_charges.json',
+                                { "recurring_application_charge": settings })
+
+        if data.status is not 'pending':
+            raise ShopifyBillingError("Setup of recurring billing was denied", data)
+        
+        self.recurring_billing_id = data.id
+        self.recurring_billing_name = data.name
+        self.recurring_billing_price = data.price
+        self.recurring_billing_created = _Shopify_str_to_datetime(data.created_at)
+        self.recurring_billing_status = data.status
+        self.recurring_billing_trial_days = data.trial_days
+
+        return data.confirmation_url
+    
+    def _retrieve_recurring_billing(self):
+        """ Retrieve billing info for customer
+
+        Returns: <Object> billing info
+        """
+        return _call_Shopify_API('GET', 
+            'recurring_application_charges/#%s.json' % self.recurring_billing_id)
+    
+    def activate_recurring_billing(self, settings):
+        """ Activate billing for customer that has approved it
+
+        Note:
+            First setup recurring billing, then redirect to confirmation_url.
+            Store owner's confirmation/denial hits the return_url.  return_url
+            handler should activate for confirmed charges.
+        
+        Inputs:
+            settings = {
+                    return_url: <String> ...
+                    "test": None or "true"
+
+                }
+            
+            Example: settings = {
+                    "return_url": "http://yourapp.com?charge_id=455696195",
+                    "test": null
+                }
+           
+        Returns:
+            None
+        """
+        # First retrieve most of the data from Shopify
+        recurring_billing_data = self._retrieve_recurring_billing()
+
+        # Check that status isn't cancelled
+        if recurring_billing_data is 'pending':
+            # Update status
+            recurring_billing_data.update({
+                "status":"accepted"
+            })
+            recurring_billing_data.update(settings)
+        
+            data = _call_Shopify_API('POST',
+                        'recurring_application_charges/#%s/activate.json' % self.recurring_billing_id,
+                        { "recurring_application_charge": recurring_billing_data })
+            
+            if data.status is 'accepted':
+                self.recurring_billing_status = "accepted"
+            else:
+                raise ShopifyBillingError('Recurring billing activation denied', data)
+        else:
+            raise ShopifyBillingError('Recurring billing cancelled before activation request', recurring_billing_data)
+        
+        return
+
+    def install_webhooks(self, product_webhooks_too= False, webhooks= None):
         """ Install the webhooks into the Shopify store """
         # pass extra webhooks as a list
         if webhooks == None:

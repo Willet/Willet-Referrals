@@ -43,11 +43,11 @@ class ButtonsShopify(Buttons, AppShopify):
     def do_install( self ):
         # Define recurring billing settings
         billing_settings = {
-            "recurring_application_charge": {
-                "price": 0.99,
-                "name": "ShopConnection",
-                "return_url": "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, self.uuid)
-              }
+            "price": 0.99,
+            "name": "ShopConnection",
+            "return_url": "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, self.uuid),
+            "test": "true",
+            "trial_days": 0
         }    
 
         # Define our script tag 
@@ -88,14 +88,14 @@ class ButtonsShopify(Buttons, AppShopify):
 def create_shopify_buttons_app(client, app_token):
 
     uuid = generate_uuid( 16 )
-    app = ButtonsShopify( key_name    = uuid,
-                          uuid        = uuid,
-                          client      = client,
-                          store_name  = client.name, # Store name
-                          store_url   = client.url,  # Store url
-                          store_id    = client.id,   # Store id
-                          store_token = app_token,
-                          button_selector = "_willet_buttons_app" ) 
+    app = ButtonsShopify( key_name          = uuid,
+                          uuid              = uuid,
+                          client            = client,
+                          store_name        = client.name, # Store name
+                          store_url         = client.url,  # Store url
+                          store_id          = client.id,   # Store id
+                          store_token       = app_token,
+                          button_selector   = "_willet_buttons_app" ) 
     app.put()
 
     confirm_url = app.do_install()
