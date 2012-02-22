@@ -89,3 +89,14 @@ class DoDeleteApp( URIHandler ):
         
         self.redirect( '/client/account' )
 
+class ServeShopifyUI (URIHandler):
+    def get (self):
+        app = self.request.get('app')
+
+        if app == 'sibt':
+            redirect_url = '/s/shopify/real-sibt.js?%s' % self.request.query_string
+        elif app == 'wosib':
+            redirect_url = '/w/shopify/wosib_button.js?%s' % self.request.query_string
+
+        logging.info("redirecting app %s to %s" % (app, redirect_url))
+        self.redirect(redirect_url)

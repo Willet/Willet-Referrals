@@ -423,10 +423,10 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
             var hash_search = '#code=';
             hash_index  = hash.indexOf(hash_search);
             willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-            var cookie_topbar_closed = (_$.cookie('_willet_topbar_closed') == 'true');
+            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
 
             // create the hide button
-            _willet_topbar_hide_button = _$(document.createElement('div'));
+            _willet_topbar_hide_button = $(document.createElement('div'));
             _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
                 .css('display', 'none')
                 .click(_willet_unhide_topbar);
@@ -439,7 +439,7 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                 _willet_topbar_hide_button.html('Help {{ asker_name }}!');
             }
 
-            _$('body').prepend(_willet_topbar_hide_button);
+            $('body').prepend(_willet_topbar_hide_button);
 
             if (_willet_show_votes || hash_index != -1) {
                 // if we are showing votes (user has click action)
@@ -488,14 +488,14 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                 
                 // watch for message
                 // Create IE + others compatible event handler
-                _$(window).bind('onmessage message', function(e) {
+                $(window).bind('onmessage message', function(e) {
                     var message = e.originalEvent.data;
                     if (message == 'shared') {
                         _willet_ask_success = true;
                     } else if (message == 'top_bar_shared') {
                         _willet_topbar_ask_success();
                     } else if (message == 'close') {
-                        _$.willet_colorbox.close();
+                        $.willet_colorbox.close();
                     }
                 });
                 

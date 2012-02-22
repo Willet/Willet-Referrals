@@ -31,6 +31,12 @@ from util.helpers                import url as reverse_url
 # ------------------------------------------------------------------------------
 class WOSIBShopify(WOSIB, AppShopify):
     
+    # NOTE
+    # WOSIB is a subset of SIBT, and, as such, does not have a version number.
+    # To obtain the WOSIB version, load its SIBT counterpart 
+    # with get_by_store_url() and read its version number.
+    # version    = db.StringProperty(default='2', indexed=False)
+    
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(WOSIBShopify, self).__init__(*args, **kwargs)
@@ -39,19 +45,8 @@ class WOSIBShopify(WOSIB, AppShopify):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
         script_src = '''<!-- START willet wosib for Shopify -->
-            <input id="_willet_WOSIB_Button" style="display:none" />
+            <div id="_willet_button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
-                if (typeof jQuery == 'undefined' || jQuery.fn.jquery < "1.6.0"){ // if page has no jQuery, load from CDN; apparently, string version comparison works even if its casted value has two decimal points.
-                    document.write(unescape("%%3Cscript src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
-                }
-                if (typeof jQuery == 'undefined'){ // if it is STILL undefined, load our own
-                    document.write(unescape("%%3Cscript src='http://%s/static/js/jquery.min.js' type='text/javascript' %%3E%%3C/script%%3E"));
-                }
-                var interval = setInterval(function() {
-                    if (typeof jQuery !== 'undefined') {
-                        clearInterval(interval);
-                    }
-                }, 1000);
                 var _willet_no_image = "http://%s/static/imgs/noimage.png";
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [

@@ -99,7 +99,7 @@ class SIBTShopify(SIBT, AppShopify):
         if self.version == 3: # sweet buttons has different on-page snippet.
             script_src = """<!-- START willet sibt for Shopify -->
                 <style>
-                    #_willet_shouldIBuyThisButton {
+                    #_willet_button_v3 {
 	                    width: 278px;
 	                    height: 88px;
 	                    border: 1px solid #BBB;
@@ -109,7 +109,7 @@ class SIBTShopify(SIBT, AppShopify):
 	                    padding: 0;
 	                    margin: 0;
                     }
-                    #_willet_shouldIBuyThisButton p {
+                    #_willet_button_v3 p {
 	                    text-align: center;
 	                    margin: 10px;
 	                    padding: 0;
@@ -117,7 +117,7 @@ class SIBTShopify(SIBT, AppShopify):
 	                    font-size: 14px;
 	                    line-height: 20px;
                     }
-                    #_willet_shouldIBuyThisButton>.button {
+                    #_willet_button_v3>.button {
                         height: 25px;
                         padding: 4px 2px;
                         margin: 8px 15px;
@@ -129,7 +129,7 @@ class SIBTShopify(SIBT, AppShopify):
                         box-shadow: 0 1px 0 #BBB;
                         behavior: url(/static/js/PIE.htc);
                     }
-                    #_willet_shouldIBuyThisButton>.button:hover {
+                    #_willet_button_v3>.button:hover {
                         cursor: pointer;
                         cursor: hand;
                         -moz-box-shadow: 0 0 4px 1px #BBB;
@@ -137,14 +137,14 @@ class SIBTShopify(SIBT, AppShopify):
                         box-shadow: 0 0 4px 1px #BBB;
                         behavior: url(/static/js/PIE.htc);
                     }
-                    #_willet_shouldIBuyThisButton>.button>img {
+                    #_willet_button_v3>.button>img {
                         float: left;
                         margin: 0 0 0 8px;
                         padding: 0;
                         width: 25px;
                         height: 25px;
                     }
-                    #_willet_shouldIBuyThisButton>.button>.title {
+                    #_willet_button_v3>.button>.title {
 	                    margin-left: 30px;
 	                    padding: 1px 0 0 0;
 	                    font-size: 16px;

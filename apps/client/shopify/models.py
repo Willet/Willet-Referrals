@@ -172,6 +172,7 @@ class ClientShopify( Client ):
         resp, content = h.request( url, "GET", headers = header)
         
         details = json.loads( content ) 
+        logging.debug ("got json: %r" % details)
         products = details['products']
 
         for p in products:

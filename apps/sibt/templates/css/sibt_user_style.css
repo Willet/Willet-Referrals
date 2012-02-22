@@ -26,7 +26,7 @@
     border-radius: 4px;
     background-image: -webkit-linear-gradient(top, #C9F7FA, #A1F0F5);
     box-shadow: 0 1px 0 #BBB;
-    behavior: url('/static/js/PIE.htc');
+    behavior: url(/static/js/PIE.htc);
 }
 #_willet_button_v3>.button:hover {
     cursor: pointer;
@@ -34,7 +34,7 @@
     -moz-box-shadow: 0 0 4px 1px #BBB;
     -webkit-box-shadow: 0 0 4px 1px #BBB;
     box-shadow: 0 0 4px 1px #BBB;
-    behavior: url('/static/js/PIE.htc');
+    behavior: url(/static/js/PIE.htc);
 }
 #_willet_button_v3>.button>img {
     float: left;
