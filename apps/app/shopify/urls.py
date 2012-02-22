@@ -3,10 +3,11 @@ from apps.app.shopify.views import *
 from apps.app.shopify.processes import *
 
 urlpatterns = [
-    (r'/a/shopify',   ShopifyRedirect),
-    (r'/a/shopify/deleteApp', DoDeleteApp),
+	# Views
+    (r'/a/shopify',   							ShopifyRedirect),
+    (r'/a/shopify/deleteApp', 					DoDeleteApp),
     
-    # processes
-    (r'/a/shopify/webhook/uninstalled/(.*)/', DoUninstalledApp),
+    # Processes
+    (r'/a/shopify/webhook/uninstalled/(.*)/', 	DoUninstalledApp)
 ]
 

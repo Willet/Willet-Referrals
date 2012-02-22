@@ -32,4 +32,5 @@ class BillingError(Exception):
 		return "%s\ndata: %r" % (self.message, self.data)
 
 class ShopifyBillingError(BillingError):
+	""" A more descriptive exception for Shopify """
 	pass

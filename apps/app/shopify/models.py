@@ -1,21 +1,15 @@
 #!/usr/bin/python
 
-# The App Model
-# A parent class for all social 'apps'
-# ie. Referral, 'Should I buy this?', etc
+# The AppShopify Model
+# A parent class for all Shopify social 'apps'
 
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib, datetime
-#import logging, random, urllib2, datetime
 
 from django.utils         import simplejson as json
-#from google.appengine.api import memcache
-#from google.appengine.api import urlfetch
-#from google.appengine.api import taskqueue
 from google.appengine.ext import db
-#from google.appengine.ext.db import polymodel
 
 from apps.app.models    import App
 from apps.email.models  import Email
@@ -61,16 +55,15 @@ class AppShopify(Model):
     store_token = db.StringProperty(indexed = True)
 
     # Recurring billing information
+    recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
     recurring_billing_id         = db.NumberProperty(indexed = False)
     recurring_billing_name       = db.StringProperty(indexed = False)
     recurring_billing_price      = db.StringProperty(indexed = False)
     recurring_billing_created    = db.DateTimeProperty(indexed = False)
-    recurring_billing_status     = db.StringProperty(indexed = False)
     recurring_billing_trial_days = db.NumberProperty(indexed = False)
     recurring_billing_trial_ends = db.DateTimeProperty(indexed = False)
 
     # One-time charge information
-    # Temporary while charge is being decided on
     charge_ids = db.ListProperty(float, indexed = False)
     charge_names = db.ListProperty(str, indexed = False)
     charge_prices = db.ListProperty(str, indexed = False)
@@ -102,7 +95,7 @@ class AppShopify(Model):
         return datetime.datetime.strptime( dt[::-1].replace(':','',1)[::-1] )
     
     @staticmethod
-    def __to_Shopify_str_datetime(dt):
+    def _datetime_to_Shopify_str(dt):
         # Adds colon as 3rd to last character
         # UTC format: YYYY-MM-DDTHH:MM:mmSHHMM
         # where SHHMM is signed UTC offset in hours minutes

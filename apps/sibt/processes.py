@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
 import hashlib
@@ -9,8 +9,6 @@ import hashlib
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
-from google.appengine.ext.webapp import template 
-from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
@@ -33,7 +31,7 @@ from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
-        logging.info("SHARESIBTONFACEBOOK")
+        logging.info("SHARE SIBT ON FACEBOOK")
 
         app  = get_app_by_id(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
@@ -233,6 +231,7 @@ class GetExpiredSIBTInstances(URIHandler):
 
 
 class RemoveExpiredSIBTInstance(webapp.RequestHandler):
+    """ ### Why is this a webapp.RequestHandler instead of URIHandler ??? """
     def post(self):
         return self.get()
     
