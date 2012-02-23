@@ -220,7 +220,7 @@ class WOSIBShowFBThanks( URIHandler ):
             #WOSIBNoConnectFBCancelled.create( user, 
             #                                  url=partial.link.target_url,
             #                                  app=partial.app_ )
-            pass # worry about analytics later
+            pass # TODO: WOSIB Analytics
 
         if partial:
             # Now, remove the PartialInstance. We're done with it!

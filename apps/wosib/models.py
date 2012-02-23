@@ -85,6 +85,7 @@ class WOSIB(App):
         def get_by_uuid( uuid ):
             return WOSIB.all().filter( 'uuid =', uuid ).get()
 
+
 # Accessors --------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -114,8 +115,9 @@ class WOSIBInstance(Model):
         super(WOSIBInstance, self).__init__(*args, **kwargs)
 
     def get_winning_products (self):
-        # returns an array of products with the most votes in the instance.
-        # array can be of one item.
+        ''' returns an array of products with the most votes in the instance.
+            array can be of one item. 
+        '''
         
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
         instance_product_votes = [Action.\
@@ -193,6 +195,8 @@ class WOSIBInstance(Model):
                 .filter('app_ =', app_)\
                 .order('-created')\
                 .get()
+
+
 # ------------------------------------------------------------------------------
 # PartialWOSIBInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------

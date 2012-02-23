@@ -107,6 +107,7 @@ class WOSIBClickAction(ClickAction):
             self.user.uuid
         )
 
+
 ## -----------------------------------------------------------------------------
 ## WOSIBVoteAction Subclass ----------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -191,6 +192,7 @@ class WOSIBVoteAction(VoteAction):
                 .filter('wosib_instance =', instance)\
                 .get()
 
+
 class WOSIBShowAction(ShowAction):
     ''' Class for storing WOSIB actions - whenever a UI component is shown or hidden. 
         If a user is detected, the WOSIBUserAction class is recommended instead. '''
@@ -222,13 +224,12 @@ class WOSIBShowAction(ShowAction):
                     self.wosib_instance.app_.client.domain
             )
         except AttributeError: # typically 'instance is null'
-            return 'Showing %s to %s(%s)' % (
+            return "Showing %s to %s(%s)\n%s" % (
                     self.what,
                     self.user.get_full_name(), 
-                    self.user.uuid
+                    self.user.uuid,
+                    'AttributeError = probably null instance'
             )
-        else: # best I can do.
-            return ''
 
     ## Accessors 
     @staticmethod
@@ -246,6 +247,7 @@ class WOSIBShowAction(ShowAction):
     def get_by_app_and_instance(app, instance):
         return WOSIBVoteAction.all().filter('app_ =', app)\
                                    .filter('wosib_instance =', instance).get()
+
 
 class WOSIBShowingButton(WOSIBShowAction):
     @staticmethod
@@ -292,6 +294,7 @@ class WOSIBShowingButton(WOSIBShowAction):
             self.user.uuid
         )
 
+
 class WOSIBShowingResults(WOSIBShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -317,6 +320,7 @@ class WOSIBShowingResults(WOSIBShowAction):
         )
         action.put()
         return action
+
 
 class WOSIBShowingResultsToAsker(WOSIBShowAction):
     @staticmethod
@@ -344,6 +348,7 @@ class WOSIBShowingResultsToAsker(WOSIBShowAction):
         action.put()
         return action
 
+
 class WOSIBShowingVote(WOSIBShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -369,6 +374,7 @@ class WOSIBShowingVote(WOSIBShowAction):
         )
         action.put()
         return action
+
 
 class WOSIBInstanceAction(UserAction):
     wosib_instance = db.ReferenceProperty(db.Model, collection_name="wosib_inst_actions")
@@ -398,6 +404,7 @@ class WOSIBInstanceAction(UserAction):
                 self.what,
                 self.app_.client.domain
         )
+
 
 class WOSIBInstanceCreated(WOSIBInstanceAction):
     medium = db.StringProperty( default="", indexed=True )
@@ -430,6 +437,7 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
         action.put()
         return action
 
+
 ##
 ## WOSIB Show event with NO INSTANCE
 ##
@@ -459,6 +467,7 @@ class WOSIBShowingAskIframe(ShowAction):
         action.put()
         return action
 
+
 class WOSIBAskIframeCancelled(ShowAction):
     """ Cancelled immediately after opening - ie. no other actions in between open and close.
         Closed using "cancel' button on splash screen """
@@ -487,6 +496,7 @@ class WOSIBAskIframeCancelled(ShowAction):
         action.put()
         return action
 
+
 class WOSIBOverlayCancelled(ShowAction):
     """ Cancelled / closed iframe by clicking on the overlay (ie. outside of iframe) """
     @staticmethod
@@ -514,6 +524,7 @@ class WOSIBOverlayCancelled(ShowAction):
         action.put()
         return action
 
+
 class WOSIBUserClickedButtonAsk(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -540,6 +551,7 @@ class WOSIBUserClickedButtonAsk(UserAction):
 
         return action
 
+
 class WOSIBAskUserClickedShare(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -564,6 +576,7 @@ class WOSIBAskUserClickedShare(UserAction):
         )
         action.put()
         return action
+
 
 class WOSIBConnectFBCancelled(UserAction):
     @staticmethod
@@ -590,6 +603,7 @@ class WOSIBConnectFBCancelled(UserAction):
         action.put()
         return action
 
+
 class WOSIBFBConnected(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -614,6 +628,7 @@ class WOSIBFBConnected(UserAction):
         )
         action.put()
         return action
+
 
 class WOSIBFriendChoosingCancelled(UserAction):
     @staticmethod
@@ -640,6 +655,7 @@ class WOSIBFriendChoosingCancelled(UserAction):
         action.put()
         return action
 
+
 class WOSIBNoConnectFBCancelled(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -664,6 +680,7 @@ class WOSIBNoConnectFBCancelled(UserAction):
         )
         action.put()
         return action
+
 
 class WOSIBNoConnectFBDialog(UserAction):
     @staticmethod
@@ -690,6 +707,7 @@ class WOSIBNoConnectFBDialog(UserAction):
         action.put()
         return action
 
+
 class WOSIBConnectFBDialog(UserAction):
     @staticmethod
     def create(user, **kwargs):
@@ -714,6 +732,7 @@ class WOSIBConnectFBDialog(UserAction):
         )
         action.put()
         return action
+
 
 class WOSIBUserAction(UserAction):
     wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_user_actions" )
