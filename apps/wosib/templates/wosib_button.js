@@ -185,15 +185,13 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                 $('<div />', {
                     'id': "_willet_WOSIB_results",
                     'class': "button",
-                }).text(
-                    "Show results"
-                ).css({
-                    'margin-left': '8px !important' // aesthetic spacing
-                }).appendTo(
-                    button
-                ).fadeIn(250, function() {
-                    $(this).css('display', 'inline-block'); 
-                }).click (_willet_show_results);
+                })
+                .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                .appendTo(button)
+                .css({
+                    'display': 'inline-block'
+                })
+                .click (_willet_show_results);
             }
             
             // init colorbox.
@@ -203,10 +201,13 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                     'instance_uuid={{instance.uuid}}&' + 
                     'target_url=' + window.location.href], function () {
                         // init colorbox last
-                        $.willet_colorbox = window.jQuery.willet_colorbox;
-                        $.willet_colorbox.init ();
-                        // $.willet_colorbox = jQuery.willet_colorbox;
-                        window.jQuery.willet_colorbox.init ();
+                        if (window.jQuery.willet_colorbox) {
+                            // some browsers ("Opera") loads colorbox onto window's
+                            // jQuery instead of the closed $
+                            $.willet_colorbox = window.jQuery.willet_colorbox;
+                            $.willet_colorbox.init ();
+                            window.jQuery.willet_colorbox.init ();
+                        }
             });
         }
     });

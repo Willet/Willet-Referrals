@@ -432,4 +432,3 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         
         return
-
