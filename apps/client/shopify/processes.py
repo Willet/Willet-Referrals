@@ -25,5 +25,6 @@ class FetchShopifyProducts( URIHandler ):
         try:
             app_type = self.request.get( 'app_type' )
             client.get_products( app_type )
+            self.response.out.write ("200 OK")
         except AttributeError:
             logging.error ('Client cannot be found.')

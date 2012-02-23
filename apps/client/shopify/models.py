@@ -25,6 +25,7 @@ from apps.user.models       import get_or_create_user_by_email
 
 from util                   import httplib2
 from util.consts            import *
+from util.errors            import *
 from util.helpers           import generate_uuid
 from util.helpers           import url as build_url 
 from util.shopify_helpers   import get_shopify_url
@@ -169,9 +170,14 @@ class ClientShopify( Client ):
         logging.info("Querying %s" % url )
         resp, content = h.request( url, "GET", headers = header)
         
-        details = json.loads( content ) 
-        logging.debug ("got json: %r" % details)
-        products = details['products']
+        details = json.loads( content )
+        try: 
+            logging.debug ("got json: %r" % details)
+            assert ('products' in details)
+            products = details['products']
+        except:
+            # details will not have ['products'] if response is incorrect.
+            raise RemoteError (resp.status, resp.reason, products)
 
         for p in products:
             ProductShopify.create_from_json( self, p ) 
