@@ -51,10 +51,8 @@ if ( navigator.userAgent.indexOf('Safari') != -1 ) {
 }
 
 
-// two calls = parallel loading
-$L (['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-     '{{ URL }}/static/js/modernizr.custom.js']);
-$L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], function () {
+$L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js', 
+     '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'], function () {
     // load CSS for colorbox as soon as possible!!
     var _willet_css = {% include stylesheet %}
     var _willet_app_css = '{{ app_css }}';
@@ -465,6 +463,11 @@ $L (['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], functi
                         _willet_show_topbar_ask();
                     }
                 } 
+
+                if (typeof AB_CTA_text === 'undefined') {
+                    // if in any case sibt-ab.js fails to load
+                    window.AB_CTA_text = "Need advice? Ask your friends!";
+                }
 
                 if (sibt_button_enabled) {
                     // only add button if it's enabled in the app 
