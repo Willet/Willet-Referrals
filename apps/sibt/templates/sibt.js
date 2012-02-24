@@ -4,9 +4,43 @@
 **/
 
 ;(function () {
-    // http://blog.fedecarg.com/2011/07/12/javascript-asynchronous-script-loading-and-lazy-loading/
-    // $L ([js files], function () { after_code });
-    var $L=function(a,b){b = b||function(){};for(var c=a.length,d=c,e=function(){if(!(this.readyState&&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=this.onreadystatechange=null;--d||b()}},f=document.getElementsByTagName("head")[0],g=function(a){var b=document.createElement("script");b.async=true;b.src=a;b.onload=b.onreadystatechange=e;f.appendChild(b)};c;)g(a[--c])}
+    var manage_script_loading = function (scripts, ready_callback) {
+        // Loads scripts in parallel, and executes ready_callback when
+        // all are finished loading
+        var i = scripts_not_ready = scripts.length,
+            ready_callback = ready_callback || function () {};
+
+        var script_loaded = function (index) {
+            // Checks if the scripts are all loaded
+            if (!--scripts_not_ready) {
+                // Good to go!
+                ready_callback();
+            }
+        };
+
+        var load = function (url, index) {
+            // Load one script
+            var script = document.createElement('script'), loaded = false;
+            script.setAttribute('type', 'text/javascript');
+            script.setAttribute('src', url);
+            script.onload = script.onreadystatechange = function() {
+                var rs = this.readyState;
+                if (rs && rs!='complete' && rs!='loaded') return;
+                if (loaded) return;
+                loaded = true;
+                // Clean up DOM
+                document.body.removeChild(script);
+                // Script done, update manager
+                script_loaded();
+            };
+            document.body.appendChild(script);
+        };
+
+        // Start asynchronously loading all scripts
+        while (i--) {
+            load(scripts[i], i);
+        }
+    };
 
     var setCookieStorageFlag = function() {
         window.cookieSafariStorageReady = true;
@@ -63,6 +97,7 @@
         setCookieStorageFlag();
     }
 
+    // Once all dependencies are loading, fire this function
     var _init_sibt = function () {
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
@@ -86,19 +121,20 @@
         // jQuery cookie plugin (included to solve lagging requests)
         jQuery.cookie=function(a,b,c){if(arguments.length>1&&String(b)!=="[object Object]"){c=jQuery.extend({},c);if(b===null||b===undefined){c.expires=-1}if(typeof c.expires==="number"){var d=c.expires,e=c.expires=new Date;e.setDate(e.getDate()+d)}b=String(b);return document.cookie=[encodeURIComponent(a),"=",c.raw?b:encodeURIComponent(b),c.expires?"; expires="+c.expires.toUTCString():"",c.path?"; path="+c.path:"",c.domain?"; domain="+c.domain:"",c.secure?"; secure":""].join("")}c=b||{};var f,g=c.raw?function(a){return a}:decodeURIComponent;return(f=(new RegExp("(?:^|; )"+encodeURIComponent(a)+"=([^;]*)")).exec(document.cookie))?g(f[1]):null};
 
-        jQuery(document).ready(function($) { // wait for DOM elements to appear + $ closure!
-            var _willet_ask_success = false;
-            var _willet_is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
-            var _willet_show_votes = ('{{ show_votes }}' == 'True');
-            var _willet_has_voted = ('{{ has_voted }}' == 'True');
-            var sibt_button_enabled = ('{{ app.button_enabled }}' == 'True');
-            var is_live = ('{{ is_live }}' == 'True');
-            var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
-            var _willet_topbar = null;
-            var _willet_padding = null;
-            var _willet_topbar_hide_button = null;
-            var willt_code = null;
-            var hash_index = -1;
+        jQuery(document).ready(function($) {
+            // wait for DOM elements to appear + $ closure!
+            var _willet_ask_success = false,
+                _willet_is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
+                _willet_show_votes = ('{{ show_votes }}' == 'True'),
+                _willet_has_voted = ('{{ has_voted }}' == 'True'),
+                sibt_button_enabled = ('{{ app.button_enabled }}' == 'True'),
+                is_live = ('{{ is_live }}' == 'True'),
+                show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
+                _willet_topbar = null,
+                _willet_padding = null,
+                _willet_topbar_hide_button = null,
+                willt_code = null,
+                hash_index = -1;
 
             // events
 
@@ -106,9 +142,9 @@
                 /**
                 * Called when the vote iframe is closed
                 */
-                var button = $('#_willet_button');
-                var original_shadow = button.css('box-shadow');
-                var glow_timeout = 400;
+                var button = $('#_willet_button'),
+                    original_shadow = button.css('box-shadow'),
+                    glow_timeout = 400;
 
                 var resetGlow = function() {
                     button.css('box-shadow', original_shadow);
@@ -155,10 +191,8 @@
                 }
             };
 
-            /**
-            * Onclick event handler for the 'sibt' button
-            */
             var _willet_topbar_onclick = function(e) {
+                // Onclick event handler for the 'sibt' button
                 _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
             };
 
@@ -178,10 +212,8 @@
                 }
             };
 
-            /**
-            * shows the ask your friends iframe
-            */
             var _willet_show_ask = function ( message ) {
+                // shows the ask your friends iframe
 
                 var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                              "&store_url={{ store_url }}" +
@@ -201,20 +233,16 @@
                 });
             };
             
-            /**
-            * Used to toggle the results view
-            */
             var _willet_toggle_results = function() {
+                // Used to toggle the results view
                 // iframe has no source, hasnt been loaded yet
                 // and we are FOR SURE showing it
                 _willet_do_vote(-1);
             };
 
-            /**
-             * When a user hides the top bar, it shows the little
-             * "Show" button in the top right. This handles the clicks to that
-             */
             var _willet_unhide_topbar = function() {
+                // When a user hides the top bar, it shows the little
+                // "Show" button in the top right. This handles the clicks to that
                 $.cookie('_willet_topbar_closed', false);
                 _willet_topbar_hide_button.slideUp('fast');
                 //_willet_padding.show();
@@ -232,19 +260,15 @@
                 }
             };
 
-            /**
-             * Hides the top bar and padding
-             */
             var _willet_close_top_bar = function() {
+                // Hides the top bar and padding
                 $.cookie('_willet_topbar_closed', true);
                 _willet_topbar.slideUp('fast'); 
                 _willet_topbar_hide_button.slideDown('fast');
                 _willet_store_analytics('SIBTUserClosedTopBar');
             };
 
-            /**
-            * Expand the top bar and load the results iframe
-            */
+            // Expand the top bar and load the results iframe
             var _willet_do_vote_yes = function() { _willet_do_vote(1);};
             var _willet_do_vote_no = function() { _willet_do_vote(0);};
             var _willet_do_vote = function(vote) {
@@ -288,12 +312,10 @@
                 iframe.fadeIn('medium');
             };
             
-            /**
-             * Builds the top bar html
-             * is_ask_bar option boolean
-             *      if true, loads ask_in_the_bar iframe
-             */
             var build_top_bar_html = function (is_ask_bar) {
+                // Builds the top bar html
+                // is_ask_bar option boolean
+                // if true, loads ask_in_the_bar iframe
 
                 if (is_ask_bar || false) {
                     var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make." + AB_CTA_text + "</p>" +
@@ -326,10 +348,8 @@
                 return bar_html;
             };
 
-            /**
-            * Shows the vote top bar
-            */
             var _willet_show_topbar = function() {
+                // Shows the vote top bar
                 var body = $('body'); 
 
                 // create the padding for the top bar
@@ -372,10 +392,9 @@
                 }
             };
 
-            /**
-             * Shows the ask top bar
-             */
             var _willet_show_topbar_ask = function() {
+                //Shows the ask top bar
+
                 // create the padding for the top bar
                 _willet_padding = document.createElement('div');
 
@@ -404,11 +423,9 @@
                 _willet_topbar.slideDown('slow'); 
             };
 
-            /**
-             * if we get a postMessage from the iframe
-             * that the share was successful
-             */
             var _willet_topbar_ask_success = function () {
+                // if we get a postMessage from the iframe
+                // that the share was successful
                 _willet_store_analytics('SIBTTopBarShareSuccess');
                 var iframe = _willet_topbar.find('div.iframe iframe');
                 var iframe_div = _willet_topbar.find('div.iframe');
@@ -423,8 +440,9 @@
             };
 
             var purchase_cta = $('#_willet_shouldIBuyThisButton');
-            if (purchase_cta.length > 0) { // is the div there?
-                 // actually running it
+            if (purchase_cta.length > 0) {
+                // is the div there?
+                // actually running it
                 _willet_store_analytics();
 
                 // run our scripts
@@ -523,76 +541,29 @@
                                  "&user_uuid={{user.uuid}}" +
                                  "&instance_uuid={{instance.uuid}}" +
                                  "&target_url=" + window.location.href
-                }).appendTo ("body");
+                }).appendTo("body");
 
-
-                $L (['{{ URL }}/s/js/jquery.colorbox.js?' + 
-                        'app_uuid={{app.uuid}}&' + 
-                        'user_uuid={{user.uuid}}&' + 
-                        'instance_uuid={{instance.uuid}}&' + 
-                        'target_url=' + window.location.href], function () {
-                            // init colorbox last
-                            // $.willet_colorbox = jQuery.willet_colorbox;
-                            window.jQuery.willet_colorbox.init ();
+                // Load jQuery colorbox
+                manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
+                    'app_uuid={{app.uuid}}&' + 
+                    'user_uuid={{user.uuid}}&' + 
+                    'instance_uuid={{instance.uuid}}&' + 
+                    'target_url=' + window.location.href],
+                    function () {
+                        // init colorbox last
+                        // $.willet_colorbox = jQuery.willet_colorbox;
+                        window.jQuery.willet_colorbox.init ();
                 });
             }
         });
     };
 
-    var manage_script_loading = (function (scripts, ready_callback) {
-        // Loads scripts in parallel, and executes ready_callback when
-        // all are finished loading
-        var i = scripts.length,
-            load_status = [];
+    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
 
-        var script_loaded = function (index) {
-            // Checks if the scripts are all loaded
-            var j = load_status.length,
-                go = true;
+    if (!window.jQuery) {
+        scripts_to_load.append('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
+    }
 
-            // Update this scripts status
-            load_status[index] = true;
-
-            // Check to see if any scripts are not finished
-            while (j--) {
-                if (!load_status[j]) {
-                    // Found a script that hasn't loaded
-                    go = false;
-                    break;
-                }
-            }
-            if (go) {
-                // Good to go!
-                ready_callback();
-            }
-        };
-
-        var load = function (url, index) {
-            // Load one script
-            var script = document.createElement('script'), loaded = false;
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', url);
-            script.onload = script.onreadystatechange = function() {
-                var rs = this.readyState;
-                if (rs && rs!='complete' && rs!='loaded') return;
-                if (loaded) return;
-                loaded = true;
-                // Clean up DOM
-                document.body.removeChild(script);
-                // Script done, update manager
-                script_loaded(index);
-            };
-            document.body.appendChild(script);
-        };
-
-        // Start asynchronously loading all scripts
-        while (i--) {
-            // Note that the indexes don't have importance,
-            // there just needs to be one for every script
-            load_status.push(false);
-            load(scripts[i], i);
-        }
-    })(['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-        'https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], 
-        _init_sibt);
+    // Go time! Load script dependencies
+    manage_script_loading( scripts_to_load, _init_sibt);
 })();
