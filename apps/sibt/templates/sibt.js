@@ -115,7 +115,6 @@
         }
         _willet_head.appendChild(_willet_style);
 
-
         jQuery.noConflict(); // Suck it, Prototype!
 
         // jQuery cookie plugin (included to solve lagging requests)
@@ -158,6 +157,7 @@
                 return;
             };
 
+            // Send action to server
             var _willet_store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
                 var iframe = document.createElement( 'iframe' );

@@ -227,6 +227,19 @@
                     })
                     .click (_willet_show_results);
                 }
+
+                // watch for message
+                // Create IE + others compatible event handler
+                $(window).bind('onmessage message', function(e) {
+                    var message = e.originalEvent.data;
+                    if (message == 'shared') {
+                        _willet_ask_success = true;
+                    } else if (message == 'top_bar_shared') {
+                        _willet_topbar_ask_success();
+                    } else if (message == 'close') {
+                        $.willet_colorbox.close();
+                    }
+                });
                 
                 // init colorbox.
                 manage_script_loading([
