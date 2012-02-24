@@ -1086,3 +1086,10 @@ div.about img {
     background-image: url("../imgs/wispy_cloud.png");
     background-repeat: no-repeat;
 }
+
+.thick_hr {
+    height: 10px; 
+    width: 500px; 
+    margin-left: auto; 
+    margin-right: auto;
+}

@@ -43,16 +43,6 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def first10Shares(email_addr):
-        subject = '[Willet Referral] We Have Some Results!'
-        to_addr =  email_addr
-        body    = template.render(Email.template_path('first10.html'), {
-            'campaign_id': campaign_id
-        })
-        
-        Email.send_email(from_addr, to_addr, subject, body)
-
-    @staticmethod
     def invite(infrom_addr, to_addrs, msg, url, app):
         # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
         # from the db via email and personalize the email.
@@ -200,18 +190,88 @@ class Email():
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
-    ### MAILOUTS ###
     @staticmethod
-    def Mailout_Nov28(to_addr, name, app_uuid):
-        subject = 'Updates About "Should I Buy This"!'
+    def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
+                 client_name, client_domain,
+                 asker_img= None):
+        subject = "Which one should I buy?"
+        to_first_name = from_first_name = ''
+
+        # Grab first name only
+        try:
+            from_first_name = from_name.split(' ')[0]
+        except:
+            from_first_name = from_name
+        try:
+            to_first_name = to_name.split(' ')[0]
+        except:
+            to_first_name = to_name
+        
+        body = template.render(Email.template_path('wosib_ask.html'),
+            {
+                'from_name'         : from_name.title(),
+                'from_first_name'   : from_first_name.title(),
+                'to_name'           : to_name.title(),
+                'to_first_name'     : to_first_name.title(),
+                'message'           : message,
+                'vote_url'          : vote_url,
+                'asker_img'         : asker_img,
+                'client_name'       : client_name,
+                'client_domain'     : client_domain
+            }
+        )
+        
+        logging.info("Emailing %s" % to_addr)
+        Email.send_email(from_address=      from_addr,
+                         to_address=        to_addr,
+                         to_name=           to_name.title(),
+                         replyto_address=   from_addr,
+                         subject=           subject,
+                         body=              body )
+
+    @staticmethod
+    def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):
+        # similar to SIBTVoteNotification, except because you can't vote 'no',
+        # you are just told someone voted on one of your product choices.
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('wosib_voteNotification.html'),
+            {
+                'name'        : name.title(),
+                'cart_url'    : cart_url,
+                'client_name' : client_name,
+                'client_domain' : client_domain 
+            }
+        )
+        
+        logging.info("Emailing X%sX" % to_addr)
+        Email.send_email(from_addr, to_addr, subject, body)
+    
+    @staticmethod
+    def WOSIBVoteCompletion(to_addr, name, products):
+        if name == "":
+            name = "Savvy Shopper"
+        subject = '%s, the votes are in!' % name
+        
+        # would have been much more elegant had django 0.96 gotten the 
+        # {% if array|length > 1 %} notation (it doesn't work in GAE)
+        product = products[0]
+        if len (products) == 1:
+            products = False
+        
         body = template.render(
-            Email.template_path('mailout_nov28.html'), {
+            Email.template_path('wosib_voteCompletion.html'), {
                 'name': name,
-                'app_uuid' : app_uuid
+                'products': products,
+                'product' : product
         })
 
         logging.info("Emailing X%sX" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
+
+    ### MAILOUTS ###
 
     @staticmethod 
     def template_path(path):

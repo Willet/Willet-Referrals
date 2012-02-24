@@ -20,13 +20,11 @@ from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
-from apps.referral.models import Referral
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
-from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify

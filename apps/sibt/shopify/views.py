@@ -33,6 +33,7 @@ from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
 from apps.user.models         import get_or_create_user_by_cookie
+from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
 from util.helpers             import *
@@ -49,12 +50,13 @@ class ShowBetaPage(URIHandler):
 
 class SIBTShopifyWelcome(URIHandler):
     def get(self):
-        logging.info('trying to create app')
+        logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
             logging.debug ('client is %s' % client)        
             token = self.request.get('t') # token
-            app = SIBTShopify.get_or_create(client, token=token)
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
             client_email = None
             shop_owner   = 'Shopify Merchant'
@@ -256,7 +258,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
-                    asker_name = 'I' # what?
+                    asker_name = 'I' # "should asker_name buy this?"
             except:
                 logging.warn('error splitting the asker name')
 
@@ -343,8 +345,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
+
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
 
@@ -429,4 +432,3 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         
         return
-

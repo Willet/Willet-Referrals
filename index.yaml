@@ -132,3 +132,25 @@ indexes:
   - name: is_admin
   - name: what
   - name: created
+
+- kind: Product
+  properties:
+  - name: shopify_id
+  - name: variants
+
+- kind: ProductShopify
+  properties:
+  - name: shopify_id
+  - name: variants
+
+- kind: WOSIBInstance
+  properties:
+  - name: is_live
+  - name: end_datetime
+
+- kind: WOSIBInstance
+  properties:
+  - name: asker
+  - name: app_
+  - name: created
+    direction: desc

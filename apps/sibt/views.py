@@ -23,6 +23,7 @@ from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
+from apps.sibt.actions          import *
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
@@ -514,3 +515,16 @@ class ShowOnUnloadHook( URIHandler ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+class SIBTGetUseCount (URIHandler):
+    def get(self):
+        # faking it for now. shows number of button loads divided by 100
+        try:
+            product_uuid = self.request.get ('product_uuid')
+            button_use_count = memcache.get ("usecount-%s" % product_uuid)
+            if button_use_count is None:
+                button_use_count = int (SIBTShowingButton.all().count() / 100)
+                memcache.add ("usecount-%s" % product_uuid, button_use_count)
+            self.response.out.write (str (button_use_count))
+        except:
+            self.response.out.write ('0') # no shame in that?

@@ -562,7 +562,7 @@
     if (!window.jQuery) {
         scripts_to_load.append('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
     }
-
+    
     // Go time! Load script dependencies
     manage_script_loading( scripts_to_load, _init_sibt);
 })();

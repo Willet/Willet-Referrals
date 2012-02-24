@@ -85,17 +85,16 @@
                 <div class="center_col">
                     {% if incentive_enabled %}
 
-                    <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
-                    <label for="email-field">PayPal Email:</label>
-                    <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
-                    
-                    <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
+                        <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
+                        <label for="email-field">PayPal Email:</label>
+                        <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
+                        
+                        <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
 
                     {% else %}
                     
-                    <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
-                    <p>You will receive an email when one of your trusted friends gives advice!</p>
-
+                        <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
+                        <p>You will receive an email when one of your trusted friends gives advice!</p>
                     {% endif %}
                 </div>
                 <div id="cancelButton" class="button close">
@@ -185,6 +184,15 @@
 
     <script type="text/javascript">
         "use strict";
+        
+        var friends        = []; // List of Friend instances in Choose Friend screen
+        var fb_friends     = []; // List of { id, name } from FB
+        var friendNames    = []; // List of names to use in autocomplete (sorted)
+        var selectionCount = 0;  // Number of friends selected to msg
+        var fbAccessToken  = "";
+        var fbIdentity     = "";
+
+        var ENTER_KEY = 13;
 
         // ----------------------------  CLASSES  ----------------------------------
 
@@ -774,10 +782,6 @@
         // Add classes here.  Any questions about js classes? Ask Fraser
         {% block js_classes %}{% endblock js_classes %}
 
-        // ----------------------------  CONSTS -------------------------------
-
-        var ENTER_KEY = 13;
-
         // ---------------------------- Global Variables ----------------------
 
         var asker; // Asker info
@@ -1125,4 +1129,3 @@
     </script>
 </body>
 </html>
-

@@ -383,7 +383,7 @@ class StartSIBTAnalytics(URIHandler):
                 'show_action': 'SIBTShowingButton',
                 'l': [],
                 'counts': {},
-            }        
+            }
         }
         actions_to_check = [
             'SIBTShowingAskIframe',
