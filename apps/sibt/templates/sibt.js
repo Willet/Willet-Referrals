@@ -41,7 +41,7 @@
             load(scripts[i], i);
         }
     };
-    
+
     var setCookieStorageFlag = function() {
         window.cookieSafariStorageReady = true;
     };
@@ -557,8 +557,12 @@
         });
     };
 
+    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+
+    if (!window.jQuery) {
+        scripts_to_load.append('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
+    }
+
     // Go time! Load script dependencies
-    manage_script_loading(['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-        'https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'], 
-        _init_sibt);
+    manage_script_loading( scripts_to_load, _init_sibt);
 })();
