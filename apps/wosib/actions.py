@@ -250,6 +250,7 @@ class WOSIBShowAction(ShowAction):
 
 
 class WOSIBShowingButton(WOSIBShowAction):
+    ''' Action created when the WOSIB button is rendered on page. '''
     @staticmethod
     def create(user, **kwargs):
         app = None
@@ -296,6 +297,9 @@ class WOSIBShowingButton(WOSIBShowAction):
 
 
 class WOSIBShowingResults(WOSIBShowAction):
+    ''' Action created when the check results button is clicked. '''
+    # TODO: WOSIB Analytics
+    
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBResults'
@@ -322,34 +326,10 @@ class WOSIBShowingResults(WOSIBShowAction):
         return action
 
 
-class WOSIBShowingResultsToAsker(WOSIBShowAction):
-    @staticmethod
-    def create(user, **kwargs):
-        what = 'WOSIBResultsToAsker'
-        uuid = generate_uuid(16)
-
-        # make sure we get an instance
-        instance = None
-        try:
-            instance = kwargs['instance']
-        except Exception, e:
-            logging.error('error getting instance: %s' % e, exc_info=True)
-
-        action = WOSIBShowingResultsToAsker(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
-                what = what,
-                wosib_instance = instance
-        )
-        action.put()
-        return action
-
-
 class WOSIBShowingVote(WOSIBShowAction):
+    ''' Action created when the vote page is loaded. '''
+    # TODO: WOSIB Analytics
+    
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBVote'
@@ -377,6 +357,7 @@ class WOSIBShowingVote(WOSIBShowAction):
 
 
 class WOSIBInstanceAction(UserAction):
+    ''' Generic class for actions with an instance available. '''
     wosib_instance = db.ReferenceProperty(db.Model, collection_name="wosib_inst_actions")
 
     ## Constructor
@@ -407,6 +388,8 @@ class WOSIBInstanceAction(UserAction):
 
 
 class WOSIBInstanceCreated(WOSIBInstanceAction):
+    ''' Class created when a WOSIB instance is made. '''
+    # TODO: WOSIB Analytics
     medium = db.StringProperty( default="", indexed=True )
 
     @staticmethod
@@ -442,6 +425,7 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
 ## WOSIB Show event with NO INSTANCE
 ##
 class WOSIBShowingAskIframe(ShowAction):
+    ''' Class created when the primary ask window is opened. '''
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBAskIframe'
@@ -526,6 +510,10 @@ class WOSIBOverlayCancelled(ShowAction):
 
 
 class WOSIBUserClickedButtonAsk(UserAction):
+    ''' Class created when the WOSIB button is clicked. 
+        However, since the button is the only way to open the WOSIB ask window,
+        it serves the same purpose as WOSIBShowingAskIframe.'''
+    # TODO: WOSIB Analytics
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -553,6 +541,9 @@ class WOSIBUserClickedButtonAsk(UserAction):
 
 
 class WOSIBAskUserClickedShare(UserAction):
+    ''' Class created when WOSIB instance is shared to everyone on FB.'''
+    # TODO: WOSIB Analytics
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -579,6 +570,9 @@ class WOSIBAskUserClickedShare(UserAction):
 
 
 class WOSIBConnectFBCancelled(UserAction):
+    ''' Class created when user decides not to authorize the SIBT/WOSIB app.'''
+    # TODO: WOSIB Analytics
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -605,6 +599,9 @@ class WOSIBConnectFBCancelled(UserAction):
 
 
 class WOSIBFBConnected(UserAction):
+    ''' Class created when user authorizes the SIBT/WOSIB app.'''
+    # TODO: WOSIB Analytics
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -631,6 +628,9 @@ class WOSIBFBConnected(UserAction):
 
 
 class WOSIBFriendChoosingCancelled(UserAction):
+    ''' Class created when user gives up while on the choose friends screen.'''
+    # TODO: WOSIB Analytics
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -657,6 +657,8 @@ class WOSIBFriendChoosingCancelled(UserAction):
 
 
 class WOSIBNoConnectFBCancelled(UserAction):
+    ''' Class created when user clicks share, but decides not to post on FB.'''
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -683,6 +685,8 @@ class WOSIBNoConnectFBCancelled(UserAction):
 
 
 class WOSIBNoConnectFBDialog(UserAction):
+    ''' Class created when user clicks share.'''
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -709,6 +713,9 @@ class WOSIBNoConnectFBDialog(UserAction):
 
 
 class WOSIBConnectFBDialog(UserAction):
+    '''Action created when user connects with FB and fetch FB friends, on 
+       Choose Friends screen'''
+    
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -735,6 +742,8 @@ class WOSIBConnectFBDialog(UserAction):
 
 
 class WOSIBUserAction(UserAction):
+    '''Generic action for all actions relatable to a single user.'''
+    
     wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_user_actions" )
 
     ## Constructor
