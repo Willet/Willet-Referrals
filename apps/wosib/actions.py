@@ -223,7 +223,7 @@ class WOSIBShowAction(ShowAction):
                     self.wosib_instance.uuid,
                     self.wosib_instance.app_.client.domain
             )
-        except AttributeError as detail: # typically 'instance is null'
+        except AttributeError, detail: # typically 'instance is null'
             return "Showing %s to %s(%s): Attribute error '%s'" % (
                     self.what,
                     self.user.get_full_name(), 
