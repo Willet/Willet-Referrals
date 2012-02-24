@@ -649,14 +649,15 @@ class SendFriendAsks( URIHandler ):
                                       product_title= product.title,
                                       client_name=   app.client.name,
                                       client_domain= app.client.domain )
-                        email_share_counter += 1
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)
+                    finally:
+                        email_share_counter += 1
             
             friend_share_counter = fb_share_counter + email_share_counter
 
-            if friend_share_counter > 0:
+            if friend_share_counter > 0: 
                 # create the instance!
                 instance = app.create_instance( user, 
                                                 None, 
@@ -680,7 +681,10 @@ class SendFriendAsks( URIHandler ):
             if not response['data']['warnings']:
                 del response['data']['warnings']
             
-            iuid = instance.uuid if instance else None
+            try:
+                iuid = instance.uuid
+            except:
+                iuid = None
 
             logging.info('Asker: %s\n \
                 Friends: %s\n \

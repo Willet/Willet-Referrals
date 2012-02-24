@@ -369,7 +369,7 @@ class SendWOSIBFriendAsks( URIHandler ):
             for (_, fname, fid) in fb_friends:
                 ids.append(fid)
                 names.append(fname)
-            try:            
+            try:
                 fb_share_ids = user.fb_post_to_friends( ids,
                                                         names,
                                                         msg,
@@ -401,10 +401,11 @@ class SendWOSIBFriendAsks( URIHandler ):
                                    asker_img=     a['pic'],
                                    client_name=   app.client.name,
                                    client_domain= app.client.domain )
-                    email_share_counter += 1
                 except Exception,e:
                     response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                     logging.error('we had an error sharing via email', exc_info=True)
+                finally:
+                    email_share_counter += 1
         
         friend_share_counter = fb_share_counter + email_share_counter
 
@@ -436,7 +437,10 @@ class SendWOSIBFriendAsks( URIHandler ):
         if not response['data']['warnings']:
             del response['data']['warnings']
         
-        iuid = instance.uuid if instance else None
+        try:
+            iuid = instance.uuid
+        except:
+            iuid = None
         
         logging.info('Friends: %s\n \
             Successful shares on FB: %d\n \
