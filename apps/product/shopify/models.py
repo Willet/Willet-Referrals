@@ -42,7 +42,7 @@ class ProductShopify(Product):
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
-        if product == None:
+        if not product or not product.variants:
             uuid = generate_uuid( 16 )
 
             variants = []
@@ -101,8 +101,11 @@ class ProductShopify(Product):
     @staticmethod
     def get_or_fetch(url, client):
         product = ProductShopify.get_by_url(url)
-        if product == None:
-            logging.warn('Could not get product for url: %s' % url)
+        if not product or not product.variants:
+            if not product:
+                logging.warn('Could not get product for url: %s' % url)
+            elif not product.variants:
+                logging.warn('need to refetch product to get variants: %s' % url)
             try:
                 result = urlfetch.fetch(
                         url = '%s.json' % url,
