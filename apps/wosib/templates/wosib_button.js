@@ -250,6 +250,6 @@
     }
 
     // Go time! Load script dependencies
-    manage_script_loading( 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js',
+    manage_script_loading(['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'],
         _init_wosib );
 })();
