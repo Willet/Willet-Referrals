@@ -1,7 +1,7 @@
 /**
  * Buttons JS. Copyright Willet Inc, 2012
  */
-(function () {
+;(function () {
     var here = window.location + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
