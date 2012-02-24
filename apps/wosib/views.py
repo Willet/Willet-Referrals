@@ -108,7 +108,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'app_uuid' : self.request.get('app_uuid'),
                 'user_uuid' : self.request.get('user_uuid'),
                 'instance_uuid' : self.request.get('instance_uuid'),
-                'target_url' : self.request.get('target_url'),
+                'target_url' : self.request.get('refer_url'),
                 'evnt' : self.request.get('evnt'),
                 'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                 'app': app,

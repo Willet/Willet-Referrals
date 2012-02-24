@@ -2,5 +2,5 @@
 from apps.wosib.shopify.views     import *
 
 urlpatterns = [
-    (r'/w/shopify/button.js',    WOSIBShopifyServeScript),
+    (r'/w/shopify/wosib.js',    WOSIBShopifyServeScript),
 ]
