@@ -14,7 +14,7 @@
     
     // Safari cookie storage backup
     var firstTimeSession = 0;
-    var doSafariCookieStorage = function() {
+    var doSafariCookieStorage = function () {
         if (firstTimeSession == 0) {
             firstTimeSession = 1;
             document.getElementById('sessionform').submit()
@@ -26,11 +26,20 @@
     // BUT it will fire on Safari, which is what we need.
     // TODO: Fix this. Apparently, there is no easy way to determine strictly 'Safari'.
     if ( navigator.userAgent.indexOf('Safari') != -1 ) {
+        var holder = document.createElement('div'),
+            storageIFrameLoaded = false;
         var storageIFrame = document.createElement( 'iframe' );
         storageIFrame.setAttribute( 'src', "{{URL}}{% url UserCookieSafariHack %}" );
         storageIFrame.setAttribute( 'id', "sessionFrame" );
         storageIFrame.setAttribute( 'name', "sessionFrame" );
         storageIFrame.setAttribute( 'onload', "doSafariCookieStorage();" );
+        storageIFrame.onload = storageIFrame.onreadystatechange = function() {
+            var rs = this.readyState;
+            if (rs && rs!='complete' && rs!='loaded') return;
+            if (storageIFrameLoaded) return;
+            storageIframeLoaded = true;
+            doSafariCookieStorage();
+        };
         storageIFrame.style.display = 'none';
 
         var storageForm = document.createElement( 'form' );
@@ -45,9 +54,11 @@
         storageInput.setAttribute( 'type', 'text' );
         storageInput.setAttribute( 'value', '{{user.uuid}}' );
         storageInput.setAttribute( 'name', 'user_uuid' );
-        document.body.appendChild( storageIFrame );
+
+        holder.appendChild( storageIFrame );
         storageForm.appendChild( storageInput );
-        document.body.appendChild( storageForm );
+        holder.appendChild(storageForm);
+        document.body.appendChild(holder);
     } else {
         setCookieStorageFlag();
     }
