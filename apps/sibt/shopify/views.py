@@ -55,8 +55,16 @@ class SIBTShopifyWelcome(URIHandler):
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
+            
+            
             logging.debug ('client is %s' % client)
             token = self.request.get('t') # token
+
+            # update client token (needed when reinstalling)
+            logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
+            client.token = token
+            client.put()
+
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
