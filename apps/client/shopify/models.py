@@ -171,6 +171,7 @@ class ClientShopify( Client ):
         resp, content = h.request( url, "GET", headers = header)
         
         details = json.loads( content )
+        products = None
         try: 
             logging.debug ("got json: %r" % details)
             assert ('products' in details)

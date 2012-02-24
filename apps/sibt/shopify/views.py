@@ -37,6 +37,7 @@ from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
 from util.helpers             import *
+from util.helpers             import url as build_url
 from util.urihandler          import URIHandler
 from util.consts              import *
 
@@ -49,11 +50,12 @@ class ShowBetaPage(URIHandler):
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class SIBTShopifyWelcome(URIHandler):
+    # "install done" page. actually installs the apps.
     def get(self):
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
-            logging.debug ('client is %s' % client)        
+            logging.debug ('client is %s' % client)
             token = self.request.get('t') # token
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
@@ -65,6 +67,15 @@ class SIBTShopifyWelcome(URIHandler):
                 client_email = client.email
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
+
+                # Query the Shopify API to update all Products
+                taskqueue.add(
+                    url = build_url('FetchShopifyProducts'),
+                    params = {
+                        'client_uuid': client.uuid,
+                        'app_type'   : 'SIBTShopify'
+                    }
+                )
 
             # Switched to new order tracking code on Jan 16
             if app.created > datetime( 2012, 01, 16 ):

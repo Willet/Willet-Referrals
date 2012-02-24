@@ -56,7 +56,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
@@ -72,7 +72,7 @@ class Email():
 
         body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name)
         
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
 
     @staticmethod
@@ -93,7 +93,7 @@ class Email():
 
         body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
         
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
     
     @staticmethod
@@ -154,7 +154,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_address= from_addr,
                          to_address= to_addr,
                          subject= subject,
@@ -187,7 +187,7 @@ class Email():
                 'buy_it_percentage': buy_it_percentage
         })
 
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
@@ -246,7 +246,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
     
     @staticmethod
@@ -268,7 +268,7 @@ class Email():
                 'product' : product
         })
 
-        logging.info("Emailing X%sX" % to_addr)
+        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
     ### MAILOUTS ###
