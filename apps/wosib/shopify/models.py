@@ -57,7 +57,8 @@ class WOSIBShopify(WOSIB, AppShopify):
                           "variant_id" : "{{ item.variant_id }}"
                         },
                     {%% endfor %%}
-                ];
+                {}];
+                _willet_cart_items.pop(); // remove trailing element... IE7 trailing comma patch
 
                 var _willet_st = document.createElement( 'script' );
                 _willet_st.type = 'text/javascript';
