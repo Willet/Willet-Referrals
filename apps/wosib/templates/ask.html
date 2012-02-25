@@ -308,7 +308,8 @@
                 "variant_id": "{{variant.variant_id}}",
                 "product_uuid": "{{variant.product_uuid}}",
             },
-        {% endfor %} ];
+        {% endfor %} {}];
+        _willet_cart_variants.pop(); // remove trailing element... IE7 trailing comma patch
         
         var x = null;
         for (x in _willet_cart_variants) {
