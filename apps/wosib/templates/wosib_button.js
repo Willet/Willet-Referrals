@@ -218,7 +218,7 @@
                     $('#_willet_button').hide ();
                     $('<div />', {
                         'id': "_willet_WOSIB_results",
-                        'class': "button",
+                        'class': "button"
                     })
                     .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                     .appendTo(button)
