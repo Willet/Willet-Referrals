@@ -76,7 +76,7 @@
                     'user_uuid': '{{user.uuid}}',
                     'instance_uuid': '{{instance.uuid}}',
                     'store_url': 'http://' + document.domain,
-                    'has_results': {{has_results|default:"false"}}, // true || false
+                    'has_results': {{has_results|default:"false"}} // true || false
                 };
                 var _willet_css = {% include stylesheet %} // pre-quoted
                 var _willet_app_css = '{{ app_css }}';
@@ -260,7 +260,7 @@
                     });
             }
         });
-    }
+    };
 
     // Go time! Load script dependencies
     manage_script_loading(['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'],
