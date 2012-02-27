@@ -16,6 +16,7 @@
     height: 262px;
     padding: 0;
     text-align: center;
+    list-style-type: none;
 }
 #cart_items_display li {
     cursor:pointer;

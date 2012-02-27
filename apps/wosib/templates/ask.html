@@ -2,6 +2,14 @@
 
 {% block styles %}
     <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+    <!--[if IE 7]>
+    <style>
+        #cart_items_display li {
+            zoom: 1;
+            display: inline;
+        }
+    </style>
+    <![endif]-->
 {% endblock styles %}
 
 
@@ -11,7 +19,7 @@
 
     <div id="splash">
         <div class="title_bar">
-            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+            <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
             <div>Not sure which one you should buy?</div>
         </div>
         <form method="POST" action="" style="margin-top:10px">
@@ -29,7 +37,7 @@
                 <textarea id="fbComment" name="fbComment">Hello! Which one should I buy?</textarea>
                 <br />
                 <div class="option left">
-                    <div class="button" id="postWosibOnWall" title="Post to your wall">
+                    <div class="button" id="postOnWall" title="Post to your wall">
                         <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
                         <div class="title">Ask Friends</div>
                         <div class="subtitle">Post to Facebook</div>
@@ -39,7 +47,7 @@
                 <div class="option right">
                     <div class="button" id="showChooseScreen" title="Post to your friends' walls">
                         <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
-                        <div class="title">Choose Friends...</div>
+                        <div class="title">Choose Friends</div>
                         <div class="subtitle">Get trusted advice</div>
                     </div>
                 </div>
@@ -215,7 +223,6 @@
             }
         });
     };
-
 {% endblock ajax_methods %}
 
 
@@ -240,6 +247,22 @@
             alert ('Oops... AdBlock is probably blocking facebook!');
         }
         closeIframe( 'WOSIBNoConnectFBDialog' );
+    };
+
+    var resizeProductImage = function (img) {
+        var logoWidth = img.width,
+            logoHeight = img.height,
+            $img = $(img);
+
+        if (logoWidth > 150 || logoHeight > 150) {
+            if (logoWidth >= logoHeight){
+               $img.height((logoHeight / logoWidth)*150);
+               $img.width(150);
+            } else {
+                $img.height(150);
+                $img.width((logoWidth / logoHeight)*150);
+            }
+        } 
     };
 
     var get_selected_objects = function () {
@@ -311,12 +334,14 @@
         {% endfor %} {}];
         _willet_cart_variants.pop(); // remove trailing element... IE7 trailing comma patch
         
-        var x = null;
-        for (x in _willet_cart_variants) {
-            // add products onto page.
-            $('#cart_items_display').append(
+        var $cart_items_display = $('#cart_items_display'),
+            cart_length = _willet_cart_variants.length,
+            x = 0;
+        while ( cart_length > x) {
+            // add products onto page
+            $cart_items_display.append(
                 '<li>' + 
-                    '<img class="variant_image" src="' + _willet_cart_variants[x].image + '" />' +
+                    '<img class="variant_image" src="' + _willet_cart_variants[x].image+ '" />'+
                     '<label>' +
                         '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
                                'data-uuid="' + _willet_cart_variants[x].product_uuid + '" ' + 
@@ -325,7 +350,16 @@
                         _willet_cart_variants[x].title + 
                     '</label>' + 
                 '</li>'
-            );
+            )
+            .find('img')
+            // Resize product images to fit
+            .css('visibility', 'hidden')
+            .bind('load', function () {
+                resizeProductImage(this);
+                $(this).css('visibility', 'visible');
+            });
+            
+            x++;
         }
         
         // adjust box width; 182px is the empirically "nice" width for the items

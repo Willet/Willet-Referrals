@@ -26,19 +26,21 @@
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
-                <ul class="friends" id="friends">
-                    <!-- Friends appended when document ready -->
-                </ul>
-                <div class="holder" id="addFriend">
-                    <div class="grey_bar">
-                        <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
-                        Add Another Friend
+                <div class="content narrow">
+                    <ul class="friends" id="friends">
+                        <!-- Friends appended when document ready -->
+                    </ul>
+                    <div class="holder" id="addFriend">
+                        <div class="grey_bar">
+                            <img alt="add" src="/static/sibt/imgs/add_cross_29x29.png" />
+                            Add Another Friend
+                        </div>
                     </div>
-                </div>
-                <div id="chosenButton" class="button inactive corner">
-                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                    <div class="title">Ask Chosen Friends</div>
-                    <div class="subtitle">Giving advice is fun</div>
+                    <div id="chosenButton" class="button inactive corner">
+                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                        <div class="title">Ask Chosen Friends</div>
+                        <div class="subtitle">Giving advice is fun</div>
+                    </div>
                 </div>
             </div>
 
@@ -49,16 +51,18 @@
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Let Your Friends Know Who Is Asking</div>
                 </div>
-                <ul class="askers" id="askers">
-                    <!-- Asker appended when document ready -->
-                </ul>
-                <div class="center_col">
-                    <p class="centered">We will email you when a friend provides advice.</p>
-                </div>
-                <div id="askButton" class="button inactive corner">
-                    <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
-                    <div class="title">Ask Chosen Friends</div>
-                    <div class="subtitle">Giving advice is fun</div>
+                <div class="content narrow">
+                    <ul class="askers" id="askers">
+                        <!-- Asker appended when document ready -->
+                    </ul>
+                    <div class="center_col">
+                        <p class="centered">We will email you when a friend provides advice.</p>
+                    </div>
+                    <div id="askButton" class="button inactive corner">
+                        <img alt="friend" src="/static/plugin/imgs/grey_outline_logo_40x40.png" />
+                        <div class="title">Ask Chosen Friends</div>
+                        <div class="subtitle">Giving advice is fun</div>
+                    </div>
                 </div>
             </div>
 
@@ -69,9 +73,11 @@
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Choose Friends To Ask For Advice</div>
                 </div>
-                <div class="middled">
-                    <div>Asking...</div>
-                    <img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" />
+                <div class="content narrow">
+                    <div class="middled">
+                        <div>Asking...</div>
+                        <img alt="loading" src="/static/imgs/ajax-loader.gif" id="loader" />
+                    </div>
                 </div>
             </div>
 
@@ -82,40 +88,44 @@
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Success! Your Question Has Been Sent</div>
                 </div>
-                <div class="center_col">
-                    {% if incentive_enabled %}
+                <div class="content narrow">
+                    <div class="center_col">
+                        {% if incentive_enabled %}
 
-                        <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
-                        <label for="email-field">PayPal Email:</label>
-                        <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
+                            <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
+                            <label for="email-field">PayPal Email:</label>
+                            <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
+                            
+                            <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
+
+                        {% else %}
                         
-                        <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
-
-                    {% else %}
-                    
-                        <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
-                        <p>You will receive an email when one of your trusted friends gives advice!</p>
-                    {% endif %}
-                </div>
-                <div id="cancelButton" class="button close">
-                    <div class="simpletitle">Close</div>
+                            <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
+                            <p>You will receive an email when one of your trusted friends gives advice!</p>
+                        {% endif %}
+                    </div>
+                    <div id="cancelButton" class="button close">
+                        <div class="simpletitle">Close</div>
+                    </div>
                 </div>
             </div>
 
             <!-------------------------- Failure Screen -------------------------------->
 
-            <div id="failure">
+            <div class="narrow_screen" id="failure">
                 <div class="title_bar">
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Sorry, But Something Went Wrong...</div>
                 </div>
-                <div class="center_col">
-                    <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
-                    <p class='error_message'>An error happened.</p>
-                    <p>You were so excited to get advice and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
-                </div>
-                <div id="cancelButton" class="button close">
-                    <div class="simpletitle">Close</div>
+                <div class="content narrow"
+                    <div class="center_col">
+                        <p>Oh drat. We feel <i>dreadful</i>. What we know is:</p>
+                        <p class='error_message'>An error happened.</p>
+                        <p>You were so excited to get advice and now we've let you down. We've been alerted and we'll get to the bottom of this.</p>
+                    </div>
+                    <div id="cancelButton" class="button close">
+                        <div class="simpletitle">Close</div>
+                    </div>
                 </div>
             </div>
 
