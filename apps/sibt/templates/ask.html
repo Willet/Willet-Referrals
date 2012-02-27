@@ -22,38 +22,40 @@
                         </ul>
                     </div>
                 </div>
-                <!-- 
-                // Enable when styling complete
-                {% if incentive_enabled %}
-                <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
-                {% endif %}
-                -->
-                <div class="message" id="message">
-                    <img alt="product" src="{{ product_images|first }}" />
-                    <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
-                </div>
-                <div class="options">
-                    <div class="option left">
-                        <div class="button" id="postOnWall" title="Post to your wall">
-                            <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
-                            <div class="title">Ask Friends</div>
-                            <div class="subtitle">Post to Facebook</div>
-                        </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>easy &amp; fast</div>
-                        </div>
+                <div class="content narrow">
+                    <!-- 
+                    // Enable when styling complete
+                    {% if incentive_enabled %}
+                    <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
+                    {% endif %}
+                    -->
+                    <div class="message" id="message">
+                        <img alt="product" src="{{ product_images|first }}" />
+                        <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
                     </div>
-                    <div class="or">or</div>
-                    <div class="option right">
-                        <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                            <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
-                            <div class="title">Choose Friends</div>
-                            <div class="subtitle">Get trusted advice</div>
+                    <div class="options">
+                        <div class="option left">
+                            <div class="button" id="postOnWall" title="Post to your wall">
+                                <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                                <div class="title">Ask Friends</div>
+                                <div class="subtitle">Post to Facebook</div>
+                            </div>
+                            <div class="hint">
+                                <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
+                                <div>easy &amp; fast</div>
+                            </div>
                         </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>best advice</div>
+                        <div class="or">or</div>
+                        <div class="option right">
+                            <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                                <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                                <div class="title">Choose Friends</div>
+                                <div class="subtitle">Get trusted advice</div>
+                            </div>
+                            <div class="hint">
+                                <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
+                                <div>best advice</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,7 +133,7 @@
                 showScreen('asking');
 
                 // No errors with friends, submit!
-                payload = {
+                var payload = {
                     user_name       : "{{user_name}}",
                     user_uuid       : "{{user_uuid}}",
                     app_uuid        : "{{app_uuid}}",

@@ -25,6 +25,7 @@ from apps.user.models       import get_or_create_user_by_email
 
 from util                   import httplib2
 from util.consts            import *
+from util.errors            import *
 from util.helpers           import generate_uuid
 from util.helpers           import url as build_url 
 from util.shopify_helpers   import get_shopify_url
@@ -98,6 +99,11 @@ class ClientShopify( Client ):
                          phone      = data['phone'],
                          client     = store )
         
+        logging.info({
+            'client_uuid': uuid,
+            'app_type'   : app_type
+        })
+        
         # Query the Shopify API to dl all Products
         taskqueue.add(
                 url = build_url('FetchShopifyProducts'),
@@ -141,11 +147,10 @@ class ClientShopify( Client ):
 
         # Construct the API URL
         url      = '%s/admin/products.json' % (self.url)
+        logging.info ("url = %s" % url)
         
         # Fix inputs ( legacy )
-        if app_type == "referral":
-            app_type = 'ReferralShopify'
-        elif app_type == "sibt": 
+        if app_type == "sibt": 
             app_type = 'SIBTShopify'
         elif app_type == 'buttons':
             app_type = "ButtonsShopify"
@@ -153,34 +158,27 @@ class ClientShopify( Client ):
         # Grab Shopify API settings
         settings = SHOPIFY_APPS[app_type]
 
+        # Constuct the API URL
         username = settings['api_key'] 
         password = hashlib.md5(settings['api_secret'] + self.token).hexdigest()
-
-        # this creates a password manager
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        # because we have put None at the start it will always
-        # use this username/password combination for  urls
-        # for which `url` is a super-url
-        passman.add_password(None, url, username, password)
-
-        # create the AuthHandler
-        authhandler = urllib2.HTTPBasicAuthHandler(passman)
-
-        opener = urllib2.build_opener(authhandler)
-
-        # All calls to urllib2.urlopen will now use our handler
-        # Make sure not to include the protocol in with the URL, or
-        # HTTPPasswordMgrWithDefaultRealm will be very confused.
-        # You must (of course) use it when fetching the page though.
-        urllib2.install_opener(opener)
-
-        # authentication is now handled automatically for us
+        header   = {'content-type':'application/json'}
+        h        = httplib2.Http()
+        
+        # Auth the http lib
+        h.add_credentials(username, password)
+        
         logging.info("Querying %s" % url )
-        result = urllib2.urlopen(url)
-
-        # Grab the data about the order from Shopify
-        details  = json.loads( result.read() ) 
-        products = details['products']
+        resp, content = h.request( url, "GET", headers = header)
+        
+        details = json.loads( content )
+        products = None
+        try: 
+            logging.debug ("got json: %r" % details)
+            assert ('products' in details)
+            products = details['products']
+        except:
+            # details will not have ['products'] if response is incorrect.
+            raise RemoteError (resp.status, resp.reason, products)
 
         for p in products:
             ProductShopify.create_from_json( self, p ) 
@@ -189,9 +187,7 @@ class ClientShopify( Client ):
 def get_store_info(store_url, store_token, app_type):
     
     # Fix inputs ( legacy )
-    if app_type == "referral":
-        app_type = 'ReferralShopify'
-    elif app_type == "sibt": 
+    if app_type == "sibt": 
         app_type = 'SIBTShopify'
     elif app_type == "buttons": 
         app_type = 'ButtonsShopify'

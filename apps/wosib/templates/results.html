@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
+        <title>Should I Buy This?</title>
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+        <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+        if (typeof jQuery == 'undefined'){
+            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+        }
+        </script>
+        <script src="{{ URL }}/static/js/jquery.timeago.js" type="text/javascript"></script>
+        <script src="{{ URL }}/static/js/modernizr.custom.js" type="text/javascript"></script>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <style type="text/css">
+            body {
+                text-align: center;
+                overflow: auto;
+                background-color: white;
+                font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper" id="wrapper">
+            <div id="splash">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/imgs/sibt_logo_79x50.png" />
+                    <div>Your friends recommend this item.</div>
+                </div>
+                <ul id="product_image_result">
+                    <li>
+                        <img src="{{product_image}}" alt="" />
+                        <label> {{product.title}} </label>
+                    </li>
+                </ul>
+                <div id="product_desc_result">{{product.description|striptags}}</div>
+                {% if has_product_link %}
+                    <p><a class="button _willet_button" href="{{product_link}}">Get it</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <script type="text/javascript">
+            var showScreen = function (id) {
+                $('#wrapper').children().hide();
+                $('#wrapper>#'+id).show();
+            };
+            showScreen ('splash');
+        </script>
+       <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
+</html>
