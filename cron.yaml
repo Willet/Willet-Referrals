@@ -1,10 +1,5 @@
 cron:
 
-# Referral App Crons
-#- description: Email results out
-#  url: /r/emailerCron
-#  schedule: every 2 hours
-
 # Admin Statistics
 #- description: Updating stats (counts)
 #  url: /stats/updateCounts
@@ -49,6 +44,10 @@ cron:
 #  schedule: every 12 hours 
 
 # SOME SIBT SHIT WE DONT CARE ABOUT
-- description: scan for expired SIBT votes
-  url: /s/getExpired
-  schedule: every 5 minutes
+#- description: scan for expired SIBT votes
+#  url: /s/getExpired
+#  schedule: every 5 minutes 
+
+#- description: scan for expired WOSIB votes
+#  url: /w/getExpired
+#  schedule: every 5 minutes 

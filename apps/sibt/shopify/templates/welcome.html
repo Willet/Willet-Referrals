@@ -40,7 +40,7 @@
                 <img class="span-18" src="/static/imgs/template_editor.png" />
             </div>
             
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            <hr class="thick_hr" /> 
 
             <div class="prepend-top prepend-3 span-12 append-bottom">
                 <p class="lower-50"> 
@@ -53,7 +53,7 @@
                  <img src="/static/imgs/snippets_product.png" />
             </div>
 
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            <hr class="thick_hr" /> 
             
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
@@ -64,7 +64,7 @@
                  <img class="span-18" src="/static/imgs/form.png" />
             </div>
             
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            <hr class="thick_hr" /> 
             
             <div class="prepend-top prepend-3 span-18 append-3 last">
                 <p>
@@ -78,7 +78,7 @@
                 </p>
             </div>
            
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+            <hr class="thick_hr" /> 
             
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
@@ -88,21 +88,57 @@
                  <img class="span-18" src="/static/imgs/save.png" />
             </div>
 
+            <hr class="thick_hr" /> 
+
+            <div class="prepend-top prepend-3 span-12 append-bottom">
+                <p class="lower-50"> 
+                    6. Under the <em>Templates</em> section, click on <em>cart.liquid</em>.
+                </p>
+            </div>
+            
+            <hr class="thick_hr" /> 
+            
+            <div class="prepend-3 span-18 append-3 last append-bottom">
+                <p>
+                    <strong>7. Look </strong>for where you would like the advice button to be placed on your cart page.
+                    After the <em>&lt;/table&gt;</em> tag would be a nice spot.
+                </p>
+                 
+                 <img class="span-18" src="/static/imgs/snippets_wosib.png" />
+            </div>
+            
+            <hr class="thick_hr" /> 
+            
+            <div class="prepend-top prepend-3 span-18 append-3 last">
+                <p>
+                    <strong>8. Once </strong>you've picked a spot, add this code:
+                    <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_wosib' &#37;&#125;" />
+                </p>
+            </div>
+           
+            <hr class="thick_hr" /> 
+            
+            <div class="prepend-3 span-18 append-3 last append-bottom">
+                <p>
+                    <strong>9. Click</strong> <em>save</em> near the top of the screen.
+                </p>
+                 
+            </div>
 
             {% if new_order_code %}
-                <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+                <hr class="thick_hr" /> 
                 
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
-                        6. Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
+                        10. Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
                     </p>
                 </div>
 
-                <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+                <hr class="thick_hr" /> 
                 
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
-                        7. Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
+                        11. Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
                         <textarea style='font-size:13px;max-height: 450px; height:450px;max-width: 600px;width: 600px;' type='text' readonly='readonly'>
 &lt;!-- Begin Willet integration code --&gt;
 &lt;script type="text/javascript"&gt;
@@ -138,11 +174,11 @@
                     </p>
                 </div>
 
-               <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
+               <hr class="thick_hr" /> 
                 
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
-                        <strong>8. Click</strong> <em>Apply these settings</em>.
+                        <strong>12. Click</strong> <em>Apply these settings</em>.
                     </p>
                 </div>
 

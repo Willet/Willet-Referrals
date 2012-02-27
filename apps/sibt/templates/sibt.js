@@ -97,6 +97,7 @@
         setCookieStorageFlag();
     }
 
+    // Once all dependencies are loading, fire this function
     var _init_sibt = function () {
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
@@ -113,7 +114,6 @@
             _willet_style.appendChild(rules);
         }
         _willet_head.appendChild(_willet_style);
-
 
         jQuery.noConflict(); // Suck it, Prototype!
 
@@ -157,6 +157,7 @@
                 return;
             };
 
+            // Send action to server
             var _willet_store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
                 var iframe = document.createElement( 'iframe' );
