@@ -350,6 +350,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
           
             'user': user,
             'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'sibt_version'   : app.version or 2,
 
             'evnt' : event,
             
