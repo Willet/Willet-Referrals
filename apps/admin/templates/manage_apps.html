@@ -12,7 +12,7 @@
         <div class="span-21 last">
             <h3>{{ app.0 }}</h3>
         </div>
-        {% for a in app.1 %}
+            {% for a in app.1 %}
         <div class="span-21 last">
             <div class="span-1">
                 {{ forloop.counter0 }}
@@ -52,11 +52,10 @@
                         <input type="submit" value="Set # Shows" />
                     </form>
                 {% else %}
-                    <div> </div>
                 {% endifequal %}
             </div>
         </div>
-        {% endfor %}
+            {% endfor %}
         {% endfor %}
     </div>
 {% endblock bottom_content %}

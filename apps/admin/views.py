@@ -138,11 +138,7 @@ class ShowRoutes(URIHandler):
 class ManageApps(URIHandler):
     def get_app_list(self):
         all_apps = App.all()
-        apps = {
-            'ButtonsShopify': [],
-            'SIBTShopify': [],
-            'WOSIBShopify': []
-        }
+        apps = {}
         for app in all_apps:
             try:
                 d = {
@@ -152,6 +148,9 @@ class ManageApps(URIHandler):
                     'client': getattr (app, 'client'),
                     'app': app
                 }
+                if not d['class_name'] in apps:
+                    apps[d['class_name']] = []
+
                 apps[d['class_name']].append(d)
             except Exception,e:
                 logging.warn('Error adding app: %s' % e, exc_info=True)
