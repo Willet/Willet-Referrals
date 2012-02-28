@@ -88,7 +88,35 @@ class SIBTShopify(SIBT, AppShopify):
             'box_shadow_color': '727272',
             'border_radius': '10',
             'padding': '10'
-        } 
+        }, 'willet_button_v3': {
+            'background': '#fff',
+            'border': '1px solid #BBB',
+            'border_radius': '3', # soften the blow
+            'color': '#383f41', # font colour within the box
+            'font': '14px Helvetica, Arial, sans-serif',
+            'margin': '12px 0',
+            'padding': '0 15px',
+            'width': '223',
+            'height': '88',
+            'p': { # text on top of the button
+                'text_align': 'left',
+                'margin': '12px 0 0 0',
+                'padding': '0 !important', # some shopify themes change this
+                'font_size': '14px !important', # some shopify themes change this
+                'line_height': '20'
+            }, 'button': {
+                'width': '219',
+                'height': '25',
+                'margin': '8px auto',
+                'padding': '4px 2px',
+                'background_color': '#C1F0F5',
+                'text_align': 'center',
+                'border_radius': '4',
+                'background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+                'box_shadow': '0 1px 0 #BBB',
+                'shadow_hover': '#BBB'
+            }
+        }
     }
 
     def __init__(self, *args, **kwargs):

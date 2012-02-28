@@ -45,14 +45,9 @@
                     </form>
                     <form method="post" action="?">
                         <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                            <input type="hidden" name="action" value="set_style" />
-                            <input type="input" name="button_css" value="{{ app.button_css|default:SIBTShopify.get_default_css }}" />
-                        <input type="submit" value="Set button CSS" />
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                            <input type="hidden" name="action" value="reset_style" />
-                        <input type="submit" value="Reset button CSS" />
+                        <input type="hidden" name="action" value="reset_style" />
+                        <a href="{{ URL }}/s/shopify/{{ app.uuid }}/edit">Edit style</a>, or 
+                        <input type="submit" value="reset it" />
                     </form>
                 {% endifequal %}
             </div>
