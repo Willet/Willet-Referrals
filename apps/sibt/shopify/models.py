@@ -40,7 +40,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default=2, indexed=False)
+    version    = db.StringProperty(default='2', indexed=False)
     
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
