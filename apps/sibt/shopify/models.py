@@ -40,7 +40,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default='2', indexed=False)
+    version    = db.IntegerProperty(default=2, indexed=False)
     CURRENT_INSTALL_VERSION = 3 # change on upgrade; new installs get this as version
     
     defaults = {
@@ -253,6 +253,7 @@ class SIBTShopify(SIBT, AppShopify):
     @staticmethod
     def create(client, token):
         uuid = generate_uuid( 16 )
+        logging.debug('creating SIBTShopify version %d' % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
                         key_name    = uuid,
                         uuid        = uuid,
@@ -261,7 +262,7 @@ class SIBTShopify(SIBT, AppShopify):
                         store_url   = client.url, # Store url
                         store_id    = client.id, # Store id
                         store_token = token,
-                        version     = CURRENT_INSTALL_VERSION)
+                        version     = SIBTShopify.CURRENT_INSTALL_VERSION)
         app.put()
         
         app.do_install()
@@ -290,13 +291,15 @@ class SIBTShopify(SIBT, AppShopify):
                     logging.debug ("app.old_client was %s" % app.old_client)
                     app.client      = app.old_client if app.old_client else client
                     app.old_client  = None
+                    logging.debug('changing SIBTShopify version to %d' % SIBTShopify.CURRENT_INSTALL_VERSION)
+                    app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         else:
-            # if token is None
+            # if token is None, i.e. getting, not creating
             pass
         
         logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
