@@ -100,6 +100,7 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_or_fetch(url, client):
+        url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
         if not product or not product.variants:
             if not product:
