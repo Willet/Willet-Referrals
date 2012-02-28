@@ -154,7 +154,6 @@ class ManageApps(URIHandler):
                 apps[d['class_name']].append(d)
             except Exception,e:
                 logging.warn('Error adding app: %s' % e, exc_info=True)
-            logging.info("apps = %r" % apps)
         return apps
     
     @admin_required

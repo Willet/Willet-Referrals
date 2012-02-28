@@ -1,7 +1,15 @@
 {% extends "admin_base.html" %}
 
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
 {% block bottom_content %}
-    <div class="span-24 prepend-top append_bottom">
+    <div class="span-24 prepend-top append-bottom">
         <h1 class="center">Manage Installed Apps</h1>
         {% for message in messages %}
         <div class="prepend-3 span-21 {{ message.type }}">
@@ -9,7 +17,7 @@
         </div>
         {% endfor %}
         {% for app in apps.items %}
-            <div class="span-21 last">
+            <div class="span-21 prepend-top last">
                 <h3>{{ app.0 }}</h3>
             </div>
             {% for a in app.1 %}
