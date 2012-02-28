@@ -214,7 +214,7 @@ class SIBTShopify(SIBT, AppShopify):
             #logging.warn('updating with data:\n%s' % data)
             class_defaults.update(data)
         except Exception, e:
-            #logging.error(e, exc_info=True)
+            logging.warning (e, exc_info=True)
             pass
         css = SIBTShopify.generate_default_css(class_defaults)
         memcache.set('app-%s-sibt-css' % self.uuid, css) 
