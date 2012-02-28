@@ -41,6 +41,7 @@ class SIBTShopify(SIBT, AppShopify):
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
     version    = db.StringProperty(default='2', indexed=False)
+    CURRENT_INSTALL_VERSION = 3 # change on upgrade; new installs get this as version
     
     defaults = {
         'willet_button': {
@@ -259,7 +260,8 @@ class SIBTShopify(SIBT, AppShopify):
                         store_name  = client.name, # Store name
                         store_url   = client.url, # Store url
                         store_id    = client.id, # Store id
-                        store_token = token)
+                        store_token = token,
+                        version     = CURRENT_INSTALL_VERSION)
         app.put()
         
         app.do_install()
