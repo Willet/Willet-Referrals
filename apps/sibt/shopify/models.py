@@ -101,12 +101,14 @@ class SIBTShopify(SIBT, AppShopify):
             'padding': '0 15px',
             'width': '223',
             'height': '88',
+            'others': '', # place whatever extra CSS in here
             'p': { # text on top of the button
                 'text_align': 'left',
                 'margin': '12px 0 0 0',
                 'padding': '0 !important', # some shopify themes change this
                 'font_size': '14px !important', # some shopify themes change this
-                'line_height': '20'
+                'line_height': '20',
+                'others': '', # place whatever extra CSS in here
             }, 'button': {
                 'width': '219',
                 'height': '25',
@@ -117,7 +119,8 @@ class SIBTShopify(SIBT, AppShopify):
                 'border_radius': '4',
                 'background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
                 'box_shadow': '0 1px 0 #BBB',
-                'shadow_hover': '#BBB'
+                'shadow_hover': '#BBB',
+                'others': '', # place whatever extra CSS in here
             }
         }
     }
