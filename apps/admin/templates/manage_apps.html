@@ -1,56 +1,67 @@
 {% extends "admin_base.html" %}
 
 {% block bottom_content %}
-    <div class="span-24 prepend-top">
-        <h1 class="prepend-top center">Manage Installed Apps</h1>
+    <div class="span-24 prepend-top append_bottom">
+        <h1 class="center">Manage Installed Apps</h1>
         {% for message in messages %}
-            <div class="prepend-3 span-21 {{ message.type }}">
-                {{ message.text }}
-            </div>
+        <div class="prepend-3 span-21 {{ message.type }}">
+            {{ message.text }}
+        </div>
         {% endfor %}
-        {% for app in apps %}
-            <div class="span-9">
-                <a href="{{ URL }}/admin/analytics/{{ app.uuid }}/">{{ app.client_name }}</a> 
+        {% for app in apps.items %}
+            <div class="span-21 last">
+                <h3>{{ app.0 }}</h3>
             </div>
-            <div class="span-6">
-                {{ app.class_name }}
-            </div>
-            <div class="span-6 append-3 last">
-                {% ifequal app.class_name "SIBTShopify" %}
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        {% if app.app.button_enabled %}
-                            <input type="hidden" name="action" value="disable_button" />
-                            <input type="submit" value="Disable Button" />
+            {% for a in app.1 %}
+                <div class="span-21 last">
+                    <div class="span-1">
+                        {{ forloop.counter0 }}
+                    </div>
+                    <div class="span-6">
+                        <a href="{{ URL }}/admin/analytics/{{ app.uuid }}/">{{ a.client_name }}</a> 
+                    </div>
+                    <div class="span-6">
+                        {{ a.class_name }}
+                    </div>
+                    <div class="span-6 append-2 last">
+                        {% ifequal a.class_name "SIBTShopify" %}
+                            <form method="post" action="?">
+                                <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                                {% if a.app.button_enabled %}
+                                    <input type="hidden" name="action" value="disable_button" />
+                                    <input type="submit" value="Disable Button" />
+                                {% else %}
+                                    <input type="hidden" name="action" value="enable_button" />
+                                    <input type="submit" value="Enable Button" />
+                                {% endif %}
+                            </form>
+                            <form method="post" action="?">
+                                <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                                {% if a.app.top_bar_enabled %}
+                                    <input type="hidden" name="action" value="disable_tb" />
+                                    <input type="submit" value="Disable TB" />
+                                {% else %}
+                                    <input type="hidden" name="action" value="enable_tb" />
+                                    <input type="submit" value="Enable TB" />
+                                {% endif %}
+                            </form>
+                            <form method="post" action="?">
+                                <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                                <input type="hidden" name="action" value="set_number_shows_before_tb" />
+                                <input type="input" size="2" name="num_shows_before_tb" value="{{ app.app.num_shows_before_tb }}" />
+                                <input type="submit" value="Set # Shows" />
+                            </form>
+                            <form method="post" action="?">
+                                <input type="hidden" name="app_id" value="{{ app.uuid }}">
+                                <input type="hidden" name="action" value="reset_style" />
+                                <a href="{{ URL }}/s/shopify/{{ app.uuid }}/edit">Edit style</a>, or 
+                                <input type="submit" value="reset it" />
+                            </form>
                         {% else %}
-                            <input type="hidden" name="action" value="enable_button" />
-                            <input type="submit" value="Enable Button" />
-                        {% endif %}
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        {% if app.app.top_bar_enabled %}
-                            <input type="hidden" name="action" value="disable_tb" />
-                            <input type="submit" value="Disable TB" />
-                        {% else %}
-                            <input type="hidden" name="action" value="enable_tb" />
-                            <input type="submit" value="Enable TB" />
-                        {% endif %}
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        <input type="hidden" name="action" value="set_number_shows_before_tb" />
-                        <input type="input" size="2" name="num_shows_before_tb" value="{{ app.app.num_shows_before_tb }}" />
-                        <input type="submit" value="Set # Shows" />
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        <input type="hidden" name="action" value="reset_style" />
-                        <a href="{{ URL }}/s/shopify/{{ app.uuid }}/edit">Edit style</a>, or 
-                        <input type="submit" value="reset it" />
-                    </form>
-                {% endifequal %}
-            </div>
+                        {% endifequal %}
+                    </div>
+                </div>
+            {% endfor %}
         {% endfor %}
     </div>
 {% endblock bottom_content %}
