@@ -138,7 +138,7 @@ class ShowRoutes(URIHandler):
 class ManageApps(URIHandler):
     def get_app_list(self):
         all_apps = App.all()
-        apps = []
+        apps = {}
         for app in all_apps:
             try:
                 d = {
@@ -148,17 +148,21 @@ class ManageApps(URIHandler):
                     'client': getattr (app, 'client'),
                     'app': app
                 }
-                apps.append(d)
+                if not d['class_name'] in apps:
+                    apps[d['class_name']] = []
+
+                apps[d['class_name']].append(d)
             except Exception,e:
-                logging.error('error adding app: %s' % e, exc_info=True)
+                logging.warn('Error adding app: %s' % e, exc_info=True)
+            logging.info("apps = %r" % apps)
         return apps
     
     @admin_required
     def get(self, client=None):
         template_values = {
-            'apps': self.get_app_list() 
+            'apps': self.get_app_list()
         }
-        
+
         self.response.out.write(self.render_page(
                 'manage_apps.html',
                 template_values
