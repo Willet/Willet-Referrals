@@ -18,10 +18,10 @@
 }
 #_willet_button_v3>.button {
     float: left;
+    width: {{ willet_button_v3.button.width }}px;
     height: {{ willet_button_v3.button.height }}px;
     padding: {{ willet_button_v3.button.padding }};
     margin: {{ willet_button_v3.button.margin }};
-    width: {{ willet_button_v3.button.width }};
     background-color: {{ willet_button_v3.button.background_color }};
     text-align: {{ willet_button_v3.button.text_align }};
     border-radius: {{ willet_button_v3.button.border_radius }}px;

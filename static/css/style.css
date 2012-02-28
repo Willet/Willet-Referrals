@@ -211,6 +211,10 @@ p.code {
     font-family: "New Courier", Courier, serif;
     font-size: 1.1em;
 }
+.mini_form {
+    display: inline-block;
+    margin-right: 20px;
+}
 .logout {
     margin-left:10px;
     font-size:.9em;
