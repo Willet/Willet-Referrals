@@ -202,5 +202,24 @@
                 </div>
             </div>
         </div>
-
+        <script type="text/javascript">
+            ;(function ($) {
+                /* patch New SnapEngage script overlay does not close on click
+                   https://www.pivotaltracker.com/story/show/23948937 */
+                try {
+                    var close_button = $('#SnapABug_P div img');
+                    if (!!$.on) {
+                        $('#SnapABug_W').on('click', function () {
+                            close_button.click();
+                        });
+                    } elseif (!!$.live) {
+                        $('#SnapABug_W').live('click', function () {
+                            close_button.click();
+                        });
+                    }
+                } catch (e) {
+                    // pass
+                }
+            }) (jQuery || $);
+        </script>
 {% endblock content %}
