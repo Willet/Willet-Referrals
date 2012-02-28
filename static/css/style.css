@@ -33,14 +33,14 @@ div#footer {
 div#footer > div {
     position: relative;
     margin-top: -145px; /* negative value of footer height */
-    min-height:20%;
+    min-height: 20%;
     clear: both;
 }
 
 /* ------------------------------ DEFAULTS ---------------------------------- */
 
 html {
-    color:#484848;
+    color: #484848;
 	background-color: #E8F7FB;
     font-family: 'PT Sans', Arial, sans-serif;
 }
