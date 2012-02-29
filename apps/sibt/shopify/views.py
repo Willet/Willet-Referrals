@@ -233,22 +233,22 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             assert(app != None)
             try:
                 # Is User an asker for this URL?
-                logging.info('trying to get instance for url: %s' % target)
+                logging.debug('trying to get instance for url: %s' % target)
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
-                logging.info('got instance by user/target: %s' % instance.uuid)
+                logging.debug('got instance by user/target: %s' % instance.uuid)
             except Exception, e:
                 try:
-                    logging.info('trying willet_code: %s' % e)
+                    logging.debug('trying willet_code: %s' % e)
                     link = Link.get_by_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'
-                    logging.info('got instance by willet_code: %s' % instance.uuid)
+                    logging.debug('got instance by willet_code: %s' % instance.uuid)
                 except Exception, e:
                     try:
-                        logging.info('trying actions: %s' % e)
+                        logging.debug('trying actions: %s' % e)
                         instances = SIBTInstance.all(keys_only=True)\
                             .filter('url =', target)\
                             .fetch(100)
@@ -258,12 +258,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                         if action:
                             instance = action.sibt_instance
                             assert(instance != None)
-                            logging.info('got instance by action: %s' % instance.uuid)
+                            logging.debug('got instance by action: %s' % instance.uuid)
                             event = 'SIBTShowingVote'
                     except Exception, e:
-                        logging.info('no instance available: %s' % e)
+                        logging.debug('no instance available: %s' % e)
         except:
-            logging.info('no app')
+            logging.debug('no app')
 
         # If we have an instance, figure out if 
         # a) Is User asker?
@@ -283,11 +283,11 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             is_asker = (instance.asker.key() == user.key()) 
             if not is_asker:
-                logging.info('not asker, check for vote ...')
+                logging.debug('not asker, check for vote ...')
                 
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
                 
-                logging.info('got a vote action? %s' % vote_action)
+                logging.debug('got a vote action? %s' % vote_action)
                 
                 has_voted = (vote_action != None)
 
@@ -315,7 +315,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         # this should only happen once, can be removed at a later date
         # TODO remove this code
-        if not hasattr(app, 'button_enabled'):
+        if app and not hasattr(app, 'button_enabled'):
             app.button_enabled = True
             app.put()
 
@@ -348,20 +348,17 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'product_images' : product.images if product else "",
             'product_desc'   : product.description if product else "",
           
-            'user': user,
-            'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'user'           : user,
+            'stylesheet'     : '../../plugin/templates/css/colorbox.css',
             'sibt_version'   : app.version or 2,
 
-            'evnt' : event,
+            'evnt'           : event,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else "",
-            'app_css': app_css,
+            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'willt_code'     : link.willt_url_code if link else "",
+            'app_css'        : app_css,
         }
-
-        # Store a script load action.
-        # ButtonLoadAction.create( user, app, target )
 
         # Finally, render the JS!
         path = os.path.join('apps/sibt/templates/', 'sibt.js')
