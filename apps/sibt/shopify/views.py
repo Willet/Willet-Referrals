@@ -107,18 +107,14 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
+    ''' Modifies SIBT button style - internal use only. '''
+    @admin_required
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
-
         if self.request.get('set_to_default'):
-            logging.error('reset button')
+            logging.debug('reset button')
             app.reset_css()
         else:
             css_dict = app.get_css_dict()
@@ -132,17 +128,11 @@ class SIBTShopifyEditStyle(URIHandler):
                         css_dict[key][value] = self.request.get(lookup) 
 
             app.set_css(css_dict)
-        self.get(app_uuid, app = app)
-
-    def get(self, app_uuid, app=None):
-        if not app:
-            app = SIBTShopify.get(app_uuid)
-
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
+        self.get(app_uuid)
+    
+    @admin_required
+    def get(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()
@@ -151,7 +141,6 @@ class SIBTShopifyEditStyle(URIHandler):
             # because template has issues with variables that have
             # a dash in them
             new_key = key.replace('-', '_').replace('.','_')
-            #logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
             display_dict[new_key] = css_dict[key]
 
         logging.warn('css: %s' % css_values)

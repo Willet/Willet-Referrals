@@ -151,4 +151,3 @@ try:
 except Exception, e:
     logging.info('no local_consts.py: %s' % e, exc_info=True)
     pass
-
