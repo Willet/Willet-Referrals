@@ -1019,8 +1019,8 @@ button img {
     float: right;
 }
 #right_header p {
-    float: right;
-    padding-left: 20px;
+    display: inline-block;
+    padding-left: 15px;
 }
 
 /* EDIT PAGE STUFF */
