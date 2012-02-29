@@ -92,8 +92,6 @@ class WOSIB(App):
 # WOSIBInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class WOSIBInstance(Model):
-    # Unique identifier for memcache and DB key
-    uuid = db.StringProperty( indexed = True )
 
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add = True, indexed = True)
@@ -206,8 +204,6 @@ class PartialWOSIBInstance(Model):
         - expires when user cancels facebook connect
         - deleted never
     '''
-    
-    uuid        = db.StringProperty( indexed = True )
 
     user        = MemcacheReferenceProperty(db.Model, 
                                        collection_name='partial_wosib_instances',

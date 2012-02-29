@@ -56,6 +56,27 @@ actions_to_count = [
     'SIBTConnectFBDialog',
     'SIBTConnectFBCancelled',
     'SIBTFriendChoosingCancelled',
+
+    'WOSIBUserClickedButtonAsk',
+    'WOSIBAskUserClickedShare',
+
+    'WOSIBShowingButton',
+    'WOSIBShowingAskIframe',
+    'WOSIBShowingResults',
+
+    'WOSIBAskUserClickedShare',
+
+    'WOSIBInstanceCreated',
+    'WOSIBVoteAction',
+    'WOSIBUserAction',
+    'WOSIBFBConnected',
+
+    'WOSIBAskIframeCancelled',
+    'WOSIBNoConnectFBDialog',
+    'WOSIBNoConnectFBCancelled',
+    'WOSIBConnectFBDialog',
+    'WOSIBConnectFBCancelled',
+    'WOSIBFriendChoosingCancelled',
 ]
 # removing duplicates for the lazy
 actions_to_count = list(set(actions_to_count))

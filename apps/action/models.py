@@ -81,9 +81,6 @@ class Action(Model, polymodel.PolyModel):
         an 'Action' obj will be stored for them.
         This 'Action' class will be subclassed for specific actions
         ie. click, vote, tweet, share, email, etc. """
-
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
     
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )
