@@ -1017,6 +1017,7 @@ button img {
     position: relative;
     z-index: 2;
     float: right;
+    text-align: right;
 }
 #right_header p {
     display: inline-block;
