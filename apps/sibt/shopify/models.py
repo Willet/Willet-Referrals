@@ -91,7 +91,37 @@ class SIBTShopify(SIBT, AppShopify):
             'box_shadow_color': '727272',
             'border_radius': '10',
             'padding': '10'
-        } 
+        }, 'willet_button_v3': {
+            'background': '#fff',
+            'border': '1px solid #BBB',
+            'border_radius': '3', # soften the blow
+            'color': '#383f41', # font colour within the box
+            'font': '14px Helvetica, Arial, sans-serif',
+            'margin': '12px 0',
+            'padding': '0 15px',
+            'width': '223',
+            'height': '88',
+            'others': '', # place whatever extra CSS in here
+             # text on top of the button
+            'p_text_align': 'left',
+            'p_margin': '12px 0 0 0',
+            'p_padding': '0 !important', # some shopify themes change this
+            'p_font_size': '14px !important', # some shopify themes change this
+            'p_line_height': '20',
+            'p_others': '', # place whatever extra CSS in here
+             # button within the frame
+            'button_width': '219',
+            'button_height': '25',
+            'button_margin': '8px auto',
+            'button_padding': '4px 2px',
+            'button_background_color': '#C1F0F5',
+            'button_text_align': 'center',
+            'button_border_radius': '4',
+            'button_background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+            'button_box_shadow': '0 1px 0 #BBB',
+            'button_shadow_hover': '#BBB',
+            'button_others': '', # place whatever extra CSS in here
+        }
     }
 
     def __init__(self, *args, **kwargs):
@@ -178,9 +208,16 @@ class SIBTShopify(SIBT, AppShopify):
         self.memcache_by_store_url()
 
     def memcache_by_store_url(self):
-        return memcache.set(
+        success1 = memcache.set(
                 self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
 
     def reset_css(self):
         self.set_css()
@@ -217,7 +254,7 @@ class SIBTShopify(SIBT, AppShopify):
             #logging.warn('updating with data:\n%s' % data)
             class_defaults.update(data)
         except Exception, e:
-            #logging.error(e, exc_info=True)
+            logging.warning (e, exc_info=True)
             pass
         css = SIBTShopify.generate_default_css(class_defaults)
         memcache.set('app-%s-sibt-css' % self.uuid, css) 
@@ -316,14 +353,15 @@ class SIBTShopify(SIBT, AppShopify):
     def get_by_store_url(url):
         data = memcache.get(url)
         if data:
-            app = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            app = SIBTShopify.all()\
-                .filter('store_url =', url)\
-                .get()
-            if app:
-                app.memcache_by_store_url()
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
 
+        app = SIBTShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = SIBTShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
         return app
 
     @staticmethod

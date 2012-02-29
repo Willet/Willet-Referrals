@@ -1,5 +1,13 @@
 {% extends "admin_base.html" %}
 
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
 {% block bottom_content %}
     <div class="span-24 prepend-top">
         <h1 class="prepend-top center">Reload URIS</h1>

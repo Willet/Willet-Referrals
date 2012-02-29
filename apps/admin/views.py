@@ -170,6 +170,7 @@ class ManageApps(URIHandler):
 
     @admin_required
     def post(self, admin=None):
+        ''' does a predefined list of actions on apps.'''
         app_id = self.request.get('app_id')
         action = self.request.get('action')
         app = App.get(app_id)
@@ -199,6 +200,13 @@ class ManageApps(URIHandler):
                     app.put()
                 elif action == 'set_number_shows_before_tb':
                     app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
+                    app.put()
+                elif action == 'set_style':
+                    app.button_css = self.request.get('button_css')
+                    memcache.get('app-%s-sibt-css' % app.uuid) # found in sibt/models.py
+                    app.put()
+                elif action == 'reset_style':
+                    app.button_css = None
                     app.put()
                 else:
                     logging.error("bad action: %s" % action)
