@@ -313,12 +313,6 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             logging.warn("no app and no instance!")
 
-        # this should only happen once, can be removed at a later date
-        # TODO remove this code
-        if app and not hasattr(app, 'button_enabled'):
-            app.button_enabled = True
-            app.put()
-
         # a whole bunch of css bullshit!
         if app:
             logging.info("got app button css")
