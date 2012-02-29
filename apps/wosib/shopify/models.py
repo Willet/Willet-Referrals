@@ -78,9 +78,22 @@ class WOSIBShopify(WOSIB, AppShopify):
         logging.debug ("installing WOSIB assets")
         self.install_assets(assets=liquid_assets)
 
+    def memcache_by_store_url(self):
+        success1 = memcache.set(
+                "WOSIB-%s" % self.store_url,
+                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    "WOSIB-%s" % self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
+
     def put(self):
         """So we memcache by the store_url as well"""
         logging.info('enhanced WOSIBShopify put')
+        self.memcache_by_store_url()
         super(WOSIBShopify, self).put()
 
     @staticmethod
@@ -145,13 +158,13 @@ class WOSIBShopify(WOSIB, AppShopify):
     def get_by_store_url(url):
         data = memcache.get("WOSIB-%s" % url)
         if data:
-            app = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            app = WOSIBShopify.all()\
-                .filter('store_url =', url)\
-                .get()
-        if app is None:
-            logging.warn ("store is Nothing, memcache and DB!")
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        app = WOSIBShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = WOSIBShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
         return app
-
-

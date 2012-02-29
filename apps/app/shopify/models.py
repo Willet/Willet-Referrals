@@ -27,10 +27,19 @@ from util.model         import Model
 NUM_SHARE_SHARDS = 15
 
 class AppShopify(Model):
+    ''' Model for storing information about a Shopify App.
+        AppShopify classes need not be installable from the Shopify app store,
+        and can be installed as a bundle. Refer to SIBTShopify for example code.
+    '''
+    
     # Shopify's ID for this store
     store_id  = db.StringProperty(indexed = True)
     
+    # must be the .shopify.com (e.g. http://thegoodhousewife.myshopify.com)
     store_url = db.StringProperty(indexed = True)
+    
+    # other domains (e.g. http://thegoodhousewife.co.nz)
+    extra_url = db.StringProperty(indexed = True, required = False, default = '')
 
     # Shopify's token for this store
     store_token = db.StringProperty(indexed = True)

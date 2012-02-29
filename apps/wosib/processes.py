@@ -77,7 +77,7 @@ class GetExpiredWOSIBInstances(URIHandler):
     
     def get(self):
         """Gets a list of WOSIB instances to be expired and emails to be sent"""
-        right_now = datetime.now()
+        right_now = datetime.datetime.now()
         expired_instances = WOSIBInstance.all()\
                 .filter('is_live =', True)\
                 .filter('end_datetime <=', right_now) 
