@@ -141,6 +141,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
             'stylesheet'     : '../../plugin/templates/css/colorbox.css',
             'evnt'           : event,
             'cta_button_text': cta_button_text,
+            'shop_url'       : shop_url,
             # this thing tells client JS if the user had created an instance
             'has_results'    : 'true' if has_results else 'false',
         }

@@ -231,6 +231,22 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # Try to find an instance for this { url, user }
         try:
             assert(app != None)
+            
+            if target and not hasattr(app, 'extra_url'):
+                ''' check if target (almost always window.location.href) has the same domain as store url
+                    example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
+                    
+                    [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
+                '''
+                try:
+                    url_parts = urlparse (target)
+                    if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                        logging.info ("[SIBT] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
+                        app.put()
+                except:
+                    pass # can't decode target as URL; oh well!
+            
             try:
                 # Is User an asker for this URL?
                 logging.debug('trying to get instance for url: %s' % target)

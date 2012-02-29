@@ -178,9 +178,16 @@ class SIBTShopify(SIBT, AppShopify):
         self.memcache_by_store_url()
 
     def memcache_by_store_url(self):
-        return memcache.set(
+        success1 = memcache.set(
                 self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
 
     def reset_css(self):
         self.set_css()
@@ -316,14 +323,15 @@ class SIBTShopify(SIBT, AppShopify):
     def get_by_store_url(url):
         data = memcache.get(url)
         if data:
-            app = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            app = SIBTShopify.all()\
-                .filter('store_url =', url)\
-                .get()
-            if app:
-                app.memcache_by_store_url()
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
 
+        app = SIBTShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = SIBTShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
         return app
 
     @staticmethod

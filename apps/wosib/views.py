@@ -87,14 +87,35 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                     logging.debug ("Product for variant %s not found in DB" % variant_id)
             
             store_domain  = self.request.get('store_url')
-            app           = WOSIBShopify.get_by_store_url(self.request.get('store_url'))
+            refer_url = self.request.get( 'refer_url' )
+            logging.info ("refer_url = %s" % refer_url)
+            app = WOSIBShopify.get_by_store_url(store_domain)
+
+            # if both are present and extra_url needs to be filled...
+            if store_domain and refer_url and not hasattr(app, 'extra_url'):
+                ''' check if refer_url (almost always window.location.href) has the same domain as store url
+                    example: http://social-referral.appspot.com/w/ask.html?
+                         store_url=http://thegoodhousewife.myshopify.com
+                        &refer_url=http://thegoodhousewife.co.nz/cart
+                        &variants=109751342
+                        &app_uuid=9d9fd05f5db0497b
+                        &user_uuid=1e1cdedac5914319
+                        &instance_uuid=
+                '''
+                try:
+                    url_parts = urlparse (refer_url)
+                    if url_parts.netloc not in urllib2.unquote(store_domain): # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                        logging.info ("[WOSIB] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
+                        app.put()
+                except:
+                    pass # can't decode target as URL; oh well!
+            
             user          = User.get(self.request.get('user_uuid'))
             user_found    = 1 if hasattr(user, 'fb_access_token') else 0
             user_is_admin = user.is_admin() if isinstance( user , User) else False
             target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
             
-            refer_url = self.request.get( 'refer_url' )
-            logging.info ("refer_url = %s" % refer_url)
             link = Link.create (target, app, refer_url, user)
             
             random_variant = choice(variants) # pick random variant, use it for showing description
