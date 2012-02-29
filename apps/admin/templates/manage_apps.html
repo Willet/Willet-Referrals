@@ -23,7 +23,7 @@
             <table>
             {% for a in app.1 %}
                 <tr>
-                    <th scope='row'>{{ forloop.counter0 }}</th>
+                    <th scope='row'>{{ forloop.counter }}</th>
                     <td>
                         <a href="{{ URL }}/admin/analytics/{{ a.uuid }}/">{{ a.client_name }}</a> 
                     </td>
