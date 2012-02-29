@@ -102,26 +102,25 @@ class SIBTShopify(SIBT, AppShopify):
             'width': '223',
             'height': '88',
             'others': '', # place whatever extra CSS in here
-            'p': { # text on top of the button
-                'text_align': 'left',
-                'margin': '12px 0 0 0',
-                'padding': '0 !important', # some shopify themes change this
-                'font_size': '14px !important', # some shopify themes change this
-                'line_height': '20',
-                'others': '', # place whatever extra CSS in here
-            }, 'button': {
-                'width': '219',
-                'height': '25',
-                'margin': '8px auto',
-                'padding': '4px 2px',
-                'background_color': '#C1F0F5',
-                'text_align': 'center',
-                'border_radius': '4',
-                'background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
-                'box_shadow': '0 1px 0 #BBB',
-                'shadow_hover': '#BBB',
-                'others': '', # place whatever extra CSS in here
-            }
+             # text on top of the button
+            'p_text_align': 'left',
+            'p_margin': '12px 0 0 0',
+            'p_padding': '0 !important', # some shopify themes change this
+            'p_font_size': '14px !important', # some shopify themes change this
+            'p_line_height': '20',
+            'p_others': '', # place whatever extra CSS in here
+             # button within the frame
+            'button_width': '219',
+            'button_height': '25',
+            'button_margin': '8px auto',
+            'button_padding': '4px 2px',
+            'button_background_color': '#C1F0F5',
+            'button_text_align': 'center',
+            'button_border_radius': '4',
+            'button_background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+            'button_box_shadow': '0 1px 0 #BBB',
+            'button_shadow_hover': '#BBB',
+            'button_others': '', # place whatever extra CSS in here
         }
     }
 
@@ -209,9 +208,16 @@ class SIBTShopify(SIBT, AppShopify):
         self.memcache_by_store_url()
 
     def memcache_by_store_url(self):
-        return memcache.set(
+        success1 = memcache.set(
                 self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
 
     def reset_css(self):
         self.set_css()
@@ -347,14 +353,15 @@ class SIBTShopify(SIBT, AppShopify):
     def get_by_store_url(url):
         data = memcache.get(url)
         if data:
-            app = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            app = SIBTShopify.all()\
-                .filter('store_url =', url)\
-                .get()
-            if app:
-                app.memcache_by_store_url()
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
 
+        app = SIBTShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = SIBTShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
         return app
 
     @staticmethod

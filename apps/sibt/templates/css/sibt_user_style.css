@@ -8,33 +8,36 @@
 	background: {{ willet_button_v3.background }};
 	padding: {{ willet_button_v3.padding }};
 	margin: {{ willet_button_v3.margin }};
+	{{ willet_button_v3.others }}
 }
 #_willet_button_v3 p {
-	text-align: {{ willet_button_v3.p.text_align }};
-	margin: {{ willet_button_v3.p.margin }};
-	padding: {{ willet_button_v3.p.padding }};
-	font-size: {{ willet_button_v3.p.font_size }};
-	line-height: {{ willet_button_v3.p.line_height }}px;
+	text-align: {{ willet_button_v3.p_text_align }};
+	margin: {{ willet_button_v3.p_margin }};
+	padding: {{ willet_button_v3.p_padding }};
+	font-size: {{ willet_button_v3.p_font_size }};
+	line-height: {{ willet_button_v3.p_line_height }}px;
+	{{ willet_button_v3.p_others }}
 }
 #_willet_button_v3>.button {
     float: left;
-    width: {{ willet_button_v3.button.width }}px;
-    height: {{ willet_button_v3.button.height }}px;
-    padding: {{ willet_button_v3.button.padding }};
-    margin: {{ willet_button_v3.button.margin }};
-    background-color: {{ willet_button_v3.button.background_color }};
-    text-align: {{ willet_button_v3.button.text_align }};
-    border-radius: {{ willet_button_v3.button.border_radius }}px;
-    background-image: {{ willet_button_v3.button.background_image }};
-    box-shadow: {{ willet_button_v3.button.box_shadow }};
+    width: {{ willet_button_v3.button_width }}px;
+    height: {{ willet_button_v3.button_height }}px;
+    padding: {{ willet_button_v3.button_padding }};
+    margin: {{ willet_button_v3.button_margin }};
+    background-color: {{ willet_button_v3.button_background_color }};
+    text-align: {{ willet_button_v3.button_text_align }};
+    border-radius: {{ willet_button_v3.button_border_radius }}px;
+    background-image: {{ willet_button_v3.button_background_image }};
+    box-shadow: {{ willet_button_v3.button_box_shadow }};
     behavior: url(/static/js/PIE.htc);
+    {{ willet_button_v3.button_others }}
 }
 #_willet_button_v3>.button:hover {
     cursor: pointer;
     cursor: hand;
-    -moz-box-shadow: 0 0 4px 1px {{ willet_button_v3.button.shadow_hover }};
-    -webkit-box-shadow: 0 0 4px 1px {{ willet_button_v3.button.shadow_hover }};
-    box-shadow: 0 0 4px 1px {{ willet_button_v3.button.shadow_hover }};
+    -moz-box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
+    -webkit-box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
+    box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
     behavior: url(/static/js/PIE.htc);
 }
 #_willet_button_v3>.button>img {
