@@ -26,7 +26,6 @@ from util.helpers           import generate_uuid
 # ------------------------------------------------------------------------------
 class Client(Model, polymodel.PolyModel):
     """A Client or the website"""
-    uuid          = db.StringProperty  (indexed = True)
     creation_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
     email         = db.StringProperty  (indexed=True)
 

@@ -1018,7 +1018,6 @@ class UserIPs(Model):
 #
 class Relationship(Model):
     """Model storing inter-user relationships data"""
-    uuid      = db.StringProperty( indexed = True )
     created   = db.DateTimeProperty(auto_now_add=True)
     from_user = MemcacheReferenceProperty( db.Model, collection_name="from_relationships" )
     to_user   = MemcacheReferenceProperty( db.Model, default = None, collection_name="to_relationships" )

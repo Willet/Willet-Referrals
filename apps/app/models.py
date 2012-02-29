@@ -31,9 +31,6 @@ NUM_SHARE_SHARDS = 15
 class App(Model, polymodel.PolyModel):
     # static memcache class name
     memcache_class = 'app'
-
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
     
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )
