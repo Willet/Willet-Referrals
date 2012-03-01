@@ -107,18 +107,14 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
 
 class SIBTShopifyEditStyle(URIHandler):
+    ''' Modifies SIBT button style - internal use only. '''
+    @admin_required
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
-
         if self.request.get('set_to_default'):
-            logging.error('reset button')
+            logging.debug('reset button')
             app.reset_css()
         else:
             css_dict = app.get_css_dict()
@@ -132,17 +128,11 @@ class SIBTShopifyEditStyle(URIHandler):
                         css_dict[key][value] = self.request.get(lookup) 
 
             app.set_css(css_dict)
-        self.get(app_uuid, app = app)
-
-    def get(self, app_uuid, app=None):
-        if not app:
-            app = SIBTShopify.get(app_uuid)
-
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
+        self.get(app_uuid)
+    
+    @admin_required
+    def get(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()
@@ -151,7 +141,6 @@ class SIBTShopifyEditStyle(URIHandler):
             # because template has issues with variables that have
             # a dash in them
             new_key = key.replace('-', '_').replace('.','_')
-            #logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
             display_dict[new_key] = css_dict[key]
 
         logging.warn('css: %s' % css_values)
@@ -231,6 +220,22 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # Try to find an instance for this { url, user }
         try:
             assert(app != None)
+            
+            if target and not hasattr(app, 'extra_url'):
+                ''' check if target (almost always window.location.href) has the same domain as store url
+                    example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
+                    
+                    [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
+                '''
+                try:
+                    url_parts = urlparse (target)
+                    if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                        logging.info ("[SIBT] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
+                        app.put()
+                except:
+                    pass # can't decode target as URL; oh well!
+            
             try:
                 # Is User an asker for this URL?
                 logging.debug('trying to get instance for url: %s' % target)

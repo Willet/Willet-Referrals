@@ -10,6 +10,9 @@ from util.consts import MEMCACHE_TIMEOUT
 
 class Model(db.Model):
     """A generic extension of db.Model"""
+
+    # Unique identifier for memcache and DB key
+    uuid = db.StringProperty( indexed = True )
     
     def put(self):
         """Stores model instance in memcache and database"""

@@ -75,7 +75,7 @@
                     'app_uuid': '{{app.uuid}}',
                     'user_uuid': '{{user.uuid}}',
                     'instance_uuid': '{{instance.uuid}}',
-                    'store_url': 'http://' + document.domain,
+                    'store_url': '{{shop_url}}',
                     'has_results': {{has_results|default:"false"}} // true || false
                 };
                 var _willet_css = {% include stylesheet %} // pre-quoted

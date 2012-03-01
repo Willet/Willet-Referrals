@@ -146,8 +146,6 @@ class SIBT(App):
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTInstance(Model):
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
 
     # the users motivation for sharing
     motivation = db.StringProperty(default="")
@@ -297,7 +295,6 @@ class PartialSIBTInstance(Model):
     Each User can have at most 1 PartialInstance.
     '''
     
-    uuid        = db.StringProperty( indexed = True )
 
     # User is the only index.
     user        = MemcacheReferenceProperty(db.Model, 

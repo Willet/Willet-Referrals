@@ -7,7 +7,7 @@ from apps.client.models     import Client
 from util.model             import Model
 
 class Product(Model, db.polymodel.PolyModel):
-    uuid    = db.StringProperty(indexed=True)
+
     created = db.DateTimeProperty(auto_now_add=True)
     client  = db.ReferenceProperty(Client, collection_name='products')
     
