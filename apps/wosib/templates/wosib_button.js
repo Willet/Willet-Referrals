@@ -202,7 +202,10 @@
     		                         "title='Ask your friends if you should buy this!'>" +
     			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
     			                     "<div class='title'>Ask Trusted Friends</div>" +
-    		                     "</div>");
+    		                     "</div>")
+                    .css({
+                        'clear': 'both'
+                    });
     		                     
                 button.appendTo (purchase_cta).css('display', 'inline-block');
                 $('#_willet_button').click (function () {
