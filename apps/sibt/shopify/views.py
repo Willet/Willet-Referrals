@@ -429,22 +429,25 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        app       = SIBTShopify.get_by_store_url(store_url)
-        user      = get_or_create_user_by_cookie( self, app )
-        target    = get_target_url(self.request.headers.get('REFERER'))
-
-        # Store a script load action.
-        ScriptLoadAction.create(user, app, target)
-
-        template_values = {
-            'URL' : URL,
-            'store_url': store_url,
-            'user': user,
-            'sibt_button_id': '_willet_shouldIBuyThisButton',
-        }
-        path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.response.out.write(template.render(path, template_values))
         
+        if store_url: # only render if there is a point of doing so
+            app       = SIBTShopify.get_by_store_url(store_url)
+            user      = get_or_create_user_by_cookie( self, app )
+            target    = get_target_url(self.request.headers.get('REFERER'))
+
+            # Store a script load action.
+            if not target: # force a referrer so the ScriptLoad always saves
+                target = "http://no-referrer.com" # commonly caused by naughty browsers
+            ScriptLoadAction.create(user, app, target)
+
+            template_values = {
+                'URL' : URL,
+                'store_url': store_url,
+                'user': user,
+                'sibt_button_id': '_willet_shouldIBuyThisButton',
+            }
+            path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+            self.response.headers.add_header('P3P', P3P_HEADER)
+            self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            self.response.out.write(template.render(path, template_values))
         return
