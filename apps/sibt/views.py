@@ -43,14 +43,18 @@ class AskDynamicLoader(webapp.RequestHandler):
     # TODO: THis code is Shopify specific. Refactor.
     def get(self):
         store_domain  = self.request.get('store_url')
-        app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        app           = SIBTShopify.get_by_store_url(store_domain)
         user          = User.get(self.request.get('user_uuid'))
         user_found    = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
-        target        = self.request.get( 'url' )
         
-        # Store 'Show' action
-        SIBTShowingAskIframe.create(user, url=target, app=app)
+        # if no URL, then referrer, then everything dies
+        target        = self.request.get ('url', self.request.headers.get('referer'))
+        
+        product_uuid        = self.request.get( 'product_uuid', None ) # optional
+        product_shopify_id  = self.request.get( 'shopify_id', None ) # optional
+        product_variant_id  = self.request.get( 'variant_id', None ) # optional
+        logging.debug("%r" % [product_uuid, product_shopify_id, product_variant_id])
 
         # We need this stuff here to fill in the FB.ui stuff 
         # if the user wants to post on wall
@@ -58,10 +62,43 @@ class AskDynamicLoader(webapp.RequestHandler):
             page_url = urlparse(self.request.headers.get('referer'))
             store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
         except Exception, e:
-            logging.error('error parsing referer %s' % e)
+            logging.error('error parsing referer %s' % e, exc_info = True)
+        
+        # successive steps to obtain the product using any way possible
+        try:
+            logging.info("getting by url")
+            product = ProductShopify.get_or_fetch (target, app.client) # by URL
+        except:
+            pass
+        
+        try:
+            if not product and product_uuid: # fast (cached)
+                product = ProductShopify.get (product_uuid)
+                target = product.resource_url # fix the missing url
+        except:
+            pass
+        
+        try:
+            if not product and product_shopify_id: # slow, deprecated
+                product = ProductShopify.get_by_shopify_id (product_shopify_id)
+                target = product.resource_url # fix the missing url
+        except:
+            pass
+        
+        try:
+            if not product and product_variant_id: # slowest
+                product = ProductShopify.all().filter ('variants =', product_variant_id).get()
+                target = product.resource_url # fix the missing url
+            assert (product is not None)
+        except:
+            # adandon the rest of the script, because we NEED a product!
+            self.response.out.write("Requested product cannot be found.")
+            return
 
+        # Store 'Show' action
+        SIBTShowingAskIframe.create(user, url=target, app=app)
+        
         # Fix the product description
-        product = ProductShopify.get_or_fetch(target, app.client)
         try:
             ex = '[!\.\?]+'
             productDesc = strip_html(product.description)
