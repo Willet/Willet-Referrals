@@ -117,8 +117,10 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
             
             link = Link.create (target, app, refer_url, user)
+
+            if variants:
+                random_variant = choice(variants) if variants else None # pick random variant, use it for showing description
             
-            random_variant = choice(variants) # pick random variant, use it for showing description
             try:
                 random_image = random_variant.images[0]
             except: # if our chosen variant happens to have no image
