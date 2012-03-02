@@ -42,7 +42,7 @@ class ProductShopify(Product):
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
-        if not product or not product.variants:
+        if not product:
             uuid = generate_uuid( 16 )
 
             variants = []
@@ -117,6 +117,8 @@ class ProductShopify(Product):
                 product = ProductShopify.get_by_shopify_id( str(data['id']) )
                 if product:
                     product.add_url(url)
+                    if not product.variants:
+                        product.update_from_json(data)
                 else:
                     logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
@@ -144,6 +146,13 @@ class ProductShopify(Product):
             logging.info("No images for this product %s" % self.uuid)
 
         try:
+            logging.debug ('%d variants for this product found; adding to \
+                    ProductShopify object.' % len(data['variants']))
+            variants = [str(variant['id']) for variant in data['variants']]
+        except:
+            logging.info("No variants for this product %s" % self.uuid)
+
+        try:
             price = float(data['variants'][0]['price'])
         except:
             logging.info("No price for this product %s" % self.uuid)
@@ -167,6 +176,8 @@ class ProductShopify(Product):
             self.price         = price
         if images != None and len(images) != 0:
             self.images        = images
+        if variants != None and len(variants) != 0:
+            self.variants      = variants
         if description != None and len(description) != 0:
             self.description   = description
         if tags != None and len(tags) != 0:
