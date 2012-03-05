@@ -15,6 +15,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.analytics_backend.models import *
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
@@ -29,9 +30,7 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.user.models import User
-from apps.analytics_backend.models import *
-
+from apps.user.models import *
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
@@ -864,12 +863,107 @@ class GenerateOlderHourPeriods(URIHandler):
         self.response.out.write(json.dumps({'success':True}))
 
 
-
 class SIBTReset (URIHandler):
-    def get(self):
+
+    @admin_required
+    def get(self, admin):
         sibt_apps = SIBT.all().fetch(1000000)
         for sibt_app in sibt_apps:
             sibt_app.button_enabled = True
             sibt_app.top_bar_enabled = False
             sibt_app.put()
         self.response.out.write("Done")
+
+
+class EmailEveryone (URIHandler):
+    """ Task Queue-based blast email URL. """
+
+    @admin_required
+    def get (self, admin):
+        # render the mail client
+        template_values = {}
+        self.response.out.write(self.render_page('mass_mail_client.html', template_values))
+
+    @admin_required
+    def post (self, admin):
+        logging.info("Sending everyone an email.")
+        
+        target_version = self.request.get('version', '3')
+        logging.info ('target_version = %r' % target_version)
+        
+        all_sibts = SIBTShopify.all().fetch(1000000)
+        logging.info ('all_sibts = %r' % all_sibts)
+
+        try:
+            assert (len (self.request.get('subject')) > 0)
+            assert (len (self.request.get('body')) > 0)
+        except:
+            self.error(400) # Bad Request
+            return
+
+        all_emails = []
+        # no try-catches in list comprehension... so this.
+        for sibt in all_sibts:
+            try:
+                assert (hasattr (sibt, 'client'))       # lagging cache
+                assert (hasattr (sibt.client, 'email')) # bad install
+                
+                # construct email
+                body = template.render(Email.template_path('general_mail.html'),
+                    {
+                        'title'        : self.request.get('subject'),
+                        'content'      : self.request.get('body')
+                    }
+                )
+                
+                if sibt.version == target_version: # testing
+                    email = {
+                        'client': sibt.client,
+                        # 'from': ...
+                        'to': sibt.client.email,
+                        'subject': self.request.get('subject'),
+                        'body': body
+                    }
+                    all_emails.append (email)
+                    logging.info('added %r to all_emails' % sibt.client)
+            except Exception, e:
+                logging.error ("can't find client/email for app: %r; %s" % (sibt, e), exc_info = True)
+                pass # miss a client!
+
+        for email in all_emails:
+            taskqueue.add ( # have them sent one by one.
+                url = url ('EmailSomeone'),
+                params = email
+            )
+        
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write ("%r" % all_emails)
+        return
+
+
+class EmailSomeone (URIHandler):
+    def get (self):
+        self.post() # yup, taskqueues are randomly GET or POST.
+
+    def post( self ):
+        try:
+            Email.send_email (
+                self.request.get('from', 'fraser@getwillet.com'),
+                self.request.get('to'),
+                self.request.get('subject'),
+                self.request.get('body'),
+                self.request.get('to_name', None),
+                self.request.get('reply-to', None)
+            )
+            self.response.out.write ("200 OK")
+        except Exception, e:
+            logging.error ("Error sending one of the emails in batch! %s\n%r" % 
+                (e, [
+                    self.request.get('from', 'fraser@getwillet.com'),
+                    self.request.get('to'),
+                    self.request.get('subject'),
+                    self.request.get('body'),
+                    self.request.get('to_name', None),
+                    self.request.get('reply-to', None)
+                ]), exc_info = True
+            )
