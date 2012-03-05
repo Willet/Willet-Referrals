@@ -100,6 +100,10 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_or_fetch(url, client):
+        ''' returns a product from our datastore, or if it is not found, 
+            fire a JSON request to Shopify servers to get the product's
+            information, create the Product object, and returns that.
+        '''
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
         if not product or not product.variants:
@@ -108,17 +112,16 @@ class ProductShopify(Product):
             elif not product.variants:
                 logging.warn('need to refetch product to get variants: %s' % url)
             try:
+                # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
                         url = '%s.json' % url,
                         method = urlfetch.GET
                 )
-                            
+                # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id( str(data['id']) )
                 if product:
                     product.add_url(url)
-                    if not product.variants:
-                        product.update_from_json(data)
                 else:
                     logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
@@ -147,7 +150,7 @@ class ProductShopify(Product):
 
         try:
             logging.debug ('%d variants for this product found; adding to \
-                    ProductShopify object.' % len(data['variants']))
+ProductShopify object.' % len(data['variants']))
             variants = [str(variant['id']) for variant in data['variants']]
         except:
             logging.info("No variants for this product %s" % self.uuid)
@@ -170,17 +173,17 @@ class ProductShopify(Product):
         self.title         = data[ 'title' ]
         self.json_response = json.dumps( data )
         
-        if len(type) != 0:
+        if type:
             self.type          = type
         if price != 0.0:
             self.price         = price
-        if images != None and len(images) != 0:
+        if images:
             self.images        = images
-        if variants != None and len(variants) != 0:
+        if variants:
             self.variants      = variants
-        if description != None and len(description) != 0:
+        if description:
             self.description   = description
-        if tags != None and len(tags) != 0:
+        if tags:
             self.tags          = tags
 
         if hasattr( self, 'processed' ):

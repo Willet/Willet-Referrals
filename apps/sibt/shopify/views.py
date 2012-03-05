@@ -106,8 +106,8 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s' % (
-                    client_email, shop_owner, shop_name
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' % (
+                    client_email, shop_owner, client.url, shop_name
                 )
             )
             self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
@@ -448,7 +448,9 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
 
             # Store a script load action.
             if not target: # force a referrer so the ScriptLoad always saves
-                target = "http://no-referrer.com" # commonly caused by naughty browsers
+                # commonly caused by naughty visitors who disables referrer info
+                # http://en.wikipedia.org/wiki/Referrer_spoofing
+                target = "http://no-referrer.com"
             ScriptLoadAction.create(user, app, target)
 
             template_values = {

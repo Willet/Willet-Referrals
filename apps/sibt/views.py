@@ -68,29 +68,19 @@ class AskDynamicLoader(webapp.RequestHandler):
         try:
             logging.info("getting by url")
             product = ProductShopify.get_or_fetch (target, app.client) # by URL
-        except:
-            pass
-        
-        try:
             if not product and product_uuid: # fast (cached)
                 product = ProductShopify.get (product_uuid)
                 target = product.resource_url # fix the missing url
-        except:
-            pass
-        
-        try:
             if not product and product_shopify_id: # slow, deprecated
                 product = ProductShopify.get_by_shopify_id (product_shopify_id)
                 target = product.resource_url # fix the missing url
-        except:
-            pass
-        
-        try:
             if not product and product_variant_id: # slowest
-                product = ProductShopify.all().filter ('variants =', product_variant_id).get()
+                product = ProductShopify.all().filter('variants =', product_variant_id).get()
                 target = product.resource_url # fix the missing url
-            assert (product is not None)
-        except:
+            if not product:
+                # we failed to find a single product!
+                raise LookupError
+        except LookupError:
             # adandon the rest of the script, because we NEED a product!
             self.response.out.write("Requested product cannot be found.")
             return
