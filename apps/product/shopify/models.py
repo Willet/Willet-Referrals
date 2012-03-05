@@ -42,7 +42,7 @@ class ProductShopify(Product):
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
-        if not product or not product.variants:
+        if not product:
             uuid = generate_uuid( 16 )
 
             variants = []
@@ -100,6 +100,10 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_or_fetch(url, client):
+        ''' returns a product from our datastore, or if it is not found, 
+            fire a JSON request to Shopify servers to get the product's
+            information, create the Product object, and returns that.
+        '''
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
         if not product or not product.variants:
@@ -108,11 +112,12 @@ class ProductShopify(Product):
             elif not product.variants:
                 logging.warn('need to refetch product to get variants: %s' % url)
             try:
+                # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
                         url = '%s.json' % url,
                         method = urlfetch.GET
                 )
-                            
+                # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id( str(data['id']) )
                 if product:
@@ -144,6 +149,13 @@ class ProductShopify(Product):
             logging.info("No images for this product %s" % self.uuid)
 
         try:
+            logging.debug ('%d variants for this product found; adding to \
+ProductShopify object.' % len(data['variants']))
+            variants = [str(variant['id']) for variant in data['variants']]
+        except:
+            logging.info("No variants for this product %s" % self.uuid)
+
+        try:
             price = float(data['variants'][0]['price'])
         except:
             logging.info("No price for this product %s" % self.uuid)
@@ -161,15 +173,17 @@ class ProductShopify(Product):
         self.title         = data[ 'title' ]
         self.json_response = json.dumps( data )
         
-        if len(type) != 0:
+        if type:
             self.type          = type
         if price != 0.0:
             self.price         = price
-        if images != None and len(images) != 0:
+        if images:
             self.images        = images
-        if description != None and len(description) != 0:
+        if variants:
+            self.variants      = variants
+        if description:
             self.description   = description
-        if tags != None and len(tags) != 0:
+        if tags:
             self.tags          = tags
 
         if hasattr( self, 'processed' ):

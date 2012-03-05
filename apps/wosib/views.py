@@ -21,6 +21,7 @@ from apps.client.shopify.models       import *
 from apps.link.models                 import Link
 from apps.order.models                import *
 from apps.product.models              import Product
+from apps.sibt.views                  import AskDynamicLoader
 from apps.user.models                 import get_user_by_cookie
 from apps.wosib.actions               import *
 from apps.wosib.models                import WOSIBInstance
@@ -66,42 +67,60 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             variant_ids = []
         
         if variant_ids: # only if variants are valid, render the page
-            logging.debug ("variant_ids = %s" % variant_ids)
-            variants = []
-            for variant_id in variant_ids:
-                variant_product = Product.all().filter ('variants = ', str(variant_id)).get()
-                if variant_product: # could be None of Product is somehow not in DB
-                    if len(variant_product.images) > 0:
-                        image = variant_product.images[0] # can't catch LIOOR w/try
+            if len (variant_ids) > 1: # render WOSIB if more than one thing selected... else SIBT.
+                logging.debug ("variant_ids = %s" % variant_ids)
+                variants = []
+                for variant_id in variant_ids:
+                    variant_product = Product.all().filter ('variants = ', str(variant_id)).get()
+                    if variant_product: # could be None of Product is somehow not in DB
+                        if len(variant_product.images) > 0:
+                            image = variant_product.images[0] # can't catch LIOOR w/try
+                        else:
+                            image = '/static/imgs/noimage-willet.png'
+                        variants.append({
+                            'id' : variant_product.shopify_id,
+                            'image' : image,
+                            'title' : variant_product.title,
+                            'variant_id' : variant_id,
+                            'product_uuid' : variant_product.uuid,
+                            'product_desc' : variant_product.description,
+                        })
                     else:
-                        image = '/static/imgs/noimage-willet.png'
-                    variants.append({
-                        'id' : variant_product.shopify_id,
-                        'image' : image,
-                        'title' : variant_product.title,
-                        'variant_id' : variant_id,
-                        'product_uuid' : variant_product.uuid,
-                        'product_desc' : variant_product.description,
-                    })
-                else:
-                    logging.debug ("Product for variant %s not found in DB" % variant_id)
-            
-            store_domain  = self.request.get('store_url')
-            refer_url = self.request.get( 'refer_url' )
-            logging.info ("refer_url = %s" % refer_url)
-            app = WOSIBShopify.get_by_store_url(store_domain)
+                        logging.debug ("Product for variant %s not found in DB" % variant_id)
+                
+                store_domain  = self.request.get('store_url')
+                refer_url = self.request.get( 'refer_url' )
+                logging.info ("refer_url = %s" % refer_url)
+                app = WOSIBShopify.get_by_store_url(store_domain)
 
-            # if both are present and extra_url needs to be filled...
-            if store_domain and refer_url and not hasattr(app, 'extra_url'):
-                ''' check if refer_url (almost always window.location.href) has the same domain as store url
-                    example: http://social-referral.appspot.com/w/ask.html?
-                         store_url=http://thegoodhousewife.myshopify.com
-                        &refer_url=http://thegoodhousewife.co.nz/cart
-                        &variants=109751342
-                        &app_uuid=9d9fd05f5db0497b
-                        &user_uuid=1e1cdedac5914319
-                        &instance_uuid=
-                '''
+                # if both are present and extra_url needs to be filled...
+                if store_domain and refer_url and not hasattr(app, 'extra_url'):
+                    ''' check if refer_url (almost always window.location.href) has the same domain as store url
+                        example: http://social-referral.appspot.com/w/ask.html?
+                             store_url=http://thegoodhousewife.myshopify.com
+                            &refer_url=http://thegoodhousewife.co.nz/cart
+                            &variants=109751342
+                            &app_uuid=9d9fd05f5db0497b
+                            &user_uuid=1e1cdedac5914319
+                            &instance_uuid=
+                    '''
+                    try:
+                        url_parts = urlparse (refer_url)
+                        if url_parts.netloc not in urllib2.unquote(store_domain): # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                            app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                            logging.info ("[WOSIB] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
+                            app.put()
+                    except:
+                        pass # can't decode target as URL; oh well!
+                
+                user          = User.get(self.request.get('user_uuid'))
+                user_found    = 1 if hasattr(user, 'fb_access_token') else 0
+                user_is_admin = user.is_admin() if isinstance( user , User) else False
+                target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
+                
+                link = Link.create (target, app, refer_url, user)
+                
+                random_variant = choice(variants) # pick random variant, use it for showing description
                 try:
                     url_parts = urlparse (refer_url)
                     if url_parts.netloc not in urllib2.unquote(store_domain): # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
@@ -144,11 +163,15 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'share_url' : link.get_willt_url(), # refer_url
             }
 
-            # Finally, render the HTML!
-            path = os.path.join('apps/wosib/templates/', 'ask.html')
+                # Finally, render the HTML!
+                path = os.path.join('apps/wosib/templates/', 'ask.html')
 
-            self.response.headers.add_header('P3P', P3P_HEADER)
-            self.response.out.write(template.render(path, template_values))
+                self.response.headers.add_header('P3P', P3P_HEADER)
+                self.response.out.write(template.render(path, template_values))
+            elif len(variant_ids) == 1: # render SIBT
+                redirect_url = url('AskDynamicLoader')
+                # SIBT now supports retrieving products by variant ID.
+                self.redirect("%s?%s&variant_id=%s" % (redirect_url, self.request.query_string, variant_ids[0]))
         return
 
 class WOSIBShowResults(webapp.RequestHandler):
