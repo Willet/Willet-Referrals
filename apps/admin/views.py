@@ -863,3 +863,13 @@ class GenerateOlderHourPeriods(URIHandler):
 
         self.response.out.write(json.dumps({'success':True}))
 
+
+
+class SIBTReset (URIHandler):
+    def get(self):
+        sibt_apps = SIBT.all().fetch(1000000)
+        for sibt_app in sibt_apps:
+            sibt_app.button_enabled = True
+            sibt_app.top_bar_enabled = False
+            sibt_app.put()
+        self.response.out.write("Done")
