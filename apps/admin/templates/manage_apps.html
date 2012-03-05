@@ -19,6 +19,9 @@
         {% for app in apps.items %}
             <div class="span-21 prepend-top last">
                 <h3>{{ app.0 }}</h3>
+                {% ifequal app.0 "SIBTShopify" %}
+                    <a href="{{ URL }}/admin/sibt_reset/">Reset all SIBT (buttons = true, top bar = false)</a>
+                {% endifequal %}
             </div>
             <table>
             {% for a in app.1 %}
