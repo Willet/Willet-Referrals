@@ -118,8 +118,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             
             link = Link.create (target, app, refer_url, user)
 
-            if variants:
-                random_variant = choice(variants) if variants else None # pick random variant, use it for showing description
+            random_variant = choice(variants) if variants else None # pick random variant, use it for showing description
             
             try:
                 random_image = random_variant.images[0]
@@ -140,7 +139,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                 'store_domain' : self.request.get( 'store_url' ),
                 'title'  : "Which one should I buy?",
-                'product_desc' : random_variant['product_desc'],
+                'product_desc' : random_variant['product_desc'] if random_variant else None,
                 'images' : random_image,
                 'share_url' : link.get_willt_url(), # refer_url
             }

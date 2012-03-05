@@ -1,7 +1,9 @@
 import logging
 import time
-
 from datetime import timedelta
+
+from django.utils import simplejson
+    
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
@@ -17,10 +19,10 @@ class Model(db.Model):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
+        logging.debug('Model::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
-            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            logging.debug('Model::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
                 self.hardPut() # Will validate the instance.
             except datastore_errors.Timeout:
@@ -92,8 +94,14 @@ class ObjectListProperty(db.ListProperty):
     longer strings, change line with #! comment: 'str' -> 'db.Text' and deal 
     with encoding / decoding
     
-    Example:
+    Example using ObjectListItem:  !!!! Not tested
     
+    class Record(ObjectListItem):
+        who = db.Key()
+        timestamp = datetime.datetime()
+    
+    Example defining your own serialize and deserialize functions:
+
     class Record:
         def __init__(self, who, timestamp=None):
             self.who = who.key() if hasattr(who, 'key') else who # Some user model
@@ -168,3 +176,31 @@ class ObjectListProperty(db.ListProperty):
             return [ self._cls.deserialize(value) for value in db_list ]
         else:
             return []
+
+
+class ObjectListItem():
+    """ A flexible item implementation for ObjectListProperty
+
+    Appropriate for an object containing simple members (a struct-like model with no lists or dicts)
+
+    Serialize and deserialize are defined
+
+    !!!! Note: not yet tested, but should work beautifully in theory
+    """
+    def __init__(self, **entries): 
+        self.__dict__.update(entries)
+
+    def __repr__(self):
+        return '<%s.%s ObjectListItem at %s\n%s>' % (self.__class__.__module__,
+                                        self.__class__.__name__,
+                                        hex(id(self)), 
+                                        str('\n '.join('%s : %s' % (k, repr(v)) 
+                                            for (k, v) in self.__dict.iteritems())))
+
+    def serialize(self):
+        return simplejson.dump(self.__dict__)
+
+    @classmethod
+    def deserialize(cls, data):
+        entries = simplejson.loads(data)
+        return cls(**entries)
