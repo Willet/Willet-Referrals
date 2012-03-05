@@ -161,15 +161,15 @@ class ProductShopify(Product):
         self.title         = data[ 'title' ]
         self.json_response = json.dumps( data )
         
-        if len(type) != 0:
+        if type:
             self.type          = type
         if price != 0.0:
             self.price         = price
-        if images != None and len(images) != 0:
+        if images:
             self.images        = images
-        if description != None and len(description) != 0:
+        if description:
             self.description   = description
-        if tags != None and len(tags) != 0:
+        if tags:
             self.tags          = tags
 
         if hasattr( self, 'processed' ):
