@@ -29,5 +29,6 @@ urlpatterns = [
     (r'/admin/analytics/(.*)/', ShowAppAnalytics),
     (r'/admin/analytics/(.*)/rpc', AppAnalyticsRPC),
     (r'/admin/analytics', ShowAnalytics),
+    (r'/admin/sibt_reset/', SIBTReset),
 ]
 

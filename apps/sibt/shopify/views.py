@@ -21,6 +21,7 @@ from apps.action.models       import ButtonLoadAction
 from apps.action.models       import ScriptLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
+from apps.email.models        import Email
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
@@ -55,7 +56,6 @@ class SIBTShopifyWelcome(URIHandler):
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
-            
             
             logging.debug ('client is %s' % client)
             token = self.request.get('t') # token
@@ -102,9 +102,16 @@ class SIBTShopifyWelcome(URIHandler):
             }
 
             self.response.out.write( self.render_page( 'welcome.html', template_values)) 
-        except:
-            ### This should redirect to an error page
+        except Exception, e:
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
+            # Email DevTeam
+            Email.emailDevTeam(
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' % (
+                    client_email, shop_owner, client.url, shop_name
+                )
+            )
+            self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
+            return
 
 class SIBTShopifyEditStyle(URIHandler):
     ''' Modifies SIBT button style - internal use only. '''
@@ -157,10 +164,6 @@ class SIBTShopifyEditStyle(URIHandler):
         
         self.response.out.write(self.render_page('edit_style.html', template_values)) 
 
-class ShowEditPage(URIHandler):
-    def get(self):
-        pass
-
 class ShowFinishedPage(URIHandler):
     def get(self):
         app_id       = self.request.get( 'id' )
@@ -193,9 +196,16 @@ class ShowFinishedPage(URIHandler):
             )
         ) 
 
+
+class ShowEditPage(URIHandler):
+    def get(self):
+        pass
+
+
 class ShowCodePage( URIHandler ):
     def get(self):
        pass
+
 
 class SIBTShopifyServeScript(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
@@ -424,27 +434,50 @@ class SIBTShopifyServeAB (webapp.RequestHandler):
             self.response.out.write ('{ "AB_CTA_text": "%s" }' % cta_button_text)
         return
 
+
 class SIBTShopifyProductDetection(webapp.RequestHandler):
     def get(self):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        app       = SIBTShopify.get_by_store_url(store_url)
-        user      = get_or_create_user_by_cookie( self, app )
-        target    = get_target_url(self.request.headers.get('REFERER'))
+        
+        if store_url: # only render if there is a point of doing so
+            app       = SIBTShopify.get_by_store_url(store_url)
+            user      = get_or_create_user_by_cookie( self, app )
+            target    = get_target_url(self.request.headers.get('REFERER'))
 
-        # Store a script load action.
-        ScriptLoadAction.create(user, app, target)
+            # Store a script load action.
+            if not target: # force a referrer so the ScriptLoad always saves
+                # commonly caused by naughty visitors who disables referrer info
+                # http://en.wikipedia.org/wiki/Referrer_spoofing
+                target = "http://no-referrer.com"
+            ScriptLoadAction.create(user, app, target)
 
+            template_values = {
+                'URL' : URL,
+                'store_url': store_url,
+                'user': user,
+                'sibt_button_id': '_willet_shouldIBuyThisButton',
+            }
+            path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+            self.response.headers.add_header('P3P', P3P_HEADER)
+            self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+            self.response.out.write(template.render(path, template_values))
+        return
+
+
+class SIBTShopifyInstallError (webapp.RequestHandler):
+    def get (self):
+        """ Displays an error page for when the SIBT app fails to install. 
+            Error emails are not handled by this page. 
+        """
+        
         template_values = {
             'URL' : URL,
-            'store_url': store_url,
-            'user': user,
-            'sibt_button_id': '_willet_shouldIBuyThisButton',
+            'reason': self.request.get('reason', None),
         }
-        path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+        path = os.path.join('apps/sibt/shopify/templates/', 'install_error.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
-        
         return
