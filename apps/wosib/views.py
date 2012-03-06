@@ -61,25 +61,25 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
+        ids = variant_ids = products = variants = []
     
         # get product IDs from the query string
         try:
             ids = map(lambda x: long(x), self.request.get('ids').split(','))
         except: # if user throws in random crap in the query string, no biggie
-            ids = []
+            pass
 
         # repeat for (shopify) variants
         try:
             variant_ids = map(lambda x: long(x), self.request.get('variants').split(','))
         except: # if user throws in random crap in the query string, no biggie
-            variant_ids = []
+             pass
         
         if ids or variant_ids: # only if variants are valid, render the page
+            logging.debug ("ids = %s; variant_ids = %s" % (ids, variant_ids))
             # render WOSIB if more than one thing selected... else SIBT.
             if len (ids) > 1 or len (variant_ids) > 1:
-                logging.debug ("ids = %s; variant_ids = %s" % (ids, variant_ids))
                 if ids: # prioritize product IDs before variant IDs (flaky)
-                    products = []
                     logging.debug ("Getting products by Shopify ID")
                     for shopify_id in ids:
                         product = Product.all().filter ('shopify_id = ', str(shopify_id)).get()
@@ -98,8 +98,9 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                             })
                         else:
                             logging.warning ("Product of ID %s not found in DB" % shopify_id)
-                elif variant_ids: # runs if no product IDs, but variant IDs exist
-                    variants = []
+                
+                # runs if no products found, but variant IDs exist
+                if not products and variant_ids:
                     logging.debug ("Getting products by variant ID")
                     for variant_id in variant_ids:
                         variant_product = Product.all().filter ('variants = ', str(variant_id)).get()
@@ -118,7 +119,9 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                             })
                         else:
                             logging.warning ("Product for variant %s not found in DB" % variant_id)
-                
+                if not products and not variants:
+                    raise ValueError ('No product could be found with parameters supplied')
+
                 store_domain  = self.request.get('store_url')
                 refer_url = self.request.get( 'refer_url' )
                 logging.info ("refer_url = %s" % refer_url)
