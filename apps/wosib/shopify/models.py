@@ -54,7 +54,9 @@ class WOSIBShopify(WOSIB, AppShopify):
                         { "id" : "{{ item.id }}",
                           "image" : "{{ item.image }}" || _willet_no_image, // url
                           "title" : "{{ item.title }}", // or "name"
-                          "variant_id" : "{{ item.variant_id }}"
+                          "variant_id" : "{{ item.variant_id }}",
+                          "id" : "{{ item.product.id }}",
+                          "product_url" : "{{ item.product.url }}"
                         },
                     {%% endfor %%}
                 {}];

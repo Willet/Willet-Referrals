@@ -157,6 +157,11 @@
                                   // func collects all variant IDs for the cart items.
                                   return x.variant_id;
                               }).join(',') +
+                              "&ids=" +
+                              _willet_cart_items.map(function (x) {
+                                  // func collects all variant IDs for the cart items.
+                                  return x.id;
+                              }).join(',') +
                               "&" + _willet_metadata();
                     $.willet_colorbox({
                         href: url,
