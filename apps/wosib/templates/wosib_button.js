@@ -152,14 +152,9 @@
                 
                 var _willet_show_ask = function () {
                     var url = "{{URL}}/w/ask.html?store_url=" + encodeURIComponent(srv_data.store_url) + 
-                              "&variants=" +
-                              _willet_cart_items.map(function (x) {
-                                  // func collects all variant IDs for the cart items.
-                                  return x.variant_id;
-                              }).join(',') +
                               "&ids=" +
                               _willet_cart_items.map(function (x) {
-                                  // func collects all variant IDs for the cart items.
+                                  // func collects all product IDs for the cart items.
                                   return x.id;
                               }).join(',') +
                               "&" + _willet_metadata();
