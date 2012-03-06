@@ -130,44 +130,45 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 except:
                     pass # can't decode target as URL; oh well!
             
-            user          = User.get(self.request.get('user_uuid'))
-            user_found    = 1 if hasattr(user, 'fb_access_token') else 0
-            user_is_admin = user.is_admin() if isinstance( user , User) else False
-            target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
-            
-            link = Link.create (target, app, refer_url, user)
+                user          = User.get(self.request.get('user_uuid'))
+                user_found    = 1 if hasattr(user, 'fb_access_token') else 0
+                user_is_admin = user.is_admin() if isinstance( user , User) else False
+                target        = "%s%s?instance_uuid=%s" % (URL, url('WOSIBVoteDynamicLoader'), self.request.get('instance_uuid'))
+                
+                link = Link.create (target, app, refer_url, user)
 
-            random_variant = choice(variants) if variants else None # pick random variant, use it for showing description
-            
-            try:
-                random_image = random_variant.images[0]
-            except: # if our chosen variant happens to have no image
-                random_image = ['%s/static/imgs/blank.png' % URL], # blank
-            
-            template_values = {
-                'URL' : URL,
-                'app_uuid' : self.request.get('app_uuid'),
-                'user_uuid' : self.request.get('user_uuid'),
-                'instance_uuid' : self.request.get('instance_uuid'),
-                'target_url' : self.request.get('refer_url'),
-                'evnt' : self.request.get('evnt'),
-                'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-                'app': app,
-                'willt_code': link.willt_url_code, # used to create full instances
-                'variants' : variants,
-                'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
-                'store_domain' : self.request.get( 'store_url' ),
-                'title'  : "Which one should I buy?",
-                'product_desc' : random_variant['product_desc'] if random_variant else None,
-                'images' : random_image,
-                'share_url' : link.get_willt_url(), # refer_url
-            }
-
+                random_variant = choice(variants) if variants else None # pick random variant, use it for showing description
+                
+                try:
+                    random_image = random_variant.images[0]
+                except: # if our chosen variant happens to have no image
+                    random_image = ['%s/static/imgs/blank.png' % URL], # blank
+                
+                template_values = {
+                    'URL' : URL,
+                    'app_uuid' : self.request.get('app_uuid'),
+                    'user_uuid' : self.request.get('user_uuid'),
+                    'instance_uuid' : self.request.get('instance_uuid'),
+                    'target_url' : self.request.get('refer_url'),
+                    'evnt' : self.request.get('evnt'),
+                    'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+                    'app': app,
+                    'willt_code': link.willt_url_code, # used to create full instances
+                    'variants' : variants,
+                    'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
+                    'store_domain' : self.request.get( 'store_url' ),
+                    'title'  : "Which one should I buy?",
+                    'product_desc' : random_variant['product_desc'] if random_variant else None,
+                    'images' : random_image,
+                    'share_url' : link.get_willt_url(), # refer_url
+                }
+                
                 # Finally, render the HTML!
                 path = os.path.join('apps/wosib/templates/', 'ask.html')
 
                 self.response.headers.add_header('P3P', P3P_HEADER)
                 self.response.out.write(template.render(path, template_values))
+            
             elif len(variant_ids) == 1: # render SIBT
                 redirect_url = url('AskDynamicLoader')
                 # SIBT now supports retrieving products by variant ID.
