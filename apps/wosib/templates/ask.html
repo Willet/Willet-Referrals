@@ -237,7 +237,7 @@
                 FB.ui({ method:  "feed",
                         display: "popup",
                         link:    "{{share_url}}",
-                        picture: "{{images|first}}",
+                        picture: "{{image|first}}",
                         name:    "{{title|escape}}",
                         caption: "{{store_domain}}",
                         description: $('#fbComment').val(),
@@ -321,33 +321,32 @@
 
 {% block js_init %}
     $(document).ready (function () {
-        /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 variants;
-            if there are 0 variants, this script is not loaded at all.
+        /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 products;
+            if there are 0 products, this script is not loaded at all.
         */
-        var _willet_cart_variants = [ {% for variant in variants %}
-            {   "id": "{{variant.id}}",
-                "title": "{{variant.title}}",
-                "image": "{{variant.image}}", // deprecated... try /cart.js.
-                "variant_id": "{{variant.variant_id}}",
-                "product_uuid": "{{variant.product_uuid}}"
+        var _willet_cart_products = [ {% for product in products %}
+            {   "id": "{{product.id}}",
+                "title": "{{product.title}}",
+                "image": "{{product.image}}", // deprecated... try /cart.js.
+                "product_uuid": "{{product.product_uuid}}"
             },
         {% endfor %} {}];
-        _willet_cart_variants.pop(); // remove trailing element... IE7 trailing comma patch
+        _willet_cart_products.pop(); // remove trailing element... IE7 trailing comma patch
         
         var $cart_items_display = $('#cart_items_display'),
-            cart_length = _willet_cart_variants.length,
+            cart_length = _willet_cart_products.length,
             x = 0;
         while ( cart_length > x) {
             // add products onto page
             $cart_items_display.append(
                 '<li>' + 
-                    '<img class="variant_image" src="' + _willet_cart_variants[x].image+ '" />'+
+                    '<img class="product_image" src="' + _willet_cart_products[x].image+ '" />'+
                     '<label>' +
-                        '<input name="item' + _willet_cart_variants[x].variant_id + '" ' + 
-                               'data-uuid="' + _willet_cart_variants[x].product_uuid + '" ' + 
-                               'id="item' + _willet_cart_variants[x].variant_id + '" ' + 
-                               'class="variant_select" type="checkbox" checked="checked" />' +
-                        _willet_cart_variants[x].title + 
+                        '<input name="item' + _willet_cart_products[x].id + '" ' + 
+                               'data-uuid="' + _willet_cart_products[x].product_uuid + '" ' + 
+                               'id="item' + _willet_cart_products[x].id + '" ' + 
+                               'class="product_select" type="checkbox" checked="checked" />' +
+                        _willet_cart_products[x].title + 
                     '</label>' + 
                 '</li>'
             )
@@ -363,7 +362,7 @@
         }
         
         // adjust box width; 182px is the empirically "nice" width for the items
-        $('#cart_items_display').width(182 * _willet_cart_variants.length);
+        $('#cart_items_display').width(182 * _willet_cart_products.length);
         
         // add product selection events onto checkbox.
         $('#cart_items_display li').each (function () {

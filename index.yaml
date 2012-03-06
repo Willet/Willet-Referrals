@@ -133,16 +133,6 @@ indexes:
   - name: what
   - name: created
 
-- kind: Product
-  properties:
-  - name: shopify_id
-  - name: variants
-
-- kind: ProductShopify
-  properties:
-  - name: shopify_id
-  - name: variants
-
 - kind: WOSIBInstance
   properties:
   - name: is_live
