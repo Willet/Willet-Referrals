@@ -26,12 +26,6 @@ class ProductShopify(Product):
     # The type of product
     type = db.StringProperty( indexed = False )
     
-    # Array of IDs of the variants of the product
-    # (get from shopify API: /admin/products.json)
-    # Do NOT change to any number-based data type. This is an UNKNOWN indexing 
-    # issue with non-string lists.
-    variants = db.StringListProperty(indexed = True)
-    
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
 
@@ -45,15 +39,6 @@ class ProductShopify(Product):
         if not product:
             uuid = generate_uuid( 16 )
 
-            variants = []
-            if 'variants' in data:
-                # if one or more variants exist, store their IDs. 
-                # otherwise, store an empty list.
-                logging.debug ('%d variants for this product found; adding to \
-                    ProductShopify object.' % len(data['variants']))
-                variants = [str(variant['id']) for variant in data['variants']]
-            logging.info ('variants = %s' % variants)
-
             images = []
             if 'images' in data:
                 logging.debug ('%d images for this product found; adding to \
@@ -66,8 +51,7 @@ class ProductShopify(Product):
                     uuid         = uuid,
                     client       = client,
                     resource_url = url,
-                    images       = images,
-                    variants     = variants
+                    images       = images
             )
 
         # Now, update it with info.
@@ -106,11 +90,9 @@ class ProductShopify(Product):
         '''
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
-        if not product or not product.variants:
+        if not product:
             if not product:
                 logging.warn('Could not get product for url: %s' % url)
-            elif not product.variants:
-                logging.warn('need to refetch product to get variants: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
@@ -149,13 +131,6 @@ class ProductShopify(Product):
             logging.info("No images for this product %s" % self.uuid)
 
         try:
-            logging.debug ('%d variants for this product found; adding to \
-ProductShopify object.' % len(data['variants']))
-            variants = [str(variant['id']) for variant in data['variants']]
-        except:
-            logging.info("No variants for this product %s" % self.uuid)
-
-        try:
             price = float(data['variants'][0]['price'])
         except:
             logging.info("No price for this product %s" % self.uuid)
@@ -179,8 +154,6 @@ ProductShopify object.' % len(data['variants']))
             self.price         = price
         if images:
             self.images        = images
-        if variants:
-            self.variants      = variants
         if description:
             self.description   = description
         if tags:
