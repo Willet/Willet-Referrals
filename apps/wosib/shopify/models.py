@@ -51,10 +51,10 @@ class WOSIBShopify(WOSIB, AppShopify):
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
                     {%% for item in cart.items %%}
-                        { "id" : "{{ item.id }}",
-                          "image" : "{{ item.image }}" || _willet_no_image, // url
+                        { "image" : "{{ item.image }}" || _willet_no_image, // url
                           "title" : "{{ item.title }}", // or "name"
-                          "variant_id" : "{{ item.variant_id }}"
+                          "id" : "{{ item.product.id }}",
+                          "product_url" : "{{ item.product.url }}"
                         },
                     {%% endfor %%}
                 {}];

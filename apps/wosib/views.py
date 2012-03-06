@@ -39,7 +39,7 @@ class WOSIBVoteDynamicLoader (URIHandler):
         as the asker's cart. This renders a voting page for voters to vote on
         the cart's items, stored in a "WOSIBInstance". '''
     def get (self):
-        products = [] # populate this to show product variants on design page.
+        products = [] # populate this to show products on design page.
         try:
             instance_uuid = self.request.get('instance_uuid')
             wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
@@ -61,33 +61,40 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
+        ids = products = []
+    
+        # get product IDs from the query string
         try:
-            variant_ids = map(lambda x: long(x), self.request.get('variants').split(','))
-        except: # if user throws in random crap in the query string, no biggie
-            variant_ids = []
-        
-        if variant_ids: # only if variants are valid, render the page
-            if len (variant_ids) > 1: # render WOSIB if more than one thing selected... else SIBT.
-                logging.debug ("variant_ids = %s" % variant_ids)
-                variants = []
-                for variant_id in variant_ids:
-                    variant_product = Product.all().filter ('variants = ', str(variant_id)).get()
-                    if variant_product: # could be None of Product is somehow not in DB
-                        if len(variant_product.images) > 0:
-                            image = variant_product.images[0] # can't catch LIOOR w/try
+            ids = [long(x) for x in self.request.get('ids').split(',')]
+        except NameError, ValueError: # if user throws in random crap in the query string, no biggie
+            pass # no error is thrown when: string is nothing, and IDs not numbers
+
+        if ids: # only if IDs are valid, render the page
+            logging.debug ("ids = %s" % ids)
+            # render WOSIB if more than one thing selected... else SIBT.
+            if len (ids) > 1:
+                logging.debug ("Getting products by Shopify ID")
+                for shopify_id in ids:
+                    product = Product.all().filter ('shopify_id = ', str(shopify_id)).get()
+                    if product: # could be None of Product is somehow not in DB
+                        if len(product.images) > 0:
+                            image = product.images[0] # can't catch LIOOR w/try
                         else:
                             image = '/static/imgs/noimage-willet.png'
-                        variants.append({
-                            'id' : variant_product.shopify_id,
+                        products.append({
+                            'id' : product.shopify_id,
                             'image' : image,
-                            'title' : variant_product.title,
-                            'variant_id' : variant_id,
-                            'product_uuid' : variant_product.uuid,
-                            'product_desc' : variant_product.description,
+                            'title' : product.title,
+                            'shopify_id' : shopify_id,
+                            'product_uuid' : product.uuid,
+                            'product_desc' : product.description,
                         })
                     else:
-                        logging.debug ("Product for variant %s not found in DB" % variant_id)
-                
+                        logging.warning ("Product of ID %s not found in DB" % shopify_id)
+
+                if not products:
+                    raise ValueError ('No product could be found with parameters supplied')
+
                 store_domain  = self.request.get('store_url')
                 refer_url = self.request.get( 'refer_url' )
                 logging.info ("refer_url = %s" % refer_url)
@@ -99,7 +106,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                         example: http://social-referral.appspot.com/w/ask.html?
                              store_url=http://thegoodhousewife.myshopify.com
                             &refer_url=http://thegoodhousewife.co.nz/cart
-                            &variants=109751342
+                            &ids=109751342
                             &app_uuid=9d9fd05f5db0497b
                             &user_uuid=1e1cdedac5914319
                             &instance_uuid=
@@ -120,10 +127,11 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 
                 link = Link.create (target, app, refer_url, user)
                 
-                random_variant = choice(variants) # pick random variant, use it for showing description
                 try:
-                    random_image = random_variant.images[0]
-                except: # if our chosen variant happens to have no image
+                    random_product = choice(products) # pick random product, use it for showing description
+                    random_image = random_product['image']
+                except IndexError: # if our chosen product happens to have no image
+                    logging.error ('No products found! Using plain image.')
                     random_image = ['%s/static/imgs/blank.png' % URL], # blank
                 
                 template_values = {
@@ -136,12 +144,12 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                     'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
                     'app': app,
                     'willt_code': link.willt_url_code, # used to create full instances
-                    'variants' : variants,
+                    'products' : products,
                     'fb_redirect' : "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
                     'store_domain' : self.request.get( 'store_url' ),
                     'title'  : "Which one should I buy?",
-                    'product_desc' : random_variant['product_desc'],
-                    'images' : random_image,
+                    'product_desc' : random_product['product_desc'],
+                    'image' : random_image,
                     'share_url' : link.get_willt_url(), # refer_url
                 }
 
@@ -150,10 +158,16 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
 
                 self.response.headers.add_header('P3P', P3P_HEADER)
                 self.response.out.write(template.render(path, template_values))
-            elif len(variant_ids) == 1: # render SIBT
+            elif len(product_ids) == 1: # render SIBT
+                logging.debug ('Only one product - switched to SIBT!')
                 redirect_url = url('AskDynamicLoader')
-                # SIBT now supports retrieving products by variant ID.
-                self.redirect("%s?%s&variant_id=%s" % (redirect_url, self.request.query_string, variant_ids[0]))
+                # SIBT now supports retrieving products by product ID.
+                self.redirect("%s?%s&product_id=%s" % (redirect_url, self.request.query_string, product_ids[0]))
+        else:
+            # give a warning to the client to help debugging
+            msg = "Incorrect calling method - products not found."
+            logging.warning (msg)
+            self.response.out.write(msg)
         return
 
 class WOSIBShowResults(webapp.RequestHandler):
