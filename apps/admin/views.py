@@ -871,5 +871,5 @@ class SIBTReset (URIHandler):
         for sibt_app in sibt_apps:
             sibt_app.button_enabled = True
             sibt_app.top_bar_enabled = False
-        sibt_apps.put()
+            sibt_app.put()
         self.response.out.write("Done")
