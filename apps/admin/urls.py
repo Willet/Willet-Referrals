@@ -30,5 +30,7 @@ urlpatterns = [
     (r'/admin/analytics/(.*)/rpc', AppAnalyticsRPC),
     (r'/admin/analytics', ShowAnalytics),
     (r'/admin/sibt_reset/', SIBTReset),
+    (r'/email/everyone', EmailEveryone),
+    (r'/email/someone', EmailSomeone) # taskqueue URL. do not call!
 ]
 
