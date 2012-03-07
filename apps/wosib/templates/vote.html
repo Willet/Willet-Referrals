@@ -86,7 +86,7 @@
         </div>
         <script type="text/javascript">
             $(document).ready (function () {
-                // controller guarantees there to be > 0 variants
+                // controller guarantees there to be > 0 products
                 var _willet_cart_products = [ {% for product in products %}
                     {   "id": "{{product.shopify_id}}",
                         "title": "{{product.title}}",

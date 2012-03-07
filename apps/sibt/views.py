@@ -52,9 +52,8 @@ class AskDynamicLoader(webapp.RequestHandler):
         target        = self.request.get ('url', self.request.headers.get('referer'))
         
         product_uuid        = self.request.get( 'product_uuid', None ) # optional
-        product_shopify_id  = self.request.get( 'shopify_id', None ) # optional
-        product_variant_id  = self.request.get( 'variant_id', None ) # optional
-        logging.debug("%r" % [product_uuid, product_shopify_id, product_variant_id])
+        product_shopify_id  = self.request.get( 'product_id', None ) # optional
+        logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # We need this stuff here to fill in the FB.ui stuff 
         # if the user wants to post on wall
@@ -73,9 +72,6 @@ class AskDynamicLoader(webapp.RequestHandler):
                 target = product.resource_url # fix the missing url
             if not product and product_shopify_id: # slow, deprecated
                 product = ProductShopify.get_by_shopify_id (product_shopify_id)
-                target = product.resource_url # fix the missing url
-            if not product and product_variant_id: # slowest
-                product = ProductShopify.all().filter('variants =', product_variant_id).get()
                 target = product.resource_url # fix the missing url
             if not product:
                 # we failed to find a single product!
