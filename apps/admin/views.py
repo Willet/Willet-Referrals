@@ -867,12 +867,18 @@ class GenerateOlderHourPeriods(URIHandler):
 
 class SIBTReset (URIHandler):
     def get(self):
-        ops = []
-        query = db.Query(SIBT)
-        for sibt_app in query:
+        sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(100)
+
+        # Update apps, and get async db puts rolling
+        for sibt_app in sibt_apps:
             sibt_app.button_enabled = True
             sibt_app.top_bar_enabled = False
-            ops.append (db.put_async(sibt_app))
-        for op in ops:
-            op.get_result()
+            db.put_async(sibt_app)
+
+        # Now update memcache
+        for sibt_app in sibt_apps:
+            key = sibt_app.get_key()
+            if key:
+                memcache.set(key, db.model_to_protobuf(sibt_app).Encode(), time=MEMCACHE_TIMEOUT)
+
         self.response.out.write("Done")
