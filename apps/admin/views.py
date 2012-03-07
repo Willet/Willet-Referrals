@@ -905,8 +905,10 @@ class EmailEveryone (URIHandler):
         # no try-catches in list comprehension... so this.
         for sibt in all_sibts:
             try:
-                assert (hasattr (sibt, 'client'))       # lagging cache
-                assert (hasattr (sibt.client, 'email')) # bad install
+                if not hasattr (sibt, 'client'):      # lagging cache
+                    raise AttributeError ('Client is missing')
+                if not hasattr (sibt.client, 'email'): # bad install
+                    raise AttributeError ('Email is missing from client object!')
                 
                 # construct email
                 body = template.render(Email.template_path('general_mail.html'),
