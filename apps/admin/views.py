@@ -893,6 +893,7 @@ class EmailEveryone (URIHandler):
 
     @admin_required
     def post (self, admin):
+        full_name = ''
         logging.info("Sending everyone an email.")
         
         target_version = self.request.get('version', '3')
@@ -917,16 +918,24 @@ class EmailEveryone (URIHandler):
                     raise AttributeError ('Client is missing')
                 if not hasattr (sibt.client, 'email'): # bad install
                     raise AttributeError ('Email is missing from client object!')
+                if not hasattr (sibt.client, 'merchant'): # crazy bad install
+                    raise AttributeError ('User is missing from client object!')
+                    full_name = "shop owner"
+                else:
+                    full_name = sibt.client.merchant.full_name
+                
+                raw_body_text = self.request.get('body', '')
+                raw_body_text = raw_body_text.replace('{{ name }}', full_name).replace('{{name}}', full_name)
                 
                 # construct email
                 body = template.render(Email.template_path('general_mail.html'),
                     {
                         'title'        : self.request.get('subject'),
-                        'content'      : self.request.get('body')
+                        'content'      : raw_body_text
                     }
                 )
                 
-                if sibt.version == target_version: # testing
+                if sibt.client and sibt.version == target_version: # testing
                     email = {
                         'client': sibt.client,
                         'to': 'brian@getwillet.com', # you are CC'd
