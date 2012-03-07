@@ -893,7 +893,8 @@ class EmailEveryone (URIHandler):
         logging.info ('target_version = %r' % target_version)
         
         all_sibts = SIBTShopify.all().fetch(1000000)
-        logging.info ('all_sibts = %r' % all_sibts)
+        #logging.info ('all_sibts = %r' % all_sibts)
+        logging.info ('loaded all SIBTs')
 
         try:
             assert (len (self.request.get('subject')) > 0)
@@ -922,8 +923,8 @@ class EmailEveryone (URIHandler):
                 if sibt.version == target_version: # testing
                     email = {
                         'client': sibt.client,
-                        # 'from': ...
-                        'to': sibt.client.email,
+                        'to': 'brian@getwillet.com', # you are CC'd
+                      # 'to': sibt.client.email,
                         'subject': self.request.get('subject'),
                         'body': body
                     }
