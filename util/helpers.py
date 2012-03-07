@@ -258,3 +258,11 @@ def url(view, *args, **kwargs):
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
     return p.sub('', data)
+
+def create_hash (*args):
+    """Returns a hash from args"""
+    keys = list (args)
+    if SALT:
+        keys.append (SALT)
+    key = "".join(list(('%s$' % str(k)) for k in keys))
+    return hashlib.sha1(key).hexdigest()

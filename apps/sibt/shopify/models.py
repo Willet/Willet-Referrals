@@ -135,9 +135,12 @@ class SIBTShopify(SIBT, AppShopify):
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;
-                    var hash_index = hash.indexOf('#code=');
-                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
+                    var product_json = {{ product | json }};
                     var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    if (product_json) {
+                        params += '&product_id=' + product_json.id;
+                    }
                     var src = "http://%s%s?" + params;
                     var script = window.document.createElement("script");
                     script.type = "text/javascript";

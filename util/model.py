@@ -79,6 +79,35 @@ class Model(db.Model):
         else:
             logging.debug('Model::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+    @classmethod
+    def get_by (cls, field, value):
+        ''' supply field corresponding to the object's property
+            and required value, e.g. product_id, '1234'
+            and this function will return the first match, first by looking for
+            it in the memcache, then by DB query.
+        '''
+        data = memcache.get('%s-%s:%s' % (cls.__name__.lower(), field, str (value)))
+        if data:
+            obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+        else:
+            obj = cls.all().filter('%s =' % field, value).get()
+
+        return product
+    
+    '''def memcache_by (self, field):
+        """ supply field corresponding to the object's property
+            and this function will cache the object based on its class name and
+            the value of that field.
+        """
+        if hasattr(self, field):
+            return memcache.set(
+                    '%s-%s:%s' % (type(self).lower(), field, self.field),
+                    db.model_to_protobuf(self).Encode(),
+                    time=MEMCACHE_TIMEOUT)
+        return False
+    '''
+
 # end class
 
 
