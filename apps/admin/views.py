@@ -867,7 +867,7 @@ class GenerateOlderHourPeriods(URIHandler):
 
 class SIBTReset (URIHandler):
     def get(self):
-        sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(100)
+        sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(500)
 
         # Update apps, and get async db puts rolling
         for sibt_app in sibt_apps:
