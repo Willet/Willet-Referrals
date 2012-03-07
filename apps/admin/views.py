@@ -15,6 +15,7 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.analytics_backend.models import *
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
@@ -29,9 +30,7 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.user.models import User
-from apps.analytics_backend.models import *
-
+from apps.user.models import *
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
@@ -864,17 +863,22 @@ class GenerateOlderHourPeriods(URIHandler):
         self.response.out.write(json.dumps({'success':True}))
 
 
-
 class SIBTReset (URIHandler):
     def get(self):
-        ops = []
-        query = db.Query(SIBT)
-        for sibt_app in query:
+        sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(500)
+
+        # Update apps, and get async db puts rolling
+        for sibt_app in sibt_apps:
             sibt_app.button_enabled = True
             sibt_app.top_bar_enabled = False
-            ops.append (db.put_async(sibt_app))
-        for op in ops:
-            op.get_result()
+            db.put_async(sibt_app)
+
+        # Now update memcache
+        for sibt_app in sibt_apps:
+            key = sibt_app.get_key()
+            if key:
+                memcache.set(key, db.model_to_protobuf(sibt_app).Encode(), time=MEMCACHE_TIMEOUT)
+
         self.response.out.write("Done")
 
 
@@ -934,7 +938,8 @@ class EmailEveryone (URIHandler):
                 if sibt.client and sibt.version == target_version: # testing
                     email = {
                         'client': sibt.client,
-                        'to': sibt.client.email,
+                        'to': 'brian@getwillet.com', # you are CC'd
+                      # 'to': sibt.client.email,
                         'subject': self.request.get('subject'),
                         'body': body
                     }
