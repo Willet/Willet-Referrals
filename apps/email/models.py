@@ -63,6 +63,7 @@ class Email():
     def welcomeClient( app_name, to_addr, name, store_name ):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
+        body = ''
     
         # Grab first name only
         try:
@@ -70,8 +71,26 @@ class Email():
         except:
             pass
 
-        body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name)
+        if app_name == 'ShopConnection':
+            body = """<p>Hi %s,</p>
+                  <p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+                  <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>
+                  <p>Fraser</p>
+                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name, app_name)
         
+        elif app_name == 'Should I Buy This':
+            body = """<p>Hi %s,</p>
+                  <p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+                  <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>
+                  <p>Fraser</p>
+                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name, app_name)
+
+        else:
+            logging.error("Attmpt to email welcome for unknown app %s" % app_name)
+            return
+
         logging.info("Emailing '%s'" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)
 
