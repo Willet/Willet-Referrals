@@ -217,6 +217,8 @@ class VoteDynamicLoader(webapp.RequestHandler):
             event = 'SIBTShowingVote'
 
             product = ProductShopify.get_or_fetch(target, app.client)
+            yesses = instance.get_yesses_count()
+            nos = instance.get_nos_count()
 
             template_values = {
                     'evnt' : event,
@@ -230,12 +232,12 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
                     'fb_comments_url' : '%s' % (link.get_willt_url()),
-
+                    'percentage': (yesses / float (yesses + nos)),
                     'share_url': share_url,
                     'is_asker' : is_asker,
                     'instance' : instance,
                     'has_voted': has_voted,
-
+                    'votes': yesses + nos,
                     'yesses': instance.get_yesses_count(),
                     'noes': instance.get_nos_count()
             }

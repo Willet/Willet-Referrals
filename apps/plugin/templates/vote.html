@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+        <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
+        <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+        <style type="text/css">
+            {% block styles %}{% endblock %}
+        </style>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+            if (typeof jQuery == 'undefined'){
+                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+            }
+            {% block head_script %}{% endblock %}
+        </script>
+        <style type="text/css">
+            #wrapper, .wrapper { /* overrides ask.css defaults */
+                height: auto;
+                /* width: auto; */
+                display: auto;
+            }
+            #error_bar {
+                display:none;
+                color: #f00;
+            }
+            #cart_items_display li {
+                background-color: transparent;
+                border: 2px transparent solid;
+                box-shadow: none;
+            }
+        </style>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Willet Vote</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            {% block screens %}{% endblock %}
+        </div>
+        <script type="text/javascript">
+            {% block body_script %}{% endblock %}
+        </script>
+        <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
+</html>
