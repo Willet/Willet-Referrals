@@ -158,30 +158,24 @@ class AskDynamicLoader(webapp.RequestHandler):
 
 class VoteDynamicLoader(webapp.RequestHandler):
     """Serves a plugin where people can vote on a purchase"""
-    #TODO: Using asserts to force try/except code paths is unpythonic & only works if
-    #      __debug__ is True.  Replace with if/else blocks.
     def get(self):
         template_values = {}
-        user   = User.get(self.request.get('user_uuid'))
+        user = User.get(self.request.get('user_uuid'))
         target = get_target_url(self.request.get('url'))
-        link   = None
-        app    = None
+        link = app = None
 
-        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+        # successive stages to get instance
         try:
-            # get instance by instance_uuid
-            assert(instance is not None)
-        except:
-            try:
-                # get instance by link
-                # Grab the link
-
+            # stage 1: get instance by instance_uuid
+            instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+            
+            # stage 2: get instance by willet code in URL
+            if not instance:
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
+                # app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
-                app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 link = Link.get_by_code( self.request.get('willt_code') )
-                
-                if link is None:
+                if not link:
                     # no willt code, asker probably came back to page with
                     # no hash code
                     link = Link.all()\
@@ -190,33 +184,19 @@ class VoteDynamicLoader(webapp.RequestHandler):
                             .filter('app_ =', app)\
                             .get()
                     logging.info('got link by page_url %s: %s' % (target, link))
-                instance = link.sibt_instance.get()
-                assert(instance is not None)
-            except:
-                try:
-                    # get instance by asker
-                    instance = SIBTInstance.get_by_asker_for_url(user, target)
-                    assert(instance is not None)
-                except:
-                    try:
-                        # ugh, get the instance by actions ...
-                        instances = SIBTInstance.all(key_onlys=True)\
-                            .filter('url =', target)\
-                            .filter('is_live =', True)\
-                            .fetch(100)
-                        key_list = [instance.id_or_name() for instance in instances]
-                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
-                        if action:
-                            instance = action.sibt_instance
-                            logging.info('no link, got action %s and instance %s' % (action, instance))
-                        assert(instance is not None)
-                    except:
-                        logging.error('failed to get instance', exc_info=True)
+                if link:
+                    instance = link.sibt_instance.get()
 
-        logging.info("Did we get an instance? %s" % instance.uuid)
-        
-        if instance:
-            if app == None:
+            # stage 3: get instance by user and URL
+            if not instance:
+                instance = SIBTInstance.get_by_asker_for_url(user, target)
+
+            # still no instance? fail
+            if not instance:
+                raise ValueError ("Tried everything - no SIBT instance could be found!")
+
+            # start looking for instance info
+            if not app:
                 app = instance.app_
 
             name = instance.asker.get_full_name()
@@ -224,22 +204,17 @@ class VoteDynamicLoader(webapp.RequestHandler):
             vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
             
             logging.info('got vote action: %s' % vote_action)
-            has_voted = (vote_action != None)
+            has_voted = (vote_action is not None)
             if not instance.is_live:
                 has_voted = True
 
-            if link == None: 
+            if not link:
                 link = instance.link
             share_url = link.get_willt_url()
 
-            if is_asker:
-                SIBTShowingResultsToAsker.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                SIBTShowingResults.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToFriend'
-            else:
-                SIBTShowingVote.create(user=user, instance=instance)
+            # record that the vote page was once opened.
+            SIBTShowingVote.create(user=user, instance=instance)
+            event = 'SIBTShowingVote'
 
             product = ProductShopify.get_or_fetch(target, app.client)
 
@@ -254,7 +229,6 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'asker_name' : name if name != '' else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
-                    #'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
                     'fb_comments_url' : '%s' % (link.get_willt_url()),
 
                     'share_url': share_url,
@@ -266,15 +240,16 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'noes': instance.get_nos_count()
             }
 
-            # Finally, render the HTML!
             path = os.path.join('apps/sibt/templates/', 'vote.html')
-        else:
-            event = 'SIBTEventOverClosingIframe'
+
+        except ValueError, e:
+            # well, we can't find the instance, so let's assume the vote is over
             template_values = {
                 'output': 'Vote is over'        
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
+        # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
