@@ -123,6 +123,7 @@ class TrackWOSIBShowAction(URIHandler):
 
     def post(self):
         """So javascript can track a wosib specific show actions"""
+        '''
         success = False
         instance = app = user = action = None
         if self.request.get('instance_uuid'):
@@ -159,8 +160,8 @@ class TrackWOSIBShowAction(URIHandler):
         else:
             logging.info('tracked action: %s' % action)
             success = True
-
-        self.response.out.write('')
+        '''
+        self.response.out.write('200 OK')
 
 class TrackWOSIBUserAction(URIHandler):
     """ For actions WITH AN INSTANCE """
@@ -170,6 +171,7 @@ class TrackWOSIBUserAction(URIHandler):
 
     def post(self):
         """So javascript can track a wosib specific show actions"""
+        '''
         success = False
         instance = app = user = action = None
         if self.request.get('instance_uuid'):
@@ -201,8 +203,8 @@ class TrackWOSIBUserAction(URIHandler):
         else:
             logging.info('tracked action: %s' % action)
             success = True
-
-        self.response.out.write('')
+        '''
+        self.response.out.write('200 OK')
 
 class StartPartialWOSIBInstance( URIHandler ):
     def get (self):

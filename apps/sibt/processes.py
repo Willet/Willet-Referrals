@@ -274,6 +274,7 @@ class TrackSIBTShowAction(URIHandler):
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
+        '''
         success  = False
         instance = app = user = action = None
         duration = 0.0
@@ -309,8 +310,8 @@ class TrackSIBTShowAction(URIHandler):
         else:
             logging.info('tracked action: %s' % action)
             success = True
-
-        self.response.out.write('')
+        '''
+        self.response.out.write('200 OK')
 
 
 class TrackSIBTUserAction(URIHandler):
@@ -321,6 +322,7 @@ class TrackSIBTUserAction(URIHandler):
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
+        '''
         success  = False
         duration = 0.0
         instance = app = user = action = None
@@ -355,8 +357,8 @@ class TrackSIBTUserAction(URIHandler):
         else:
             logging.info('tracked action: %s' % action)
             success = True
-
-        self.response.out.write('')
+        '''
+        self.response.out.write('200 OK')
 
 
 class StartPartialSIBTInstance( URIHandler ):
