@@ -11,5 +11,6 @@ urlpatterns = [
     (r'/s/shopify/sibt.js',     	SIBTShopifyProductDetection),
     (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),
     (r'/s/shopify/sibt-ab.js',     	SIBTShopifyServeAB),
+    (r'/s/shopify/error.html',     	SIBTShopifyInstallError),
 ]
 

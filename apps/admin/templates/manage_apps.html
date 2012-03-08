@@ -1,50 +1,81 @@
 {% extends "admin_base.html" %}
 
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
 {% block bottom_content %}
-    <div class="span-24 prepend-top">
-        <h1 class="prepend-top center">Manage Installed Apps</h1>
+    <div class="span-24 prepend-top append-bottom">
+        <h1 class="center">Manage Installed Apps</h1>
         {% for message in messages %}
-            <div class="prepend-3 span-21 {{ message.type }}">
-                {{ message.text }}
-            </div>
+        <div class="prepend-3 span-21 {{ message.type }}">
+            {{ message.text }}
+        </div>
         {% endfor %}
-        {% for app in apps %}
-            <div class="span-9">
-                <a href="{{ URL }}/admin/analytics/{{ app.uuid }}/">{{ app.client_name }}</a> 
-            </div>
-            <div class="span-6">
-                {{ app.class_name }}
-            </div>
-            <div class="span-6 append-3 last">
-                {% ifequal app.class_name "SIBTShopify" %}
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        {% if app.app.button_enabled %}
-                            <input type="hidden" name="action" value="disable_button" />
-                            <input type="submit" value="Disable Button" />
-                        {% else %}
-                            <input type="hidden" name="action" value="enable_button" />
-                            <input type="submit" value="Enable Button" />
-                        {% endif %}
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        {% if app.app.top_bar_enabled %}
-                            <input type="hidden" name="action" value="disable_tb" />
-                            <input type="submit" value="Disable TB" />
-                        {% else %}
-                            <input type="hidden" name="action" value="enable_tb" />
-                            <input type="submit" value="Enable TB" />
-                        {% endif %}
-                    </form>
-                    <form method="post" action="?">
-                        <input type="hidden" name="app_id" value="{{ app.uuid }}">
-                        <input type="hidden" name="action" value="set_number_shows_before_tb" />
-                        <input type="input" size="2" name="num_shows_before_tb" value="{{ app.app.num_shows_before_tb }}" />
-                        <input type="submit" value="Set # Shows" />
-                    </form>
+        {% for app in apps.items %}
+            <div class="span-21 prepend-top last">
+                <h3>{{ app.0 }}</h3>
+                {% ifequal app.0 "SIBTShopify" %}
+                    <a href="{{ URL }}/admin/sibt_reset/">Reset all SIBT (buttons = true, top bar = false)</a>
                 {% endifequal %}
             </div>
+            <table>
+            {% for a in app.1 %}
+                <tr>
+                    <th scope='row'>{{ forloop.counter }}</th>
+                    <td>
+                        <a href="{{ URL }}/admin/analytics/{{ a.uuid }}/">{{ a.client_name }}</a> 
+                    </td>
+                    {% ifequal a.class_name "SIBTShopify" %}
+                        <td>
+                            <form method="post" action="?" class="mini_form">
+                                <input type="hidden" name="app_id" value="{{ a.uuid }}">
+                                {% if a.app.button_enabled %}
+                                    <input type="hidden" name="action" value="disable_button" />
+                                    <input type="submit" value="Disable Button" />
+                                {% else %}
+                                    <input type="hidden" name="action" value="enable_button" />
+                                    <input type="submit" value="Enable Button" />
+                                {% endif %}
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="?" class="mini_form">
+                                <input type="hidden" name="app_id" value="{{ a.uuid }}">
+                                {% if a.app.top_bar_enabled %}
+                                    <input type="hidden" name="action" value="disable_tb" />
+                                    <input type="submit" value="Disable TB" />
+                                {% else %}
+                                    <input type="hidden" name="action" value="enable_tb" />
+                                    <input type="submit" value="Enable TB" />
+                                {% endif %}
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="?" class="mini_form">
+                                <input type="hidden" name="app_id" value="{{ a.uuid }}">
+                                <input type="hidden" name="action" value="set_number_shows_before_tb" />
+                                <input type="input" size="2" name="num_shows_before_tb" value="{{ a.num_shows_before_tb }}" />
+                                <input type="submit" value="Set # Shows" />
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="?" class="mini_form">
+                                <input type="hidden" name="app_id" value="{{ a.uuid }}">
+                                <input type="hidden" name="action" value="reset_style" />
+                                <a href="{{ URL }}/s/shopify/{{ a.uuid }}/edit">Edit style</a>, or 
+                                <input type="submit" value="reset it" />
+                            </form>
+                        </td>
+                    {% else %}
+                    {% endifequal %}
+                </tr>
+            {% endfor %}
+            </table>
         {% endfor %}
     </div>
 {% endblock bottom_content %}

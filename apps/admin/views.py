@@ -15,25 +15,22 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.analytics_backend.models import *
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
-from apps.referral.models import Referral
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
-from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.user.models import User
-from apps.analytics_backend.models import *
-
+from apps.user.models import *
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
@@ -140,7 +137,7 @@ class ShowRoutes(URIHandler):
 class ManageApps(URIHandler):
     def get_app_list(self):
         all_apps = App.all()
-        apps = []
+        apps = {}
         for app in all_apps:
             try:
                 d = {
@@ -150,17 +147,20 @@ class ManageApps(URIHandler):
                     'client': getattr (app, 'client'),
                     'app': app
                 }
-                apps.append(d)
+                if not d['class_name'] in apps:
+                    apps[d['class_name']] = []
+
+                apps[d['class_name']].append(d)
             except Exception,e:
-                logging.error('error adding app: %s' % e, exc_info=True)
+                logging.warn('Error adding app: %s' % e, exc_info=True)
         return apps
     
     @admin_required
     def get(self, client=None):
         template_values = {
-            'apps': self.get_app_list() 
+            'apps': self.get_app_list()
         }
-        
+
         self.response.out.write(self.render_page(
                 'manage_apps.html',
                 template_values
@@ -169,6 +169,7 @@ class ManageApps(URIHandler):
 
     @admin_required
     def post(self, admin=None):
+        ''' does a predefined list of actions on apps.'''
         app_id = self.request.get('app_id')
         action = self.request.get('action')
         app = App.get(app_id)
@@ -198,6 +199,13 @@ class ManageApps(URIHandler):
                     app.put()
                 elif action == 'set_number_shows_before_tb':
                     app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
+                    app.put()
+                elif action == 'set_style':
+                    app.button_css = self.request.get('button_css')
+                    memcache.get('app-%s-sibt-css' % app.uuid) # found in sibt/models.py
+                    app.put()
+                elif action == 'reset_style':
+                    app.button_css = None
                     app.put()
                 else:
                     logging.error("bad action: %s" % action)
@@ -854,3 +862,133 @@ class GenerateOlderHourPeriods(URIHandler):
 
         self.response.out.write(json.dumps({'success':True}))
 
+
+class SIBTReset (URIHandler):
+    def get(self):
+        sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(500)
+
+        # Update apps, and get async db puts rolling
+        for sibt_app in sibt_apps:
+            sibt_app.button_enabled = True
+            sibt_app.top_bar_enabled = False
+            db.put_async(sibt_app)
+
+        # Now update memcache
+        for sibt_app in sibt_apps:
+            key = sibt_app.get_key()
+            if key:
+                memcache.set(key, db.model_to_protobuf(sibt_app).Encode(), time=MEMCACHE_TIMEOUT)
+
+        self.response.out.write("Done")
+
+
+class EmailEveryone (URIHandler):
+    """ Task Queue-based blast email URL. """
+
+    @admin_required
+    def get (self, admin):
+        # render the mail client
+        template_values = {}
+        self.response.out.write(self.render_page('mass_mail_client.html', template_values))
+
+    @admin_required
+    def post (self, admin):
+        full_name = ''
+        logging.info("Sending everyone an email.")
+        
+        target_version = self.request.get('version', '3')
+        logging.info ('target_version = %r' % target_version)
+        
+        all_sibts = SIBTShopify.all().fetch(1000)
+        #logging.info ('all_sibts = %r' % all_sibts)
+        logging.info ('loaded all SIBTs')
+
+        try:
+            assert (len (self.request.get('subject')) > 0)
+            assert (len (self.request.get('body')) > 0)
+        except:
+            self.error(400) # Bad Request
+            return
+
+        all_emails = []
+        # no try-catches in list comprehension... so this.
+        for sibt in all_sibts:
+            try:
+                if not hasattr (sibt, 'client'):      # lagging cache
+                    raise AttributeError ('Client is missing, likely an uninstall')
+                if not hasattr (sibt.client, 'email'): # bad install
+                    raise AttributeError ('Email is missing from client object!')
+                if not hasattr (sibt.client, 'merchant'): # crazy bad install
+                    raise AttributeError ('User is missing from client object!')
+                    full_name = "shop owner"
+                else:
+                    full_name = sibt.client.merchant.full_name
+
+                # TEMPORARY - 1st fully rolled out on V3
+                if sibt.client.email == 'contact@bentoandco.com':
+                    # Skip Bento & Co.
+                    continue
+                
+                raw_body_text = self.request.get('body', '')
+                raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
+                
+                # construct email
+                body = template.render(Email.template_path('general_mail.html'),
+                    {
+                        'title'        : self.request.get('subject'),
+                        'content'      : raw_body_text
+                    }
+                )
+                subject = re.compile(r'<.*?>').sub('', self.request.get('subject'))
+                
+                if sibt.client and sibt.version == target_version: # testing
+                    email = {
+                        'client': sibt.client,
+                        #'to': 'brian@getwillet.com, fraser@getwillet.com', # you are CC'd
+                        'to': sibt.client.email,
+                        'subject': subject,
+                        'body': body
+                    }
+                    all_emails.append (email)
+                    logging.info('added %r to all_emails' % sibt.client)
+            except Exception, e:
+                logging.error ("Error finding client/email for app: %r; %s" % (sibt, e), exc_info = True)
+                pass # miss a client!
+
+        for email in all_emails:
+            taskqueue.add ( # have them sent one by one.
+                url = url ('EmailSomeone'),
+                params = email
+            )
+        
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write ("%r" % all_emails)
+        return
+
+
+class EmailSomeone (URIHandler):
+    def get (self):
+        self.post() # yup, taskqueues are randomly GET or POST.
+
+    def post( self ):
+        try:
+            Email.send_email (
+                self.request.get('from', 'fraser@getwillet.com'),
+                self.request.get('to'),
+                self.request.get('subject'),
+                self.request.get('body'),
+                self.request.get('to_name', None),
+                self.request.get('reply-to', None)
+            )
+            self.response.out.write ("200 OK")
+        except Exception, e:
+            logging.error ("Error sending one of the emails in batch! %s\n%r" % 
+                (e, [
+                    self.request.get('from', 'fraser@getwillet.com'),
+                    self.request.get('to'),
+                    self.request.get('subject'),
+                    self.request.get('body'),
+                    self.request.get('to_name', None),
+                    self.request.get('reply-to', None)
+                ]), exc_info = True
+            )

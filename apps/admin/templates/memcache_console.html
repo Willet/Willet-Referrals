@@ -88,6 +88,14 @@
     </script>
 {% endblock %}
 
+{% block content %}
+    <div class="prepend-top span-24 last right_col">
+        <div id="right_header" class="span-24 last">
+            {% include "admin_menu.html" %}
+        </div>
+    </div>
+{% endblock content %}
+
 {% block bottom_content %}
     <div class="span-24 prepend-top mc_body">
         <h1 class="prepend-top center">Memcache Console v0.1</h1>

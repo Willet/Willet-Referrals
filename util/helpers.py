@@ -169,12 +169,18 @@ def admin_required( fn ):
     def check(self, param=None):
         from apps.user.models import User
         user = User.get(read_user_cookie(self))
-
-        if not user.is_admin():
+        # user not found if cookie references lost user
+        try:
+            if not user.is_admin():
+                logging.error('@admin_required: Non-admin is attempting to access protected pages')
+                self.redirect ( '/' )
+                return
+            else:   
+                fn( self, param )
+        except Exception, e:
+            logging.error('@admin_required - Error occured, redirecting to homepage: %s' % e, exc_info=True)
             self.redirect ( '/' )
             return
-        else:   
-            fn( self, param )
     return check
 
 #

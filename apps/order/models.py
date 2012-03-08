@@ -21,8 +21,6 @@ from util.memcache_ref_prop  import MemcacheReferenceProperty
 # ------------------------------------------------------------------------------
 class Order( Model, polymodel.PolyModel ):
     """Model storing purchase order data"""
-    # A unique identifier
-    uuid           = db.StringProperty( indexed = True )
 
     # Datetime when this Order was first stored in the DB
     created        = db.DateTimeProperty(auto_now_add=True)

@@ -164,7 +164,8 @@ class Link(Model):
                     supplied_user_id = usr,
                     app_             = app,
                     user             = user,
-                    origin_domain    = domain)
+                    origin_domain    = domain,
+                    retweets         = [])
 
         #link.put()
         link.memcache_by_code()

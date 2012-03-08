@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+        <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
+        <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+            if (typeof jQuery == 'undefined'){
+                document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
+            }   
+        </script>
+        <style type="text/css">
+            #wrapper, .wrapper { /* overrides ask.css defaults */
+                height: auto;
+                width: auto;
+                display: auto;
+            }
+            #error_bar {
+                display:none;
+                color: #f00;
+            }
+            #cart_items_display li {
+                background-color: transparent;
+                border: 2px transparent solid;
+                box-shadow: none;
+            }
+        </style>
+        <meta http-equiv="X-UA-Compatible" content="IE=8" />
+        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+        <title>Willet Vote</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="splash">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                    <div>Which one would you get?</div>
+                    <!-- text should not mention 'buy' -->
+                </div>
+                <form method="POST" action="">
+                    <ul id="cart_items_display">
+                        <!-- JS -->
+                    </ul>
+                </form>
+                <div class="dialog_button_area">
+                    <input type="hidden" name="app_uuid" value="{{app_uuid}}">
+                    <input type="hidden" name="user_uuid" value="{{user_uuid}}">
+                    <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
+                    <input type="hidden" name="target_url" value="{{target_url}}">
+                    
+                    <input name="vote_btn" id="vote_btn" 
+                           type="button" value="Done">
+                    <div id="error_bar"></div>
+                </div>
+            </div>
+            <div id="wosib_thanks_for_vote">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                    <div>Thank you!</div>
+                    <!-- text should not mention 'buy' -->
+                </div>
+                <div>Thank you. You're awesome! <br />
+                    We'll email your friend the result in a couple of hours.
+                </div>
+                <div class="dialog_button_area">
+                    <input type="button" value="Close">
+                </div>
+            </div>
+            <div id="wosib_error">
+                <div class="title_bar">
+                    <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+                    <div>Doh!</div>
+                    <!-- text should not mention 'buy' -->
+                </div>
+                <div>Something went wrong, and your vote was not counted! <br />
+                    Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
+                </div>
+                <div class="dialog_button_area">
+                    <input type="button" value="Close">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(document).ready (function () {
+                // controller guarantees there to be > 0 products
+                var _willet_cart_products = [ {% for product in products %}
+                    {   "id": "{{product.shopify_id}}",
+                        "title": "{{product.title}}",
+                        "image" : "{{product.images.0}}" || "/static/imgs/noimage-willet.png",
+                        "product_uuid": "{{product.uuid}}",
+                    },
+                {% endfor %} ];
+
+
+                // Widget class
+                // Base widget, same basic functionality
+                var LiWidget = function (name) {
+                    var elem = this.elem = document.createElement('li');
+                    elem.id = elem.name = name || '';
+                };
+                LiWidget.prototype = {
+                    getElement: function () {
+                        return this.elem;
+                    },
+                    getName: function () {
+                        return this.name;
+                    },
+                    setVisible: function (i) {
+                        this.elem.style.display = i ? 'block' : 'none';
+                    }
+                };
+
+                var Product = function (uuid, title, image_src, shopify_id) {
+                    LiWidget.call(this, "item" + shopify_id);
+
+                    var that = this,
+                        $elem = $(this.elem);
+                    
+                    $elem.click (function (e) {
+                        // add product selection events onto checkbox.
+                        $('#cart_items_display input').prop('checked', false);
+                        var checkbox = $(this).find('input')[0];
+                        checkbox.checked = true;
+                        
+                        // cancel select for all other checkboxes
+                        $('#cart_items_display li').each (function () {
+                            var checkbox = $(this).find('input')[0];
+                            $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
+                        });
+                    });
+                    
+                    var image = this.image = document.createElement('img');
+                    image.src = image_src || "/static/imgs/noimage-willet.png";
+
+                    var input = this.input = document.createElement('input');
+                    input.id = "item" + shopify_id;
+                    input.name = "item" + shopify_id;
+                    input.className = "product_select";
+                    input.type = "checkbox";
+                    input.dataset.uuid = uuid;
+                    
+                    var label = this.label = document.createElement('label');
+                    label.appendChild (input);
+                    label.innerHTML += title;
+                    
+                    $elem.append ([image, label]);
+                    
+                };
+                
+                Product.prototype = new LiWidget();
+                
+                Product.prototype.getProductUuid = function () {
+                    return $elem.data('uuid');
+                };
+
+                Product.prototype.attach = function () {
+                    $('#cart_items_display').append(this.elem);
+                };
+
+                
+                for (var x in _willet_cart_products) {
+                    // add products onto page.
+                    var prod = new Product (_willet_cart_products[x].product_uuid, 
+                                            _willet_cart_products[x].title, 
+                                            _willet_cart_products[x].image,
+                                            _willet_cart_products[x].product_id);
+                    prod.attach ();
+                }
+                
+                var showScreen = function (id) {
+                    $('#wrapper').children().hide();
+                    $('#wrapper>#'+id).show();
+                };
+                
+                var closeWindow = function () {
+                    window.close();
+                };
+                $('[value="Close"]').click (closeWindow);
+                
+                var showError = function (msg) {
+                    $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
+                }
+                
+                var vote = function () {
+                    var product_uuid = $('#cart_items_display input:checked').data('uuid');
+                    if (product_uuid) {
+                        var payload = {
+                            "user_uuid" : "{{ user_uuid }}",
+                            "instance_uuid" : "{{ instance_uuid }}",
+                            "product_uuid" : product_uuid
+                        };
+                        $.ajax({
+                            url      : "{{ URL }}{% url DoWOSIBVote %}",
+                            type     : 'post',
+                            data     : payload,
+                            success  : function () {
+                                showScreen('wosib_thanks_for_vote');
+                            },
+                            error    : function () {
+                                showScreen('wosib_error');
+                            }
+                        });
+                    } else {
+                        showError ("Please select a product :)");
+                    }
+                }
+                $('#vote_btn').click(vote);
+                
+                $('#cart_items_display input').prop('checked', false);
+                showScreen('splash');
+            });
+        </script>
+        <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
+</html>

@@ -97,6 +97,7 @@
         setCookieStorageFlag();
     }
 
+    // Once all dependencies are loading, fire this function
     var _init_sibt = function () {
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
@@ -114,11 +115,10 @@
         }
         _willet_head.appendChild(_willet_style);
 
-
         jQuery.noConflict(); // Suck it, Prototype!
 
         // jQuery cookie plugin (included to solve lagging requests)
-        jQuery.cookie=function(a,b,c){if(arguments.length>1&&String(b)!=="[object Object]"){c=jQuery.extend({},c);if(b===null||b===undefined){c.expires=-1}if(typeof c.expires==="number"){var d=c.expires,e=c.expires=new Date;e.setDate(e.getDate()+d)}b=String(b);return document.cookie=[encodeURIComponent(a),"=",c.raw?b:encodeURIComponent(b),c.expires?"; expires="+c.expires.toUTCString():"",c.path?"; path="+c.path:"",c.domain?"; domain="+c.domain:"",c.secure?"; secure":""].join("")}c=b||{};var f,g=c.raw?function(a){return a}:decodeURIComponent;return(f=(new RegExp("(?:^|; )"+encodeURIComponent(a)+"=([^;]*)")).exec(document.cookie))?g(f[1]):null};
+        {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
         jQuery(document).ready(function($) {
             // wait for DOM elements to appear + $ closure!
@@ -127,6 +127,7 @@
                 _willet_show_votes = ('{{ show_votes }}' == 'True'),
                 _willet_has_voted = ('{{ has_voted }}' == 'True'),
                 sibt_button_enabled = ('{{ app.button_enabled }}' == 'True'),
+                sibt_version = {{sibt_version|default:"2"}},
                 is_live = ('{{ is_live }}' == 'True'),
                 show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
                 _willet_topbar = null,
@@ -157,6 +158,7 @@
                 return;
             };
 
+            // Send action to server
             var _willet_store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
                 var iframe = document.createElement( 'iframe' );
@@ -477,10 +479,6 @@
                         _willet_show_topbar();
                     }
                 } else {
-                    var purchase_cta = document.getElementById('_willet_shouldIBuyThisButton');
-                    var button = document.createElement('a');
-                    var button_html = '';
-
                     // check if we are showing top bar ask too
                     if (show_top_bar_ask) {
                         if (cookie_topbar_closed) {
@@ -493,28 +491,42 @@
                     } 
 
                     if (sibt_button_enabled) {
-                        // only add button if it's enabled in the app 
-                        if (_willet_is_asker) {
-                            button_html = 'See what your friends said!';
-                        } else if (_willet_show_votes) {
-                            button_html = 'Help {{ asker_name }} by voting!';
-                        } else {
-                            button_html = AB_CTA_text;
-                        }
+                        if (sibt_version <= 2) {
+                            var button = document.createElement('a');
+                            var button_html = '';
+                            // only add button if it's enabled in the app 
+                            if (_willet_is_asker) {
+                                button_html = 'See what your friends said!';
+                            } else if (_willet_show_votes) {
+                                button_html = 'Help {{ asker_name }} by voting!';
+                            } else {
+                                button_html = AB_CTA_text;
+                            }
 
-                        button = $(button)
-                            .html(button_html)
-                            // .css('display', 'none')
-                            .css('display', 'inline-block')
-                            .attr('title', 'Ask your friends if you should buy this!')
-                            .attr('id','_willet_button')
-                            .attr('class','_willet_button willet_reset')
-                            .click(_willet_button_onclick);
-                    
-                        $(purchase_cta).append(button);
-                        /* button.fadeIn(250, function() {
-                            $(this).css('display', 'inline-block'); 
-                        });*/
+                            button = $(button)
+                                .html(button_html)
+                                .css('display', 'inline-block')
+                                .attr('title', 'Ask your friends if you should buy this!')
+                                .attr('id','_willet_button')
+                                .attr('class','_willet_button willet_reset')
+                                .click(_willet_button_onclick);
+                            $(purchase_cta).append(button);
+                        } else if (sibt_version == 3) {
+                            var button = $("<div />", {
+                                'id': '_willet_button_v3'
+                            });
+                            button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                         "<div class='button' " +
+                                             "title='Ask your friends if you should buy this!'>" +
+                                             "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                             "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                         "</div>")
+                            .css({
+                                'clear': 'both'
+                            });
+                            $(purchase_cta).append(button);
+                            $('#_willet_button').click(_willet_button_onclick);
+                        }
                     }
                     
                     // watch for message
@@ -559,8 +571,8 @@
 
     var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
 
-    if (!window.jQuery) {
-        scripts_to_load.append('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
+    if (!window.jQuery || window.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
     }
 
     // Go time! Load script dependencies

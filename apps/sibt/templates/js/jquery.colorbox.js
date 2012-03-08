@@ -5,7 +5,6 @@
 {% endblock %}
 
 {%block js_analytics %}
-
     publicMethod.topRightClose = function( ) {
         publicMethod.storeAnalytics( publicMethod.closeState );
         publicMethod.close();

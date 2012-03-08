@@ -25,7 +25,7 @@ class ProductShopify(Product):
 
     # The type of product
     type = db.StringProperty( indexed = False )
-
+    
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
 
@@ -36,15 +36,22 @@ class ProductShopify(Product):
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
         product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
-        if product == None:
+        if not product:
             uuid = generate_uuid( 16 )
+
+            images = []
+            if 'images' in data:
+                logging.debug ('%d images for this product found; adding to \
+                    ProductShopify object.' % len(data['images']))
+                images = [str(image['src']) for image in data['images']]
             
             # Make the product
             product = ProductShopify(
                     key_name     = uuid,
                     uuid         = uuid,
                     client       = client,
-                    resource_url = url
+                    resource_url = url,
+                    images       = images
             )
 
         # Now, update it with info.
@@ -77,21 +84,28 @@ class ProductShopify(Product):
 
     @staticmethod
     def get_or_fetch(url, client):
+        ''' returns a product from our datastore, or if it is not found, 
+            fire a JSON request to Shopify servers to get the product's
+            information, create the Product object, and returns that.
+        '''
+        url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
-        if product == None:
-            logging.warn('Could not get product for url: %s' % url)
+        if not product:
+            if not product:
+                logging.warn('Could not get product for url: %s' % url)
             try:
+                # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
                         url = '%s.json' % url,
                         method = urlfetch.GET
                 )
-                            
+                # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id( str(data['id']) )
                 if product:
                     product.add_url(url)
                 else:
-                    logging.warn('failed to get product for id: %s' % str(data['id']))
+                    logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
             except:
                 logging.error("error fetching and storing product for url %s" % url, exc_info=True)
@@ -134,15 +148,15 @@ class ProductShopify(Product):
         self.title         = data[ 'title' ]
         self.json_response = json.dumps( data )
         
-        if len(type) != 0:
+        if type:
             self.type          = type
         if price != 0.0:
             self.price         = price
-        if images != None and len(images) != 0:
+        if images:
             self.images        = images
-        if description != None and len(description) != 0:
+        if description:
             self.description   = description
-        if tags != None and len(tags) != 0:
+        if tags:
             self.tags          = tags
 
         if hasattr( self, 'processed' ):

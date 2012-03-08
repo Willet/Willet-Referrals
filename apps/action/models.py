@@ -26,6 +26,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.buttons.actions import *
     from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
+    from apps.wosib.actions import *
     action_dict = memcache.get_multi(list_keys) 
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
@@ -80,9 +81,6 @@ class Action(Model, polymodel.PolyModel):
         an 'Action' obj will be stored for them.
         This 'Action' class will be subclassed for specific actions
         ie. click, vote, tweet, share, email, etc. """
-
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
     
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )

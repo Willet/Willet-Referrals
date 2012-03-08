@@ -33,14 +33,14 @@ div#footer {
 div#footer > div {
     position: relative;
     margin-top: -145px; /* negative value of footer height */
-    min-height:20%;
+    min-height: 20%;
     clear: both;
 }
 
 /* ------------------------------ DEFAULTS ---------------------------------- */
 
 html {
-    color:#484848;
+    color: #484848;
 	background-color: #E8F7FB;
     font-family: 'PT Sans', Arial, sans-serif;
 }
@@ -210,6 +210,10 @@ p.code {
 .number {
     font-family: "New Courier", Courier, serif;
     font-size: 1.1em;
+}
+.mini_form {
+    display: inline-block;
+    margin-right: 20px;
 }
 .logout {
     margin-left:10px;
@@ -1013,10 +1017,11 @@ button img {
     position: relative;
     z-index: 2;
     float: right;
+    text-align: right;
 }
 #right_header p {
-    float: right;
-    padding-left: 20px;
+    display: inline-block;
+    padding-left: 15px;
 }
 
 /* EDIT PAGE STUFF */
@@ -1085,4 +1090,11 @@ div.about img {
     background: transparent;
     background-image: url("../imgs/wispy_cloud.png");
     background-repeat: no-repeat;
+}
+
+.thick_hr {
+    height: 10px; 
+    width: 500px; 
+    margin-left: auto; 
+    margin-right: auto;
 }

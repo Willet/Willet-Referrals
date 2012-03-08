@@ -39,7 +39,12 @@ class SIBTShopify(SIBT, AppShopify):
     # Version 2 = [Nov. 23, 2011, Present]
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
+    # version 3: "sweet buttons upgrade"
     version    = db.StringProperty(default='2', indexed=False)
+    
+    # STRING property of any integer
+    # change on upgrade; new installs get this as version.
+    CURRENT_INSTALL_VERSION = '3'
     
     defaults = {
         'willet_button': {
@@ -86,7 +91,37 @@ class SIBTShopify(SIBT, AppShopify):
             'box_shadow_color': '727272',
             'border_radius': '10',
             'padding': '10'
-        } 
+        }, 'willet_button_v3': {
+            'background': '#fff',
+            'border': '1px solid #BBB',
+            'border_radius': '3', # soften the blow
+            'color': '#383f41', # font colour within the box
+            'font': '14px Helvetica, Arial, sans-serif',
+            'margin': '12px 0',
+            'padding': '0 15px',
+            'width': '223',
+            'height': '88',
+            'others': '', # place whatever extra CSS in here
+             # text on top of the button
+            'p_text_align': 'left',
+            'p_margin': '12px 0 0 0',
+            'p_padding': '0 !important', # some shopify themes change this
+            'p_font_size': '14px !important', # some shopify themes change this
+            'p_line_height': '20',
+            'p_others': '', # place whatever extra CSS in here
+             # button within the frame
+            'button_width': '219',
+            'button_height': '25',
+            'button_margin': '8px auto',
+            'button_padding': '4px 2px',
+            'button_background_color': '#C1F0F5',
+            'button_text_align': 'center',
+            'button_border_radius': '4',
+            'button_background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+            'button_box_shadow': '0 1px 0 #BBB',
+            'button_shadow_hover': '#BBB',
+            'button_others': '', # place whatever extra CSS in here
+        }
     }
 
     def __init__(self, *args, **kwargs):
@@ -95,27 +130,52 @@ class SIBTShopify(SIBT, AppShopify):
     
     def do_install(self):
         """Installs this instance"""
-        script_src = """<!-- START willet sibt for Shopify -->
-            <script type="text/javascript">
-            (function(window) {
-                var hash = window.location.hash;
-                var hash_index = hash.indexOf('#code=');
-                var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
-                var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                var src = "http://%s%s?" + params;
-                var script = window.document.createElement("script");
-                script.type = "text/javascript";
-                script.src = src;
-                window.document.getElementsByTagName("head")[0].appendChild(script);
-            }(window));
-            </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
-        willet_snippet = script_src + """
-            <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
-                data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
-                data-price="{{ product.price | money }}" data-page_source="product"
-                data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
-            <!-- END Willet SIBT for Shopify -->"""
-
+        if self.version == '3': # sweet buttons has different on-page snippet.
+            script_src = """<!-- START willet sibt for Shopify -->
+                <script type="text/javascript">
+                (function(window) {
+                    var hash = window.location.hash;
+                    var hash_index = hash.indexOf('#code=');
+                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    var src = "http://%s%s?" + params;
+                    var script = window.document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    window.document.getElementsByTagName("head")[0].appendChild(script);
+                }(window));
+                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            willet_snippet = script_src + """
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"
+                    style="width: 278px;height: 88px;">
+                
+                </div>
+                <!-- END Willet SIBT for Shopify -->"""
+        else:
+            script_src = """<!-- START willet sibt for Shopify -->
+                <script type="text/javascript">
+                (function(window) {
+                    var hash = window.location.hash;
+                    var hash_index = hash.indexOf('#code=');
+                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    var src = "http://%s%s?" + params;
+                    var script = window.document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    window.document.getElementsByTagName("head")[0].appendChild(script);
+                }(window));
+                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+            willet_snippet = script_src + """
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
+                <!-- END Willet SIBT for Shopify -->"""
+        
         liquid_assets = [{
             'asset': {
                 'value': willet_snippet,
@@ -148,9 +208,16 @@ class SIBTShopify(SIBT, AppShopify):
         self.memcache_by_store_url()
 
     def memcache_by_store_url(self):
-        return memcache.set(
-                self.store_url, 
+        success1 = memcache.set(
+                self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
 
     def reset_css(self):
         self.set_css()
@@ -187,7 +254,7 @@ class SIBTShopify(SIBT, AppShopify):
             #logging.warn('updating with data:\n%s' % data)
             class_defaults.update(data)
         except Exception, e:
-            #logging.error(e, exc_info=True)
+            logging.warning (e, exc_info=True)
             pass
         css = SIBTShopify.generate_default_css(class_defaults)
         memcache.set('app-%s-sibt-css' % self.uuid, css) 
@@ -226,14 +293,16 @@ class SIBTShopify(SIBT, AppShopify):
     @staticmethod
     def create(client, token):
         uuid = generate_uuid( 16 )
+        logging.debug("creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
-                        key_name    = uuid,
-                        uuid        = uuid,
-                        client      = client,
-                        store_name  = client.name, # Store name
-                        store_url   = client.url, # Store url
-                        store_id    = client.id, # Store id
-                        store_token = token)
+                        key_name = uuid,
+                        uuid = uuid,
+                        client = client,
+                        store_name = client.name, # Store name
+                        store_url = client.url, # Store url
+                        store_id = client.id, # Store id
+                        store_token = token,
+                        version = SIBTShopify.CURRENT_INSTALL_VERSION )
         app.put()
         
         app.do_install()
@@ -262,13 +331,15 @@ class SIBTShopify(SIBT, AppShopify):
                     logging.debug ("app.old_client was %s" % app.old_client)
                     app.client      = app.old_client if app.old_client else client
                     app.old_client  = None
+                    logging.debug("changing SIBTShopify version to '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
+                    app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         else:
-            # if token is None
+            # if token is None, i.e. getting, not creating
             pass
         
         logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
@@ -282,14 +353,15 @@ class SIBTShopify(SIBT, AppShopify):
     def get_by_store_url(url):
         data = memcache.get(url)
         if data:
-            app = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            app = SIBTShopify.all()\
-                .filter('store_url =', url)\
-                .get()
-            if app:
-                app.memcache_by_store_url()
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
 
+        app = SIBTShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = SIBTShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
         return app
 
     @staticmethod

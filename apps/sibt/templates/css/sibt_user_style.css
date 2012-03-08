@@ -1,3 +1,60 @@
+#_willet_button_v3 {
+	width: {{ willet_button_v3.width }}px;
+	height: {{ willet_button_v3.height }}px;
+	border: {{ willet_button_v3.border }};
+	border-radius: {{ willet_button_v3.border_radius }}px;
+	font: {{ willet_button_v3.font }};
+	color: {{ willet_button_v3.color }};
+	background: {{ willet_button_v3.background }};
+	padding: {{ willet_button_v3.padding }};
+	margin: {{ willet_button_v3.margin }};
+	{{ willet_button_v3.others }}
+}
+#_willet_button_v3 p {
+	text-align: {{ willet_button_v3.p_text_align }};
+	margin: {{ willet_button_v3.p_margin }};
+	padding: {{ willet_button_v3.p_padding }};
+	font-size: {{ willet_button_v3.p_font_size }};
+	line-height: {{ willet_button_v3.p_line_height }}px;
+	{{ willet_button_v3.p_others }}
+}
+#_willet_button_v3>.button {
+    float: left;
+    width: {{ willet_button_v3.button_width }}px;
+    height: {{ willet_button_v3.button_height }}px;
+    padding: {{ willet_button_v3.button_padding }};
+    margin: {{ willet_button_v3.button_margin }};
+    background-color: {{ willet_button_v3.button_background_color }};
+    text-align: {{ willet_button_v3.button_text_align }};
+    border-radius: {{ willet_button_v3.button_border_radius }}px;
+    background-image: {{ willet_button_v3.button_background_image }};
+    box-shadow: {{ willet_button_v3.button_box_shadow }};
+    behavior: url(/static/js/PIE.htc);
+    {{ willet_button_v3.button_others }}
+}
+#_willet_button_v3>.button:hover {
+    cursor: pointer;
+    cursor: hand;
+    -moz-box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
+    -webkit-box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
+    box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
+    behavior: url(/static/js/PIE.htc);
+}
+#_willet_button_v3>.button>img {
+    float: left;
+    margin: 0 0 0 8px;
+    padding: 0;
+    width: 25px;
+    height: 25px;
+}
+#_willet_button_v3>.button>.title {
+	margin-left: 30px;
+	padding: 1px 0 0 0;
+	font-size: 16px;
+	line-height: 24px;
+	text-shadow: 1px 1px 1px #EEE;
+}
+
 ._willet_button {
     min-width: 202px !important; 
     max-width: {{ willet_button.width }}px !important; 

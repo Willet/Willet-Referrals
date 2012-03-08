@@ -35,6 +35,7 @@ class TrackWilltURL( webapp.RequestHandler ):
         # Fetch the Link
         link = Link.get_by_code(code)
         if not link:
+            logging.warn ("no link contains the code '%s'" % code)
             self.redirect("/")
             return
 

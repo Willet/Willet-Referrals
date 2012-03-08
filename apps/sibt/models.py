@@ -24,6 +24,7 @@ from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models     import Link
 from apps.user.models     import get_or_create_user_by_cookie
+from apps.vote.models     import VoteCounter
 
 from util.consts          import *
 from util.helpers         import generate_uuid
@@ -145,8 +146,6 @@ class SIBT(App):
 # SIBTInstance Class Definition ------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTInstance(Model):
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
 
     # the users motivation for sharing
     motivation = db.StringProperty(default="")
@@ -281,16 +280,6 @@ class SIBTInstance(Model):
         memcache.incr(self.uuid+"VoteCounter_nos")
 
 # ------------------------------------------------------------------------------
-# VoteCounter Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
-class VoteCounter(db.Model):
-    """Sharded counter for voting counts"""
-
-    instance_uuid = db.StringProperty(indexed=True, required=True)
-    yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
-    nos           = db.IntegerProperty(indexed=False, required=True, default=0)
-
-# ------------------------------------------------------------------------------
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
@@ -306,7 +295,6 @@ class PartialSIBTInstance(Model):
     Each User can have at most 1 PartialInstance.
     '''
     
-    uuid        = db.StringProperty( indexed = True )
 
     # User is the only index.
     user        = MemcacheReferenceProperty(db.Model, 
