@@ -893,12 +893,13 @@ class EmailEveryone (URIHandler):
 
     @admin_required
     def post (self, admin):
+        full_name = ''
         logging.info("Sending everyone an email.")
         
         target_version = self.request.get('version', '3')
         logging.info ('target_version = %r' % target_version)
         
-        all_sibts = SIBTShopify.all().fetch(1000000)
+        all_sibts = SIBTShopify.all().fetch(1000)
         #logging.info ('all_sibts = %r' % all_sibts)
         logging.info ('loaded all SIBTs')
 
@@ -914,30 +915,44 @@ class EmailEveryone (URIHandler):
         for sibt in all_sibts:
             try:
                 if not hasattr (sibt, 'client'):      # lagging cache
-                    raise AttributeError ('Client is missing')
+                    raise AttributeError ('Client is missing, likely an uninstall')
                 if not hasattr (sibt.client, 'email'): # bad install
                     raise AttributeError ('Email is missing from client object!')
+                if not hasattr (sibt.client, 'merchant'): # crazy bad install
+                    raise AttributeError ('User is missing from client object!')
+                    full_name = "shop owner"
+                else:
+                    full_name = sibt.client.merchant.full_name
+
+                # TEMPORARY - 1st fully rolled out on V3
+                if sibt.client.email == 'contact@bentoandco.com':
+                    # Skip Bento & Co.
+                    continue
+                
+                raw_body_text = self.request.get('body', '')
+                raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
                 
                 # construct email
                 body = template.render(Email.template_path('general_mail.html'),
                     {
                         'title'        : self.request.get('subject'),
-                        'content'      : self.request.get('body')
+                        'content'      : raw_body_text
                     }
                 )
+                subject = re.compile(r'<.*?>').sub('', self.request.get('subject'))
                 
-                if sibt.version == target_version: # testing
+                if sibt.client and sibt.version == target_version: # testing
                     email = {
                         'client': sibt.client,
-                        'to': 'brian@getwillet.com', # you are CC'd
-                      # 'to': sibt.client.email,
-                        'subject': self.request.get('subject'),
+                        #'to': 'brian@getwillet.com, fraser@getwillet.com', # you are CC'd
+                        'to': sibt.client.email,
+                        'subject': subject,
                         'body': body
                     }
                     all_emails.append (email)
                     logging.info('added %r to all_emails' % sibt.client)
             except Exception, e:
-                logging.error ("can't find client/email for app: %r; %s" % (sibt, e), exc_info = True)
+                logging.error ("Error finding client/email for app: %r; %s" % (sibt, e), exc_info = True)
                 pass # miss a client!
 
         for email in all_emails:
