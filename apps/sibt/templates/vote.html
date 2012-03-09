@@ -1,175 +1,187 @@
-{% extends "../../plugin/templates/results.html" %}
+{% extends "../../plugin/templates/vote.html" %}
 
-{% block head_script %}
-    var reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
-        shareArea, shareFrame, shareText, charsLeft, clear, fbToken, 
-        next;
-    var yesses = {{yesses}};
-    var noes = {{noes}};
-
-    var percent_el;
-
-    var calculatePercent = function() {
-        var total = yesses + noes; 
-        var value = Math.round(parseFloat(yesses/total)*100);
-        if (isNaN(value)) {
-            value = 0;
+{% block styles %}
+    <style type="text/css">
+        html. body {
+            background: transparent !important;
+            background-color: transparent !important;
         }
-        return value;
-    };
-    var vote = function( which ) {
-        //var count = $('#' + which + 'Count span');
-        //var val = parseInt(count.text()) + 1;
-        //count.text(val);
-        if (which == 'yes') {
-            yesses++;
-        } else {
-            noes++;
+        h2 a {
+            color: inherit;
+            text-decoration: none;
         }
-        percent_el.text(calculatePercent());
-        $.ajax({
-            url: "/s/doVote",
-            type: 'post',
-            data: {
-                instance_uuid : "{{instance.uuid}}",
-                which : which
-            },
-            success: function (tr) {
-                if (tr === 'ok') {
-                    // pass
-                } else {
-                    //console.log("Facebook post failure");
-                }
-            }
-        });
-        $("#BAR span." + which).show();
-        voteComplete(('{{is_asker}}' == 'True'));
-    };
-
-    var voteComplete = function(is_asker) {
-        var c   = document.getElementById( 'FOO' );
-        var b   = document.getElementById( 'BAR' );
-        //var yes = document.getElementById( 'yesBtn' );
-        //var no  = document.getElementById( 'noBtn' );
-        
-        var yesCount = document.getElementById( 'yesCount' );
-        var noCount  = document.getElementById( 'noCount' );
-        var title    = document.getElementById( 'title' );
-
-        // Turn things Off
-        //yes.style.display = "none";
-        //no.style.display  = "none";
-
-        // Turn things On
-        c.style.display         = "inline";
-        b.style.display         = "inline";
-        //yesCount.style.display  = "inline";
-        //noCount.style.display   = "inline";
-        $('#voting').hide(); 
-        $('#result').fadeIn(300);
-
-        if( !is_asker ) {
-            $(title).html("Thanks for voting!");
-        } else {
-            $(title).html("Here's what your friends think");
+        h2 a:hover {
+            text-decoration: underline;
         }
-    };
+    </style>
+{% endblock %}
 
-    var shareComplete = function() {
-        // clear the share text
-        toggleThanks();
-        //console.log("Sharing complete!");
-        return true;
-    };
-
-    var toggleThanks = function () {
-        $("#invite").toggle();
-        $("#thanks").fadeIn(300);
-    };
-
-
-    $(document).ready(function() {
-        percent_el = $('#result').find('span');
-        percent_el.text(calculatePercent());
-
-        iframeBody = $('#willt');
-        shareFrame = $('#willt-frame');
-        shareArea = $('#share-area'),
-        userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
-        shareText = $('#share-text'),
-        charsLeft = $('#chars-left');
-        
-        {% if is_asker or has_voted %}
-            voteComplete(('{{is_asker}}' == 'True'));
-        {% endif %}
-    });
+{% block body_start %}
+    <div id='header'>
+        <div id="white"></div>
+        <div id="cloud_bottom"></div>
+        <div id="cloud_top"></div>
+    </div>
 {% endblock %}
 
 {% block screens %}
-    <div id="top-div">
-        <div id="img-div">
-            <img src="{{ product_img|first }}" />
-        </div>
-        <div id="top-right">
-            <div id="asker_title">
-                {% if asker_pic %}
-                    <img align="left" src="{{ asker_pic }}"  />
-                {% endif %}
-                <div>
-                    <span>{{asker_name}}</span>   
-                    <p id="title">
-                        Should I Buy This?
-                    </p>
-                </div>
-            </div>
-            
-            <div id="result" style="display: none">
-                <h1><span></span>%</h1>
-                say buy it!
+    <div id="asker_title">
+        <div id="title">
+            {% if asker_pic %}
+                <img align="left" src="{{ asker_pic }}"  />
+            {% endif %}
+            Should <b>{{asker_name}}</b> Buy This?
+            <div id="share_again">
+                Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
             </div>
         </div>
     </div>
-
-    <div id="comments-div">
-        <h2 id="BAR" class="hidden">
-            <span class="yes">
-                Tell {{asker_name}} why you voted YES. 
-            </span>
-            <span class="no">
-                Tell {{asker_name}} why you voted NO. 
-            </span>
+    <div class="slight_highlight">
+        <h2><a href="{{ product_url }}">{{ product.title }}</a>
+            <br />
+            <span class="mini">From <a href="{{ store_url }}">{{ store_name }}</a></span>
         </h2>
-        <script>
-            window.fbAsyncInit = function() {
-                // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
-                //FB._https = true;
-                FB.init({
-                    appId: '{{FACEBOOK_APP_ID}}', // App ID
-                    //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
-                    status: true, // check login status
-                    cookie: true, // enable cookies to allow the server to access the session
-                    oauth: true, // enable OAuth 2.0
-                    xfbml: true  // parse XFBML
+        <div id="left-div">
+            <img src="{{ product_img }}" />
+        </div>
+        <div id="right-div" class="description">
+            {{ product.description }}
+        </div>
+    </div>
+    <div id="choice">
+        <button class="button" id="yes">Yes</button>
+        <button class="button" id="no">No</button>
+    </div>
+    <h2 id="BAR" class="hidden">
+        <span class="yes">
+            Tell {{asker_name}} why you voted YES. 
+        </span>
+        <span class="no">
+            Tell {{asker_name}} why you voted NO. 
+        </span>
+        <div id="fb-root"></div>
+        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="400"></div>
+    </h2>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var reset,  willet_conversion, sendGmail, highlight, sendEmailiframeBody,
+                shareArea, shareFrame, shareText, charsLeft, clear, fbToken, 
+                next;
+            var yesses = {{yesses}};
+            var noes = {{noes}};
+
+            var percent_el;
+
+            var calculatePercent = function() {
+                var total = yesses + noes; 
+                var value = Math.round(parseFloat(yesses/total)*100);
+                if (isNaN(value)) {
+                    value = 0;
+                }
+                return value;
+            };
+            var vote = function( which ) {
+                //var count = $('#' + which + 'Count span');
+                //var val = parseInt(count.text()) + 1;
+                //count.text(val);
+                if (which == 'yes') {
+                    yesses++;
+                } else {
+                    noes++;
+                }
+                percent_el.text(calculatePercent());
+                $.ajax({
+                    url: "/s/doVote",
+                    type: 'post',
+                    data: {
+                        instance_uuid : "{{instance.uuid}}",
+                        which : which
+                    },
+                    success: function (tr) {
+                        if (tr === 'ok') {
+                            // pass
+                            $("#BAR span." + which).show();
+                            voteComplete ();
+                        } else {
+                            //console.log("Facebook post failure");
+                        }
+                    }
                 });
             };
 
-            (function(d, s, id) {
-                var js, fjs = d.getElementsByTagName(s)[0];
-                if (d.getElementById(id)) {return;}
-                js = d.createElement(s);
-                js.id = id;
-                js.async = true;
-                js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
-                fjs.parentNode.insertBefore(js, fjs);
-            }(document, 'script', 'facebook-jssdk'));
-        </script>
+            var voteComplete = function () {
+                var c   = document.getElementById( 'FOO' );
+                var b   = document.getElementById( 'BAR' );
+                //var yes = document.getElementById( 'yesBtn' );
+                //var no  = document.getElementById( 'noBtn' );
+                
+                var yesCount = document.getElementById( 'yesCount' );
+                var noCount  = document.getElementById( 'noCount' );
+                var title    = document.getElementById( 'title' );
+
+                // Turn things On
+                c.style.display         = "inline";
+                b.style.display         = "inline";
+                //yesCount.style.display  = "inline";
+                //noCount.style.display   = "inline";
+                $('#voting').hide(); 
+                $('#result').fadeIn(300);
+
+                $(title).html("Thanks for voting!");
+            };
+
+            var shareComplete = function() {
+                // clear the share text
+                toggleThanks();
+                //console.log("Sharing complete!");
+                return true;
+            };
+
+            var toggleThanks = function () {
+                $("#invite").toggle();
+                $("#thanks").fadeIn(300);
+            };
+
+            percent_el = $('#percentage');
+            percent_el.text(calculatePercent());
+
+            iframeBody = $('#willt');
+            shareFrame = $('#willt-frame');
+            shareArea = $('#share-area'),
+            userFound = {% if user_found %}{{ user_found }}{% else %}false{% endif %};
+            shareText = $('#share-text'),
+            charsLeft = $('#chars-left');
             
-        <div id="fb-root"></div>
-        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="575"></div>
-    </div>
-    <div id="share_again">
-        <p>
-            Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
-        </p>
-    </div>
+            $('#choice button').click(function () {
+                // click button = vote
+                vote (this.id);
+            });
+            
+        });
+    </script>
+    <script>
+        window.fbAsyncInit = function() {
+            // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+            //FB._https = true;
+            FB.init({
+                appId: '{{FACEBOOK_APP_ID}}', // App ID
+                //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                oauth: true, // enable OAuth 2.0
+                width: 400,
+                xfbml: true  // parse XFBML
+            });
+        };
+
+        (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s);
+            js.id = id;
+            js.async = true;
+            js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
 {% endblock %}

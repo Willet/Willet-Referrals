@@ -28,7 +28,7 @@ from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
-from apps.user.models           import get_user_by_cookie
+from apps.user.models           import get_user_by_cookie, get_or_create_user_by_cookie
 
 from util.consts                import *
 from util.helpers               import *
@@ -157,7 +157,9 @@ class AskDynamicLoader(webapp.RequestHandler):
 
 
 class VoteDynamicLoader(webapp.RequestHandler):
-    """Serves a plugin where people can vote on a purchase"""
+    """ Serves a plugin where people can vote on a purchase
+        On v4 and up (standalone vote page), "voter is never asker"
+    """
     def get(self):
         template_values = {}
         user = User.get(self.request.get('user_uuid'))
@@ -170,7 +172,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
             
             # stage 2: get instance by willet code in URL
-            if not instance:
+            if not instance and self.request.get('willt_code'):
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
                 # app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
@@ -188,7 +190,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     instance = link.sibt_instance.get()
 
             # stage 3: get instance by user and URL
-            if not instance:
+            if not instance and user and target:
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
 
             # still no instance? fail
@@ -198,32 +200,38 @@ class VoteDynamicLoader(webapp.RequestHandler):
             # start looking for instance info
             if not app:
                 app = instance.app_
+            
+            if not user and app:
+                user = get_or_create_user_by_cookie (self, app)
 
             name = instance.asker.get_full_name()
-            is_asker = (instance.asker.key() == user.key())
-            vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-            
-            logging.info('got vote action: %s' % vote_action)
-            has_voted = (vote_action is not None)
-            if not instance.is_live:
-                has_voted = True
 
             if not link:
                 link = instance.link
             share_url = link.get_willt_url()
 
             # record that the vote page was once opened.
-            SIBTShowingVote.create(user=user, instance=instance)
+            SIBTShowingVote.create(user = user, instance = instance)
             event = 'SIBTShowingVote'
 
-            product = ProductShopify.get_or_fetch(target, app.client)
+            product = ProductShopify.get_or_fetch(instance.url, app.client)
+            
+            try:
+                product_img = product.images[0]
+            except:
+                product_img = ''
+            
             yesses = instance.get_yesses_count()
             nos = instance.get_nos_count()
+            try:
+                percentage = yesses / float (yesses + nos)
+            except ZeroDivisionError, e:
+                percentage = 0.0 # "it's true that 0% said buy it"
 
             template_values = {
                     'evnt' : event,
-
-                    'product_img': product.images if product and len(product.images) > 0 else [],
+                    'product': product,
+                    'product_img': product_img,
                     'app' : app,
                     'URL': URL,
                     
@@ -232,11 +240,12 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
                     'fb_comments_url' : '%s' % (link.get_willt_url()),
-                    'percentage': (yesses / float (yesses + nos)),
+                    'percentage': percentage,
                     'share_url': share_url,
-                    'is_asker' : is_asker,
+                    'product_url': product.resource_url,
+                    'store_url': app.store_url,
+                    'store_name': app.store_name,
                     'instance' : instance,
-                    'has_voted': has_voted,
                     'votes': yesses + nos,
                     'yesses': instance.get_yesses_count(),
                     'noes': instance.get_nos_count()

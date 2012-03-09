@@ -1,21 +1,23 @@
 {% extends "../../plugin/templates/vote.html" %}
-{# this is actually both the voting and results page, depending on the viewer #}
 
 {% block styles %}
-    #wrapper, .wrapper { /* overrides ask.css defaults */
-        height: auto;
-        width: auto;
-        display: auto;
-    }
-    #error_bar {
-        display:none;
-        color: #f00;
-    }
-    #cart_items_display li {
-        background-color: transparent;
-        border: 2px transparent solid;
-        box-shadow: none;
-    }
+    <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
+    <style type="text/css">
+        #wrapper, .wrapper { /* overrides ask.css defaults */
+            height: auto;
+            width: auto;
+            display: auto;
+        }
+        #error_bar {
+            display:none;
+            color: #f00;
+        }
+        #cart_items_display li {
+            background-color: transparent;
+            border: 2px transparent solid;
+            box-shadow: none;
+        }
+    </style>
 {% endblock %}
 
 {% block screens %}
