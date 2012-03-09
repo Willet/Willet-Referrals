@@ -176,15 +176,24 @@ class StartSIBTInstance(URIHandler):
 
 class DoVote( URIHandler ):
     def post(self):
-        user_uuid = self.request.get('user_uuid')
-        if user_uuid != None:
-            user = User.all().filter('uuid =', user_uuid).get() 
-
-        which = self.request.get( 'which' )
+        user = None
         instance_uuid = self.request.get( 'instance_uuid' )
         instance = SIBTInstance.get( instance_uuid )
         app = instance.app_
+        user_uuid = self.request.get('user_uuid')
+        if user_uuid:
+            user = User.get (user_uuid)
+            #user = User.all().filter('uuid =', user_uuid).get()
+        if not user:
+            user = get_or_create_user_by_cookie (self, app)
+        if not user:
+            # how can get_or_create_user_by_cookie fail?
+            pass
 
+        which = self.request.get( 'which', 'yes' )
+        
+        logging.debug("%r" % [instance, app, user, which])
+        
         # Make a Vote action for this User
         action = SIBTVoteAction.create( user, instance, which )
 
