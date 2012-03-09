@@ -270,30 +270,22 @@ class ShowResults(webapp.RequestHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         template_values = {}
-        user   = User.get(self.request.get('user_uuid'))
-        target = get_target_url( self.request.get('url') )
+        user = User.get(self.request.get('user_uuid'))
+        target = get_target_url(self.request.get('url'))
+        link = app = None
 
-        doing_vote  = (self.request.get('doing_vote')  == 'true')
-        vote_result = (self.request.get('vote_result') == 'true')
-        
-        link      = None
-        app       = None
-        has_voted = False
-
-        instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+        # successive stages to get instance
         try:
-            # get instance by instance_uuid
-            assert(instance != None)
-        except Exception, e:
-            try:
-                logging.info('failed to get instance by uuid: %s\n%s' % (
-                            self.request.get('instance_uuid'), e))
-                # get instance by link
-                app = SIBTShopify.get_by_store_url(self.request.get('store_url'))
-                code = self.request.get('willt_code')
-                link = Link.get_by_code(code)
-                
-                if link == None:
+            # stage 1: get instance by instance_uuid
+            instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
+            
+            # stage 2: get instance by willet code in URL
+            if not instance and self.request.get('willt_code'):
+                # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
+                # app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
+                logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
+                link = Link.get_by_code( self.request.get('willt_code') )
+                if not link:
                     # no willt code, asker probably came back to page with
                     # no hash code
                     link = Link.all()\
@@ -302,36 +294,25 @@ class ShowResults(webapp.RequestHandler):
                             .filter('app_ =', app)\
                             .get()
                     logging.info('got link by page_url %s: %s' % (target, link))
-                instance = link.sibt_instance.get()
-                assert(instance != None)
-            except Exception,e:
-                try:
-                    logging.info('failed to get instance by link: %s' % e)
-                    # get instance by asker
-                    instance = SIBTInstance.get_by_asker_for_url(user, target)
-                    assert(instance != None)
-                except Exception,e:
-                    try:
-                        # ugh, get the instance by actions ...
-                        logging.info('failed to get instance for asker by url: %s' % e)
-                        instances = SIBTInstance.all(keys_only=True)\
-                            .filter('url =', target)\
-                            .fetch(100)
-                        key_list = [instance.id_or_name() for instance in instances]
-                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
-                        if action:
-                            instance = action.sibt_instance.get()
-                            logging.info('no link, got action %s and instance %s' % (action, instance))
-                        assert(instance != None)
-                    except Exception, e:
-                        logging.error('failed to get instance: %s' % e, exc_info=True)
+                if link:
+                    instance = link.sibt_instance.get()
 
-        logging.info("Did we get an instance? %s" % instance)
-        event = 'SIBTShowingButton'
-        
-        if instance:
-            if app == None:
+            # stage 3: get instance by user and URL
+            if not instance and user and target:
+                instance = SIBTInstance.get_by_asker_for_url(user, target)
+
+            # still no instance? fail
+            if not instance:
+                raise ValueError ("Tried everything - no SIBT instance could be found!")
+
+            # start looking for instance info
+            if not app:
                 app = instance.app_
+            
+            if not user and app:
+                user = get_or_create_user_by_cookie (self, app)
+
+            name = instance.asker.get_full_name()
             
             # we get these values before we submit the results
             # because we cannot be sure how quickly the taskqueue will finish
@@ -389,15 +370,13 @@ class ShowResults(webapp.RequestHandler):
             else:
                 vote_percentage = str(int(float(float(yesses)/float(total))*100))
 
-            product = ProductShopify.get_or_fetch(target, app.client)
+            product = ProductShopify.get_or_fetch(instance.url, app.client)
 
             template_values = {
                 'evnt' : event,
-
                 'product_img': product.images,
                 'app' : app,
                 'URL': URL,
-                
                 'user': user,
                 'asker_name' : name if name != '' else "your friend",
                 'asker_pic' : instance.asker.get_attr('pic'),
@@ -409,8 +388,6 @@ class ShowResults(webapp.RequestHandler):
                 'is_asker' : is_asker,
                 'instance' : instance,
                 'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
-                'has_voted': has_voted,
-                'is_live': instance.is_live,
 
                 'vote_percentage': vote_percentage,
                 'total_votes' : total
@@ -418,13 +395,15 @@ class ShowResults(webapp.RequestHandler):
 
             # Finally, render the HTML!
             path = os.path.join('apps/sibt/templates/', 'results.html')
-        else:
-            event = 'SIBTEventOverClosingIframe'
+
+        except ValueError, e:
+            # well, we can't find the instance, so let's assume the vote is over
             template_values = {
                 'output': 'Vote is over'        
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
+        # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
