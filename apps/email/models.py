@@ -327,13 +327,15 @@ class Email():
                 params['replyto'] = replyto_address
 
             #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
-
-            result = urlfetch.fetch(
-                url     = 'https://sendgrid.com/api/mail.send.json',
-                payload = urllib.urlencode( params ), 
-                method  = urlfetch.POST,
-                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            )
-            logging.info("%s"% result.content)
+            try:
+                result = urlfetch.fetch(
+                    url     = 'https://sendgrid.com/api/mail.send.json',
+                    payload = urllib.urlencode( params ), 
+                    method  = urlfetch.POST,
+                    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+                )
+                logging.info("%s"% result.content)
+            except DeadlineExceededError, e:
+                logging.error ("SendGrid was lagging; email was not sent.")
 # end class
 
