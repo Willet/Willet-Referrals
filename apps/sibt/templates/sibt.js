@@ -255,12 +255,12 @@
                 });
             };
             
-            var _willet_toggle_results = function() {
-                // Used to toggle the results view
-                // iframe has no source, hasnt been loaded yet
-                // and we are FOR SURE showing it
-                _willet_do_vote(-1);
-            };
+            // var _willet_toggle_results = function() {
+                // // Used to toggle the results view
+                // // iframe has no source, hasnt been loaded yet
+                // // and we are FOR SURE showing it
+                // _willet_do_vote(-1);
+            // };
 
             var _willet_unhide_topbar = function() {
                 // When a user hides the top bar, it shows the little
@@ -291,48 +291,48 @@
             };
 
             // Expand the top bar and load the results iframe
-            var _willet_do_vote_yes = function() { _willet_do_vote(1);};
-            var _willet_do_vote_no = function() { _willet_do_vote(0);};
-            var _willet_do_vote = function(vote) {
-                // detecting if we just voted or not
-                var doing_vote = (vote != -1);
-                var vote_result = (vote == 1);
+            // var _willet_do_vote_yes = function() { _willet_do_vote(1);};
+            // var _willet_do_vote_no = function() { _willet_do_vote(0);};
+            // var _willet_do_vote = function(vote) {
+                // // detecting if we just voted or not
+                // var doing_vote = (vote != -1);
+                // var vote_result = (vote == 1);
 
-                // getting the neccesary dom elements
-                var iframe_div = _willet_topbar.find('div.iframe');
-                var iframe = _willet_topbar.find('div.iframe iframe');
+                // // getting the neccesary dom elements
+                // var iframe_div = _willet_topbar.find('div.iframe');
+                // var iframe = _willet_topbar.find('div.iframe iframe');
 
-                // constructing the iframe src
-                var hash        = window.location.hash;
-                var hash_search = '#code=';
-                var hash_index  = hash.indexOf(hash_search);
-                var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-                var results_src = "{{ URL }}/s/results.html?" +
-                    "willt_code=" + willt_code + 
-                    "&user_uuid={{user.uuid}}" + 
-                    "&doing_vote=" + doing_vote + 
-                    "&vote_result=" + vote_result + 
-                    "&is_asker={{is_asker}}" +
-                    "&store_id={{store_id}}" +
-                    "&store_url={{store_url}}" +
-                    "&instance_uuid={{instance.uuid}}" + 
-                    "&url=" + window.location.href; 
+                // // constructing the iframe src
+                // var hash        = window.location.hash;
+                // var hash_search = '#code=';
+                // var hash_index  = hash.indexOf(hash_search);
+                // var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+                // var results_src = "{{ URL }}/s/results.html?" +
+                    // "willt_code=" + willt_code + 
+                    // "&user_uuid={{user.uuid}}" + 
+                    // "&doing_vote=" + doing_vote + 
+                    // "&vote_result=" + vote_result + 
+                    // "&is_asker={{is_asker}}" +
+                    // "&store_id={{store_id}}" +
+                    // "&store_url={{store_url}}" +
+                    // "&instance_uuid={{instance.uuid}}" + 
+                    // "&url=" + window.location.href; 
 
-                // show/hide stuff
-                _willet_topbar.find('div.vote').hide();
-                if (doing_vote || _willet_has_voted) {
-                    _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
-                } else if (_willet_is_asker) {
-                    _willet_topbar.find('div.message').html('Your friends say:   ').fadeIn();
-                }
+                // // show/hide stuff
+                // _willet_topbar.find('div.vote').hide();
+                // if (doing_vote || _willet_has_voted) {
+                    // _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
+                // } else if (_willet_is_asker) {
+                    // _willet_topbar.find('div.message').html('Your friends say:   ').fadeIn();
+                // }
 
-                // start loading the iframe
-                iframe_div.show();
-                iframe.attr('src', ''); 
-                iframe.attr('src', results_src); 
+                // // start loading the iframe
+                // iframe_div.show();
+                // iframe.attr('src', ''); 
+                // iframe.attr('src', results_src); 
             
-                iframe.fadeIn('medium');
-            };
+                // iframe.fadeIn('medium');
+            // };
             
             var build_top_bar_html = function (is_ask_bar) {
                 // Builds the top bar html
@@ -389,9 +389,9 @@
                 body.prepend(_willet_topbar);
 
                 // bind event handlers
-                $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
-                $('#yesBtn').click(_willet_do_vote_yes);
-                $('#noBtn').click(_willet_do_vote_no);
+                // $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+                // $('#yesBtn').click(_willet_do_vote_yes);
+                // $('#noBtn').click(_willet_do_vote_no);
 
                 _willet_padding.show(); 
                 _willet_topbar.slideDown('slow');
