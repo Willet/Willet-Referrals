@@ -114,8 +114,9 @@ ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
                  'harrismc@gmail.com', 'fraser.harris@gmail.com',
                  'b2lai@uwaterloo.ca', 'brian@getwillet.com' ]
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
-              '69.166.16.20',        # VeloCity @ Hub
-              '216.16.232.86' # Brian Desktop network drop
+              '69.166.16.20',       # VeloCity @ Hub
+              '216.16.232.86',      # Brian Desktop network drop
+              '206.126.92.56'       # Brian House
             ]
 
 # the apps we are using
@@ -146,8 +147,8 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+try:
+    from local_consts import *
+except Exception, e:
+    logging.info('no local_consts.py: %s' % e, exc_info=True)
+    pass
