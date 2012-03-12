@@ -61,11 +61,11 @@ class DoWOSIBVote(URIHandler):
         email = instance.asker.get_attr('email')
         if email != "":
             Email.WOSIBVoteNotification(
-                email, 
-                instance.asker.get_full_name(), 
-                "%s#open_wosib=1" % instance.link.origin_domain, # cart url
-                app.client.name,
-                app.client.domain
+                to_addr = email, 
+                name = instance.asker.get_full_name(), 
+                cart_url = "%s#open_wosib=1" % instance.link.origin_domain, # cart url
+                client_name = app.client.name,
+                client_domain = app.client.domain
         )
 
         # client just cares if it was HTTP 200 or 500.
