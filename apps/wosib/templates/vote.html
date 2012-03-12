@@ -181,7 +181,7 @@
                     "product_uuid" : product_uuid
                 };
                 $.ajax({
-                    url      : "{{ URL }}{% url DoWOSIBVote %}",
+                    url      : "{{ URL }}{% url WOSIBDoVote %}",
                     type     : 'post',
                     data     : payload,
                     success  : function () {

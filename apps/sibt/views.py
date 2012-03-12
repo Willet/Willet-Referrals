@@ -102,6 +102,8 @@ class AskDynamicLoader(webapp.RequestHandler):
         # Make a new Link
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
+        
+        # we will be replacing this target url with the vote page url once we get an instance.
         link = Link.create(target, app, origin_domain, user)
         
         # Which share message should we use?
@@ -444,9 +446,17 @@ class ShowFBThanks( URIHandler ):
             instance = app.create_instance(user, None, link, product_image,
                                            motivation=None, dialog="NoConnectFB")
 
+            # partial's link is actually bogus (points to vote.html without an instance_uuid)
+            # this adds the full SIBT instance_uuid to the URL, so that the vote page can
+            # be served.
+            link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('VoteDynamicLoader'), instance.uuid)
+            logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
+
             # increment link stuff
             link.app_.increment_shares()
             link.add_user(user)
+            link.put()
+            link.memcache_by_code() # doubly memcached
             logging.info('incremented link and added user')
         elif partial != None:
             # Create cancelled action

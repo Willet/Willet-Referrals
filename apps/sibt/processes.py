@@ -674,6 +674,13 @@ class SendFriendAsks( URIHandler ):
                                                 product_image, 
                                                 motivation="",
                                                 dialog="ConnectFB")
+
+                # change link to reflect to the vote page.
+                link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+                logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
+                link.put()
+                link.memcache_by_code() # doubly memcached
+
                 # increment shares
                 for _ in range(friend_share_counter):
                     app.increment_shares()

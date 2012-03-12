@@ -13,7 +13,7 @@ urlpatterns = [
     (r'/w/colorbox.css',            ShowWOSIBColorboxCSS),
 
     # Processes
-    (r'/w/doVote',                  DoWOSIBVote),
+    (r'/w/doVote',                  WOSIBDoVote),
     (r'/w/getExpired',              GetExpiredWOSIBInstances),
     (r'/w/removeExpired',           RemoveExpiredWOSIBInstance),
     (r'/w/instance/start',          StartWOSIBInstance),
