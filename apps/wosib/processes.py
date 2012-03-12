@@ -61,11 +61,11 @@ class DoWOSIBVote(URIHandler):
         email = instance.asker.get_attr('email')
         if email != "":
             Email.WOSIBVoteNotification(
-                to_addr = email, 
-                name = instance.asker.get_full_name(), 
-                cart_url = "%s#open_wosib=1" % instance.link.origin_domain, # cart url
-                client_name = app.client.name,
-                client_domain = app.client.domain
+                to_addr=email, 
+                name=instance.asker.get_full_name(), 
+                cart_url="%s#open_wosib=1" % instance.link.origin_domain, # cart url
+                client_name=app.client.name,
+                client_domain=app.client.domain
         )
 
         # client just cares if it was HTTP 200 or 500.
@@ -142,9 +142,9 @@ class TrackWOSIBShowAction(URIHandler):
             logging.debug ('TrackWOSIBShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance = instance, 
-                    url = url,
-                    app = app,
+                    instance=instance, 
+                    url=url,
+                    app=app,
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
@@ -185,9 +185,9 @@ class TrackWOSIBUserAction(URIHandler):
         try:
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance = instance, 
-                    url = url,
-                    app = app,
+                    instance=instance, 
+                    url=url,
+                    app=app,
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
@@ -209,12 +209,12 @@ class StartPartialWOSIBInstance( URIHandler ):
         self.post()
     
     def post( self ):
-        app     = App.get( self.request.get( 'app_uuid' ) )
-        link    = Link.get_by_code( self.request.get( 'willt_code' ) )
+        app = App.get( self.request.get( 'app_uuid' ) )
+        link = Link.get_by_code( self.request.get( 'willt_code' ) )
         
         products = self.request.get( 'product_uuids' )
         logging.info ('products = %s' % products)
-        user    = User.get( self.request.get( 'user_uuid' ) )
+        user = User.get( self.request.get( 'user_uuid' ) )
         PartialWOSIBInstance.create( user, app, link, products.split(',') )
 
 class StartWOSIBInstance(URIHandler):
@@ -223,7 +223,7 @@ class StartWOSIBInstance(URIHandler):
         link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
         products = self.request.get( 'product_uuids' )
         logging.info ('products = %s' % products)
-        user    = User.get( self.request.get( 'user_uuid' ) )
+        user = User.get( self.request.get( 'user_uuid' ) )
 
         logging.info("Starting WOSIB instance for %s" % link.target_url )
 
@@ -392,15 +392,15 @@ class SendWOSIBFriendAsks( URIHandler ):
             for (_, fname, femail) in email_friends:
                 try:
                     logging.info ("sending email with link %s" % link.get_willt_url())
-                    Email.WOSIBAsk(from_name=     a['name'],
-                                   from_addr=     a['email'],
-                                   to_name=       fname,
-                                   to_addr=       femail,
-                                   message=       msg,
-                                   vote_url=      link.get_willt_url(),
-                                   asker_img=     a['pic'],
-                                   client_name=   app.client.name,
-                                   client_domain= app.client.domain )
+                    Email.WOSIBAsk(from_name=a['name'],
+                                   from_addr=a['email'],
+                                   to_name=fname,
+                                   to_addr=femail,
+                                   message=msg,
+                                   vote_url=link.get_willt_url(),
+                                   asker_img=a['pic'],
+                                   client_name=app.client.name,
+                                   client_domain=app.client.domain )
                 except Exception,e:
                     response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                     logging.error('we had an error sharing via email', exc_info=True)
