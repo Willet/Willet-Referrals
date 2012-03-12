@@ -370,13 +370,16 @@ class TrackSIBTUserAction(URIHandler):
 
 class StartPartialSIBTInstance( URIHandler ):
     def post( self ):
-        app = App.get( self.request.get( 'app_uuid' ) )
-        link = Link.get_by_code( self.request.get( 'willt_code' ) )
-        product = Product.get( self.request.get( 'product_uuid' ) )
-        user = User.get( self.request.get( 'user_uuid' ) )
-
-        PartialSIBTInstance.create( user, app, link, product )
-
+        try:
+            app = App.get( self.request.get( 'app_uuid' ) )
+            link = Link.get_by_code( self.request.get( 'willt_code' ) )
+            product = Product.get( self.request.get( 'product_uuid' ) )
+            user = User.get( self.request.get( 'user_uuid' ) )
+            logging.debug ("StartPartialSIBTInstance: %r" % [app, link, product, user])
+            PartialSIBTInstance.create( user, app, link, product )
+            self.response.out.write('OK')
+        except:
+            self.response.out.write('NOT OK') # this is for humans to read
 
 class StartSIBTAnalytics(URIHandler):
     def get(self):

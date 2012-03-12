@@ -216,7 +216,7 @@
             
             var _willet_show_results = function () {
                 // show results if results are done.
-                // this can be detected if a srv_data.finished flag is raised.
+                // this can be detected if a finished flag is raised.
                 var url = "{{URL}}/s/results.html" + 
                           "?" + _willet_metadata();
                 $.willet_colorbox({
@@ -550,7 +550,7 @@
                             
                             // if server sends a flag that indicates "results available"
                             // (not necessarily "finished") then show finished button
-                            if (srv_data.has_results) {
+                            if (has_results) {
                                 $('#_willet_button').hide ();
                                 $('<div />', {
                                     'id': "_willet_SIBT_results",

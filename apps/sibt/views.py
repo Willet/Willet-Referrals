@@ -424,7 +424,9 @@ class ShowFBThanks( URIHandler ):
         app = None
         post_id = self.request.get( 'post_id' ) # from FB
         user = get_user_by_cookie( self )
+        logging.debug ("user = %r" % user)
         partial = PartialSIBTInstance.get_by_user( user )
+        logging.debug ("partial = %r" % partial)
         
         if post_id != "":
             user_cancelled = False
