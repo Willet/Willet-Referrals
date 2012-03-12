@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import datetime
 import random
 
+from datetime import datetime, timedelta
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
@@ -343,10 +344,13 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         # determine whether to show the button thingy.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
+        logging.debug ("votes_count = %s" % votes_count)
         if votes_count:
             time_diff = datetime.now() - instance.created
+            logging.debug ("time_diff = %s" % time_diff)
             if time_diff <= timedelta(days=1):
                 has_results = True
+        logging.debug ("has_results = %s" % has_results)
 
                 # Grab all template values
         template_values = {

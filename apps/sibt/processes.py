@@ -210,7 +210,7 @@ class DoVote( URIHandler ):
                 to_addr=email, 
                 name=instance.asker.get_full_name(), 
                 vote_type=which, 
-                vote_url=instance.link.get_willt_url(), 
+                vote_url=instance.url, # full product link
                 product_img=instance.product_img,
                 client_name=app.client.name,
                 client_domain=app.client.domain

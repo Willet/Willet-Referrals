@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re, urllib
 
+from datetime import datetime, timedelta
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache

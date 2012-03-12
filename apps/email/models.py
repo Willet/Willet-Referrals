@@ -10,10 +10,10 @@ import os
 import urllib
 import urllib2
 
-from django.utils                import simplejson as json
-from google.appengine.api        import taskqueue
-from google.appengine.api        import urlfetch
-from google.appengine.api.mail   import EmailMessage
+from django.utils import simplejson as json
+from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
+from google.appengine.api.mail import EmailMessage
 from google.appengine.ext.webapp import template
 from util.consts import *
 
@@ -21,11 +21,11 @@ from util.consts import *
 #### Addresses ####
 ###################
 
-info      = "info@getwillet.com"
-fraser    = 'fraser@getwillet.com'
-brian     = "brian@getwillet.com"
+info = "info@getwillet.com"
+fraser = 'fraser@getwillet.com'
+brian = "brian@getwillet.com"
 
-dev_team  = '%s' % (fraser)
+dev_team = '%s' % (fraser)
 from_addr = info
 
 #####################
@@ -38,7 +38,7 @@ class Email():
     def emailDevTeam(msg):
         to_addr = dev_team
         subject = '[Willet]'
-        body    = '<p> %s </p>' % msg
+        body = '<p> %s </p>' % msg
  
         Email.send_email(from_addr, to_addr, subject, body)
 
@@ -329,9 +329,9 @@ class Email():
             #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
             try:
                 result = urlfetch.fetch(
-                    url     = 'https://sendgrid.com/api/mail.send.json',
+                    url = 'https://sendgrid.com/api/mail.send.json',
                     payload = urllib.urlencode( params ), 
-                    method  = urlfetch.POST,
+                    method = urlfetch.POST,
                     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                 )
                 logging.info("%s"% result.content)

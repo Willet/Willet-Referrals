@@ -129,6 +129,7 @@
                 sibt_button_enabled = ('{{ app.button_enabled }}' == 'True'),
                 sibt_version = {{sibt_version|default:"2"}},
                 is_live = ('{{ is_live }}' == 'True'),
+                has_results = {{ has_results }},
                 show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
                 _willet_topbar = null,
                 _willet_padding = null,
@@ -211,6 +212,26 @@
                     _willet_store_analytics(message);
                     _willet_show_ask();
                 }
+            };
+            
+            var _willet_show_results = function () {
+                // show results if results are done.
+                // this can be detected if a srv_data.finished flag is raised.
+                var url = "{{URL}}/s/results.html" + 
+                          "?" + _willet_metadata();
+                $.willet_colorbox({
+                    href: url,
+                    transition: 'fade',
+                    close: '',
+                    scrolling: false,
+                    iframe: true, 
+                    initialWidth: 0, 
+                    initialHeight: 0, 
+                    innerWidth: '600px',
+                    innerHeight: '400px', 
+                    fixed: true,
+                    onClosed: function () { }
+                });
             };
 
             var _willet_show_ask = function ( message ) {
@@ -526,6 +547,22 @@
                             });
                             $(purchase_cta).append(button);
                             $('#_willet_button').click(_willet_button_onclick);
+                            
+                            // if server sends a flag that indicates "results available"
+                            // (not necessarily "finished") then show finished button
+                            if (srv_data.has_results) {
+                                $('#_willet_button').hide ();
+                                $('<div />', {
+                                    'id': "_willet_SIBT_results",
+                                    'class': "button"
+                                })
+                                .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                                .appendTo(button)
+                                .css({
+                                    'display': 'inline-block'
+                                })
+                                .click (_willet_show_results);
+                            }
                         }
                     }
                     
