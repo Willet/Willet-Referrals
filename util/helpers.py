@@ -171,7 +171,7 @@ def admin_required( fn ):
         user = User.get(read_user_cookie(self))
         # user not found if cookie references lost user
         try:
-            if not user.is_admin():
+            if not user or not user.is_admin():
                 logging.error('@admin_required: Non-admin is attempting to access protected pages')
                 self.redirect ( '/' )
                 return
