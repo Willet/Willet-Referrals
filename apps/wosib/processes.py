@@ -63,7 +63,7 @@ class DoWOSIBVote(URIHandler):
             Email.WOSIBVoteNotification(
                 email, 
                 instance.asker.get_full_name(), 
-                instance.link.origin_domain, # cart url
+                "%s#open_wosib=1" % instance.link.origin_domain, # cart url
                 app.client.name,
                 app.client.domain
         )
