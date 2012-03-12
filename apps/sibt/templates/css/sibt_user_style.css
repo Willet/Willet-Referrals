@@ -27,7 +27,10 @@
     background-color: {{ willet_button_v3.button_background_color }};
     text-align: {{ willet_button_v3.button_text_align }};
     border-radius: {{ willet_button_v3.button_border_radius }}px;
-    background-image: {{ willet_button_v3.button_background_image }};
+    
+    /* button_background_image contains its own property name */
+    {{ willet_button_v3.button_background_image }};
+    
     box-shadow: {{ willet_button_v3.button_box_shadow }};
     behavior: url(/static/js/PIE.htc);
     {{ willet_button_v3.button_others }}
@@ -39,6 +42,7 @@
     -webkit-box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
     box-shadow: 0 0 4px 1px {{ willet_button_v3.button_shadow_hover }};
     behavior: url(/static/js/PIE.htc);
+    {{ willet_button_v3.button_hover_others }}
 }
 #_willet_button_v3>.button>img {
     float: left;
@@ -46,6 +50,7 @@
     padding: 0;
     width: 25px;
     height: 25px;
+    {{ willet_button_v3.button_img_others }}
 }
 #_willet_button_v3>.button>.title {
 	margin-left: 30px;
@@ -53,6 +58,7 @@
 	font-size: 16px;
 	line-height: 24px;
 	text-shadow: 1px 1px 1px #EEE;
+    {{ willet_button_v3.button_title_others }}
 }
 
 ._willet_button {
