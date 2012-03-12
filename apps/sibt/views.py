@@ -5,34 +5,34 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import re, urllib
 
-from django.utils               import simplejson as json
-from google.appengine.api       import urlfetch
-from google.appengine.api       import memcache
-from google.appengine.api       import taskqueue 
-from google.appengine.ext       import webapp
-from google.appengine.ext.webapp      import template
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
+from google.appengine.api import taskqueue 
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from time                       import time
-from urlparse                   import urlparse
+from time import time
+from urlparse import urlparse
 
-from apps.sibt.actions          import *
-from apps.app.models            import *
-from apps.gae_bingo.gae_bingo   import ab_test
-from apps.gae_bingo.gae_bingo   import bingo
+from apps.sibt.actions import *
+from apps.app.models import *
+from apps.gae_bingo.gae_bingo import ab_test
+from apps.gae_bingo.gae_bingo import bingo
 from apps.client.shopify.models import *
-from apps.link.models           import Link
-from apps.order.models          import *
+from apps.link.models import Link
+from apps.order.models import *
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions          import *
-from apps.sibt.models           import SIBTInstance
-from apps.sibt.models           import PartialSIBTInstance
-from apps.sibt.shopify.models   import SIBTShopify
-from apps.user.models           import User
-from apps.user.models           import get_user_by_cookie, get_or_create_user_by_cookie
+from apps.sibt.actions import *
+from apps.sibt.models import SIBTInstance
+from apps.sibt.models import PartialSIBTInstance
+from apps.sibt.shopify.models import SIBTShopify
+from apps.user.models import User
+from apps.user.models import get_user_by_cookie, get_or_create_user_by_cookie
 
-from util.consts                import *
-from util.helpers               import *
-from util.urihandler            import URIHandler
+from util.consts import *
+from util.helpers import *
+from util.urihandler import URIHandler
 from util.strip_html import strip_html
 
 
@@ -42,17 +42,17 @@ class AskDynamicLoader(webapp.RequestHandler):
     
     # TODO: THis code is Shopify specific. Refactor.
     def get(self):
-        store_domain  = self.request.get('store_url')
-        app           = SIBTShopify.get_by_store_url(store_domain)
-        user          = User.get(self.request.get('user_uuid'))
-        user_found    = 1 if hasattr(user, 'fb_access_token') else 0
+        store_domain = self.request.get('store_url')
+        app = SIBTShopify.get_by_store_url(store_domain)
+        user = User.get(self.request.get('user_uuid'))
+        user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
         
         # if no URL, then referrer, then everything dies
-        target        = self.request.get ('url', self.request.headers.get('referer'))
+        target = self.request.get ('url', self.request.headers.get('referer'))
         
-        product_uuid        = self.request.get( 'product_uuid', None ) # optional
-        product_shopify_id  = self.request.get( 'product_id', None ) # optional
+        product_uuid = self.request.get( 'product_uuid', None ) # optional
+        product_shopify_id = self.request.get( 'product_id', None ) # optional
         logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # We need this stuff here to fill in the FB.ui stuff 
@@ -118,7 +118,7 @@ class AskDynamicLoader(webapp.RequestHandler):
             ab_opt = ab_test('sibt_share_text3',
                               ab_share_options,
                               user = user,
-                              app  = app )
+                              app = app )
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
@@ -176,7 +176,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
             # stage 2: get instance by willet code in URL
             if not instance and self.request.get('willt_code'):
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
-                # app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
+                # app = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
                 link = Link.get_by_code( self.request.get('willt_code') )
                 if not link:
@@ -238,7 +238,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                     'URL': URL,
                     
                     'user': user,
-                    'asker_name' : name if name != '' else "your friend",
+                    'asker_name' : name if name else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
                     'target_url' : target,
                     'fb_comments_url' : '%s' % (link.get_willt_url()),
@@ -284,7 +284,7 @@ class ShowResults(webapp.RequestHandler):
             # stage 2: get instance by willet code in URL
             if not instance and self.request.get('willt_code'):
                 # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
-                # app  = SIBTShopify.get_by_store_id(self.request.get('store_id'))
+                # app = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
                 link = Link.get_by_code( self.request.get('willt_code') )
                 if not link:
@@ -417,13 +417,13 @@ class ShowFBThanks( URIHandler ):
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
     def get( self ):
-        email       = ""
+        email = ""
         incentive_enabled = False
         user_cancelled = True
-        app         = None
-        post_id     = self.request.get( 'post_id' ) # from FB
-        user        = get_user_by_cookie( self )
-        partial     = PartialSIBTInstance.get_by_user( user )
+        app = None
+        post_id = self.request.get( 'post_id' ) # from FB
+        user = get_user_by_cookie( self )
+        partial = PartialSIBTInstance.get_by_user( user )
         
         if post_id != "":
             user_cancelled = False
@@ -433,16 +433,19 @@ class ShowFBThanks( URIHandler ):
                 bingo( 'sibt_fb_no_connect_dialog' )
             
             # Grab stuff from PartialSIBTInstance
-            app      = partial.app_
-            link     = partial.link
-            product  = partial.product
-
-            # Make the Instance!
+            try:
+                app = partial.app_
+                link = partial.link
+                product = partial.product
+            except AttributeError, e:
+                logging.error ("partial is: %s (%s)" % (partial, e))
 
             try:
                 product_image = product.images[0]
             except:
                 product_image = '%s/static/imgs/blank.png' % URL # blank
+
+            # Make the Instance!
             instance = app.create_instance(user, None, link, product_image,
                                            motivation=None, dialog="NoConnectFB")
 

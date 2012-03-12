@@ -12,30 +12,30 @@ from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template 
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.action.models       import UserAction
-from apps.app.models          import App
-from apps.app.models          import get_app_by_id
-from apps.email.models        import Email
-from apps.link.models         import Link
+from apps.action.models import UserAction
+from apps.app.models import App
+from apps.app.models import get_app_by_id
+from apps.email.models import Email
+from apps.link.models import Link
 from apps.product.shopify.models import ProductShopify
-from apps.product.models      import Product
-from apps.sibt.actions        import *
-from apps.sibt.models         import SIBTInstance, PartialSIBTInstance
-from apps.user.actions        import UserIsFBLoggedIn
-from apps.user.models         import User, get_or_create_user_by_cookie
+from apps.product.models import Product
+from apps.sibt.actions import *
+from apps.sibt.models import SIBTInstance, PartialSIBTInstance
+from apps.user.actions import UserIsFBLoggedIn
+from apps.user.models import User, get_or_create_user_by_cookie
 
-from util.consts              import *
-from util.helpers             import url 
-from util.helpers             import remove_html_tags
-from util.strip_html          import strip_html
-from util.urihandler          import URIHandler
+from util.consts import *
+from util.helpers import url 
+from util.helpers import remove_html_tags
+from util.strip_html import strip_html
+from util.urihandler import URIHandler
 
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARESIBTONFACEBOOK")
 
-        app  = get_app_by_id(self.request.get('app_uuid'))
+        app = get_app_by_id(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
@@ -144,7 +144,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        app  = get_app_by_id(self.request.get('app_uuid'))
+        app = get_app_by_id(self.request.get('app_uuid'))
         user = get_or_create_user_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
@@ -207,13 +207,13 @@ class DoVote( URIHandler ):
         email = instance.asker.get_attr('email')
         if email != "":
             Email.SIBTVoteNotification(
-                email, 
-                instance.asker.get_full_name(), 
-                which, 
-                instance.link.get_willt_url(), 
-                instance.product_img,
-                app.client.name,
-                app.client.domain
+                to_addr=email, 
+                name=instance.asker.get_full_name(), 
+                vote_type=which, 
+                vote_url=instance.link.get_willt_url(), 
+                product_img=instance.product_img,
+                client_name=app.client.name,
+                client_domain=app.client.domain
             ) 
 
         self.response.out.write('ok')
@@ -235,7 +235,7 @@ class GetExpiredSIBTInstances(URIHandler):
             taskqueue.add(
                 url = url('RemoveExpiredSIBTInstance'),
                 params = {
-                    'instance_uuid': instance.uuid    
+                    'instance_uuid': instance.uuid 
                 }
             )
         logging.info('expiring %d instances' % expired_instances.count())
@@ -283,7 +283,7 @@ class TrackSIBTShowAction(URIHandler):
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        success  = False
+        success = False
         instance = app = user = action = None
         duration = 0.0
         if self.request.get('instance_uuid'):
@@ -330,7 +330,7 @@ class TrackSIBTUserAction(URIHandler):
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        success  = False
+        success = False
         duration = 0.0
         instance = app = user = action = None
         if self.request.get('instance_uuid'):
@@ -370,10 +370,10 @@ class TrackSIBTUserAction(URIHandler):
 
 class StartPartialSIBTInstance( URIHandler ):
     def post( self ):
-        app     = App.get( self.request.get( 'app_uuid' ) )
-        link    = Link.get_by_code( self.request.get( 'willt_code' ) )
+        app = App.get( self.request.get( 'app_uuid' ) )
+        link = Link.get_by_code( self.request.get( 'willt_code' ) )
         product = Product.get( self.request.get( 'product_uuid' ) )
-        user    = User.get( self.request.get( 'user_uuid' ) )
+        user = User.get( self.request.get( 'user_uuid' ) )
 
         PartialSIBTInstance.create( user, app, link, product )
 
@@ -500,18 +500,18 @@ class SendFriendAsks( URIHandler ):
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
         
         # Fetch arguments 
-        friends     = json.loads( self.request.get('friends') )
-        asker       = json.loads( self.request.get('asker') )
-        msg         = self.request.get( 'msg' )
+        friends = json.loads( self.request.get('friends') )
+        asker = json.loads( self.request.get('asker') )
+        msg = self.request.get( 'msg' )
         default_msg = self.request.get( 'default_msg' )
-        app         = App.get( self.request.get('app_uuid') ) # Could be <SIBT>, <SIBTShopify> or something...
-        product     = Product.get( self.request.get( 'product_uuid' ) )
-        link        = Link.get_by_code( self.request.get( 'willt_code' ) )
-        user        = User.get( self.request.get( 'user_uuid' ) )
-        fb_token    = self.request.get('fb_access_token')
-        fb_id       = self.request.get('fb_id')
+        app = App.get( self.request.get('app_uuid') ) # Could be <SIBT>, <SIBTShopify> or something...
+        product = Product.get( self.request.get( 'product_uuid' ) )
+        link = Link.get_by_code( self.request.get( 'willt_code' ) )
+        user = User.get( self.request.get( 'user_uuid' ) )
+        fb_token = self.request.get('fb_access_token')
+        fb_id = self.request.get('fb_id')
 
-        fb_friends    = []
+        fb_friends = []
         email_friends = []
         email_share_counter = 0
         fb_share_counter = 0
@@ -676,7 +676,7 @@ class SendFriendAsks( URIHandler ):
                                                 dialog="ConnectFB")
 
                 # change link to reflect to the vote page.
-                link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+                link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('VoteDynamicLoader'), instance.uuid)
                 logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
                 link.put()
                 link.memcache_by_code() # doubly memcached

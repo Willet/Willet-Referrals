@@ -212,7 +212,8 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        votes_count = 0
+        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
@@ -289,6 +290,10 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             asker_pic  = instance.asker.get_attr('pic')
             show_votes = True
 
+            # number of votes.
+            votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
+            logging.info ("votes_count = %s" % votes_count)
+
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
@@ -335,7 +340,15 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             app_css = SIBTShopify.get_default_css()
         
-        # Grab all template values
+        # determine whether to show the button thingy.
+        # code below makes button show only if vote was started less than 1 day ago.
+        has_results = False
+        if votes_count:
+            time_diff = datetime.now() - instance.created
+            if time_diff <= timedelta(days=1):
+                has_results = True
+
+                # Grab all template values
         template_values = {
             'URL'            : URL,
             'is_asker'       : is_asker,
@@ -367,6 +380,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
+            'has_results'    : 'true' if has_results else 'false',
         }
 
         # Finally, render the JS!
