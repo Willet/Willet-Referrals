@@ -15,6 +15,7 @@ from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api.mail import EmailMessage
 from google.appengine.ext.webapp import template
+from google.appengine.runtime import DeadlineExceededError
 from util.consts import *
 
 ###################
