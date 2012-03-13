@@ -138,6 +138,15 @@
 
             // events
 
+            var is_scrolled_into_view = function (elem) {
+                // http://stackoverflow.com/questions/487073
+                var docViewTop = $(window).scrollTop();
+                var docViewBottom = docViewTop + $(window).height();
+                var elemTop = $(elem).offset().top;
+                var elemBottom = elemTop + $(elem).height();
+                return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+            }
+            
             var _willet_vote_callback = function () {
                 /**
                 * Called when the vote iframe is closed
@@ -553,7 +562,27 @@
                                  "&instance_uuid={{instance.uuid}}" +
                                  "&target_url=" + window.location.href
                 }).appendTo("body");
-
+                
+                var $wbtn = $('#_willet_button_v3 .button');
+                console.log ($wbtn);
+                if ($wbtn.length > 0) {
+                    $wbtn = $($wbtn[0]);
+                }
+                if ($wbtn && show_top_bar_ask) { // show_top_bar_ask is also the key for wiggling
+                    var shaken_yet = false;
+                    $(window).scroll (function () {
+                        if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
+                            setTimeout (function () {
+                                $($wbtn).shaker();
+                                setTimeout (function () {
+                                    $($wbtn).shaker.stop();
+                                    shaken_yet = true;
+                                }, 400); // shake duration
+                            }, 750); // wait for ?ms until it shakes
+                        }
+                    });
+                }
+                
                 // Load jQuery colorbox
                 manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
                     'app_uuid={{app.uuid}}&' + 
@@ -569,7 +598,8 @@
         });
     };
 
-    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
+                           '{{ URL }}/static/js/jquery.shaker.js'];
 
     if (!window.jQuery || window.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
         scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
