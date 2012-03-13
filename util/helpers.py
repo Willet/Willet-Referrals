@@ -168,8 +168,9 @@ def set_visited_cookie(headers):
 def admin_required( fn ):
     def check(self, param=None):
         from apps.user.models import User
-        user = User.get(read_user_cookie(self))
-        # user not found if cookie references lost user
+        user_cookie = read_user_cookie(self)
+        user = User.get(user_cookie) if user_cookie else None
+        
         try:
             if not user or not user.is_admin():
                 logging.error('@admin_required: Non-admin is attempting to access protected pages')
