@@ -946,14 +946,16 @@ def get_or_create_user_by_email( email, request_handler, app ):
 
 def get_user_by_cookie(request_handler):
     """Read a user by cookie. Update IP address if present"""
-    if request_handler == None:
-        return None
-
-    user = User.get(read_user_cookie(request_handler))
-    if user:
-        ip = request_handler.request.remote_addr
-        user.add_ip(ip)
-    return user
+    if request_handler:
+        user_cookie = read_user_cookie(request_handler)
+        if user_cookie:
+            user = User.get(user_cookie)
+            if user:
+                ip = request_handler.request.remote_addr
+                user.add_ip(ip)
+                return user
+    # If anything went wrong, return None
+    return None
 
 def get_or_create_user_by_cookie( request_handler, app ): 
     user = get_user_by_cookie(request_handler)

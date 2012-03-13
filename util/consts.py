@@ -108,11 +108,11 @@ TEMPLATE_DIRS = (
 )
 
 # Admin whitelist
-ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
-                 'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
-                 'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
-                 'harrismc@gmail.com', 'fraser.harris@gmail.com',
-                 'b2lai@uwaterloo.ca', 'brian@getwillet.com' ]
+ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
+                 'fraser.harris@gmail.com', 'fraser@getwillet.com',
+                 'b2lai@uwaterloo.ca', 'lpppppl@gmail.com', 'brian@getwillet.com',
+                 'nicholas.terwoord@gmail.com', 'nicholas@getwillet.com' ]
+
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
               '216.16.232.86',      # Brian Desktop network drop
@@ -147,8 +147,8 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts
-try:
-    from local_consts import *
-except Exception, e:
-    logging.info('no local_consts.py: %s' % e, exc_info=True)
-    pass
+#try:
+#    from local_consts import *
+#except Exception, e:
+#    logging.info('no local_consts.py: %s' % e, exc_info=True)
+#    pass

@@ -121,20 +121,39 @@ class SIBTShopifyEditStyle(URIHandler):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
+        logging.info('Updating %s with styles: \n%s' % (app.store_url, 
+                                                      [ '%s { %s }' % (var, self.request.get(var)) for var in post_vars ]))
+
         if self.request.get('set_to_default'):
+            # Reset to default CSS
             logging.debug('reset button')
             app.reset_css()
         else:
+            # Update custom CSS with new rules
             css_dict = app.get_css_dict()
-            for key in css_dict:
-                for value in css_dict[key]:
-                    lookup = '%s:%s' % (key, value)
-                    #logging.info('looking for: %s' % lookup)
-                    if lookup in post_vars:
-                        #logging.info('found with value: %s' % 
-                        #        self.request.get(lookup))
-                        css_dict[key][value] = self.request.get(lookup) 
+            
+            #logging.debug('Start css_dict = %s' % json.dumps(css_dict))
 
+            for var in post_vars:
+                key = value = None
+                try:
+                    (key, value) = var.split(':')
+                except ValueError:
+                    continue
+
+                #logging.debug('Updating %s:%s with %s' % (key, value, self.request.get(var)))
+
+                # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
+                if key and value:
+                    
+                    # Add key if it doesn't already exist
+                    if not key in css_dict:
+                        #logging.debug('%s not in css_dict, adding {}' % key)
+                        css_dict[key] = {}
+
+                    css_dict[key][value] = self.request.get(var)
+
+            #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
             app.set_css(css_dict)
         self.get(app_uuid)
     
