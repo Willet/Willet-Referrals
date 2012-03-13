@@ -259,6 +259,15 @@
                             $.willet_colorbox = window.jQuery.willet_colorbox;
                             $.willet_colorbox.init ();
                             window.jQuery.willet_colorbox.init ();
+                            
+                            // when colorbox is ready to bounce out, check if results screen needs to open...
+                            var hash        = window.location.hash;
+                            var hash_search = '#open_wosib=';
+                            var hash_index  = hash.indexOf(hash_search);
+                            var open_wosib  = hash.substring(hash_index + hash_search.length , hash.length);
+                            if (srv_data.has_results && open_wosib) {
+                                _willet_show_results ();
+                            }
                         }
                     });
             }

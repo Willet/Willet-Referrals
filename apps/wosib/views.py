@@ -166,11 +166,11 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 self.response.out.write(template.render(path, template_values))
 
             # Render SIBT b/c only 1 product
-            elif len(product_ids) == 1:
+            elif len(ids) == 1:
                 logging.debug ('Only one product - switched to SIBT!')
                 redirect_url = url('AskDynamicLoader')
                 # SIBT now supports retrieving products by product ID.
-                self.redirect("%s?%s&product_id=%s" % (redirect_url, self.request.query_string, product_ids[0]))
+                self.redirect("%s?%s&product_id=%s" % (redirect_url, self.request.query_string, ids[0]))
         else:
             # give a warning to the client to help debugging
             msg = "Incorrect calling method - products not found."

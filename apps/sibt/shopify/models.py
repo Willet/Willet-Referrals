@@ -117,10 +117,18 @@ class SIBTShopify(SIBT, AppShopify):
             'button_background_color': '#C1F0F5',
             'button_text_align': 'center',
             'button_border_radius': '4',
-            'button_background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+            'button_background_image': '''  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -o-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -moz-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -webkit-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -ms-linear-gradient(top, #c9f7fa, #a1eff5);
+                                       ''',
             'button_box_shadow': '0 1px 0 #BBB',
             'button_shadow_hover': '#BBB',
             'button_others': '', # place whatever extra CSS in here
+            'button_hover_others': '', # place whatever extra CSS in here
+            'button_img_others': '', # place whatever extra CSS in here
+            'button_title_others': '', # place whatever extra CSS in here
         }
     }
 
