@@ -243,15 +243,17 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
         if self.request.get('page_url'):
             target = get_target_url(self.request.get('page_url'))
+            logging.debug ("got target %s by page URL" % target)
         else:
             target = get_target_url(self.request.headers.get('REFERER'))
+            logging.debug ("got target %s by referrer field" % target)
 
         user = get_or_create_user_by_cookie( self, app )
 
         # Try to find an instance for this { url, user }
-        try:
-            assert(app != None)
-            
+        if not app:
+            logging.debug('no app')
+        else:
             if target and not hasattr(app, 'extra_url'):
                 ''' check if target (almost always window.location.href) has the same domain as store url
                     example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
@@ -267,39 +269,33 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 except:
                     pass # can't decode target as URL; oh well!
             
-            try:
-                # Is User an asker for this URL?
-                logging.debug('trying to get instance for url: %s' % target)
-                instance = SIBTInstance.get_by_asker_for_url(user, target)
-                assert(instance != None)
+            logging.debug('trying to get instance for url: %s' % target)
+            instance = SIBTInstance.get_by_asker_for_url(user, target)
+            
+            if instance:
                 event = 'SIBTShowingResults'
                 logging.debug('got instance by user/target: %s' % instance.uuid)
-            except Exception, e:
-                try:
-                    logging.debug('trying willet_code: %s' % e)
-                    link = Link.get_by_code(willet_code)
-                    instance = link.sibt_instance.get()
-                    assert(instance != None)
-                    event = 'SIBTShowingResults'
-                    logging.debug('got instance by willet_code: %s' % instance.uuid)
-                except Exception, e:
-                    try:
-                        logging.debug('trying actions: %s' % e)
-                        instances = SIBTInstance.all(keys_only=True)\
-                            .filter('url =', target)\
-                            .fetch(100)
-                        key_list = [key.id_or_name() for key in instances]
-                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
-                        
-                        if action:
-                            instance = action.sibt_instance
-                            assert(instance != None)
-                            logging.debug('got instance by action: %s' % instance.uuid)
-                            event = 'SIBTShowingVote'
-                    except Exception, e:
-                        logging.debug('no instance available: %s' % e)
-        except:
-            logging.debug('no app')
+            
+            if not instance and willet_code:
+                link = Link.get_by_code(willet_code)
+                instance = link.sibt_instance.get()
+                event = 'SIBTShowingResults'
+                logging.debug('got instance by willet_code: %s' % instance.uuid)
+            
+            if not instance:
+                instances = SIBTInstance.all(keys_only=True)\
+                    .filter('url =', target)\
+                    .fetch(100)
+                key_list = [key.id_or_name() for key in instances]
+                action = SIBTClickAction.get_for_instance(app, user, target, key_list)
+                if action:
+                    instance = action.sibt_instance
+                    logging.debug('got instance by action: %s' % instance.uuid)
+                    event = 'SIBTShowingVote'
+            
+            # new visitor?
+            if not instance:
+                logging.debug('no instance available: %s' % e)
 
         # If we have an instance, figure out if 
         # a) Is User asker?
@@ -312,16 +308,15 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
 
             # number of votes.
             votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
-            logging.info ("votes_count = %s" % votes_count)
 
             try:
                 asker_name = asker_name.split(' ')[0]
-                if not asker_name:
-                    asker_name = 'I' # "should asker_name buy this?"
             except:
-                logging.warn('error splitting the asker name')
+                pass
+            if not asker_name:
+                asker_name = 'I' # "should asker_name buy this?"
 
-            is_asker = (instance.asker.key() == user.key()) 
+            is_asker = (instance.asker.key() == user.key())
             if not is_asker:
                 logging.debug('not asker, check for vote ...')
                 
@@ -342,8 +337,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             logging.info('could not get an instance, check page views')
 
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked urls')
-            logging.info(tracked_urls)
+            logging.info('got tracked urls: %r' % tracked_urls)
             if tracked_urls.count(target) >= app.num_shows_before_tb:
                 #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
@@ -360,7 +354,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             app_css = SIBTShopify.get_default_css()
         
-        # determine whether to show the button thingy.
+        # determine whether to show the results button.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
         logging.debug ("votes_count = %s" % votes_count)

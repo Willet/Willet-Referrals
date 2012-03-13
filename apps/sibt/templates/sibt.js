@@ -136,9 +136,9 @@
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
             var _willet_metadata = function () {
-                return "app_uuid={{app_uuid}}" + 
-                      "&user_uuid={{user_uuid}}" + 
-                      "&instance_uuid={{instance_uuid}}" + 
+                return "app_uuid={{app.uuid}}" + 
+                      "&user_uuid={{user.uuid}}" + 
+                      "&instance_uuid={{instance.uuid}}" + 
                       "&refer_url=" + window.location.href;
             };
 
