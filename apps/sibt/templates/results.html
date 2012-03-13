@@ -27,10 +27,19 @@
                 
                 font-family: Helvetica, Arial, sans-serif;
                 line-height: 40px;
-                text-shadow: 0px 0px 1px #999;
                 font-size: 16px;
                 text-align: center;
                 font-weight: bold;
+            }
+            #num_votes {
+                margin-top: 25px;
+            }
+            #pc_div {
+                margin: 60px;
+            }
+            #percentage {
+                font-size: 90px;
+                text-shadow: 0px 0px 1px #999;
             }
         </style>
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -47,8 +56,10 @@
                 {{ total_votes }} friends voted so far.
             </div>
             {% if vote_percentage %}
-            <div id="percentage">
-                {{ vote_percentage }}% say buy it!
+            <div id="pc_div">
+                <span id="percentage">
+                    {{ vote_percentage }}%
+                </span> say buy it!
             </div>
             {% endif %}
             <div id="time">

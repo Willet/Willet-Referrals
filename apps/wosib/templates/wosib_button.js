@@ -197,7 +197,7 @@
                 var button = $("<div />", {
                         'id': '_willet_button_v3'
                     });
-                    button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+                    button.html ("<p>Which ones should you buy?</p>" +
     		                     "<div id='_willet_button' class='button' " +
     		                         "title='Ask your friends if you should buy this!'>" +
     			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +

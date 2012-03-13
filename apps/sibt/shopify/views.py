@@ -295,7 +295,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             
             # new visitor?
             if not instance:
-                logging.debug('no instance available: %s' % e)
+                logging.debug('no instance available')
 
         # If we have an instance, figure out if 
         # a) Is User asker?
