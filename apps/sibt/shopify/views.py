@@ -144,7 +144,7 @@ class SIBTShopifyEditStyle(URIHandler):
 
                 # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
                 if key and value:
-                    
+
                     # Add key if it doesn't already exist
                     if not key in css_dict:
                         #logging.debug('%s not in css_dict, adding {}' % key)
@@ -153,6 +153,7 @@ class SIBTShopifyEditStyle(URIHandler):
                     css_dict[key][value] = self.request.get(var)
 
             #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
+            # Save updated CSS
             app.set_css(css_dict)
         self.get(app_uuid)
     
