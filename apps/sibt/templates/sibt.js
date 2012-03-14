@@ -120,6 +120,9 @@
         // jQuery cookie plugin (included to solve lagging requests)
         {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
+        // jQuery shaker plugin
+        (function(a){var b={};var c=3;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
+        
         jQuery(document).ready(function($) {
             // wait for DOM elements to appear + $ closure!
             var _willet_ask_success = false,
@@ -138,6 +141,15 @@
 
             // events
 
+            var is_scrolled_into_view = function (elem) {
+                // http://stackoverflow.com/questions/487073
+                var docViewTop = $(window).scrollTop();
+                var docViewBottom = docViewTop + $(window).height();
+                var elemTop = $(elem).offset().top;
+                var elemBottom = elemTop + $(elem).height();
+                return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+            }
+            
             var _willet_vote_callback = function () {
                 /**
                 * Called when the vote iframe is closed
@@ -553,7 +565,27 @@
                                  "&instance_uuid={{instance.uuid}}" +
                                  "&target_url=" + window.location.href
                 }).appendTo("body");
-
+                
+                var $wbtn = $('#_willet_button_v3 .button');
+                console.log ($wbtn);
+                if ($wbtn.length > 0) {
+                    $wbtn = $($wbtn[0]);
+                }
+                if ($wbtn && show_top_bar_ask) { // show_top_bar_ask is also the key for wiggling
+                    var shaken_yet = false;
+                    $(window).scroll (function () {
+                        if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
+                            setTimeout (function () {
+                                $($wbtn).shaker();
+                                setTimeout (function () {
+                                    $($wbtn).shaker.stop();
+                                    shaken_yet = true;
+                                }, 400); // shake duration
+                            }, 750); // wait for ?ms until it shakes
+                        }
+                    });
+                }
+                
                 // Load jQuery colorbox
                 manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
                     'app_uuid={{app.uuid}}&' + 
