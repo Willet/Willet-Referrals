@@ -496,79 +496,67 @@
 
                 $('body').prepend(_willet_topbar_hide_button);
 
-                if (_willet_show_votes || hash_index != -1) {
-                    // if we are showing votes (user has click action)
-                    // or if there is a willet hash
+                if (show_top_bar_ask) {
                     if (cookie_topbar_closed) {
                         // user has hidden the top bar
                         _willet_topbar_hide_button.slideDown('fast');
                     } else {
-                        _willet_show_topbar();
+                        _willet_store_analytics('SIBTShowingTopBarAsk');
+                        _willet_show_topbar_ask();
                     }
-                } else {
-                    // check if we are showing top bar ask too
-                    if (show_top_bar_ask) {
-                        if (cookie_topbar_closed) {
-                            // user has hidden the top bar
-                            _willet_topbar_hide_button.slideDown('fast');
+                }
+
+                if (sibt_button_enabled) {
+                    if (sibt_version <= 2) {
+                        var button = document.createElement('a');
+                        var button_html = '';
+                        // only add button if it's enabled in the app 
+                        if (_willet_is_asker) {
+                            button_html = 'See what your friends said!';
+                        } else if (_willet_show_votes) {
+                            button_html = 'Help {{ asker_name }} by voting!';
                         } else {
-                            _willet_store_analytics('SIBTShowingTopBarAsk');
-                            _willet_show_topbar_ask();
+                            button_html = AB_CTA_text;
                         }
-                    }
 
-                    if (sibt_button_enabled) {
-                        if (sibt_version <= 2) {
-                            var button = document.createElement('a');
-                            var button_html = '';
-                            // only add button if it's enabled in the app 
-                            if (_willet_is_asker) {
-                                button_html = 'See what your friends said!';
-                            } else if (_willet_show_votes) {
-                                button_html = 'Help {{ asker_name }} by voting!';
-                            } else {
-                                button_html = AB_CTA_text;
-                            }
-
-                            button = $(button)
-                                .html(button_html)
-                                .css('display', 'inline-block')
-                                .attr('title', 'Ask your friends if you should buy this!')
-                                .attr('id','_willet_button')
-                                .attr('class','_willet_button willet_reset')
-                                .click(_willet_button_onclick);
-                            $(purchase_cta).append(button);
-                        } else if (sibt_version == 3) {
-                            var button = $("<div />", {
-                                'id': '_willet_button_v3'
-                            });
-                            button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-                                         "<div class='button' " +
-                                             "title='Ask your friends if you should buy this!'>" +
-                                             "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                             "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                         "</div>")
+                        button = $(button)
+                            .html(button_html)
+                            .css('display', 'inline-block')
+                            .attr('title', 'Ask your friends if you should buy this!')
+                            .attr('id','_willet_button')
+                            .attr('class','_willet_button willet_reset')
+                            .click(_willet_button_onclick);
+                        $(purchase_cta).append(button);
+                    } else if (sibt_version == 3) {
+                        var button = $("<div />", {
+                            'id': '_willet_button_v3'
+                        });
+                        button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                     "<div class='button' " +
+                                         "title='Ask your friends if you should buy this!'>" +
+                                         "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                         "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                     "</div>")
+                        .css({
+                            'clear': 'both'
+                        });
+                        $(purchase_cta).append(button);
+                        $('#_willet_button').click(_willet_button_onclick);
+                        
+                        // if server sends a flag that indicates "results available"
+                        // (not necessarily "finished") then show finished button
+                        if (has_results) {
+                            $('#_willet_button_v3 .button').hide ();
+                            $('<div />', {
+                                'id': "_willet_SIBT_results",
+                                'class': "button"
+                            })
+                            .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                            .appendTo(button)
                             .css({
-                                'clear': 'both'
-                            });
-                            $(purchase_cta).append(button);
-                            $('#_willet_button').click(_willet_button_onclick);
-                            
-                            // if server sends a flag that indicates "results available"
-                            // (not necessarily "finished") then show finished button
-                            if (has_results) {
-                                $('#_willet_button_v3 .button').hide ();
-                                $('<div />', {
-                                    'id': "_willet_SIBT_results",
-                                    'class': "button"
-                                })
-                                .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
-                                .appendTo(button)
-                                .css({
-                                    'display': 'inline-block'
-                                })
-                                .click (_willet_show_results);
-                            }
+                                'display': 'inline-block'
+                            })
+                            .click (_willet_show_results);
                         }
                     }
                     
