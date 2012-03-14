@@ -112,6 +112,7 @@
                 is_live = ('{{ is_live }}' == 'True'),
                 has_results = {{ has_results }},
                 show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
                 _willet_topbar = null,
                 _willet_padding = null,
                 _willet_topbar_hide_button = null,

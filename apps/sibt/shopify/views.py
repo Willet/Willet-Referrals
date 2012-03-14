@@ -344,6 +344,9 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
+            if len (tracked_urls) >= 4:
+                # part of the unsure detection: 4 or more URLs tracked for (app and user)
+                unsure_mutli_view = True
             product = ProductShopify.get_or_fetch(target, app.client)
         else:
             logging.warn("no app and no instance!")
@@ -374,7 +377,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'has_voted'      : has_voted,
             'is_live'        : is_live,
             'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
-            
+            'unsure_mutli_view': unsure_mutli_view,
             'app'            : app,
             'instance'       : instance,
             'asker_name'     : asker_name, 
