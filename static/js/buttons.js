@@ -68,6 +68,7 @@
             button_div.style.margin = '0';
 
             var protocol = 'http:'; // For local testing
+            var store_url = protocol + location.hostname; // http://|example.com
 
             var createButton = function () {
                 var d = document.createElement('div');
@@ -92,8 +93,18 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter'];
+            var supported_buttons = ['SIBT', 'Tumblr','Pinterest','Fancy','Facebook','Twitter'];
             var buttons = {
+                SIBT: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = '62px';
+                        d.id = '_willet_button_v3';
+                        d.style.background = "url('http://photos-h.ak.fbcdn.net/photos-ak-snc1/v85005/18/132803916820614/app_2_132803916820614_5222.gif') top left no-repeat transparent";
+                        return d;
+                    },
+                    script: protocol+'//brian-willet.appspot.com/s/shopify/sc-sibt.js?store_url=' + store_url
+                },
                 Tumblr: {
                     create: function () {
                         var d = createButton();
