@@ -3,6 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+from datetime import datetime
 import re
 import hashlib
 
@@ -225,7 +226,6 @@ class GetExpiredSIBTInstances(URIHandler):
     
     def get(self):
         """Gets a list of SIBT instances to be expired and emails to be sent"""
-        from datetime import datetime
         right_now = datetime.now()
         expired_instances = SIBTInstance.all()\
                 .filter('is_live =', True)\
@@ -238,7 +238,9 @@ class GetExpiredSIBTInstances(URIHandler):
                     'instance_uuid': instance.uuid 
                 }
             )
-        logging.info('expiring %d instances' % expired_instances.count())
+        msg = 'expiring %d instances' % expired_instances.count()
+        logging.info (msg)
+        self.response.out.write (msg)
 
 
 class RemoveExpiredSIBTInstance(webapp.RequestHandler):
@@ -259,12 +261,12 @@ class RemoveExpiredSIBTInstance(webapp.RequestHandler):
             email = instance.asker.get_attr('email')
             if email != "":
                 Email.SIBTVoteCompletion(
-                    email,
-                    result_instance.asker.get_full_name(),
-                    result_instance.link.get_willt_url(),
-                    result_instance.product_img,
-                    result_instance.get_yesses_count(),
-                    result_instance.get_nos_count()
+                    to_addr=email,
+                    name=result_instance.asker.get_full_name(),
+                    product_url=result_instance.url, # original product URL
+                    product_img=result_instance.product_img,
+                    yesses=result_instance.get_yesses_count(),
+                    noes=result_instance.get_nos_count()
                 )
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
@@ -300,10 +302,10 @@ class TrackSIBTShowAction(URIHandler):
             logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance = instance, 
-                    url = url,
-                    app = app,
-                    duration = duration
+                    instance=instance, 
+                    url=url,
+                    app=app,
+                    duration=duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
@@ -347,10 +349,10 @@ class TrackSIBTUserAction(URIHandler):
         try:
             action_class = globals()[what]
             action = action_class.create(user, 
-                    instance = instance, 
-                    url = url,
-                    app = app,
-                    duration = duration
+                    instance=instance, 
+                    url=url,
+                    app=app,
+                    duration=duration
             )
         except Exception,e:
             logging.warn('(this is not serious) could not create class: %s' % e)
