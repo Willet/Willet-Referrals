@@ -111,6 +111,8 @@
                 sibt_version = {{sibt_version|default:"2"}},
                 is_live = ('{{ is_live }}' == 'True'),
                 has_results = {{ has_results }},
+                show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
+                _willet_topbar = null,
                 _willet_padding = null,
                 _willet_topbar_hide_button = null,
                 willt_code = null,
@@ -195,6 +197,11 @@
                 }
             };
 
+            var _willet_topbar_onclick = function(e) {
+                // Onclick event handler for the 'sibt' button
+                _willet_button_onclick(e, 'SIBTUserClickedTopBarAsk');
+            };
+
             var _willet_button_onclick = function(e, message) {
                 var message = message || 'SIBTUserClickedButtonAsk';
                 try {
@@ -252,6 +259,213 @@
                 });
             };
 
+            var _willet_unhide_topbar = function() {
+                // When a user hides the top bar, it shows the little
+                // "Show" button in the top right. This handles the clicks to that
+                $.cookie('_willet_topbar_closed', false);
+                _willet_topbar_hide_button.slideUp('fast');
+                //_willet_padding.show();
+                if (_willet_topbar == null) {
+                    if (_willet_show_votes || hash_index != -1) {
+                        _willet_show_topbar();
+                        _willet_store_analytics('SIBTUserReOpenedTopBar');
+                    } else {
+                        _willet_show_topbar_ask();
+                        _willet_store_analytics('SIBTShowingTopBarAsk');
+                    }
+                } else {
+                    _willet_topbar.slideDown('fast'); 
+                    _willet_store_analytics('SIBTUserReOpenedTopBar');
+                }
+            };
+
+            var _willet_close_top_bar = function() {
+                // Hides the top bar and padding
+                $.cookie('_willet_topbar_closed', true);
+                _willet_topbar.slideUp('fast'); 
+                _willet_topbar_hide_button.slideDown('fast');
+                _willet_store_analytics('SIBTUserClosedTopBar');
+            };
+
+            // Expand the top bar and load the results iframe
+            var _willet_do_vote_yes = function() { _willet_do_vote(1);};
+            var _willet_do_vote_no = function() { _willet_do_vote(0);};
+            var _willet_do_vote = function(vote) {
+                // detecting if we just voted or not
+                var doing_vote = (vote != -1);
+                var vote_result = (vote == 1);
+
+                // getting the neccesary dom elements
+                var iframe_div = _willet_topbar.find('div.iframe');
+                var iframe = _willet_topbar.find('div.iframe iframe');
+
+                // constructing the iframe src
+                var hash        = window.location.hash;
+                var hash_search = '#code=';
+                var hash_index  = hash.indexOf(hash_search);
+                var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+                var results_src = "{{ URL }}/s/results.html?" +
+                    "willt_code=" + willt_code + 
+                    "&user_uuid={{user.uuid}}" + 
+                    "&doing_vote=" + doing_vote + 
+                    "&vote_result=" + vote_result + 
+                    "&is_asker={{is_asker}}" +
+                    "&store_id={{store_id}}" +
+                    "&store_url={{store_url}}" +
+                    "&instance_uuid={{instance.uuid}}" + 
+                    "&url=" + window.location.href; 
+
+                // show/hide stuff
+                _willet_topbar.find('div.vote').hide();
+                if (doing_vote || _willet_has_voted) {
+                    _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
+                } else if (_willet_is_asker) {
+                    _willet_topbar.find('div.message').html('Your friends say:   ').fadeIn();
+                }
+
+                // start loading the iframe
+                iframe_div.show();
+                iframe.attr('src', ''); 
+                iframe.attr('src', results_src); 
+            
+                iframe.fadeIn('medium');
+            };
+            
+            var build_top_bar_html = function (is_ask_bar) {
+                // Builds the top bar html
+                // is_ask_bar option boolean
+                // if true, loads ask_in_the_bar iframe
+
+                if (is_ask_bar || false) {
+                    var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make." + AB_CTA_text + "</p>" +
+                        "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
+                        "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                        "</div>" +
+                    "</div>";
+                } else {
+                    var asker_text = '';
+                    var message = 'Should <em>{{ asker_name }}</em> Buy This?';
+                    var image_src = '{{ asker_pic }}';
+                    
+                    var bar_html = "<div class='_willet_wrapper'> " +
+                        "<div class='asker'>" +
+                            "<div class='pic'><img src='" + image_src + "' /></div>" +
+                        "</div>" +
+                        "<div class='message'>" + message + "</div>" +
+                        "<div class='vote last' style='display: none'>" +
+                        "    <button id='yesBtn' class='yes'>Yes</button> "+
+                        "    <button id='noBtn' class='no'>No</button> "+
+                        "</div> "+
+                        "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
+                        "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+ 
+                        "</div>" +
+                        "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
+                        "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                        "</div>" +
+                    "</div>";
+                }
+                return bar_html;
+            };
+            
+            var _willet_show_topbar = function() {
+                // Shows the vote top bar
+                var body = $('body'); 
+
+                // create the padding for the top bar
+                _willet_padding = document.createElement('div');
+                _willet_padding = $(_willet_padding)
+                    .attr('id', '_willet_padding')
+                    .css('display', 'none');
+
+                _willet_topbar  = document.createElement('div');
+                _willet_topbar = $(_willet_topbar)
+                    .attr('id', '_willet_sibt_bar')
+                    .css('display', "none")
+                    .html(build_top_bar_html());
+                body.prepend(_willet_padding);
+                body.prepend(_willet_topbar);
+
+                // bind event handlers
+                $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+                $('#yesBtn').click(_willet_do_vote_yes);
+                $('#noBtn').click(_willet_do_vote_no);
+
+                _willet_padding.show(); 
+                _willet_topbar.slideDown('slow');
+
+                if (!is_live) {
+                    // voting is over folks!
+                    _willet_topbar.find('div.message').html('Voting is over!');
+                    _willet_toggle_results();
+                } else if (_willet_show_votes && !_willet_has_voted && !_willet_is_asker) {
+                    // show voting!
+                    _willet_topbar.find('div.vote').show();
+                } else if (_willet_has_voted && !_willet_is_asker) {
+                    // someone has voted && not the asker!
+                    _willet_topbar.find('div.message').html('Thanks for voting!').fadeIn();
+                    _willet_toggle_results();
+                } else if (_willet_is_asker) {
+                    // showing top bar to asker!
+                    _willet_topbar.find('div.message').html('Your friends say:   ').fadeIn();
+                    _willet_toggle_results();
+                }
+            };
+
+            var _willet_show_topbar_ask = function() {
+                //Shows the ask top bar
+
+                // create the padding for the top bar
+                _willet_padding = document.createElement('div');
+
+                _willet_padding = $(_willet_padding)
+                    .attr('id', '_willet_padding')
+                    .css('display', 'none');
+
+                _willet_topbar  = document.createElement('div');
+                _willet_topbar = $(_willet_topbar)
+                    .attr('id', '_willet_sibt_ask_bar')
+                    .attr('class', 'willet_reset')
+                    .css('display', "none")
+                    .html(build_top_bar_html(true));
+
+                $("body").prepend(_willet_padding).prepend(_willet_topbar);
+
+                var iframe = _willet_topbar.find('div.iframe iframe');
+                var iframe_div = _willet_topbar.find('div.iframe');
+
+                $('#_willet_close_button').unbind().bind('click', _willet_close_top_bar);
+                
+                _willet_topbar.find( '._willet_wrapper p' )
+                    .css('cursor', 'pointer')
+                    .click(_willet_topbar_onclick);
+                _willet_padding.show(); 
+                _willet_topbar.slideDown('slow'); 
+            };
+
+            var _willet_topbar_ask_success = function () {
+                // if we get a postMessage from the iframe
+                // that the share was successful
+                _willet_store_analytics('SIBTTopBarShareSuccess');
+                var iframe = _willet_topbar.find('div.iframe iframe');
+                var iframe_div = _willet_topbar.find('div.iframe');
+                
+                _willet_is_asker = true;
+
+                iframe_div.fadeOut('fast', function() {
+                    _willet_topbar.animate({height: '40'}, 500);
+                    iframe.attr('src', ''); 
+                    _willet_toggle_results();
+                });
+            };
+            
+            
+            var _willet_toggle_results = function() {
+                // Used to toggle the results view
+                // iframe has no source, hasnt been loaded yet
+                // and we are FOR SURE showing it
+                _willet_do_vote(-1);
+            };
+            
             var purchase_cta = $('#_willet_shouldIBuyThisButton');
             if (purchase_cta.length > 0) {
                 // is the div there?
@@ -263,57 +477,98 @@
                 var hash_search = '#code=';
                 hash_index  = hash.indexOf(hash_search);
                 willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-                if (sibt_button_enabled) {
-                    if (sibt_version <= 2) {
-                        var button = document.createElement('a');
-                        var button_html = '';
-                        // only add button if it's enabled in the app 
-                        if (_willet_is_asker) {
-                            button_html = 'See what your friends said!';
-                        } else if (_willet_show_votes) {
-                            button_html = 'Help {{ asker_name }} by voting!';
-                        } else {
-                            button_html = AB_CTA_text;
-                        }
 
-                        button = $(button)
-                            .html(button_html)
-                            .css('display', 'inline-block')
-                            .attr('title', 'Ask your friends if you should buy this!')
-                            .attr('id','_willet_button')
-                            .attr('class','_willet_button willet_reset')
-                            .click(_willet_button_onclick);
-                        $(purchase_cta).append(button);
-                    } else if (sibt_version == 3) {
-                        var button = $("<div />", {
-                            'id': '_willet_button_v3'
-                        });
-                        button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-                                     "<div class='button' " +
-                                         "title='Ask your friends if you should buy this!'>" +
-                                         "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                         "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                     "</div>")
-                        .css({
-                            'clear': 'both'
-                        });
-                        $(purchase_cta).append(button);
-                        $('#_willet_button').click(_willet_button_onclick);
-                        
-                        // if server sends a flag that indicates "results available"
-                        // (not necessarily "finished") then show finished button
-                        if (has_results) {
-                            $('#_willet_button_v3 .button').hide ();
-                            $('<div />', {
-                                'id': "_willet_SIBT_results",
-                                'class': "button"
-                            })
-                            .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
-                            .appendTo(button)
+                var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
+
+                // create the hide button
+                _willet_topbar_hide_button = $(document.createElement('div'));
+                _willet_topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+                    .css('display', 'none')
+                    .click(_willet_unhide_topbar);
+                
+                if ( show_top_bar_ask ) {
+                    _willet_topbar_hide_button.html('Get advice!');
+                } else if( _willet_is_asker ) {
+                    _willet_topbar_hide_button.html('See your results!');
+                } else {
+                    _willet_topbar_hide_button.html('Help {{ asker_name }}!');
+                }
+
+                $('body').prepend(_willet_topbar_hide_button);
+
+                if (_willet_show_votes || hash_index != -1) {
+                    // if we are showing votes (user has click action)
+                    // or if there is a willet hash
+                    if (cookie_topbar_closed) {
+                        // user has hidden the top bar
+                        _willet_topbar_hide_button.slideDown('fast');
+                    } else {
+                        _willet_show_topbar();
+                    }
+                } else {
+                    // check if we are showing top bar ask too
+                    if (show_top_bar_ask) {
+                        if (cookie_topbar_closed) {
+                            // user has hidden the top bar
+                            _willet_topbar_hide_button.slideDown('fast');
+                        } else {
+                            _willet_store_analytics('SIBTShowingTopBarAsk');
+                            _willet_show_topbar_ask();
+                        }
+                    }
+
+                    if (sibt_button_enabled) {
+                        if (sibt_version <= 2) {
+                            var button = document.createElement('a');
+                            var button_html = '';
+                            // only add button if it's enabled in the app 
+                            if (_willet_is_asker) {
+                                button_html = 'See what your friends said!';
+                            } else if (_willet_show_votes) {
+                                button_html = 'Help {{ asker_name }} by voting!';
+                            } else {
+                                button_html = AB_CTA_text;
+                            }
+
+                            button = $(button)
+                                .html(button_html)
+                                .css('display', 'inline-block')
+                                .attr('title', 'Ask your friends if you should buy this!')
+                                .attr('id','_willet_button')
+                                .attr('class','_willet_button willet_reset')
+                                .click(_willet_button_onclick);
+                            $(purchase_cta).append(button);
+                        } else if (sibt_version == 3) {
+                            var button = $("<div />", {
+                                'id': '_willet_button_v3'
+                            });
+                            button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                         "<div class='button' " +
+                                             "title='Ask your friends if you should buy this!'>" +
+                                             "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                             "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                         "</div>")
                             .css({
-                                'display': 'inline-block'
-                            })
-                            .click (_willet_show_results);
+                                'clear': 'both'
+                            });
+                            $(purchase_cta).append(button);
+                            $('#_willet_button').click(_willet_button_onclick);
+                            
+                            // if server sends a flag that indicates "results available"
+                            // (not necessarily "finished") then show finished button
+                            if (has_results) {
+                                $('#_willet_button_v3 .button').hide ();
+                                $('<div />', {
+                                    'id': "_willet_SIBT_results",
+                                    'class': "button"
+                                })
+                                .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                                .appendTo(button)
+                                .css({
+                                    'display': 'inline-block'
+                                })
+                                .click (_willet_show_results);
+                            }
                         }
                     }
                     

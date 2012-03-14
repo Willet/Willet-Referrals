@@ -373,6 +373,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             'show_votes'     : show_votes,
             'has_voted'      : has_voted,
             'is_live'        : is_live,
+            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
             
             'app'            : app,
             'instance'       : instance,
