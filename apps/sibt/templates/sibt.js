@@ -3,7 +3,10 @@
  * Copyright Willet Inc, 2012
 **/
 
-;(function () {
+// SIBT is disabled in favour of SIBT-Connection. 
+// They conflict if enabled on the same page.
+
+;/* (function () {
     var manage_script_loading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when
         // all are finished loading
@@ -130,7 +133,6 @@
         
         jQuery(document).ready(function($) {
             // server-side variables
-            jQuery.noConflict(); // Suck it, Prototype!
             var _willet_ask_success = false,
                 _willet_is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
                 _willet_show_votes = ('{{ show_votes }}' == 'True'),
@@ -184,9 +186,7 @@
             }
             
             var _willet_vote_callback = function () {
-                /**
-                * Called when the vote iframe is closed
-                */
+                // Called when the vote iframe is closed
                 var button = $('#_willet_button'),
                     original_shadow = button.css('box-shadow'),
                     glow_timeout = 400;
@@ -225,9 +225,7 @@
                 document.body.appendChild( iframe );
             };
             
-            /**
-            * Called when ask iframe is closed
-            */
+            // Called when ask iframe is closed
             var _willet_ask_callback = function( fb_response ) {
                 if (_willet_ask_success) {
                     _willet_is_asker = true;
@@ -663,4 +661,4 @@
 
     // Go time! Load script dependencies
     manage_script_loading( scripts_to_load, _init_sibt);
-})();
+})(); */

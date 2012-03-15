@@ -526,6 +526,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
     """
     
     def get(self):
+        votes_count = 0
         is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
@@ -607,6 +608,9 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
             asker_pic  = instance.asker.get_attr('pic')
             show_votes = True
 
+            # number of votes.
+            votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
+            
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
@@ -656,6 +660,17 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
         else:
             app_css = SIBTShopify.get_default_css()
         
+        # determine whether to show the results button.
+        # code below makes button show only if vote was started less than 1 day ago.
+        has_results = False
+        logging.debug ("votes_count = %s" % votes_count)
+        if votes_count:
+            time_diff = datetime.now() - instance.created
+            logging.debug ("time_diff = %s" % time_diff)
+            if time_diff <= timedelta(days=1):
+                has_results = True
+        logging.debug ("has_results = %s" % has_results)
+
         # Grab all template values
         template_values = {
             'URL'            : URL,
@@ -688,6 +703,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
+            'has_results'    : 'true' if has_results else 'false',
         }
 
         # Finally, render the JS!

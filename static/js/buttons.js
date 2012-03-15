@@ -2,8 +2,8 @@
  * Buttons JS. Copyright Willet Inc, 2012
  */
 ;(function () {
-    var here = window.location + '.json';
-    var console = { log: function () {}, error: function () {} };
+    var here = window.location.href.split('#')[0] + '.json';
+    // var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
         //    && typeof(window.console.error) ==='function' )
@@ -277,32 +277,21 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
+                        } else {
+                            console.log("No data");
                         }
                     } else {  
                         // Didn't work, just silently bail
                         console.log("Buttons: request for product.json failed");
                     }  
-                }  
-            };  
+                } else {
+                    console.log("state is not 4 yet");
+                }
+            };
             req.send(null);
         } catch (e) {
             // Didn't work, just silently bail
             console.log("Buttons: "+e);
         }
     })();
-    /*(function() { // for local testing
-        _init_buttons({
-            product: {
-                images: [
-                    { created_at: "2012-02-03T11:42:17+09:00",
-                    id: 166600132,
-                    position: 1,
-                    product_id: 81809292,
-                    updated_at: "2012-02-03T11:42:17+09:00",
-                    src:'/static/imgs/beer_200.png' }
-                ]
-            },
-            title: "Glass of beer"
-        });
-    })();*/
 })();

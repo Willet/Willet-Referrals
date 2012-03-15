@@ -67,7 +67,9 @@
             var ask_success = false,
                 is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
                 is_live = ('{{ is_live }}' == 'True'),
+                has_results = {{ has_results }},
                 show_votes = ('{{ show_votes }}' == 'True'),
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
                 hash_index = -1;
             
             var willet_metadata = function () {
@@ -100,18 +102,39 @@
             /**
             * Called when ask iframe is closed
             */
-            var _willet_ask_callback = function( fb_response ) {
+            var ask_callback = function( fb_response ) {
                 // this callback currently needs to do nothing
             };
 
-            var _willet_button_onclick = function(e, message) {
+            var button_onclick = function(e, message) {
                 var message = message || 'SIBTUserClickedButtonAsk';
                 if (is_asker || show_votes) {
-                    window.location.reload(true);
+                    show_results ();
                 } else {
                     store_analytics(message);
                     show_ask ();
                 }
+            };
+            
+            var show_results = function () {
+                // show results if results are done.
+                // this can be detected if a finished flag is raised.
+                var url = "{{URL}}/s/results.html" + 
+                          "?" + willet_metadata () + 
+                          "&refer_url=" + window.location.href;
+                $.willet_colorbox({
+                    href: url,
+                    transition: 'fade',
+                    close: '',
+                    scrolling: false,
+                    iframe: true, 
+                    initialWidth: 0, 
+                    initialHeight: 0, 
+                    innerWidth: '600px',
+                    innerHeight: '400px', 
+                    fixed: true,
+                    onClosed: function () { }
+                });
             };
 
             var show_ask = function ( message ) {
@@ -131,7 +154,7 @@
                     innerHeight: '400px', 
                     fixed: true,
                     href: url,
-                    onClosed: _willet_ask_callback
+                    onClosed: ask_callback
                 });
             };
 
@@ -141,7 +164,7 @@
                 // actually running it
                 store_analytics();
 
-                sibt_elem.click(_willet_button_onclick);
+                sibt_elem.click(button_onclick);
                 
                 // watch for message
                 // Create IE + others compatible event handler
@@ -166,6 +189,13 @@
                         '{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
                             // init colorbox last
                             window.jQuery.willet_colorbox.init ();
+
+                            var hash        = window.location.hash;
+                            var hash_search = '#open_sibt=';
+                            hash_index  = hash.indexOf(hash_search);
+                            if (has_results && hash_index != -1) { // if vote has results and voter came from an email
+                                show_results ();
+                            }
                     });
                 }
             }
