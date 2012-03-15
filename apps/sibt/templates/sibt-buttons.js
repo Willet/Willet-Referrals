@@ -141,18 +141,7 @@
                 // actually running it
                 store_analytics();
 
-                sibt_elem
-                    .html("Ask friends")
-                    .css({
-                        'width': '62px',
-                        'display': 'inline-block',
-                        // 'border-radius': '1px #eee solid',
-                        'background': "url('{{ URL }}/static/sibt/imgs/mini_logo.gif') 3% 80% no-repeat transparent",
-                        'color': '#333',
-                        'padding': '3px 0 3px 18px',
-                        'font': '8pt Tahoma, sans-serif'
-                    })
-                    .click(_willet_button_onclick);
+                sibt_elem.click(_willet_button_onclick);
                 
                 // watch for message
                 // Create IE + others compatible event handler
