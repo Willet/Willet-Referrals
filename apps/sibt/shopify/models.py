@@ -93,12 +93,12 @@ class SIBTShopify(SIBT, AppShopify):
             'padding': '10'
         }, 'willet_button_v3': {
             'background': '#fff',
-            'border': '1px solid #BBB',
+            'border': '0',
             'border_radius': '3', # soften the blow
             'color': '#383f41', # font colour within the box
             'font': '14px Helvetica, Arial, sans-serif',
-            'margin': '12px 0',
-            'padding': '0 15px',
+            'margin': '0',
+            'padding': '0',
             'width': '223',
             'height': '88',
             'others': '', # place whatever extra CSS in here
