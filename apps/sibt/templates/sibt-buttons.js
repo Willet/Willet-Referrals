@@ -42,12 +42,14 @@
         }
     };
 
+    var $_conflict = !(window.$ && window.$.fn && window.$.fn.jquery);
+
     // Once all dependencies are loading, fire this function
     var init = function () {
+        if ($_conflict) {
+            jQuery.noConflict(); // Suck it, Prototype!
+        }
         jQuery(document).ready(function($) {
-            if (window.$ && window.$.fn && window.$.fn.jquery) {
-                jQuery.noConflict(); // Suck it, Prototype!
-            }
 
             // load CSS for colorbox as soon as possible!!
             var _willet_css = {% include stylesheet %}

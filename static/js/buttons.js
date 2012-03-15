@@ -104,11 +104,10 @@
                         d.style.marginTop = '-1px';
                         d.style.paddingTop = '4px';
                         d.style.paddingLeft = '20px';
-                        // d.style.background = "";
                         d.style.display = 'inline-block';
                         return d;
                     },
-                    script: protocol+'//rf.rs/s/shopify/sibt-buttons.js?store_url=' + store_url
+                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
                 },
                 Tumblr: {
                     create: function () {

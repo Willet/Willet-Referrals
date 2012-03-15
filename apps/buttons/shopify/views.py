@@ -27,9 +27,20 @@ class ButtonsShopifyWelcome(URIHandler):
 
         # Fetch the client
         client = ClientShopify.get_by_url( shop )
+
+        # update client token (needed when reinstalling)
+        logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
+        client.token = token
+        client.put()
     
         # Fetch or create the app
         app    = get_or_create_buttons_shopify_app(client, token=token)
+        
+        # SIBT app is installed when the buttons JS is requested for the first time
+        # app2   = SIBTShopify.get_or_create(client, token=token)
+        
+        # WOSIB is never installed with Buttons
+        # app3   = WOSIBShopify.get_or_create(client, token=token)
         
         # Render the page
         template_values = {

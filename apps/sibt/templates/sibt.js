@@ -1,12 +1,11 @@
 /** 
  * Willet's "Should I Buy This" Shopify App
  * Copyright Willet Inc, 2012
+ * 
+ * If ButtonsShopify is detected on the same page, SIBT (this) will not show.
 **/
 
-// SIBT is disabled in favour of SIBT-Connection. 
-// They conflict if enabled on the same page.
-
-;/* (function () {
+;(function () {
     var manage_script_loading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when
         // all are finished loading
@@ -660,5 +659,7 @@
     }
 
     // Go time! Load script dependencies
-    manage_script_loading( scripts_to_load, _init_sibt);
-})(); */
+    if (!document.getElementById('mini_willet_button')) { // Buttons Detection
+        manage_script_loading( scripts_to_load, init);
+    }
+})();
