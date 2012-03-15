@@ -3,7 +3,7 @@
  */
 ;(function () {
     var here = window.location.href.split('#')[0] + '.json';
-    // var console = { log: function () {}, error: function () {} };
+    var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
         //    && typeof(window.console.error) ==='function' )
@@ -104,11 +104,11 @@
                         d.style.marginTop = '-1px';
                         d.style.paddingTop = '4px';
                         d.style.paddingLeft = '20px';
-                        d.style.background = "url('http://brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                        // d.style.background = "";
                         d.style.display = 'inline-block';
                         return d;
                     },
-                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
+                    script: protocol+'//rf.rs/s/shopify/sibt-buttons.js?store_url=' + store_url
                 },
                 Tumblr: {
                     create: function () {
