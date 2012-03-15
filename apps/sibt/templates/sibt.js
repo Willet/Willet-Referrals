@@ -42,6 +42,9 @@
         }
     };
 
+
+    var $_conflict = !(window.$ && window.$.fn && window.$.fn.jquery);
+
     var setCookieStorageFlag = function() {
         window.cookieSafariStorageReady = true;
     };
@@ -99,6 +102,10 @@
 
     // Once all dependencies are loading, fire this function
     var _init_sibt = function () {
+        if ($_conflict) {
+            jQuery.noConflict(); // Suck it, Prototype!
+        }
+        
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
         var _willet_app_css = '{{ app_css }}';
@@ -114,8 +121,6 @@
             _willet_style.appendChild(rules);
         }
         _willet_head.appendChild(_willet_style);
-
-        jQuery.noConflict(); // Suck it, Prototype!
 
         // jQuery cookie plugin (included to solve lagging requests)
         {% include '../../plugin/templates/js/jquery.cookie.js' %}
@@ -567,7 +572,6 @@
                 }).appendTo("body");
                 
                 var $wbtn = $('#_willet_button_v3 .button');
-                console.log ($wbtn);
                 if ($wbtn.length > 0) {
                     $wbtn = $($wbtn[0]);
                 }
