@@ -68,6 +68,7 @@
             button_div.style.margin = '0';
 
             var protocol = 'http:'; // For local testing
+            var store_url = protocol + '//' + location.hostname; // http:|//example.com
 
             var createButton = function () {
                 var d = document.createElement('div');
@@ -92,8 +93,23 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter'];
+            var supported_buttons = ['SIBT', 'Tumblr','Pinterest','Fancy','Facebook','Twitter'];
             var buttons = {
+                SIBT: {
+                    create: function () {
+                        var d = createButton();
+                        d.id = 'mini_willet_button';
+                        d.style.width = '80px';
+                        d.style.cursor = 'pointer';
+                        d.style.marginTop = '-1px';
+                        d.style.paddingTop = '4px';
+                        d.style.paddingLeft = '20px';
+                        d.style.background = "url('http://brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                        d.style.display = 'inline-block';
+                        return d;
+                    },
+                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
+                },
                 Tumblr: {
                     create: function () {
                         var d = createButton();
@@ -194,7 +210,7 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+            var req_buttons = ['SIBT','Fancy','Pinterest']; // default for backwards compatibilty
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;

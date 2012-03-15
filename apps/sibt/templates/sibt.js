@@ -42,6 +42,9 @@
         }
     };
 
+
+    var $_conflict = !(window.$ && window.$.fn && window.$.fn.jquery);
+
     var setCookieStorageFlag = function() {
         window.cookieSafariStorageReady = true;
     };
@@ -99,7 +102,32 @@
 
     // Once all dependencies are loading, fire this function
     var _init_sibt = function () {
-        // wait for DOM elements to appear + $ closure!
+        if ($_conflict) {
+            jQuery.noConflict(); // Suck it, Prototype!
+        }
+        
+        // load CSS for colorbox as soon as possible!!
+        var _willet_css = {% include stylesheet %}
+        var _willet_app_css = '{{ app_css }}';
+        var _willet_style = document.createElement('style');
+        var _willet_head  = document.getElementsByTagName('head')[0];
+        _willet_style.type = 'text/css';
+        _willet_style.setAttribute('charset','utf-8');
+        _willet_style.setAttribute('media','all');
+        if (_willet_style.styleSheet) {
+            _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
+        } else {
+            var rules = document.createTextNode(_willet_css + _willet_app_css);
+            _willet_style.appendChild(rules);
+        }
+        _willet_head.appendChild(_willet_style);
+
+        // jQuery cookie plugin (included to solve lagging requests)
+        {% include '../../plugin/templates/js/jquery.cookie.js' %}
+
+        // jQuery shaker plugin
+        (function(a){var b={};var c=3;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
+        
         jQuery(document).ready(function($) {
             // server-side variables
             jQuery.noConflict(); // Suck it, Prototype!
@@ -146,6 +174,15 @@
             };
 
             // events
+            var is_scrolled_into_view = function (elem) {
+                // http://stackoverflow.com/questions/487073
+                var docViewTop = $(window).scrollTop();
+                var docViewBottom = docViewTop + $(window).height();
+                var elemTop = $(elem).offset().top;
+                var elemBottom = elemTop + $(elem).height();
+                return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+            }
+            
             var _willet_vote_callback = function () {
                 /**
                 * Called when the vote iframe is closed
@@ -580,13 +617,32 @@
                     src : "{{ URL }}{% url ShowOnUnloadHook %}?evnt=SIBTVisitLength" + 
                                  "&" + _willet_metadata ()
                 }).appendTo("body");
-
+                
+                var $wbtn = $('#_willet_button_v3 .button');
+                if ($wbtn.length > 0) {
+                    $wbtn = $($wbtn[0]);
+                }
+                if ($wbtn && show_top_bar_ask) { // show_top_bar_ask is also the key for wiggling
+                    var shaken_yet = false;
+                    $(window).scroll (function () {
+                        if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
+                            setTimeout (function () {
+                                $($wbtn).shaker();
+                                setTimeout (function () {
+                                    $($wbtn).shaker.stop();
+                                    shaken_yet = true;
+                                }, 400); // shake duration
+                            }, 750); // wait for ?ms until it shakes
+                        }
+                    });
+                }
+                
                 // Load jQuery colorbox
                 manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + _willet_metadata ()],
                     function () {
                         // init colorbox last
-                        // $.willet_colorbox = jQuery.willet_colorbox;
                         window.jQuery.willet_colorbox.init ();
+
                         var hash        = window.location.hash;
                         var hash_search = '#open_sibt=';
                         hash_index  = hash.indexOf(hash_search);
