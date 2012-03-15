@@ -235,7 +235,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
     
     def get(self):
         votes_count = 0
-        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = False
+        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_mutli_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
@@ -527,7 +527,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
     
     def get(self):
         votes_count = 0
-        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = unsure_mutli_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code', None)
@@ -646,6 +646,9 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
+                if len (tracked_urls) >= 4:
+                    # part of the unsure detection: 4 or more URLs tracked for (app and user)
+                    unsure_mutli_view = True
             try:
                 product = ProductShopify.get_or_fetch(target, app.client)
             except:
@@ -679,7 +682,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
             'has_voted'      : has_voted,
             'is_live'        : is_live,
             'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
-            
+            'unsure_mutli_view': unsure_mutli_view,
             'app'            : app,
             'instance'       : instance,
             'asker_name'     : asker_name, 

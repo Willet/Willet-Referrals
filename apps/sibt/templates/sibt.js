@@ -619,7 +619,7 @@
                 if ($wbtn.length > 0) {
                     $wbtn = $($wbtn[0]);
                 }
-                if ($wbtn && show_top_bar_ask) { // show_top_bar_ask is also the key for wiggling
+                if ($wbtn) {
                     var shaken_yet = false;
                     $(window).scroll (function () {
                         if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
@@ -660,6 +660,6 @@
 
     // Go time! Load script dependencies
     if (!document.getElementById('mini_willet_button')) { // Buttons Detection
-        manage_script_loading( scripts_to_load, init);
+        manage_script_loading( scripts_to_load, _init_sibt);
     }
 })();
