@@ -630,7 +630,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
             try:
                 product = ProductShopify.get_or_fetch(target, app.client)
             except:
-                
+                pass
         else:
             logging.warn("no app and no instance!")
 

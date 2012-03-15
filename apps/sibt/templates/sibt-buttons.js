@@ -101,10 +101,7 @@
             * Called when ask iframe is closed
             */
             var _willet_ask_callback = function( fb_response ) {
-                if (ask_success) {
-                    is_asker = true;
-                    $('#_willet_button').html('Refresh the page to see your results!');
-                }
+                // this callback currently needs to do nothing
             };
 
             var _willet_button_onclick = function(e, message) {
@@ -138,26 +135,24 @@
                 });
             };
 
-            var sibt_elem = $('#_willet_shouldIBuyThisButton');
+            var sibt_elem = $('#mini_willet_button');
             if (sibt_elem.length > 0) {
                 // is the div there?
                 // actually running it
                 store_analytics();
 
-                var button = $("<div />", {
-                    'id': '_willet_button_v3'
-                });
-                button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-                             "<div class='button' " +
-                                 "title='Ask your friends if you should buy this!'>" +
-                                 "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                 "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                             "</div>")
-                .css({
-                    'clear': 'both'
-                });
-                $(sibt_elem).append(button);
-                $('#_willet_button').click(_willet_button_onclick);
+                sibt_elem
+                    .html("Ask friends")
+                    .css({
+                        'width': '62px',
+                        'display': 'inline-block',
+                        // 'border-radius': '1px #eee solid',
+                        'background': "url('{{ URL }}/static/sibt/imgs/mini_logo.gif') 3% 80% no-repeat transparent",
+                        'color': '#333',
+                        'padding': '3px 0 3px 18px',
+                        'font': '8pt Tahoma, sans-serif'
+                    })
+                    .click(_willet_button_onclick);
                 
                 // watch for message
                 // Create IE + others compatible event handler
@@ -177,11 +172,13 @@
                 }).appendTo("body");
                 
                 // Load jQuery colorbox
-                manage_script_loading([
-                    '{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
-                        // init colorbox last
-                        window.jQuery.willet_colorbox.init ();
-                });
+                if (window && window.jQuery && !window.jQuery.willet_colorbox) {
+                    manage_script_loading([
+                        '{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
+                            // init colorbox last
+                            window.jQuery.willet_colorbox.init ();
+                    });
+                }
             }
         });
     };

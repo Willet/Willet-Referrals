@@ -98,12 +98,10 @@
                 SIBT: {
                     create: function () {
                         var d = createButton();
-                        d.style.width = '62px';
-                        d.id = '_willet_button_v3';
-                        d.style.background = "url('http://photos-h.ak.fbcdn.net/photos-ak-snc1/v85005/18/132803916820614/app_2_132803916820614_5222.gif') top left no-repeat transparent";
+                        d.id = 'mini_willet_button';
                         return d;
                     },
-                    script: protocol+'//brian-willet.appspot.com/s/shopify/sc-sibt.js?store_url=' + store_url
+                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
                 },
                 Tumblr: {
                     create: function () {

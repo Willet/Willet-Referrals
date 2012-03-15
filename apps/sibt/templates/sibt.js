@@ -587,7 +587,7 @@
                 }
                 
                 // Load jQuery colorbox
-                manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
+                /* manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
                     'app_uuid={{app.uuid}}&' + 
                     'user_uuid={{user.uuid}}&' + 
                     'instance_uuid={{instance.uuid}}&' + 
@@ -596,7 +596,7 @@
                         // init colorbox last
                         // $.willet_colorbox = jQuery.willet_colorbox;
                         window.jQuery.willet_colorbox.init ();
-                });
+                }); */
             }
         });
     };
