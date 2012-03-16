@@ -502,6 +502,7 @@ class SIBTShopifyInstallError (webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
+
 class SIBTShopifyVersion2To3(URIHandler):
     """ TEMPORARY!!! """
     @admin_required
