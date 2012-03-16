@@ -2,7 +2,7 @@
  * Buttons JS. Copyright Willet Inc, 2012
  */
 ;(function () {
-    var here = window.location + '.json';
+    var here = window.location.href.split('#')[0] + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
@@ -68,6 +68,7 @@
             button_div.style.margin = '0';
 
             var protocol = 'http:'; // For local testing
+            var store_url = protocol + '//' + location.hostname; // http:|//example.com
 
             var createButton = function () {
                 var d = document.createElement('div');
@@ -92,8 +93,22 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter'];
+            var supported_buttons = ['SIBT', 'Tumblr','Pinterest','Fancy','Facebook','Twitter'];
             var buttons = {
+                SIBT: {
+                    create: function () {
+                        var d = createButton();
+                        d.id = 'mini_willet_button';
+                        // d.style.width = '80px';
+                        d.style.cursor = 'pointer';
+                        // d.style.marginTop = '-1px';
+                        // d.style.paddingTop = '4px';
+                        // d.style.paddingLeft = '20px';
+                        d.style.display = 'inline-block';
+                        return d;
+                    },
+                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
+                },
                 Tumblr: {
                     create: function () {
                         var d = createButton();
@@ -203,7 +218,7 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+            var req_buttons = ['SIBT', 'Tumblr', 'Fancy','Pinterest']; // default for backwards compatibilty
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;
@@ -270,32 +285,21 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
+                        } else {
+                            console.log("No data");
                         }
                     } else {  
                         // Didn't work, just silently bail
                         console.log("Buttons: request for product.json failed");
                     }  
-                }  
-            };  
+                } else {
+                    console.log("state is not 4 yet");
+                }
+            };
             req.send(null);
         } catch (e) {
             // Didn't work, just silently bail
             console.log("Buttons: "+e);
         }
     })();
-    /*(function() { // for local testing
-        _init_buttons({
-            product: {
-                images: [
-                    { created_at: "2012-02-03T11:42:17+09:00",
-                    id: 166600132,
-                    position: 1,
-                    product_id: 81809292,
-                    updated_at: "2012-02-03T11:42:17+09:00",
-                    src:'/static/imgs/beer_200.png' }
-                ]
-            },
-            title: "Glass of beer"
-        });
-    })();*/
 })();

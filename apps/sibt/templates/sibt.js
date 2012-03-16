@@ -1,6 +1,8 @@
 /** 
  * Willet's "Should I Buy This" Shopify App
  * Copyright Willet Inc, 2012
+ * 
+ * If ButtonsShopify is detected on the same page, SIBT (this) will not show.
 **/
 
 ;(function () {
@@ -129,7 +131,7 @@
         (function(a){var b={};var c=3;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
         
         jQuery(document).ready(function($) {
-            // wait for DOM elements to appear + $ closure!
+            // server-side variables
             var _willet_ask_success = false,
                 _willet_is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
                 _willet_show_votes = ('{{ show_votes }}' == 'True'),
@@ -137,15 +139,42 @@
                 sibt_button_enabled = ('{{ app.button_enabled }}' == 'True'),
                 sibt_version = {{sibt_version|default:"2"}},
                 is_live = ('{{ is_live }}' == 'True'),
+                has_results = {{ has_results }},
                 show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True'),
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
                 _willet_topbar = null,
                 _willet_padding = null,
                 _willet_topbar_hide_button = null,
                 willt_code = null,
                 hash_index = -1;
+            
+            // load CSS for colorbox as soon as possible!!
+            var _willet_css = {% include stylesheet %}
+            var _willet_app_css = '{{ app_css }}';
+            var _willet_style = document.createElement('style');
+            var _willet_head  = document.getElementsByTagName('head')[0];
+            _willet_style.type = 'text/css';
+            _willet_style.setAttribute('charset','utf-8');
+            _willet_style.setAttribute('media','all');
+            if (_willet_style.styleSheet) {
+                _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
+            } else {
+                var rules = document.createTextNode(_willet_css + _willet_app_css);
+                _willet_style.appendChild(rules);
+            }
+            _willet_head.appendChild(_willet_style);
+
+            // jQuery cookie plugin (included to solve lagging requests)
+            {% include '../../plugin/templates/js/jquery.cookie.js' %}
+
+            var _willet_metadata = function () {
+                return "app_uuid={{app.uuid}}" + 
+                      "&user_uuid={{user.uuid}}" + 
+                      "&instance_uuid={{instance.uuid}}" + 
+                      "&refer_url=" + window.location.href;
+            };
 
             // events
-
             var is_scrolled_into_view = function (elem) {
                 // http://stackoverflow.com/questions/487073
                 var docViewTop = $(window).scrollTop();
@@ -156,9 +185,7 @@
             }
             
             var _willet_vote_callback = function () {
-                /**
-                * Called when the vote iframe is closed
-                */
+                // Called when the vote iframe is closed
                 var button = $('#_willet_button'),
                     original_shadow = button.css('box-shadow'),
                     glow_timeout = 400;
@@ -184,9 +211,7 @@
                 iframe.style.display = 'none';
                 //iframe.src = "{{URL}}/s/storeAnalytics?evnt=" + message + 
                 iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + 
-                            "&app_uuid={{app.uuid}}" +
-                            "&user_uuid={{user.uuid}}" +
-                            "&instance_uuid={{instance.uuid}}" +
+                            "&" + _willet_metadata () + 
                             "&target_url=" + window.location.href;
                 iframe.id = random_id;
                 iframe.name = random_id;
@@ -199,9 +224,7 @@
                 document.body.appendChild( iframe );
             };
             
-            /**
-            * Called when ask iframe is closed
-            */
+            // Called when ask iframe is closed
             var _willet_ask_callback = function( fb_response ) {
                 if (_willet_ask_success) {
                     _willet_is_asker = true;
@@ -218,7 +241,6 @@
                 var message = message || 'SIBTUserClickedButtonAsk';
                 try {
                     $('#_willet_padding').hide();
-                    _willet_topbar.fadeOut('fast');
                 } catch (err) {
                     // pass!
                 }
@@ -228,6 +250,27 @@
                     _willet_store_analytics(message);
                     _willet_show_ask();
                 }
+            };
+            
+            var _willet_show_results = function () {
+                // show results if results are done.
+                // this can be detected if a finished flag is raised.
+                var url = "{{URL}}/s/results.html" + 
+                          "?" + _willet_metadata () + 
+                          "&refer_url=" + window.location.href;
+                $.willet_colorbox({
+                    href: url,
+                    transition: 'fade',
+                    close: '',
+                    scrolling: false,
+                    iframe: true, 
+                    initialWidth: 0, 
+                    initialHeight: 0, 
+                    innerWidth: '600px',
+                    innerHeight: '400px', 
+                    fixed: true,
+                    onClosed: function () { }
+                });
             };
 
             var _willet_show_ask = function ( message ) {
@@ -249,13 +292,6 @@
                     href: url,
                     onClosed: _willet_ask_callback
                 });
-            };
-            
-            var _willet_toggle_results = function() {
-                // Used to toggle the results view
-                // iframe has no source, hasnt been loaded yet
-                // and we are FOR SURE showing it
-                _willet_do_vote(-1);
             };
 
             var _willet_unhide_topbar = function() {
@@ -365,7 +401,7 @@
                 }
                 return bar_html;
             };
-
+            
             var _willet_show_topbar = function() {
                 // Shows the vote top bar
                 var body = $('body'); 
@@ -456,7 +492,15 @@
                     _willet_toggle_results();
                 });
             };
-
+            
+            
+            var _willet_toggle_results = function() {
+                // Used to toggle the results view
+                // iframe has no source, hasnt been loaded yet
+                // and we are FOR SURE showing it
+                _willet_do_vote(-1);
+            };
+            
             var purchase_cta = $('#_willet_shouldIBuyThisButton');
             if (purchase_cta.length > 0) {
                 // is the div there?
@@ -468,6 +512,7 @@
                 var hash_search = '#code=';
                 hash_index  = hash.indexOf(hash_search);
                 willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+
                 var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
 
                 // create the hide button
@@ -486,63 +531,67 @@
 
                 $('body').prepend(_willet_topbar_hide_button);
 
-                if (_willet_show_votes || hash_index != -1) {
-                    // if we are showing votes (user has click action)
-                    // or if there is a willet hash
+                if (show_top_bar_ask) {
                     if (cookie_topbar_closed) {
                         // user has hidden the top bar
                         _willet_topbar_hide_button.slideDown('fast');
                     } else {
-                        _willet_show_topbar();
+                        _willet_store_analytics('SIBTShowingTopBarAsk');
+                        _willet_show_topbar_ask();
                     }
-                } else {
-                    // check if we are showing top bar ask too
-                    if (show_top_bar_ask) {
-                        if (cookie_topbar_closed) {
-                            // user has hidden the top bar
-                            _willet_topbar_hide_button.slideDown('fast');
+                }
+
+                if (sibt_button_enabled) {
+                    if (sibt_version <= 2) {
+                        var button = document.createElement('a');
+                        var button_html = '';
+                        // only add button if it's enabled in the app 
+                        if (_willet_is_asker) {
+                            button_html = 'See what your friends said!';
+                        } else if (_willet_show_votes) {
+                            button_html = 'Help {{ asker_name }} by voting!';
                         } else {
-                            _willet_store_analytics('SIBTShowingTopBarAsk');
-                            _willet_show_topbar_ask();
+                            button_html = AB_CTA_text;
                         }
-                    } 
 
-                    if (sibt_button_enabled) {
-                        if (sibt_version <= 2) {
-                            var button = document.createElement('a');
-                            var button_html = '';
-                            // only add button if it's enabled in the app 
-                            if (_willet_is_asker) {
-                                button_html = 'See what your friends said!';
-                            } else if (_willet_show_votes) {
-                                button_html = 'Help {{ asker_name }} by voting!';
-                            } else {
-                                button_html = AB_CTA_text;
-                            }
-
-                            button = $(button)
-                                .html(button_html)
-                                .css('display', 'inline-block')
-                                .attr('title', 'Ask your friends if you should buy this!')
-                                .attr('id','_willet_button')
-                                .attr('class','_willet_button willet_reset')
-                                .click(_willet_button_onclick);
-                            $(purchase_cta).append(button);
-                        } else if (sibt_version == 3) {
-                            var button = $("<div />", {
-                                'id': '_willet_button_v3'
-                            });
-                            button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-                                         "<div class='button' " +
-                                             "title='Ask your friends if you should buy this!'>" +
-                                             "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                             "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                         "</div>")
+                        button = $(button)
+                            .html(button_html)
+                            .css('display', 'inline-block')
+                            .attr('title', 'Ask your friends if you should buy this!')
+                            .attr('id','_willet_button')
+                            .attr('class','_willet_button willet_reset')
+                            .click(_willet_button_onclick);
+                        $(purchase_cta).append(button);
+                    } else if (sibt_version == 3) {
+                        var button = $("<div />", {
+                            'id': '_willet_button_v3'
+                        });
+                        button.html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                     "<div class='button' " +
+                                         "title='Ask your friends if you should buy this!'>" +
+                                         "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                         "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                     "</div>")
+                        .css({
+                            'clear': 'both'
+                        });
+                        $(purchase_cta).append(button);
+                        $('#_willet_button').click(_willet_button_onclick);
+                        
+                        // if server sends a flag that indicates "results available"
+                        // (not necessarily "finished") then show finished button
+                        if (has_results) {
+                            $('#_willet_button_v3 .button').hide ();
+                            $('<div />', {
+                                'id': "_willet_SIBT_results",
+                                'class': "button"
+                            })
+                            .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                            .appendTo(button)
                             .css({
-                                'clear': 'both'
-                            });
-                            $(purchase_cta).append(button);
-                            $('#_willet_button').click(_willet_button_onclick);
+                                'display': 'inline-block'
+                            })
+                            .click (_willet_show_results);
                         }
                     }
                     
@@ -552,8 +601,6 @@
                         var message = e.originalEvent.data;
                         if (message == 'shared') {
                             _willet_ask_success = true;
-                        } else if (message == 'top_bar_shared') {
-                            _willet_topbar_ask_success();
                         } else if (message == 'close') {
                             $.willet_colorbox.close();
                         }
@@ -565,17 +612,14 @@
                 $('<iframe />', {
                     css : {'display': 'none'},
                     src : "{{ URL }}{% url ShowOnUnloadHook %}?evnt=SIBTVisitLength" + 
-                                 "&app_uuid={{app.uuid}}" +
-                                 "&user_uuid={{user.uuid}}" +
-                                 "&instance_uuid={{instance.uuid}}" +
-                                 "&target_url=" + window.location.href
+                                 "&" + _willet_metadata ()
                 }).appendTo("body");
                 
                 var $wbtn = $('#_willet_button_v3 .button');
                 if ($wbtn.length > 0) {
                     $wbtn = $($wbtn[0]);
                 }
-                if ($wbtn && show_top_bar_ask) { // show_top_bar_ask is also the key for wiggling
+                if ($wbtn) {
                     var shaken_yet = false;
                     $(window).scroll (function () {
                         if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
@@ -591,16 +635,19 @@
                 }
                 
                 // Load jQuery colorbox
-                manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + 
-                    'app_uuid={{app.uuid}}&' + 
-                    'user_uuid={{user.uuid}}&' + 
-                    'instance_uuid={{instance.uuid}}&' + 
-                    'target_url=' + window.location.href],
+                manage_script_loading(['{{ URL }}/s/js/jquery.colorbox.js?' + _willet_metadata ()],
                     function () {
                         // init colorbox last
-                        // $.willet_colorbox = jQuery.willet_colorbox;
                         window.jQuery.willet_colorbox.init ();
-                });
+
+                        var hash        = window.location.hash;
+                        var hash_search = '#open_sibt=';
+                        hash_index  = hash.indexOf(hash_search);
+                        if (has_results && hash_index != -1) { // if vote has results and voter came from an email
+                            _willet_show_results ();
+                        }
+                    }
+                );
             }
         });
     };
@@ -612,5 +659,7 @@
     }
 
     // Go time! Load script dependencies
-    manage_script_loading( scripts_to_load, _init_sibt);
+    if (!document.getElementById('mini_willet_button')) { // Buttons Detection
+        manage_script_loading( scripts_to_load, _init_sibt);
+    }
 })();

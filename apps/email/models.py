@@ -10,22 +10,23 @@ import os
 import urllib
 import urllib2
 
-from django.utils                import simplejson as json
-from google.appengine.api        import taskqueue
-from google.appengine.api        import urlfetch
-from google.appengine.api.mail   import EmailMessage
+from django.utils import simplejson as json
+from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
+from google.appengine.api.mail import EmailMessage
 from google.appengine.ext.webapp import template
 from util.consts import *
+from util.helpers import url 
 
 ###################
 #### Addresses ####
 ###################
 
-info      = "info@getwillet.com"
-fraser    = 'fraser@getwillet.com'
-brian     = "brian@getwillet.com"
+info = "info@getwillet.com"
+fraser = 'fraser@getwillet.com'
+brian = "brian@getwillet.com"
 
-dev_team  = '%s' % (fraser)
+dev_team = '%s' % (fraser)
 from_addr = info
 
 #####################
@@ -38,7 +39,7 @@ class Email():
     def emailDevTeam(msg):
         to_addr = dev_team
         subject = '[Willet]'
-        body    = '<p> %s </p>' % msg
+        body = '<p> %s </p>' % msg
  
         Email.send_email(from_addr, to_addr, subject, body)
 
@@ -157,7 +158,7 @@ class Email():
                          body=body )
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
+    def SIBTVoteNotification( to_addr, name, vote_type, product_url, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
@@ -166,7 +167,7 @@ class Email():
             {
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
-                'vote_url'      : vote_url,
+                'product_url'   : product_url,
                 'product_img'   : product_img,
                 'client_name'   : client_name,
                 'client_domain' : client_domain 
@@ -299,41 +300,16 @@ class Email():
     @staticmethod
     def send_email(from_address, to_address, subject, body,
                    to_name= None, replyto_address= None):
-        if ',' in to_address:
-            try:
-                e = EmailMessage(
-                        sender=from_address, 
-                        to=to_address, 
-                        subject=subject, 
-                        html=body
-                        )
-                e.send()
-            except Exception,e:
-                logging.error('error sending email: %s', e)
-        else:
-            params = {
-                "api_user" : "BarbaraEMac",
-                "api_key"  : "w1llet!!",
-                "to"       : to_address,
-                "subject"  : subject,
-                "html"     : body,
-                "from"     : info,
-                "fromname" : "Willet",
-                "bcc"      : fraser
-            }
-            if to_name:
-                params['toname'] = to_name
-            if replyto_address:
-                params['replyto'] = replyto_address
-
-            #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
-
-            result = urlfetch.fetch(
-                url     = 'https://sendgrid.com/api/mail.send.json',
-                payload = urllib.urlencode( params ), 
-                method  = urlfetch.POST,
-                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        taskqueue.add(
+                url=url('SendEmailAsync'),
+                params={
+                    'from_address': from_address,
+                    'to_address': to_address,
+                    'subject': subject,
+                    'body': body,
+                    'to_name': to_name,
+                    'replyto_address': replyto_address
+                }
             )
-            logging.info("%s"% result.content)
-# end class
 
+# end class

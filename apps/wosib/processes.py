@@ -38,10 +38,10 @@ from util.strip_html          import strip_html
 from util.urihandler          import URIHandler
 
 
-class DoWOSIBVote(URIHandler):
+class WOSIBDoVote(URIHandler):
     def post(self):
         # since WOSIBInstances contain more than one product, clients
-        # just call DoWOSIBVote multiple time to vote on each product
+        # just call WOSIBDoVote multiple time to vote on each product
         # they select. (right now, the UI permits selection of only 
         # product per vote anyway)
         instance_uuid = self.request.get('instance_uuid')
