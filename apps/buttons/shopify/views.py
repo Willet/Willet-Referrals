@@ -41,7 +41,16 @@ class ButtonsShopifyWelcome(URIHandler):
             client.put()
     
         # Fetch or create the app
-        app    = get_or_create_buttons_shopify_app(client=client, token=token)
+        app = get_or_create_buttons_shopify_app(client=client, token=token)
+        try:
+            app2 = SIBTShopify.get_or_create (client=client, token=token, email_client=False)
+        except Exception, e:
+            logging.error ('cannot bundle SIBT with buttons install: %s' % e)
+        
+        try:
+            app3 = WOSIBShopify.get_or_create (client=client, token=token, email_client=False)
+        except Exception, e:
+            logging.error ('cannot bundle WOSIB with buttons install: %s' % e)
         
         # Render the page
         template_values = {
