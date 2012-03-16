@@ -93,10 +93,10 @@ def create_shopify_buttons_app(client, app_token):
 def get_or_create_buttons_shopify_app( client, token ):
     app = get_shopify_buttons_by_url( client.url )
     
-    if app is None:
+    if not app:
         app = create_shopify_buttons_app(client, token)
     
-    elif token != None and token != '':
+    elif token:
         if app.store_token != token:
             # TOKEN mis match, this might be a re-install
             logging.warn(
@@ -107,8 +107,8 @@ def get_or_create_buttons_shopify_app( client, token ):
             ) 
             try:
                 app.store_token = token
+                app.old_client  = app.client
                 app.client      = client
-                app.old_client  = None
                 app.put()
                 
                 app.do_install()

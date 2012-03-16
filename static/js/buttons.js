@@ -3,7 +3,7 @@
  */
 ;(function () {
     var here = window.location.href.split('#')[0] + '.json';
-    var console = { log: function () {}, error: function () {} };
+    // var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
         //    && typeof(window.console.error) ==='function' )
@@ -39,6 +39,7 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
+    var button_div = document.getElementById('_willet_buttons_app');
     var _init_buttons = function(data) {
         /* data is product json 
          */
@@ -46,7 +47,10 @@
         /**
          * INSERT IFRAME WITH DATA
          */
-        var button_div = document.getElementById('_willet_buttons_app');
+        if (button_div.dataset.loaded) {
+            console.log ('double execution detected!!');
+            return; // loading buttons.js twice fails them both.
+        }
 
         if (button_div && window._willet_iframe_loaded == undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
@@ -98,16 +102,12 @@
                 SIBT: {
                     create: function () {
                         var d = createButton();
-                        d.id = 'mini_willet_button';
-                        d.style.width = '80px';
+                        d.id = 'mini_sibt_button';
                         d.style.cursor = 'pointer';
-                        // d.style.marginTop = '-1px';
-                        // d.style.paddingTop = '4px';
-                        // d.style.paddingLeft = '20px';
                         d.style.display = 'inline-block';
                         return d;
                     },
-                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
+                    script: protocol+'//brian-willet2.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
                 },
                 Tumblr: {
                     create: function () {
@@ -238,6 +238,7 @@
             while (j--) {
                 b = req_buttons[j];
                 button_div.appendChild( buttons[b].create() );
+                console.log('Button: '+ buttons[b].create() +' attached');
                 t  = document.createElement( 'script' );
                 t.type = 'text/javascript';
                 t.src = buttons[b].script;
@@ -276,6 +277,7 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
+                            button_div.dataset.loaded = true;
                         } else {
                             console.log("No data");
                         }

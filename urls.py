@@ -58,7 +58,7 @@ def main():
         memcache.set('combined_uris', combined_uris)
         memcache.set('reload_uris', reload_uris)
     else:
-        logging.warn('using memcached uris!')
+        logging.info('using memcached uris!')
 
     #logging.info('running application with patterns: %s' % combined_uris)
 

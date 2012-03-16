@@ -156,7 +156,7 @@ class ClientShopify( Client ):
             app_type = "ButtonsShopify"
         
         # Grab Shopify API settings
-        settings = SHOPIFY_APPS[app_type]
+        settings = SHOPIFY_APPS['AppShopify']
 
         # Constuct the API URL
         username = settings['api_key'] 
@@ -193,7 +193,7 @@ def get_store_info(store_url, store_token, app_type):
         app_type = 'ButtonsShopify'
     
     # Grab Shopify API settings
-    settings = SHOPIFY_APPS[app_type]
+    settings = SHOPIFY_APPS['AppShopify']
 
     # Constuct the API URL
     url      = '%s/admin/shop.json' % ( store_url )

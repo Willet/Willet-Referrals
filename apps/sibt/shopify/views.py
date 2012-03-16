@@ -47,8 +47,8 @@ from util.consts              import *
 class ShowBetaPage(URIHandler):
     def get(self):
         logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['SIBTShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
+        logging.info(SHOPIFY_APPS['AppShopify'] )
+        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['AppShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -547,7 +547,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
                 else:
                     # no client = why do we have a ShopConnection app on it?
                     logging.error ('No client and no app')
-                    self.response.out.write ('No client and no app')
+                    self.response.out.write ('/* No client and no app */')
                     return
         # so now you should have an app.
         

@@ -159,8 +159,8 @@
                     onClosed: ask_callback
                 });
             };
-
-            var sibt_elem = $('#mini_willet_button');
+            
+            var sibt_elem = $('#mini_sibt_button');
             if (sibt_elem.length > 0) {
                 // is the div there?
                 // actually running it
@@ -170,11 +170,13 @@
                 
                 if (has_results) {
                     sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent"
+                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
+                        'width': '80px'
                     });
                 } else {
                     sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"
+                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent",
+                        'width': '80px'
                     });
                 }
                 
@@ -201,7 +203,6 @@
                         '{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
                             // init colorbox last
                             window.jQuery.willet_colorbox.init ();
-
                             var hash = window.location.hash;
                             var hash_search = '#open_sibt=';
                             hash_index = hash.indexOf(hash_search);

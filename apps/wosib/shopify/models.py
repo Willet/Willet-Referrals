@@ -41,7 +41,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         """ Initialize this model """
         super(WOSIBShopify, self).__init__(*args, **kwargs)
     
-    def do_install(self):
+    def do_install(self, email_client=True):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
         script_src = '''<!-- START willet wosib for Shopify -->
@@ -97,7 +97,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         super(WOSIBShopify, self).put()
 
     @staticmethod
-    def create(client, token):
+    def create(client, token, email_client=True):
         uuid = generate_uuid( 16 )
         app = WOSIBShopify (
                         key_name    = uuid,
@@ -110,12 +110,12 @@ class WOSIBShopify(WOSIB, AppShopify):
         logging.debug ("app %s ready to put" % app)
         app.put()
         
-        app.do_install()
+        app.do_install(email_client)
        
         return app
 
     @staticmethod
-    def get_or_create(client, token=None):
+    def get_or_create(client, token=None, email_client=True):
         logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = WOSIBShopify.get_by_store_url(client.url)
         if app is None:
@@ -138,7 +138,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                     app.client = client
                     app.put()
 
-                    app.do_install()
+                    app.do_install(email_client)
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
             else:

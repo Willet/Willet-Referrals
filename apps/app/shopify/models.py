@@ -52,7 +52,7 @@ class AppShopify(Model):
         class_name = self.class_name()
         self.settings = None 
         try:
-            self.settings = SHOPIFY_APPS[class_name]
+            self.settings = SHOPIFY_APPS['AppShopify']
         except Exception, e:
             logging.error('could not get settings for app %s: %s' % (
                     class_name,

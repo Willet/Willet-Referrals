@@ -18,7 +18,7 @@ class DoUninstalledApp( URIHandler ):
         # Grab the ShopifyApp
         store_url = self.request.headers['X-Shopify-Shop-Domain']
         logging.info("store: %s " % store_url)
-        app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
+        app_class_name = app_name
 
         client = ClientShopify.get_by_url( store_url )
 

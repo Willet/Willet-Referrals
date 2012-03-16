@@ -6,16 +6,17 @@ from google.appengine.ext           import webapp
 from google.appengine.ext.webapp    import template
 from urlparse                       import urlparse
 
-from apps.sibt.shopify.models       import * 
 from apps.buttons.shopify.models    import * 
 from apps.client.shopify.models     import ClientShopify
+from apps.sibt.shopify.models       import * 
+from apps.wosib.shopify.models      import * 
 from util.consts                    import *
 from util.urihandler                import URIHandler
 
 class ButtonsShopifyBeta(URIHandler):
     def get(self):
         template_values = {
-            "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
+            "SHOPIFY_API_KEY": SHOPIFY_APPS['AppShopify']['api_key']
         }
         
         self.response.out.write(self.render_page('beta.html', template_values))
@@ -34,14 +35,13 @@ class ButtonsShopifyWelcome(URIHandler):
             return
         
         # update client token (needed when reinstalling)
-        logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
-        client.token = token
-        client.put()
+        if client.token != token:
+            logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
+            client.token = token
+            client.put()
     
         # Fetch or create the app
         app    = get_or_create_buttons_shopify_app(client=client, token=token)
-        app2   = SIBTShopify.get_or_create(client=client, token=token, email_client=False)
-        app3   = WOSIBShopify.get_or_create(client=client, token=token, email_client=False)
         
         # Render the page
         template_values = {

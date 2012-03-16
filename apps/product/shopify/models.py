@@ -91,8 +91,7 @@ class ProductShopify(Product):
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = ProductShopify.get_by_url(url)
         if not product:
-            if not product:
-                logging.warn('Could not get product for url: %s' % url)
+            logging.warn('Could not get product for url: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(

@@ -40,7 +40,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default='2', indexed=False)
+    version    = db.StringProperty(default='3', indexed=False)
     
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
@@ -322,10 +322,10 @@ class SIBTShopify(SIBT, AppShopify):
     def get_or_create(client, token=None, email_client=True):
         logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = SIBTShopify.get_by_store_url(client.url)
-        if app is None:
+        if not app:
             logging.debug ("app not found; creating one.")
             app = SIBTShopify.create(client, token)
-        elif token != None and token != '':
+        elif token:
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
                 logging.warn(
@@ -338,8 +338,8 @@ class SIBTShopify(SIBT, AppShopify):
                 try:
                     app.store_token = token
                     logging.debug ("app.old_client was %s" % app.old_client)
-                    app.client      = app.old_client if app.old_client else client
-                    app.old_client  = None
+                    app.old_client = app.client
+                    app.client = client
                     logging.debug("changing SIBTShopify version to '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
                     app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
