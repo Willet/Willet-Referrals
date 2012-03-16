@@ -503,6 +503,8 @@ class SIBTShopifyInstallError (webapp.RequestHandler):
         return
 
 class SIBTShopifyVersion2To3(URIHandler):
+    """ TEMPORARY!!! """
+    @admin_required
     def post(self):
         """ Updates all version 2 SIBT apps to version 3 """
         logging.warn('TEMPORARY HANDLER')
