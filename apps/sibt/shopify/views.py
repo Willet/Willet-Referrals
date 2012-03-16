@@ -539,16 +539,10 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
             if app: # then install it!
                 logging.debug ('got_by_store_url an app: %r' % app)
             else: # then install it!
-                client = ClientShopify.get_by_url (shop_url)
-                if client and client.token:
-                    # here a SIBT app is either created and/or retrieved
-                    app = SIBTShopify.get_or_create (client=client, token=client.token, email_client=False)
-                    logging.debug ('got_or_created an app: %r' % app)
-                else:
-                    # no client = why do we have a ShopConnection app on it?
-                    logging.error ('No client and no app')
-                    self.response.out.write ('No client and no app')
-                    return
+                # no client = why do we have a ShopConnection app on it?
+                logging.error ('No client and no app')
+                self.response.out.write ('/* No client and no app */')
+                return
         # so now you should have an app.
         
         target = get_target_url(self.request.headers.get('REFERER'))

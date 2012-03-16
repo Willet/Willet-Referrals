@@ -99,7 +99,7 @@
                     create: function () {
                         var d = createButton();
                         d.id = 'mini_willet_button';
-                        d.style.width = '80px';
+                        // d.style.width = '80px';
                         d.style.cursor = 'pointer';
                         // d.style.marginTop = '-1px';
                         // d.style.paddingTop = '4px';
@@ -209,7 +209,7 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['SIBT','Fancy','Pinterest']; // default for backwards compatibilty
+            var req_buttons = ['SIBT', 'Tumblr', 'Fancy','Pinterest']; // default for backwards compatibilty
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;

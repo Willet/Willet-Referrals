@@ -170,11 +170,13 @@
                 
                 if (has_results) {
                     sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent"
+                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
+                        'width': '80px'
                     });
                 } else {
                     sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"
+                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent",
+                        'width': '80px'
                     });
                 }
                 
