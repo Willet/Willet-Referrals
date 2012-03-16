@@ -62,7 +62,7 @@
             button_div.style.styleFloat = 'left'; // IE
             button_div.style.cssFloat = 'left'; // FF, Webkit
             button_div.style.minWidth = '240px';
-            button_div.style.height = '30px';
+            button_div.style.height = '21px';
             button_div.style.padding = button_padding;
             button_div.style.border = 'none';
             button_div.style.margin = '0';
@@ -183,6 +183,15 @@
                         return d;
                     },
                     script: protocol+'//platform.twitter.com/widgets.js'
+                },
+                GooglePlus: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = button_count ? '90px' : '48px';
+                        d.innerHTML = "<g:plusone size='small'></g:plusone>";
+                        return d;
+                    },
+                    script: protocol+'//apis.google.com/js/plusone.js'
                 }
             };
             
