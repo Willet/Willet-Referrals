@@ -339,7 +339,8 @@ class SIBTShopify(SIBT, AppShopify):
                     app.store_token = token
                     logging.debug ("app.old_client was %s" % app.old_client)
                     app.old_client = app.client
-                    app.client = client
+                    if client:
+                        app.client = client
                     logging.debug("changing SIBTShopify version to '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
                     app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()

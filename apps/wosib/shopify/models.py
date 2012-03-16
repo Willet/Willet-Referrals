@@ -135,7 +135,8 @@ class WOSIBShopify(WOSIB, AppShopify):
                 try:
                     app.store_token = token
                     app.old_client = app.client
-                    app.client = client
+                    if client:
+                        app.client = client
                     app.put()
 
                     app.do_install(email_client)
