@@ -101,9 +101,9 @@
                         d.id = 'mini_willet_button';
                         d.style.width = '80px';
                         d.style.cursor = 'pointer';
-                        d.style.marginTop = '-1px';
-                        d.style.paddingTop = '4px';
-                        d.style.paddingLeft = '20px';
+                        // d.style.marginTop = '-1px';
+                        // d.style.paddingTop = '4px';
+                        // d.style.paddingLeft = '20px';
                         d.style.display = 'inline-block';
                         return d;
                     },

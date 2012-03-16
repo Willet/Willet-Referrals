@@ -82,7 +82,7 @@ class AppShopify(Model):
             # First fetch webhooks that already exist
             resp, content = h.request( url, "GET", headers = header)
             data = json.loads( content ) 
-            #logging.info('%s %s' % (resp, content))
+            logging.info('%s %s' % (resp, content))
 
             product_create = product_delete = product_update = True
             for w in data['webhooks']:

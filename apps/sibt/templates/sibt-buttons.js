@@ -202,9 +202,9 @@
                             // init colorbox last
                             window.jQuery.willet_colorbox.init ();
 
-                            var hash        = window.location.hash;
+                            var hash = window.location.hash;
                             var hash_search = '#open_sibt=';
-                            hash_index  = hash.indexOf(hash_search);
+                            hash_index = hash.indexOf(hash_search);
                             if (has_results && hash_index != -1) { // if vote has results and voter came from an email
                                 show_results ();
                             }

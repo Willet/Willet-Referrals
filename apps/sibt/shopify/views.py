@@ -542,7 +542,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
                 client = ClientShopify.get_by_url (shop_url)
                 if client and client.token:
                     # here a SIBT app is either created and/or retrieved
-                    app = SIBTShopify.get_or_create (client, client.token)
+                    app = SIBTShopify.get_or_create (client=client, token=client.token, email_client=False)
                     logging.debug ('got_or_created an app: %r' % app)
                 else:
                     # no client = why do we have a ShopConnection app on it?

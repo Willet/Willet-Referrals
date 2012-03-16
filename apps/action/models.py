@@ -182,7 +182,7 @@ class Action(Model, polymodel.PolyModel):
 ## -----------------------------------------------------------------------------
 class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
-        Currently used for 'Referral' and 'SIBT' Apps """
+        Currently used for 'SIBT' and 'WOSIB' Apps """
     
     # Link that caused the click action ...
     link = db.ReferenceProperty( db.Model, collection_name = "link_clicks" )

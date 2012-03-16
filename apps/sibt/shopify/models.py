@@ -136,7 +136,7 @@ class SIBTShopify(SIBT, AppShopify):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
     
-    def do_install(self):
+    def do_install(self, email_client=True):
         """Installs this instance"""
         if self.version == '3': # sweet buttons has different on-page snippet.
             script_src = """<!-- START willet sibt for Shopify -->
@@ -204,10 +204,11 @@ class SIBTShopify(SIBT, AppShopify):
         )
 
         # Fire off "personal" email from Fraser
-        Email.welcomeClient( "Should I Buy This", 
-                             self.client.merchant.get_attr('email'), 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name )
+        if email_client:
+            Email.welcomeClient( "Should I Buy This", 
+                                 self.client.merchant.get_attr('email'), 
+                                 self.client.merchant.get_full_name(), 
+                                 self.client.name )
 
     def put(self):
         """So we memcache by the store_url as well"""
@@ -299,7 +300,7 @@ class SIBTShopify(SIBT, AppShopify):
         return cls.get_default_css()
         
     @staticmethod
-    def create(client, token):
+    def create(client, token, email_client=True):
         uuid = generate_uuid( 16 )
         logging.debug("creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
@@ -313,12 +314,12 @@ class SIBTShopify(SIBT, AppShopify):
                         version = SIBTShopify.CURRENT_INSTALL_VERSION )
         app.put()
         
-        app.do_install()
+        app.do_install(email_client)
        
         return app
 
     @staticmethod
-    def get_or_create(client, token=None):
+    def get_or_create(client, token=None, email_client=True):
         logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = SIBTShopify.get_by_store_url(client.url)
         if app is None:
@@ -343,7 +344,7 @@ class SIBTShopify(SIBT, AppShopify):
                     app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
-                    app.do_install()
+                    app.do_install(email_client)
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         else:
