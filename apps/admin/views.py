@@ -884,7 +884,6 @@ class SIBTReset (URIHandler):
 
 class EmailEveryone (URIHandler):
     """ Task Queue-based blast email URL. """
-
     @admin_required
     def get (self, admin):
         # render the mail client
@@ -893,84 +892,139 @@ class EmailEveryone (URIHandler):
 
     @admin_required
     def post (self, admin):
+        batch_size = 100
         full_name = ''
+
         logging.info("Sending everyone an email.")
         
-        target_version = self.request.get('version', '3')
-        logging.info ('target_version = %r' % target_version)
-        
-        all_sibts = SIBTShopify.all().fetch(1000)
-        #logging.info ('all_sibts = %r' % all_sibts)
-        logging.info ('loaded all SIBTs')
+        app_cls = self.request.get('app_cls')
+        target_version = self.request.get('version')
+        subject = self.request.get('subject')
+        body = self.request.get('body')
 
-        try:
-            assert (len (self.request.get('subject')) > 0)
-            assert (len (self.request.get('body')) > 0)
-        except:
+        logging.info('Requested email:\nApp Class = %s\nApp version = %r\nSubject = %s\nBody = %s'
+                        % (app_cls, target_version, subject, body))
+        
+        # Check that we have something to email
+        if not (len(subject) > 0) or not (len(body) > 0):
             self.error(400) # Bad Request
             return
 
-        all_emails = []
-        # no try-catches in list comprehension... so this.
-        for sibt in all_sibts:
+        params = {
+            'batch_size':   batch_size,
+            'offset':       0,
+            'app_cls':      app_cls,
+            'subject':      subject,
+            'body':         body
+        }
+        if target_version:
+            params.update({ 'target_version': target_version })
+
+        # Initiate batched emailing
+        taskqueue.add(url=url('EmailBatch'), params=params)
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write ("%r" % all_emails)
+        return
+
+
+class EmailBatch(URIHandler):
+    """ Emails batch of App clients from offset to batch_size
+
+    Adds another EmailBatch to taskqueue if it reaches limit
+    """
+    def get (self):
+        self.post() # yup, taskqueues are randomly GET or POST.
+
+    def post( self ):
+        """ Expected inputs:
+        batch_size: (int) 0 - 1000
+        offset: (int) database offset
+        app_cls: App class
+        target_version: (Optional)
+        title: (str) email title
+        body: (str) email body
+        """
+        batch_size = self.request.get('batch_size')
+        offset = self.request.get('offset')
+        app_cls = self.request.get('app_cls')
+        target_version = self.request.get('target_version')
+
+        if not batch_size or not (offset >= 0) or not app_cls:
+            self.error(400) # Bad Request
+            return
+
+        apps = db.Query(App).filter('class = ', app_cls).fetch(limit=batch_size, offset=offset)
+
+        # If reached batch size, start another batch at the next offset
+        if len(apps) == batch_size:
+            params = {
+                'batch_size':       batch_size,
+                'offset':           offset + batch,
+                'app_cls':          app_cls,
+                'target_version':   target_version,
+                'title':            title,
+                'body':             body
+            }
+            taskqueue.add(url=url('EmailBatch'), params=params)
+
+        # For each app, try to create an email & send it
+        for app in all_apps:
             try:
-                if not hasattr (sibt, 'client'):      # lagging cache
+                # Check version
+                if target_version >= 0 and app.version != target_version:
+                    # Wrong version, skip this one
+                    continue
+
+                # Get client name
+                if not hasattr (app, 'client'):      # lagging cache
                     raise AttributeError ('Client is missing, likely an uninstall')
-                if not hasattr (sibt.client, 'email'): # bad install
+                if not hasattr (app.client, 'email'): # bad install
                     raise AttributeError ('Email is missing from client object!')
-                if not hasattr (sibt.client, 'merchant'): # crazy bad install
+                if not hasattr (app.client, 'merchant'): # crazy bad install
                     raise AttributeError ('User is missing from client object!')
                     full_name = "shop owner"
                 else:
-                    full_name = sibt.client.merchant.full_name
-
-                # TEMPORARY - 1st fully rolled out on V3
-                if sibt.client.email == 'contact@bentoandco.com':
-                    # Skip Bento & Co.
-                    continue
+                    full_name = app.client.merchant.full_name
                 
+                # Create body text
                 raw_body_text = self.request.get('body', '')
                 raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
                 
-                # construct email
+                # Construct email body
                 body = template.render(Email.template_path('general_mail.html'),
                     {
                         'title'        : self.request.get('subject'),
                         'content'      : raw_body_text
                     }
                 )
+                # Remove HTML formatting from email subject line
                 subject = re.compile(r'<.*?>').sub('', self.request.get('subject'))
                 
-                if sibt.client and sibt.version == target_version: # testing
-                    email = {
-                        'client': sibt.client,
-                        #'to': 'brian@getwillet.com, fraser@getwillet.com', # you are CC'd
-                        'to': sibt.client.email,
-                        'subject': subject,
-                        'body': body
-                    }
-                    all_emails.append (email)
-                    logging.info('added %r to all_emails' % sibt.client)
-            except Exception, e:
-                logging.error ("Error finding client/email for app: %r; %s" % (sibt, e), exc_info = True)
-                pass # miss a client!
+                # Construct email
+                email = {
+                    'client': app.client,
+                    'to': 'brian@getwillet.com, fraser@getwillet.com', # you are CC'd
+                    #'to': app.client.email,
+                    'subject': subject,
+                    'body': body
+                }
 
-        for email in all_emails:
-            taskqueue.add ( # have them sent one by one.
-                url = url ('EmailSomeone'),
-                params = email
-            )
-        
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write ("%r" % all_emails)
-        return
+                # Send off email
+                taskqueue.add(url=url('EmailSomeone'), params= email)
+
+                logging.info('Sending email to %r' % app.client)
+
+            except Exception, e:
+                logging.error("Error finding client/email for app: %r; %s" % (app, e), exc_info = True)
+                pass # miss a client!
 
 
 class EmailSomeone (URIHandler):
     def get (self):
         self.post() # yup, taskqueues are randomly GET or POST.
 
-    def post( self ):
+    def post(self):
         try:
             Email.send_email (
                 self.request.get('from', 'fraser@getwillet.com'),
