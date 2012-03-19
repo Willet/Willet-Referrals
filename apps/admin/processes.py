@@ -27,7 +27,7 @@ class BatchRequest(URIHandler):
 
     def post(self):
         """ Expected inputs:
-            - batch_size: (int) 0 - 1000
+            - batch_size: (int) 0 - 1000, 100 is good in general
             - offset: (int) database offset
             - app_cls: App class
             - target_version: (Optional)
@@ -47,11 +47,15 @@ class BatchRequest(URIHandler):
 
         apps = db.Query(App).filter('class = ', app_cls).fetch(limit=batch_size, offset=offset)
 
+        # Check that method is safe and callable
         if method:
             if method[0] == '_':
                 self.error(403) # Access Denied
                 return
-            elif not hasattr(app_cls, method) or not callable(app_cls[method]):
+            try:
+                if not callable(getattr(app_cls, method)):
+                    raise AttributeError
+            except AttributeError:
                 self.error(400) # Bad Request
 
         # If reached batch size, start another batch at the next offset
@@ -73,28 +77,35 @@ class BatchRequest(URIHandler):
                 if target_version >= 0 and app.version != target_version:
                     # Wrong version, skip this one
                     continue
-                app[method]()
+                getattr(app, method)()
+            except Exception, e:
+                logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__, app.__class__.__name__, method, e))
+                continue
 
 
 class UploadEmailsToMailChimp(URIHandler):
-    """ One-time use to upload existing ShopConnection customers to MailChimp """
+    """ One-time use to upload existing ShopConnection customers to MailChimp 
+    Remove after use
+    """
     def get(self):
         pass
 
     def post(self):
         # http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
-        # for app in apps:
-        #    batch.append({ 'FNAME': first_name,
-        #                   'LNAME': last_name,
-        #                   'STORENAME': self.client.name,
-        #                   'STOREURL': self.client.url })
-        # MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id='98231a9737', # ShopConnection list
-        #                                          email_address=self.client.email,
-        #                                          batch=batch,
-        #                                          double_optin=False,
-        #                                          update_existing=True,
-        #                                          send_welcome=False)
-        pass
+        for app in apps:
+            batch.append({ 'FNAME': first_name,
+                           'LNAME': last_name,
+                           'STORENAME': self.client.name,
+                           'STOREURL': self.client.url })
+
+        MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id='98231a9737', # ShopConnection list
+                                                        email_address=self.client.email,
+                                                        batch=batch,
+                                                        double_optin=False,
+                                                        update_existing=True,
+                                                        send_welcome=False)
+        self.response.out.write('Done')
+        # pass
 
 
 class TrackRemoteError(webapp.RequestHandler):
