@@ -24,8 +24,9 @@ from util.consts import *
 info      = "info@getwillet.com"
 fraser    = 'fraser@getwillet.com'
 brian     = "brian@getwillet.com"
+nick      = 'nick@getwillet.com'
 
-dev_team  = '%s' % (fraser)
+dev_team  = '%s, %s' % (fraser, nick)
 from_addr = info
 
 #####################
@@ -44,8 +45,9 @@ class Email():
 
     @staticmethod
     def invite(infrom_addr, to_addrs, msg, url, app):
-        # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
-        # from the db via email and personalize the email.
+        # Deprecated
+        # Was part of Invite For A Gift
+        DeprecationWarning('Invite For A Gift related method called')
         to_addr = to_addrs.split(',')
         subject = 'I\'ve Given You A Gift!'
         body = template.render(Email.template_path('invite.html'),
@@ -71,25 +73,24 @@ class Email():
         except:
             pass
 
+        body += "<p>Hi %s,</p>" % (name,)
+
         if app_name == 'ShopConnection':
-            body = """<p>Hi %s,</p>
-                  <p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
                   <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
-                  <p>If you have any ideas on how to improve %s, please let us know.</p>
-                  <p>Fraser</p>
-                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name, app_name)
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
         
         elif app_name == 'Should I Buy This':
-            body = """<p>Hi %s,</p>
-                  <p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
                   <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
-                  <p>If you have any ideas on how to improve %s, please let us know.</p>
-                  <p>Fraser</p>
-                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name, app_name)
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
 
         else:
             logging.error("Attmpt to email welcome for unknown app %s" % app_name)
             return
+
+        body += """<p>Fraser</p>
+                <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>"""
 
         logging.info("Emailing '%s'" % to_addr)
         Email.send_email(fraser, to_addr, subject, body)

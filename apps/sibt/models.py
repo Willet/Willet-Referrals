@@ -136,11 +136,6 @@ class SIBT(App):
                Email.emailDevTeam('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
 
-        @staticmethod
-        def get_by_uuid( uuid ):
-            return SIBT.all().filter( 'uuid =', uuid ).get()
-
-# Accessors --------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------
@@ -279,6 +274,7 @@ class SIBTInstance(Model):
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
 
+
 # ------------------------------------------------------------------------------
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
@@ -318,26 +314,25 @@ class PartialSIBTInstance(Model):
     """ Users can only have 1 of these ever.
         If they already have one, update it.
         Otherwise, make a new one. """
-    @staticmethod
-    def create( user, app, link, product ):
-
-        instance = PartialSIBTInstance.get_by_user( user )
+    @classmethod
+    def create(cls, user, app, link, product):
+        instance = cls.get_by_user(user)
         if instance:
             instance.link    = link
             instance.product = product
             instance.app_    = app
         else: 
-            uuid = generate_uuid( 16 )
+            uuid = generate_uuid(16)
 
-            instance = PartialSIBTInstance( key_name = uuid,
-                                            uuid     = uuid,
-                                            user     = user,
-                                            link     = link, 
-                                            product  = product,
-                                            app_     = app )
+            instance = cls(key_name=uuid,
+                                           uuid=uuid,
+                                           user=user,
+                                           link=link, 
+                                           product=product,
+                                           app_=app)
         instance.put()
         return instance
 
-    @staticmethod
-    def get_by_user( user ):
-        return PartialSIBTInstance.all().filter( 'user =', user ).get()
+    @classmethod
+    def get_by_user(cls, user):
+        return cls.all().filter('user =', user).get()

@@ -1,3 +1,11 @@
+#!/usr/bin/python
+
+# Model - a base model for all of our models
+# ObjectListProperty - list of objects, transparently serialized in the db
+
+__author__      = "Willet, Inc."
+__copyright__   = "Copyright 2012, Willet, Inc"
+
 import logging
 import time
 from datetime import timedelta
@@ -10,12 +18,24 @@ from google.appengine.ext import db
 
 from util.consts import MEMCACHE_TIMEOUT
 
+
 class Model(db.Model):
     """A generic extension of db.Model"""
 
     # Unique identifier for memcache and DB key
-    uuid = db.StringProperty( indexed = True )
+    uuid = db.StringProperty(indexed = True)
     
+    @classmethod
+    def _get_from_datastore(cls, memcache_key):
+        """Datastore retrieval using memcache_key"""
+        raise NotImplementedError('_validate_self should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
+
+    def _validate_self(self):
+        """ Called before saving to memcache/db """
+        # Subclasses must override this
+        raise NotImplementedError('_validate_self should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
+
+    # Database methods -----------------------------------------------------------------
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
@@ -39,11 +59,14 @@ class Model(db.Model):
 
     def hardPut( self ):
         logging.debug("PUTTING %s" % self.__class__.__name__)
-        db.put(self)
-        
-    def validateSelf( self ):
-        pass # Fill in in sub class!!
+        try:
+            self._validate_self()
+        except NotImplementedError, e:
+            logging.error(e)
 
+        db.put(self)
+
+    # Storage key methods -------------------------------------------------------------------
     def get_key(self):
         if hasattr(self, 'memcache_class'):
             return '%s-%s' % (self.memcache_class, self._memcache_key)
@@ -58,12 +81,11 @@ class Model(db.Model):
             key = '%s-%s' % (cls.__name__.lower(), memcache_key)
         return key
     
+    # Accessors --------------------------------------------------------------------------
     @classmethod
     def get(cls, memcache_key):
         """Checks memcache for model before hitting database
-        Each class must have a staticmethod get_from_datastore
-        TODO(barbara): Enforce the above statement!!!
-        Also, should it be: get_from_datastore OR _get_from_datastore?
+        Each class must define a get_from_datastore
         """
         key = cls.build_key(memcache_key)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
@@ -79,6 +101,11 @@ class Model(db.Model):
         else:
             logging.debug('Model::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+    @classmethod
+    def get_by_uuid(cls, uuid):
+        """ Get from datastore, bypassing the memcache """
+        return cls.all().filter('uuid =', uuid).get()
 # end class
 
 
@@ -196,3 +223,4 @@ class ObjectListProperty(db.ListProperty):
             return [ string_to_item(value) for value in db_list ]
         else:
             return []
+# end class

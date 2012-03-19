@@ -38,7 +38,8 @@ from util.helpers           import url as reverse_url
 from util.urihandler import URIHandler
 from util.memcache_bucket_config import MemcacheBucketConfig 
 
-class Admin( URIHandler ):
+
+class Admin(URIHandler):
     @admin_required
     def get(self, admin):
         links = Link.all()
@@ -50,12 +51,13 @@ class Admin( URIHandler ):
 
         self.response.out.write( str )
 
+
 class InitRenameFacebookData(webapp.RequestHandler):
     """Ensure all user models have their facebook properties prefixed exactly
        'fb_' and not 'facebook_' """
 
     def get(self):
-
+        DeprecationWarning('If not used by Apr 18, 2012, get rid of it')
         users = User.all()
         logging.info("Fired")
         for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\
@@ -64,6 +66,7 @@ class InitRenameFacebookData(webapp.RequestHandler):
             taskqueue.add(url = '/admin/renamefb',
                           params = {'uuid': u})
         self.response.out.write("update dispatched")
+
 
 class RenameFacebookData(webapp.RequestHandler):
     """Fetch facebook information about the given user"""
@@ -88,9 +91,11 @@ class RenameFacebookData(webapp.RequestHandler):
             logging.info(user)
             logging.info(user.uuid)
 
+
 class ImportPlugin(URIHandler):
     def get(self):
         pass
+
 
 class ShowRoutes(URIHandler):
     def format_route(self, route):
@@ -133,6 +138,7 @@ class ShowRoutes(URIHandler):
                 template_values,
             )
         )
+
 
 class ManageApps(URIHandler):
     def get_app_list(self):
@@ -241,6 +247,7 @@ class ManageApps(URIHandler):
             )
         ) 
 
+
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
         str += "<h1> Live Instances </h1>"
@@ -323,6 +330,7 @@ class SIBTInstanceStats( URIHandler ):
         self.response.out.write( str )
         return
 
+
 class InstallShopifyJunk( URIHandler ):
     def get( self ):
         """ Install the webhooks into the Shopify store """
@@ -404,6 +412,7 @@ class InstallShopifyJunk( URIHandler ):
                 logging.info('install failed %d script_tags' % len(script_tags))
         logging.info('installed %d script_tags' % len(script_tags))
 
+
 class ShowActions(URIHandler):
     @admin_required
     def get(self, admin):
@@ -414,6 +423,7 @@ class ShowActions(URIHandler):
                 template_values,
             )
         )
+
 
 class GetActionsSince(URIHandler):
     @admin_required
@@ -469,6 +479,7 @@ class GetActionsSince(URIHandler):
         except Exception, e:
             logging.error(e, exc_info=True)
             self.response.out.write(e)
+
 
 class ShowClickActions(URIHandler):
     @admin_required
@@ -567,6 +578,7 @@ class ShowClickActions(URIHandler):
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
+
 class FBConnectStats( URIHandler ):
     def get( self ):
         no_connect = SIBTNoConnectFBDialog.all().count()
@@ -585,6 +597,7 @@ class FBConnectStats( URIHandler ):
         
         self.response.out.write(html)
 
+
 class ReloadURIS(URIHandler):
     def get(self):
         if self.request.get('all'):
@@ -599,6 +612,7 @@ class ReloadURIS(URIHandler):
         }
         self.response.out.write(self.render_page('reload_uris.html', 
             template_values))
+
 
 class CheckMBC(URIHandler):
     ''' /admin/check_mbc displays the current number of "memcache buckets".
@@ -618,7 +632,9 @@ class CheckMBC(URIHandler):
         #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
+
 class UpdateStore( URIHandler ):
+    # TODO: move to admin/processess.py
     def get(self):
         store_url = self.request.get( 'store' )
 
@@ -675,7 +691,9 @@ class UpdateStore( URIHandler ):
                     resp, content = h.request( url, "DELETE", headers = header)
                     logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
 
+
 class MemcacheConsole(URIHandler):
+    # TODO: Rename ShowMemcacheConsole
     @admin_required
     def post(self, admin):
         key = self.request.get('key')
@@ -718,6 +736,7 @@ class MemcacheConsole(URIHandler):
             )
         )
 
+
 class ShowCounts( URIHandler ):
     def get( self ):
 
@@ -744,7 +763,9 @@ class ShowCounts( URIHandler ):
 
         self.response.out.write( str )
 
+
 class AnalyticsRPC(URIHandler):
+    # TODO: move to admin/processess.py
     @admin_required
     def get(self, admin):
         limit = self.request.get('limit') or 3
@@ -771,6 +792,7 @@ class AnalyticsRPC(URIHandler):
 
         self.response.out.write(json.dumps(response))
 
+
 class ShowAnalytics(URIHandler):
     @admin_required
     def get(self, admin):
@@ -782,6 +804,7 @@ class ShowAnalytics(URIHandler):
         self.response.out.write(
             self.render_page('analytics.html', template_values)
         )
+
 
 class ShowAppAnalytics(URIHandler):
     def get(self, app_uuid):
@@ -795,7 +818,9 @@ class ShowAppAnalytics(URIHandler):
             self.render_page('analytics.html', template_values)
         )
 
+
 class AppAnalyticsRPC(URIHandler):
+    # TODO: move to admin/processess.py
     def get(self, app_uuid):
         app = App.get(app_uuid)
         limit = self.request.get('limit') or 3
@@ -823,6 +848,7 @@ class AppAnalyticsRPC(URIHandler):
 
         self.response.out.write(json.dumps(response))
 
+
 class AppAnalyticsCompare(URIHandler):
     @admin_required
     def get(self, admin):
@@ -834,7 +860,9 @@ class AppAnalyticsCompare(URIHandler):
             self.render_page('analytics.html', template_values)
         )
 
+
 class GenerateOlderHourPeriods(URIHandler):
+    # TODO: move to admin/processess.py
     def get(self):
         if self.request.get('reset'):
             memcache.delete_multi(['day', 'hour', 'day_global', 'hour_global'])
@@ -864,6 +892,8 @@ class GenerateOlderHourPeriods(URIHandler):
 
 
 class SIBTReset (URIHandler):
+    # TODO: move to admin/processess.py
+    # TODO: make BatchRequest
     def get(self):
         sibt_apps = App.all().filter('class =', 'SIBTShopify').fetch(500)
 
@@ -883,6 +913,8 @@ class SIBTReset (URIHandler):
 
 
 class EmailEveryone (URIHandler):
+    # TODO: move to admin/processess.py
+    # TODO: change EmailBatch request into BatchRequest
     """ Task Queue-based blast email URL. """
     @admin_required
     def get (self, admin):
@@ -929,6 +961,7 @@ class EmailEveryone (URIHandler):
 
 
 class EmailBatch(URIHandler):
+    # TODO: move to admin/processess.py
     """ Emails batch of App clients from offset to batch_size
 
     Adds another EmailBatch to taskqueue if it reaches limit
@@ -938,12 +971,12 @@ class EmailBatch(URIHandler):
 
     def post( self ):
         """ Expected inputs:
-        batch_size: (int) 0 - 1000
-        offset: (int) database offset
-        app_cls: App class
-        target_version: (Optional)
-        title: (str) email title
-        body: (str) email body
+            - batch_size: (int) 0 - 1000
+            - offset: (int) database offset
+            - app_cls: App class
+            - target_version: (Optional)
+            - title: (str) email title
+            - body: (str) email body
         """
         batch_size = self.request.get('batch_size')
         offset = self.request.get('offset')
@@ -1021,6 +1054,7 @@ class EmailBatch(URIHandler):
 
 
 class EmailSomeone (URIHandler):
+    # TODO: move to admin/processess.py 
     def get (self):
         self.post() # yup, taskqueues are randomly GET or POST.
 

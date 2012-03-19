@@ -31,6 +31,7 @@ from util.model                 import Model
 
 NUM_VOTE_SHARDS = 15
 
+
 # ------------------------------------------------------------------------------
 # WOSIB Class Definition --------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -81,12 +82,6 @@ class WOSIB(App):
             
         return instance
 
-        @staticmethod
-        def get_by_uuid( uuid ):
-            return WOSIB.all().filter( 'uuid =', uuid ).get()
-
-
-# Accessors --------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 # WOSIBInstance Class Definition ------------------------------------------------
@@ -112,6 +107,23 @@ class WOSIBInstance(Model):
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
 
+    @classmethod 
+    def _get_from_datastore(cls, uuid):
+        return cls.all().filter('uuid =', uuid).get()
+
+    # Accessors -------------------------------------------------------------------
+    @classmethod
+    def get_by_link(cls, link):
+        return cls.all().filter('link =', link).get()
+
+    @classmethod
+    def get_by_user_and_app (user, app_):
+        # returns only the most recent instance.
+        # function makes sense only when one instance is active per user per store.
+        return cls.all().filter('asker =', user).filter('app_ =', app_)\
+                  .order('-created').get()
+
+    # ----------------------------------------------------------------------------
     def get_winning_products (self):
         ''' returns an array of products with the most votes in the instance.
             array can be of one item. 
@@ -168,31 +180,7 @@ class WOSIBInstance(Model):
 
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"WOSIBVoteCounter_count")
-    
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return WOSIBInstance.get(uuid)
-
-    @staticmethod 
-    def _get_from_datastore(uuid):
-        return db.Query(WOSIBInstance).filter('uuid =', uuid).get()
-
-    @staticmethod
-    def get_by_link(link):
-        return WOSIBInstance.all()\
-                .filter('link =', link)\
-                .get()
-
-    @staticmethod
-    def get_by_user_and_app (user, app_):
-        # returns only the most recent instance.
-        # function makes sense only when one instance is active per user per store.
-        return WOSIBInstance.all()\
-                .filter('asker =', user)\
-                .filter('app_ =', app_)\
-                .order('-created')\
-                .get()
+# end class
 
 
 # ------------------------------------------------------------------------------
@@ -205,35 +193,40 @@ class PartialWOSIBInstance(Model):
         - deleted never
     '''
 
-    user        = MemcacheReferenceProperty(db.Model, 
-                                       collection_name='partial_wosib_instances',
-                                       indexed=True)
+    user = MemcacheReferenceProperty(db.Model, 
+                                     collection_name='partial_wosib_instances',
+                                     indexed=True)
     
-    link        = db.ReferenceProperty(db.Model, 
-                                       collection_name='link_partial_wosib_instances',
-                                       indexed=False)
+    link = db.ReferenceProperty(db.Model, 
+                                collection_name='link_partial_wosib_instances',
+                                indexed=False)
     
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
-    products    = db.StringListProperty(db.Text, indexed=False)
+    products = db.StringListProperty(db.Text, indexed=False)
     
-    app_        = db.ReferenceProperty(db.Model,
-                                       collection_name='app_partial_wosib_instances',
-                                       indexed=False)
+    app_ = db.ReferenceProperty(db.Model,
+                                collection_name='app_partial_wosib_instances',
+                                indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(PartialWOSIBInstance, self).__init__(*args, **kwargs)
 
-    """ Users can only have 1 of these ever.
-        If they already have one, update it.
-        Otherwise, make a new one. """
-    @staticmethod
-    def create( user, app, link, products ):
+    @classmethod 
+    def _get_from_datastore(cls, uuid):
+        return db.Query(cls).filter('uuid =', uuid).get()
 
-        instance = PartialWOSIBInstance.get_by_user( user )
+    # Constructors ------------------------------------------------------------------
+    """ Users can only have 1 of these ever. If they already have one, update it.
+        Otherwise, make a new one.
+    """
+    @classmethod
+    def create(cls, user, app, link, products):
+
+        instance = cls.get_by_user(user)
         if instance:
-            logging.info ("Updating existing PartialWOSIBInstance.")
+            logging.info ("Updating existing %s." % cls.__name__)
             instance.link    = link
             instance.products = products
             instance.app_    = app
@@ -241,23 +234,17 @@ class PartialWOSIBInstance(Model):
             # make a new one (user doesn't have an existing partial instance).
             uuid = generate_uuid( 16 )
 
-            instance = PartialWOSIBInstance( key_name = uuid,
-                                            uuid     = uuid,
-                                            user     = user,
-                                            link     = link, 
-                                            products  = products, # type StringList
-                                            app_     = app )
+            instance = cls(key_name=uuid,
+                           uuid=uuid,
+                           user=user,
+                           link=link, 
+                           products=products, # type StringList
+                           app_=app )
         instance.put()
         return instance
 
-    @staticmethod
-    def get_by_user( user ):
-        return PartialWOSIBInstance.all().filter( 'user =', user ).get()
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return PartialWOSIBInstance.get(uuid)
-
-    @staticmethod 
-    def _get_from_datastore(uuid):
-        return db.Query(PartialWOSIBInstance).filter('uuid =', uuid).get()
+    # Accessors ----------------------------------------------------------------------
+    @classmethod
+    def get_by_user(cls, user):
+        return cls.all().filter('user =', user).get()
+# end class
