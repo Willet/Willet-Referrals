@@ -62,12 +62,12 @@
             button_div.style.styleFloat = 'left'; // IE
             button_div.style.cssFloat = 'left'; // FF, Webkit
             button_div.style.minWidth = '240px';
-            button_div.style.height = '30px';
+            button_div.style.height = '22px';
             button_div.style.padding = button_padding;
             button_div.style.border = 'none';
             button_div.style.margin = '0';
 
-            var protocol = 'http:'; // For local testing
+            var protocol = window.location.protocol; //'http:'; // For local testing
 
             var createButton = function () {
                 var d = document.createElement('div');
@@ -92,7 +92,7 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter'];
+            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
             var buttons = {
                 Tumblr: {
                     create: function () {
@@ -183,6 +183,27 @@
                         return d;
                     },
                     script: protocol+'//platform.twitter.com/widgets.js'
+                },
+                GooglePlus: {
+                    create: function () {
+                        var d = createButton();
+                        d.style.width = button_count ? '90px' : '32px';
+                        d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
+                        // Google is using the Open Graph spec
+                        var t, p, 
+                            m = [ { property: 'og:title', content: data.product.title },
+                                  { property: 'og:image', content: photo },
+                                  { property: 'og:description', content: 'I found this on '+ domain } ]
+                        while (m.length) {
+                            p = m.pop();
+                            t = document.createElement('meta');
+                            t.setAttribute('property', p.property);
+                            t.setAttribute('content', p.content);
+                            head.appendChild(t);
+                        }
+                        return d;
+                    },
+                    script: protocol+'//apis.google.com/js/plusone.js'
                 }
             };
             

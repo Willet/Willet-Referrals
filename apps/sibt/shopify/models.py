@@ -40,7 +40,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Differences between versions: version 1 uses script_tags API to install scripts
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default='2', indexed=False)
+    version    = db.StringProperty(default='3', indexed=False)
     
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
@@ -93,12 +93,12 @@ class SIBTShopify(SIBT, AppShopify):
             'padding': '10'
         }, 'willet_button_v3': {
             'background': '#fff',
-            'border': '1px solid #BBB',
+            'border': 'none',
             'border_radius': '3', # soften the blow
             'color': '#383f41', # font colour within the box
             'font': '14px Helvetica, Arial, sans-serif',
-            'margin': '12px 0',
-            'padding': '0 15px',
+            'margin': '0',
+            'padding': '0',
             'width': '223',
             'height': '88',
             'others': '', # place whatever extra CSS in here
@@ -117,10 +117,18 @@ class SIBTShopify(SIBT, AppShopify):
             'button_background_color': '#C1F0F5',
             'button_text_align': 'center',
             'button_border_radius': '4',
-            'button_background_image': '-webkit-linear-gradient(top, #C9F7FA, #A1F0F5)',
+            'button_background_image': '''  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -o-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -moz-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -webkit-linear-gradient(top, #c9f7fa, #a1eff5);
+                                            background-image: -ms-linear-gradient(top, #c9f7fa, #a1eff5);
+                                       ''',
             'button_box_shadow': '0 1px 0 #BBB',
             'button_shadow_hover': '#BBB',
             'button_others': '', # place whatever extra CSS in here
+            'button_hover_others': '', # place whatever extra CSS in here
+            'button_img_others': '', # place whatever extra CSS in here
+            'button_title_others': '', # place whatever extra CSS in here
         }
     }
 

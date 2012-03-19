@@ -149,12 +149,12 @@ class Email():
         )
         
         logging.info("Emailing %s" % to_addr)
-        Email.send_email(from_address=      from_addr,
-                         to_address=        to_addr,
-                         to_name=           to_name.title(),
-                         replyto_address=   from_addr,
-                         subject=           subject,
-                         body=              body )
+        Email.send_email(from_address=from_addr,
+                         to_address=to_addr,
+                         to_name=to_name.title(),
+                         replyto_address=from_addr,
+                         subject=subject,
+                         body=body )
 
     @staticmethod
     def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
@@ -174,10 +174,10 @@ class Email():
         )
         
         logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_address= from_addr,
-                         to_address= to_addr,
-                         subject= subject,
-                         body= body )
+        Email.send_email(from_address=from_addr,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body )
 
     @staticmethod
     def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):
@@ -241,12 +241,12 @@ class Email():
         )
         
         logging.info("Emailing %s" % to_addr)
-        Email.send_email(from_address=      from_addr,
-                         to_address=        to_addr,
-                         to_name=           to_name.title(),
-                         replyto_address=   from_addr,
-                         subject=           subject,
-                         body=              body )
+        Email.send_email(from_address=from_addr,
+                         to_address=to_addr,
+                         to_name=to_name.title(),
+                         replyto_address=from_addr,
+                         subject=subject,
+                         body=body )
 
     @staticmethod
     def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):

@@ -120,20 +120,40 @@ class SIBTShopifyEditStyle(URIHandler):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
+        logging.info('Updating %s with styles: \n%s' % (app.store_url, 
+                                                      [ '%s { %s }' % (var, self.request.get(var)) for var in post_vars ]))
+
         if self.request.get('set_to_default'):
+            # Reset to default CSS
             logging.debug('reset button')
             app.reset_css()
         else:
+            # Update custom CSS with new rules
             css_dict = app.get_css_dict()
-            for key in css_dict:
-                for value in css_dict[key]:
-                    lookup = '%s:%s' % (key, value)
-                    #logging.info('looking for: %s' % lookup)
-                    if lookup in post_vars:
-                        #logging.info('found with value: %s' % 
-                        #        self.request.get(lookup))
-                        css_dict[key][value] = self.request.get(lookup) 
+            
+            #logging.debug('Start css_dict = %s' % json.dumps(css_dict))
 
+            for var in post_vars:
+                key = value = None
+                try:
+                    (key, value) = var.split(':')
+                except ValueError:
+                    continue
+
+                #logging.debug('Updating %s:%s with %s' % (key, value, self.request.get(var)))
+
+                # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
+                if key and value:
+
+                    # Add key if it doesn't already exist
+                    if not key in css_dict:
+                        #logging.debug('%s not in css_dict, adding {}' % key)
+                        css_dict[key] = {}
+
+                    css_dict[key][value] = self.request.get(var)
+
+            #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
+            # Save updated CSS
             app.set_css(css_dict)
         self.get(app_uuid)
     
@@ -481,3 +501,44 @@ class SIBTShopifyInstallError (webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
+
+
+class SIBTShopifyVersion2To3(URIHandler):
+    """ TEMPORARY!!! """
+    @admin_required
+    def post(self, admin):
+        """ Updates all version 2 SIBT apps to version 3 """
+        logging.warn('TEMPORARY HANDLER')
+
+        apps = SIBTShopify.all().fetch()
+        app_stats = {
+            'v1': 0,
+            'v2': 0,
+            'v3': 0
+        }
+        updated_apps = []
+
+        for app in apps:
+            if app.version == '1':
+                app_stats['v1'] += 1
+
+            elif app.version == '2':
+                app_stats['v2'] += 1
+                app.version == '3'
+                db.put_async(app)
+                updated_apps.append(app)
+
+            elif app.version == '3':
+                app_stats['v3'] += 1
+
+            else:
+                logging.warn('App has no version: %r' % app)
+
+        # Now update memcache
+        for app in updated_apps:
+            key = app.get_key()
+            if key:
+                memcache.set(key, db.model_to_protobuf(app).Encode(), time=MEMCACHE_TIMEOUT)
+
+        self.response.out.write("Updated %i v2 apps. Found %i v1 and %i v3 apps." % (app_stats['v1'], app_stats['v2'], apps_stats['v3']))
+
