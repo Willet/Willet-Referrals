@@ -338,12 +338,14 @@
         Friend.prototype._validateFriendEmail = function (el) {
             // Validates email address at input element 'el'
             // Returns: <boolean> true = valid, false = invalid, null = empty
-            if (/^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/.test(el.value)) {
-                return true;
-            } else if (el.value === '') {
+            var email = el.value || "";
+            var trimmedEmail = email.trim();
+            var emailRegex = /^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/
+
+            if (trimmedEmail === "") {
                 return null;
             } else {
-                return false;
+                return emailRegex.test(trimmedEmail);
             }
         };
         Friend.prototype._validateFriendName = function (el) {
