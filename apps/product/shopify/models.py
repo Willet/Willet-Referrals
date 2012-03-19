@@ -59,13 +59,13 @@ class ProductShopify(Product):
         product.update_from_json(data)
         return product
 
-    @staticmethod
-    def get_memcache_key (unique_identifier):
+    @classmethod
+    def get_memcache_key (cls, unique_identifier):
         ''' unique_identifier can be URL or ID '''
-        return 'product-shopify:%s' % str(unique_identifier)
+        return '%s:%s' % (cls.__name__.lower(), str (unique_identifier))
 
-    @staticmethod
-    def get_by_url(url):
+    @classmethod
+    def get_by_url(cls, url):
         
         data = memcache.get(ProductShopify.get_memcache_key(url))
         if data:
@@ -74,20 +74,20 @@ class ProductShopify(Product):
             product = ProductShopify.all().filter('resource_url =', url).get()
         
         if product:
-            product.memcache ()
+            product._memcache ()
         return product
 
-    @staticmethod
-    def get_by_shopify_id(id):
+    @classmethod
+    def get_by_shopify_id(cls, id):
         id = str( id )
-        data = memcache.get(ProductShopify.get_memcache_key(id))
+        data = memcache.get(cls.get_memcache_key(id))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
-            product = ProductShopify.all().filter('shopify_id =', id).get()
+            product = cls.all().filter('shopify_id =', id).get()
         
         if product:
-            product.memcache ()
+            product._memcache ()
         return product
 
     @staticmethod
@@ -177,15 +177,15 @@ class ProductShopify(Product):
         """ The Shopify API doesn't give us the URL for the product.
             Just add it here """
         self.resource_url = url
-        self.memcache ()
+        self._memcache ()
         self.put()
     
-    def memcache (self):
+    def _memcache (self):
         # updates all memcache for this item.
-        self.memcache_by_url ()
-        self.memcache_by_shopify_id ()
+        self._memcache_by_url ()
+        self._memcache_by_shopify_id ()
     
-    def memcache_by_url(self):
+    def _memcache_by_url(self):
         """Memcaches this product by its url, False if memcache fails or if
         this product has no resource_url"""
         if hasattr(self, 'resource_url'):
@@ -195,7 +195,7 @@ class ProductShopify(Product):
                     time=MEMCACHE_TIMEOUT)
         return False
 
-    def memcache_by_shopify_id(self):
+    def _memcache_by_shopify_id(self):
         ''' Stores the product by key product-shopify:(id).
             We call products by ID more so than we call by URL. '''
         if hasattr(self, 'shopify_id'):
