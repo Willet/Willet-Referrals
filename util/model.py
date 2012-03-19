@@ -27,8 +27,8 @@ class Model(db.Model):
     
     @classmethod
     def _get_from_datastore(cls, memcache_key):
-        """Datastore retrieval using memcache_key"""
-        raise NotImplementedError('_validate_self should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
+        """ Datastore retrieval using memcache_key """
+        raise NotImplementedError('_get_from_datastore should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
 
     def _validate_self(self):
         """ Called before saving to memcache/db """
@@ -39,10 +39,10 @@ class Model(db.Model):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('Model::put(): Saving %s to memcache and datastore.' % key)
+        #logging.debug('Model::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
-            logging.debug('Model::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            #logging.debug('Model::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
                 self.hardPut() # Will validate the instance.
             except datastore_errors.Timeout:
@@ -52,7 +52,7 @@ class Model(db.Model):
                 break
         # Memcache *after* model is given datastore key
         if self.key():
-            logging.debug('setting new memcache entity: %s' % key)
+            #logging.debug('setting new memcache entity: %s' % key)
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
             
         return True
@@ -84,18 +84,19 @@ class Model(db.Model):
     # Accessors --------------------------------------------------------------------------
     @classmethod
     def get(cls, memcache_key):
-        """Checks memcache for model before hitting database
-        Each class must define a get_from_datastore
+        """ Checks memcache for model before hitting database
+
+        Each class must define a _get_from_datastore
         """
         key = cls.build_key(memcache_key)
-        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        #logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
-            logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
+            #logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
-                logging.debug('setting new memcache entity: %s' % key)
+                #logging.debug('setting new memcache entity: %s' % key)
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:

@@ -82,6 +82,18 @@ class UploadEmailsToMailChimp(URIHandler):
         pass
 
     def post(self):
+        # http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
+        # for app in apps:
+        #    batch.append({ 'FNAME': first_name,
+        #                   'LNAME': last_name,
+        #                   'STORENAME': self.client.name,
+        #                   'STOREURL': self.client.url })
+        # MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id='98231a9737', # ShopConnection list
+        #                                          email_address=self.client.email,
+        #                                          batch=batch,
+        #                                          double_optin=False,
+        #                                          update_existing=True,
+        #                                          send_welcome=False)
         pass
 
 
