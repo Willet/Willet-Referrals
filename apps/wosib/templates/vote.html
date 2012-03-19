@@ -1,11 +1,10 @@
 {% extends "../../plugin/templates/vote.html" %}
 
 {% block styles %}
-    <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
     <style type="text/css">
         html. body {
             background: transparent !important;
-            background-color: transparent !important;
+            background-color: rgb(232, 247, 251) !important;
         }
         h2 a {
             color: inherit;
@@ -14,12 +13,32 @@
         h2 a:hover {
             text-decoration: underline;
         }
+        .title_bar {
+            width: 100%;
+            height: 55px;
+            font-size: 18px;
+            padding: 0 0 8px 0;
+            border-bottom: 1px solid #BBB;
+        }
+        .title_bar>* {
+            float: left;
+        }
+        .title_bar>img {
+            height: 60px;
+            width: 50px;
+            margin: 0px 0px 0px 15px;
+            padding: 0px;
+        }
+        .title_bar>div {
+            line-height: 30px;
+            margin: 14px 0 0 15px;
+        }
         #wrapper {
             margin-top: 130px;
+            padding: 10px;
         }
         #wrapper, .wrapper { /* overrides ask.css defaults */
             height: auto;
-            width: auto;
             display: auto;
         }
         #error_bar {
@@ -47,25 +66,31 @@
         <div id="asker_title">
             <div id="title">
                 Which one would you get?
+                {% if share_url %}
                 <div id="share_again">
                     Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
                 </div>
+                {% endif %}
             </div>
         </div>
-        <form method="POST" action="">
-            <ul id="cart_items_display">
-                <!-- JS -->
-            </ul>
-        </form>
-        <div class="dialog_button_area">
-            <input type="hidden" name="app_uuid" value="{{app_uuid}}">
-            <input type="hidden" name="user_uuid" value="{{user_uuid}}">
-            <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
-            <input type="hidden" name="target_url" value="{{target_url}}">
-            
-            <input name="vote_btn" id="vote_btn" 
-                   type="button" value="Done">
-            <div id="error_bar"></div>
+        <div class="slight_highlight">
+            <form method="POST" action="">
+                <ul id="cart_items_display">
+                    <!-- JS -->
+                </ul>
+            </form>
+            <div class="dialog_button_area">
+                <input type="hidden" name="app_uuid" value="{{app_uuid}}">
+                <input type="hidden" name="user_uuid" value="{{user_uuid}}">
+                <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
+                <input type="hidden" name="target_url" value="{{target_url}}">
+                
+                <input name="vote_btn" id="vote_btn" 
+                       class="button"
+                       type="button" value="Done">
+                <div id="error_bar"></div>
+            </div>
+
         </div>
     </div>
     <div id="wosib_thanks_for_vote">
@@ -78,7 +103,7 @@
             We'll email your friend the result in a couple of hours.
         </div>
         <div class="dialog_button_area">
-            <input type="button" value="Close">
+            <input type="button" class="button" value="Close">
         </div>
     </div>
     <div id="wosib_error">
@@ -91,7 +116,7 @@
             Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
         </div>
         <div class="dialog_button_area">
-            <input type="button" value="Close">
+            <input type="button" class="button" value="Close">
         </div>
     </div>
 {% endblock %}

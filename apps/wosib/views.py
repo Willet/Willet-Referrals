@@ -40,14 +40,23 @@ class WOSIBVoteDynamicLoader (URIHandler):
         the cart's items, stored in a "WOSIBInstance". '''
     def get (self):
         products = [] # populate this to show products on design page.
+        share_url = ''
         try:
             instance_uuid = self.request.get('instance_uuid')
             wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
             # no sane man would compare more than 1000 products from his cart
             products = Product.all().filter('uuid IN', wosib_instance.products).fetch(1000)
             logging.info ("products = %r" % products)
+            
+            try:
+                share_url = wosib_instance.link.get_willt_url()
+            except AttributeError, e:
+                logging.warn ('Faulty link')
+                
+            
             template_values = { 'instance_uuid' : instance_uuid,
-                                'products'      : products
+                                'products'      : products,
+                                'share_url'     : share_url
                               }
             
             path = os.path.join('apps/wosib/templates/', 'vote.html')
