@@ -13,6 +13,6 @@ urlpatterns = [
     (r'/s/shopify/sibt-buttons.js', SIBTShopConnectionServe),
     (r'/s/shopify/sibt-ab.js',     	SIBTShopifyServeAB),
     (r'/s/shopify/error.html',     	SIBTShopifyInstallError),
-    (r'/s/shopify/v2to3'),          SIBTShopifyVersion2to3)
+    (r'/s/shopify/v2to3',          SIBTShopifyVersion2To3)
 ]
 

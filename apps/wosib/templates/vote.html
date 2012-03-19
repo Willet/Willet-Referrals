@@ -3,6 +3,20 @@
 {% block styles %}
     <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
     <style type="text/css">
+        html. body {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+        h2 a:hover {
+            text-decoration: underline;
+        }
+        #wrapper {
+            margin-top: 130px;
+        }
         #wrapper, .wrapper { /* overrides ask.css defaults */
             height: auto;
             width: auto;
@@ -20,12 +34,23 @@
     </style>
 {% endblock %}
 
+{% block body_start %}
+    <div id='header'>
+        <div id="white"></div>
+        <div id="cloud_bottom"></div>
+        <div id="cloud_top"></div>
+    </div>
+{% endblock %}
+
 {% block screens %}
     <div id="splash">
-        <div class="title_bar">
-            <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-            <div>Which one would you get?</div>
-            <!-- text should not mention 'buy' -->
+        <div id="asker_title">
+            <div id="title">
+                Which one would you get?
+                <div id="share_again">
+                    Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
+                </div>
+            </div>
         </div>
         <form method="POST" action="">
             <ul id="cart_items_display">

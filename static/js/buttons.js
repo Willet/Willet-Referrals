@@ -47,7 +47,7 @@
         /**
          * INSERT IFRAME WITH DATA
          */
-        if (button_div.dataset.loaded) {
+        if (button_div && button_div.dataset.loaded) {
             console.log ('double execution detected!!');
             return; // loading buttons.js twice fails them both.
         }
@@ -300,7 +300,9 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
-                            button_div.dataset.loaded = true;
+                            if (button_div) {
+                                button_div.dataset.loaded = true;
+                            }
                         } else {
                             console.log("No data");
                         }
