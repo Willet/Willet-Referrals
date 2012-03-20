@@ -54,7 +54,7 @@ class AppShopify(Model):
         try:
             self.settings = SHOPIFY_APPS['AppShopify']
         except Exception, e:
-            logging.error('could not get settings for app %s: %s' % (
+            logging.error('Could not find settings for app in SHOPIFY_APPS[%s]: %s' % (
                     class_name,
                     e
                 )
