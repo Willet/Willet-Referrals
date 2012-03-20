@@ -340,7 +340,7 @@
             // Returns: <boolean> true = valid, false = invalid, null = empty
             var email = el.value || "";
             var trimmedEmail = email.trim();
-            var emailRegex = /^.+@[^\.].*\.[a-z]{2,}$/; ///^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/;
+            var emailRegex = /^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/;
 
             if (trimmedEmail === "") {
                 return null;
