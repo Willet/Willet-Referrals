@@ -75,8 +75,7 @@ class MemcacheReferenceProperty(db.Property):
             DuplicatePropertyError if referenced class already has the provided
                 collection name as a property.
         """
-        super(MemcacheReferenceProperty, self).__property_config__(model_class,
-                                                                                                             property_name)
+        super(MemcacheReferenceProperty, self).__property_config__(model_class, property_name)
 
         if self.reference_class is _SELF_REFERENCE:
             self.reference_class = self.data_type = model_class

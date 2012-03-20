@@ -99,7 +99,7 @@ MEMCACHE_BUCKET_COUNTS = {
 # number of seconds to memcache an item
 # see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache
 # TODO: Try 2591999 instead
-MEMCACHE_TIMEOUT = 1728000
+MEMCACHE_TIMEOUT = 2591999
 
 # List of root template directories
 # to import templates from

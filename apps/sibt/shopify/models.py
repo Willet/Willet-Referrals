@@ -322,7 +322,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     @staticmethod
     def get_or_create(client, token=None):
-        logging.debug ("in get_or_create, client.url = %s" % client.url)
+        # logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = SIBTShopify.get_by_store_url(client.url)
         if app is None:
             logging.debug ("app not found; creating one.")
@@ -330,13 +330,7 @@ class SIBTShopify(SIBT, AppShopify):
         elif token != None and token != '':
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
-                logging.warn(
-                    'We are going to reinstall this app because the stored token \
-                    does not match the request token\n%s vs %s' % (
-                        app.store_token,
-                        token
-                    )
-                ) 
+                logging.warn("client and app token mismatch; reinstalling app.")
                 try:
                     app.store_token = token
                     logging.debug ("app.old_client was %s" % app.old_client)

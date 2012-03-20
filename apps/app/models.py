@@ -53,10 +53,6 @@ class App(Model, polymodel.PolyModel):
         """Datastore retrieval using memcache_key"""
         return App.all().filter('uuid =', uuid).get()
 
-    def validateSelf( self ):
-        # Subclasses should override this
-        return
-
     def handleLinkClick( self ):
         # Subclasses must override this
         logging.error("THIS FCN SHOULD NEVER GET CALLED. FIX ME.")

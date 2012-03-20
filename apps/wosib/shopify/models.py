@@ -111,12 +111,12 @@ class WOSIBShopify(WOSIB, AppShopify):
         app.put()
         
         app.do_install()
-       
+        
         return app
 
     @staticmethod
     def get_or_create(client, token=None):
-        logging.debug ("in get_or_create, client.url = %s" % client.url)
+        # logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = WOSIBShopify.get_by_store_url(client.url)
         if app is None:
             logging.debug ("app not found; creating one.")
@@ -125,13 +125,7 @@ class WOSIBShopify(WOSIB, AppShopify):
             logging.debug("WOSIB: Have both app and token")
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
-                logging.warn(
-                    'We are going to reinstall this app because the stored token \
-                    does not match the request token\n%s vs %s' % (
-                        app.store_token,
-                        token
-                    )
-                )
+                logging.warn("client and app token mismatch; reinstalling app.")
                 try:
                     app.store_token = token
                     app.old_client = app.client
