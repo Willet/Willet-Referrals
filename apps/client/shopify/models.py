@@ -50,8 +50,8 @@ class ClientShopify( Client ):
         """ Initialize this obj """
         super(ClientShopify, self).__init__(*args, **kwargs)
     
-    def validateSelf( self ):
-        self.url = get_shopify_url( self.url )
+    def _validate_self(self):
+        self.url = get_shopify_url(self.url)
 
     # Constructor
     @staticmethod

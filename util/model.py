@@ -7,6 +7,7 @@ from django.utils import simplejson
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
+from google.net.proto import ProtocolBuffer
 
 from util.consts import MEMCACHE_TIMEOUT
 
@@ -14,17 +15,18 @@ class Model(db.Model):
     """A generic extension of db.Model"""
 
     # Unique identifier for memcache and DB key
-    uuid = db.StringProperty( indexed = True )
+    uuid = db.StringProperty(indexed=True)
     
     def put(self):
         """Stores model instance in memcache and database"""
+        self._validate_self() # will raise any kind of error if not valid
         key = self.get_key()
         logging.debug('Model::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
             logging.debug('Model::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
-                self.hardPut() # Will validate the instance.
+                self._hard_put()
             except datastore_errors.Timeout:
                 thread.sleep(timeout_ms)
                 timeout_ms *= 2
@@ -37,12 +39,26 @@ class Model(db.Model):
             
         return True
 
-    def hardPut( self ):
+    def _hard_put(self):
         logging.debug("PUTTING %s" % self.__class__.__name__)
         db.put(self)
         
-    def validateSelf( self ):
-        pass # Fill in in sub class!!
+    def _validate_self(self):
+        ''' All Model subclasses containing a _validate_self function
+            will be checked for errors when they are put().
+            This function can either raise an exception when its contents are 
+            deemed invalid, or automatically correct its contents.
+            
+            Example with exception raised:
+            def _validate_self(self):
+                if not (self.vote == 'yes' or self.vote == 'no'):
+                    raise Exception("Vote type needs to be yes or no")
+            
+            Example with data correction:
+            def _validate_self(self):
+                self.url = get_shopify_url(self.url)
+        '''
+        pass
 
     def get_key(self):
         if hasattr(self, 'memcache_class'):
@@ -65,10 +81,26 @@ class Model(db.Model):
         TODO(barbara): Enforce the above statement!!!
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
+        obj = None
         key = cls.build_key(memcache_key)
         logging.debug('Model::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
+
+        if data:
+            try:
+                obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+                logging.debug('Model::get(): %s found in memcache!' % key)
+            except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
+                logging.debug('%s found in memcache but is not object; trying data as key.' % key)
+                data = memcache.get(data) # look deeper into memcache
+                obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+        
+        if obj:
+            # hits here if obj is successfully retrieved from memcache
+            return obj
+        
         if not data:
+            # hits here if object does not exist and/but the memcache reference still is
             logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
@@ -76,9 +108,7 @@ class Model(db.Model):
                 logging.debug('setting new memcache entity: %s' % key)
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
-        else:
-            logging.debug('Model::get(): %s found in memcache!' % key)
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
 # end class
 
 
