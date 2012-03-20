@@ -7,9 +7,23 @@ from django.utils import simplejson
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
+from google.appengine.ext import deferred
 from google.net.proto import ProtocolBuffer
 
 from util.consts import MEMCACHE_TIMEOUT
+
+def async_model_put(le_model):
+    '''Helper method to write and memcache models asynchronously.'''
+    try:
+        logging.debug('async_model_put: Trying %s.put_async.' % (le_model.__class__.__name__.lower()))
+        op = db.put_async (le_model)
+        key = le_model.get_key()
+        logging.debug('setting new memcache entity: %s' % key)
+        memcache.set(key, db.model_to_protobuf(le_model).Encode(), time=MEMCACHE_TIMEOUT)
+        return op.get_result()
+    except Exception, e:
+        logging.error('Error deferring model %s put: %s' % (le_model, e), exc_info=True)
+
 
 class Model(db.Model):
     """A generic extension of db.Model"""
@@ -22,27 +36,17 @@ class Model(db.Model):
         self._validate_self() # will raise any kind of error if not valid
         key = self.get_key()
         logging.debug('Model::put(): Saving %s to memcache and datastore.' % key)
-        timeout_ms = 100
-        while True:
-            logging.debug('Model::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
-            try:
-                self._hard_put()
-            except datastore_errors.Timeout:
-                thread.sleep(timeout_ms)
-                timeout_ms *= 2
-            else:
-                break
-        # Memcache *after* model is given datastore key
-        if self.key():
-            logging.debug('setting new memcache entity: %s' % key)
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-            
+        
+        # Memcache will take place after model is given datastore key
+        self._hard_put()
+
         return True
 
     def _hard_put(self):
         logging.debug("PUTTING %s" % self.__class__.__name__)
-        db.put(self)
-        
+        deferred.defer (async_model_put, self, _queue='model-deferred')
+        # return db.put_async (self)
+    
     def _validate_self(self):
         ''' All Model subclasses containing a _validate_self function
             will be checked for errors when they are put().
