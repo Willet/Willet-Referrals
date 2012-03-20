@@ -465,8 +465,9 @@
                 $elem = $(this.elem),
                 email = $elem.find('.email_option input').val(),
                 emailUser = email.split('@')[0],
+                emailUserWithoutPlus = email.split('+')[0],
                 splitCharactersRegex = /[\+\.\_]/,
-                name = $.map(emailUser.split(splitCharactersRegex), function(i) {
+                name = $.map(emailUserWithoutPlus.split(splitCharactersRegex), function(i) {
                         // Capitalize 1st letter
                         return i.charAt(0).toUpperCase() + i.slice(1);
                     }).join(' ');
