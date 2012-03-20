@@ -325,11 +325,11 @@ class PartialSIBTInstance(Model):
             uuid = generate_uuid(16)
 
             instance = cls(key_name=uuid,
-                                           uuid=uuid,
-                                           user=user,
-                                           link=link, 
-                                           product=product,
-                                           app_=app)
+                           uuid=uuid,
+                           user=user,
+                           link=link, 
+                           product=product,
+                           app_=app)
         instance.put()
         return instance
 
