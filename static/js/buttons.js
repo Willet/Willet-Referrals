@@ -95,7 +95,7 @@
                 d.style.overflow = 'hidden';
                 d.name = 'button';
                 d.id = '_willet_'+id;
-                d.className = '_willet_button';
+                d.className = '_willet_sc_btn';
                 return d;
             }
 

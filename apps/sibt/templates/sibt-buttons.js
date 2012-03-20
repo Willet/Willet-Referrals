@@ -66,7 +66,7 @@
             _willet_head.appendChild(_willet_style);
 
             // jQuery shaker plugin
-            (function(a){var b={};var c=3;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
+            (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
 
 
             // wait for DOM elements to appear + $ closure!
@@ -79,12 +79,21 @@
                 hash_index = -1;
             
             var willet_metadata = function () {
-                return  'app_uuid={{app.uuid}}&' + 
+                return 'app_uuid={{app.uuid}}&' + 
                         'user_uuid={{user.uuid}}&' + 
                         'instance_uuid={{instance.uuid}}&' + 
                         'target_url=' + window.location.href;
             };
             
+            var is_scrolled_into_view = function (elem) {
+                // http://stackoverflow.com/questions/487073
+                var docViewTop = $(window).scrollTop();
+                var docViewBottom = docViewTop + $(window).height();
+                var elemTop = $(elem).offset().top;
+                var elemBottom = elemTop + $(elem).height();
+                return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+            }
+
             // Send action to server
             var store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
@@ -205,8 +214,8 @@
                             setTimeout (function () {
                                 $(sibt_elem).shaker.stop();
                                 shaken_yet = true;
-                            }, 400); // shake duration
-                        }, 750); // wait for ?ms until it shakes
+                            }, 600); // shake duration
+                        }, 700); // wait for ?ms until it shakes
                     }
                 });
 
