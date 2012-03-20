@@ -231,8 +231,8 @@ class User( db.Expando ):
     def hardPut( self ):
         # By default, Python fcns return None
         # If you want to prevent an object from being saved to the db, have 
-        # validateSelf return anyhting except None
-        if self.validateSelf() == None:
+        # _validate_self return anyhting except None
+        if self._validate_self() == None:
             
             logging.debug("PUTTING %s" % self.__class__.__name__)
             db.put( self )
@@ -240,7 +240,7 @@ class User( db.Expando ):
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
-    def validateSelf(self):
+    def _validate_self(self):
         pass
 
     @classmethod

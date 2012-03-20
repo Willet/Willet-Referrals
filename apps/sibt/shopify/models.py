@@ -328,13 +328,7 @@ class SIBTShopify(SIBT, AppShopify):
         elif token:
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
-                logging.warn(
-                    'We are going to reinstall this app because the stored token \
-                    does not match the request token\n%s vs %s' % (
-                        app.store_token,
-                        token
-                    )
-                ) 
+                logging.warn("client and app token mismatch; reinstalling app.")
                 try:
                     app.store_token = token
                     logging.debug ("app.old_client was %s" % app.old_client)

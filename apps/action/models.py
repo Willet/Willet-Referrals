@@ -133,7 +133,7 @@ class Action(Model, polymodel.PolyModel):
         """Datastore retrieval using memcache_key"""
         return Action.all().filter('uuid =', uuid).get()
 
-    def validateSelf( self ):
+    def _validate_self(self):
         pass
 
     def __unicode__(self):
@@ -237,7 +237,7 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-    def validateSelf(self):
+    def _validate_self(self):
         if not (self.vote == 'yes' or self.vote == 'no'):
             raise Exception("Vote type needs to be yes or no")
 

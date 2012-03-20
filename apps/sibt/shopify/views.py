@@ -63,9 +63,10 @@ class SIBTShopifyWelcome(URIHandler):
             token = self.request.get('t') # token
 
             # update client token (needed when reinstalling)
-            logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
-            client.token = token
-            client.put()
+            if client and client.token != token:
+                logging.debug ("token was %s; updating to %s." % (client.token, token))
+                client.token = token
+                client.put()
 
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
