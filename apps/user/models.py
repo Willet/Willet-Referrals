@@ -71,18 +71,15 @@ class EmailModel(Model):
                 em = cls(key_name=email, address=email, user=user )
             
             else:
-                logging.error("FIRST: %s" % em.user.uuid )
-                logging.error("SECOND %s" % user.uuid )
-
                 try:
+                    # Check if this is a returning user who has cleared their cookies
                     if em.user.uuid != user.uuid:
                         Email.emailDevTeam( "CHECK OUT: %s(%s) %s. They might be the same person." % (em.address, em.user.uuid, user.uuid) )
-                        logging.error("CHECK OUT: %s %s. They might be the same person." % (em.user.uuid, user.uuid))
                         
                         # TODO: We might need to merge Users here
                         em.user = user
                 except Exception, e:
-                    logging.error('create_email_model error: %s' % e, exc_info=True)
+                    logging.error('%s.%s.create() error: %s' % (cls.__module__, cls.__name__, e), exc_info=True)
             
             em.put()
         
@@ -129,7 +126,7 @@ def deferred_user_put(bucket_key, list_keys, decrementing=False):
                 deferred.defer(deferred_user_put, old_key, last_keys, decrementing=True, _queue='slow-deferred')
                 had_error = True
         except Exception, e:
-            logging.error('error getting action: %s' % e, exc_info=True)
+            logging.error('Error getting action: %s' % e, exc_info=True)
 
     try:
         def txn():
@@ -657,7 +654,7 @@ class User(db.Expando):
     # Facebook helpers -------------------------------------------------------------
     def facebook_share(self, msg, img='', name='', desc='', link=None):
         """Share 'message' on behalf of this user. returns share_id, html_response
-           invoation: fb_share_id, res = self.facebook_share(msg)...
+           example: fb_share_id, res = self.facebook_share(msg)...
                         ... self.response.out.write(res) """
         
         logging.info("LINK %s" % link )
@@ -745,7 +742,7 @@ class User(db.Expando):
                                          method=urlfetch.POST,
                                          deadline=7)
         except urlfetch.DownloadError, e: 
-            logging.error('error sending fb request: %s' % e)
+            logging.error('Error sending fb request: %s' % e)
             return None, 'fail'
             # No response from facebook
             
@@ -841,7 +838,7 @@ class User(db.Expando):
                                               method   = urlfetch.POST,
                                               deadline = 7 )
             except urlfetch.DownloadError, e: 
-                logging.error('error sending fb request: %s' % e)
+                logging.error('Error sending fb request: %s' % e)
                 return [], 'fail'
                 # No response from facebook
                 
@@ -914,7 +911,7 @@ class User(db.Expando):
                                               method   = urlfetch.POST,
                                               deadline = 7 )
             except urlfetch.DownloadError, e: 
-                logging.error('error sending fb request: %s' % e)
+                logging.error('Error sending fb request: %s' % e)
                 return [], 'fail'
                 # No response from facebook
                 
@@ -962,7 +959,7 @@ class User(db.Expando):
                 deadline=7
             )
         except urlfetch.DownloadError, e: 
-            logging.error('error sending fb request: %s' % e)
+            logging.error('Error sending fb request: %s' % e)
             plugin_response = False
         else:
             try:
@@ -981,7 +978,6 @@ class User(db.Expando):
                 fb_share_id = None
                 plugin_response = False
                 logging.error('Error posting action: %r' % fb_response)
-                logging.error("%s %s" % (fb_response.status_code, fb_response.content))
             
         return fb_share_id, plugin_response
 # end class

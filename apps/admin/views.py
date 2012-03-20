@@ -82,7 +82,7 @@ class ShowRoutes(URIHandler):
                     # we clobbered some urls
                     raise Exception('url route conflict with %s' % app)
             except Exception,e:
-                logging.error('error importing %s: %s' % (app, e), exc_info=True)
+                logging.warn('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
         template_values = {
@@ -169,7 +169,7 @@ class ManageApps(URIHandler):
                     app.button_css = None
                     app.put()
                 else:
-                    logging.error("bad action: %s" % action)
+                    logging.warn("bad action: %s" % action)
                 messages.append({
                     'type': 'message',
                     'text': '%s for %s' % (action, app.client.name) 

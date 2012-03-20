@@ -165,7 +165,7 @@ class EmailBatch(URIHandler):
                 logging.info('Sending email to %r' % app.client)
 
             except Exception, e:
-                logging.error("Error finding client/email for app: %r; %s" % (app, e), exc_info = True)
+                logging.warn("Error finding client/email for app: %r; %s" % (app, e), exc_info = True)
                 pass # miss a client!
 
 
@@ -185,7 +185,7 @@ class EmailSomeone (URIHandler):
             )
             self.response.out.write ("200 OK")
         except Exception, e:
-            logging.error ("Error sending one of the emails in batch! %s\n%r" % 
+            logging.warn("Error sending one of the emails in batch! %s\n%r" % 
                 (e, [
                     self.request.get('from', 'fraser@getwillet.com'),
                     self.request.get('to'),

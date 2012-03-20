@@ -86,7 +86,7 @@ class Email():
                   <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
 
         else:
-            logging.error("Attmpt to email welcome for unknown app %s" % app_name)
+            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
             return
 
         body += """<p>Fraser</p>
@@ -310,7 +310,7 @@ class Email():
                         )
                 e.send()
             except Exception,e:
-                logging.error('error sending email: %s', e)
+                logging.warn('Error sending email:\nfrom: %s\nto: %s\nsubject: %s\n%s', (from_address, to_address, subject, e))
         else:
             params = {
                 "api_user" : "BarbaraEMac",
