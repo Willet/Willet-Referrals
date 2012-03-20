@@ -57,7 +57,7 @@ class InitRenameFacebookData(webapp.RequestHandler):
        'fb_' and not 'facebook_' """
 
     def get(self):
-        DeprecationWarning('If not used by Apr 18, 2012, get rid of it')
+        raise DeprecationWarning('If not used by Apr 18, 2012, get rid of it')
         users = User.all()
         logging.info("Fired")
         for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\

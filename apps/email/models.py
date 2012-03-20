@@ -47,7 +47,7 @@ class Email():
     def invite(infrom_addr, to_addrs, msg, url, app):
         # Deprecated
         # Was part of Invite For A Gift
-        DeprecationWarning('Invite For A Gift related method called')
+        raise DeprecationWarning('Invite For A Gift related method called')
         to_addr = to_addrs.split(',')
         subject = 'I\'ve Given You A Gift!'
         body = template.render(Email.template_path('invite.html'),
