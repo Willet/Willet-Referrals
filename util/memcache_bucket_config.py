@@ -17,6 +17,8 @@ class MemcacheBucketConfig(Model):
     name = db.StringProperty(indexed = True)
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
+    
+    _memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 

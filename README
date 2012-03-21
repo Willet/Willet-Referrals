@@ -38,8 +38,7 @@ Last-Updated: Feb 13, 2012
           within templates/. Essentially, any file that is dynamically
           served would go under templates.
 
- - gaesessions/: This isn't currently in use. If you want to have server-side
-                 sessions in GAE, you'll need to use it.
+ - gaesessions/: Used to get clients by email address in URIHandler.
 
  - mapreduce/: This is GAE's mapreduce lib. Unfortunately, it needs to be kept
                in a top level folder. It is used to compute the analytics.

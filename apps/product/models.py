@@ -22,6 +22,8 @@ class Product(Model, db.polymodel.PolyModel):
 
     price = db.FloatProperty(default=float(0))
 
+    _memcache_fields = ['resource_url']
+
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Product, self).__init__(*args, **kwargs)

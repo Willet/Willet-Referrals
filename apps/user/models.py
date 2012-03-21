@@ -208,10 +208,10 @@ class User( db.Expando ):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('Model::save(): Saving %s to memcache and datastore.' % key)
+        logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
-            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
             try:
                 self.hardPut() # Will validate the instance.
                 logging.debug("user has been hardput().")
@@ -251,17 +251,17 @@ class User( db.Expando ):
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
-            logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
+            logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:
-            logging.debug('Model::get(): %s found in memcache!' % key)
+            logging.debug('User::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
     def is_admin( self ):
