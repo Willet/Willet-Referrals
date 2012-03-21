@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
+import re, hashlib, urllib
 
 from django.utils               import simplejson as json
 from google.appengine.api       import urlfetch
@@ -31,6 +31,7 @@ from apps.user.models           import User
 from apps.user.models           import get_user_by_cookie
 
 from util.consts                import *
+from util.shopify_helpers import get_shopify_url as format_url
 from util.helpers               import *
 from util.urihandler            import URIHandler
 from util.strip_html import strip_html
@@ -551,3 +552,48 @@ class SIBTGetUseCount (URIHandler):
             self.response.out.write (str (button_use_count))
         except:
             self.response.out.write ('0') # no shame in that?
+
+class SIBTServeScript(URIHandler):
+    ''' Serves a script that shows the SIBT button.
+        Due to the try-before-you-buy nature of the Internets, this view will
+        not create a SIBT app for the store/domain until (undecided trigger).
+    '''
+    
+    def get(self):
+        app = None
+        domain = path = ''
+        parts = template_values = {}
+        
+        # in the proposed SIBT v11, page URL is the only required parameter.
+        page_url = self.request.get ('url')
+        if not page_url:
+            self.error(400) # we NEED to know where you are!
+            return
+
+        try:
+            parts = urlparse(page_url) # http://docs.python.org/library/urlparse.html
+            domain = parts.scheme + parts.netloc
+            path = parts.path
+        except:
+            self.error(400) # visitor is screwing with us
+            return
+        
+        # app = SIBT.get(store_url=domain) # this get method does not work (yet)
+        app = SIBT.get(hashlib.md5(domain).hexdigest()) # this, however, will
+        
+        # indent like this: http://stackoverflow.com/questions/6388187
+        template_values = {
+            'URL': URL,
+            'DOMAIN': domain,
+            'app': app, # if missing, django omits these silently
+        }
+        
+        path = os.path.join('apps/sibt/templates/', 'sibt-static.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.out.write(template.render(path, template_values))
+        return
+    
+    def post(self):
+        self.get() # because money
+
+

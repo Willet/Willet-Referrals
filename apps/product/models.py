@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from google.appengine.ext   import db
-
 from apps.client.models     import Client
-
 from util.model             import Model
 
 class Product(Model, db.polymodel.PolyModel):
