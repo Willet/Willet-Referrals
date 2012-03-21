@@ -6,6 +6,8 @@
 import os
 import logging
 
+from google.appengine.api.app_identity import get_application_id
+
 from urlparse import urlunsplit
 
 # Product Stuff
@@ -132,9 +134,11 @@ INSTALLED_APPS = [
     'link',
 ]
 
-# Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
+# Overide settings with local_consts unless the google app name is exactly 'social-referral'
+appname = get_application_id()
+if appname != 'social-referral':
+    try:
+        logging.info ("appname = %s; loading local_consts" % appname)
+        from local_consts import *
+    except Exception, e:
+        logging.info('no local_consts.py: %s' % e, exc_info=True)
