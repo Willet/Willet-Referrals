@@ -62,25 +62,25 @@ class ProductShopify(Product):
         return product
 
     @classmethod
-    def get_memcache_key (cls, unique_identifier):
+    def _get_memcache_key (cls, unique_identifier):
         ''' unique_identifier can be URL or ID '''
         return '%s:%s' % (cls.__name__.lower(), str (unique_identifier))
 
     @classmethod
     def get_by_url(cls, url):
         
-        data = memcache.get(ProductShopify.get_memcache_key(url))
+        data = memcache.get(cls._get_memcache_key(url))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
-            product = ProductShopify.all().filter('resource_url =', url).get()
+            product = cls.all().filter('resource_url =', url).get()
         
         return product
 
     @classmethod
     def get_by_shopify_id(cls, id):
         id = str( id )
-        data = memcache.get(cls.get_memcache_key(id))
+        data = memcache.get(cls._get_memcache_key(id))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
