@@ -30,7 +30,7 @@ class Model(db.Model):
 
     # Unique identifier for memcache and DB key
     uuid = db.StringProperty(indexed=True)
-    
+
     def put(self):
         """Stores model instance in memcache and database"""
         self._validate_self() # will raise any kind of error if not valid

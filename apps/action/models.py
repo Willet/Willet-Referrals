@@ -177,6 +177,7 @@ class Action(Model, polymodel.PolyModel):
     def get_by_user_and_app( user, app ):
         return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
+
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
@@ -200,20 +201,6 @@ class ClickAction( Action ):
                 self.app_.uuid
         )
 
-## Constructor -----------------------------------------------------------------
-"""
-# Never call this directly
-def create_click_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = ClickAction( key_name = uuid,
-                        uuid     = uuid,
-                        user     = user,
-                        app_     = app,
-                        link     = link )
-
-    act.put()
-"""
    
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
@@ -253,21 +240,6 @@ class VoteAction( Action ):
     def get_all_nos():
         return VoteAction.all().filter( 'vote =', 'no' )
 
-## Constructor -----------------------------------------------------------------
-"""
-# Never call this directly
-def create_vote_action( user, app, link, vote ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = VoteAction( key_name = uuid,
-                       uuid     = uuid,
-                       user     = user,
-                       app_     = app,
-                       link     = link,
-                       vote     = vote )
-
-    act.put() 
-"""
 
 ## -----------------------------------------------------------------------------
 ## LoadAction Subclass ---------------------------------------------------------------

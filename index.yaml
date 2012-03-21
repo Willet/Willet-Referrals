@@ -1,11 +1,5 @@
 indexes:
 
-#- kind: Link
-#  properties:
-#  - name: creation_time
-#  - name: tweet_id
-#  - name: campaign
-
 - kind: App
   properties:
   - name: client
@@ -83,22 +77,6 @@ indexes:
   ancestor: yes
   properties:
   - name: time_recorded
-    direction: desc
-
-- kind: AppAnalyticsDaySlice
-  properties:
-  - name: app_
-  - name: start
-
-- kind: AppAnalyticsHourSlice
-  properties:
-  - name: app_
-  - name: start
-
-- kind: AppAnalyticsDaySlice
-  properties:
-  - name: app_
-  - name: start
     direction: desc
 
 - kind: Action

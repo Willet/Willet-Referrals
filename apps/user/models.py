@@ -307,8 +307,11 @@ class User( db.Expando ):
         user_ips = self.user_ips.get()
         if not user_ips:
             user_ips = UserIPs.get_or_create(self)
-
-        return ip in user_ips.ips
+        
+        if user_ips: # fix "argument of type 'NoneType' is not iterable" memlag
+            return ip in user_ips.ips
+        else:
+            return []
 
     def merge_data( self, u ):
         """ Merge u into self. """
