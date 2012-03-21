@@ -26,7 +26,7 @@ class BatchRequest(URIHandler):
             - app_cls: App class
             - target_version: (Optional)
             - method: method to call on app_cls
-            - params: parameters to send to method
+            - params: JSON-encoded parameters to send to method
         """
         batch_size = self.request.get('batch_size')
         offset = self.request.get('offset')
@@ -47,7 +47,7 @@ class BatchRequest(URIHandler):
                 self.error(403) # Access Denied
                 return
             try:
-                if not callable(getattr(app_cls, method)):
+                if not hasattr(getattr(app_cls, method), '__call__'):
                     raise AttributeError
             except AttributeError:
                 self.error(400) # Bad Request
