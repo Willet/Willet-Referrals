@@ -29,6 +29,8 @@ class ProductShopify(Product):
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
 
+    _memcache_fields = ['resource_url', 'shopify_id']
+
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)
     
@@ -73,8 +75,6 @@ class ProductShopify(Product):
         else:
             product = ProductShopify.all().filter('resource_url =', url).get()
         
-        if product:
-            product._memcache ()
         return product
 
     @classmethod
@@ -85,9 +85,7 @@ class ProductShopify(Product):
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
         else:
             product = cls.all().filter('shopify_id =', id).get()
-        
-        if product:
-            product._memcache ()
+
         return product
 
     @staticmethod
@@ -170,39 +168,10 @@ class ProductShopify(Product):
         if hasattr( self, 'processed' ):
             delattr( self, 'processed' )
 
-        self.memcache ()
         self.put()
 
     def add_url(self, url):
         """ The Shopify API doesn't give us the URL for the product.
             Just add it here """
         self.resource_url = url
-        self._memcache ()
         self.put()
-    
-    def _memcache (self):
-        # updates all memcache for this item.
-        self._memcache_by_url ()
-        self._memcache_by_shopify_id ()
-    
-    def _memcache_by_url(self):
-        """Memcaches this product by its url, False if memcache fails or if
-        this product has no resource_url"""
-        if hasattr(self, 'resource_url'):
-            return memcache.set(
-                    ProductShopify.get_memcache_key(self.resource_url), 
-                    db.model_to_protobuf(self).Encode(),
-                    time=MEMCACHE_TIMEOUT)
-        return False
-
-    def _memcache_by_shopify_id(self):
-        ''' Stores the product by key product-shopify:(id).
-            We call products by ID more so than we call by URL. '''
-        if hasattr(self, 'shopify_id'):
-            return memcache.set(
-                    ProductShopify.get_memcache_key(self.shopify_id), 
-                    db.model_to_protobuf(self).Encode(),
-                    time=MEMCACHE_TIMEOUT)
-        else:
-            logging.warn ("cannot memcahce by shopify id")
-        return False

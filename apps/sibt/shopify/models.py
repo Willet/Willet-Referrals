@@ -46,6 +46,7 @@ class SIBTShopify(SIBT, AppShopify):
     # change on upgrade; new installs get this as version.
     CURRENT_INSTALL_VERSION = '3'
     
+    
     defaults = {
         'willet_button': {
             'color': '333333',
