@@ -955,7 +955,11 @@
 
                     // Get user info & then run callback
                     FB.api('/me', function (r) {
-                        asker.FBLoggedIn(r.name, r.email, '//graph.facebook.com/'+r.username+'/picture');
+                        var name = r.name;
+                        var email = r.email;
+                        var userId = r.username || r.id;
+
+                        asker.FBLoggedIn(name, email, '//graph.facebook.com/'+userId+'/picture');
 
                         // Good to go!
                         if (success_callback) {

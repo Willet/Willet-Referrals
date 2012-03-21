@@ -722,11 +722,11 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
 class SIBTShopifyVersion2To3(URIHandler):
     """ TEMPORARY!!! """
     @admin_required
-    def post(self, admin):
+    def get(self, admin):
         """ Updates all version 2 SIBT apps to version 3 """
         logging.warn('TEMPORARY HANDLER')
 
-        apps = SIBTShopify.all().fetch()
+        apps = SIBTShopify.all().fetch(limit=500)
         app_stats = {
             'v1': 0,
             'v2': 0,
@@ -740,7 +740,7 @@ class SIBTShopifyVersion2To3(URIHandler):
 
             elif app.version == '2':
                 app_stats['v2'] += 1
-                app.version == '3'
+                app.version = '3'
                 db.put_async(app)
                 updated_apps.append(app)
 
@@ -756,5 +756,5 @@ class SIBTShopifyVersion2To3(URIHandler):
             if key:
                 memcache.set(key, db.model_to_protobuf(app).Encode(), time=MEMCACHE_TIMEOUT)
 
-        self.response.out.write("Updated %i v2 apps. Found %i v1 and %i v3 apps." % (app_stats['v1'], app_stats['v2'], apps_stats['v3']))
+        self.response.out.write("Updated %i v2 apps. Found %i v1 and %i v3 apps." % (app_stats['v2'], app_stats['v1'], app_stats['v3']))
 
