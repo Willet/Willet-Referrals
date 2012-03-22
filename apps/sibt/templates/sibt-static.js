@@ -55,18 +55,18 @@
         jQuery(d).ready(function($) { // wait for DOM elements to appear + $ closure!
 
             // load CSS for colorbox as soon as possible!!
-            /*var _willet_css = {% include stylesheet %}
-            var _willet_app_css = '{{ app_css }}';
+            var wil_css = {% include stylesheet %};
+            var app_css = '{{ app_css }}';
             var _willet_style = d.createElement('style');
             var _willet_head  = d.getElementsByTagName('head')[0];
             _willet_style.type = 'text/css';
             if (_willet_style.styleSheet) {
-                _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
+                _willet_style.styleSheet.cssText = wil_css + app_css;
             } else {
-                var rules = d.createTextNode(_willet_css + _willet_app_css);
+                var rules = d.createTextNode(wil_css + app_css);
                 _willet_style.appendChild(rules);
             }
-            _willet_head.appendChild(_willet_style); */
+            _willet_head.appendChild(_willet_style);
             
             // jQuery shaker plugin
             (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
@@ -143,7 +143,7 @@
 
             var button_onclick = function(e, message) {
                 var message = message || 'SIBTUserClickedButtonAsk';
-                if (is_asker || show_votes) {
+                if (is_asker) {
                     show_results ();
                 } else {
                     store_analytics(message);
@@ -189,22 +189,19 @@
                 });
             };
             
-            console.log($('._willet_sibt'));
             var sibt_elem = $('._willet_sibt').eq(0); // the first sibt box
-            console.log (sibt_elem);
-            if (sibt_elem.size() >= 1) { // is the div there?
+            if (sibt_elem) { // is the div there?
                 store_analytics();
 
                 sibt_elem.click(button_onclick);
                 
-                if (has_results) {
-                    sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
-                        'width': '80px',
-                        'height': '21px',
-                        'display': 'inline-block'
-                    });
-                }
+                sibt_elem.css ({
+                    'background': (has_results? "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
+                                                "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
+                    'width': '80px',
+                    'height': '21px',
+                    'display': 'inline-block'
+                });
                 
                 // watch for message
                 // Create IE + others compatible event handler

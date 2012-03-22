@@ -619,7 +619,7 @@ class SIBTServeScript(URIHandler):
             'user': user,
             'instance': instance,
 
-            'stylesheet': '../plugin/templates/css/colorbox.css',
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
 
             'is_asker': False,
