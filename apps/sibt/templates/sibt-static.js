@@ -22,17 +22,17 @@
 
         var load = function (url, index) {
             // Load one script
-            var script = document.createElement('script'), loaded = false;
+            var script = d.createElement('script'), loaded = false;
             script.setAttribute('type', 'text/javascript');
             script.setAttribute('src', url);
             script.onload = script.onreadystatechange = function() {
                 var rs = this.readyState;
                 if loaded || (rs && rs!='complete' && rs!='loaded') return;
                 loaded = true;
-                document.body.removeChild(script); // Clean up DOM
+                d.body.removeChild(script); // Clean up DOM
                 script_loaded(); // Script done, update manager
             };
-            document.body.appendChild(script);
+            d.body.appendChild(script);
         };
 
         // Start asynchronously loading all scripts
@@ -41,30 +41,33 @@
         }
     };
 
-    var $_conflict = !(window.$ && window.$.fn && window.$.fn.jquery);
+    var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
-    // Once all dependencies are loading, fire this function
-    var init = function () {
-        if ($_conflict) {
-            jQuery.noConflict(); // Suck it, Prototype!
-        }
-        // wait for DOM elements to appear + $ closure!
-        jQuery(document).ready(function($) {
+    var scripts_to_load = []; // ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}']
+    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
+    }
+
+    // Go time! Load script dependencies, then fire this function
+    manage_script_loading( scripts_to_load,  function () {
+        if ($_conflict) jQuery.noConflict(); // Suck it, Prototype!
+        
+        jQuery(d).ready(function($) { // wait for DOM elements to appear + $ closure!
 
             // load CSS for colorbox as soon as possible!!
             /*var _willet_css = {% include stylesheet %}
             var _willet_app_css = '{{ app_css }}';
-            var _willet_style = document.createElement('style');
-            var _willet_head  = document.getElementsByTagName('head')[0];
+            var _willet_style = d.createElement('style');
+            var _willet_head  = d.getElementsByTagName('head')[0];
             _willet_style.type = 'text/css';
             if (_willet_style.styleSheet) {
                 _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
             } else {
-                var rules = document.createTextNode(_willet_css + _willet_app_css);
+                var rules = d.createTextNode(_willet_css + _willet_app_css);
                 _willet_style.appendChild(rules);
             }
             _willet_head.appendChild(_willet_style); */
-
+            
             // jQuery shaker plugin
             (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
 
@@ -72,19 +75,22 @@
                 is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
                 is_live = ('{{ is_live }}' == 'True'),
                 has_results = {{ has_results }},
-                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True');
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
             
-            var willet_metadata = function () {
-                return 'app_uuid={{app.uuid}}&' + 
-                        'user_uuid={{user.uuid}}&' + 
-                        'instance_uuid={{instance.uuid}}&' + 
-                        'target_url=' + window.location.href;
+            var willet_metadata = function (more) {
+                var metadata = { // add more properties with the "more" param.
+                    'app_uuid': '{{ app.uuid }}',
+                    'user_uuid': '{{ user.uuid }}',
+                    'instance_uuid': '{{ instance.uuid }}',
+                    'target_url': '{{ PAGE }}' // this should be escaped for single quotes, but who has single quotes in URLs?
+                };
+                return $.param($.extend ({}, metadata, more || {})); // no beginning ?
             };
             
             var is_scrolled_into_view = function (elem) {
                 // http://stackoverflow.com/questions/487073
-                var docViewTop = $(window).scrollTop();
-                var docViewBottom = docViewTop + $(window).height();
+                var docViewTop = $(w).scrollTop();
+                var docViewBottom = docViewTop + $(w).height();
                 var elemTop = $(elem).offset().top;
                 var elemBottom = elemTop + $(elem).height();
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
@@ -92,7 +98,7 @@
 
             // find largest image on page: http://stackoverflow.com/questions/3724738
             var get_largest_image = function (within) {
-                within = within || document;
+                within = within || d;
                 var largest_image = '';
                 $(within).('img').each (function () {
                     var $this = $(this);
@@ -105,7 +111,7 @@
             };
             
             var get_page_title = function () {
-                return document.title || '';
+                return d.title || '';
             };
 
             // Send action to server
@@ -117,19 +123,20 @@
                     id: random_id,
                     name: random_id,
                     css : {'display': 'none'},
-                    src : "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + "&" + willet_metadata (),
+                    src : "{{ URL }}{% url TrackSIBTShowAction %}?" + willet_metadata ({
+                            'evnt': message
+                        })
+                    ,
                     load: function () {
                         try {
-                            var iframe_handle = document.getElementById(random_id);
+                            var iframe_handle = d.getElementById(random_id);
                             iframe_handle.parentNode.removeChild ( iframe_handle );
                         } catch (e) { }
                     }
                 }).appendTo("body");
             };
             
-            /**
-            * Called when ask iframe is closed
-            */
+            // Called when ask iframe is closed
             var ask_callback = function( fb_response ) {
                 // this callback currently needs to do nothing
             };
@@ -147,17 +154,15 @@
             var show_results = function () {
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
-                var url = "{{URL}}/s/results.html" + 
-                          "?" + willet_metadata () + 
-                          "&refer_url=" + window.location.href;
+                var url = "{{URL}}/s/results.html?" + willet_metadata ({
+                    'refer_url': '{{ PAGE }}'
+                });
                 $.willet_colorbox({
                     href: url,
                     transition: 'fade',
                     close: '',
                     scrolling: false,
                     iframe: true, 
-                    initialWidth: 0, 
-                    initialHeight: 0, 
                     innerWidth: '600px',
                     innerHeight: '400px', 
                     fixed: true,
@@ -170,14 +175,12 @@
 
                 var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                              "&store_url={{ store_url }}" +
-                                             "&url=" + window.location.href;
+                                             "&url={{ PAGE }}";
                 $.willet_colorbox({
                     transition: 'fade',
                     close: '',
                     scrolling: false,
                     iframe: true, 
-                    initialWidth: 0, 
-                    initialHeight: 0, 
                     innerWidth: '600px',
                     innerHeight: '400px', 
                     fixed: true,
@@ -186,8 +189,8 @@
                 });
             };
             
-            var sibt_elem = $('#mini_sibt_button');
-            if (sibt_elem.length > 0) {
+            var sibt_elem = $('._willet_sibt').eq(0); // the first sibt box
+            if (sibt_elem.size() >= 1) {
                 // is the div there?
                 // actually running it
                 store_analytics();
@@ -203,7 +206,7 @@
                 
                 // watch for message
                 // Create IE + others compatible event handler
-                $(window).bind('onmessage message', function(e) {
+                $(w).bind('onmessage message', function(e) {
                     var message = e.originalEvent.data;
                     if (message == 'shared') {
                         ask_success = true;
@@ -215,12 +218,12 @@
                 // analytics to record the amount of time this script has been loaded
                 $('<iframe />', {
                     css : {'display': 'none'},
-                    src : "{{ URL }}{% url ShowOnUnloadHook %}?evnt=SIBTVisitLength&" + willet_metadata ()
+                    src : "{{ URL }}{% url ShowOnUnloadHook %}?" + willet_metadata ({'evnt': 'SIBTVisitLength'})
                 }).appendTo("body");
                 
                 // shake ONLY the SIBT button when scrolled into view
                 var shaken_yet = false;
-                $(window).scroll (function () {
+                $(w).scroll (function () {
                     if (is_scrolled_into_view (sibt_elem) && !shaken_yet) {
                         setTimeout (function () {
                             $(sibt_elem).shaker();
@@ -233,31 +236,21 @@
                 });
 
                 // Load jQuery colorbox
-                if (window && window.jQuery && !window.jQuery.willet_colorbox) {
-                    manage_script_loading([
-                        '{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
-                            // init colorbox last
-                            window.jQuery.willet_colorbox.init ();
-                            var hash = window.location.hash;
+                if (w && w.jQuery && !w.jQuery.willet_colorbox) {
+                    manage_script_loading(
+                        ['{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()],
+                        function () {
+                            w.jQuery.willet_colorbox.init (); // init colorbox last
+                            var hash = w.location.hash;
                             var hash_search = '#open_sibt=';
                             hash_index = hash.indexOf(hash_search);
                             if (has_results && hash_index != -1) { // if vote has results and voter came from an email
                                 show_results ();
                             }
-                    });
+                        }
+                    );
                 }
             }
         });
-    };
-
-    // var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
-    var scripts_to_load = [];
-
-    if (!window.jQuery || window.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
-    }
-
-    // Go time! Load script dependencies
-    manage_script_loading( scripts_to_load, init);
+    });
 })(window, document);
-

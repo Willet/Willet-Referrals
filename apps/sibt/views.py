@@ -19,6 +19,7 @@ from apps.sibt.actions          import *
 from apps.app.models            import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
+from apps.client.models         import *
 from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.order.models          import *
@@ -583,20 +584,32 @@ class SIBTServeScript(URIHandler):
         
         # app = SIBT.get(store_url=domain) # this get method does not work (yet)
         app = SIBT.get(hashlib.md5(domain).hexdigest()) # this, however, will
-        if not app:
-            app = SIBT.get_by_store_url(hashlib.md5('default').hexdigest()) # not implemented
-        if not app:
-            logging.error('no app available for rendering AND I\'m too cheap to make you one')
+        # app = SIBT.get_by_store_url(hashlib.md5('default').hexdigest()) # not implemented
         
-        # we now have app
         try:
             user = User.get_or_create_by_cookie(self, app)
         except (AttributeError, NotImplementedError):
+            # try the "cool, it is not deprecated yet" method
             user = get_or_create_user_by_cookie(self, app)
         
+        client = Client.get_by_url(domain)
+        if client and app:
+            if client != app.client: # if something is really screwed up, fix it
+                app.client = client
+                app.put()
+        elif client and not app:
+            # if client exists and the app is not installed for it, then
+            # automatically install the app for the client
+            
+        elif not client:
+            # we have no business with you
+            self.error(402)
+            return
+
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             'URL': URL,
+            'PAGE': page_url,
             'DOMAIN': domain,
             'app': app, # if missing, django omits these silently
             'user': user,
@@ -605,6 +618,7 @@ class SIBTServeScript(URIHandler):
         
         path = os.path.join('apps/sibt/templates/', 'sibt-static.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
     
