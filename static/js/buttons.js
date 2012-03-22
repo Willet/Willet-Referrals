@@ -3,14 +3,14 @@
  */
 ;(function () {
     var here = window.location + '.json';
-    var console = { log: function () {}, error: function () {} };
-        //( typeof(window.console) === 'object' 
-        // && ( ( typeof(window.console.log) === 'function' 
-        //    && typeof(window.console.error) ==='function' )
-        // || (typeof(window.console.log) === 'object' // IE 
-        // && typeof(window.console.error) ==='object') ) )
-        // ? window.console 
-        //: { log: function () {}, error: function () {} }; // debugging
+    var console = //{ log: function () {}, error: function () {} };
+        ( typeof(window.console) === 'object' 
+        && ( ( typeof(window.console.log) === 'function' 
+           && typeof(window.console.error) ==='function' )
+        || (typeof(window.console.log) === 'object' // IE 
+        && typeof(window.console.error) ==='object') ) )
+        ? window.console 
+        : { log: function () {}, error: function () {} }; // debugging
     
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
@@ -38,6 +38,76 @@
     ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
+
+    //http://www.quirksmode.org/js/cookies.html
+    //------
+    var _createCookie = function (name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime()+(days*24*60*60*1000));
+            var expires = "; expires="+date.toGMTString();
+        }
+        else var expires = "";
+        document.cookie = name+"="+value+expires+"; path=/";
+    }
+
+    var _readCookie = function (name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    var eraseCookie = function (name) {
+        createCookie(name,"",-1);
+    }
+    //-----
+
+    var _cookie_name = "_willet_smart_buttons";
+
+    var _detectNetworks = function () {
+        var loggedInNetworks = {};
+        var supportedNetworks = {
+            'Tumblr': "",
+            'Pinterest': "",
+            'Fancy': "",
+            'Facebook': "",
+            'Twitter': "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif",
+            'GooglePlus': "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"
+        };
+        var cookieExpiryInDays = 0.00347222222; //5 minutes
+
+        var createHiddenImage = function(network, source) {
+            var image = document.createElement("img");
+            image.onload = function () {
+                loggedInNetworks[network] = true;
+                _createCookie(_cookie_name, JSON.stringify(loggedInNetworks), cookieExpiryInDays);
+            };
+            image.onerror = function() {
+                loggedInNetworks[network] = false;
+                _createCookie(_cookie_name, JSON.stringify(loggedInNetworks), cookieExpiryInDays);
+            };
+            image.src = source;
+            image.style.display = "none";
+            return image;
+        };
+
+        var detectNetworksDiv = document.createElement("div");
+        // detectNetworksDiv.style.display = "none";
+        detectNetworksDiv.id = "_willet_detect_networks_div";
+
+        for (network in supportedNetworks) {
+            if (supportedNetworks.hasOwnProperty(network) && supportedNetworks[network] !== "") {
+                var image = createHiddenImage(network, supportedNetworks[network]);
+                detectNetworksDiv.appendChild(image);
+            }
+        }
+        document.body.appendChild(detectNetworksDiv);
+    };
 
     var _init_buttons = function(data) {
         /* data is product json 
@@ -215,29 +285,43 @@
             if ( data.product.images[0] != null ) {
                 photo = data.product.images[0].src;
             }
-            
-            // Get the buttons, should be children of #_willet_buttons_app
-            //      ex: <div>Facebook</div>
-            var req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
-            if (button_div.childNodes.length > 0) {
-                // Search for supported buttons
-                i = button_div.childNodes.length;
-                req_buttons = [];
-                while (i--) {
-                    if (button_div.childNodes[i].nodeType === 1) {
-                        j = button_div.childNodes[i].innerHTML;
-                        for (var k in supported_buttons) {
-                            if (supported_buttons[k] === j) {
-                                req_buttons.push(j);
-                                break;
+
+            var req_buttons = [];
+            var networksJSON = _readCookie(_cookie_name) || "";
+            if (networksJSON === "") {
+                // Get the buttons, should be children of #_willet_buttons_app
+                //      ex: <div>Facebook</div>
+                req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+                if (button_div.childNodes.length > 0) {
+                    // Search for supported buttons
+                    i = button_div.childNodes.length;
+                    req_buttons = [];
+                    while (i--) {
+                        if (button_div.childNodes[i].nodeType === 1) {
+                            j = button_div.childNodes[i].innerHTML;
+                            for (var k in supported_buttons) {
+                                if (supported_buttons[k] === j) {
+                                    req_buttons.push(j);
+                                    break;
+                                }
                             }
                         }
                     }
+                    // Now remove all children of #_willet_buttons_app
+                    i = button_div.childNodes.length;
+                    while (i--) {
+                        button_div.removeChild( button_div.childNodes[i]);
+                    }
                 }
-                // Now remove all children of #_willet_buttons_app
-                i = button_div.childNodes.length;
-                while (i--) {
-                    button_div.removeChild( button_div.childNodes[i]);
+            } else {
+                var networks = JSON.parse(networksJSON);
+                for (var network in networks) {
+                    for (var k in supported_buttons) {
+                        if (supported_buttons[k] === network
+                            && networks[network] === true) {
+                            req_buttons.push(network);
+                        }
+                    }
                 }
             }
 
@@ -265,40 +349,43 @@
     };
 
     // Get product info, then load scripts
-    (function() {
-        try {
-            console.log("Buttons: initiating product.json request")
-            var req = new XMLHttpRequest();
-            req.open('GET', here, true);
-            req.onreadystatechange = function () {  
-                if (req.readyState === 4) {
-                    // 4 means something has been returned by the request
-                    if (req.status === 200) {
-                        console.log("Buttons: recieved product.json request");
-                        var data;
-                        try {
-                            data = JSON.parse(req.responseText);
-                        } catch (e) {
-                            console.log("Buttons: could not parse product info, stopping.");
-                            return;
-                        }
-                        if (data) {
-                            // Proceed!
-                            _init_buttons(data);
-                        }
-                    } else {  
-                        // Didn't work, just silently bail
-                        console.log("Buttons: request for product.json failed");
-                    }  
-                }  
-            };  
-            req.send(null);
-        } catch (e) {
-            // Didn't work, just silently bail
-            console.log("Buttons: "+e);
+    // (function() {
+    //     try {
+    //         console.log("Buttons: initiating product.json request")
+    //         var req = new XMLHttpRequest();
+    //         req.open('GET', here, true);
+    //         req.onreadystatechange = function () {  
+    //             if (req.readyState === 4) {
+    //                 // 4 means something has been returned by the request
+    //                 if (req.status === 200) {
+    //                     console.log("Buttons: recieved product.json request");
+    //                     var data;
+    //                     try {
+    //                         data = JSON.parse(req.responseText);
+    //                     } catch (e) {
+    //                         console.log("Buttons: could not parse product info, stopping.");
+    //                         return;
+    //                     }
+    //                     if (data) {
+    //                         // Proceed!
+    //                         _init_buttons(data);
+    //                     }
+    //                 } else {  
+    //                     // Didn't work, just silently bail
+    //                     console.log("Buttons: request for product.json failed");
+    //                 }  
+    //             }  
+    //         };  
+    //         req.send(null);
+    //     } catch (e) {
+    //         // Didn't work, just silently bail
+    //         console.log("Buttons: "+e);
+    //     }
+    // })();
+    (function() { // for local testing
+        if (!_readCookie(_cookie_name)) {
+            _detectNetworks();    
         }
-    })();
-    /*(function() { // for local testing
         _init_buttons({
             product: {
                 images: [
@@ -312,5 +399,5 @@
             },
             title: "Glass of beer"
         });
-    })();*/
+    })();
 })();
