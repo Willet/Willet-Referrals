@@ -3,14 +3,14 @@
  */
 ;(function () {
     var here = window.location + '.json';
-    var console = //{ log: function () {}, error: function () {} };
-        ( typeof(window.console) === 'object' 
-        && ( ( typeof(window.console.log) === 'function' 
-           && typeof(window.console.error) ==='function' )
-        || (typeof(window.console.log) === 'object' // IE 
-        && typeof(window.console.error) ==='object') ) )
-        ? window.console 
-        : { log: function () {}, error: function () {} }; // debugging
+    var console = { log: function () {}, error: function () {} };
+        // ( typeof(window.console) === 'object' 
+        // && ( ( typeof(window.console.log) === 'function' 
+        //    && typeof(window.console.error) ==='function' )
+        // || (typeof(window.console.log) === 'object' // IE 
+        // && typeof(window.console.error) ==='object') ) )
+        // ? window.console 
+        // : { log: function () {}, error: function () {} }; // debugging
     
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
@@ -72,9 +72,9 @@
     var _detectNetworks = function () {
         var loggedInNetworks = {};
         var supportedNetworks = {
-            'Tumblr': "",
-            'Pinterest': "",
-            'Fancy': "",
+            'Tumblr': "", //https://www.tumblr.com/login?redirect_to=http://secure.assets.tumblr.com/images/logo.png", //???
+            'Pinterest': "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png", //Works!
+            'Fancy': "", //https://www.thefancy.com/login?next=http://www.thefancy.com/shown-to-you", //???
             'Facebook': "",
             'Twitter': "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif",
             'GooglePlus': "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"
@@ -349,40 +349,40 @@
     };
 
     // Get product info, then load scripts
-    // (function() {
-    //     try {
-    //         console.log("Buttons: initiating product.json request")
-    //         var req = new XMLHttpRequest();
-    //         req.open('GET', here, true);
-    //         req.onreadystatechange = function () {  
-    //             if (req.readyState === 4) {
-    //                 // 4 means something has been returned by the request
-    //                 if (req.status === 200) {
-    //                     console.log("Buttons: recieved product.json request");
-    //                     var data;
-    //                     try {
-    //                         data = JSON.parse(req.responseText);
-    //                     } catch (e) {
-    //                         console.log("Buttons: could not parse product info, stopping.");
-    //                         return;
-    //                     }
-    //                     if (data) {
-    //                         // Proceed!
-    //                         _init_buttons(data);
-    //                     }
-    //                 } else {  
-    //                     // Didn't work, just silently bail
-    //                     console.log("Buttons: request for product.json failed");
-    //                 }  
-    //             }  
-    //         };  
-    //         req.send(null);
-    //     } catch (e) {
-    //         // Didn't work, just silently bail
-    //         console.log("Buttons: "+e);
-    //     }
-    // })();
-    (function() { // for local testing
+    (function() {
+        try {
+            console.log("Buttons: initiating product.json request")
+            var req = new XMLHttpRequest();
+            req.open('GET', here, true);
+            req.onreadystatechange = function () {  
+                if (req.readyState === 4) {
+                    // 4 means something has been returned by the request
+                    if (req.status === 200) {
+                        console.log("Buttons: recieved product.json request");
+                        var data;
+                        try {
+                            data = JSON.parse(req.responseText);
+                        } catch (e) {
+                            console.log("Buttons: could not parse product info, stopping.");
+                            return;
+                        }
+                        if (data) {
+                            // Proceed!
+                            _init_buttons(data);
+                        }
+                    } else {  
+                        // Didn't work, just silently bail
+                        console.log("Buttons: request for product.json failed");
+                    }  
+                }  
+            };  
+            req.send(null);
+        } catch (e) {
+            // Didn't work, just silently bail
+            console.log("Buttons: "+e);
+        }
+    })();
+    /*(function() { // for local testing
         if (!_readCookie(_cookie_name)) {
             _detectNetworks();    
         }
@@ -399,5 +399,5 @@
             },
             title: "Glass of beer"
         });
-    })();
+    })();*/
 })();
