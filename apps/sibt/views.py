@@ -582,14 +582,6 @@ class SIBTServeScript(URIHandler):
         
         # app = SIBT.get(store_url=domain) # this get method does not work (yet)
         app = SIBT.get(hashlib.md5(domain).hexdigest()) # this, however, will
-        # app = SIBT.get_by_store_url(hashlib.md5('default').hexdigest()) # not implemented
-        
-        try:
-            user = User.get_or_create_by_cookie(self, app)
-        except (AttributeError, NotImplementedError):
-            # try the "cool, it is not deprecated yet" method
-            user = get_or_create_user_by_cookie(self, app)
-        
         client = Client.get_by_url(domain)
         if client and app:
             if client != app.client: # if something is really screwed up, fix it
@@ -607,6 +599,12 @@ class SIBTServeScript(URIHandler):
             self.response.out.write('/* no client for %s */' % domain)
             return
         
+        try:
+            user = User.get_or_create_by_cookie(self, app)
+        except (AttributeError, NotImplementedError):
+            # try the "cool, it is not deprecated yet" method
+            user = get_or_create_user_by_cookie(self, app)
+
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
         # you now have app, user, client, and instance
 
@@ -630,7 +628,7 @@ class SIBTServeScript(URIHandler):
             'unsure_mutli_view': False
         }
         
-        path = os.path.join('apps/sibt/templates/', 'sibt-static.js')
+        path = os.path.join('apps/sibt/templates/', 'sibt_static.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))

@@ -82,7 +82,9 @@
                     'app_uuid': '{{ app.uuid }}',
                     'user_uuid': '{{ user.uuid }}',
                     'instance_uuid': '{{ instance.uuid }}',
-                    'target_url': '{{ PAGE }}' // this should be escaped for single quotes, but who has single quotes in URLs?
+                    
+                     // this should be escaped for single quotes, but who has single quotes in URLs?
+                    'target_url': '{{ PAGE }}' || window.location.href
                 };
                 return $.param($.extend ({}, metadata, more || {})); // no beginning ?
             };
@@ -100,7 +102,7 @@
             var get_largest_image = function (within) {
                 within = within || d;
                 var largest_image = '';
-                $(within).('img').each (function () {
+                $(within).find('img').each (function () {
                     var $this = $(this);
                     var nDim = parseFloat ($this.width()) * parseFloat ($this.height());
                     if (nDim > nMaxDim) {
