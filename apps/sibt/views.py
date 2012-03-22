@@ -24,11 +24,12 @@ from apps.link.models           import Link
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions          import *
+from apps.sibt.models           import SIBT
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
-from apps.user.models           import get_user_by_cookie
+from apps.user.models           import get_user_by_cookie, get_or_create_user_by_cookie
 
 from util.consts                import *
 from util.shopify_helpers import get_shopify_url as format_url
@@ -557,14 +558,16 @@ class SIBTServeScript(URIHandler):
     ''' Serves a script that shows the SIBT button.
         Due to the try-before-you-buy nature of the Internets, this view will
         not create a SIBT app for the store/domain until (undecided trigger).
+        
+        Example call: http://brian-willet.appspot.com/s/sibt.js?url=http%3A%2F%2Fkiehn-mertz3193.myshopify.com%2Fproducts%2Fcustomer-focused-leading-edge-algorithm
     '''
     
     def get(self):
-        app = None
+        app = user = instance = None
         domain = path = ''
         parts = template_values = {}
         
-        # in the proposed SIBT v11, page URL is the only required parameter.
+        # in the proposed SIBT v10, page URL is the only required parameter.
         page_url = self.request.get ('url')
         if not page_url:
             self.error(400) # we NEED to know where you are!
@@ -580,12 +583,24 @@ class SIBTServeScript(URIHandler):
         
         # app = SIBT.get(store_url=domain) # this get method does not work (yet)
         app = SIBT.get(hashlib.md5(domain).hexdigest()) # this, however, will
+        if not app:
+            app = SIBT.get_by_store_url(hashlib.md5('default').hexdigest()) # not implemented
+        if not app:
+            logging.error('no app available for rendering AND I\'m too cheap to make you one')
+        
+        # we now have app
+        try:
+            user = User.get_or_create_by_cookie(self, app)
+        except (AttributeError, NotImplementedError):
+            user = get_or_create_user_by_cookie(self, app)
         
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             'URL': URL,
             'DOMAIN': domain,
             'app': app, # if missing, django omits these silently
+            'user': user,
+            'instance': instance,
         }
         
         path = os.path.join('apps/sibt/templates/', 'sibt-static.js')

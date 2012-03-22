@@ -40,9 +40,9 @@ class ClientShopify( Client ):
     merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
 
     # Store properties
-    name    = db.StringProperty( indexed = False )
-    url     = db.LinkProperty  ( indexed = True )
-    domain  = db.LinkProperty  ( indexed = True )
+    # name    = db.StringProperty( indexed = False )
+    # url     = db.LinkProperty  ( indexed = True )
+    # domain  = db.LinkProperty  ( indexed = True )
     token   = db.StringProperty( default = '' )
     id      = db.StringProperty( indexed = True )
 

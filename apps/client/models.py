@@ -29,6 +29,11 @@ class Client(Model, polymodel.PolyModel):
     creation_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
     email         = db.StringProperty  (indexed=True)
 
+    # Store properties
+    name    = db.StringProperty( indexed = False )
+    url     = db.LinkProperty  ( indexed = True )
+    domain  = db.LinkProperty  ( indexed = True )
+
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Client, self).__init__(*args, **kwargs)

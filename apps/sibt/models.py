@@ -58,6 +58,64 @@ class SIBT(App):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def get_by_store_url(cls, url):
+        data = memcache.get(url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        app = cls.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = cls.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
+        return app
+    
+    @staticmethod
+    def create(client, token):
+        uuid = hashlib.md5(client.url).hexdigest() # generate_uuid( 16 )
+        logging.debug("creating SIBT version '%s'" % App.CURRENT_INSTALL_VERSION)
+        app = SIBT (
+            key_name=uuid,
+            uuid=uuid,
+            client=client,
+            store_name=client.name, # Store name
+            store_url=client.url, # Store url
+            store_id=client.id, # Store id
+            version=App.CURRENT_INSTALL_VERSION
+        )
+        app.put()
+        # app.do_install() # this is JS-based; there could be nothing to install
+        return app
+
+    @staticmethod
+    def get_or_create(client = None, domain = ''):
+        ''' create a SIBT app (used like a profile) for a specific domain. '''
+        
+        # SIBT JS has a 'client', but its meaning is much less significant than 
+        # that of Shopify Clients.
+        if client:
+            domain = client.url
+        
+        if not domain:
+            raise AttributeError ('A valid (client or domain) must be supplied to create a SIBT app')
+        
+        if not client:
+            client = Client.get_or_create (
+                url=domain,
+                email=''
+            )
+        
+        app = SIBT.get(hashlib.md5(domain).hexdigest())
+        if not app:
+            logging.debug ("app not found; creating one.")
+            app = SIBT.create(domain)
+
+        logging.debug ("SIBT::get_or_create.app is now %s" % app)
+        return app
     
     def handleLinkClick( self, urihandler, link ):
         logging.info("SIBTAPP HANDLING LINK CLICK" )

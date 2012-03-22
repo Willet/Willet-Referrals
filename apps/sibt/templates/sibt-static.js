@@ -1,9 +1,11 @@
-/** 
- * Willet's "Should I Buy This" for everyone else
- * Copyright Willet Inc, 2012
-**/
+;(function (w, d) {
+    /** 
+     * Willet's "Should I Buy This" for everyone else
+     * Copyright Willet Inc, 2012
+     *
+     * w and d are aliases of window and document.
+    **/
 
-;(function () {
     var manage_script_loading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when
         // all are finished loading
@@ -25,13 +27,10 @@
             script.setAttribute('src', url);
             script.onload = script.onreadystatechange = function() {
                 var rs = this.readyState;
-                if (rs && rs!='complete' && rs!='loaded') return;
-                if (loaded) return;
+                if loaded || (rs && rs!='complete' && rs!='loaded') return;
                 loaded = true;
-                // Clean up DOM
-                document.body.removeChild(script);
-                // Script done, update manager
-                script_loaded();
+                document.body.removeChild(script); // Clean up DOM
+                script_loaded(); // Script done, update manager
             };
             document.body.appendChild(script);
         };
@@ -49,10 +48,11 @@
         if ($_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
         }
+        // wait for DOM elements to appear + $ closure!
         jQuery(document).ready(function($) {
 
             // load CSS for colorbox as soon as possible!!
-            var _willet_css = {% include stylesheet %}
+            /*var _willet_css = {% include stylesheet %}
             var _willet_app_css = '{{ app_css }}';
             var _willet_style = document.createElement('style');
             var _willet_head  = document.getElementsByTagName('head')[0];
@@ -63,20 +63,16 @@
                 var rules = document.createTextNode(_willet_css + _willet_app_css);
                 _willet_style.appendChild(rules);
             }
-            _willet_head.appendChild(_willet_style);
+            _willet_head.appendChild(_willet_style); */
 
             // jQuery shaker plugin
             (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
 
-
-            // wait for DOM elements to appear + $ closure!
             var ask_success = false,
                 is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
                 is_live = ('{{ is_live }}' == 'True'),
                 has_results = {{ has_results }},
-                show_votes = ('{{ show_votes }}' == 'True'),
-                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
-                hash_index = -1;
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True');
             
             var willet_metadata = function () {
                 return 'app_uuid={{app.uuid}}&' + 
@@ -94,11 +90,28 @@
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
             }
 
+            // find largest image on page: http://stackoverflow.com/questions/3724738
+            var get_largest_image = function (within) {
+                within = within || document;
+                var largest_image = '';
+                $(within).('img').each (function () {
+                    var $this = $(this);
+                    var nDim = parseFloat ($this.width()) * parseFloat ($this.height());
+                    if (nDim > nMaxDim) {
+                        largest_image = $this.prop('src');
+                        nMaxDim = nDim;
+                    }
+                });
+            };
+            
+            var get_page_title = function () {
+                return document.title || '';
+            };
+
             // Send action to server
             var store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
-                //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
-                var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
+                var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,''); //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
                 
                 $('<iframe />', {
                     id: random_id,
@@ -237,7 +250,8 @@
         });
     };
 
-    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+    // var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+    var scripts_to_load = [];
 
     if (!window.jQuery || window.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
         scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
@@ -245,5 +259,5 @@
 
     // Go time! Load script dependencies
     manage_script_loading( scripts_to_load, init);
-})();
+})(window, document);
 
