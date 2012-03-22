@@ -25,9 +25,7 @@ from apps.link.models           import Link
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions          import *
-from apps.sibt.models           import SIBT
-from apps.sibt.models           import SIBTInstance
-from apps.sibt.models           import PartialSIBTInstance
+from apps.sibt.models           import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
 from apps.user.models           import get_user_by_cookie, get_or_create_user_by_cookie
@@ -571,15 +569,15 @@ class SIBTServeScript(URIHandler):
         # in the proposed SIBT v10, page URL is the only required parameter.
         page_url = self.request.get ('url')
         if not page_url:
-            self.error(400) # we NEED to know where you are!
+            self.response.out.write('/* missing URL */')
             return
 
         try:
             parts = urlparse(page_url) # http://docs.python.org/library/urlparse.html
-            domain = parts.scheme + parts.netloc
+            domain = '%s://%s' % (parts.scheme, parts.netloc)
             path = parts.path
         except:
-            self.error(400) # visitor is screwing with us
+            self.response.out.write('/* malformed URL */')
             return
         
         # app = SIBT.get(store_url=domain) # this get method does not work (yet)
@@ -600,11 +598,17 @@ class SIBTServeScript(URIHandler):
         elif client and not app:
             # if client exists and the app is not installed for it, then
             # automatically install the app for the client
-            
+            app = SIBT.get_or_create (
+                client=client,
+                domain=domain
+            )
         elif not client:
             # we have no business with you
-            self.error(402)
+            self.response.out.write('/* no client for %s */' % domain)
             return
+        
+        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+        # you now have app, user, client, and instance
 
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
@@ -614,6 +618,16 @@ class SIBTServeScript(URIHandler):
             'app': app, # if missing, django omits these silently
             'user': user,
             'instance': instance,
+
+            'stylesheet': '../plugin/templates/css/colorbox.css',
+            'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
+
+            'is_asker': False,
+            'show_votes': False,
+            'has_voted': False,
+            'has_results': False,
+            'is_live': False,
+            'unsure_mutli_view': False
         }
         
         path = os.path.join('apps/sibt/templates/', 'sibt-static.js')

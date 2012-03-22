@@ -27,7 +27,7 @@
             script.setAttribute('src', url);
             script.onload = script.onreadystatechange = function() {
                 var rs = this.readyState;
-                if loaded || (rs && rs!='complete' && rs!='loaded') return;
+                if (loaded || (rs && rs!='complete' && rs!='loaded')) return;
                 loaded = true;
                 d.body.removeChild(script); // Clean up DOM
                 script_loaded(); // Script done, update manager
@@ -73,9 +73,9 @@
 
             var ask_success = false,
                 is_asker = ('{{ is_asker }}' == 'True'), // did they ask?
-                is_live = ('{{ is_live }}' == 'True'),
-                has_results = {{ has_results }},
-                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'),
+                is_live = ('{{ is_live }}' == 'True'), // most logically, true
+                has_results = ('{{ has_results }}' == 'True'),
+                unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True');
             
             var willet_metadata = function (more) {
                 var metadata = { // add more properties with the "more" param.
@@ -189,10 +189,10 @@
                 });
             };
             
+            console.log($('._willet_sibt'));
             var sibt_elem = $('._willet_sibt').eq(0); // the first sibt box
-            if (sibt_elem.size() >= 1) {
-                // is the div there?
-                // actually running it
+            console.log (sibt_elem);
+            if (sibt_elem.size() >= 1) { // is the div there?
                 store_analytics();
 
                 sibt_elem.click(button_onclick);
@@ -200,7 +200,9 @@
                 if (has_results) {
                     sibt_elem.css ({
                         'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
-                        'width': '80px'
+                        'width': '80px',
+                        'height': '21px',
+                        'display': 'inline-block'
                     });
                 }
                 

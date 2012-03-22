@@ -112,7 +112,7 @@ class SIBT(App):
         app = SIBT.get(hashlib.md5(domain).hexdigest())
         if not app:
             logging.debug ("app not found; creating one.")
-            app = SIBT.create(domain)
+            app = SIBT.create(client, domain)
 
         logging.debug ("SIBT::get_or_create.app is now %s" % app)
         return app
