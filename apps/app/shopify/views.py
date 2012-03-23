@@ -80,9 +80,9 @@ class DoDeleteApp( URIHandler ):
         app_uuid = self.request.get( 'app_uuid' )
         
         logging.info('app id: %s' % app_uuid)
-        app = get_app_by_id( app_uuid )
+        app = get_app_by_id(app_uuid)
         if app.client.key() == client.key():
-            logging.info('deelting')
+            logging.info('deleting')
             app.delete()
         
         self.redirect( '/client/account' )
