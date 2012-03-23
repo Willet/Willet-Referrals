@@ -28,7 +28,6 @@ from apps.sibt.actions          import *
 from apps.sibt.models           import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
-from apps.user.models           import get_user_by_cookie, get_or_create_user_by_cookie
 
 from util.consts                import *
 from util.shopify_helpers import get_shopify_url as format_url
@@ -468,7 +467,7 @@ class ShowFBThanks( URIHandler ):
         user_cancelled = True
         app         = None
         post_id     = self.request.get( 'post_id' ) # from FB
-        user        = get_user_by_cookie( self )
+        user        = User.get_by_cookie(self)
         partial     = PartialSIBTInstance.get_by_user( user )
         
         if post_id != "":

@@ -21,7 +21,7 @@ from apps.app.shopify.models import AppShopify
 from apps.client.models      import Client
 from apps.email.models       import Email
 from apps.sibt.models        import SIBT 
-from apps.user.models        import get_user_by_cookie
+from apps.user.models        import User
 from util                    import httplib2
 from util.consts             import *
 from util.helpers            import generate_uuid
@@ -33,6 +33,7 @@ from util.helpers            import url as reverse_url
 class SIBTShopify(SIBT, AppShopify):
     # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
+    
     
     defaults = {
         'willet_button': {
@@ -131,9 +132,12 @@ class SIBTShopify(SIBT, AppShopify):
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;
-                    var hash_index = hash.indexOf('#code=');
-                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
+                    var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
+                    var product_json = {{ product | json }};
                     var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
+                    if (product_json) {
+                        params += '&product_id=' + product_json.id;
+                    }
                     var src = "http://%s%s?" + params;
                     var script = window.document.createElement("script");
                     script.type = "text/javascript";
@@ -305,13 +309,13 @@ class SIBTShopify(SIBT, AppShopify):
        
         return app
 
-    @staticmethod
-    def get_or_create(client, token=None):
+    @classmethod
+    def get_or_create(cls, client, token=None):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
-        app = SIBTShopify.get_by_store_url(client.url)
+        app = cls.get_by_store_url(client.url)
         if app is None:
             logging.debug ("app not found; creating one.")
-            app = SIBTShopify.create(client, token)
+            app = cls.create(client, token)
         elif token != None and token != '':
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
@@ -321,8 +325,8 @@ class SIBTShopify(SIBT, AppShopify):
                     logging.debug ("app.old_client was %s" % app.old_client)
                     app.client      = app.old_client if app.old_client else client
                     app.old_client  = None
-                    logging.debug("changing SIBTShopify version to '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
-                    app.version = SIBTShopify.CURRENT_INSTALL_VERSION # reinstall? update version
+                    logging.debug("changing %s version to '%s'" % (cls.__name__, cls.CURRENT_INSTALL_VERSION))
+                    app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
                     app.do_install()

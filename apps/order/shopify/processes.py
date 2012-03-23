@@ -15,8 +15,6 @@ from apps.client.shopify.models  import ClientShopify
 from apps.order.shopify.models   import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.user.models            import User
-from apps.user.models            import get_user_by_cookie
-from apps.user.models            import get_or_create_user_by_email
 from apps.user.actions           import UserCreate
 
 from util                        import httplib2
@@ -26,7 +24,7 @@ from util.urihandler             import URIHandler
 class CreateShopifyOrder(URIHandler):
     def get(self):
         # Grab the important peeps
-        user   = get_user_by_cookie( self )
+        user   = User.get_by_cookie(self)
         client = get_client_by_uuid( self.request.get('client_uuid') )
 
         # Grab order deets
@@ -85,7 +83,7 @@ class OrderIframeNotification(webapp.RequestHandler):
         client = get_client_by_uuid( self.request.get('client_uuid') )
         user   = User.get( self.request.get('user_uuid') )
         if user is None:
-            user = get_user_by_cookie( self )
+            user = User.get_by_cookie(self)
 
         # Grab order info from url
         url      = self.request.get( 'url' ).split( '/' )
@@ -195,7 +193,7 @@ class OrderWebhookNotification(URIHandler):
             # Fetch the order if we hve it.
             o = OrderShopify.get_by_token( token )
             if o == None:
-                user = get_or_create_user_by_email( email, self, client.apps.get() )
+                user = User.get_or_create_by_email( email, self, client.apps.get() )
             else:
                 user = o.user
      

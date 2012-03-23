@@ -14,11 +14,11 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.app.models import App, ShareCounter, get_app_by_id
+from apps.app.models import App, ShareCounter
 from apps.email.models import Email
 from apps.link.models import *
 from apps.user.models import *
-from apps.user.models import create_email_model
+from apps.user.models import EmailModel
 
 from util.consts import *
 from util.helpers import *
@@ -77,7 +77,7 @@ class FetchFacebookData(webapp.RequestHandler):
         if hasattr( result_user, 'fb_email' ):
             logging.info("DOING EMAIL STUFF: %s" % result_user.get_attr('fb_email'))
             email = result_user.fb_email
-            create_email_model( result_user, email )
+            EmailModel.create(result_user, email)
 
             delattr( result_user, 'fb_email' )
             result_user.put_later()
@@ -98,7 +98,7 @@ class FetchFacebookFriends(webapp.RequestHandler):
                 fb_response = json.loads(urllib.urlopen(url).read())
                 if fb_response.has_key('data'):
                     for friend in fb_response['data']:
-                        willet_friend = get_or_create_user_by_facebook(friend['id'],
+                        willet_friend = User.get_or_create_by_facebook(friend['id'],
                             name=friend['name'], would_be=True)
                         friends.append(willet_friend.key())
                     user.update(fb_friends=friends)
@@ -223,7 +223,7 @@ def unpacker(obj, user):
 
 class UpdateEmailAddress(webapp.RequestHandler):
     def post( self ):
-        user = get_user_by_cookie( self )
+        user = User.get_by_cookie(self)
 
         user.update( email=self.request.get('email') )
 

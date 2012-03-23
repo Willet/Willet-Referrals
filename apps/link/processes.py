@@ -13,7 +13,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from apps.link.models import CodeCounter
 from apps.link.models import Link
-from apps.app.models import get_app_by_id, App
+from apps.app.models import App
 
 # helpers
 from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie

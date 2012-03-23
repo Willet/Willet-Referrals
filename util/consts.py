@@ -8,6 +8,8 @@ import logging
 
 from urlparse import urlunsplit
 
+from google.appengine.api.app_identity import get_application_id
+
 # Product Stuff
 NAME = 'Willet'
 
@@ -16,6 +18,7 @@ USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE',
 PROTOCOL            = 'http' 
 SECURE_PROTOCOL     = 'https'
 APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
+APP_LIVE            = 'social-referral'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
 URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
@@ -38,6 +41,9 @@ BUTTONS_FACEBOOK_APP_SECRET = '1f8e4c81de61de9dc054685bddf8b50f'
 # Facebook Stuff
 FACEBOOK_APP_ID     = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
+
+# MailChimp Stuff
+MAILCHIMP_API_KEY = '27a8343ec17004bfc06bad23d2d865b0-us4'
     
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
@@ -146,9 +152,11 @@ INSTALLED_APPS = [
     'link',
 ]
 
-# Overide settings with local_consts
-try:
-    from local_consts import *
-except Exception, e:
-    logging.info('no local_consts.py: %s' % e, exc_info=True)
-    pass
+# Overide settings with local_consts unless the google app name is exactly 'social-referral'
+appname = get_application_id() # e.g. brian-willet
+if appname != APP_LIVE:
+    try:
+        logging.info ("appname = %s; loading local_consts" % appname)
+        from local_consts import *
+    except Exception, e:
+        logging.info('no local_consts.py: %s' % e)

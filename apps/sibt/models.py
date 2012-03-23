@@ -23,7 +23,7 @@ from apps.app.models      import App
 from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models     import Link
-from apps.user.models     import get_or_create_user_by_cookie
+from apps.user.models     import User
 from apps.vote.models     import VoteCounter
 
 from util.consts          import *
@@ -54,6 +54,8 @@ class SIBT(App):
 
     # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
+
+    _memcache_fields = ['link', 'created', 'end_datetime']
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -121,7 +123,7 @@ class SIBT(App):
         logging.info("SIBTAPP HANDLING LINK CLICK" )
 
         # Fetch User by cookie
-        user = get_or_create_user_by_cookie( urihandler, self )
+        user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
         act = SIBTClickAction.create( user, self, link )
@@ -194,11 +196,6 @@ class SIBT(App):
                Email.emailDevTeam('SIBT INSTANCE: error printing data: %s' % str(e))
         return instance
 
-        @staticmethod
-        def get_by_uuid( uuid ):
-            return SIBT.all().filter( 'uuid =', uuid ).get()
-
-# Accessors --------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 # SIBTInstance Class Definition ------------------------------------------------
@@ -337,6 +334,7 @@ class SIBTInstance(Model):
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_nos")
 
+
 # ------------------------------------------------------------------------------
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
@@ -376,26 +374,25 @@ class PartialSIBTInstance(Model):
     """ Users can only have 1 of these ever.
         If they already have one, update it.
         Otherwise, make a new one. """
-    @staticmethod
-    def create( user, app, link, product ):
-
-        instance = PartialSIBTInstance.get_by_user( user )
+    @classmethod
+    def create(cls, user, app, link, product):
+        instance = cls.get_by_user(user)
         if instance:
             instance.link    = link
             instance.product = product
             instance.app_    = app
         else: 
-            uuid = generate_uuid( 16 )
+            uuid = generate_uuid(16)
 
-            instance = PartialSIBTInstance( key_name = uuid,
-                                            uuid     = uuid,
-                                            user     = user,
-                                            link     = link, 
-                                            product  = product,
-                                            app_     = app )
+            instance = cls(key_name=uuid,
+                           uuid=uuid,
+                           user=user,
+                           link=link, 
+                           product=product,
+                           app_=app)
         instance.put()
         return instance
 
-    @staticmethod
-    def get_by_user( user ):
-        return PartialSIBTInstance.all().filter( 'user =', user ).get()
+    @classmethod
+    def get_by_user(cls, user):
+        return cls.all().filter('user =', user).get()

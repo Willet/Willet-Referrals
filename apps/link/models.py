@@ -12,13 +12,14 @@ from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 from google.appengine.api import memcache
+from google.appengine.api.app_identity import get_application_id
 
 from apps.user.models import User
 
 from util.model import Model
 from util.helpers import encode_base62
 from util.helpers import url
-from util.consts import MEMCACHE_TIMEOUT
+from util.consts import APP_LIVE, DOMAIN, MEMCACHE_TIMEOUT
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARDS = 25
@@ -110,8 +111,14 @@ class Link(Model):
         self.add_clicks(1)
 
     def get_willt_url(self):
-        return 'http://rf.rs/' + self.willt_url_code
-
+        appname = get_application_id() # e.g. brian-willet
+        if appname == APP_LIVE:
+            # you see, rf.rs links don't actually work unless it is on live server
+            return 'http://rf.rs/' + self.willt_url_code
+        else:
+            # if testing, just output the testing domain
+            return 'http://' + DOMAIN + '/' + self.willt_url_code
+    
     def count_retweets(self):
         return len(self.retweets)
 
