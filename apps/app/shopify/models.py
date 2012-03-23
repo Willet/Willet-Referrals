@@ -46,7 +46,7 @@ class AppShopify(Model):
         self.get_settings()
 
     def _validate_self(self):
-        if not re.match("(http|https)://[\w-_~]+.myshopify.com", self.store_url):
+        if not re.match("(http|https)://[\w\-~]+.myshopify.com", self.store_url):
             raise ValueError("<%s.%s> has malformated store url '%s'" % (self.__class__.__module__, self.__class__.__name__, self.store_url))
         return True
 
