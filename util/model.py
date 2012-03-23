@@ -11,7 +11,7 @@ import time
 from datetime import timedelta
 
 from django.utils import simplejson
-    
+
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
@@ -46,7 +46,7 @@ class Model(db.Model):
     # Subclasses can add their own fields.
     # Memcaching with non-unique fields yields unexpected results!
     # Failure to cache a given field will raise a warning.
-    _memcache_fields = []
+    memcache_fields = []
 
     def _validate_self(self):
         ''' All Model subclasses containing a _validate_self function
@@ -162,10 +162,10 @@ class Model(db.Model):
         '''
         try:
             key = self.get_key()
-            logging.debug('setting new memcache object: %r (%d secondary keys: %r)' % (self, len(self._memcache_fields), self._memcache_fields))
+            logging.debug('setting new memcache object: %r (%d secondary keys: %r)' % (self, len(self.memcache_fields), self.memcache_fields))
             memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
-            for field in self._memcache_fields:
+            for field in self.memcache_fields:
                 if getattr (self, field, None): # if this object's given property has a non-null value
                     try: # memcache by custom fields
                         secondary_key = self.build_key (str (getattr (self, field)))

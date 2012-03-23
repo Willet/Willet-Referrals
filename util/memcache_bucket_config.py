@@ -18,11 +18,14 @@ class MemcacheBucketConfig(Model):
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
     
-    _memcache_fields = ['id', 'name']
+    memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
         super(MemcacheBucketConfig, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     def get_bucket(self, number):
         return '%s:%s' % (self.name, number)

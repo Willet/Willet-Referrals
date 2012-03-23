@@ -185,9 +185,9 @@ class DoVote( URIHandler ):
             user = User.get (user_uuid)
             #user = User.all().filter('uuid =', user_uuid).get()
         if not user:
-            user = get_or_create_user_by_cookie (self, app)
+            user = User.get_or_create_by_cookie (self, app)
         if not user:
-            # how can get_or_create_user_by_cookie fail?
+            # how can User.get_or_create_by_cookie fail?
             pass
 
         which = self.request.get( 'which', 'yes' )

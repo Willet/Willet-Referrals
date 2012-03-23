@@ -553,7 +553,7 @@ class SIBTShopConnectionServe (webapp.RequestHandler):
         # so now you should have an app.
         
         target = get_target_url(self.request.headers.get('REFERER'))
-        user = get_or_create_user_by_cookie( self, app )
+        user = User.get_or_create_by_cookie(self, app)
         if target and not hasattr(app, 'extra_url'):
             ''' check if target (almost always window.location.href) has the same domain as store url
                 example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket

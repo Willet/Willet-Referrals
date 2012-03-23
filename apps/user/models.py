@@ -244,7 +244,7 @@ class User(db.Expando):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
+        # logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
             logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
@@ -287,7 +287,7 @@ class User(db.Expando):
         Each subclass must have a staticmethod _get_from_datastore
         """
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        logging.debug('User::get(): Pulling %s from memcache.' % key)
+        # logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
             logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
@@ -1054,7 +1054,7 @@ def get_or_create_user_by_email(email, request_handler, app):
     User.get_or_create_by_email(email, request_handler, app)
 
 def get_or_create_user_by_cookie(request_handler, app): 
-    logging.warn('Replaced by User.get_or_create_by_cookie')
+    raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
     User.get_or_create_by_cookie(request_handler, app)
 
 

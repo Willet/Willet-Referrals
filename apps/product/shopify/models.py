@@ -29,7 +29,7 @@ class ProductShopify(Product):
     # A list of tags to describe the product
     tags = db.StringListProperty( indexed = False )
 
-    _memcache_fields = ['resource_url', 'shopify_id']
+    memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)

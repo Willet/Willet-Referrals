@@ -55,7 +55,7 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
 
-    _memcache_fields = ['link', 'created', 'end_datetime']
+    memcache_fields = ['link', 'created', 'end_datetime']
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

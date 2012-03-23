@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
-import re, hashlib, urllib
+import re
+import hashlib
+import urllib
 
-from datetime import datetime, timedelta
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch
-from google.appengine.api import memcache
-from google.appengine.api import taskqueue 
-from google.appengine.ext import webapp
+from datetime                   import datetime, timedelta
+from django.utils               import simplejson as json
+from google.appengine.api       import urlfetch
+from google.appengine.api       import memcache
+from google.appengine.api       import taskqueue 
+from google.appengine.ext       import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from time import time
-from urlparse import urlparse
+from time                       import time
+from urlparse                   import urlparse
 
 from apps.app.models            import *
 from apps.client.shopify.models import *
@@ -31,10 +33,10 @@ from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
 
 from util.consts                import *
-from util.shopify_helpers import get_shopify_url as format_url
+from util.shopify_helpers       import get_shopify_url as format_url
 from util.helpers               import *
 from util.urihandler            import URIHandler
-from util.strip_html import strip_html
+from util.strip_html            import strip_html
 
 class ShowBetaPage(URIHandler):
     def get(self):
@@ -217,7 +219,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
                 app = instance.app_
             
             if not user and app:
-                user = get_or_create_user_by_cookie (self, app)
+                user = User.get_or_create_by_cookie (self, app)
 
             name = instance.asker.get_full_name()
 
@@ -325,7 +327,7 @@ class ShowResults(webapp.RequestHandler):
                 app = instance.app_
             
             if not user and app:
-                user = get_or_create_user_by_cookie (self, app)
+                user = User.get_or_create_by_cookie (self, app)
 
             name = instance.asker.get_full_name()
             
@@ -589,11 +591,7 @@ class SIBTServeScript(URIHandler):
             self.response.out.write('/* no client for %s */' % domain)
             return
         
-        try:
-            user = User.get_or_create_by_cookie(self, app)
-        except (AttributeError, NotImplementedError):
-            # try the "cool, it is not deprecated yet" method
-            user = get_or_create_user_by_cookie(self, app)
+        user = User.get_or_create_by_cookie(self, app)
 
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
         # you now have app, user, client, and instance
