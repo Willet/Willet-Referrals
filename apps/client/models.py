@@ -30,7 +30,7 @@ class Client(Model, polymodel.PolyModel):
     email         = db.StringProperty  (indexed=True)
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        self._memcache_key = hashlib.md5(kwargs['email']).hexdigest() if 'email' in kwargs else None 
         super(Client, self).__init__(*args, **kwargs)
     
     @staticmethod
@@ -40,6 +40,9 @@ class Client(Model, polymodel.PolyModel):
         
 # Accessors
 def get_client_by_email( email ):
+    client = Client.get(hashlib.md5(email).hexdigest())
+    if client:
+        return client
     return Client.all().filter( 'email =', email ).get()
 
 def get_client_by_uuid( uuid ):

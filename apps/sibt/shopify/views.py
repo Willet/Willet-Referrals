@@ -53,6 +53,7 @@ class ShowBetaPage(URIHandler):
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
     def get(self):
+        client_email = None
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
@@ -69,7 +70,6 @@ class SIBTShopifyWelcome(URIHandler):
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
-            client_email = None
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
