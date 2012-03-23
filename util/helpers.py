@@ -105,6 +105,7 @@ def get_request_variables(targets, rh):
     return rd
 
 # Cookie Stuff
+
 def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""
     logging.info("Setting a user cookie: %s" % user_uuid)

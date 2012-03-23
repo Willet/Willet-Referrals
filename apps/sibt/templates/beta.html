@@ -1,0 +1,59 @@
+{% extends "../shopify/templates/base.html" %}
+
+{% block head %}
+    <style>
+        input[type='text'], textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+        div button {
+            position: relative;
+            top: -1px;
+        }
+    </style>
+{% endblock head %}
+
+{% block content %}
+
+    <h1 class="span-24 last lower-100 center">Should I Buy This?</h1>
+    
+    <div class="span-8 append-1">
+        <p class="span-8 lower-50">
+            Lowering cart abandonment <strong>and</strong> gaining you <strong>new</strong>, <strong>better</strong> customers!
+            <br /><br />
+            Empower your customers to get shopping advice from their friends!
+            <br /><br />
+            Friends come to <strong>your site</strong>, discover your products, and help your initial customer make a decision!
+            <br /><br />
+            <b>100% free</b> for our Beta customers - <b>That's YOU</b>!
+        </p>
+    </div>
+
+    <div class="span-15 last">
+        <iframe style="border: 10px solid #474747; border-radius: 10px;" width="560" height="315" src="http://www.youtube.com/embed/VujD0OOZNvU" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <div class="about prepend-top append-bottom span-24 last center">
+        <h3>Interested? Sign up now!</h3>
+        <br />
+        <form>
+            <fieldset>
+                <legend>Your information</legend>
+                <input type="text" id="fullname" placeholder="Full name" />
+                <input type="text" id="email" placeholder="Admin email" />
+
+                <hr />
+                <input type="text" id="phone" placeholder="Phone number (optional)" />
+                <input type="text" id="address1" placeholder="Addres (optional)" />
+            </fieldset>
+            
+            <fieldset>
+                <legend>Site information</legend>
+                <input type="text" id="shopname" placeholder="Shop name" value="Amy&rsquo;s Bakery" />
+                <!-- ridiculous name here is to encourage real input -->
+            </fieldset>
+
+            <input class="button" type="submit" value="Done" />
+        </form>
+    </div>
+{% endblock content %}

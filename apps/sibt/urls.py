@@ -11,6 +11,9 @@ urlpatterns = [
     (r'/s/results.html',            ShowResults),
     (r'/s/fb_thanks.html',          ShowFBThanks),
     (r'/s/track/unload',            ShowOnUnloadHook),
+    (r'/s/sibt.js',                 SIBTServeScript),
+    (r'/s',             	        SIBTWelcome),
+    (r'/s/beta',        	        ShowBetaPage),
 
     # Processes
     (r'/s/doVote',                  DoVote),

@@ -33,18 +33,6 @@ from util.helpers            import url as reverse_url
 class SIBTShopify(SIBT, AppShopify):
     # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
-
-    # Version number of the app
-    # Version 1 = [Beginning, Nov. 22, 2011]
-    # Version 2 = [Nov. 23, 2011, Present]
-    # Differences between versions: version 1 uses script_tags API to install scripts
-    # version 2 uses asset api to include liquid
-    # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default='3', indexed=False)
-    
-    # STRING property of any integer
-    # change on upgrade; new installs get this as version.
-    CURRENT_INSTALL_VERSION = '3'
     
     def _validate_self(self):
         return True
@@ -357,21 +345,6 @@ class SIBTShopify(SIBT, AppShopify):
     @staticmethod
     def get_by_uuid(uuid):
         return SIBTShopify.get(uuid)
-
-    @staticmethod
-    def get_by_store_url(url):
-        data = memcache.get(url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
-
-        app = SIBTShopify.all().filter('store_url =', url).get()
-        if not app:
-            # no app in DB by store_url; try again with extra_url
-            app = SIBTShopify.all().filter('extra_url =', url).get()
-        
-        if app:
-            app.memcache_by_store_url()
-        return app
 
     @staticmethod
     def get_by_store_id(store_id):

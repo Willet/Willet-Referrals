@@ -36,12 +36,13 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 class ClientShopify( Client ):
     
     # User
-    merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
+    # merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
+    # hint: nobody uses the shopify_stores back-reference.
 
     # Store properties
-    name    = db.StringProperty( indexed = False )
-    url     = db.LinkProperty  ( indexed = True )
-    domain  = db.LinkProperty  ( indexed = True )
+    # name    = db.StringProperty( indexed = False )
+    # url     = db.LinkProperty  ( indexed = True )
+    # domain  = db.LinkProperty  ( indexed = True )
     token   = db.StringProperty( default = '' )
     id      = db.StringProperty( indexed = True )
 

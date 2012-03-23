@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
+import re, hashlib, urllib
 
 from datetime import datetime, timedelta
 from django.utils import simplejson as json
@@ -20,19 +20,33 @@ from apps.app.models            import *
 from apps.client.shopify.models import *
 from apps.gae_bingo.gae_bingo   import ab_test
 from apps.gae_bingo.gae_bingo   import bingo
+from apps.client.models         import *
+from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions          import *
-from apps.sibt.models           import SIBTInstance
-from apps.sibt.models           import PartialSIBTInstance
+from apps.sibt.models           import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
 
 from util.consts                import *
+from util.shopify_helpers import get_shopify_url as format_url
 from util.helpers               import *
 from util.urihandler            import URIHandler
 from util.strip_html import strip_html
+
+class ShowBetaPage(URIHandler):
+    def get(self):
+        path = os.path.join('apps/sibt/templates/', 'beta.html')
+        self.response.out.write(template.render(path, {}))
+
+
+class SIBTWelcome(URIHandler):
+    # "install done" page. actually installs the apps.
+    def get(self):
+        path = os.path.join('apps/sibt/templates/', 'welcome.html')
+        self.response.out.write(template.render(path, {}))
 
 
 class AskDynamicLoader(webapp.RequestHandler):
@@ -528,3 +542,89 @@ class SIBTGetUseCount (URIHandler):
             self.response.out.write (str (button_use_count))
         except:
             self.response.out.write ('0') # no shame in that?
+
+class SIBTServeScript(URIHandler):
+    ''' Serves a script that shows the SIBT button.
+        Due to the try-before-you-buy nature of the Internets, this view will
+        not create a SIBT app for the store/domain until (undecided trigger).
+        
+        Example call: http://brian-willet.appspot.com/s/sibt.js?url=http%3A%2F%2Fkiehn-mertz3193.myshopify.com%2Fproducts%2Fcustomer-focused-leading-edge-algorithm
+    '''
+    
+    def get(self):
+        app = user = instance = None
+        domain = path = ''
+        parts = template_values = {}
+        
+        # in the proposed SIBT v10, page URL is the only required parameter.
+        page_url = self.request.get ('url')
+        if not page_url:
+            self.response.out.write('/* missing URL */')
+            return
+
+        try:
+            parts = urlparse(page_url) # http://docs.python.org/library/urlparse.html
+            domain = '%s://%s' % (parts.scheme, parts.netloc)
+            path = parts.path
+        except:
+            self.response.out.write('/* malformed URL */')
+            return
+        
+        # app = SIBT.get(store_url=domain) # this get method does not work (yet)
+        app = SIBT.get(hashlib.md5(domain).hexdigest()) # this, however, will
+        client = Client.get_by_url(domain)
+        if client and app:
+            if client != app.client: # if something is really screwed up, fix it
+                app.client = client
+                app.put()
+        elif client and not app:
+            # if client exists and the app is not installed for it, then
+            # automatically install the app for the client
+            app = SIBT.get_or_create (
+                client=client,
+                domain=domain
+            )
+        elif not client:
+            # we have no business with you
+            self.response.out.write('/* no client for %s */' % domain)
+            return
+        
+        try:
+            user = User.get_or_create_by_cookie(self, app)
+        except (AttributeError, NotImplementedError):
+            # try the "cool, it is not deprecated yet" method
+            user = get_or_create_user_by_cookie(self, app)
+
+        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+        # you now have app, user, client, and instance
+
+        # indent like this: http://stackoverflow.com/questions/6388187
+        template_values = {
+            'URL': URL,
+            'PAGE': page_url,
+            'DOMAIN': domain,
+            'app': app, # if missing, django omits these silently
+            'user': user,
+            'instance': instance,
+
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
+
+            'is_asker': False,
+            'show_votes': False,
+            'has_voted': False,
+            'has_results': False,
+            'is_live': False,
+            'unsure_mutli_view': False
+        }
+        
+        path = os.path.join('apps/sibt/templates/', 'sibt_static.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+        self.response.out.write(template.render(path, template_values))
+        return
+    
+    def post(self):
+        self.get() # because money
+
+

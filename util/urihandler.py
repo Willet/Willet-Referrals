@@ -11,6 +11,7 @@ from google.appengine.ext.webapp import template
 
 from apps.client.models import get_client_by_email
 from util.consts        import *
+from util.cookies       import LilCookies
 from util.gaesessions   import get_current_session
 from util.templates     import render 
 
@@ -84,4 +85,19 @@ class URIHandler( webapp.RequestHandler ):
                 app_path = '/'.join(parts[:-1])
 
         return app_path
+
+    def set_cookie(field, value):
+        """Sets a cookie on the browser"""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        cookie.set_secure_cookie(
+            name=field,
+            value=value,
+            expires_days=365*10,
+            domain='.%s' % APP_DOMAIN
+        )
+        
+    def get_cookie(field):
+        """Retrieves a cookie value from the browser; None if N/A."""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        return cookie.get_secure_cookie(name=field)
 

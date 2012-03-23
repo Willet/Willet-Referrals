@@ -44,6 +44,19 @@ class App(Model, polymodel.PolyModel):
     
     # For Apps that use a click counter, this is the cached amount
     cached_clicks_count = db.IntegerProperty( default = 0 )
+
+    # Version number of the app
+    # Version 1 = [Beginning, Nov. 22, 2011]
+    # Version 2 = [Nov. 23, 2011, Present]
+    # Differences between versions: version 1 uses script_tags API to install scripts
+    # version 2 uses asset api to include liquid
+    # version 3: "sweet buttons upgrade"
+    # version 10: merge SIBT into ShopConnection app
+    version    = db.StringProperty(default='10', indexed=False)
+    
+    # STRING property of any integer
+    # change on upgrade; new installs get this as version.
+    CURRENT_INSTALL_VERSION = '10'
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
