@@ -17,10 +17,6 @@ from google.appengine.api.mail   import EmailMessage
 from google.appengine.ext.webapp import template
 from util.consts import *
 
-###################
-#### Addresses ####
-###################
-
 info      = "info@getwillet.com"
 fraser    = 'fraser@getwillet.com'
 brian     = "brian@getwillet.com"
@@ -29,36 +25,18 @@ nick      = 'nick@getwillet.com'
 dev_team  = '%s, %s' % (fraser, nick)
 from_addr = info
 
-#####################
-#### Email Class ####
-#####################
-class Email():
 
-#### Dev Team Emails ####
+class Email():
+    """ All email methods are held in this class.  All emails are routed
+        through Email.send_email.  Here we control our email provider.
+        Currently: SendGrid for single recipients, App Engine for multiple recipients
+    """
     @staticmethod
     def emailDevTeam(msg):
         to_addr = dev_team
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
-        Email.send_email(from_addr, to_addr, subject, body)
-
-    @staticmethod
-    def invite(infrom_addr, to_addrs, msg, url, app):
-        # Deprecated
-        # Was part of Invite For A Gift
-        raise DeprecationWarning('Invite For A Gift related method called')
-        to_addr = to_addrs.split(',')
-        subject = 'I\'ve Given You A Gift!'
-        body = template.render(Email.template_path('invite.html'),
-            {
-                'from_addr' : infrom_addr,
-                'msg' : msg,
-                'app' : app 
-            }
-        )
-        
-        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod

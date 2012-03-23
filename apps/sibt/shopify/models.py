@@ -135,7 +135,104 @@ class SIBTShopify(SIBT, AppShopify):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
+
+    def _memcache_by_store_url(self):
+        success1 = memcache.set(
+                self.store_url,
+                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        if hasattr (self, 'extra_url'):
+            # if you have an extra URL, you need to memcache the app by extra URL as well.
+            success2 = memcache.set(
+                    self.extra_url,
+                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            return success1 and success2
+        return success1
+
+    def put(self):
+        """ Memcache by the store_url as well"""
+        super(SIBTShopify, self).put()
+        self.memcache_by_store_url()
     
+    # Retreivers --------------------------------------------------------------------
+    @staticmethod
+    def get_by_uuid(uuid):
+        return SIBTShopify.get(uuid)
+
+    @staticmethod
+    def get_by_store_url(url):
+        data = memcache.get(url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        app = SIBTShopify.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = SIBTShopify.all().filter('extra_url =', url).get()
+        
+        if app:
+            app.memcache_by_store_url()
+        return app
+
+    @staticmethod
+    def get_by_store_id(store_id):
+        logging.info("Shopify: Looking for %s" % store_id)
+        logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
+        return SIBTShopify.all()\
+                .filter('store_id =', store_id)\
+                .get()
+    
+    # Constructors -----------------------------------------------------------------------------
+    @staticmethod
+    def create(client, token):
+        uuid = generate_uuid( 16 )
+        logging.debug("creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
+        app = SIBTShopify(
+                        key_name = uuid,
+                        uuid = uuid,
+                        client = client,
+                        store_name = client.name, # Store name
+                        store_url = client.url, # Store url
+                        store_id = client.id, # Store id
+                        store_token = token,
+                        version = SIBTShopify.CURRENT_INSTALL_VERSION )
+        app.put()
+        
+        app.do_install()
+       
+        return app
+
+    # 'Retreive or Construct'ers -------------------------------------------------------------
+    @classmethod
+    def get_or_create(cls, client, token=None):
+        # logging.debug ("in get_or_create, client.url = %s" % client.url)
+        app = cls.get_by_store_url(client.url)
+        if app is None:
+            logging.debug ("app not found; creating one.")
+            app = cls.create(client, token)
+        elif token != None and token != '':
+            if app.store_token != token:
+                # TOKEN mis match, this might be a re-install
+                logging.warn("client and app token mismatch; reinstalling app.")
+                try:
+                    app.store_token = token
+                    logging.debug ("app.old_client was %s" % app.old_client)
+                    app.client      = app.old_client if app.old_client else client
+                    app.old_client  = None
+                    logging.debug("changing %s version to '%s'" % (cls.__name__, cls.CURRENT_INSTALL_VERSION))
+                    app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
+                    app.put()
+
+                    app.do_install()
+                except:
+                    logging.error('encountered error with reinstall', exc_info=True)
+        else:
+            # if token is None, i.e. getting, not creating
+            pass
+        
+        logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
+        return app
+
+    # Shopify API calls -------------------------------------------------------------
     def do_install(self):
         """Installs this instance"""
         if self.version == '3': # sweet buttons has different on-page snippet.
@@ -209,24 +306,7 @@ class SIBTShopify(SIBT, AppShopify):
                              self.client.merchant.get_full_name(), 
                              self.client.name )
 
-    def put(self):
-        """So we memcache by the store_url as well"""
-        logging.info('enhanced SIBTShopify put')
-        super(SIBTShopify, self).put()
-        self.memcache_by_store_url()
-
-    def memcache_by_store_url(self):
-        success1 = memcache.set(
-                self.store_url,
-                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-        if hasattr (self, 'extra_url'):
-            # if you have an extra URL, you need to memcache the app by extra URL as well.
-            success2 = memcache.set(
-                    self.extra_url,
-                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-            return success1 and success2
-        return success1
-
+    # CSS Methods -------------------------------------------------------------
     def reset_css(self):
         self.set_css()
         
@@ -297,80 +377,4 @@ class SIBTShopify(SIBT, AppShopify):
     def get_default_button_css(cls):
         logging.warn('this method shouldnt be used: get_default_button_css')
         return cls.get_default_css()
-        
-    @staticmethod
-    def create(client, token):
-        uuid = generate_uuid( 16 )
-        logging.debug("creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
-        app = SIBTShopify(
-                        key_name = uuid,
-                        uuid = uuid,
-                        client = client,
-                        store_name = client.name, # Store name
-                        store_url = client.url, # Store url
-                        store_id = client.id, # Store id
-                        store_token = token,
-                        version = SIBTShopify.CURRENT_INSTALL_VERSION )
-        app.put()
-        
-        app.do_install()
-       
-        return app
-
-    @classmethod
-    def get_or_create(cls, client, token=None):
-        # logging.debug ("in get_or_create, client.url = %s" % client.url)
-        app = cls.get_by_store_url(client.url)
-        if app is None:
-            logging.debug ("app not found; creating one.")
-            app = cls.create(client, token)
-        elif token != None and token != '':
-            if app.store_token != token:
-                # TOKEN mis match, this might be a re-install
-                logging.warn("client and app token mismatch; reinstalling app.")
-                try:
-                    app.store_token = token
-                    logging.debug ("app.old_client was %s" % app.old_client)
-                    app.client      = app.old_client if app.old_client else client
-                    app.old_client  = None
-                    logging.debug("changing %s version to '%s'" % (cls.__name__, cls.CURRENT_INSTALL_VERSION))
-                    app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
-                    app.put()
-
-                    app.do_install()
-                except:
-                    logging.error('encountered error with reinstall', exc_info=True)
-        else:
-            # if token is None, i.e. getting, not creating
-            pass
-        
-        logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
-        return app
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return SIBTShopify.get(uuid)
-
-    @staticmethod
-    def get_by_store_url(url):
-        data = memcache.get(url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
-
-        app = SIBTShopify.all().filter('store_url =', url).get()
-        if not app:
-            # no app in DB by store_url; try again with extra_url
-            app = SIBTShopify.all().filter('extra_url =', url).get()
-        
-        if app:
-            app.memcache_by_store_url()
-        return app
-
-    @staticmethod
-    def get_by_store_id(store_id):
-        logging.info("Shopify: Looking for %s" % store_id)
-        logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
-        return SIBTShopify.all()\
-                .filter('store_id =', store_id)\
-                .get()
-
+# end class

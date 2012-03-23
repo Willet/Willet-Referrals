@@ -72,7 +72,7 @@ class ShopifyRedirect( URIHandler ):
         self.redirect(redirect_url)
 
 # The "Dos" --------------------------------------------------------------------
-class DoDeleteApp( URIHandler ):
+class DoDeleteApp(URIHandler):
     def post( self ):
         client   = self.get_client()
         app_uuid = self.request.get( 'app_uuid' )
@@ -85,7 +85,7 @@ class DoDeleteApp( URIHandler ):
         
         self.redirect( '/client/account' )
 
-class ServeShopifyUI (URIHandler):
+class ServeShopifyUI(URIHandler):
     def get (self):
         app = self.request.get('app')
 
