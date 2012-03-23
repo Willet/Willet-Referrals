@@ -18,8 +18,9 @@ from apps.client.shopify.models import ClientShopify
 from apps.user.models   import User
 
 from util.consts import SECURE_URL
+from util.urihandler import URIHandler
 
-class OrderJSLoader(webapp.RequestHandler):
+class OrderJSLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     

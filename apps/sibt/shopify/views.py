@@ -520,7 +520,7 @@ class SIBTShopifyInstallError (URIHandler):
         return
 
         
-class SIBTShopConnectionServe (webapp.RequestHandler):
+class SIBTShopConnectionServe (URIHandler):
     """ Serves SIBT for shops with ShopConnection installed.
         If the shop does not have a SIBT app, it will be created.
         Creating SIBT will install WOSIB, too... so it's like installing everything.

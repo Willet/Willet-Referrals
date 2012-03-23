@@ -242,7 +242,7 @@ class GetExpiredSIBTInstances(URIHandler):
         self.response.out.write (msg)
 
 
-class RemoveExpiredSIBTInstance(webapp.RequestHandler):
+class RemoveExpiredSIBTInstance(URIHandler):
     def post(self):
         return self.get()
     

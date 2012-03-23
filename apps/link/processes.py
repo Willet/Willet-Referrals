@@ -20,7 +20,7 @@ from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set
 from util.consts import *
 from util.urihandler import URIHandler
 
-class TrackWilltURL( webapp.RequestHandler ):
+class TrackWilltURL(URIHandler):
     """This handler tracks click-throughs on a given code. It tests
        for the presence of a cookie that it also sets in order to ensure
        incremental click-throughs are unique"""
@@ -50,7 +50,7 @@ class TrackWilltURL( webapp.RequestHandler ):
 
         return
             
-class InitCodes(webapp.RequestHandler):
+class InitCodes(URIHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""
     def get(self):
@@ -65,7 +65,7 @@ class InitCodes(webapp.RequestHandler):
             n += 1
         self.response.out.write(str(n) + " counters initialized")
 
-class CleanBadLinks( webapp.RequestHandler ):
+class CleanBadLinks(URIHandler):
     def get(self):
         links = Link.all().filter('user =', None)
 
@@ -85,7 +85,7 @@ class CleanBadLinks( webapp.RequestHandler ):
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
 
-class IncrementCodeCounter(webapp.RequestHandler):
+class IncrementCodeCounter(URIHandler):
     """ This was getting called every time a willet code was being
         created, usually taking ~100ms. Moved to a task to speed up
         page load times"""

@@ -87,7 +87,7 @@ class GetExpiredWOSIBInstances(URIHandler):
             )
         logging.info('expiring %d instances' % expired_instances.count())
 
-class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
+class RemoveExpiredWOSIBInstance(URIHandler):
     def post(self):
         return self.get()
     

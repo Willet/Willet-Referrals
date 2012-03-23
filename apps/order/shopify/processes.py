@@ -73,7 +73,7 @@ class CreateShopifyOrder(URIHandler):
 
 """ The following is all legacy code."""
 
-class OrderIframeNotification(webapp.RequestHandler):
+class OrderIframeNotification(URIHandler):
     """ When order.js is loaded on a confirmation page, it'll
         notify us here so that we can score a sale for this User"""
     

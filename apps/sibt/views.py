@@ -51,7 +51,7 @@ class SIBTWelcome(URIHandler):
         self.response.out.write(template.render(path, {}))
 
 
-class AskDynamicLoader(webapp.RequestHandler):
+class AskDynamicLoader(URIHandler):
     """Serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -173,7 +173,7 @@ class AskDynamicLoader(webapp.RequestHandler):
         return
 
 
-class VoteDynamicLoader(webapp.RequestHandler):
+class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on a purchase
         On v4 and up (standalone vote page), "voter is never asker"
     """
@@ -283,7 +283,7 @@ class VoteDynamicLoader(webapp.RequestHandler):
         return
 
 
-class ShowResults(webapp.RequestHandler):
+class ShowResults(URIHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         template_values = {}

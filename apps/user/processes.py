@@ -25,7 +25,7 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 
-class FetchFacebookData(webapp.RequestHandler):
+class FetchFacebookData(URIHandler):
     """Fetch facebook information about the given user"""
     def post(self):
         def txn(user):
@@ -87,7 +87,7 @@ class FetchFacebookData(webapp.RequestHandler):
         logging.info("done updating")
 
 
-class FetchFacebookFriends(webapp.RequestHandler):
+class FetchFacebookFriends(URIHandler):
     """Fetch and save the facebook friends of a given user"""
     def get(self):
         def txn(user):
@@ -221,7 +221,7 @@ def unpacker(obj, user):
     return r
 
 
-class UpdateEmailAddress(webapp.RequestHandler):
+class UpdateEmailAddress(URIHandler):
     def post( self ):
         user = User.get_by_cookie(self)
 

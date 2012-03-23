@@ -66,7 +66,7 @@ class WOSIBVoteDynamicLoader (URIHandler):
             logging.error ('ono', exc_info = True)
         return
 
-class WOSIBAskDynamicLoader(webapp.RequestHandler):
+class WOSIBAskDynamicLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
@@ -187,7 +187,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             self.response.out.write(msg)
         return
 
-class WOSIBShowResults(webapp.RequestHandler):
+class WOSIBShowResults(URIHandler):
     """ Shows the results of an instance """
     def get(self):
         instance_uuid = self.request.get( 'instance_uuid' )
