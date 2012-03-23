@@ -57,7 +57,6 @@ class ClientShopify( Client ):
     @staticmethod
     def create( url_, token, request_handler, app_type ):
         """ Create a Shopify Store as a Client"""
-        # TODO(Barbara): Technically, we can do all this on a queue.
 
         url_ = get_shopify_url( url_ )
         
@@ -86,6 +85,8 @@ class ClientShopify( Client ):
                                token    = token,
                                id       = str(data['id']),
                                merchant = merchant  )
+        
+        #TODO: change to Model.put once it becomes synchronous
         db.put (store) # critical install-time process; it cannot wait
 
         # Update the merchant with data from Shopify
