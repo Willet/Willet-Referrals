@@ -107,9 +107,8 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % (
-                    client_email, shop_owner, client.url, shop_name
-                )
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                    (client_email, shop_owner, client.url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
             return

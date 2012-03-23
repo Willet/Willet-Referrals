@@ -10,15 +10,16 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import re
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
+from django.utils           import simplejson as json
+from google.appengine.ext   import db
 
-from apps.app.models    import App
-from apps.email.models  import Email
+from apps.app.models        import App
+from apps.email.models      import Email
 
-from util.consts        import *
-from util               import httplib2
-from util.model         import Model
+from util                   import httplib2
+from util.consts            import *
+from util.shopify_helpers   import *
+from util.model             import Model
 
 NUM_SHARE_SHARDS = 15
 
@@ -211,6 +212,10 @@ class AppShopify(Model):
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
             Must first get the `main` template in use"""
+        if not assets:
+            logging.warn('No assets to install')
+            return
+        
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -218,9 +223,6 @@ class AppShopify(Model):
         h.add_credentials(username, password)
         
         main_id = None
-
-        if assets == None:
-            assets = []
 
         # get the theme ID
         theme_url = '%s/admin/themes.json' % self.store_url
