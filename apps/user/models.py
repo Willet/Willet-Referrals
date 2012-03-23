@@ -237,6 +237,29 @@ class User(db.Expando):
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
         logging.info('put_later: %s' % self.uuid)
+    
+    def put(self):
+        """Stores model instance in memcache and database"""
+        key = self.get_key()
+        logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
+        timeout_ms = 100
+        while True:
+            logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            try:
+                self.hardPut() # Will validate the instance.
+                logging.debug("user has been hardput().")
+            except datastore_errors.Timeout:
+                thread.sleep(timeout_ms)
+                timeout_ms *= 2
+            else:
+                break
+        # Memcache *after* model is given datastore key
+        if self.key():
+            logging.debug("user exists in DB, and is stored in memcache.")
+            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
+            
+        return True
 
     def hardPut( self ):
         logging.debug("PUTTING %s" % self.__class__.__name__)
@@ -261,17 +284,17 @@ class User(db.Expando):
         Each subclass must have a staticmethod _get_from_datastore
         """
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
-            logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
+            logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:
-            logging.debug('Model::get(): %s found in memcache!' % key)
+            logging.debug('User::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
     @classmethod
