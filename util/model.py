@@ -119,7 +119,6 @@ class Model(db.Model):
     # Accessors --------------------------------------------------------------------------
     @classmethod
     def get(cls, memcache_key):
-<<<<<<< HEAD
         """ Checks memcache for model before hitting database
 
         Each class must define a _get_from_datastore
@@ -127,12 +126,6 @@ class Model(db.Model):
         obj = None
         key = cls.build_key(memcache_key)
         #logging.debug('Model::get(): Pulling %s from memcache.' % key)
-=======
-        """Checks memcache for model before hitting database"""
-        obj = None
-        key = cls.build_key(memcache_key)
-        # logging.debug('Model::get(): Pulling %s from memcache.' % key)
->>>>>>> productcache
         data = memcache.get(key)
 
         if data:
@@ -151,17 +144,6 @@ class Model(db.Model):
                 pass # logging.debug ('Secondary key miss!')
         
         if not data:
-<<<<<<< HEAD
-            # hits here if object does not exist and/but the memcache reference still isinstance
-            #logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
-
-            entity = cls._get_from_datastore(memcache_key)
-            # Throw everything in the memcache when you pull it - it may never be saved
-            if entity:
-                #logging.debug('setting new memcache entity: %s' % key)
-                memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
-            return entity
-=======
             # object was not found in memcache
             logging.debug('Memcache miss! (%s) Hitting DB.' % key)
             obj = cls._get_from_datastore(memcache_key)
@@ -194,7 +176,6 @@ class Model(db.Model):
         except Exception, e:
             logging.error ("Error setting memcache: %s" % e, exc_info=True)
 
->>>>>>> productcache
 # end class
 
 
