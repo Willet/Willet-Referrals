@@ -554,7 +554,9 @@ class SIBTServeScript(URIHandler):
     '''
     
     def get(self):
+        # declare vars.
         app = user = instance = None
+        votes_count = 0
         domain = path = ''
         parts = template_values = {}
         
@@ -588,7 +590,7 @@ class SIBTServeScript(URIHandler):
             )
         elif not client:
             # we have no business with you
-            self.response.out.write('/* no client for %s */' % domain)
+            self.response.out.write('/* no account %s! Go to http://rf.rs to get an account. */' % domain)
             return
         
         user = User.get_or_create_by_cookie(self, app)
