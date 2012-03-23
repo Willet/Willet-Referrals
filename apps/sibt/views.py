@@ -594,6 +594,11 @@ class SIBTServeScript(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
 
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+        if instance:
+            asker_name = instance.asker.get_first_name()
+            asker_pic  = instance.asker.get_attr('pic')
+            votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
+
         # you now have app, user, client, and instance
 
         # indent like this: http://stackoverflow.com/questions/6388187
@@ -609,10 +614,9 @@ class SIBTServeScript(URIHandler):
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
 
             'is_asker': False,
-            'show_votes': False,
-            'has_voted': False,
-            'has_results': False,
-            'is_live': False,
+            'show_votes': bool(instance),
+            'has_results': (votes_count > 0),
+            'is_live': instance.is_live,
             'unsure_mutli_view': False
         }
         

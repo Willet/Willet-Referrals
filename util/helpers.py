@@ -46,6 +46,7 @@ def to_dict(something, recursion=0):
     return output
 
 def get_target_url(referrer):
+    ''' Clean up a URL to only contain protocol://domain.com/file.htm '''
     if referrer is not None:
         target = None
         try:

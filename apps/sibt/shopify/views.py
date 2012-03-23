@@ -133,8 +133,6 @@ class SIBTShopifyEditStyle(URIHandler):
         else:
             # Update custom CSS with new rules
             css_dict = app.get_css_dict()
-            
-            #logging.debug('Start css_dict = %s' % json.dumps(css_dict))
 
             for var in post_vars:
                 key = value = None
@@ -143,19 +141,15 @@ class SIBTShopifyEditStyle(URIHandler):
                 except ValueError:
                     continue
 
-                #logging.debug('Updating %s:%s with %s' % (key, value, self.request.get(var)))
-
                 # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
                 if key and value:
 
                     # Add key if it doesn't already exist
                     if not key in css_dict:
-                        #logging.debug('%s not in css_dict, adding {}' % key)
                         css_dict[key] = {}
 
                     css_dict[key][value] = self.request.get(var)
 
-            #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
             # Save updated CSS
             app.set_css(css_dict)
         self.get(app_uuid)
@@ -244,10 +238,8 @@ class SIBTShopifyServeScript(URIHandler):
         app         = SIBTShopify.get_by_store_url(shop_url)
         event       = 'SIBTShowingButton'
 
-        if self.request.get('page_url'):
-            target = get_target_url(self.request.get('page_url'))
-            logging.debug ("got target %s by page URL" % target)
-        else:
+        target = get_target_url(self.request.get('page_url'))
+        if not target: # in the case that page_url is not of the right format
             target = get_target_url(self.request.headers.get('REFERER'))
             logging.debug ("got target %s by referrer field" % target)
 
@@ -436,10 +428,7 @@ class SIBTShopifyServeAB (URIHandler):
                                     "Earn $5! Ask your friends what they think!",
                                     "Need advice? Ask your friends! Earn $5!",
                                     "Save $5 by getting advice from friends!",
-                                    # Muck with visitors' intrinsic motivation:
-                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
-                                    # (enable if you like)
-                                    # "Not sure? Ask your friends.", 
+                                    "Not sure? Ask your friends.",
                                   ]
                 cta_button_text = ab_test( 'sibt_incentive_text', 
                                             ab_test_options, 
