@@ -6,28 +6,15 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-#import hashlib, logging, datetime
-
-#from django.utils         import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.models      import App
-#from apps.link.models     import Link
-#from apps.user.models     import get_or_create_user_by_cookie
 
-#from util.consts          import *
 from util.model           import Model
 
 NUM_VOTE_SHARDS = 15
 
-# basic layout:
-#   client installs button app
-#       client adds buttons
-#       each button has a buttonFBAction type
 
-# ------------------------------------------------------------------------------
-# Button Class Definition ------------------------------------------------------
-# ------------------------------------------------------------------------------
 class Buttons(App):
     """Clients install the buttons App"""  
 
@@ -40,37 +27,12 @@ class Buttons(App):
         """ Initialize this model """
         super(Buttons, self).__init__(*args, **kwargs)
 
-# Accessors --------------------------------------------------------------------
+
+# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def get_buttons_app_by_uuid(id):
-    """ Fetch a obj from the DB via the uuid"""
-    return Buttons.all().filter( 'uuid =', id ).get()
+    raise DeprecationWarning('Replaced by Buttons.get_by_uuid')
+    return Buttons.get_by_uuid(id)
 
-def get_buttons_app_by_client( client ):
-    """ Fetch a obj from the DB via the client"""
-    return Buttons.all().filter( 'client =', client ).get()
-
-######### TODO TODO: NONE OF THESE ARE CURRENTLY IN USE. vvvvvvv
-
-# ------------------------------------------------------------------------------
-# ButtonActions Definition -----------------------------------------------------
-# ------------------------------------------------------------------------------
-class ButtonsFBActions(Model):
-    """We have various different FB actions (want, own)"""
-    name = db.StringProperty()
-    
-    def __init__(self, *args, **kwargs):
-        """ Initialize this model """
-        super(ButtonsFBActions, self).__init__(*args, **kwargs)
- 
-# ------------------------------------------------------------------------------
-# ClientsButtons Definition ----------------------------------------------------
-# ------------------------------------------------------------------------------
-class ClientsButtons(Model):
-    """Clients can add multiple buttons (want, own)""" 
-    app_      = db.ReferenceProperty(Buttons, collection_name="buttons")
-    action    = db.ReferenceProperty(ButtonsFBActions, collection_name="_buttons")
-    
-    css_class = db.StringProperty()
-    
-    def __init__(self, *args, **kwargs):
-        super(ClientsButtons, self).__init__(*args, **kwargs)
+def get_buttons_app_by_client(client):
+    raise DeprecationWarning('Replaced by Buttons.get_by_client')
+    return Buttons.get_by_client(client)

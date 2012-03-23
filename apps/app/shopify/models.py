@@ -8,14 +8,10 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib
-#import logging, random, urllib2, datetime
+import re
 
 from django.utils         import simplejson as json
-#from google.appengine.api import memcache
-#from google.appengine.api import urlfetch
-#from google.appengine.api import taskqueue
 from google.appengine.ext import db
-#from google.appengine.ext.db import polymodel
 
 from apps.app.models    import App
 from apps.email.models  import Email
@@ -26,6 +22,7 @@ from util.model         import Model
 
 NUM_SHARE_SHARDS = 15
 
+
 class AppShopify(Model):
     ''' Model for storing information about a Shopify App.
         AppShopify classes need not be installable from the Shopify app store,
@@ -35,7 +32,7 @@ class AppShopify(Model):
     # Shopify's ID for this store
     store_id  = db.StringProperty(indexed = True)
     
-    # must be the .shopify.com (e.g. http://thegoodhousewife.myshopify.com)
+    # must be the .myshopify.com (e.g. http://thegoodhousewife.myshopify.com)
     store_url = db.StringProperty(indexed = True)
     
     # other domains (e.g. http://thegoodhousewife.co.nz)
@@ -47,18 +44,28 @@ class AppShopify(Model):
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
         self.get_settings()
-    
+
+    def _validate_self(self):
+        if not re.match("(http|https)://[\w\-~]+.myshopify.com", self.store_url):
+            raise ValueError("<%s.%s> has malformated store url '%s'" % (self.__class__.__module__, self.__class__.__name__, self.store_url))
+        return True
+
     def get_settings(self):
         class_name = self.class_name()
         self.settings = None 
         try:
             self.settings = SHOPIFY_APPS[class_name]
         except Exception, e:
-            logging.error('Could not find settings for app in SHOPIFY_APPS[%s]: %s' % (
-                    class_name,
-                    e
-                )
-            )
+            logging.error('could not get settings for app %s: %s' % (class_name, e))
+
+    # Accessors ------------------------------------------------------------
+    @classmethod
+    def get_by_url(cls, store_url):
+        """ Fetch a Shopify app via the store's url"""
+        store_url = get_shopify_url(store_url)
+
+        logging.info("Shopify: Looking for %s" % store_url)
+        return cls.all().filter('store_url =', store_url).get()
 
     # Shopify API Calls ------------------------------------------------------------
     def install_webhooks(self, product_hooks_too=True, webhooks=None):
