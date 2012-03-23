@@ -212,6 +212,10 @@ class AppShopify(Model):
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
             Must first get the `main` template in use"""
+        if not assets:
+            logging.warn('No assets to install')
+            return
+        
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -219,10 +223,6 @@ class AppShopify(Model):
         h.add_credentials(username, password)
         
         main_id = None
-
-        if assets == None:
-            logging.warn('No assets to install')
-            return
 
         # get the theme ID
         theme_url = '%s/admin/themes.json' % self.store_url
