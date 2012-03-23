@@ -41,7 +41,7 @@ class ButtonsShopifyWelcome(URIHandler):
             client.put()
     
         # Fetch or create the app
-        app = get_or_create_buttons_shopify_app(client=client, token=token)
+        app = ButtonsShopify.get_or_create_app(client, token=token)
         try:
             app2 = SIBTShopify.get_or_create (client=client, token=token, email_client=False)
         except Exception, e:

@@ -16,24 +16,22 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.sibt.actions import *
-from apps.app.models import *
-from apps.gae_bingo.gae_bingo import ab_test
-from apps.gae_bingo.gae_bingo import bingo
+from apps.app.models            import *
 from apps.client.shopify.models import *
-from apps.link.models import Link
-from apps.order.models import *
+from apps.gae_bingo.gae_bingo   import ab_test
+from apps.gae_bingo.gae_bingo   import bingo
+from apps.link.models           import Link
+from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import *
-from apps.sibt.models import SIBTInstance
-from apps.sibt.models import PartialSIBTInstance
-from apps.sibt.shopify.models import SIBTShopify
-from apps.user.models import User
-from apps.user.models import get_user_by_cookie, get_or_create_user_by_cookie
+from apps.sibt.actions          import *
+from apps.sibt.models           import SIBTInstance
+from apps.sibt.models           import PartialSIBTInstance
+from apps.sibt.shopify.models   import SIBTShopify
+from apps.user.models           import User
 
-from util.consts import *
-from util.helpers import *
-from util.urihandler import URIHandler
+from util.consts                import *
+from util.helpers               import *
+from util.urihandler            import URIHandler
 from util.strip_html import strip_html
 
 
@@ -421,12 +419,10 @@ class ShowFBThanks( URIHandler ):
         email = ""
         incentive_enabled = False
         user_cancelled = True
-        app = None
-        post_id = self.request.get( 'post_id' ) # from FB
-        user = get_user_by_cookie( self )
-        logging.debug ("user = %r" % user)
-        partial = PartialSIBTInstance.get_by_user( user )
-        logging.debug ("partial = %r" % partial)
+        app         = None
+        post_id     = self.request.get( 'post_id' ) # from FB
+        user        = User.get_by_cookie(self)
+        partial     = PartialSIBTInstance.get_by_user( user )
         
         if post_id != "":
             user_cancelled = False

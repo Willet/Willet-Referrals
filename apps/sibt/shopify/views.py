@@ -33,9 +33,7 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
-from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
-from apps.user.models         import get_or_create_user_by_cookie
 from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
@@ -55,6 +53,7 @@ class ShowBetaPage(URIHandler):
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
     def get(self):
+        client_email = shop_owner = shop_name = ''
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
@@ -67,11 +66,13 @@ class SIBTShopifyWelcome(URIHandler):
                 logging.debug ("token was %s; updating to %s." % (client.token, token))
                 client.token = token
                 client.put()
-
+            
+            if not client:
+                logging.error ('memcache is lagging!')
+            
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
-            client_email = None
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
@@ -109,9 +110,8 @@ class SIBTShopifyWelcome(URIHandler):
             logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % (
-                    client_email, shop_owner, client.url, shop_name
-                )
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                    (client_email, shop_owner, client.url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
             return
@@ -202,7 +202,7 @@ class ShowFinishedPage(URIHandler):
             'app' : None,
             'has_app': False
         }
-        app = get_app_by_id( app_id )
+        app = App.get_by_uuid( app_id )
         if app == None:
             self.redirect( '/s/edit' )
             return
@@ -225,12 +225,12 @@ class ShowEditPage(URIHandler):
         pass
 
 
-class ShowCodePage( URIHandler ):
+class ShowCodePage(URIHandler):
     def get(self):
        pass
 
 
-class SIBTShopifyServeScript(webapp.RequestHandler):
+class SIBTShopifyServeScript(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -251,7 +251,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             target = get_target_url(self.request.headers.get('REFERER'))
             logging.debug ("got target %s by referrer field" % target)
 
-        user = get_or_create_user_by_cookie( self, app )
+        user = User.get_or_create_by_cookie(self, app)
 
         # Try to find an instance for this { url, user }
         if not app:
@@ -414,7 +414,7 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-class SIBTShopifyServeAB (webapp.RequestHandler):
+class SIBTShopifyServeAB (URIHandler):
     """ Serve AB values for SIBTShopifyServeScript in a different JSON request.
         Hopes are that it speeds up button rendering.
     """
@@ -422,7 +422,7 @@ class SIBTShopifyServeAB (webapp.RequestHandler):
     def get(self):
         shop_url    = get_shopify_url(self.request.get('store_url'))
         app         = SIBTShopify.get_by_store_url(shop_url)
-        user        = get_or_create_user_by_cookie( self, app )
+        user        = User.get_or_create_by_cookie(self, app)
         
         # return json format if jsonp is not set
         jsonp       = self.request.get('jsonp', False)
@@ -472,7 +472,7 @@ class SIBTShopifyServeAB (webapp.RequestHandler):
         return
 
 
-class SIBTShopifyProductDetection(webapp.RequestHandler):
+class SIBTShopifyProductDetection(URIHandler):
     def get(self):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
@@ -480,7 +480,7 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         
         if store_url: # only render if there is a point of doing so
             app       = SIBTShopify.get_by_store_url(store_url)
-            user      = get_or_create_user_by_cookie( self, app )
+            user      = User.get_or_create_by_cookie(self, app)
             target    = get_target_url(self.request.headers.get('REFERER'))
 
             # Store a script load action.
@@ -503,7 +503,7 @@ class SIBTShopifyProductDetection(webapp.RequestHandler):
         return
 
 
-class SIBTShopifyInstallError (webapp.RequestHandler):
+class SIBTShopifyInstallError (URIHandler):
     def get (self):
         """ Displays an error page for when the SIBT app fails to install. 
             Error emails are not handled by this page. 

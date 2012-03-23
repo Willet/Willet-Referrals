@@ -19,8 +19,7 @@ from apps.user.models import User
 from util.model import Model
 from util.helpers import encode_base62
 from util.helpers import url
-from util.consts import DOMAIN
-from util.consts import MEMCACHE_TIMEOUT
+from util.consts import APP_LIVE, DOMAIN, MEMCACHE_TIMEOUT
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARDS = 25
@@ -113,7 +112,7 @@ class Link(Model):
 
     def get_willt_url(self):
         appname = get_application_id() # e.g. brian-willet
-        if appname == 'social-referral':
+        if appname == APP_LIVE:
             # you see, rf.rs links don't actually work unless it is on live server
             return 'http://rf.rs/' + self.willt_url_code
         else:

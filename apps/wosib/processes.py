@@ -16,7 +16,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
-from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
@@ -24,9 +23,6 @@ from apps.product.models      import Product
 from apps.user.models         import User
 from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
-from apps.user.models         import get_or_create_user_by_cookie
-from apps.user.models         import get_user_by_cookie
-from apps.user.models         import get_or_create_user_by_cookie
 from apps.wosib.actions       import *
 from apps.wosib.models        import WOSIBInstance
 from apps.wosib.models        import PartialWOSIBInstance
@@ -50,7 +46,7 @@ class WOSIBDoVote(URIHandler):
         
         instance = WOSIBInstance.get(instance_uuid)
         app = instance.app_
-        user = get_or_create_user_by_cookie(self, app)
+        user = User.get_or_create_by_cookie(self, app)
 
         # Make a Vote action for this User
         action = WOSIBVoteAction.create(user, instance, product_uuid)

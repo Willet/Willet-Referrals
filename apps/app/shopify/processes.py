@@ -20,9 +20,9 @@ class DoUninstalledApp( URIHandler ):
         logging.info("store: %s " % store_url)
         app_class_name = app_name
 
-        client = ClientShopify.get_by_url( store_url )
+        client = ClientShopify.get_by_url(store_url)
 
-        Email.emailDevTeam("UNinstall app: %s\n%r %s" % (
+        Email.emailDevTeam("Uninstall app: %s\n%r %s" % (
                 app_class_name,
                 self.request, 
                 self.request.headers

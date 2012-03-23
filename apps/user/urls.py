@@ -3,12 +3,13 @@ from apps.user.processes import *
 from apps.user.views import *
 
 urlpatterns = [
+    # Views
     #(r'/computeCampaignAnalytics', ComputeCampaignAnalytics),
     (r'/user/get/(.*)/', ShowProfileJSON),
     (r'/user/(.*)/(.*)/', ShowProfilePage),
     (r'/user/safariCookieHack', UserCookieSafariHack),
     
-    # processes
+    # Processes
     (r'/updateEmailAddress', UpdateEmailAddress),
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),

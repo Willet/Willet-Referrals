@@ -134,7 +134,7 @@ class Action(Model, polymodel.PolyModel):
         return Action.all().filter('uuid =', uuid).get()
 
     def _validate_self(self):
-        pass
+        return True
 
     def __unicode__(self):
         return self.__str__()

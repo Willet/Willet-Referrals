@@ -14,14 +14,14 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
-from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions 
-from apps.client.shopify.models   import ClientShopify
+from apps.buttons.models  import Buttons
 from apps.email.models    import Email
 from apps.link.models     import Link
 
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
+from util.mailchimp       import MailChimp
 
 NUM_VOTE_SHARDS = 15
 
@@ -52,8 +52,8 @@ class ButtonsShopify(Buttons, AppShopify):
         }]
 
         # Install yourself in the Shopify store
-        self.install_webhooks( product_hooks_too = False )
-        self.install_script_tags( script_tags = tags )
+        self.install_webhooks(product_hooks_too=False)
+        self.install_script_tags(script_tags=tags)
 
         # Fire off "personal" email from Fraser
         Email.welcomeClient( "ShopConnection", 
@@ -70,57 +70,80 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
+        name = self.client.merchant.get_full_name()
+        try:
+            first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
+        except IndexError:
+            first_name, last_name = name, ''
 
-# Constructor ------------------------------------------------------------------
-def create_shopify_buttons_app(client, app_token):
+        # Add email to MailChimp
+        MailChimp(MAILCHIMP_API_KEY).listSubscribe(id='98231a9737', # ShopConnection list
+                                                   email_address=self.client.email,
+                                                   merge_vars=({ 'FNAME': first_name,
+                                                                 'LNAME': last_name,
+                                                                 'STORENAME': self.client.name,
+                                                                 'STOREURL': self.client.url }),
+                                                   double_optin=False,
+                                                   send_welcome=False)
 
-    uuid = generate_uuid( 16 )
-    app = ButtonsShopify( key_name    = uuid,
-                          uuid        = uuid,
-                          client      = client,
-                          store_name  = client.name, # Store name
-                          store_url   = client.url,  # Store url
-                          store_id    = client.id,   # Store id
-                          store_token = app_token,
-                          button_selector = "_willet_buttons_app" ) 
-    app.put()
+    # Constructors ------------------------------------------------------------------------------
+    @classmethod
+    def create_app(cls, client, app_token):
+        """ Constructor """
+        uuid = generate_uuid( 16 )
+        app = cls(key_name=uuid,
+                  uuid=uuid,
+                  client=client,
+                  store_name=client.name, # Store name
+                  store_url=client.url,  # Store url
+                  store_id=client.id,   # Store id
+                  store_token=app_token,
+                  button_selector="_willet_buttons_app" ) 
+        app.put()
 
-    app.do_install()
+        app.do_install()
+            
+        return app
+
+    @classmethod
+    def get_or_create_app(cls, client, token ):
+        """ Try to retrieve the app.  If no app, create one """
+        app = cls.get_by_url(client.url)
         
-    return app
+        if app is None:
+            app = cls.create_app(client, token)
+        
+        elif token != None and token != '':
+            if app.store_token != token:
+                # TOKEN mis match, this might be a re-install
+                logging.warn(
+                    'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
+                        app.store_token,
+                        token
+                    )
+                ) 
+                try:
+                    app.store_token = token
+                    app.client      = client
+                    app.old_client  = None
+                    app.put()
+                    
+                    app.do_install()
+                except:
+                    logging.error('encountered error with reinstall', exc_info=True)
+        return app
+# end class
 
-# Accessors --------------------------------------------------------------------
-def get_or_create_buttons_shopify_app( client, token ):
-    app = get_shopify_buttons_by_url( client.url )
-    
-    if not app:
-        app = create_shopify_buttons_app(client, token)
-    
-    elif token:
-        if app.store_token != token:
-            # TOKEN mis match, this might be a re-install
-            logging.warn(
-                'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
-                    app.store_token,
-                    token
-                )
-            ) 
-            try:
-                app.store_token = token
-                app.old_client  = app.client
-                if client:
-                    app.client = client
-                app.put()
-                
-                app.do_install()
-            except:
-                logging.error('encountered error with reinstall', exc_info=True)
-    return app
+
+# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
+def create_shopify_buttons_app(client, app_token):
+    raise DeprecationWarning('Replaced by ButtonShopify.create_app')
+
+def get_or_create_buttons_shopify_app(client, token):
+    raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
+    ButtonShopify.get_or_create_app(client, token)
 
 def get_shopify_buttons_by_url( store_url ):
-    """ Fetch a Shopify obj from the DB via the store's url"""
-    store_url = get_shopify_url( store_url )
-
-    logging.info("Shopify: Looking for %s" % store_url)
-    return ButtonsShopify.all().filter( 'store_url =', store_url ).get()
+    raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
+    ButtonShopify.get_by_url(store_url)
 

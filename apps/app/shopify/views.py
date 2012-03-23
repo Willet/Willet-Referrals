@@ -18,8 +18,6 @@ from apps.app.models            import *
 from apps.client.shopify.models import ClientShopify
 from apps.link.models           import Link
 from apps.user.models           import User
-from apps.user.models           import get_or_create_user_by_cookie
-from apps.user.models           import get_user_by_cookie
 
 from apps.order.models          import *
 
@@ -80,9 +78,9 @@ class DoDeleteApp( URIHandler ):
         app_uuid = self.request.get( 'app_uuid' )
         
         logging.info('app id: %s' % app_uuid)
-        app = get_app_by_id( app_uuid )
+        app = App.get_by_uuid(app_uuid)
         if app.client.key() == client.key():
-            logging.info('deelting')
+            logging.info('deleting')
             app.delete()
         
         self.redirect( '/client/account' )
