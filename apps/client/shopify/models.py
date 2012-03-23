@@ -86,7 +86,7 @@ class ClientShopify( Client ):
                                token    = token,
                                id       = str(data['id']),
                                merchant = merchant  )
-        store.put()
+        db.put (store) # critical install-time process; it cannot wait
 
         # Update the merchant with data from Shopify
         merchant.update( full_name  = data['shop_owner'], 

@@ -53,7 +53,7 @@ class ShowBetaPage(URIHandler):
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
     def get(self):
-        client_email = None
+        client_email = shop_owner = shop_name = ''
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
@@ -66,7 +66,10 @@ class SIBTShopifyWelcome(URIHandler):
                 logging.debug ("token was %s; updating to %s." % (client.token, token))
                 client.token = token
                 client.put()
-
+            
+            if not client:
+                logging.error ('memcache is lagging!')
+            
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             

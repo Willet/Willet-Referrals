@@ -33,7 +33,7 @@ class URIHandler( webapp.RequestHandler ):
         session = get_current_session()
         session.regenerate_id()
         email   = session.get('email', '')
-        logging.info("GETTING EMAIL: %s" % email)
+        logging.info("URIHandler reads session email: %s" % email)
         
         self.db_client = get_client_by_email( email )
         
