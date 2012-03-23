@@ -46,7 +46,9 @@ class SIBTShopify(SIBT, AppShopify):
     # change on upgrade; new installs get this as version.
     CURRENT_INSTALL_VERSION = '3'
     
-    
+    def _validate_self(self):
+        return True
+
     defaults = {
         'willet_button': {
             'color': '333333',
@@ -323,7 +325,7 @@ class SIBTShopify(SIBT, AppShopify):
         return app
 
     @classmethod
-    def get_or_create(cls, client, token=None):
+    def get_or_create(cls, client, token=None, email_client=True):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = cls.get_by_store_url(client.url)
         if app is None:

@@ -41,6 +41,9 @@ class WOSIBShopify(WOSIB, AppShopify):
         """ Initialize this model """
         super(WOSIBShopify, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     def do_install(self, email_client=True):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""

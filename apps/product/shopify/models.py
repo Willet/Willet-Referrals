@@ -34,6 +34,9 @@ class ProductShopify(Product):
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+    
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it

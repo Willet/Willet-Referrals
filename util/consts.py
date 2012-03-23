@@ -38,6 +38,9 @@ FACEBOOK_QUERY_URL = 'https://graph.facebook.com/'
 FACEBOOK_APP_ID     = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
+# MailChimp Stuff
+MAILCHIMP_API_KEY = '27a8343ec17004bfc06bad23d2d865b0-us4'
+
 # Google Social Graph API Stuff
 GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
 

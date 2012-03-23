@@ -59,6 +59,9 @@ class EmailModel(Model):
         """Datastore retrieval using memcache_key"""
         return db.Query(EmailModel).filter('created =', created).get()
     
+    def _validate_self(self):
+        return True
+
     # Constructor ------------------------------------------------------------------
     @classmethod
     def create(cls, user, email):

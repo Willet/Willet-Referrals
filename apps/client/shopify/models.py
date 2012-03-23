@@ -50,7 +50,6 @@ class ClientShopify( Client ):
         super(ClientShopify, self).__init__(*args, **kwargs)
     
     def _validate_self( self ):
-        """ TODO make this a validation function """
         self.url = get_shopify_url( self.url )
 
     # Constructor

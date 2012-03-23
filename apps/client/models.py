@@ -33,6 +33,9 @@ class Client(Model, polymodel.PolyModel):
         self._memcache_key = hashlib.md5(kwargs['email']).hexdigest() if 'email' in kwargs else None 
         super(Client, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     @staticmethod
     def _get_from_datastore(google_user):
         """Datastore retrieval using memcache_key"""

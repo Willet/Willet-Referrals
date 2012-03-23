@@ -73,6 +73,9 @@ class Link(Model):
         self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 
         super(Link, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     @staticmethod
     def _get_from_datastore(willt_url_code):
         """Datastore retrieval using memcache_key"""

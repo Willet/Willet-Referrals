@@ -43,6 +43,9 @@ class Order( Model, polymodel.PolyModel ):
         
         super(Order, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     @staticmethod
     def _get_from_datastore( uuid ):
         """Datastore retrieval using memcache_key"""

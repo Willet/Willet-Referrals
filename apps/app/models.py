@@ -49,6 +49,9 @@ class App(Model, polymodel.PolyModel):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(App, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     @classmethod
     def _get_from_datastore(cls, uuid):
         """Datastore retrieval using memcache_key"""

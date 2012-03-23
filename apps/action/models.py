@@ -101,6 +101,9 @@ class Action(Model, polymodel.PolyModel):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Action, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     def put(self):
         """Override util.model.put with some custom shizzbang"""
         # Not the best spot for this, but I can't think of a better spot either ..

@@ -39,6 +39,9 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
+    def _validate_self(self):
+        return True
+
     def do_install( self ):
         # Define our script tag 
         tags = [{

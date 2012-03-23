@@ -24,8 +24,8 @@ class ButtonsShopifyBeta(URIHandler):
 class ButtonsShopifyWelcome(URIHandler):
     def get( self ):
         # TODO: put this somewhere smarter
-        shop   = self.request.get( 'shop' )
-        token  = self.request.get( 't' )
+        shop   = self.request.get('shop')
+        token  = self.request.get('t')
 
         # Fetch the client
         client = ClientShopify.get_by_url( shop )
@@ -45,12 +45,12 @@ class ButtonsShopifyWelcome(URIHandler):
         try:
             app2 = SIBTShopify.get_or_create (client=client, token=token, email_client=False)
         except Exception, e:
-            logging.error ('cannot bundle SIBT with buttons install: %s' % e)
+            logging.error ('cannot bundle SIBT with buttons install: %s' % e, exc_info=True)
         
         try:
             app3 = WOSIBShopify.get_or_create (client=client, token=token, email_client=False)
         except Exception, e:
-            logging.error ('cannot bundle WOSIB with buttons install: %s' % e)
+            logging.error ('cannot bundle WOSIB with buttons install: %s' % e, exc_info=True)
         
         # Render the page
         template_values = {

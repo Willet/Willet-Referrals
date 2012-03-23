@@ -46,6 +46,9 @@ class WOSIB(App):
         """ Initialize this model """
         super(WOSIB, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     def handleLinkClick( self, urihandler, link ):
         logging.info("WOSIBAPP HANDLING LINK CLICK" )
 

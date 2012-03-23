@@ -61,6 +61,9 @@ class SIBT(App):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     def handleLinkClick( self, urihandler, link ):
         logging.info("SIBTAPP HANDLING LINK CLICK" )
 
@@ -175,6 +178,9 @@ class SIBTInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     def special_put(self):
         """So we memcache by asker_uuid and url as well"""
@@ -312,6 +318,9 @@ class PartialSIBTInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(PartialSIBTInstance, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     """ Users can only have 1 of these ever.
         If they already have one, update it.
