@@ -36,6 +36,18 @@ from util.helpers               import *
 from util.urihandler            import URIHandler
 from util.strip_html import strip_html
 
+class ShowBetaPage(URIHandler):
+    def get(self):
+        path = os.path.join('apps/sibt/templates/', 'beta.html')
+        self.response.out.write(template.render(path, {}))
+
+
+class SIBTWelcome(URIHandler):
+    # "install done" page. actually installs the apps.
+    def get(self):
+        path = os.path.join('apps/sibt/templates/', 'welcome.html')
+        self.response.out.write(template.render(path, {}))
+
 
 class AskDynamicLoader(webapp.RequestHandler):
     """Serves a plugin that will contain various functionality
