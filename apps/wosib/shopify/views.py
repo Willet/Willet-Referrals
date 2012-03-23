@@ -26,9 +26,7 @@ from apps.link.models                 import Link
 from apps.order.models                import *
 from apps.product.shopify.models      import ProductShopify
 from apps.sibt.shopify.models         import SIBTShopify
-from apps.user.models                 import get_user_by_cookie
 from apps.user.models                 import User
-from apps.user.models                 import get_or_create_user_by_cookie
 from apps.wosib.actions               import WOSIBVoteAction
 from apps.wosib.models                import WOSIBInstance
 from apps.wosib.shopify.models        import WOSIBShopify
@@ -38,7 +36,7 @@ from util.helpers                     import *
 from util.shopify_helpers             import get_shopify_url
 from util.urihandler                  import URIHandler
 
-class WOSIBShopifyServeScript (webapp.RequestHandler):
+class WOSIBShopifyServeScript (URIHandler):
     # chucks out a javascript that helps detect events and show wizards
     # (with wands and broomsticks)
     def get(self):
@@ -57,7 +55,7 @@ class WOSIBShopifyServeScript (webapp.RequestHandler):
 
         target = get_target_url(self.request.headers.get('REFERER'))
 
-        user = get_or_create_user_by_cookie( self, app )
+        user = User.get_or_create_by_cookie(self, app)
 
         # Try to find an instance for this { url, user }
         try:

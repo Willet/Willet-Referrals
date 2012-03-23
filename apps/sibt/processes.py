@@ -14,7 +14,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
-from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
@@ -22,7 +21,7 @@ from apps.product.models      import Product
 from apps.sibt.actions        import *
 from apps.sibt.models         import SIBTInstance, PartialSIBTInstance
 from apps.user.actions        import UserIsFBLoggedIn
-from apps.user.models         import User, get_or_create_user_by_cookie
+from apps.user.models         import User
 
 from util.consts              import *
 from util.helpers             import url 
@@ -35,11 +34,11 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARESIBTONFACEBOOK")
 
-        app  = get_app_by_id(self.request.get('app_uuid'))
+        app  = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = get_or_create_user_by_cookie(self, app)
+            user = User.get_or_create_by_cookie(self, app)
         willt_code = self.request.get('willt_code')
         link = Link.get_by_code(willt_code)
         img = self.request.get('product_img')
@@ -144,8 +143,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        app  = get_app_by_id(self.request.get('app_uuid'))
-        user = get_or_create_user_by_cookie(self, app)
+        app  = App.get_by_uuid(self.request.get('app_uuid'))
+        user = User.get_or_create_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         

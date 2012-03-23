@@ -21,7 +21,6 @@ from apps.client.models     import Client
 from apps.link.models       import Link 
 from apps.product.shopify.models import ProductShopify
 from apps.user.models       import User
-from apps.user.models       import get_or_create_user_by_email
 
 from util                   import httplib2
 from util.consts            import *
@@ -50,8 +49,9 @@ class ClientShopify( Client ):
         """ Initialize this obj """
         super(ClientShopify, self).__init__(*args, **kwargs)
     
-    def _validate_self(self):
-        self.url = get_shopify_url(self.url)
+    def _validate_self( self ):
+        """ TODO make this a validation function """
+        self.url = get_shopify_url( self.url )
 
     # Constructor
     @staticmethod
@@ -65,7 +65,7 @@ class ClientShopify( Client ):
         
         # Make the Merchant 
         # Note: App is attached later to the UserCreation action
-        merchant = get_or_create_user_by_email( data['email'], request_handler, None )
+        merchant = User.get_or_create_by_email( data['email'], request_handler, None )
         logging.info( 'MERCHANT UUID %s' % merchant.uuid )
         logging.info( 'MERCHANT Key %s' % merchant.key() )
 
@@ -86,8 +86,7 @@ class ClientShopify( Client ):
                                id       = str(data['id']),
                                merchant = merchant  )
         
-        #TODO: change to Model.put once it becomes synchronous
-        db.put (store) # critical install-time process; it cannot wait
+        store.put () # critical install-time process; it cannot wait
 
         # Update the merchant with data from Shopify
         merchant.update( full_name  = data['shop_owner'], 
@@ -115,8 +114,7 @@ class ClientShopify( Client ):
             )
 
         return store
-
-    # Accessors 
+    
     @staticmethod
     def get_by_url(store_url):
         store_url = get_shopify_url( store_url )

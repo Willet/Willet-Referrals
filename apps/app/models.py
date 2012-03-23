@@ -28,6 +28,7 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARE_SHARDS = 15
 
+
 class App(Model, polymodel.PolyModel):
     # static memcache class name
     memcache_class = 'app'
@@ -48,26 +49,32 @@ class App(Model, polymodel.PolyModel):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(App, self).__init__(*args, **kwargs)
     
-    @staticmethod
-    def _get_from_datastore(uuid):
+    @classmethod
+    def _get_from_datastore(cls, uuid):
         """Datastore retrieval using memcache_key"""
-        return App.all().filter('uuid =', uuid).get()
+        return cls.all().filter('uuid =', uuid).get()
 
-    def handleLinkClick( self ):
-        # Subclasses must override this
-        logging.error("THIS FCN SHOULD NEVER GET CALLED. FIX ME.")
-        raise Exception("THIS FCN SHOULD NEVER GET CALLED. SUBCLASS ME!")
-
-    def delete( self ):
+    def delete(self):
+        """ When someone uninstalls, put in a saved state """
         self.old_client = self.client
         self.client     = None
         self.put()
-    
-    @staticmethod
-    def get_by_client( client ):
-        return App.all().filter( 'client =', client )
 
-    def count_clicks( self ):
+    # Stubs --------------------------------------------------------------------
+    # TODO: rename function in under_score_name
+    def handleLinkClick(self):
+        """ Called when a link associated with the app is clicked """ 
+        # Subclasses must override this
+        raise NotImplementedError('handleLinkClick should be implemented by <%s.%s>' % (self.__class__.__module__,
+                                                                                        self.__class__.__name__))
+    
+    # Accessors --------------------------------------------------------------------
+    @classmethod
+    def get_by_client(cls, client):
+        return cls.all().filter('client =', client).get()
+
+    # Counters --------------------------------------------------------------------
+    def count_clicks(self):
         # Get an updated value by putting this on a queue
         taskqueue.add(
             queue_name = 'app-ClicksCounter', 
@@ -112,10 +119,10 @@ class App(Model, polymodel.PolyModel):
         """Increment this link's click counter"""
         self.add_shares(1)
 
+
 def get_app_by_id( id ):
-    logging.warn("Use App.get() !!!")
-    #return App.all().filter( 'uuid =', id ).get()
-    return App.get(id)
+    raise DeprecationWarning('Replaced by App.get_by_uuid')
+    return App.get_by_uuid(id)
 
 ## -----------------------------------------------------------------------------
 ## -----------------------------------------------------------------------------
