@@ -239,33 +239,20 @@ class User(db.Expando):
         logging.info('put_later: %s' % self.uuid)
 
     def hardPut( self ):
-<<<<<<< HEAD
-        # By default, Python fcns return None
-        # If you want to prevent an object from being saved to the db, have 
-        # _validate_self return anyhting except None
-        if self._validate_self() == None:
-            
-            logging.debug("PUTTING %s" % self.__class__.__name__)
-            db.put( self )
-=======
         logging.debug("PUTTING %s" % self.__class__.__name__)
         try:
             self._validate_self()
         except NotImplementedError, e:
             logging.error(e)
         db.put(self)
->>>>>>> FlexibleEmailer
         
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
-<<<<<<< HEAD
     def _validate_self(self):
-        pass
+        return True
 
-=======
     # Retrievers ------------------------------------------------------------------
->>>>>>> FlexibleEmailer
     @classmethod
     def get(cls, memcache_key):
         """ Generic class retriever.  If possible, use this b/c it checks memcache 
