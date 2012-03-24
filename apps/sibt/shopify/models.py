@@ -152,7 +152,7 @@ class SIBTShopify(SIBT, AppShopify):
     def put(self):
         """ Memcache by the store_url as well"""
         super(SIBTShopify, self).put()
-        self.memcache_by_store_url()
+        self._memcache_by_store_url()
     
     # Retreivers --------------------------------------------------------------------
     @staticmethod
@@ -171,7 +171,7 @@ class SIBTShopify(SIBT, AppShopify):
             app = SIBTShopify.all().filter('extra_url =', url).get()
         
         if app:
-            app.memcache_by_store_url()
+            app._memcache_by_store_url()
         return app
 
     @staticmethod
