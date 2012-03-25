@@ -1,17 +1,213 @@
-/**
+/*
  * Buttons JS. Copyright Willet Inc, 2012
  */
-;(function () {
-    var here = window.location + '.json';
-    var console = { log: function () {}, error: function () {} };
-        // ( typeof(window.console) === 'object' 
-        // && ( ( typeof(window.console.log) === 'function' 
-        //    && typeof(window.console.error) ==='function' )
-        // || (typeof(window.console.log) === 'object' // IE 
-        // && typeof(window.console.error) ==='object') ) )
-        // ? window.console 
-        // : { log: function () {}, error: function () {} }; // debugging
-    
+;var WILLET_DEBUG = false; //set to false or remove when pushing live!
+var WILLET = (function(me, debug) {
+    var console;
+    if(!debug) {
+        console = { log: function () {}, error: function () {} };
+    } else {
+        console = window.console;
+    }
+
+    // Private variables
+    var PRODUCT_JSON = window.location + '.json';
+    var COOKIE_NAME = "_willet_smart_buttons";
+    var COOKIE_EXPIRY_IN_DAYS = 0.00347222222; //5 minutes
+
+    var HEAD = document.getElementsByTagName('head')[0];
+    var BUTTONS_DIV_ID = '_willet_buttons_app';
+    var DETECT_NETWORKS_DIV_ID;
+
+    var DOMAIN = /:\/\/([^\/]+)/.exec(window.location.href)[1];
+    var PROTOCOL = debug ? "http:" : window.location.protocol;
+
+    var SUPPORTED_NETWORKS = {
+        "Tumblr": {
+            "detect": {
+                "method": "none",
+                "func": function() {}
+            },
+            "button": {
+                "script": PROTOCOL + '//platform.tumblr.com/v1/share.js',
+                "create": function (params) {
+                    var button = createBasicButton({
+                        "id": 'tumblr',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = '62px';
+
+                    var link = createElement({
+                        "nodename": "a",
+                        "href": 'http://www.tumblr.com/share',
+                        "title": "Share on Tumblr",
+                        "innerHTML": "Share on Tumblr",
+                        "style": {
+                            "display": 'inline-block',
+                            "textIndent": '-9999px',
+                            "textAlign": 'left',
+                            "width": '63px',
+                            "height": '20px',
+                            "background": "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent",
+                            "styleFloat": 'left', // IE
+                            "cssFloat": 'left', // FF, Webkit
+                            "marginRight": '5px',
+                            "marginTop": '0'
+                        }
+                    });
+
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
+        "Facebook": {
+            "detect": {
+                "method": "none",
+                "func": function() {}
+            },
+            "button": {
+                "script": PROTOCOL + '//connect.facebook.net/en_US/all.js#xfbml=1',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'facebook',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '90px' : '48px';
+                    button.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                    return button;
+                }
+            }
+        },
+        "Pinterest": {
+            "detect": {
+                "method": "image-hack",
+                "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
+            },
+            "button": {
+                "script": PROTOCOL + '//assets.pinterest.com/js/pinit.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'pinterest',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '77px' : '43px';
+
+                    var link = createElement({
+                        "nodename": "a",
+                        "href": "http://pinterest.com/pin/create/button/?" +
+                            "url=" + encodeURIComponent( window.location.href ) + 
+                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "&description=" + encodeURIComponent("I found this on " + params.domain),
+                        "className": "pin-it-button",
+                        "innerHTML": "Pin It"
+                    });
+                    link.setAttribute('count-layout', "horizontal");
+
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
+        "Twitter": {
+            "detect": {
+                "method": "image-hack",
+                "func": function() { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
+            },
+            "button": {
+                "script": PROTOCOL + '//platform.twitter.com/widgets.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'twitter',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '98px' : '56px';
+
+                    var link = createElement({
+                        "nodename": "a",
+                        "href": "https://twitter.com/share",
+                        "className": "twitter-share-button"
+                    });
+
+                    link.setAttribute('data-lang','en');
+                    link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
+
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        }, 
+        "GooglePlus": {
+            "detect": {
+                "method": "image-hack",
+                "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
+            },
+            "button": {
+                "script": PROTOCOL + '//apis.google.com/js/plusone.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'googleplus',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '90px' : '32px';
+                    button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +"></g:plusone>";
+                    
+                    // Google is using the Open Graph spec
+                    var t, p, 
+                        m = [ { property: 'og:title', content: params.data.product.title },
+                              { property: 'og:image', content: params.photo },
+                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                    while (m.length) {
+                        p = m.pop();
+                        t = document.createElement('meta');
+                        t.setAttribute('property', p.property);
+                        t.setAttribute('content', p.content);
+                        HEAD.appendChild(t);
+                    }
+                    return button;
+                }
+            }
+        },
+        "Fancy": {
+            "detect": {
+                "method": "none",
+                "func": function() {}
+            },
+            "button": {
+                "script": PROTOCOL + '//www.thefancy.com/fancyit.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'fancy',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '96px' : '57px';
+
+                    var u = "http://www.thefancy.com/fancyit?" +
+                            "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                            "&Title="  + encodeURIComponent( params.data.product.title ) +
+                            "&Category=Other";
+                    if ( params.photo.length > 0 ) {
+                        u += "&ImageURL=" + encodeURIComponent( params.photo );
+                    } else { // If no image on page, submit blank image.
+                        u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
+                    }
+
+                    var link = createElement({
+                        "nodename": "a",
+                        "id": "FancyButton",
+                        "href": u
+                    });
+                    
+                    // a.setAttribute('data-count', ( button_count ? 'true' : 'false' ));
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        }
+    };
+    var ELEMENT_NODE = 1;
+
+    // Private functions
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
     (function(){'use strict';function f(n){return n<10?'0'+n:n;}
@@ -39,9 +235,8 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
-    //http://www.quirksmode.org/js/cookies.html
-    //------
-    var _createCookie = function (name, value, days) {
+    // Source: http://www.quirksmode.org/js/cookies.html
+    var createCookie = function (name, value, days) {
         if (days) {
             var date = new Date();
             date.setTime(date.getTime()+(days*24*60*60*1000));
@@ -49,9 +244,10 @@
         }
         else var expires = "";
         document.cookie = name+"="+value+expires+"; path=/";
-    }
+    };
 
-    var _readCookie = function (name) {
+    // Source: http://www.quirksmode.org/js/cookies.html
+    var readCookie = function (name) {
         var nameEQ = name + "=";
         var ca = document.cookie.split(';');
         for(var i=0;i < ca.length;i++) {
@@ -60,344 +256,298 @@
             if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
         }
         return null;
-    }
+    };
 
+    // Source: http://www.quirksmode.org/js/cookies.html
     var eraseCookie = function (name) {
         createCookie(name,"",-1);
+    };
+
+    var ajax = function(config) {
+        var AJAX_RESPONSE_AVAILABLE = 4;
+        var HTTP_OK = 200;
+
+        var url = config.url || "";
+        var success = config.success || function() {};
+        var error = config.error || function() {};
+        var method = config.method || "GET";
+        var async = config.async || true;
+
+        if (url === "") {
+            //Error!
+        }
+
+        var request = new XMLHttpRequest();
+        request.open(method, url, async);
+        request.onreadystatechange = function () {
+            if (request.readyState === AJAX_RESPONSE_AVAILABLE) {
+                if (request.status === HTTP_OK) {
+                    success(request);
+                } else {
+                    error(request);
+                }
+            }
+        };
+        request.send(null);
+    };
+
+    var xHasKeyY = function(dict, key) {
+        return dict[key] || false;
+    };
+
+    // Source: http://stackoverflow.com/a/383245/165988
+    // Slightly modified
+    var mergeObject = function (src, obj) {
+        for (var prop in obj) {
+            try {
+                // Property in destination object set; update its value.
+                if ( obj[prop].constructor==Object ) {
+                    src[prop] = mergeObject(src[prop], obj[prop]);
+                } else {
+                    src[prop] = obj[prop];
+                }
+            } catch(e) {
+                // Property in destination object not set; create it and set its value.
+                src[prop] = obj[prop];
+            }
+        }
+        return src;
     }
-    //-----
 
-    var _cookie_name = "_willet_smart_buttons";
+    var createElement = function (config) {
+        var nodeName = config.nodename || "";
 
-    var _detectNetworks = function () {
+        if (nodeName === "") {
+            //ERROR
+        }
+
+        var modifiedConfig = config;
+        delete modifiedConfig.nodename;
+
+        var element = document.createElement(nodeName);
+        
+        //apply all properties to this
+        element = mergeObject(element, modifiedConfig);
+
+        return element;
+    };
+
+    var createBasicButton = function (params) {
+        var id = params.id || '';
+        var buttonSpacing = params.buttonSpacing || "0";
+        var d = createElement({
+            "nodename": "div",
+            "style": {
+                "styleFloat": "left", //IE
+                "cssFloat": "left", //FF, Webkit
+                "marginTop": "0",
+                "marginLeft": "0",
+                "marginBottom": "0",
+                "marginRight": buttonSpacing,
+                "paddingTop": "0",
+                "paddingLeft": "0",
+                "paddingBottom": "0",
+                "paddingRight": "0",
+                "border": "none",
+                "display": "block",
+                "visibility": "visible",
+                "height": "21px",
+                "position": "relative",
+                "overflow": "hidden"
+            },
+            "name": "button",
+            "id": "_willet_" + id,
+            "className": "_willet_social_button"
+        });
+        return d;
+    }
+
+    var getRequiredButtonsFromElement = function(container) {
+        // Get the buttons, should be children of #_willet_buttons_app
+        //      ex: <div>Facebook</div>
+        var requiredButtons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+        if (container.childNodes.length > 0) {
+            // Search for supported buttons
+            requiredButtons = [];
+            var containerLength = container.childNodes.length;
+            for(var i = 0; i < containerLength; i++) {
+                var node = container.childNodes[i];
+                if (node.nodeType === ELEMENT_NODE) {
+                    var network = node.innerHTML;
+                    if(xHasKeyY(SUPPORTED_NETWORKS, network)) {
+                        requiredButtons.push(network);
+                    }
+                }
+            }
+        }
+        return requiredButtons;
+    };
+
+    // Public functions
+    me.detectNetworks = function () {
         var loggedInNetworks = {};
         var supportedNetworks = {
-            'Tumblr': "", //https://www.tumblr.com/login?redirect_to=http://secure.assets.tumblr.com/images/logo.png", //???
-            'Pinterest': "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png", //Works!
-            'Fancy': "", //https://www.thefancy.com/login?next=http://www.thefancy.com/shown-to-you", //???
-            'Facebook': "",
-            'Twitter': "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif",
-            'GooglePlus': "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"
+            
         };
-        var cookieExpiryInDays = 0.00347222222; //5 minutes
 
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
             image.onload = function () {
                 loggedInNetworks[network] = true;
-                _createCookie(_cookie_name, JSON.stringify(loggedInNetworks), cookieExpiryInDays);
+                createCookie(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
             };
             image.onerror = function() {
                 loggedInNetworks[network] = false;
-                _createCookie(_cookie_name, JSON.stringify(loggedInNetworks), cookieExpiryInDays);
+                createCookie(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
             };
             image.src = source;
             image.style.display = "none";
             return image;
         };
 
-        var detectNetworksDiv = document.createElement("div");
-        // detectNetworksDiv.style.display = "none";
-        detectNetworksDiv.id = "_willet_detect_networks_div";
+        var detectNetworksDiv = createElement({
+            "nodename": "div",
+            "id": "_willet_detect_networks_div"
+        });
 
-        for (network in supportedNetworks) {
-            if (supportedNetworks.hasOwnProperty(network) && supportedNetworks[network] !== "") {
-                var image = createHiddenImage(network, supportedNetworks[network]);
-                detectNetworksDiv.appendChild(image);
+        for (network in SUPPORTED_NETWORKS) {
+            var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
+            switch (detectNetwork["method"]) {
+                case "image-hack":
+                    var image = createHiddenImage(network, detectNetwork.func());
+                    detectNetworksDiv.appendChild(image);
+                break;
+
+                default:
+                    //Nothing to do
             }
         }
         document.body.appendChild(detectNetworksDiv);
     };
 
-    var _init_buttons = function(data) {
-        /* data is product json 
-         */
+    me.createButtons = function(productData) {
         console.log("Buttons: finding buttons placeholder on page");
-        /**
-         * INSERT IFRAME WITH DATA
-         */
-        var button_div = document.getElementById('_willet_buttons_app');
+        var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
-        if (button_div && window._willet_iframe_loaded == undefined) {
-            console.log("Buttons: found placeholder, attaching iframe");
+        if (buttonsDiv && window._willet_iframe_loaded == undefined) {
+            var buttonCount = (buttonsDiv.getAttribute('button_count') === 'true');
+            var buttonSpacing = (buttonsDiv.getAttribute('button_spacing') ?  buttonsDiv.getAttribute('button_spacing') : '5') + 'px';
+            var buttonPadding = (buttonsDiv.getAttribute('button_padding') ? buttonsDiv.getAttribute('button_padding') : '5') + 'px';
 
-            // Get options from tag
-            var i, j,
-                head = document.getElementsByTagName('head')[0],
-                domain = /:\/\/([^\/]+)/.exec(window.location.href)[1],
-                button_count = (button_div.getAttribute('button_count') === 'true'),
-                button_spacing = (button_div.getAttribute('button_spacing') ?  button_div.getAttribute('button_spacing') : '5') + 'px',
-                button_padding = (button_div.getAttribute('button_padding') ? button_div.getAttribute('button_padding') : '5') + 'px';
+            buttonsDiv = mergeObject(buttonsDiv, {
+                "style": {
+                    "styleFloat": "left", //IE
+                    "cssFloat": "left", //FF, Webkit
+                    "minWidth": "240px",
+                    "height": "22px",
+                    "padding": buttonPadding,
+                    "border": "none",
+                    "margin": "0"
+                }    
+            });
 
-            button_div.style.styleFloat = 'left'; // IE
-            button_div.style.cssFloat = 'left'; // FF, Webkit
-            button_div.style.minWidth = '240px';
-            button_div.style.height = '22px';
-            button_div.style.padding = button_padding;
-            button_div.style.border = 'none';
-            button_div.style.margin = '0';
-
-            var protocol = window.location.protocol; //'http:'; // For local testing
-
-            var createButton = function (id) {
-                id = id || '';
-                var d = document.createElement('div');
-                d.style.styleFloat = 'left'; // IE
-                d.style.cssFloat = 'left'; // FF, Webkit
-                d.style.marginTop = '0';
-                d.style.marginLeft = '0';
-                d.style.marginBottom = '0';
-                d.style.marginRight = button_spacing;
-                d.style.paddingTop = '0';
-                d.style.paddingBottom = '0';
-                d.style.paddingLeft = '0';
-                d.style.paddingRight = '0';
-                d.style.border = 'none';
-                d.style.display = 'block';
-                d.style.visibility = 'visible';
-                d.style.height = '21px';
-                d.style.position = 'relative';
-                d.style.overflow = 'hidden';
-                d.name = 'button';
-                d.id = '_willet_'+id;
-                d.className = '_willet_social_button';
-                return d;
-            }
-
-            // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
-            var buttons = {
-                Tumblr: {
-                    create: function () {
-                        var d = createButton('tumblr');
-                        d.style.width = '62px';
-                        
-                        var a = document.createElement( 'a' );
-                        a.href = 'http://www.tumblr.com/share';
-                        a.title = "Share on Tumblr";
-                        a.style.display = 'inline-block';
-                        a.style.textIndent = '-9999px';
-                        a.style.textAlign = 'left';
-                        a.style.width = '63px';
-                        a.style.height = '20px';
-                        a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
-                        a.style.styleFloat = 'left'; // IE
-                        a.style.cssFloat = 'left'; // FF, Webkit
-                        a.style.marginRight = '5px';
-                        a.style.marginTop = '0';
-                        a.innerHTML = "Share on Tumblr";
-                        d.appendChild( a );
-                        return d;
-                    },
-                    script: protocol+'//platform.tumblr.com/v1/share.js'
-                },
-                Pinterest: {
-                    create: function () {
-                        var d = createButton('pinterest');
-                        d.style.width = button_count ? '77px' : '43px';
-
-                        var a = document.createElement( 'a' );
-                        a.href = "http://pinterest.com/pin/create/button/?" +
-                                "url=" + encodeURIComponent( window.location.href ) + 
-                                "&media=" + encodeURIComponent( photo ) + 
-                                "&description=" + encodeURIComponent("I found this on " + domain);
-                        a.className = 'pin-it-button';
-                        a.setAttribute('count-layout', "horizontal");
-                        a.innerHTML = "Pin It";
-                        d.appendChild( a );
-                        return d;
-                    },
-                    script: protocol+'//assets.pinterest.com/js/pinit.js'
-                },
-                Fancy: {
-                    create: function () {
-                        var d = createButton('fancy');
-                        d.style.width = button_count ? '96px' : '57px';
-
-                        var a = document.createElement( 'a' );
-                        var u = "http://www.thefancy.com/fancyit?" +
-                                "ItemURL=" + encodeURIComponent( window.location.href ) + 
-                                "&Title="  + encodeURIComponent( data.product.title ) +
-                                "&Category=Other";
-                        if ( photo.length > 0 ) {
-                            u += "&ImageURL=" + encodeURIComponent( photo );
-                        } else { // If no image on page, submit blank image.
-                            u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
-                        }
-
-                        a.href = u;
-                        a.id = 'FancyButton';
-                        a.setAttribute('data-count', ( button_count ? 'true' : 'false' ));
-                        d.appendChild( a );
-                        return d;
-                    },
-                    script: protocol+'//www.thefancy.com/fancyit.js'
-                },
-                Facebook: {
-                    create: function () {
-                        var d = createButton('facebook');
-                        d.style.width = button_count ? '90px' : '48px';
-                        d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
-                        return d;
-                    },
-                    script: protocol+'//connect.facebook.net/en_US/all.js#xfbml=1'
-                },
-                Twitter: {
-                    create: function () {
-                        var d = createButton('twitter');
-                        d.style.width = button_count ? '98px' : '56px';
-
-                        var a = document.createElement('a');
-                        a.href = 'https://twitter.com/share';
-                        a.className = 'twitter-share-button';
-                        a.setAttribute('data-lang','en');
-                        a.setAttribute('data-count', ( button_count ? 'horizontal' : 'none' ));
-                        d.appendChild(a);
-                        return d;
-                    },
-                    script: protocol+'//platform.twitter.com/widgets.js'
-                },
-                GooglePlus: {
-                    create: function () {
-                        var d = createButton('googleplus');
-                        d.style.width = button_count ? '90px' : '32px';
-                        d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
-                        // Google is using the Open Graph spec
-                        var t, p, 
-                            m = [ { property: 'og:title', content: data.product.title },
-                                  { property: 'og:image', content: photo },
-                                  { property: 'og:description', content: 'I found this on '+ domain } ]
-                        while (m.length) {
-                            p = m.pop();
-                            t = document.createElement('meta');
-                            t.setAttribute('property', p.property);
-                            t.setAttribute('content', p.content);
-                            head.appendChild(t);
-                        }
-                        return d;
-                    },
-                    script: protocol+'//apis.google.com/js/plusone.js'
-                }
-            };
-            
             // Grab the photo
             var photo = '';
-            if ( data.product.images[0] != null ) {
-                photo = data.product.images[0].src;
+            if ( productData.product.images[0] != null ) {
+                photo = productData.product.images[0].src;
             }
 
-            var req_buttons = [];
-            var networksJSON = _readCookie(_cookie_name) || "";
+            var requiredButtons = [];
+            var networksJSON = readCookie(COOKIE_NAME) || "";
             if (networksJSON === "") {
-                // Get the buttons, should be children of #_willet_buttons_app
-                //      ex: <div>Facebook</div>
-                req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
-                if (button_div.childNodes.length > 0) {
-                    // Search for supported buttons
-                    i = button_div.childNodes.length;
-                    req_buttons = [];
-                    while (i--) {
-                        if (button_div.childNodes[i].nodeType === 1) {
-                            j = button_div.childNodes[i].innerHTML;
-                            for (var k in supported_buttons) {
-                                if (supported_buttons[k] === j) {
-                                    req_buttons.push(j);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    // Now remove all children of #_willet_buttons_app
-                    i = button_div.childNodes.length;
-                    while (i--) {
-                        button_div.removeChild( button_div.childNodes[i]);
-                    }
+                requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
+
+                // Now remove all children of #_willet_buttons_app
+                var i = buttonsDiv.childNodes.length;
+                while (i--) {
+                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
                 }
             } else {
+                //TODO: Wrap in try / catch
                 var networks = JSON.parse(networksJSON);
                 for (var network in networks) {
-                    for (var k in supported_buttons) {
-                        if (supported_buttons[k] === network
-                            && networks[network] === true) {
-                            req_buttons.push(network);
-                        }
+                    if (xHasKeyY(SUPPORTED_NETWORKS, network)
+                        && networks[network] === true) {
+                        requiredButtons.push(network);
                     }
                 }
             }
 
-            var b, t, j = req_buttons.length;
-            
-            // Create buttons & add activating scripts!
-            while (j--) {
-                b = req_buttons[j];
-                button_div.appendChild( buttons[b].create() );
-                t  = document.createElement( 'script' );
-                t.type = 'text/javascript';
-                t.src = buttons[b].script;
-                head.appendChild(t);
-                console.log('Buttons: '+ b +' attached');
+            for (var index in requiredButtons) {
+                var network = requiredButtons[index];
+                var button = SUPPORTED_NETWORKS[network]["button"];
+                buttonsDiv.appendChild(button.create({
+                    "domain": DOMAIN,
+                    "photo": photo,
+                    "data": productData,
+                    "buttonCount": buttonCount,
+                    "buttonSpacing": buttonSpacing,
+                    "buttonPadding": buttonPadding
+                }));
+
+                var script = createElement({
+                    "nodename": "script",
+                    "type": "text/javascript",
+                    "src": button["script"]
+                });
+                HEAD.appendChild(script);
+                console.log('Buttons: '+ network +' attached');
             }
 
             // Make visible if hidden
-            button_div.style.display = 'block';
+            buttonsDiv.style.display = 'block';
 
             console.log('Buttons: Done!');
         } else {
             console.log('Buttons: could not find buttons placeholder on page');
         }
-
     };
 
-    // Get product info, then load scripts
-    (function() {
-        try {
-            console.log("Buttons: initiating product.json request")
-            var req = new XMLHttpRequest();
-            req.open('GET', here, true);
-            req.onreadystatechange = function () {  
-                if (req.readyState === 4) {
-                    // 4 means something has been returned by the request
-                    if (req.status === 200) {
+    me.init = function() {
+        if (!readCookie(COOKIE_NAME)) {
+            me.detectNetworks();
+        }
+
+        if(!debug) {
+            try {
+                console.log("Buttons: initiating product.json request")
+                ajax({
+                    url: PRODUCT_JSON,
+                    method: "GET",
+                    success: function(request) {
                         console.log("Buttons: recieved product.json request");
                         var data;
                         try {
-                            data = JSON.parse(req.responseText);
+                            data = JSON.parse(request.responseText);
                         } catch (e) {
                             console.log("Buttons: could not parse product info, stopping.");
                             return;
                         }
                         if (data) {
                             // Proceed!
-                            _init_buttons(data);
+                            me.createButtons(data);
                         }
-                    } else {  
-                        // Didn't work, just silently bail
-                        console.log("Buttons: request for product.json failed");
-                    }  
-                }  
-            };  
-            req.send(null);
-        } catch (e) {
-            // Didn't work, just silently bail
-            console.log("Buttons: "+e);
+                    }
+                });   
+            } catch(e) {
+                console.log("Buttons: request for product.json failed");
+            }
+        } else {
+            me.createButtons({
+                product: {
+                    images: [
+                        { created_at: "2012-02-03T11:42:17+09:00",
+                        id: 166600132,
+                        position: 1,
+                        product_id: 81809292,
+                        updated_at: "2012-02-03T11:42:17+09:00",
+                        src:'/static/imgs/beer_200.png' }
+                    ]
+                },
+                title: "Glass of beer"
+            });
         }
-    })();
-    /*(function() { // for local testing
-        if (!_readCookie(_cookie_name)) {
-            _detectNetworks();    
-        }
-        _init_buttons({
-            product: {
-                images: [
-                    { created_at: "2012-02-03T11:42:17+09:00",
-                    id: 166600132,
-                    position: 1,
-                    product_id: 81809292,
-                    updated_at: "2012-02-03T11:42:17+09:00",
-                    src:'/static/imgs/beer_200.png' }
-                ]
-            },
-            title: "Glass of beer"
-        });
-    })();*/
-})();
+    };
+
+    me.init();
+}(WILLET || {}, WILLET_DEBUG || false));
