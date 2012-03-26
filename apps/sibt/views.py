@@ -41,7 +41,6 @@ from util.strip_html            import strip_html
 class ShowBetaPage(URIHandler):
     def get(self):
         path = os.path.join('apps/sibt/templates/', 'beta.html')
-        logging.debug(URL)
         self.response.out.write(template.render(path, {
             'URL': URL,
             'sibt_version': SIBT.CURRENT_INSTALL_VERSION
@@ -62,10 +61,15 @@ class AskDynamicLoader(URIHandler):
     # TODO: THis code is Shopify specific. Refactor.
     def get(self):
         store_domain = self.request.get('store_url')
-        app = SIBTShopify.get_by_store_url(store_domain)
+        app = SIBT.get_by_store_url(store_domain)
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
+        
+        if not app:
+            logging.error('app not found; exiting.')
+            self.error(400)
+            return
         
         # if no URL, then referrer, then everything dies
         target = self.request.get ('url', self.request.headers.get('referer'))
@@ -79,6 +83,7 @@ class AskDynamicLoader(URIHandler):
         try:
             page_url = urlparse(self.request.headers.get('referer'))
             store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
+            # warning: parsing an empty string will give you :// without error
         except Exception, e:
             logging.error('error parsing referer %s' % e, exc_info = True)
         
@@ -87,7 +92,7 @@ class AskDynamicLoader(URIHandler):
             logging.info("getting by url")
             product = ProductShopify.get_or_fetch (target, app.client) # by URL
             if not product and product_uuid: # fast (cached)
-                product = ProductShopify.get (product_uuid)
+                product = Product.get (product_uuid)
                 target = product.resource_url # fix the missing url
             if not product and product_shopify_id: # slow, deprecated
                 product = ProductShopify.get_by_shopify_id (product_shopify_id)

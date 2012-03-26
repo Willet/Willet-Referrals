@@ -41,14 +41,11 @@
                         data: $(this).serialize(),
                         type: 'POST',
                         success: function () {
-                            $('#sibt_reg_form').slideUp();
                             $('#success_script').show();
-                            $('html, body').animate({
-                                scrollTop: $('#success_script').offset().top
-                            }, 1500);
+                            $('#sibt_reg_form').slideUp('slow');
                         },
                         error: function (jqXHR) {
-                            switch (jqXHR) {
+                            switch (jqXHR.status) {
                                 case 400:
                                     $('#error_bar').html('Please ensure all of your information is correctly filled in.').slideDown();
                                     break;
@@ -95,7 +92,7 @@
                 <legend>Your information</legend>
                 <table>
                     <tr>
-                        <td>Full name:</td>
+                        <td style='width:50%'>Full name:</td>
                         <td><input type="text" name="fullname" placeholder="Full name" /></td>
                     </tr>
                     <tr>
@@ -117,7 +114,7 @@
                 <legend>Site information</legend>
                 <table>
                     <tr>
-                        <td>Store name:</td>
+                        <td style='width:50%'>Store name:</td>
                         <td><input type="text" name="shopname" placeholder="Shop name" value="Amy&rsquo;s Bakery" /></td>
                         <!-- ridiculous name here is to encourage real input -->
                     </tr>
@@ -146,8 +143,8 @@
             '?url=' + encodeURIComponent(window.location.href); // required
         jse.parentNode.insertBefore(jsa, jse);
     } catch (e) {}
-}(document, 'script');/*--*//*]]&gt;*/&lt;/script&gt;
-            </pre><!-- do not reindent lines above -->
+}(document, 'script');/*--*//*]]&gt;*/&lt;/script&gt;</pre>
+            <!-- do not reindent lines above -->
         </div>
     </div>
 {% endblock content %}

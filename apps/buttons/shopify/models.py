@@ -80,7 +80,7 @@ class ButtonsShopify(Buttons, AppShopify):
             first_name, last_name = name, ''
 
         # Add email to MailChimp
-        email_list_id = SHOPIFY_APPS[app_name]['email_list_id']
+        email_list_id = SHOPIFY_APPS['AppShopify']['email_list_id']
         if email_list_id:
             MailChimp(MAILCHIMP_API_KEY).listSubscribe(id=email_list_id,
                                                        email_address=self.client.email,

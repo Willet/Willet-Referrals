@@ -9,6 +9,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import logging
 import random
+import urlparse
 from datetime import datetime
 from datetime import timedelta
 
@@ -55,7 +56,7 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
 
-    memcache_fields = ['link', 'created', 'end_datetime']
+    memcache_fields = ['link', 'created', 'end_datetime', 'store_url', 'extra_url']
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -63,7 +64,16 @@ class SIBT(App):
 
     @classmethod
     def get_by_store_url(cls, url):
-        data = memcache.get(url)
+        if not url:
+            return None
+        
+        try:
+            ua = urlparse.urlsplit(url)
+            url = "%s://%s" % (ua.scheme, ua.netloc)
+        except:
+            pass # use original URL
+        
+        data = cls.get(url)
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
@@ -71,9 +81,7 @@ class SIBT(App):
         if not app:
             # no app in DB by store_url; try again with extra_url
             app = cls.all().filter('extra_url =', url).get()
-        
-        if app:
-            app.memcache_by_store_url()
+
         return app
     
     @staticmethod

@@ -51,15 +51,15 @@ class SIBTSignUp(URIHandler):
         address1 = self.request.get("address1", '')
         address2 = self.request.get("address2", '')
         
+        if not (fullname and email and shopname and shop_url):
+            self.error (400) # missing info
+            return
+
         try: # rebuild URL
             shop_url_parts = urlparse.urlsplit(shop_url)
             shop_url = '%s://%s' % (shop_url_parts.scheme, shop_url_parts.netloc)
         except :
             self.error (400) # malformed URL
-            return
-        
-        if not (fullname and email and shopname and shop_url):
-            self.error (400) # missing info
             return
         
         user = User.get_or_create_by_email(
@@ -246,7 +246,7 @@ class StartSIBTInstance(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class DoVote( URIHandler ):
+class DoVote(URIHandler):
     def post(self):
         user = None
         instance_uuid = self.request.get( 'instance_uuid' )
@@ -262,9 +262,7 @@ class DoVote( URIHandler ):
             # how can User.get_or_create_by_cookie fail?
             pass
 
-        which = self.request.get( 'which', 'yes' )
-        
-        logging.debug("%r" % [instance, app, user, which])
+        which = self.request.get('which', 'yes')
         
         # Make a Vote action for this User
         action = SIBTVoteAction.create( user, instance, which )

@@ -23,7 +23,7 @@ class DoUninstalledApp(URIHandler):
         client = ClientShopify.get_by_url(store_url)
 
         # Remove email from MailChimp
-        email_list_id = SHOPIFY_APPS[app_name]['email_list_id']
+        email_list_id = SHOPIFY_APPS['AppShopify']['email_list_id']
         if email_list_id:
             MailChimp(MAILCHIMP_API_KEY).listUnsubscribe(id=email_list_id,
                                                          email_address=self.client.email,
