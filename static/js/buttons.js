@@ -587,4 +587,4 @@
     };
 
     me.init();
-}(WILLET || {}, WILLET_DEBUG || false));
+}(WILLET || {}));
