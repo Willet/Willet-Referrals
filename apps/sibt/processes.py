@@ -225,7 +225,13 @@ class GetExpiredSIBTInstances(URIHandler):
     
     def get(self):
         """Gets a list of SIBT instances to be expired and emails to be sent"""
-        right_now = datetime.now()
+        try:
+            right_now = datetime.now()
+        except AttributeError: # 'module' object has no attribute 'now'
+            # while the one above will work in "standard python",
+            # it is unclear why GAE python fires the one below.
+            right_now = datetime.datetime.now()
+            
         expired_instances = SIBTInstance.all()\
                 .filter('is_live =', True)\
                 .filter('end_datetime <=', right_now) 
