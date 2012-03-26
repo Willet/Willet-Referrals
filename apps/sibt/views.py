@@ -558,10 +558,12 @@ class SIBTServeScript(URIHandler):
         app = user = instance = None
         votes_count = 0
         domain = path = ''
+        is_live = False
         parts = template_values = {}
         
         # in the proposed SIBT v10, page URL is the only required parameter.
-        page_url = self.request.get ('url')
+        page_url = self.request.get ('url', '').split('#')[0]
+
         if not page_url:
             self.response.out.write('/* missing URL */')
             return
@@ -596,9 +598,11 @@ class SIBTServeScript(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
 
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+        logging.debug('%r' % [user, page_url, instance])
         if instance:
             asker_name = instance.asker.get_first_name()
-            asker_pic  = instance.asker.get_attr('pic')
+            asker_pic = instance.asker.get_attr('pic')
+            is_live = False
             votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
 
         # you now have app, user, client, and instance
@@ -618,7 +622,7 @@ class SIBTServeScript(URIHandler):
             'is_asker': False,
             'show_votes': bool(instance),
             'has_results': (votes_count > 0),
-            'is_live': instance.is_live,
+            'is_live': is_live,
             'unsure_mutli_view': False,
             
         }

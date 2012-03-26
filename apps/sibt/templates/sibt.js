@@ -132,6 +132,7 @@
         setCookieStorageFlag();
     }
 
+    // set up a list of scripts to load asynchronously.
     var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
     if (!window.jQuery || window.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
         scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
@@ -139,7 +140,6 @@
 
     // Once all dependencies are loading, fire this function
     var init = function () {
-        // console.log('called init');
 
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
@@ -159,15 +159,12 @@
 
         if ($_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
-            // console.log('noConflicted');
         }
         
         jQuery(document).ready(function($) { // wait for DOM elements to appear + $ closure!
-            // console.log('jQuery ready');
 
             // jQuery shaker plugin
-            (function(a){var b={};var c=4;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
-            
+            (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
@@ -242,9 +239,7 @@
                 var message = message || 'SIBTUserClickedButtonAsk';
                 try {
                     $('#_willet_padding').hide();
-                } catch (err) {
-                    // pass!
-                }
+                } catch (e) {}
                 if (is_asker || show_votes) {
                     // we are no longer showing results with the topbar.
                     show_results ();
@@ -257,19 +252,17 @@
             var show_results = function () {
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
-                var url = "{{URL}}/s/results.html" + 
-                          "?" + willet_metadata () + 
-                          "&refer_url=" + window.location.href;
+                var url = "{{URL}}/s/results.html?" + willet_metadata ({'refer_url': window.location.href});
                 $.willet_colorbox({
                     href: url,
                     transition: 'fade',
                     close: '',
                     scrolling: false,
-                    iframe: true, 
-                    initialWidth: 0, 
-                    initialHeight: 0, 
+                    iframe: true,
+                    initialWidth: 0,
+                    initialHeight: 0,
                     innerWidth: '600px',
-                    innerHeight: '400px', 
+                    innerHeight: '400px',
                     fixed: true,
                     onClosed: function () { }
                 });
@@ -584,7 +577,6 @@
                 var hash_search = '#code=';
                 hash_index  = hash.indexOf(hash_search);
                 willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-                
 
                 {% if app.top_bar_enabled %} // add this topbar code only if necessary
                     console.log('topbar enabled');
@@ -617,8 +609,7 @@
                     }
                 {% endif %} ; // app.top_bar_enabled
 
-
-                if (sibt_button_enabled) {
+                {% if app.button_enabled %} // add this button code only if necessary
                     if (sibt_version <= 2) {
                         console.log('v2 button is enabled');
                         var button = document.createElement('a');
@@ -641,20 +632,19 @@
                             .attr('class','_willet_button willet_reset')
                             .click(button_onclick);
                         $(purchase_cta).append(button);
-                    } else if (sibt_version == 3) {
+                    } else if (sibt_version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                         console.log('v3 button is enabled');
                         var button = $("<div />", {
                             'id': '_willet_button_v3'
                         });
-                        button.html ("<p>Should you buy this? Can\'t decide?</p>" +
-                                     "<div class='button' " +
-                                         "title='Ask your friends if you should buy this!'>" +
-                                         "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                         "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                        button
+                            .html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                    "<div class='button' " +
+                                        "title='Ask your friends if you should buy this!'>" +
+                                        "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                        "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
                                      "</div>")
-                        .css({
-                            'clear': 'both'
-                        });
+                            .css({'clear': 'both'});
                         $(purchase_cta).append(button);
                         $('#_willet_button').click(button_onclick);
                         
@@ -693,7 +683,7 @@
                             });
                         }
                     }
-                } // if sibt_button_enabled
+                {% endif %} // app.button_enabled
             } // if #_willet_shouldIBuyThisButton
 
             // Load jQuery colorbox
@@ -712,7 +702,8 @@
                                 $.willet_colorbox.close();
                             }
                         });
-
+                        
+                        // auto-show results on hash
                         var hash = window.location.hash;
                         var hash_search = '#open_sibt=';
                         hash_index = hash.indexOf(hash_search);
