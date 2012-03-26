@@ -395,7 +395,7 @@ class SIBTShopifyServeScript(URIHandler):
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
-            'has_results'    : 'true' if has_results else 'false',
+            'has_results'    : has_results,
         }
 
         # Finally, render the JS!
@@ -696,7 +696,7 @@ class SIBTShopConnectionServe (URIHandler):
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
-            'has_results'    : 'true' if has_results else 'false',
+            'has_results'    : has_results,
         }
 
         # Finally, render the JS!
