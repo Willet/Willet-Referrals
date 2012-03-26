@@ -95,6 +95,7 @@ class MemcacheBucketConfig(Model):
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
+    # TODO - make classmethod of MemcacheBucketConfig
     from apps.user.models import *
 
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))

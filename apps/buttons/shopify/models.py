@@ -80,14 +80,16 @@ class ButtonsShopify(Buttons, AppShopify):
             first_name, last_name = name, ''
 
         # Add email to MailChimp
-        MailChimp(MAILCHIMP_API_KEY).listSubscribe(id='98231a9737', # ShopConnection list
-                                                   email_address=self.client.email,
-                                                   merge_vars=({ 'FNAME': first_name,
-                                                                 'LNAME': last_name,
-                                                                 'STORENAME': self.client.name,
-                                                                 'STOREURL': self.client.url }),
-                                                   double_optin=False,
-                                                   send_welcome=False)
+        email_list_id = SHOPIFY_APPS[app_name]['email_list_id']
+        if email_list_id:
+            MailChimp(MAILCHIMP_API_KEY).listSubscribe(id=email_list_id,
+                                                       email_address=self.client.email,
+                                                       merge_vars=({ 'FNAME': first_name,
+                                                                     'LNAME': last_name,
+                                                                     'STORENAME': self.client.name,
+                                                                     'STOREURL': self.client.url }),
+                                                       double_optin=False,
+                                                       send_welcome=False)
 
     # Constructors ------------------------------------------------------------------------------
     @classmethod

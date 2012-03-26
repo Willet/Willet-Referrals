@@ -49,12 +49,37 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 
 SHOPIFY_APPS = {
     'AppShopify': {
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
+        'class_name': 'SIBTShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        },
+        'email_list_id': None,
+    }, 'SIBTShopify': {
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'SIBTShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        },
+        'email_list_id': None,
+    }, 'WOSIBShopify': {
+        # repeat keys in SIBT
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
         'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
         'facebook': {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
-        }
+        },
+        'email_list_id': None,
+    }, 'ButtonsShopify': {
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
+        'class_name': 'ButtonsShopify',
+        'email_list_id': '01629537ab',
     }
 }
 
@@ -122,4 +147,4 @@ if appname != APP_LIVE:
         logging.info ("appname = %s; loading local_consts" % appname)
         from local_consts import *
     except Exception, e:
-        logging.info('no local_consts.py: %s' % e)
+        pass

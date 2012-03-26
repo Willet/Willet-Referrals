@@ -520,6 +520,7 @@
                                                 "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
                     'width': '80px',
                     'height': '21px',
+                    'cursor': 'pointer',
                     'display': 'inline-block'
                 });
                 
@@ -548,6 +549,7 @@
                 if (has_results) {
                     sibt_elem.css ({
                         'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
+                        'cursor': 'pointer',
                         'width': '80px'
                     });
                 }
@@ -634,20 +636,24 @@
                         $(purchase_cta).append(button);
                     } else if (sibt_version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                         console.log('v3 button is enabled');
-                        var button = $("<div />", {
-                            'id': '_willet_button_v3'
-                        });
-                        button
-                            .html ("<p>Should you buy this? Can\'t decide?</p>" +
-                                    "<div class='button' " +
-                                        "title='Ask your friends if you should buy this!'>" +
-                                        "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                        "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                     "</div>")
-                            .css({'clear': 'both'});
-                        $(purchase_cta).append(button);
+                        if ($('#_willet_button_v3').length == 0) { // if the v3 button isn't there already
+                            var button = $("<div />", {
+                                'id': '_willet_button_v3'
+                            });
+                            button
+                                .html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                        "<div class='button' " +
+                                            "title='Ask your friends if you should buy this!'>" +
+                                            "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                            "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                         "</div>")
+                                .css({'clear': 'both'});
+                            $(purchase_cta).append(button);
+                        } else {
+                            var button = $('#_willet_button_v3');
+                        }
                         $('#_willet_button').click(button_onclick);
-                        
+
                         // if server sends a flag that indicates "results available"
                         // (not necessarily "finished") then show finished button
                         if (has_results) {

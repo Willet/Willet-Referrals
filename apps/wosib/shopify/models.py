@@ -81,7 +81,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         logging.debug ("installing WOSIB assets")
         self.install_assets(assets=liquid_assets)
 
-    def memcache_by_store_url(self):
+    def _memcache_by_store_url(self):
         success1 = memcache.set(
                 "WOSIB-%s" % self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
@@ -96,7 +96,7 @@ class WOSIBShopify(WOSIB, AppShopify):
     def put(self):
         """So we memcache by the store_url as well"""
         logging.info('enhanced WOSIBShopify put')
-        self.memcache_by_store_url()
+        self._memcache_by_store_url()
         super(WOSIBShopify, self).put()
 
     @staticmethod
@@ -164,5 +164,5 @@ class WOSIBShopify(WOSIB, AppShopify):
             app = WOSIBShopify.all().filter('extra_url =', url).get()
         
         if app:
-            app.memcache_by_store_url()
+            app._memcache_by_store_url()
         return app

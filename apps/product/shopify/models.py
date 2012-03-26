@@ -14,20 +14,11 @@ from util.consts import MEMCACHE_TIMEOUT
 
 class ProductShopify(Product):
     
-    shopify_id = db.StringProperty( indexed = True )
-
-    # this is the URL used to lookup this product
-    # this will be filled in when people view product pages
-    resource_url = db.StringProperty( default = "" )
-    
-    # cache the json result so we can get more fields later
-    json_response = db.TextProperty( indexed = False )
-
-    # The type of product
-    type = db.StringProperty( indexed = False )
-    
-    # A list of tags to describe the product
-    tags = db.StringListProperty( indexed = False )
+    shopify_id = db.StringProperty(indexed = True)
+    resource_url = db.StringProperty(default = "") # product page url & main lookup key
+    json_response = db.TextProperty(indexed = False) # add more product fields to json as necessary
+    type = db.StringProperty(indexed = False) # The type of product
+    tags = db.StringListProperty(indexed = False) # A list of tags to describe the product
 
     memcache_fields = ['resource_url', 'shopify_id']
 
@@ -35,8 +26,10 @@ class ProductShopify(Product):
         super(ProductShopify, self).__init__(*args, **kwargs)
     
     def _validate_self(self):
+        # Could check if shopify_id is valid
+        # Could check if resource_url is valid
         return True
-    
+
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
