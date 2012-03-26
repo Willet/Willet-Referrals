@@ -700,7 +700,7 @@ class SIBTShopConnectionServe (URIHandler):
         }
 
         # Finally, render the JS!
-        path = os.path.join('apps/sibt/templates/', 'sibt-buttons.js')
+        path = os.path.join('apps/sibt/templates/', 'sibt.js')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'

@@ -619,10 +619,11 @@ class SIBTServeScript(URIHandler):
             'show_votes': bool(instance),
             'has_results': (votes_count > 0),
             'is_live': instance.is_live,
-            'unsure_mutli_view': False
+            'unsure_mutli_view': False,
+            
         }
         
-        path = os.path.join('apps/sibt/templates/', 'sibt_static.js')
+        path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
