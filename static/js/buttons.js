@@ -404,10 +404,9 @@ var WILLET = (function(me, debug) {
     var getRequiredButtonsFromElement = function(container) {
         // Get the buttons, should be children of #_willet_buttons_app
         //      ex: <div>Facebook</div>
-        var requiredButtons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+        var requiredButtons = [];
         if (container.childNodes.length > 0) {
             // Search for supported buttons
-            requiredButtons = [];
             var containerLength = container.childNodes.length;
             for(var i = 0; i < containerLength; i++) {
                 var node = container.childNodes[i];
@@ -419,7 +418,7 @@ var WILLET = (function(me, debug) {
                 }
             }
         }
-        return requiredButtons;
+        return (requiredButtons.length) ? requiredButtons : ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty;
     };
 
     var updateLoggedInStatus = function(network, status) {
