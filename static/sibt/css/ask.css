@@ -114,7 +114,7 @@ p {
 .title_bar {
     width: 100%;
     height: 55px;
-    font-size: 18px;
+    font-size: 20px;
     padding: 0 0 8px 0;
     border-bottom: 1px solid #BBB;
 }
@@ -129,7 +129,7 @@ p {
 }
 .title_bar>div {
     line-height: 30px;
-    margin: 14px 0 0 15px;
+    margin: 14px 0 0 40px;
 }
 .center_col {
         margin: 40px 20% 0 20%;
@@ -275,7 +275,15 @@ p {
 .message>textarea {
     float: right;
     width: 70%;
-    height: 86px; /* textarea has 16px of outer stuff */
+    height: 68px; /* textarea has 16px of outer stuff */
+}
+.message>.detailed {
+    float: right;
+    width: 70%;
+    text-align: left;
+    text-indent: -16px;
+    font-size: 14px;
+    color: #666;
 }
 .options {
     position: absolute;

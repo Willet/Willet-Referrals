@@ -159,4 +159,4 @@ if appname != APP_LIVE:
         logging.info ("appname = %s; loading local_consts" % appname)
         from local_consts import *
     except Exception, e:
-        logging.info('no local_consts.py: %s' % e)
+        pass

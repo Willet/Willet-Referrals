@@ -9,18 +9,7 @@
             <div id="splash">
                 <div class="title_bar">
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Ask Your Friends</div>
-                    <div class="drop_bar" id="questionOptions">
-                        <div class="holder">
-                            <div class="grey_bar">
-                                Should I buy this?
-                            </div>
-                            <img alt="arrow" src="/static/sibt/imgs/drop_arrow_29x29.png" />
-                        </div>
-                        <ul>
-                            <!-- Question options appended when document ready -->
-                        </ul>
-                    </div>
+                    <div>Need Help Deciding? Ask Your Friends</div>
                 </div>
                 <div class="content narrow">
                     <!-- 
@@ -31,7 +20,8 @@
                     -->
                     <div class="message" id="message">
                         <img alt="product" src="{{ product_images|first }}" />
-                        <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
+                        <textarea id='shareText'>I like this, but...</textarea>
+                        <div class="detailed">Hint: detailed questions get better answers</div>
                     </div>
                     <div class="options">
                         <div class="option left">
@@ -186,46 +176,46 @@
 {% block js_functions %}
         // Show or hide list of question options on Splash screen
         // opt - true = show, false = hide
-        var toggleShowQuestionOptions = function (opt) {
-            $('#questionOptions>ul').toggle(opt);
-        };
+        //var toggleShowQuestionOptions = function (opt) {
+        //    $('#questionOptions>ul').toggle(opt);
+        //};
 
         // Question to ask has been selected.  Change button text and 
         // close list of options on Splash screen
-        var selectQuestionOption = function (num) {
-            $('#questionOptions .grey_bar').text(options[num].title);
-            $('#message>textarea').html(options[num].text);
-            toggleShowQuestionOptions();
-        };
+        //var selectQuestionOption = function (num) {
+        //    $('#questionOptions .grey_bar').text(options[num].title);
+        //    $('#message>textarea').html(options[num].text);
+        //    toggleShowQuestionOptions();
+        //};
 {% endblock js_functions %}
 
 {% block js_init %}
             // Close drop down bar if it loses focus
             // Hack because div's dont have blur
-            $("body").click(function (evt) {
-                 var target = evt.target;
-                 if ($(target).parents("#questionOptions").length === 0)  {
-                     toggleShowQuestionOptions(false);
-                 }
-            });
+            //$("body").click(function (evt) {
+            //     var target = evt.target;
+            //     if ($(target).parents("#questionOptions").length === 0)  {
+            //         toggleShowQuestionOptions(false);
+            //     }
+            //});
 
             // Don't change this - click passes values into toggle,
             // which will trigger an animation we don't want. So
             // we wrap in function to block pass-through.
-            $('#questionOptions .grey_bar').click(function () {toggleShowQuestionOptions();
-            });
+            //$('#questionOptions .grey_bar').click(function () {toggleShowQuestionOptions();
+            //});
 
-            $('#questionOptions img').click(function () {
-                toggleShowQuestionOptions();
-            });
+            //$('#questionOptions img').click(function () {
+            //    toggleShowQuestionOptions();
+            //});
 
             // Load up options
-            (function () {
-                var $ul = $('#questionOptions>ul');
-                $.each(options, function (i, opt) {
-                    $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
-                });
-            })();
+            //(function () {
+            //    var $ul = $('#questionOptions>ul');
+            //    $.each(options, function (i, opt) {
+            //        $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
+            //    });
+            //})();
 
             // OK READY TO GO!
             showScreen('splash');
