@@ -17,16 +17,19 @@ var WILLET = (function(me, debug) {
 
     var HEAD = document.getElementsByTagName('head')[0];
     var BUTTONS_DIV_ID = '_willet_buttons_app';
-    var DETECT_NETWORKS_DIV_ID;
+    var DETECT_NETWORKS_DIV_ID = '_willet_buttons_detect_networks';
 
     var DOMAIN = /:\/\/([^\/]+)/.exec(window.location.href)[1];
     var PROTOCOL = debug ? "http:" : window.location.protocol;
 
+    var ELEMENT_NODE = 1;
+
+    var LOGGED_IN_NETWORKS = {};
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
             "detect": {
                 "method": "none",
-                "func": function() {}
+                "func": function() { return ""; }
             },
             "button": {
                 "script": PROTOCOL + '//platform.tumblr.com/v1/share.js',
@@ -63,8 +66,45 @@ var WILLET = (function(me, debug) {
         },
         "Facebook": {
             "detect": {
-                "method": "none",
-                "func": function() {}
+                "method": "api",
+                "func": function() {
+                    //build the fb-root element if it does not exist
+                    if(!document.getElementById("fb-root")) {
+                        var fbRoot = createElement({
+                            "nodename": "div",
+                            "id": "fb-root"
+                        });
+                        document.body.appendChild(fbRoot);
+                    }
+
+                    //Given URL is not allowed by the Application configuration.:
+                    //One or more of the given URLs is not allowed by the Application configuration.
+                    //It must match one of the Connect or Canvas URLs or domain must be the same as
+                    //or a subdomain of one of the Application's base domains.
+                    var detectFBLoggedIn = function() {
+                        FB.init({ appId:'132803916820614', status:true,  cookie:true, xfbml:true});
+                        FB.getLoginStatus(function(response){
+                            var status = response.status != "unknown";
+                            updateLoggedInStatus("Facebook", status);
+                        });
+                    }
+
+                    if (!window.FB) {
+                        window.fbAsyncInit = function() {
+                            detectFBLoggedIn();
+                        };
+
+                        //load the FB SDK if it isn't already loaded;
+                        (function(d){
+                        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+                        js = d.createElement('script'); js.id = id; js.async = true;
+                        js.src = "//connect.facebook.net/en_US/all.js";
+                        d.getElementsByTagName('head')[0].appendChild(js);
+                        }(document));
+                    } else {
+                        detectFBLoggedIn();
+                    }
+                }
             },
             "button": {
                 "script": PROTOCOL + '//connect.facebook.net/en_US/all.js#xfbml=1',
@@ -171,7 +211,7 @@ var WILLET = (function(me, debug) {
         "Fancy": {
             "detect": {
                 "method": "none",
-                "func": function() {}
+                "func": function() { return ""; }
             },
             "button": {
                 "script": PROTOCOL + '//www.thefancy.com/fancyit.js',
@@ -205,11 +245,10 @@ var WILLET = (function(me, debug) {
             }
         }
     };
-    var ELEMENT_NODE = 1;
 
     // Private functions
+    // Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
     var JSON;if(!JSON){JSON={};}
-    /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
     (function(){'use strict';function f(n){return n<10?'0'+n:n;}
     if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
     f(this.getUTCMonth()+1)+'-'+
@@ -274,7 +313,7 @@ var WILLET = (function(me, debug) {
         var async = config.async || true;
 
         if (url === "") {
-            //Error!
+            //TODO: Error
         }
 
         var request = new XMLHttpRequest();
@@ -383,22 +422,20 @@ var WILLET = (function(me, debug) {
         return requiredButtons;
     };
 
+    var updateLoggedInStatus = function(network, status) {
+        LOGGED_IN_NETWORKS[network] = status;
+        createCookie(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
+    }
+
     // Public functions
     me.detectNetworks = function () {
-        var loggedInNetworks = {};
-        var supportedNetworks = {
-            
-        };
-
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
             image.onload = function () {
-                loggedInNetworks[network] = true;
-                createCookie(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+                updateLoggedInStatus(network, true);
             };
             image.onerror = function() {
-                loggedInNetworks[network] = false;
-                createCookie(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+                updateLoggedInStatus(network, false);
             };
             image.src = source;
             image.style.display = "none";
@@ -407,7 +444,7 @@ var WILLET = (function(me, debug) {
 
         var detectNetworksDiv = createElement({
             "nodename": "div",
-            "id": "_willet_detect_networks_div"
+            "id": DETECT_NETWORKS_DIV_ID
         });
 
         for (network in SUPPORTED_NETWORKS) {
@@ -416,6 +453,10 @@ var WILLET = (function(me, debug) {
                 case "image-hack":
                     var image = createHiddenImage(network, detectNetwork.func());
                     detectNetworksDiv.appendChild(image);
+                break;
+
+                case "api":
+                    detectNetwork.func();
                 break;
 
                 default:
