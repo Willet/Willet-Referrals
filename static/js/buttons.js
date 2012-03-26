@@ -13,7 +13,7 @@ var WILLET = (function(me, debug) {
     // Private variables
     var PRODUCT_JSON = window.location + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
-    var COOKIE_EXPIRY_IN_DAYS = 0.00347222222; //5 minutes
+    var COOKIE_EXPIRY_IN_DAYS = 30;
 
     var HEAD = document.getElementsByTagName('head')[0];
     var BUTTONS_DIV_ID = '_willet_buttons_app';
