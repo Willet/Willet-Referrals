@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 from datetime import datetime
 import re
 import hashlib
+import urlparse
 
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
@@ -15,12 +16,13 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
+from apps.client.models       import Client
 from apps.email.models        import Email
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models      import Product
 from apps.sibt.actions        import *
-from apps.sibt.models         import SIBTInstance, PartialSIBTInstance
+from apps.sibt.models         import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 
@@ -30,6 +32,76 @@ from util.helpers import remove_html_tags
 from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
+
+class SIBTSignUp(URIHandler):
+    ''' SIBT Signup is done in 3 stages:
+        - get_or_create user
+        - get_or_create client
+        - get_or_create app
+        
+        This is called by AJAX. Response is an empty page with appropriate code.
+    '''
+    def post(self):
+        fullname = self.request.get("fullname")
+        email = self.request.get("email")
+        shopname = self.request.get("shopname")
+        shop_url = self.request.get("shop_url")
+        # optional stuff
+        phone = self.request.get("phone", '')
+        address1 = self.request.get("address1", '')
+        address2 = self.request.get("address2", '')
+        
+        try: # rebuild URL
+            shop_url_parts = urlparse.urlsplit(shop_url)
+            shop_url = '%s://%s' % (shop_url_parts.scheme, shop_url_parts.netloc)
+        except :
+            self.error (400) # malformed URL
+            return
+        
+        if not (fullname and email and shopname and shop_url):
+            self.error (400) # missing info
+            return
+        
+        user = User.get_or_create_by_email(
+            email=email,
+            request_handler=self,
+            app=None # for now
+        )
+        if not user:
+            logging.error ('Could not get user for SIBT signup')
+            self.error (500) # did something wrong
+            return
+        
+        user.update(
+            full_name=fullname, # required update
+            email=email, # required update
+            phone=phone, # some users get this stuff
+            address1=address1,
+            address2=address2
+        )
+        
+        client = Client.get_or_create(
+            url=shop_url,
+            request_handler=self,
+            user=user
+        )
+        if not client:
+            logging.error ('Could not create client for SIBT signup')
+            self.error (500) # did something wrong
+            return
+        
+        app = SIBT.get_or_create(
+            client=client,
+            domain=shop_url
+        )
+        if not app:
+            logging.error ('Could not create client for SIBT signup')
+            self.error (500) # did something wrong
+            return
+        
+        # installation apparently succeeds
+        self.error (200) # OK
+        return
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):

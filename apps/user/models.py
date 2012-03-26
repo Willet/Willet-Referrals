@@ -54,6 +54,9 @@ class EmailModel(Model):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
         super(EmailModel, self).__init__(*args, **kwargs)
     
+    def __str__(self):
+        return self.address
+    
     @staticmethod
     def _get_from_datastore(created):
         """Datastore retrieval using memcache_key"""

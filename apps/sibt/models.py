@@ -86,9 +86,15 @@ class SIBT(App):
             client=client,
             store_name=client.name, # Store name
             store_url=client.url, # Store url
-            store_id=client.id, # Store id
             version=App.CURRENT_INSTALL_VERSION
         )
+        
+        try:
+            app.store_id=client.id # Store id
+        except AttributeError, e: # non-Shopify Shops need not Shop ID
+            logging.warn ('Store created without store_id')
+            pass
+        
         app.put()
         # app.do_install() # this is JS-based; there could be nothing to install
         return app

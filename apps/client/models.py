@@ -62,7 +62,7 @@ class Client(Model, polymodel.PolyModel):
         
         try:
             user_name = user.full_name
-            user_email = user.emails[0] # emails is a back-reference
+            user_email = user.emails[0].address  # emails is a back-reference
         except AttributeError, e:
             msg = "User supplied must have at least name and one email address"
             logging.error (msg, exc_info=True)
@@ -86,7 +86,7 @@ class Client(Model, polymodel.PolyModel):
     def get_or_create (url, request_handler=None, user=None):
         client = Client.get_by_url(url)
         if not client:
-            client = ClientShopify.create( 
+            client = Client.create( 
                 url,
                 request_handler,
                 user

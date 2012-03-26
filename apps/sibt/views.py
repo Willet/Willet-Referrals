@@ -41,7 +41,11 @@ from util.strip_html            import strip_html
 class ShowBetaPage(URIHandler):
     def get(self):
         path = os.path.join('apps/sibt/templates/', 'beta.html')
-        self.response.out.write(template.render(path, {}))
+        logging.debug(URL)
+        self.response.out.write(template.render(path, {
+            'URL': URL,
+            'sibt_version': SIBT.CURRENT_INSTALL_VERSION
+        }))
 
 
 class SIBTWelcome(URIHandler):
