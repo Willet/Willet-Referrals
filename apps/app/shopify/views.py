@@ -18,8 +18,6 @@ from apps.app.models            import *
 from apps.client.shopify.models import ClientShopify
 from apps.link.models           import Link
 from apps.user.models           import User
-from apps.user.models           import get_or_create_user_by_cookie
-from apps.user.models           import get_user_by_cookie
 
 from apps.order.models          import *
 
@@ -74,20 +72,20 @@ class ShopifyRedirect( URIHandler ):
         self.redirect(redirect_url)
 
 # The "Dos" --------------------------------------------------------------------
-class DoDeleteApp( URIHandler ):
+class DoDeleteApp(URIHandler):
     def post( self ):
         client   = self.get_client()
         app_uuid = self.request.get( 'app_uuid' )
         
         logging.info('app id: %s' % app_uuid)
-        app = get_app_by_id( app_uuid )
+        app = App.get_by_uuid(app_uuid)
         if app.client.key() == client.key():
-            logging.info('deelting')
+            logging.info('deleting')
             app.delete()
         
         self.redirect( '/client/account' )
 
-class ServeShopifyUI (URIHandler):
+class ServeShopifyUI(URIHandler):
     def get (self):
         app = self.request.get('app')
 

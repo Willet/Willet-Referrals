@@ -7,7 +7,7 @@ from util.urihandler import URIHandler
 
 class ShowProfilePage(URIHandler):
     def get(self, app_id = None, user_id = None):
-        app = get_app_by_id(app_id)
+        app = App.get_by_uuid(app_id)
         user = User.get( user_id )
 
         if not app:

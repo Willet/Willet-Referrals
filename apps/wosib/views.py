@@ -22,7 +22,7 @@ from apps.link.models                 import Link
 from apps.order.models                import *
 from apps.product.models              import Product
 from apps.sibt.views                  import AskDynamicLoader
-from apps.user.models                 import get_user_by_cookie
+from apps.user.models                 import User
 from apps.wosib.actions               import *
 from apps.wosib.models                import WOSIBInstance
 from apps.wosib.models                import PartialWOSIBInstance
@@ -228,7 +228,7 @@ class WOSIBShowFBThanks( URIHandler ):
         user_cancelled = True
         app         = None
         post_id     = self.request.get( 'post_id' ) # from FB
-        user        = get_user_by_cookie( self )
+        user        = User.get_by_cookie( self )
         partial     = PartialWOSIBInstance.get_by_user( user )
         
         if post_id != "":

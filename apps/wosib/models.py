@@ -21,7 +21,7 @@ from apps.app.models            import App
 from apps.email.models          import Email
 from apps.link.models           import Link
 from apps.product.models        import Product
-from apps.user.models           import get_or_create_user_by_cookie
+from apps.user.models           import User
 from apps.vote.models           import VoteCounter
 from apps.wosib.actions         import *
 from util.consts                import *
@@ -50,7 +50,7 @@ class WOSIB(App):
         logging.info("WOSIBAPP HANDLING LINK CLICK" )
 
         # Fetch User by cookie
-        user = get_or_create_user_by_cookie( urihandler, self )
+        user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
         # act = WOSIBClickAction.create( user, self, link )

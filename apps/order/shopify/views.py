@@ -15,7 +15,7 @@ from time import time
 from urlparse import urlparse
 
 from apps.client.shopify.models import ClientShopify
-from apps.user.models   import get_user_by_cookie
+from apps.user.models   import User
 
 from util.consts import SECURE_URL
 
@@ -24,7 +24,7 @@ class OrderJSLoader(webapp.RequestHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        user = get_user_by_cookie( self )
+        user = User.get_by_cookie(self)
         
         # Grab shop URL from params
         shop_url = self.request.get('shop')

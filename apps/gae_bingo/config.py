@@ -3,14 +3,14 @@ from __future__ import absolute_import
 import logging
 
 from google.appengine.api import users
-from apps.user.models import get_user_by_cookie
+from apps.user.models import User
 
 # CUSTOMIZE can_see_experiments however you want to specify
 # whether or not the currently-logged-in user has access
 # to the experiment dashboard.
 def can_control_experiments( request_handler=None ):
     if request_handler:
-        user = get_user_by_cookie( request_handler )
+        user = User.get_by_cookie(request_handler)
         logging.info('user: %s' % user)
         logging.info('is admin: %s' % user.is_admin())
         return user.is_admin()

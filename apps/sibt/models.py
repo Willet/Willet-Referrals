@@ -23,7 +23,7 @@ from apps.app.models      import App
 from apps.email.models    import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.link.models     import Link
-from apps.user.models     import get_or_create_user_by_cookie
+from apps.user.models     import User
 from apps.vote.models     import VoteCounter
 
 from util.consts          import *
@@ -55,6 +55,8 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
 
+    _memcache_fields = ['link', 'created', 'end_datetime']
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
@@ -63,7 +65,7 @@ class SIBT(App):
         logging.info("SIBTAPP HANDLING LINK CLICK" )
 
         # Fetch User by cookie
-        user = get_or_create_user_by_cookie( urihandler, self )
+        user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
         act = SIBTClickAction.create( user, self, link )

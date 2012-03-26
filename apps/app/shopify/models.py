@@ -10,36 +10,29 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import re
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
+from django.utils           import simplejson as json
+from google.appengine.ext   import db
 
-from apps.app.models    import App
-from apps.email.models  import Email
+from apps.app.models        import App
+from apps.email.models      import Email
 
-from util.consts        import *
-from util               import httplib2
-from util.model         import Model
+from util                   import httplib2
+from util.consts            import *
+from util.shopify_helpers   import *
+from util.model             import Model
 
 NUM_SHARE_SHARDS = 15
 
 
 class AppShopify(Model):
-    ''' Model for storing information about a Shopify App.
+    """ Model for storing information about a Shopify App.
         AppShopify classes need not be installable from the Shopify app store,
         and can be installed as a bundle. Refer to SIBTShopify for example code.
-    '''
-    
-    # Shopify's ID for this store
-    store_id  = db.StringProperty(indexed = True)
-    
-    # must be the .myshopify.com (e.g. http://thegoodhousewife.myshopify.com)
-    store_url = db.StringProperty(indexed = True)
-    
-    # other domains (e.g. http://thegoodhousewife.co.nz)
-    extra_url = db.StringProperty(indexed = True, required = False, default = '')
-
-    # Shopify's token for this store
-    store_token = db.StringProperty(indexed = True)
+    """
+    store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
+    store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com
+    extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
+    store_token = db.StringProperty(indexed = True) # Shopify token for this store
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
@@ -58,7 +51,7 @@ class AppShopify(Model):
         except Exception, e:
             logging.error('could not get settings for app %s: %s' % (class_name, e))
 
-    # Accessors ------------------------------------------------------------
+    # Retreivers ------------------------------------------------------------
     @classmethod
     def get_by_url(cls, store_url):
         """ Fetch a Shopify app via the store's url"""
@@ -211,6 +204,10 @@ class AppShopify(Model):
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
             Must first get the `main` template in use"""
+        if not assets:
+            logging.warn('No assets to install')
+            return
+        
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -218,9 +215,6 @@ class AppShopify(Model):
         h.add_credentials(username, password)
         
         main_id = None
-
-        if assets == None:
-            assets = []
 
         # get the theme ID
         theme_url = '%s/admin/themes.json' % self.store_url

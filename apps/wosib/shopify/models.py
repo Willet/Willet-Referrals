@@ -19,7 +19,7 @@ from google.appengine.ext.webapp import template
 from apps.app.shopify.models     import AppShopify
 from apps.client.models          import Client
 from apps.email.models           import Email
-from apps.user.models            import get_user_by_cookie
+from apps.user.models            import User
 from apps.wosib.models           import WOSIB 
 from util                        import httplib2
 from util.consts                 import *

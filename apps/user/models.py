@@ -237,35 +237,45 @@ class User(db.Expando):
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
         logging.info('put_later: %s' % self.uuid)
+    
+    def put(self):
+        """Stores model instance in memcache and database"""
+        key = self.get_key()
+        logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
+        timeout_ms = 100
+        while True:
+            logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
+            try:
+                self.hardPut() # Will validate the instance.
+                logging.debug("user has been hardput().")
+            except datastore_errors.Timeout:
+                thread.sleep(timeout_ms)
+                timeout_ms *= 2
+            else:
+                break
+        # Memcache *after* model is given datastore key
+        if self.key():
+            logging.debug("user exists in DB, and is stored in memcache.")
+            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            memcache.set(str(self.key()), key, time=MEMCACHE_TIMEOUT)
+            
+        return True
 
     def hardPut( self ):
-<<<<<<< HEAD
-        # By default, Python fcns return None
-        # If you want to prevent an object from being saved to the db, have 
-        # _validate_self return anyhting except None
-        if self._validate_self() == None:
-            
-            logging.debug("PUTTING %s" % self.__class__.__name__)
-            db.put( self )
-=======
         logging.debug("PUTTING %s" % self.__class__.__name__)
         try:
             self._validate_self()
         except NotImplementedError, e:
             logging.error(e)
         db.put(self)
->>>>>>> FlexibleEmailer
         
     def get_key(self):
         return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
 
-<<<<<<< HEAD
     def _validate_self(self):
-        pass
+        return True
 
-=======
     # Retrievers ------------------------------------------------------------------
->>>>>>> FlexibleEmailer
     @classmethod
     def get(cls, memcache_key):
         """ Generic class retriever.  If possible, use this b/c it checks memcache 
@@ -274,17 +284,17 @@ class User(db.Expando):
         Each subclass must have a staticmethod _get_from_datastore
         """
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        logging.debug('Model::get(): Pulling %s from memcache.' % key)
+        logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
-            logging.debug('Model::get(): %s not found in memcache, hitting datastore.' % key)
+            logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
             entity = cls._get_from_datastore(memcache_key)
             # Throw everything in the memcache when you pull it - it may never be saved
             if entity:
                 memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
             return entity
         else:
-            logging.debug('Model::get(): %s found in memcache!' % key)
+            logging.debug('User::get(): %s found in memcache!' % key)
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
     @classmethod
@@ -356,7 +366,7 @@ class User(db.Expando):
         user.put_later()
         
         # Store email
-        create_email_model( user, email )
+        EmailModel.create(user, email)
         
         # Store User creation action
         UserCreate.create( user, app )
@@ -376,7 +386,7 @@ class User(db.Expando):
         logging.info("Putting later: %s %s" % (user.uuid, user.key()))
         user.put() # cannot put_later() here; app creation relies on merchant
 
-        create_email_model(user, email) # Store email
+        EmailModel.create(user, email) # Store email
         UserCreate.create(user, app) # Store User creation action
         
         return user
@@ -602,7 +612,7 @@ class User(db.Expando):
             return self.user_is_admin
         is_admin = False
 
-        emails = get_emails_by_user( self )
+        emails = EmailModel.get_by_user(self)
         # Filter by user email
         for e in emails:
             if e.address in ADMIN_EMAILS:
@@ -651,7 +661,7 @@ class User(db.Expando):
     def update(self, **kwargs):
         for k in kwargs:
             if k == 'email':
-                create_email_model( self, kwargs['email'] )
+                EmailModel.create(self, kwargs['email'])
             elif k == 'client':
                 self.client = kwargs['client']
             elif k == 'referrer':
@@ -1038,7 +1048,7 @@ def get_or_create_user_by_email(email, request_handler, app):
     User.get_or_create_by_email(email, request_handler, app)
 
 def get_or_create_user_by_cookie(request_handler, app): 
-    raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
+    logging.warn('Replaced by User.get_or_create_by_cookie')
     User.get_or_create_by_cookie(request_handler, app)
 
 

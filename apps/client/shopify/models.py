@@ -21,7 +21,6 @@ from apps.client.models     import Client
 from apps.link.models       import Link 
 from apps.product.shopify.models import ProductShopify
 from apps.user.models       import User
-from apps.user.models       import get_or_create_user_by_email
 
 from util                   import httplib2
 from util.consts            import *
@@ -58,7 +57,6 @@ class ClientShopify( Client ):
     @staticmethod
     def create( url_, token, request_handler, app_type ):
         """ Create a Shopify Store as a Client"""
-        # TODO(Barbara): Technically, we can do all this on a queue.
 
         url_ = get_shopify_url( url_ )
         
@@ -67,7 +65,7 @@ class ClientShopify( Client ):
         
         # Make the Merchant 
         # Note: App is attached later to the UserCreation action
-        merchant = get_or_create_user_by_email( data['email'], request_handler, None )
+        merchant = User.get_or_create_by_email( data['email'], request_handler, None )
         logging.info( 'MERCHANT UUID %s' % merchant.uuid )
         logging.info( 'MERCHANT Key %s' % merchant.key() )
 
@@ -87,7 +85,8 @@ class ClientShopify( Client ):
                                token    = token,
                                id       = str(data['id']),
                                merchant = merchant  )
-        store.put()
+        
+        store.put () # critical install-time process; it cannot wait
 
         # Update the merchant with data from Shopify
         merchant.update( full_name  = data['shop_owner'], 
