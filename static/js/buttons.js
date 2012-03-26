@@ -5,11 +5,6 @@
     var debug = false; //set to false or remove when pushing live!
 
     var console;
-    if(!debug) {
-        console = { log: function () {}, error: function () {} };
-    } else {
-        console = window.console;
-    }
 
     // Private variables
     var PRODUCT_JSON = window.location + '.json';
@@ -79,11 +74,13 @@
                     }
 
                     var detectFBLoggedIn = function() {
-                        FB.init({ appId:'132803916820614', status:true,  cookie:true, xfbml:true});
+                        // Willet App: 132803916820614
+                        // Nick's Test App: 119776401486297
+                        FB.init({ appId:'132803916820614', status:true, cookie:true, xfbml:true});
                         FB.getLoginStatus(function(response){
                             var status = response.status != "unknown";
                             updateLoggedInStatus("Facebook", status);
-                        });
+                        }, true);
                     }
 
                     if (!window.FB) {
@@ -423,7 +420,28 @@
         createCookie(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
     }
 
+    var getCookies = function() {
+        return readCookie(COOKIE_NAME);
+    };
+
+    var clearCookies = function () {
+        eraseCookie(COOKIE_NAME);
+    };
+
     // Public functions
+    me.setDebug = function(debug) {
+        if(!debug) {
+            console = { log: function () {}, error: function () {} };
+            delete me.clearCookies;
+            delete me.getCookies;
+        } else {
+            console = window.console;
+            me.clearCookies = clearCookies;
+            me.getCookies = getCookies;
+        }
+        return me;
+    };
+
     me.detectNetworks = function () {
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
@@ -586,5 +604,9 @@
         }
     };
 
+    me.setDebug(debug);
+
     me.init();
-}(WILLET || {}));
+
+    return me;
+} (WILLET || {}));
