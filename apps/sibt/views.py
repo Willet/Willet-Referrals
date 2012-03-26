@@ -633,7 +633,7 @@ class SIBTServeScript(URIHandler):
             'has_results': (votes_count > 0),
             'is_live': is_live,
             'unsure_mutli_view': False,
-            
+            'detect_shopconnection': True,
         }
         
         path = os.path.join('apps/sibt/templates/', 'sibt.js')

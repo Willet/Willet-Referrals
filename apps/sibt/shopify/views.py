@@ -396,6 +396,7 @@ class SIBTShopifyServeScript(URIHandler):
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
             'has_results'    : has_results,
+            'detect_shopconnection': True,
         }
 
         # Finally, render the JS!
