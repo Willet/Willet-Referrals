@@ -607,6 +607,7 @@ class SIBTServeScript(URIHandler):
         template_values = {
             'URL': URL,
             'PAGE': page_url,
+            'store_url': page_url, # legacy alias for PAGE?
             'DOMAIN': domain,
             'app': app, # if missing, django omits these silently
             'user': user,
@@ -614,7 +615,6 @@ class SIBTServeScript(URIHandler):
 
             'stylesheet': '../../plugin/templates/css/colorbox.css',
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
-
             'is_asker': False,
             'show_votes': bool(instance),
             'has_results': (votes_count > 0),
