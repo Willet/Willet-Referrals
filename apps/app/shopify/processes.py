@@ -5,31 +5,33 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import logging, re, hashlib, urllib
 
+from django.utils import simplejson as json
+
 from apps.app.models        import *
 from apps.client.shopify.models import ClientShopify
 from apps.email.models      import Email
 
-from util.helpers           import *
-from util.urihandler        import URIHandler
 from util.consts            import *
+from util.helpers           import *
+from util.mailchimp         import MailChimp
+from util.urihandler        import URIHandler
+
 
 class DoUninstalledApp(URIHandler):
     def post(self, app_name):
         # Grab the ShopifyApp
         store_url = self.request.headers['X-Shopify-Shop-Domain']
-        logging.info("store: %s " % store_url)
+        logging.info("Uninstalling store: %s " % store_url)
         app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
 
         client = ClientShopify.get_by_url(store_url)
 
-        # Remove email from MailChimp
-        email_list_id = SHOPIFY_APPS[app_name]['email_list_id']
-        if email_list_id:
-            MailChimp(MAILCHIMP_API_KEY).listUnsubscribe(id=email_list_id,
-                                                         email_address=self.client.email,
-                                                         delete_member=False,
-                                                         send_notify=False,
-                                                         send_goodbye=False)
+        # Stop sending email updates
+        if 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+            client.unsubscribe_from_mailing_list(
+                list_name=app_name,
+                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
+            )
 
         Email.emailDevTeam("Uninstall app: %s\n%r %s" % (
                 app_class_name,
@@ -39,8 +41,8 @@ class DoUninstalledApp(URIHandler):
         )
 
         # Say goodbye from Fraser
-        Email.goodbyeFromFraser( client.merchant.get_attr( 'email' ),
-                                 client.merchant.get_attr( 'full_name' ),
+        Email.goodbyeFromFraser( client.merchant.get_attr('email'),
+                                 client.merchant.get_attr('full_name'),
                                  app_class_name )
 
         # "Delete" the App
