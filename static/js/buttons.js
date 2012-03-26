@@ -1,8 +1,9 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
  */
-;var WILLET_DEBUG = false; //set to false or remove when pushing live!
-var WILLET = (function(me, debug) {
+;var WILLET = (function(me) {
+    var debug = false; //set to false or remove when pushing live!
+
     var console;
     if(!debug) {
         console = { log: function () {}, error: function () {} };
