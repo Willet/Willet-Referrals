@@ -73,9 +73,9 @@ class SIBT(App):
         except:
             pass # use original URL
         
-        data = cls.get(url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
+        app = cls.get(url)
+        if app:
+            return app
 
         app = cls.all().filter('store_url =', url).get()
         if not app:
