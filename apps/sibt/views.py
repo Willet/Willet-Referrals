@@ -567,7 +567,7 @@ class SIBTServeScript(URIHandler):
         app = user = instance = None
         votes_count = 0
         domain = path = ''
-        is_live = False
+        is_live = is_safari = False
         parts = template_values = {}
         
         # in the proposed SIBT v10, page URL is the only required parameter.
@@ -614,7 +614,10 @@ class SIBTServeScript(URIHandler):
             is_live = False
             votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
 
-        # you now have app, user, client, and instance
+        # stackoverflow.com/questions/5899783/detect-safari-using-jquery
+        is_safari = ('safari' in self.get_browser() and not 'chrome' in self.get_browser())
+
+        # you now have app, user, client, and (possibly) instance
 
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
@@ -634,6 +637,7 @@ class SIBTServeScript(URIHandler):
             'is_live': is_live,
             'unsure_mutli_view': False,
             'detect_shopconnection': True,
+            'is_safari': is_safari
         }
         
         path = os.path.join('apps/sibt/templates/', 'sibt.js')

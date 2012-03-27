@@ -74,22 +74,23 @@
         }
     };
     
-    var setCookieStorageFlag = function() {
-        w.cookieSafariStorageReady = true;
-    };
     
-    // Safari cookie storage backup
-    var firstTimeSession = 0;
-    var doSafariCookieStorage = function () {
-        if (firstTimeSession == 0) {
-            firstTimeSession = 1;
-            d.getElementById('sessionform').submit()
-            setTimeout(setCookieStorageFlag, 2000);
-        }
-    };
+    {% if is_safari %}
+        // Stores user_uuid for all browsers - differently for Safari.
+        var setCookieStorageFlag = function() {
+            w.cookieSafariStorageReady = true;
+        };
+        
+        // Safari cookie storage backup
+        var firstTimeSession = 0;
+        var doSafariCookieStorage = function () {
+            if (firstTimeSession == 0) {
+                firstTimeSession = 1;
+                d.getElementById('sessionform').submit()
+                setTimeout(setCookieStorageFlag, 2000);
+            }
+        };
 
-    // "Fixes" Safari's problems with XD-storage.
-    if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         var holder = d.createElement('div');
         var storageIFrameLoaded = false;
         var storageIFrame = d.createElement( 'iframe' );
@@ -123,9 +124,8 @@
         storageForm.appendChild( storageInput );
         holder.appendChild(storageForm);
         d.body.appendChild(holder);
-    } else {
-        setCookieStorageFlag();
-    }
+    {% endif %}
+
 
     // set up a list of scripts to load asynchronously.
     var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
@@ -246,12 +246,8 @@
                 }
             };
             
-            var show_results = function () {
-                // show results if results are done.
-                // this can be detected if a finished flag is raised.
-                var url = "{{URL}}/s/results.html?" + willet_metadata ({'refer_url': w.location.href});
-                $.willet_colorbox({
-                    href: url,
+            var show_colorbox = function (options) {
+                var defaults = {
                     transition: 'fade',
                     close: '',
                     scrolling: false,
@@ -260,28 +256,27 @@
                     initialHeight: 0,
                     innerWidth: '600px',
                     innerHeight: '400px',
-                    fixed: true,
+                    fixed: true
+                };
+                options = $.extend({}, defaults, options);
+                $.willet_colorbox(options);
+            }
+            
+            var show_results = function () {
+                // show results if results are done.
+                // this can be detected if a finished flag is raised.
+                show_colorbox({
+                    href: "{{URL}}/s/results.html?" + willet_metadata ({'refer_url': w.location.href}),
                     onClosed: function () { }
                 });
             };
 
             var show_ask = function ( message ) {
                 // shows the ask your friends iframe
-
-                var url =  "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
+                show_colorbox({
+                    href: "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                              "&store_url={{ store_url }}" +
-                                             "&url=" + w.location.href;
-                $.willet_colorbox({
-                    transition: 'fade',
-                    close: '',
-                    scrolling: false,
-                    iframe: true, 
-                    initialWidth: 0, 
-                    initialHeight: 0, 
-                    innerWidth: '600px',
-                    innerHeight: '400px', 
-                    fixed: true,
-                    href: url,
+                                             "&url=" + w.location.href,
                     onClosed: ask_callback
                 });
             };

@@ -44,6 +44,11 @@ class URIHandler(webapp.RequestHandler):
 
         return self.db_client
     
+    def get_browser(self):
+        if 'user-agent' in self.request.headers:
+                return self.request.headers['user-agent'].lower()
+        return '' # default is str(nothing)
+    
     def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
