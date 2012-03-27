@@ -1,12 +1,14 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
  */
-;var WILLET = (function(me) {
+;var _willet = (function(me) {
     var debug = false; //set to false or remove when pushing live!
 
     var console;
 
     // Private variables
+    var APP_URL;
+    var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var PRODUCT_JSON = window.location + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
@@ -64,23 +66,20 @@
             "detect": {
                 "method": "api",
                 "func": function() {
-                    var result = function(event) {
-                        var data = JSON.parse(event.data);
-                        var status = (data.Facebook && data.Facebook.status) || false; //use status, if it exists
+                    _willet.messaging.xd.createMessageHandler(function(data) {
+                        var message = data.message;
+                        var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
                         updateLoggedInStatus("Facebook", status);
-                    };
+                    }, APP_URL);
 
-                    if(typeof window.addEventListener != 'undefined') { 
-                        window.addEventListener('message', result, false); 
-                    } else if(typeof window.attachEvent != 'undefined') { 
-                        window.attachEvent('onmessage', result); 
-                    }
-
-                    var url = encodeURIComponent("" + PROTOCOL + "//" + DOMAIN);
+                    var origin = encodeURIComponent("" + PROTOCOL + "//" + DOMAIN);
 
                     var iframe = createElement({
                         "nodename": "iframe",
-                        "src": "http://willet-nterwoord.appspot.com/static/plugin/html/detectFB.html#url=" + url, //social-referral
+                        "src": APP_URL + "/static/plugin/html/detectFB.html?origin=" + origin,
+                        "style": {
+                            "display": "none"
+                        }
                     });
 
                     document.getElementById(DETECT_NETWORKS_DIV_ID).appendChild(iframe);
@@ -227,89 +226,6 @@
     };
 
     // Private functions
-    // Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
-    var JSON;if(!JSON){JSON={};}
-    (function(){'use strict';function f(n){return n<10?'0'+n:n;}
-    if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
-    f(this.getUTCMonth()+1)+'-'+
-    f(this.getUTCDate())+'T'+
-    f(this.getUTCHours())+':'+
-    f(this.getUTCMinutes())+':'+
-    f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
-    var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
-    function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
-    if(typeof rep==='function'){value=rep.call(holder,key,value);}
-    switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
-    gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
-    v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
-    if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
-    v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
-    if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
-    rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
-    return str('',{'':value});};}
-    if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
-    return reviver.call(holder,key,value);}
-    text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
-    ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
-    if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
-    throw new SyntaxError('JSON.parse');};}}());
-
-    // Source: http://www.quirksmode.org/js/cookies.html
-    var createCookie = function (name, value, days) {
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime()+(days*24*60*60*1000));
-            var expires = "; expires="+date.toGMTString();
-        }
-        else var expires = "";
-        document.cookie = name+"="+value+expires+"; path=/";
-    };
-
-    // Source: http://www.quirksmode.org/js/cookies.html
-    var readCookie = function (name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(';');
-        for(var i=0;i < ca.length;i++) {
-            var c = ca[i];
-            while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-        }
-        return null;
-    };
-
-    // Source: http://www.quirksmode.org/js/cookies.html
-    var eraseCookie = function (name) {
-        createCookie(name,"",-1);
-    };
-
-    var ajax = function(config) {
-        var AJAX_RESPONSE_AVAILABLE = 4;
-        var HTTP_OK = 200;
-
-        var url = config.url || "";
-        var success = config.success || function() {};
-        var error = config.error || function() {};
-        var method = config.method || "GET";
-        var async = config.async || true;
-
-        if (url === "") {
-            //TODO: Error
-        }
-
-        var request = new XMLHttpRequest();
-        request.open(method, url, async);
-        request.onreadystatechange = function () {
-            if (request.readyState === AJAX_RESPONSE_AVAILABLE) {
-                if (request.status === HTTP_OK) {
-                    success(request);
-                } else {
-                    error(request);
-                }
-            }
-        };
-        request.send(null);
-    };
-
     var xHasKeyY = function(dict, key) {
         return dict[key] || false;
     };
@@ -403,25 +319,27 @@
 
     var updateLoggedInStatus = function(network, status) {
         LOGGED_IN_NETWORKS[network] = status;
-        createCookie(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
+        _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
     }
 
     var getCookies = function() {
-        return readCookie(COOKIE_NAME);
+        return _willet.cookies.read(COOKIE_NAME);
     };
 
     var clearCookies = function () {
-        eraseCookie(COOKIE_NAME);
+        _willet.cookies.erase(COOKIE_NAME);
     };
 
     // Public functions
     me.setDebug = function(debug) {
         if(!debug) {
             console = { log: function () {}, error: function () {} };
+            APP_URL = "http://social-referral.appspot.com";
             delete me.clearCookies;
             delete me.getCookies;
         } else {
             console = window.console;
+            APP_URL = MY_APP_URL;
             me.clearCookies = clearCookies;
             me.getCookies = getCookies;
         }
@@ -495,7 +413,7 @@
             }
 
             var requiredButtons = [];
-            var networksJSON = readCookie(COOKIE_NAME) || "";
+            var networksJSON = _willet.cookies.read(COOKIE_NAME) || "";
             if (networksJSON === "") {
                 requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
 
@@ -546,14 +464,14 @@
     };
 
     me.init = function() {
-        if (!readCookie(COOKIE_NAME)) {
+        if (!_willet.cookies.read(COOKIE_NAME)) {
             me.detectNetworks();
         }
 
         if(!debug) {
             try {
                 console.log("Buttons: initiating product.json request")
-                ajax({
+                _willet.messaging.ajax({
                     url: PRODUCT_JSON,
                     method: "GET",
                     success: function(request) {
@@ -593,7 +511,204 @@
 
     me.setDebug(debug);
 
-    me.init();
+    return me;
+} (_willet || {}));
+
+_willet.JSON = (function(){
+    // Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
+    var JSON;if(!JSON){JSON={};}
+    (function(){'use strict';function f(n){return n<10?'0'+n:n;}
+    if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
+    f(this.getUTCMonth()+1)+'-'+
+    f(this.getUTCDate())+'T'+
+    f(this.getUTCHours())+':'+
+    f(this.getUTCMinutes())+':'+
+    f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
+    var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
+    function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
+    if(typeof rep==='function'){value=rep.call(holder,key,value);}
+    switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
+    gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
+    v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
+    if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
+    v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
+    if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
+    rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
+    return str('',{'':value});};}
+    if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
+    return reviver.call(holder,key,value);}
+    text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
+    ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
+    if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
+    throw new SyntaxError('JSON.parse');};}}());
+
+    return JSON;
+}());
+
+_willet.cookies = (function(){
+    var me = {};
+
+    // Source: http://www.quirksmode.org/js/cookies.html
+    me.create = function (name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime()+(days*24*60*60*1000));
+            var expires = "; expires="+date.toGMTString();
+        }
+        else var expires = "";
+        document.cookie = name+"="+value+expires+"; path=/";
+    };
+
+    // Source: http://www.quirksmode.org/js/cookies.html
+    me.read = function (name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    };
+
+    // Source: http://www.quirksmode.org/js/cookies.html
+    me.erase = function (name) {
+        me.create(name,"",-1);
+    };
 
     return me;
-} (WILLET || {}));
+}());
+
+_willet.messaging = (function(){
+    var me = {};
+
+    me.ajax = function(config) {
+        var AJAX_RESPONSE_AVAILABLE = 4;
+        var HTTP_OK = 200;
+
+        var url = config.url || "";
+        var success = config.success || function() {};
+        var error = config.error || function() {};
+        var method = config.method || "GET";
+        var async = config.async || true;
+
+        if (url === "") {
+            //TODO: Error
+        }
+
+        if (typeof XMLHttpRequest == "undefined") {
+            XMLHttpRequest = function () {
+                try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch (e) {}
+                try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch (e) {}
+                try { return new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) {}
+                throw new Error("This browser does not support XMLHttpRequest.");
+            };
+        }
+
+        var request = new XMLHttpRequest();
+        request.open(method, url, async);
+        request.onreadystatechange = function () {
+            if (request.readyState === AJAX_RESPONSE_AVAILABLE) {
+                if (request.status === HTTP_OK) {
+                    success(request);
+                } else {
+                    error(request);
+                }
+            }
+        };
+        request.send(null);
+    };
+
+    me.xd = (function(){
+        var xd = {};
+
+        var PAYLOAD_IDENTIFIER = "willet";
+        var MESSAGE_TOKEN = "message";
+
+        var stopCommunication;
+
+        var parseMessage = function (hash) {
+            if (typeof(hash) === 'string' && hash.substr(0, 7) === '#willet') {
+                var splitHash = hash.split("?" + MESSAGE_TOKEN + "=");
+
+                if(splitHash.length) {
+                    var dataJSONString = splitHash[1];
+                    var data = _willet.JSON.parse(dataJSONString);
+                    return data;
+                }
+            }
+            return {};
+        };
+
+        /*
+            sendMessage is always called from the child window (e.g. iframe)
+            messages are always assumed to be JSON of the following form:
+                {
+                     "event": "?", //the name of an event
+                     "message": "" //valid JSON
+                }
+        */
+        xd.sendMessage = function(message, targetOrigin) {
+            var target = targetOrigin || "*";
+            var payload = "#" + PAYLOAD_IDENTIFIER + "?";
+            if (!message) {
+                //TODO: Error
+            }
+
+            payload += MESSAGE_TOKEN + "=" + _willet.JSON.stringify(message);
+            
+            if (window.parent.postMessage) {
+                // Try HTML5 postMessage
+                window.parent.postMessage(payload, target);
+            } else {
+                // Try hash manipulation
+                window.parent.location.hash = payload;
+            }
+        };
+
+        // sets up message handling
+        xd.createMessageHandler = function(callback, baseUrl) {
+            if (window.postMessage) {
+                // Note: IE w/ HTML5 supports addEventListener
+                var listener = function (event) {
+                    if (event.origin === baseUrl) {
+                        var data = parseMessage(event.data);
+                        callback(data);
+                    }
+                };
+
+                if (window.addEventListener) {
+                    window.addEventListener('message', listener, false); //Standard method
+                } else {
+                    window.attachEvent('onmessage', listener); //IE
+                }
+
+                stopCommunication = function() {
+                     if(window.removeEventListener) {
+                        window.removeEventListener('message', listener, false); //Standard method
+                     } else {
+                        window.detachEvent('onmessage', listener); //IE
+                     }
+                }
+            } else {
+                // Set up window.location.hash polling
+                // Expects hash messages of the form:
+                //  #willet?message=____
+                var interval = setInterval(function () {
+                    var hash = window.location.hash;
+                    callback(parseMessage(hash));
+                }, 1000);
+
+                stopCommunication = function () {
+                    clearInterval(interval);
+                };
+            }
+        };
+
+        return xd;
+    }());
+
+    return me;
+}());
+
+_willet.init();
