@@ -20,10 +20,17 @@ from google.net.proto import ProtocolBuffer
 
 from util.consts import MEMCACHE_TIMEOUT
 
-# Delete after Apr 27, 2012
 def async_model_put(model):
-    logging.error("Deprecated function, replace with Model.put_later")
-    return model.put_later()
+    """ Helper method to write and memcache models asynchronously.
+        Deferred can't use a bound method (not pickle-able), so we need this function
+    """
+    try:
+        db.put(model)
+        key = model.get_key()
+        memcache.set(key, db.model_to_protobuf(model).Encode(), time=MEMCACHE_TIMEOUT)
+    except Exception, e:
+        logging.error('Error saving model %s: %s' % (model, e), exc_info=True)
+    return True
 
 
 class Model(db.Model):
@@ -69,7 +76,7 @@ class Model(db.Model):
         except NotImplementedError, e:
             logging.error(e)
 
-        self._put(self)
+        self._put()
 
     def put_later(self):
         """Asynchronously stores model instance in memcache and database"""
@@ -78,21 +85,24 @@ class Model(db.Model):
         except NotImplementedError, e:
             logging.error(e)
         
-        # Memcache will take place after model is given datastore key
-        deferred.defer(self._put, self, _queue='model-deferred')
+        # Immediately add to memcache so requests get new state
+        key = self.get_key()
+        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+
+        # Memcache will be updated after model is given datastore key
+        deferred.defer(async_model_put, self, _queue='model-deferred')
 
         return True
 
-    @staticmethod
-    def _put(model):
-        ''' Helper method to write and memcache models asynchronously.'''
+    def _put(self):
+        ''' Helper method to write and memcache models.'''
         try:
-            db.put(model)
-            key = model.get_key()
-            memcache.set(key, db.model_to_protobuf(model).Encode(), time=MEMCACHE_TIMEOUT)
-            return True
+            db.put(self)
+            key = self.get_key()
+            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
         except Exception, e:
-            logging.error('Error deferring model %s put: %s' % (le_model, e), exc_info=True)
+            logging.error('Error saving model <%s:%s>: %s' % (self.__class__.__module__,self.__class__.__name__, e), exc_info=True)
+        return True
 
     # Storage key methods -------------------------------------------------------------------
     def get_key(self):
@@ -146,7 +156,8 @@ class Model(db.Model):
                 obj._memcache() # update memcache
 
         if not obj:
-            logging.warn ('Memcache AND DB miss!')
+            #logging.warn ('Memcache AND DB miss!')
+            pass
             
         return obj
     
@@ -169,7 +180,6 @@ class Model(db.Model):
                         logging.warn ("Failed to memcache object by custom key '%s': %s" % (secondary_key, e), exc_info=True)
         except Exception, e:
             logging.error("Error setting memcache: %s" % e, exc_info=True)
-
 # end class
 
 

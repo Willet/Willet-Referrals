@@ -241,18 +241,15 @@ def url(view, *args, **kwargs):
         app = webapp.WSGIApplication.active_instance
         handler = app.get_registered_handler_by_name(view)
 
-        logging.info('handler: %s' % handler)
-
         url = handler.get_url(*args)
 
         qs = kwargs.get('qs', ())
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.info(qs)
-        logging.info('got url: %s' % url)
+        logging.info('url(\'%s\',...) became: %s' % (view,url))
     except:
-        logging.warn('could not reverse url %s' % view)
+        logging.warn('Could not reverse url %s' % view)
 
     return url  
 

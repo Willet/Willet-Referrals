@@ -63,7 +63,7 @@ class SendEmailAsync (URIHandler):
                         )
                 e.send()
             except Exception,e:
-                logging.error('error sending email: %s', e)
+                logging.error('Error sending email: %s', e)
         else:
             try:
                 result = urlfetch.fetch(
