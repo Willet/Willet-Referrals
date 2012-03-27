@@ -52,7 +52,7 @@ class MailChimp(object):
         """
         self.apikey = apikey
 
-        self.default_params = {'apikey':apikey}
+        self.default_params = {'apikey':apikey, 'output':'json'}
         self.default_params.update(extra_params)
 
         dc = 'us1'

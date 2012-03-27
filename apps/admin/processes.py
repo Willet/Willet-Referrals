@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import re, urllib
+import re, logging, urllib
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache
@@ -12,10 +12,12 @@ from google.appengine.api import mail, taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.buttons.shopify.models import ButtonsShopify
 from apps.link.models import Link
 
 from util.consts import *
 from util.helpers import *
+from util.mailchimp import MailChimp
 from util.urihandler import URIHandler
 
 
@@ -200,29 +202,55 @@ class EmailSomeone (URIHandler):
 class UploadEmailsToMailChimp(URIHandler):
     """ One-time use to upload existing ShopConnection customers to MailChimp 
     Remove after use
+
+    MailChimp Docs: http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
     """
     def get(self):
-        pass
+        self.post()
 
     def post(self):
-        # http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
-        apps = db.Query(App).filter('class = ', 'ButtonsShopify').fetch()
+        batch_size = 100
+        offset = self.request.get('offest', 0)
+        logging.info('Adding ButtonShopify %i-%i to MailChimp' % (offset, offset+batch_size-1))
+        batch = []
+
+        apps = db.Query(ButtonsShopify).fetch(offset=offset, limit=batch_size)
 
         for app in apps:
             if app.client:
+                name = app.client.merchant.get_full_name()
+                try:
+                    first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
+                except IndexError:
+                    first_name, last_name = name, ''
+
                 batch.append({ 'FNAME': first_name,
                                'LNAME': last_name,
-                               'STORENAME': self.client.name,
-                               'STOREURL': self.client.url })
+                               'EMAIL': app.client.email,
+                               'STORENAME': app.client.name,
+                               'STOREURL': app.client.url })
+                logging.info('Adding %s (%s) to MailChimp' % (app.client.name, app.client.url))
 
-        MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id='98231a9737', # ShopConnection list
-                                                        email_address=self.client.email,
-                                                        batch=batch,
-                                                        double_optin=False,
-                                                        update_existing=True,
-                                                        send_welcome=False)
-        self.response.out.write('Done')
-        # pass
+        resp = {}
+        if 'mailchimp_list_id' in SHOPIFY_APPS['ButtonsShopify']:
+            email_list_id = SHOPIFY_APPS['ButtonsShopify']['mailchimp_list_id']
+
+            if email_list_id:
+                josn_resp = MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id=email_list_id,
+                                                                       batch=batch,
+                                                                       double_optin=False,
+                                                                       update_existing=True,
+                                                                       send_welcome=False)
+                resp = json.loads(json_resp)
+                logging.info('ListSubscribe result: %r' % (resp,))
+
+        logging.info('Done')
+
+        # Keep going if haven't reached end
+        if len(apps) == batch_size:
+            logging.info('Add next batch: %i-%i' % (offset+batch_size, offset+2*batch_size-1))
+            taskqueue.add(url=url('UploadEmailsToMailChimp'), params={'offset': offset+batch_size})
+        self.response.out.write('Done: %r' % resp)
 
 
 class SIBTReset (URIHandler):

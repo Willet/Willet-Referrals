@@ -21,7 +21,6 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
-from util.mailchimp       import MailChimp
 
 NUM_VOTE_SHARDS = 15
 
@@ -30,9 +29,7 @@ NUM_VOTE_SHARDS = 15
 #       client adds buttons
 #       each button has a buttonFBAction type
 
-# ------------------------------------------------------------------------------
-# Button Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class ButtonsShopify(Buttons, AppShopify):
 
     def __init__(self, *args, **kwargs):
@@ -42,7 +39,9 @@ class ButtonsShopify(Buttons, AppShopify):
     def _validate_self(self):
         return True
 
-    def do_install( self ):
+    def do_install(self):
+        app_name = self.__class__.__name__
+
         # Define our script tag 
         tags = [{
             "script_tag": {
@@ -73,23 +72,14 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
-        name = self.client.merchant.get_full_name()
-        try:
-            first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
-        except IndexError:
-            first_name, last_name = name, ''
-
-        # Add email to MailChimp
-        email_list_id = SHOPIFY_APPS['AppShopify']['email_list_id']
-        if email_list_id:
-            MailChimp(MAILCHIMP_API_KEY).listSubscribe(id=email_list_id,
-                                                       email_address=self.client.email,
-                                                       merge_vars=({ 'FNAME': first_name,
-                                                                     'LNAME': last_name,
-                                                                     'STORENAME': self.client.name,
-                                                                     'STOREURL': self.client.url }),
-                                                       double_optin=False,
-                                                       send_welcome=False)
+        # Start sending email updates
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+            self.client.subscribe_to_mailing_list(
+                list_name=app_name,
+                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
+            )
+        
+        return
 
     # Constructors ------------------------------------------------------------------------------
     @classmethod
@@ -110,6 +100,7 @@ class ButtonsShopify(Buttons, AppShopify):
             
         return app
 
+    # 'Retreive or Construct'ers -----------------------------------------------------------------
     @classmethod
     def get_or_create_app(cls, client, token ):
         """ Try to retrieve the app.  If no app, create one """
@@ -122,7 +113,8 @@ class ButtonsShopify(Buttons, AppShopify):
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
                 logging.warn(
-                    'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
+                    'We are going to reinstall this app because the stored\
+                     token does not match the request token\n%s vs %s' % (
                         app.store_token,
                         token
                     )
