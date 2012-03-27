@@ -49,21 +49,16 @@ class TrackWilltURL(URIHandler):
             set_clicked_cookie(self.response.headers, code)
 
         return
-            
+
+
 class InitCodes(URIHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""
     def get(self):
-        n = 0
-        for i in range(20):
-            ac = CodeCounter(
-                count=i,
-                total_counter_nums=20,
-                key_name = str(i)
-            )
-            ac.put()
-            n += 1
-        self.response.out.write(str(n) + " counters initialized")
+        logging.warn('Deprecated handler: codes are now initialized on-demand')
+        CodeCounter.generate_counters()
+        self.response.out.write("[Deprecated handler] Counters initialized")
+
 
 class CleanBadLinks(URIHandler):
     def get(self):

@@ -615,9 +615,9 @@ class User(db.Expando):
             return None
 
     def is_admin( self ):
-        logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
+        # logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
         if hasattr(self, 'user_is_admin'):
-            logging.info("%s might be ADMIN (via cached check) %s" % (self.uuid, self.user_is_admin))
+            logging.info("%s (%s) might be ADMIN (via cached check) %s" % (self.uuid, self.get_full_name(), self.user_is_admin))
             return self.user_is_admin
         is_admin = False
 
@@ -625,7 +625,7 @@ class User(db.Expando):
         # Filter by user email
         for e in emails:
             if e.address in ADMIN_EMAILS:
-                logging.info("%s is an ADMIN (via email check)" % (self.uuid))
+                logging.info("%s (%s) is an ADMIN (via email check)" % (self.uuid, self.get_full_name()))
                 is_admin = True
                 break
 
@@ -635,7 +635,7 @@ class User(db.Expando):
             if user_ips:
                 for i in user_ips.ips:
                     if i in ADMIN_IPS:
-                        logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
+                        logging.info("%s (%s) is an ADMIN (via IP check)" % (self.uuid, self.get_full_name()))
                         is_admin = True
                         break
 

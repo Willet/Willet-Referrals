@@ -212,6 +212,10 @@ class CodeCounter(Model):
                                             required=True,
                                             default=20)
     
+    def _validate_self(self):
+        # there is not much to check - count can be higher than total_counter_nums
+        return True
+    
     def get_next(self):
         #c = self.count
         #self.count += self.total_counter_nums
@@ -224,6 +228,20 @@ class CodeCounter(Model):
             }
         )
         return self.count
+    
+    @staticmethod
+    def generate_counters (total=20):
+        try:
+            for i in range(total):
+                ac = CodeCounter(
+                    count=i,
+                    total_counter_nums=total,
+                    key_name = str(i)
+                )
+                ac.put()
+            return True
+        except db.Timeout, e:
+            return False
 
     def __init__(self, *args, **kwargs):
        self._memcache_key = kwargs['count'] if 'count' in kwargs else None 
@@ -238,6 +256,10 @@ def get_a_willt_code():
     """Get a counter at random and return an unused code"""
     counter_index = random.randint(0,19)
     counter = CodeCounter.get_by_key_name(str(counter_index))
+    if not counter: # links haven't been link/init'ed yet
+        CodeCounter.generate_counters()
+        # redo
+        counter = CodeCounter.get_by_key_name(str(counter_index))
     c = counter.get_next()
     return c
 

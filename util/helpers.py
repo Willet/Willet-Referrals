@@ -243,16 +243,13 @@ def url(view, *args, **kwargs):
         app = webapp.WSGIApplication.active_instance
         handler = app.get_registered_handler_by_name(view)
 
-        logging.info('handler: %s' % handler)
-
         url = handler.get_url(*args)
 
         qs = kwargs.get('qs', ())
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.info(qs)
-        logging.info('got url: %s' % url)
+        logging.info('Found url "%s" for handler %s; qs = %r' % (url, handler, qs))
     except:
         logging.warn('could not reverse url %s' % view)
 
