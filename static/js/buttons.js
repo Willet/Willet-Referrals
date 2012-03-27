@@ -9,7 +9,7 @@
     // Private variables
     var APP_URL;
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
-    var PRODUCT_JSON = window.location + '.json';
+    var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -423,8 +423,13 @@
                     buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
                 }
             } else {
-                //TODO: Wrap in try / catch
-                var networks = JSON.parse(networksJSON);
+                var networks = {};
+                try {
+                    networks = JSON.parse(networksJSON);
+                } catch {
+                    console.log("Buttons: Unable to parse cookie")
+                }
+                
                 for (var network in networks) {
                     if (xHasKeyY(SUPPORTED_NETWORKS, network)
                         && networks[network] === true) {
