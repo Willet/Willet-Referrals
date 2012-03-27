@@ -64,40 +64,26 @@
             "detect": {
                 "method": "api",
                 "func": function() {
-                    //build the fb-root element if it does not exist
-                    if(!document.getElementById("fb-root")) {
-                        var fbRoot = createElement({
-                            "nodename": "div",
-                            "id": "fb-root"
-                        });
-                        document.body.appendChild(fbRoot);
+                    var result = function(event) {
+                        var data = JSON.parse(event.data);
+                        var status = (data.Facebook && data.Facebook.status) || false; //use status, if it exists
+                        updateLoggedInStatus("Facebook", status);
+                    };
+
+                    if(typeof window.addEventListener != 'undefined') { 
+                        window.addEventListener('message', result, false); 
+                    } else if(typeof window.attachEvent != 'undefined') { 
+                        window.attachEvent('onmessage', result); 
                     }
 
-                    var detectFBLoggedIn = function() {
-                        // Willet App: 132803916820614
-                        // Nick's Test App: 119776401486297
-                        FB.init({ appId:'132803916820614', status:true, cookie:true, xfbml:true});
-                        FB.getLoginStatus(function(response){
-                            var status = response.status != "unknown";
-                            updateLoggedInStatus("Facebook", status);
-                        }, true);
-                    }
+                    var url = encodeURIComponent("" + PROTOCOL + "//" + DOMAIN);
 
-                    if (!window.FB) {
-                        window.fbAsyncInit = function() {
-                            detectFBLoggedIn();
-                        };
+                    var iframe = createElement({
+                        "nodename": "iframe",
+                        "src": "http://willet-nterwoord.appspot.com/static/plugin/html/detectFB.html#url=" + url, //social-referral
+                    });
 
-                        //load the FB SDK if it isn't already loaded;
-                        (function(d){
-                        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
-                        js = d.createElement('script'); js.id = id; js.async = true;
-                        js.src = "//connect.facebook.net/en_US/all.js";
-                        d.getElementsByTagName('head')[0].appendChild(js);
-                        }(document));
-                    } else {
-                        detectFBLoggedIn();
-                    }
+                    document.getElementById(DETECT_NETWORKS_DIV_ID).appendChild(iframe);
                 }
             },
             "button": {
@@ -461,6 +447,8 @@
             "id": DETECT_NETWORKS_DIV_ID
         });
 
+        document.body.appendChild(detectNetworksDiv);
+
         for (network in SUPPORTED_NETWORKS) {
             var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
             switch (detectNetwork["method"]) {
@@ -477,7 +465,6 @@
                     //Nothing to do
             }
         }
-        document.body.appendChild(detectNetworksDiv);
     };
 
     me.createButtons = function(productData) {

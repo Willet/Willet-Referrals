@@ -1,0 +1,27 @@
+<html>
+<head>
+</head>
+
+<body>
+	<div id="fb-root">
+	<script type="text/javascript">
+		window.fbAsyncInit = function() {
+			// Willet App: 132803916820614
+            // Nick's Test App: 119776401486297
+			FB.init({ appId:'132803916820614', status:true, cookie:true, xfbml:true});
+	        FB.getLoginStatus(function(response){
+	            var status = response.status != "unknown";
+	            var url = decodeURIComponent(window.location.hash.split("#url=")[1]);
+	            window.parent.postMessage('{ "Facebook": {"status": ' + status + '}}', url);
+	        }, true);
+	    };
+
+        (function(d){
+        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
+        js = d.createElement('script'); js.id = id; js.async = true;
+        js.src = "//connect.facebook.net/en_US/all.js";
+        d.getElementsByTagName('head')[0].appendChild(js);
+        }(document));
+	</script>
+</body>
+</html>
