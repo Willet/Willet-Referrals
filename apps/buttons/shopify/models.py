@@ -21,7 +21,6 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
-from util.mailchimp       import MailChimp
 
 NUM_VOTE_SHARDS = 15
 
@@ -30,9 +29,7 @@ NUM_VOTE_SHARDS = 15
 #       client adds buttons
 #       each button has a buttonFBAction type
 
-# ------------------------------------------------------------------------------
-# Button Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class ButtonsShopify(Buttons, AppShopify):
 
     def __init__(self, *args, **kwargs):
@@ -40,6 +37,8 @@ class ButtonsShopify(Buttons, AppShopify):
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
     def do_install(self):
+        app_name = self.__class__.__name__
+
         # Define our script tag 
         tags = [{
             "script_tag": {
@@ -98,6 +97,7 @@ class ButtonsShopify(Buttons, AppShopify):
             
         return app
 
+    # 'Retreive or Construct'ers -----------------------------------------------------------------
     @classmethod
     def get_or_create_app(cls, client, token ):
         """ Try to retrieve the app.  If no app, create one """
@@ -110,7 +110,8 @@ class ButtonsShopify(Buttons, AppShopify):
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
                 logging.warn(
-                    'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
+                    'We are going to reinstall this app because the stored\
+                     token does not match the request token\n%s vs %s' % (
                         app.store_token,
                         token
                     )

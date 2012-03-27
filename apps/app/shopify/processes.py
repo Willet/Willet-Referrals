@@ -13,7 +13,6 @@ from apps.email.models      import Email
 
 from util.consts            import *
 from util.helpers           import *
-from util.mailchimp         import MailChimp
 from util.urihandler        import URIHandler
 
 
@@ -41,15 +40,14 @@ class DoUninstalledApp(URIHandler):
         )
 
         # Say goodbye from Fraser
-        Email.goodbyeFromFraser( client.merchant.get_attr('email'),
-                                 client.merchant.get_attr('full_name'),
-                                 app_class_name )
+        Email.goodbyeFromFraser(client.merchant.get_attr('email'),
+                                client.merchant.get_attr('full_name'),
+                                app_class_name)
 
         # "Delete" the App
         apps = client.apps
         for a in apps:
-            logging.info('%s %s' % (a.class_name(), app_class_name))
             if a.class_name() == app_class_name:
                 a.old_client = client
                 a.client     = None
-                a.put()
+                a.put_later()

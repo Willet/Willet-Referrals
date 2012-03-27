@@ -66,7 +66,7 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         },
-        'email_list_id': None,
+        'mailchimp_list_id': None,
     }, 'WOSIBShopify': {
         # repeat keys in SIBT
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
@@ -76,7 +76,7 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         },
-        'email_list_id': None,
+        'mailchimp_list_id': None,
     }, 'ButtonsShopify': {
         'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 

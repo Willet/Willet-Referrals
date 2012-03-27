@@ -18,6 +18,7 @@ from google.appengine.ext   import db
 from google.appengine.ext.db import polymodel
 
 from util.consts            import *
+from util.mailchimp         import MailChimp
 from util.model             import Model
 from util.helpers           import generate_uuid
 
@@ -36,12 +37,6 @@ class Client(Model, polymodel.PolyModel):
         """Datastore retrieval using memcache_key"""
         return db.Query(Client).filter('uuid =', google_user).get()
 
-            name = self.client.merchant.get_full_name()
-        try:
-            first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
-        except IndexError:
-            first_name, last_name = name, ''
-
     # Retrievers ------------------------------------------------------------------------------------
     @classmethod
     def get_by_email(cls, email):
@@ -55,52 +50,69 @@ class Client(Model, polymodel.PolyModel):
         return cls.all().filter('uuid =', uuid).get()
 
     # Mailing list methods --------------------------------------------------------------------------
-    def subscribe_to_mailing_list(list_name='', list_id=None):
+    def subscribe_to_mailing_list(self, list_name='', list_id=None):
         """ Add client to MailChimp
              MailChimp API Docs: http://apidocs.mailchimp.com/api/1.3/listsubscribe.func.php
         """
         resp = {}
+        first_name, last_name = '',''
+        name = self.merchant.get_full_name()
+        try:
+            first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
+        except IndexError:
+            first_name, last_name = name, ''
+
         if list_id:
             try:
-                json_resp = MailChimp(MAILCHIMP_API_KEY).listSubscribe(id=list_id,
-                                                           email_address=self.email,
-                                                           merge_vars=({ 'FNAME': first_name,
-                                                                         'LNAME': last_name,
-                                                                         'STORENAME': self.name,
-                                                                         'STOREURL': self.url }),
-                                                           double_optin=False,
-                                                           send_welcome=False)
-                resp = json.loads(json_resp)
+                resp = MailChimp(MAILCHIMP_API_KEY).listSubscribe(
+                                id=list_id,
+                                email_address=self.email,
+                                merge_vars=({ 'FNAME': first_name,
+                                              'LNAME': last_name,
+                                              'STORENAME': self.name,
+                                              'STOREURL': self.url }),
+                                double_optin=False,
+                                send_welcome=False )
+                # Response can be:
+                #     <bool> True / False (unsubscribe worked, didn't work)
+                #     <dict> error + message
             except Exception, e:
                 # This is bad form to except everything, but we really can't have a failure on install
                 logging.error('Subscribe %s from %s FAILED: %r' % (self.email, list_name, e), exc_info=True)
             else:
-                if 'error' in resp:
-                    logging.error('Subscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
-                else:
+                try:
+                    if 'error' in resp:
+                        logging.error('Subscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
+                except TypeError:
+                    # thrown when results is not iterable (eg bool)
                     logging.info('Subscribed %s from %s OK: %r' % (self.email, list_name, resp))
         return
 
-    def unsubscribe_from_mailing_list(list_name='', list_id=None):
+    def unsubscribe_from_mailing_list(self, list_name='', list_id=None):
         """ Remove client from MailChimp list
             MailChimp API Docs: http://apidocs.mailchimp.com/api/1.3/listunsubscribe.func.php
         """
         resp = {}
         if list_id:
             try:
-                json_resp = MailChimp(MAILCHIMP_API_KEY).listUnsubscribe(id=list_id,
-                                                                         email_address=self.email,
-                                                                         delete_member=False,
-                                                                         send_notify=False,
-                                                                         send_goodbye=False)
-                resp = json.loads(json_resp)
+                resp = MailChimp(MAILCHIMP_API_KEY).listUnsubscribe(
+                                id=list_id,
+                                email_address=self.email,
+                                delete_member=False,
+                                send_notify=False,
+                                send_goodbye=False )
+                # Response can be:
+                #     <bool> True / False (unsubscribe worked, didn't work)
+                #     <dict> error + message
             except Exception, e:
-                # This is bad form to except everything, but we really can't have aa failure on uninstall
+                # This is bad form to except everything, but we really can't have a failure on uninstall
                 logging.error('Unsubscribe %s from %s FAILED: %r' % (self.email, list_name, e), exc_info=True)
             else:
-                if 'error' in resp:
-                    logging.error('Unsubscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
-                else:
+                try:
+                    if 'error' in resp:
+                        logging.error('Unsubscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
+                except TypeError:
+                    # thrown when results is not iterable (eg bool)
                     logging.info('Unsubscribed %s from %s OK: %r' % (self.email, list_name, resp))
         return
 
