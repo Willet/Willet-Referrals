@@ -112,7 +112,7 @@
                         d.style.width = '80px';
                         return d;
                     },
-                    script: protocol+'//brian-willet.appspot.com/s/shopify/sibt-buttons.js?store_url=' + store_url
+                    script: protocol+'//brian-willet.appspot.com/s/sibt.js?url=' + store_url
                 },
                 Tumblr: {
                     create: function () {
