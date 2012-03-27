@@ -2,13 +2,10 @@
  * Buttons JS. Copyright Willet Inc, 2012
  */
 ;var _willet = (function(me) {
-    var debug = false; //set to false or remove when pushing live!
-
-    var console;
-
     // Private variables
-    var APP_URL;
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
+    var WILLET_APP_URL = "http://social-referral.appspot.com";
+    var APP_URL = WILLET_APP_URL;
     var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
@@ -18,7 +15,7 @@
     var DETECT_NETWORKS_DIV_ID = '_willet_buttons_detect_networks';
 
     var DOMAIN = /:\/\/([^\/]+)/.exec(window.location.href)[1];
-    var PROTOCOL = debug ? "http:" : window.location.protocol;
+    var PROTOCOL = window.location.protocol;
 
     var ELEMENT_NODE = 1;
 
@@ -318,6 +315,7 @@
     };
 
     var updateLoggedInStatus = function(network, status) {
+        _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
         LOGGED_IN_NETWORKS[network] = status;
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
     }
@@ -331,22 +329,8 @@
     };
 
     // Public functions
-    me.setDebug = function(debug) {
-        if(!debug) {
-            console = { log: function () {}, error: function () {} };
-            APP_URL = "http://social-referral.appspot.com";
-            delete me.clearCookies;
-            delete me.getCookies;
-        } else {
-            console = window.console;
-            APP_URL = MY_APP_URL;
-            me.clearCookies = clearCookies;
-            me.getCookies = getCookies;
-        }
-        return me;
-    };
-
     me.detectNetworks = function () {
+        _willet.debug.log("Buttons: Detecting networks...")
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
             image.onload = function () {
@@ -369,6 +353,7 @@
 
         for (network in SUPPORTED_NETWORKS) {
             var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
+            _willet.debug.log("Buttons: Attempting to detect " + network);
             switch (detectNetwork["method"]) {
                 case "image-hack":
                     var image = createHiddenImage(network, detectNetwork.func());
@@ -386,7 +371,7 @@
     };
 
     me.createButtons = function(productData) {
-        console.log("Buttons: finding buttons placeholder on page");
+        _willet.debug.log("Buttons: finding buttons placeholder on page");
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
@@ -426,8 +411,8 @@
                 var networks = {};
                 try {
                     networks = JSON.parse(networksJSON);
-                } catch {
-                    console.log("Buttons: Unable to parse cookie")
+                } catch(e) {
+                    _willet.debug.log("Buttons: Unable to parse cookie")
                 }
                 
                 for (var network in networks) {
@@ -456,36 +441,43 @@
                     "src": button["script"]
                 });
                 HEAD.appendChild(script);
-                console.log('Buttons: '+ network +' attached');
+                _willet.debug.log('Buttons: '+ network +' attached');
             }
 
             // Make visible if hidden
             buttonsDiv.style.display = 'block';
 
-            console.log('Buttons: Done!');
+            _willet.debug.log('Buttons: Done!');
         } else {
-            console.log('Buttons: could not find buttons placeholder on page');
+            _willet.debug.log('Buttons: could not find buttons placeholder on page');
         }
     };
 
     me.init = function() {
+        var isDebugging = _willet.debug.isDebugging();
+        _willet.debug.register(function(debug) {
+            APP_URL = (debug) ? MY_APP_URL : WILLET_APP_URL;
+            PROTOCOL = (debug) ? "http:" : window.location.protocol;
+        });
+        _willet.debug.set(isDebugging);
+
         if (!_willet.cookies.read(COOKIE_NAME)) {
             me.detectNetworks();
         }
 
-        if(!debug) {
+        if(!isDebugging) {
             try {
-                console.log("Buttons: initiating product.json request")
+                _willet.debug.log("Buttons: initiating product.json request")
                 _willet.messaging.ajax({
                     url: PRODUCT_JSON,
                     method: "GET",
                     success: function(request) {
-                        console.log("Buttons: recieved product.json request");
+                        _willet.debug.log("Buttons: recieved product.json request");
                         var data;
                         try {
                             data = JSON.parse(request.responseText);
                         } catch (e) {
-                            console.log("Buttons: could not parse product info, stopping.");
+                            _willet.debug.log("Buttons: could not parse product info, stopping.");
                             return;
                         }
                         if (data) {
@@ -495,7 +487,7 @@
                     }
                 });   
             } catch(e) {
-                console.log("Buttons: request for product.json failed");
+                _willet.debug.log("Buttons: request for product.json failed");
             }
         } else {
             me.createButtons({
@@ -513,8 +505,6 @@
             });
         }
     };
-
-    me.setDebug(debug);
 
     return me;
 } (_willet || {}));
@@ -548,6 +538,46 @@ _willet.JSON = (function(){
     throw new SyntaxError('JSON.parse');};}}());
 
     return JSON;
+}());
+
+_willet.debug = (function(){
+    var me = {};
+    var isDebugging = false;
+    var callbacks = [];
+
+    var _log = function() {};
+    var _error = function() {};
+
+    if (window.console) {
+        _log = function () {
+            window.console.log.apply(window.console, arguments);
+        };
+        _error = function () {
+            window.console.error.apply(window.console, arguments);
+        };
+    }
+
+    me.register = function(callback) {
+        callbacks.push(callback);
+    };
+
+    me.set = function(debug) {
+        me.log = (debug) ? _log: function() {};
+        me.error = (debug) ? _error: function() {};
+        isDebugging = debug;
+
+        for(var i in callbacks) {
+            callbacks[i](debug);
+        }
+    }
+
+    me.isDebugging = function() {
+        return isDebugging;
+    };
+
+    me.set(false); //setup proper log functions
+
+    return me;
 }());
 
 _willet.cookies = (function(){
@@ -598,7 +628,8 @@ _willet.messaging = (function(){
         var async = config.async || true;
 
         if (url === "") {
-            //TODO: Error
+            _willet.debug.error("Messaging: No URL provided");
+            error();
         }
 
         if (typeof XMLHttpRequest == "undefined") {
@@ -657,11 +688,13 @@ _willet.messaging = (function(){
             var target = targetOrigin || "*";
             var payload = "#" + PAYLOAD_IDENTIFIER + "?";
             if (!message) {
-                //TODO: Error
+                _willet.debug.log("Messaging.XD: No message provided");
+                return;
             }
 
             payload += MESSAGE_TOKEN + "=" + _willet.JSON.stringify(message);
             
+            _willet.debug.log("Messaging.XD: Sending payload..." + payload);
             if (window.parent.postMessage) {
                 // Try HTML5 postMessage
                 window.parent.postMessage(payload, target);
@@ -716,4 +749,5 @@ _willet.messaging = (function(){
     return me;
 }());
 
+_willet.debug.set(false); //set to true if you want logging turned on
 _willet.init();
