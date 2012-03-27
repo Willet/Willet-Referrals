@@ -16,6 +16,7 @@ from google.appengine.api        import urlfetch
 from google.appengine.api.mail   import EmailMessage
 from google.appengine.ext.webapp import template
 from util.consts import *
+from util.helpers import url 
 
 info      = "info@getwillet.com"
 fraser    = 'fraser@getwillet.com'
@@ -280,45 +281,16 @@ class Email():
     @staticmethod
     def send_email(from_address, to_address, subject, body,
                    to_name= None, replyto_address= None):
-        if ',' in to_address:
-            try:
-                e = EmailMessage(
-                        sender=from_address, 
-                        to=to_address, 
-                        subject=subject, 
-                        html=body
-                        )
-                e.send()
-            except Exception,e:
-                logging.warn('Error sending email:\nfrom: %s\nto: %s\nsubject: %s\n%s', (from_address, to_address, subject, e))
-            else:
-                logging.info('Emailed %s' % to_address)
-        elif not to_address:
-            logging.warn('Error sending email: no to address')
-        else:
-            params = {
-                "api_user" : "BarbaraEMac",
-                "api_key"  : "w1llet!!",
-                "to"       : to_address,
-                "subject"  : subject,
-                "html"     : body,
-                "from"     : info,
-                "fromname" : "Willet",
-                "bcc"      : fraser
-            }
-            if to_name:
-                params['toname'] = to_name
-            if replyto_address:
-                params['replyto'] = replyto_address
-
-            #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
-
-            result = urlfetch.fetch(
-                url     = 'https://sendgrid.com/api/mail.send.json',
-                payload = urllib.urlencode( params ), 
-                method  = urlfetch.POST,
-                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        taskqueue.add(
+                url=url('SendEmailAsync'),
+                params={
+                    'from_address': from_address,
+                    'to_address': to_address,
+                    'subject': subject,
+                    'body': body,
+                    'to_name': to_name,
+                    'replyto_address': replyto_address
+                }
             )
-            logging.info("Emailed %s. Result: %s" % (to_address, result.content))
 # end class
 
