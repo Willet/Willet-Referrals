@@ -188,7 +188,7 @@
 
             // find largest image on page: http://stackoverflow.com/questions/3724738
             var get_largest_image = function (within) {
-                within = within || d;
+                within = within || d, nMaxDim = 0;
                 var largest_image = '';
                 $(within).find('img').each (function () {
                     var $this = $(this);
@@ -198,6 +198,7 @@
                         nMaxDim = nDim;
                     }
                 });
+                return largest_image;
             };
             
             var get_page_title = function () {
@@ -528,6 +529,28 @@
                         }, 700); // wait for ?ms until it shakes
                     }
                 });
+                
+                // auto-create product objects using page info (<div class='_willet_...' data-....>)
+                // server decides if the input supplied is good to save.
+                var metadata = sibtjs_elem.data();
+                if (metadata) {
+                    if (!metadata.title) {
+                        metadata.title = get_page_title(); // might want to avoid that
+                    }
+                    if (!metadata.image) { // do NOT use images (images is prioritised over image)
+                        metadata.image = get_largest_image(); // might want to avoid this, too
+                    }
+                    console.log(metadata);
+                    $.ajax({
+                        url: '{{ URL }}{% url CreateProduct %}',
+                        type: "POST",
+                        async: true,
+                        data: metadata,
+                        dataType: 'json',
+                        success: function () {}, // good job; I don't care
+                        error: function () {}
+                    });
+                }
             }
 
             // SIBT Connection

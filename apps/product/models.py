@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import hashlib
+
 from google.appengine.ext   import db
 from apps.client.models     import Client
 from util.model             import Model
@@ -30,6 +32,47 @@ class Product(Model, db.polymodel.PolyModel):
         return True
 
     @staticmethod
-    def _get_from_datastore( uuid ):
+    def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return db.Query(Product).filter('uuid =', uuid).get()
+    
+    @staticmethod
+    def create(title, description='', images=[], price=0.0, client=None):
+        '''Creates a product in the datastore. 
+           Accepts datastore fields, returns Product object.
+        '''
+        if not client:
+            raise AttributeError("Must have client")
+        
+        # set uuid to its most "useful" hash.
+        uu_format = "%s-%s" % (client.domain, title)
+        uuid = hashlib.md5(uu_format).hexdigest()
+        
+        try:
+            resource_url = kwargs['resource_url']
+        except:
+            resource_url = ''
+        
+        product = Product(
+            uuid=uuid,
+            title=title,
+            description=description,
+            images=images,
+            price=price,
+            client=client,
+            resource_url=resource_url
+        )
+        product.put()
+        return product
+
+    @staticmethod
+    def get_or_create(title, description='', images=[], price=0.0, client=None):
+        if client and client.domain and title: # can check for existence
+            uu_format = "%s-%s" % (client.domain, title)
+            uuid = hashlib.md5(uu_format).hexdigest()
+            product = Product.get(uuid)
+            if product:
+                return product
+        
+        product = Product.create(title, description, images, price, client)
+        return product

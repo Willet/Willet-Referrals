@@ -124,14 +124,14 @@ class Model(db.Model):
             try:
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
             except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
-                pass # logging.debug('%s found in memcache but is not object; trying data (%r) as key.' % (key, data))
+                pass # Primary key miss
         
         if data and not obj:
             try:
                 data = memcache.get(data) # look deeper into memcache
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
             except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
-                pass # logging.debug ('Secondary key miss!')
+                pass # Secondary key miss
         
         if not data:
             # object was not found in memcache
@@ -152,17 +152,17 @@ class Model(db.Model):
         sec_keys = []
         try:
             key = self.get_key()
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-
-            for field in self.memcache_fields:
+            for field in self.memcache_fields: # get secondary keys to point to primary key
                 if getattr (self, field, None): # if this object's given property has a non-null value
                     # e.g. sibt-http://ohai.ca if SIBT specifies memcache by a store URL field
                     sec_keys.append(self.build_key (str (getattr (self, field))))
-
+            
+            # that is, {sec_key1: primary_key, sec_key2: primary_key, sec_key3: primary_key, primary_key: object_serial}
+            cache_keys_dict = dict(zip(sec_keys, [key] * len(sec_keys)))
+            cache_keys_dict[key] = db.model_to_protobuf(self).Encode() # add primary key
+            
             try:
-                # that is, {sec_key1: primary_key, sec_key2: primary_key, sec_key3: primary_key}
-                memcache.set_multi (dict(zip(sec_keys, [key] * len(sec_keys))), time=MEMCACHE_TIMEOUT)
-                logging.info ("multi memcache was successful: %r" % dict(zip(sec_keys, [key] * len(sec_keys))))
+                memcache.set_multi (cache_keys_dict, time=MEMCACHE_TIMEOUT)
             except Exception, e:
                 logging.warn ("Failed to memcache object by custom key: %s" % e, exc_info=True)
 
