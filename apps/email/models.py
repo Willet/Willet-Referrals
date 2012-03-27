@@ -40,7 +40,7 @@ class Email():
         Email.send_email(from_addr, to_addr, subject, body)
 
     @staticmethod
-    def welcomeClient( app_name, to_addr, name, store_name ):
+    def welcomeClient(app_name, to_addr, name, store_name):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
@@ -74,7 +74,7 @@ class Email():
         Email.send_email(fraser, to_addr, subject, body)
 
     @staticmethod
-    def goodbyeFromFraser( to_addr, name, app_name ):
+    def goodbyeFromFraser(to_addr, name, app_name):
         to_addr = to_addr
         subject = 'We are sad to see you go :('
     
@@ -291,6 +291,10 @@ class Email():
                 e.send()
             except Exception,e:
                 logging.warn('Error sending email:\nfrom: %s\nto: %s\nsubject: %s\n%s', (from_address, to_address, subject, e))
+            else:
+                logging.info('Emailed %s' % to_address)
+        elif not to_address:
+            logging.warn('Error sending email: no to address')
         else:
             params = {
                 "api_user" : "BarbaraEMac",
@@ -315,6 +319,6 @@ class Email():
                 method  = urlfetch.POST,
                 headers = {'Content-Type': 'application/x-www-form-urlencoded'}
             )
-            logging.info("%s"% result.content)
+            logging.info("Emailed %s. Result: %s" % (to_address, result.content))
 # end class
 

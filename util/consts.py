@@ -43,7 +43,7 @@ FACEBOOK_APP_ID     = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
 # MailChimp Stuff
-MAILCHIMP_API_KEY = '27a8343ec17004bfc06bad23d2d865b0-us4'
+MAILCHIMP_API_KEY = 'b58ce277cd799842ed2bdf03b06d603b-us4'
     
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
@@ -66,7 +66,7 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         },
-        'email_list_id': None,
+        'mailchimp_list_id': None,
     }, 'WOSIBShopify': {
         # repeat keys in SIBT
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
@@ -76,12 +76,12 @@ SHOPIFY_APPS = {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
         },
-        'email_list_id': None,
+        'mailchimp_list_id': None,
     }, 'ButtonsShopify': {
         'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
         'class_name': 'ButtonsShopify',
-        'email_list_id': '01629537ab',
+        'mailchimp_list_id': '01629537ab',
     }
 }
 
