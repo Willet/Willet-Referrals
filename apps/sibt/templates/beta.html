@@ -14,13 +14,14 @@
             font-family: Monaco, 'Courier New', 'Lucida Console', monospace;
             border: 1px #ddd solid;
             background-color: #f6f6f6;
-            font-size: 1.1em;
+            font-size: 1em;
             width:80%;
-            height:400px;
+            height:500px;
             max-width:100%;
             max-height:100%;
             margin:auto;
             text-align: left;
+            overflow: scroll;
         }
         #sibt_reg_form table td, #sibt_reg_form input {
             font-size: 1.1em;
@@ -43,7 +44,9 @@
                         dataType: 'json',
                         success: function (data) {
                             $('#success_script .insert').html(
-                                $(this).html().replace("<<client_uuid>>", data.client_uuid);
+                                $('#success_script .insert').html()
+                                    .replace("(client_uuid)", data.client_uuid)
+                                    .replace("(app_uuid)", data.app_uuid)
                             );
                             $('#success_script').show();
                             $('#sibt_reg_form').slideUp('slow');
@@ -141,8 +144,9 @@
             <pre class="insert">
 &lt;div class=&quot;_willet_sibt&quot; 
      data-sibtversion=&quot;{{ sibt_version }}&quot;
-     data-client_uuid=&quot;<<client_uuid>>&quot;
-     data-title=&quot; (name of the product) &quot;
+     data-app_uuid=&quot;(app_uuid)&quot;
+     data-client_uuid=&quot;(client_uuid)&quot;
+     data-title=&quot; (name of your product) &quot;
      data-description=&quot; (product description) &quot;
      data-images=&quot; (optional: pictures of the product, separated by a comma) &quot;
      data-image=&quot; (optional: picture of the product) &quot;

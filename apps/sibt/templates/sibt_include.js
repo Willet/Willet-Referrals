@@ -1,5 +1,6 @@
 <div class="_willet_sibt" 
      data-sibtversion="{{ sibt_version }}"
+     data-app_uuid="{{ app.uuid }}"
      data-client_uuid="{{ client.uuid }}"
      data-title=" (name of the product) "
      data-description=" (product description) "

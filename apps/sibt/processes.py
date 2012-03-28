@@ -51,6 +51,8 @@ class SIBTSignUp(URIHandler):
         address1 = self.request.get("address1", '')
         address2 = self.request.get("address2", '')
         
+        logging.debug ("SIBT Signup: %r" % [fullname, email, shopname, shop_url, phone, address1, address2])
+        
         if not (fullname and email and shopname and shop_url):
             self.error (400) # missing info
             return
