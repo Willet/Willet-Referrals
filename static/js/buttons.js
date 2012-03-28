@@ -70,19 +70,7 @@
                         var message = data.message;
                         var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
                         updateLoggedInStatus("Facebook", status);
-                    }, APP_URL);
-
-                    var origin = encodeURIComponent("" + PROTOCOL + "//" + DOMAIN);
-
-                    var iframe = createElement({
-                        "nodename": "iframe",
-                        "src": APP_URL + "/static/plugin/html/detectFB.html?origin=" + origin,
-                        "style": {
-                            "display": "none"
-                        }
-                    });
-
-                    document.getElementById(DETECT_NETWORKS_DIV_ID).appendChild(iframe);
+                    }, APP_URL + "/static/plugin/html/detectFB.html");
                 }
             },
             "button": {
@@ -729,7 +717,9 @@ _willet.messaging = (function(){
         };
 
         // sets up message handling
-        xd.createMessageHandler = function(callback, baseUrl) {
+        xd.createMessageHandler = function(callback, url) {
+            var baseUrl = /https?:\/\/([^\/]+)/.exec(url)[0];
+
             if (window.postMessage) {
                 // Note: IE w/ HTML5 supports addEventListener
                 var listener = function (event) {
@@ -765,6 +755,14 @@ _willet.messaging = (function(){
                     clearInterval(interval);
                 };
             }
+
+            //create the iframe
+            var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
+            var iframe = document.createElement("iframe");
+            iframe.src = url + "?origin=" + originDomain;
+            iframe.style.display = "none";
+
+            document.body.appendChild(iframe);
         };
 
         return xd;
