@@ -67,7 +67,6 @@ class AppShopify(Model):
         if webhooks == None:
             webhooks = []
 
-        logging.info("TOKEN %s" % self.store_token )
         url      = '%s/admin/webhooks.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
@@ -81,12 +80,11 @@ class AppShopify(Model):
         if product_hooks_too:
             # First fetch webhooks that already exist
             resp, content = h.request( url, "GET", headers = header)
-            data = json.loads( content ) 
+            data = json.loads(content) 
             #logging.info('%s %s' % (resp, content))
 
             product_create = product_delete = product_update = True
             for w in data['webhooks']:
-                #logging.info("checking %s"% w['address'])
                 if w['address'] == '%s/product/shopify/webhook/create' % URL or \
                    w['address'] == '%s/product/shopify/webhook/create/' % URL:
                     product_create = False
@@ -103,7 +101,7 @@ class AppShopify(Model):
             product_create = product_delete = product_update = False
 
         # Install the "App Uninstall" webhook
-        data = {
+        webhooks.append({
             "webhook": {
                 "address": "%s/a/shopify/webhook/uninstalled/%s/" % (
                     URL,
@@ -112,62 +110,59 @@ class AppShopify(Model):
                 "format": "json",
                 "topic": "app/uninstalled"
             }
-        }
-        webhooks.append(data)
+        })
 
         # Install the "Product Creation" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/create" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/create"
-            }
-        }
         if product_create:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/create" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/create"
+                }
+            })
         
         # Install the "Product Update" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/update" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/update"
-            }
-        }
         if product_update:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/update" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/update"
+                }
+            })
 
         # Install the "Product Delete" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/delete" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/delete"
-            }
-        }
         if product_delete:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/delete"
+                }
+            })
 
         for webhook in webhooks:
-            logging.info('Installing extra hook %s' % webhook)
-            logging.info("POSTING to %s %r " % (url, webhook))
             resp, content = h.request(
                 url,
                 "POST",
                 body = json.dumps(webhook),
                 headers = header
             )
-            logging.info('%r %r' % (resp, content)) 
-            if int(resp.status) == 401:
-                Email.emailDevTeam(
-                    '%s WEBHOOK INSTALL FAILED\n%s\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
+            
+            if 200 <= int(resp.status) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed webhook, %s: %s' % (resp.status, webhook['webhook']['topic']))
+            else:
+                error_msg = 'Webhook install failed, %s: %s\n%s\n%s\n%s' % (
+                        resp.status,
+                        webhook['webhook']['topic'],
                         self.store_url,
+                        resp,
                         content
-                    )        
-                )
-        logging.info('installed %d webhooks' % len(webhooks))
+                    )
+                logging.error(message)
+                Email.emailDevTeam(message)
         
     def install_script_tags(self, script_tags=None):
         """ Install our script tags onto the Shopify store """
@@ -183,23 +178,26 @@ class AppShopify(Model):
         h.add_credentials(username, password)
         
         for script_tag in script_tags:
-            logging.info("POSTING to %s %r " % (url, script_tag) )
             resp, content = h.request(
                 url,
                 "POST",
                 body = json.dumps(script_tag),
                 headers = header
             )
-            logging.info('%r %r' % (resp, content))
-            if int(resp.status) == 401:
-                Email.emailDevTeam(
-                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
-                        content
-                    )        
+
+            if 200 <= int(resp.status) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed script tag, %s: %s' % (resp.status, script_tag['script_tag']['src']))
+            else:
+                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status,
+                    script_tag['script_tag']['src'],
+                    self.store_url,
+                    resp,
+                    content
                 )
-        logging.info('installed %d script_tags' % len(script_tags))
+                logging.error(message)
+                Email.emailDevTeam(message)
 
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
@@ -218,11 +216,10 @@ class AppShopify(Model):
 
         # get the theme ID
         theme_url = '%s/admin/themes.json' % self.store_url
-        logging.info('Getting themes %s' % theme_url)
         resp, content = h.request(theme_url, 'GET', headers = header)
 
-        if int(resp.status) == 200:
-            # we are okay
+        if 200 <= int(resp.status) <= 299:
+            # HTTP status 200's == success
             content = json.loads(content)
             for theme in content['themes']:
                 if 'role' in theme and 'id' in theme:
@@ -230,32 +227,37 @@ class AppShopify(Model):
                         main_id = theme['id']
                         break
         else:
-            logging.error('%s error getting themes: \n%s\n%s' % (
-                self.class_name(),
+            error_msg = 'Error getting themes, %s: %s\n%s\n%s\n%s' % (
+                resp.status,
+                theme_url,
+                self.store_url,
                 resp,
                 content
-            ))
-            return
+            )
+            logging.error(message)
+            Email.emailDevTeam(message)
 
         # now post all the assets
         url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
         for asset in assets: 
-            logging.info("POSTING to %s %r " % (url, asset) )
             resp, content = h.request(
                 url,
                 "PUT",
                 body = json.dumps(asset),
                 headers = header
             )
-            logging.info('%r %r' % (resp, content))
-            if int(resp.status) != 200: 
-                Email.emailDevTeam(
-                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
-                        content
-                    )        
+            
+            if 200 <= int(resp.status) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed asset, %s: %s' % (resp.status, asset['asset']['key']))
+            else:
+                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status,
+                    asset['asset']['key'],
+                    self.store_url,
+                    resp,
+                    content
                 )
-
-        logging.info('installed %d assets' % len(assets))
-
+                logging.error(message)
+                Email.emailDevTeam(message)
+# end class
