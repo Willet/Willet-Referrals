@@ -696,7 +696,7 @@ class SIBTServeScript(URIHandler):
             'app_css'        : app_css, # SIBT-JS does not allow custom CSS.
             '''
             
-            'FACEBOOK_APP_ID': SHOPIFY_APPS['AppShopify']['facebook']['app_id'],
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
         }

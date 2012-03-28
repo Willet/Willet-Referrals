@@ -45,7 +45,7 @@ class WOSIBVoteDynamicLoader (URIHandler):
         share_url = ''
         try:
             instance_uuid = self.request.get('instance_uuid')
-            wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
+            wosib_instance = WOSIBInstance.get(instance_uuid)
             # no sane man would compare more than 1000 products from his cart
             products = Product.all().filter('uuid IN', wosib_instance.products).fetch(1000)
             logging.info ("products = %r" % products)
@@ -193,7 +193,7 @@ class WOSIBShowResults(URIHandler):
     """ Shows the results of an instance """
     def get(self):
         instance_uuid = self.request.get( 'instance_uuid' )
-        wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
+        wosib_instance = WOSIBInstance.get(instance_uuid)
         if not wosib_instance:
             raise Exception ('instance not found')
             
@@ -254,7 +254,7 @@ class WOSIBShowFBThanks( URIHandler ):
 
             try:
                 # given all those products, get one of them, and use its image
-                product = Product.get_by_uuid (products[0])
+                product = Product.get(products[0])
                 product_image = product.images[0]
             except:
                 # either no products, no images in products, or... 

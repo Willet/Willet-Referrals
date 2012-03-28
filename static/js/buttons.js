@@ -100,15 +100,15 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['SIBT', 'Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
+            var supported_buttons = ['AskFriends', 'Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
             var buttons = {
-                SIBT: {
+                AskFriends: { // does not allow asking/voting unless SIBT-JS is also installed!
                     create: function () {
                         var d = createButton();
                         d.id = 'mini_sibt_button';
                         d.style.cursor = 'pointer';
                         d.style.display = 'inline-block';
-                        d.style.background = "url('" + protocol + "//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                        d.style.background = "url('" + protocol + "//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"; // change to master domain after deploying
                         d.style.width = '80px';
                         return d;
                     },
@@ -235,7 +235,7 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['SIBT','Fancy','Pinterest']; // default for backwards compatibilty
+            var req_buttons = ['Tumblr','Fancy','Pinterest']; // default for backwards compatibilty
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;

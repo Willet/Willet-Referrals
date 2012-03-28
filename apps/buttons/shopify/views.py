@@ -16,7 +16,7 @@ from util.urihandler                import URIHandler
 class ButtonsShopifyBeta(URIHandler):
     def get(self):
         template_values = {
-            "SHOPIFY_API_KEY": SHOPIFY_APPS['AppShopify']['api_key']
+            "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
         }
         
         self.response.out.write(self.render_page('beta.html', template_values))

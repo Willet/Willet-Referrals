@@ -45,8 +45,8 @@ from util.consts              import *
 class ShowBetaPage(URIHandler):
     def get(self):
         logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['AppShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['AppShopify']['api_key'] }
+        logging.info(SHOPIFY_APPS['SIBTShopify'] )
+        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
