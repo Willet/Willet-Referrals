@@ -20,7 +20,7 @@ from apps.action.models     import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
 
-from util.helpers           import generate_uuid
+from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
 ## -----------------------------------------------------------------------------
