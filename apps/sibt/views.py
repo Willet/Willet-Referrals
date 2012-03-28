@@ -54,8 +54,17 @@ class AskDynamicLoader(URIHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        ''' url: window.location.href '''
+        ''' 
+            SIBT Ask page
+            params:
+                url (required) - the product URL; typically window.location.href
+                
+                user_uuid (optional)
+                product_uuid (optional)
+                product_shopify_id (optional)
+        '''
         page_url = self.request.get('url', self.request.headers.get('referer'))
+        product = product_shopify = None
         try:
             url_parts = urlparse(page_url)
             store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
@@ -73,10 +82,9 @@ class AskDynamicLoader(URIHandler):
         user_is_admin = user.is_admin() if isinstance( user , User) else False
         
         product_uuid = self.request.get( 'product_uuid', None ) # optional
-        product_shopify_id = self.request.get( 'product_id', None ) # optional
+        product_shopify_id = self.request.get( 'product_shopify_id', None ) # optional
         logging.debug("%r" % [product_uuid, product_shopify_id])
 
-        
         # successive steps to obtain the product using any way possible
         try:
             logging.info("getting by url")
@@ -557,6 +565,11 @@ class SIBTServeScript(URIHandler):
         not create a SIBT app for the store/domain until (undecided trigger).
         
         Example call: http://brian-willet.appspot.com/s/sibt.js?url=http%3A%2F%2Fkiehn-mertz3193.myshopify.com%2Fproducts%2Fcustomer-focused-leading-edge-algorithm
+        
+        SIBT is activated on the page using any of these methods:
+        {% include "willet_sibt" %} (the Shopify snippet)
+        <div id="_willet_buttons_app"></div> (Buttons app, as SIBT Connection)
+        <div class="_willet_sibt" (...)><script src='(above)'> (SIBT-JS)
         
         Required params: url (the page URL)
         Optional params: willt_code (helps find instance)
