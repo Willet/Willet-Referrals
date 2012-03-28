@@ -115,12 +115,12 @@ class Action(Model, polymodel.PolyModel):
 
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         bucket = mbc.get_random_bucket()
-        logging.info('bucket: %s' % bucket)
+        # logging.info('bucket: %s' % bucket)
 
         list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
-        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
+        # logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')

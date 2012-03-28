@@ -54,55 +54,58 @@ class AskDynamicLoader(URIHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        store_url = self.request.get('url')
-        app = SIBT.get_by_store_url(store_url)
+        ''' url: window.location.href '''
+        page_url = self.request.get('url', self.request.headers.get('referer'))
+        try:
+            url_parts = urlparse(page_url)
+            store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
+            # warning: parsing an empty string will give you :// without error
+        except Exception, e:
+            logging.error('error parsing referer %s' % e, exc_info = True)
+        
+        app = SIBT.get_by_store_url(store_domain)
+        if not app:
+            self.response.out.write("Please register at http://rf.rs to use this product.")
+            return
+
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
-        
-        if not app:
-            logging.error('app not found; exiting.')
-            self.error(400)
-            return
-        
-        # if no URL, then referrer, then everything dies
-        target = self.request.get ('url', self.request.headers.get('referer'))
         
         product_uuid = self.request.get( 'product_uuid', None ) # optional
         product_shopify_id = self.request.get( 'product_id', None ) # optional
         logging.debug("%r" % [product_uuid, product_shopify_id])
 
-        # We need this stuff here to fill in the FB.ui stuff 
-        # if the user wants to post on wall
-        try:
-            page_url = urlparse(store_url)
-            store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
-            # warning: parsing an empty string will give you :// without error
-        except Exception, e:
-            logging.error('error parsing referer %s' % e, exc_info = True)
         
         # successive steps to obtain the product using any way possible
         try:
             logging.info("getting by url")
-            product = Product.get_or_fetch (target, app.client) # by URL
+            product = Product.get_or_fetch (page_url, app.client) # by URL
             if not product and product_uuid: # fast (cached)
                 product = Product.get (product_uuid)
-                target = product.resource_url # fix the missing url
             if not product and product_shopify_id: # slow, deprecated
                 product_shopify = ProductShopify.get_by_shopify_id (product_shopify_id)
-                if product_shopify: # reget this product by its uuid so we get the non-shopify object
-                    product = Product.get(product_shopify.uuid)
-                target = product.resource_url # fix the missing url
+            if not product: # last resort: assume site is Shopify, and hit (product url).json
+                product_shopify = ProductShopify.get_or_fetch (page_url, app.client)
+
+            # if we used a Shopify method, reget this product by its uuid so we get the non-shopify object
+            if product_shopify:
+                product = Product.get(product_shopify.uuid)
+            
             if not product:
                 # we failed to find a single product!
                 raise LookupError
         except LookupError:
             # adandon the rest of the script, because we NEED a product!
-            self.response.out.write("Requested product cannot be found.")
+            self.response.out.write("Product on this page is not in our database yet. <br> \
+                Please specify a product on your page with a div class=_willet_sibt element.")
             return
 
+        if not page_url: # if somehow it's still missing, fix the missing url
+            page_url = product.resource_url
+
         # Store 'Show' action
-        SIBTShowingAskIframe.create(user, url=target, app=app)
+        SIBTShowingAskIframe.create(user, url=page_url, app=app)
         
         # Fix the product description
         try:
@@ -124,7 +127,7 @@ class AskDynamicLoader(URIHandler):
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
         
         # we will be replacing this target url with the vote page url once we get an instance.
-        link = Link.create(target, app, origin_domain, user)
+        link = Link.create(page_url, app, origin_domain, user)
         
         # Which share message should we use?
         ab_share_options = [ 
@@ -147,8 +150,7 @@ class AskDynamicLoader(URIHandler):
 
             'app_uuid'     : app.uuid,
             'user_uuid'    : self.request.get( 'user_uuid' ),
-            'target_url'   : store_url,
-            'store_url'    : store_url,
+            'target_url'   : page_url,
             'store_domain' : store_domain,
 
             'user_email'   : user.get_attr('email') if user_found else None,

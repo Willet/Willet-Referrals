@@ -302,6 +302,38 @@
                 });
             };
 
+            var save_product = function (data) {
+                // auto-create product objects using page info (<div class='_willet_...' data-....>)
+                // server decides if the input supplied is good to save.
+                // does not guarantee saving; does not have return value; asynchronous.
+                try {
+                    // do NOT send .data() directly! Will cause unexpected func calls.
+                    var data = {
+                        'client_uuid': sibtjs_elem.data('client_uuid') || '', // REQUIRED
+                        'sibtversion': sibtjs_elem.data('sibtversion') || sibt_version,
+                        'title': sibtjs_elem.data('title') || get_page_title(),
+                        'description': sibtjs_elem.data('description') || '',
+                        'images': sibtjs_elem.data('images') || '',
+                        'image': sibtjs_elem.data('image') || get_largest_image(d),
+                        'price': sibtjs_elem.data('price') || '0.0',
+                        'tags': sibtjs_elem.data('tags') || '',
+                        'type': sibtjs_elem.data('type') || '',
+                        'resource_url': '{{ PAGE }}' || w.location.href
+                    };
+                    if (data.client_uuid) {
+                        $.ajax({
+                            url: '{{ URL }}{% url CreateProduct %}',
+                            type: "POST",
+                            data: data,
+                            dataType: 'json',
+                            success: function () {}, // good job; I don't care
+                            error: function () {}
+                        });
+                        console.log('sent product request');
+                    }
+                } catch (e) {}
+            };
+
 
             {% if app.top_bar_enabled %} // add this topbar code only if necessary
                 var topbar_onclick = function(e) {
@@ -550,34 +582,7 @@
                     }
                 });
                 
-                // auto-create product objects using page info (<div class='_willet_...' data-....>)
-                // server decides if the input supplied is good to save.
-                try {
-                    // do NOT send .data() directly! Will cause unexpected func calls.
-                    var data = {
-                        'client_uuid': sibtjs_elem.data('client_uuid') || '', // REQUIRED
-                        'sibtversion': sibtjs_elem.data('sibtversion') || sibt_version,
-                        'title': sibtjs_elem.data('title') || get_page_title(),
-                        'description': sibtjs_elem.data('description') || '',
-                        'images': sibtjs_elem.data('images') || '',
-                        'image': sibtjs_elem.data('image') || get_largest_image(d),
-                        'price': sibtjs_elem.data('price') || '0.0',
-                        'tags': sibtjs_elem.data('tags') || '',
-                        'type': sibtjs_elem.data('type') || '',
-                        'resource_url': '{{ PAGE }}' || w.location.href
-                    };
-                    if (data.client_uuid) {
-                        $.ajax({
-                            url: '{{ URL }}{% url CreateProduct %}',
-                            type: "POST",
-                            data: data,
-                            dataType: 'json',
-                            success: function () {}, // good job; I don't care
-                            error: function () {}
-                        });
-                        console.log('sent product request');
-                    }
-                } catch (e) {}
+                save_product (sibtjs_elem.data());
             }
 
             // SIBT Connection
