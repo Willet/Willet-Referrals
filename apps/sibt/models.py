@@ -88,12 +88,12 @@ class SIBT(App):
     def create(client, token):
         uuid = hashlib.md5('SIBT' + client.url).hexdigest() # generate_uuid( 16 )
         logging.debug("creating SIBT version '%s'" % App.CURRENT_INSTALL_VERSION)
-        app = SIBT (
+        app = SIBT(
             key_name=uuid,
             uuid=uuid,
             client=client,
             store_name=client.name, # Store name
-            store_url=client.url, # Store url
+            store_url=client.url,
             version=App.CURRENT_INSTALL_VERSION
         )
         
@@ -113,7 +113,7 @@ class SIBT(App):
         
         # SIBT JS has a 'client', but its meaning is much less significant than 
         # that of Shopify Clients.
-        if client:
+        if client and not domain:
             domain = client.url
         
         if not domain:
@@ -129,6 +129,10 @@ class SIBT(App):
         if not app:
             logging.debug ("app not found; creating one.")
             app = SIBT.create(client, domain)
+        
+        if not app.store_url:
+            app.store_url = domain
+            app.put()
 
         logging.debug ("SIBT::get_or_create.app is now %s" % app)
         return app

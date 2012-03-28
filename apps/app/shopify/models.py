@@ -24,14 +24,12 @@ from util.model             import Model
 NUM_SHARE_SHARDS = 15
 
 
-class AppShopify(Model):
+class AppShopify(App):
     """ Model for storing information about a Shopify App.
         AppShopify classes need not be installable from the Shopify app store,
         and can be installed as a bundle. Refer to SIBTShopify for example code.
     """
     store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
-    store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com
-    extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
     store_token = db.StringProperty(indexed = True) # Shopify token for this store
 
     def __init__(self, *args, **kwargs):

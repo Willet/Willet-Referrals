@@ -74,6 +74,7 @@ class AskDynamicLoader(URIHandler):
         
         app = SIBT.get_by_store_url(store_domain)
         if not app:
+            logging.error("could not find SIBT app for %s" % store_domain)
             self.response.out.write("Please register at http://rf.rs to use this product.")
             return
 
@@ -165,7 +166,7 @@ class AskDynamicLoader(URIHandler):
             'user_name'    : user.get_full_name() if user_found else None,
             'user_pic'     : user.get_attr('pic') if user_found else None,
 
-            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'], # doesn't actually involve Shopify
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'user_has_fb_token' : user_found,
 
