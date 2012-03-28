@@ -69,7 +69,8 @@
 
             var protocol = window.location.protocol; //'http:'; // For local testing
 
-            var createButton = function () {
+            var createButton = function (id) {
+                id = id || '';
                 var d = document.createElement('div');
                 d.style.styleFloat = 'left'; // IE
                 d.style.cssFloat = 'left'; // FF, Webkit
@@ -88,6 +89,8 @@
                 d.style.position = 'relative';
                 d.style.overflow = 'hidden';
                 d.name = 'button';
+                d.id = '_willet_'+id;
+                d.className = '_willet_social_button';
                 return d;
             }
 
@@ -96,7 +99,7 @@
             var buttons = {
                 Tumblr: {
                     create: function () {
-                        var d = createButton();
+                        var d = createButton('tumblr');
                         d.style.width = '62px';
                         
                         var a = document.createElement( 'a' );
@@ -120,7 +123,7 @@
                 },
                 Pinterest: {
                     create: function () {
-                        var d = createButton();
+                        var d = createButton('pinterest');
                         d.style.width = button_count ? '77px' : '43px';
 
                         var a = document.createElement( 'a' );
@@ -138,7 +141,7 @@
                 },
                 Fancy: {
                     create: function () {
-                        var d = createButton(0);
+                        var d = createButton('fancy');
                         d.style.width = button_count ? '96px' : '57px';
 
                         var a = document.createElement( 'a' );
@@ -162,7 +165,7 @@
                 },
                 Facebook: {
                     create: function () {
-                        var d = createButton();
+                        var d = createButton('facebook');
                         d.style.width = button_count ? '90px' : '48px';
                         d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
                         return d;
@@ -171,7 +174,7 @@
                 },
                 Twitter: {
                     create: function () {
-                        var d = createButton();
+                        var d = createButton('twitter');
                         d.style.width = button_count ? '98px' : '56px';
 
                         var a = document.createElement('a');
@@ -186,7 +189,7 @@
                 },
                 GooglePlus: {
                     create: function () {
-                        var d = createButton();
+                        var d = createButton('googleplus');
                         d.style.width = button_count ? '90px' : '32px';
                         d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
                         // Google is using the Open Graph spec
