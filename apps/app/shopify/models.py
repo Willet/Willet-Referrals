@@ -161,8 +161,8 @@ class AppShopify(Model):
                         resp,
                         content
                     )
-                logging.error(message)
-                Email.emailDevTeam(message)
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
         
     def install_script_tags(self, script_tags=None):
         """ Install our script tags onto the Shopify store """
@@ -196,8 +196,8 @@ class AppShopify(Model):
                     resp,
                     content
                 )
-                logging.error(message)
-                Email.emailDevTeam(message)
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
 
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
@@ -234,8 +234,8 @@ class AppShopify(Model):
                 resp,
                 content
             )
-            logging.error(message)
-            Email.emailDevTeam(message)
+            logging.error(error_msg)
+            Email.emailDevTeam(error_msg)
 
         # now post all the assets
         url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
@@ -258,6 +258,6 @@ class AppShopify(Model):
                     resp,
                     content
                 )
-                logging.error(message)
-                Email.emailDevTeam(message)
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
 # end class
