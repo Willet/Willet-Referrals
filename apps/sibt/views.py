@@ -568,7 +568,7 @@ class SIBTServeScript(URIHandler):
     def get(self):
         # declare vars.
         app = user = instance = link = None
-        show_top_bar_ask = is_live = is_safari = False
+        show_top_bar_ask = is_live = is_asker = is_safari = unsure_mutli_view = False
         domain = path = asker_name = asker_pic = ''
         votes_count = 0
         event       = 'SIBTShowingButton'
@@ -636,6 +636,7 @@ class SIBTServeScript(URIHandler):
             asker_name = instance.asker.get_first_name()
             asker_pic = instance.asker.get_attr('pic')
             votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
+            is_asker = (instance.asker.key() == user.key())
 
         # unsure detection
         if not instance and app:
@@ -673,12 +674,12 @@ class SIBTServeScript(URIHandler):
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
             'asker_name': asker_name if asker_name else "your friend",
             'asker_pic': asker_pic if asker_name else "",
-            'is_asker': False,
+            'is_asker': is_asker,
             'has_results': (votes_count > 0),
-            'show_votes': bool(instance),
+            'show_votes': False, # this is annoying if True
             'show_top_bar_ask': show_top_bar_ask and (app.top_bar_enabled if app else True),
             'is_live': is_live,
-            'unsure_mutli_view': False,
+            'unsure_mutli_view': unsure_mutli_view,
             'detect_shopconnection': True,
 
             ''' these properties cannot be used automatically on SIBT-JS.

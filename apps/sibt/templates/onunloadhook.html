@@ -16,7 +16,7 @@
 	        $(window).unload(function () {
                 var _willet_visit_end = new Date ();
 	            $.ajax ({
-                    url: "{% url TrackSIBTShowAction %}?evnt={{evnt}}&duration=" + 
+                    url: "{% url TrackSIBTUserAction %}?evnt={{evnt}}&duration=" + 
                          (_willet_visit_end - _willet_visit_start) / 1000 + 
                          "&app_uuid={{app_uuid}}" + 
                          "&user_uuid={{user_uuid}}" + 

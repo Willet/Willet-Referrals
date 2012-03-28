@@ -75,22 +75,23 @@
     };
     
     
-    {% if is_safari %}
-        // Stores user_uuid for all browsers - differently for Safari.
-        var setCookieStorageFlag = function() {
-            w.cookieSafariStorageReady = true;
-        };
-        
-        // Safari cookie storage backup
-        var firstTimeSession = 0;
-        var doSafariCookieStorage = function () {
-            if (firstTimeSession == 0) {
-                firstTimeSession = 1;
-                d.getElementById('sessionform').submit()
-                setTimeout(setCookieStorageFlag, 2000);
-            }
-        };
+    // Stores user_uuid for all browsers - differently for Safari.
+    var setCookieStorageFlag = function() {
+        w.cookieSafariStorageReady = true;
+    };
+    
+    // Safari cookie storage backup
+    var firstTimeSession = 0;
+    var doSafariCookieStorage = function () {
+        if (firstTimeSession == 0) {
+            firstTimeSession = 1;
+            d.getElementById('sessionform').submit()
+            setTimeout(setCookieStorageFlag, 2000);
+        }
+    };
 
+    // "Fixes" Safari's problems with XD-storage.
+    if ( navigator.userAgent.indexOf('Safari') != -1 ) {
         var holder = d.createElement('div');
         var storageIFrameLoaded = false;
         var storageIFrame = d.createElement( 'iframe' );
@@ -124,13 +125,14 @@
         storageForm.appendChild( storageInput );
         holder.appendChild(storageForm);
         d.body.appendChild(holder);
-    {% endif %}
-
+    } else {
+        setCookieStorageFlag();
+    }
 
     // set up a list of scripts to load asynchronously.
     var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
     if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js');
+        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
     }
 
     // Once all dependencies are loading, fire this function
@@ -188,7 +190,8 @@
 
             // find largest image on page: http://stackoverflow.com/questions/3724738
             var get_largest_image = function (within) {
-                within = within || d, nMaxDim = 0;
+                within = within || d;
+                var nMaxDim = 0;
                 var largest_image = '';
                 $(within).find('img').each (function () {
                     var $this = $(this);
@@ -260,7 +263,25 @@
                     fixed: true
                 };
                 options = $.extend({}, defaults, options);
-                $.willet_colorbox(options);
+                if ($.willet_colorbox) {
+                    $.willet_colorbox(options);
+                } else { // backup
+                    console.log("opening window");
+                    var width = parseInt(options.innerWidth);
+                    var height = parseInt(options.innerHeight);
+                    var left = (screen.width - width) /2;
+                    var top = (screen.height - height) /2;
+                    var new_window = window.open(
+                        options.href, // url
+                        '_blank', // name
+                        'width=' + width + ',' + 
+                        'height=' + height + ',' + 
+                        'left=' + left + ',' + 
+                        'top=' + top,
+                        true //.preserve history
+                    );
+                    new_window.focus();
+                }
             }
             
             var show_results = function () {
@@ -532,25 +553,29 @@
                 
                 // auto-create product objects using page info (<div class='_willet_...' data-....>)
                 // server decides if the input supplied is good to save.
-                var metadata = sibtjs_elem.data();
-                if (metadata) {
-                    if (!metadata.title) {
-                        metadata.title = get_page_title(); // might want to avoid that
-                    }
-                    if (!metadata.image) { // do NOT use images (images is prioritised over image)
-                        metadata.image = get_largest_image(); // might want to avoid this, too
-                    }
-                    console.log(metadata);
+                try {
+                    // do NOT send .data()! Will cause unexpected func calls.
+                    var metadata = {
+                        'sibtversion': sibtjs_elem.data('sibtversion') || sibt_version,
+                        'title': sibtjs_elem.data('title') || get_page_title(),
+                        'description': sibtjs_elem.data('description') || '',
+                        'images': sibtjs_elem.data('images') || '',
+                        'image': sibtjs_elem.data('image') || get_largest_image(d),
+                        'price': sibtjs_elem.data('price') || '0.0',
+                        'tags': sibtjs_elem.data('tags') || '',
+                        'type': sibtjs_elem.data('type') || '',
+                        'resource_url': '{{ PAGE }}'
+                    };
                     $.ajax({
                         url: '{{ URL }}{% url CreateProduct %}',
                         type: "POST",
-                        async: true,
                         data: metadata,
                         dataType: 'json',
                         success: function () {}, // good job; I don't care
                         error: function () {}
                     });
-                }
+                    console.log('sent product request');
+                } catch (e) {}
             }
 
             // SIBT Connection
@@ -589,10 +614,10 @@
                 store_analytics();
 
                 // run our scripts
-                var hash        = w.location.hash;
+                var hash = w.location.hash;
                 var hash_search = '#code=';
-                hash_index  = hash.indexOf(hash_search);
-                willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+                hash_index = hash.indexOf(hash_search);
+                willt_code = hash.substring(hash_index + hash_search.length , hash.length);
 
                 {% if app.top_bar_enabled %} // add this topbar code only if necessary
                     console.log('topbar enabled');
@@ -727,6 +752,7 @@
                         var hash_search = '#open_sibt=';
                         hash_index = hash.indexOf(hash_search);
                         if (has_results && hash_index != -1) { // if vote has results and voter came from an email
+                            console.log("has results?");
                             show_results ();
                         }
                     }

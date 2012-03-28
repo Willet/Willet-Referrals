@@ -37,7 +37,7 @@ class Product(Model, db.polymodel.PolyModel):
         return db.Query(Product).filter('uuid =', uuid).get()
     
     @staticmethod
-    def create(title, description='', images=[], price=0.0, client=None):
+    def create(title, description='', images=[], tags=[], price=0.0, client=None, resource_url='', type=''):
         '''Creates a product in the datastore. 
            Accepts datastore fields, returns Product object.
         '''
@@ -54,19 +54,22 @@ class Product(Model, db.polymodel.PolyModel):
             resource_url = ''
         
         product = Product(
+            key_name=uuid,
             uuid=uuid,
             title=title,
             description=description,
             images=images,
             price=price,
             client=client,
-            resource_url=resource_url
+            resource_url=resource_url,
+            type=type,
+            tags=tags
         )
         product.put()
         return product
 
     @staticmethod
-    def get_or_create(title, description='', images=[], price=0.0, client=None):
+    def get_or_create(title, description='', images=[], tags=[], price=0.0, client=None, resource_url='', type=''):
         if client and client.domain and title: # can check for existence
             uu_format = "%s-%s" % (client.domain, title)
             uuid = hashlib.md5(uu_format).hexdigest()
@@ -74,5 +77,14 @@ class Product(Model, db.polymodel.PolyModel):
             if product:
                 return product
         
-        product = Product.create(title, description, images, price, client)
+        product = Product.create(
+            title=title,
+            description=description,
+            images=images,
+            price=price,
+            client=client,
+            resource_url=resource_url,
+            type=type,
+            tags=tags
+        )
         return product

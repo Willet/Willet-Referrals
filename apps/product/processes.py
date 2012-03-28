@@ -21,9 +21,12 @@ class CreateProduct(URIHandler):
         try:
             title = self.request.get("title")
             description = self.request.get("description", "")
+            type = self.request.get("type", "")
             price = float(self.request.get("price", "0.0"))
+            resource_url = self.request.get("resource_url")
             client = Client.get(self.request.get("client_uuid")) # a None client will stop creation
             images = self.request.get("images", "").split(',')
+            tags = self.request.get("tags", "").split(',')
 
             if not images and self.request.get("image", ""): # thus, image url field must be non-empty
                 images = [self.request.get("image")] # this is a list of one object
@@ -34,7 +37,10 @@ class CreateProduct(URIHandler):
                     description=description,
                     images=images,
                     price=price,
-                    client=client
+                    client=client,
+                    resource_url=resource_url,
+                    type=type,
+                    tags=tags
                 )
                 self.response.out.write("OK") # only care about headers
             else:
