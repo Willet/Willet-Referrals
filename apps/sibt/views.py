@@ -26,6 +26,7 @@ from apps.client.models         import *
 from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.order.models          import *
+from apps.product.models        import Product
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions          import *
 from apps.sibt.models           import SIBT, SIBTInstance, PartialSIBTInstance
@@ -58,10 +59,9 @@ class AskDynamicLoader(URIHandler):
     """Serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
-    # TODO: THis code is Shopify specific. Refactor.
     def get(self):
-        store_domain = self.request.get('store_url')
-        app = SIBT.get_by_store_url(store_domain)
+        store_url = self.request.get('url')
+        app = SIBT.get_by_store_url(store_url)
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
@@ -81,7 +81,7 @@ class AskDynamicLoader(URIHandler):
         # We need this stuff here to fill in the FB.ui stuff 
         # if the user wants to post on wall
         try:
-            page_url = urlparse(self.request.headers.get('referer'))
+            page_url = urlparse(store_url)
             store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
@@ -90,12 +90,14 @@ class AskDynamicLoader(URIHandler):
         # successive steps to obtain the product using any way possible
         try:
             logging.info("getting by url")
-            product = ProductShopify.get_or_fetch (target, app.client) # by URL
+            product = Product.get_or_fetch (target, app.client) # by URL
             if not product and product_uuid: # fast (cached)
                 product = Product.get (product_uuid)
                 target = product.resource_url # fix the missing url
             if not product and product_shopify_id: # slow, deprecated
-                product = ProductShopify.get_by_shopify_id (product_shopify_id)
+                product_shopify = ProductShopify.get_by_shopify_id (product_shopify_id)
+                if product_shopify: # reget this product by its uuid so we get the non-shopify object
+                    product = Product.get(product_shopify.uuid)
                 target = product.resource_url # fix the missing url
             if not product:
                 # we failed to find a single product!
@@ -151,9 +153,9 @@ class AskDynamicLoader(URIHandler):
 
             'app_uuid'     : app.uuid,
             'user_uuid'    : self.request.get( 'user_uuid' ),
-            'target_url'   : self.request.get( 'url' ),
-            'store_url'    : self.request.get( 'store_url' ),
-            'store_domain' : self.request.get( 'store_url' ),
+            'target_url'   : store_url,
+            'store_url'    : store_url,
+            'store_domain' : store_domain,
 
             'user_email'   : user.get_attr('email') if user_found else None,
             'user_name'    : user.get_full_name() if user_found else None,
@@ -199,8 +201,6 @@ class VoteDynamicLoader(URIHandler):
             
             # stage 2: get instance by willet code in URL
             if not instance and self.request.get('willt_code'):
-                # TODO: SHOPIFY IS DEPRECATING STORE_ID, USE STORE_URL INSTEAD
-                # app = SIBTShopify.get_by_store_id(self.request.get('store_id'))
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
                 link = Link.get_by_code( self.request.get('willt_code') )
                 if not link:
@@ -240,7 +240,8 @@ class VoteDynamicLoader(URIHandler):
             SIBTShowingVote.create(user = user, instance = instance)
             event = 'SIBTShowingVote'
 
-            product = ProductShopify.get_or_fetch(instance.url, app.client)
+            # In the case of a Shopify product, it will fetch from a .json URL.
+            product = Product.get_or_fetch(instance.url, app.client)
             
             try:
                 product_img = product.images[0]
@@ -396,7 +397,7 @@ class ShowResults(URIHandler):
             else:
                 vote_percentage = str(int(float(float(yesses)/float(total))*100))
 
-            product = ProductShopify.get_or_fetch(instance.url, app.client)
+            product = Product.get_or_fetch(instance.url, app.client)
 
             template_values = {
                 'evnt' : event,

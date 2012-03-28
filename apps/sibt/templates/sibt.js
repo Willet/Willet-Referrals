@@ -297,7 +297,6 @@
                 // shows the ask your friends iframe
                 show_colorbox({
                     href: "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
-                                             "&store_url={{ store_url }}" +
                                              "&url=" + ('{{ PAGE }}' || w.location.href),
                     onClosed: ask_callback
                 });
@@ -565,7 +564,7 @@
                         'price': sibtjs_elem.data('price') || '0.0',
                         'tags': sibtjs_elem.data('tags') || '',
                         'type': sibtjs_elem.data('type') || '',
-                        'resource_url': '{{ PAGE }}'
+                        'resource_url': '{{ PAGE }}' || w.location.href
                     };
                     if (data.client_uuid) {
                         $.ajax({

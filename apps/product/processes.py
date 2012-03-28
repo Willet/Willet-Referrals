@@ -25,10 +25,10 @@ class CreateProduct(URIHandler):
             price = float(self.request.get("price", "0.0"))
             resource_url = self.request.get("resource_url")
             client = Client.get(self.request.get("client_uuid")) # a None client will stop creation
-            images = self.request.get("images", "").split(',')
+            images = self.request.get("images", "").split(',') # if empty string, -> [''] (True)
             tags = self.request.get("tags", "").split(',')
 
-            if not images and self.request.get("image", ""): # thus, image url field must be non-empty
+            if not images[0] and self.request.get("image", ""): # thus, image url field must be non-empty
                 images = [self.request.get("image")] # this is a list of one object
             
             if title and description and images and price and client:
