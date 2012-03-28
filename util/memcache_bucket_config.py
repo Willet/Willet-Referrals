@@ -8,6 +8,7 @@ from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import deferred
 
+from apps.user.models import *
 from util.model import Model
 from util.consts import MEMCACHE_TIMEOUT
 from util.consts import MEMCACHE_BUCKET_COUNTS
@@ -96,7 +97,6 @@ class MemcacheBucketConfig(Model):
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
     # TODO - make classmethod of MemcacheBucketConfig
-    from apps.user.models import *
 
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))
     mbc = MemcacheBucketConfig.get_or_create(mbc_name)

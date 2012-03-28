@@ -4,6 +4,7 @@
 # constants for referrals
 
 import os
+import inspect
 import logging
 
 from urlparse import urlunsplit
@@ -156,10 +157,14 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts unless the google app name is exactly 'social-referral'
+# HT: http://stackoverflow.com/questions/4650622/how-can-i-load-all-keys-from-a-dict-as-local-variables-a-better-aproach
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:
         logging.info ("appname = %s; loading local_consts" % appname)
-        from local_consts import *
+        from local_consts import LOCAL_CONSTS
+        globals = inspect.currentframe(1).f_globals
+        for key, value in LOCAL_CONSTS:
+            globals[key] = value
     except Exception, e:
         pass
