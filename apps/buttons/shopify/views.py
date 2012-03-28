@@ -48,7 +48,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
 
         if charge_id == app.recurring_billing_id:
             # Good to go, activate!
-            self.activate_recurring_billing({
+            app.activate_recurring_billing({
                 'return_url': self.request.url,
                 'test': 'true'
             })

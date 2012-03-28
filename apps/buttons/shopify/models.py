@@ -94,11 +94,11 @@ def create_shopify_buttons_app(client, app_token):
         "price":        0.99,
         "name":         "ShopConnection",
         "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, self.uuid),
-        "test":         "true",
+        "test":         "true", # Set to false when live
         "trial_days":   0
     }
     
-    confirm_url = app.setup_recurring_billing()
+    confirm_url = app.setup_recurring_billing(billing_settings)
     
     app.put()
 
