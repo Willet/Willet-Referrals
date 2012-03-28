@@ -249,9 +249,9 @@ def url(view, *args, **kwargs):
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.info('Found url "%s" for handler %s; qs = %r' % (url, handler, qs))
+        logging.info('url(\'%s\',...) became: %s' % (view,url))
     except:
-        logging.warn('could not reverse url %s' % view)
+        logging.warn('Could not reverse url %s' % view)
 
     return url  
 

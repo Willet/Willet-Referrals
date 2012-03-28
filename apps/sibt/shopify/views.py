@@ -58,17 +58,16 @@ class SIBTShopifyWelcome(URIHandler):
         try:
             client = self.get_client() # May be None if not authenticated
             
-            logging.debug ('client is %s' % client)
             token = self.request.get('t') # token
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
-                logging.debug ("token was %s; updating to %s." % (client.token, token))
                 client.token = token
                 client.put()
             
             if not client:
-                logging.error ('memcache is lagging!')
+                # client was just put, expected to be in memcache
+                logging.error('Memcache is lagging!')
             
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
@@ -105,9 +104,9 @@ class SIBTShopifyWelcome(URIHandler):
                 'new_order_code' : new_order_code
             }
 
-            self.response.out.write( self.render_page( 'welcome.html', template_values)) 
+            self.response.out.write(self.render_page('welcome.html', template_values)) 
         except Exception, e:
-            logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
+            logging.error('SIbt install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
                 'SIBT install error, may require reinstall: %s, %s, %s, %s' % 

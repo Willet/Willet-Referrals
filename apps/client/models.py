@@ -149,7 +149,7 @@ class Client(Model, polymodel.PolyModel):
             else:
                 try:
                     if 'error' in resp:
-                        logging.error('Subscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
+                        logging.warning('Subscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
                 except TypeError:
                     # thrown when results is not iterable (eg bool)
                     logging.info('Subscribed %s from %s OK: %r' % (self.email, list_name, resp))
@@ -177,7 +177,7 @@ class Client(Model, polymodel.PolyModel):
             else:
                 try:
                     if 'error' in resp:
-                        logging.error('Unsubscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
+                        logging.warning('Unsubscribe %s from %s FAILED: %r' % (self.email, list_name, resp))
                 except TypeError:
                     # thrown when results is not iterable (eg bool)
                     logging.info('Unsubscribed %s from %s OK: %r' % (self.email, list_name, resp))

@@ -128,14 +128,15 @@ class SIBTShopify(SIBT, AppShopify):
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
     # Retreivers --------------------------------------------------------------------
-    @staticmethod
+    @classmethod
     def get_by_uuid(uuid):
-        return SIBTShopify.get(uuid)
+        return cls.get(uuid)
 
     @staticmethod
     def get_by_store_id(store_id):
         logging.info("Shopify: Looking for %s" % store_id)
-        logging.warn('THIS METHOD IS DEPRECATED: %s' % inspect.stack()[0][3])
+        logging.error('Deprecated method get_by_store_id should be\
+                       replaced by %s.get or %s.get_by_store_url: %s' % (cls, cls, inspect.stack()[0][3]))
         return SIBTShopify.all()\
                 .filter('store_id =', store_id)\
                 .get()
@@ -144,7 +145,7 @@ class SIBTShopify(SIBT, AppShopify):
     @staticmethod
     def create(client, token, email_client=True):
         uuid = generate_uuid( 16 )
-        logging.debug("creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
+        logging.debug("Creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
             key_name=uuid,
             uuid=uuid,
@@ -167,29 +168,24 @@ class SIBTShopify(SIBT, AppShopify):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = cls.get_by_store_url(client.url)
         if app is None:
-            logging.debug ("app not found; creating one.")
             app = cls.create(client, token)
         elif token != None and token != '':
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
-                logging.warn("client and app token mismatch; reinstalling app.")
+                logging.warn("Reinstalling app.")
                 try:
                     app.store_token = token
-                    logging.debug ("app.old_client was %s" % app.old_client)
                     app.client      = app.old_client if app.old_client else client
                     app.old_client  = None
-                    logging.debug("changing %s version to '%s'" % (cls.__name__, cls.CURRENT_INSTALL_VERSION))
                     app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
                     app.do_install(email_client)
                 except:
-                    logging.error('encountered error with reinstall', exc_info=True)
+                    logging.error('Encountered error with reinstall:', exc_info=True)
         else:
             # if token is None, i.e. getting, not creating
             pass
-        
-        logging.debug ("SIBTShopify::get_or_create.app is now %s" % app)
         return app
 
     # Shopify API calls -------------------------------------------------------------
@@ -251,7 +247,7 @@ class SIBTShopify(SIBT, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        self.install_webhooks( product_hooks_too = True )
+        self.install_webhooks(product_hooks_too=True)
         self.install_assets(assets=liquid_assets)
 
         # Email DevTeam
@@ -339,7 +335,8 @@ class SIBTShopify(SIBT, AppShopify):
 
     @classmethod
     def get_default_button_css(cls):
-        logging.warn('this method shouldnt be used: get_default_button_css')
+        logging.error('Deprecated method get_default_button_css should be\
+                       replaced by %s.get_default_css: %s' % (cls,  inspect.stack()[0][3]))
         return cls.get_default_css()
 
 # end class
