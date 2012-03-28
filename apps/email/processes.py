@@ -3,24 +3,17 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
-from datetime import datetime
-import re
-import hashlib
+import urllib
 
-from django.utils import simplejson as json
-from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
 from google.appengine.api.mail import EmailMessage
-from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.runtime import DeadlineExceededError
 
-from apps.email.models import *
-from apps.link.models import Link
+from apps.email.models import INFO, FRASER
 
 from util.consts import *
-from util.helpers import url 
-from util.helpers import remove_html_tags
-from util.strip_html import strip_html
 from util.urihandler import URIHandler
+
 
 class SendEmailAsync(URIHandler):
     def get (self):
@@ -44,9 +37,9 @@ class SendEmailAsync(URIHandler):
             "to"       : to_address,
             "subject"  : subject,
             "html"     : body,
-            "from"     : info,
+            "from"     : INFO,
             "fromname" : "Willet",
-            "bcc"      : fraser
+            "bcc"      : FRASER
         }
         if to_name:
             params['toname'] = to_name
@@ -68,10 +61,10 @@ class SendEmailAsync(URIHandler):
             try:
                 result = urlfetch.fetch(
                     url = 'https://sendgrid.com/api/mail.send.json',
-                    payload = urllib.urlencode( params ), 
+                    payload = urllib.urlencode(params), 
                     method = urlfetch.POST,
                     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                 )
                 logging.info (result.content)
             except DeadlineExceededError, e:
-                logging.error ("SendGrid was lagging; email was not sent.")
+                logging.error("SendGrid was lagging; email was not sent.")
