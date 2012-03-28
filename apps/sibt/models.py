@@ -9,6 +9,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import logging
 import random
+import urlparse
 from datetime import datetime
 from datetime import timedelta
 
@@ -55,12 +56,86 @@ class SIBT(App):
     # Name of the store - used here for caching purposes.
     store_name    = db.StringProperty( indexed = True )
 
-    _memcache_fields = ['link', 'created', 'end_datetime']
+    memcache_fields = ['link', 'created', 'end_datetime', 'store_url', 'extra_url']
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(SIBT, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def get_by_store_url(cls, url):
+        if not url:
+            return None
+        
+        try:
+            ua = urlparse.urlsplit(url)
+            url = "%s://%s" % (ua.scheme, ua.netloc)
+        except:
+            pass # use original URL
+        
+        app = cls.get(url)
+        if app:
+            return app
+
+        app = cls.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = cls.all().filter('extra_url =', url).get()
+
+        return app
     
+    @staticmethod
+    def create(client, token):
+        uuid = hashlib.md5('SIBT' + client.url).hexdigest() # generate_uuid( 16 )
+        logging.debug("creating SIBT version '%s'" % App.CURRENT_INSTALL_VERSION)
+        app = SIBT (
+            key_name=uuid,
+            uuid=uuid,
+            client=client,
+            store_name=client.name, # Store name
+            store_url=client.url, # Store url
+            version=App.CURRENT_INSTALL_VERSION
+        )
+        
+        try:
+            app.store_id=client.id # Store id
+        except AttributeError, e: # non-Shopify Shops need not Shop ID
+            logging.warn ('Store created without store_id')
+            pass
+        
+        app.put()
+        # app.do_install() # this is JS-based; there could be nothing to install
+        return app
+
+    @staticmethod
+    def get_or_create(client = None, domain = ''):
+        ''' create a SIBT app (used like a profile) for a specific domain. '''
+        
+        # SIBT JS has a 'client', but its meaning is much less significant than 
+        # that of Shopify Clients.
+        if client:
+            domain = client.url
+        
+        if not domain:
+            raise AttributeError ('A valid (client or domain) must be supplied to create a SIBT app')
+        
+        if not client:
+            client = Client.get_or_create (
+                url=domain,
+                email=''
+            )
+        
+        app = SIBT.get(hashlib.md5(domain).hexdigest())
+        if not app:
+            logging.debug ("app not found; creating one.")
+            app = SIBT.create(client, domain)
+
+        logging.debug ("SIBT::get_or_create.app is now %s" % app)
+        return app
+    
+    def _validate_self(self):
+        return True
+
     def handleLinkClick( self, urihandler, link ):
         logging.info("SIBTAPP HANDLING LINK CLICK" )
 
@@ -175,6 +250,9 @@ class SIBTInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(SIBTInstance, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     def special_put(self):
         """So we memcache by asker_uuid and url as well"""
@@ -312,6 +390,9 @@ class PartialSIBTInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(PartialSIBTInstance, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     """ Users can only have 1 of these ever.
         If they already have one, update it.

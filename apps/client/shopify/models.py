@@ -36,12 +36,13 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 class ClientShopify( Client ):
     
     # User
-    merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
+    # merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
+    # hint: nobody uses the shopify_stores back-reference.
 
     # Store properties
-    name    = db.StringProperty( indexed = False )
-    url     = db.LinkProperty  ( indexed = True )
-    domain  = db.LinkProperty  ( indexed = True )
+    # name    = db.StringProperty( indexed = False )
+    # url     = db.LinkProperty  ( indexed = True )
+    # domain  = db.LinkProperty  ( indexed = True )
     token   = db.StringProperty( default = '' )
     id      = db.StringProperty( indexed = True )
 
@@ -50,7 +51,6 @@ class ClientShopify( Client ):
         super(ClientShopify, self).__init__(*args, **kwargs)
     
     def _validate_self( self ):
-        """ TODO make this a validation function """
         self.url = get_shopify_url( self.url )
 
     # Constructor
@@ -155,7 +155,7 @@ class ClientShopify( Client ):
             app_type = "ButtonsShopify"
         
         # Grab Shopify API settings
-        settings = SHOPIFY_APPS[app_type]
+        settings = SHOPIFY_APPS['AppShopify']
 
         # Constuct the API URL
         username = settings['api_key'] 
@@ -192,7 +192,7 @@ def get_store_info(store_url, store_token, app_type):
         app_type = 'ButtonsShopify'
     
     # Grab Shopify API settings
-    settings = SHOPIFY_APPS[app_type]
+    settings = SHOPIFY_APPS['AppShopify']
 
     # Constuct the API URL
     url      = '%s/admin/shop.json' % ( store_url )

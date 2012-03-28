@@ -10,7 +10,9 @@ from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
 from apps.client.models import Client
+from apps.user.models   import User
 from util.consts        import *
+from util.cookies       import LilCookies
 from util.gaesessions   import get_current_session
 from util.templates     import render 
 
@@ -43,6 +45,21 @@ class URIHandler(webapp.RequestHandler):
 
         return self.db_client
     
+    def get_browser(self):
+        if 'user-agent' in self.request.headers:
+                return self.request.headers['user-agent'].lower()
+        return '' # default is str(nothing)
+    
+    def get_user(self):
+        ''' Reads a cookie, returns user. Does not auto-create. '''
+        user_cookie = read_user_cookie(self)
+        if user_cookie:
+            user = User.get(user_cookie)
+            if user:
+                ip = self.request.remote_addr
+                user.add_ip(ip)
+                return user
+
     def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
@@ -84,4 +101,20 @@ class URIHandler(webapp.RequestHandler):
                 app_path = '/'.join(parts[:-1])
 
         return app_path
+
+    def set_cookie(field, value):
+        """Sets a cookie on the browser"""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        cookie.set_secure_cookie(
+            name=field,
+            value=value,
+            expires_days=365*10,
+            domain='.%s' % APP_DOMAIN
+        )
+        
+    def get_cookie(field):
+        """Retrieves a cookie value from the browser; None if N/A."""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        return cookie.get_secure_cookie(name=field)
+
 # end class

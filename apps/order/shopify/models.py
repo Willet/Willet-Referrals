@@ -32,6 +32,9 @@ class OrderShopify( Order ):
         """ Initialize this object"""
         super(OrderShopify, self).__init__(*args, **kwargs)
 
+    def _validate_self(self):
+        return True
+
     # Constructor
     @staticmethod
     def create( user, client, order_token, order_id = "", 

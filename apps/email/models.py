@@ -10,10 +10,10 @@ import os
 import urllib
 import urllib2
 
-from django.utils                import simplejson as json
-from google.appengine.api        import taskqueue
-from google.appengine.api        import urlfetch
-from google.appengine.api.mail   import EmailMessage
+from django.utils import simplejson as json
+from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
+from google.appengine.api.mail import EmailMessage
 from google.appengine.ext.webapp import template
 from util.consts import *
 from util.helpers import url 
@@ -36,7 +36,7 @@ class Email():
     def emailDevTeam(msg):
         to_addr = dev_team
         subject = '[Willet]'
-        body    = '<p> %s </p>' % msg
+        body = '<p> %s </p>' % msg
  
         Email.send_email(from_addr, to_addr, subject, body)
 
@@ -139,7 +139,7 @@ class Email():
                          body=body )
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
+    def SIBTVoteNotification( to_addr, name, vote_type, product_url, product_img, client_name, client_domain ):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
@@ -148,7 +148,7 @@ class Email():
             {
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
-                'vote_url'      : vote_url,
+                'product_url'   : product_url,
                 'product_img'   : product_img,
                 'client_name'   : client_name,
                 'client_domain' : client_domain 
@@ -293,4 +293,3 @@ class Email():
                 }
             )
 # end class
-

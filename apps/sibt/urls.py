@@ -11,6 +11,10 @@ urlpatterns = [
     (r'/s/results.html',            ShowResults),
     (r'/s/fb_thanks.html',          ShowFBThanks),
     (r'/s/track/unload',            ShowOnUnloadHook),
+    (r'/s/sibt.js',                 SIBTServeScript),
+  # (r'/s',                         SIBTWelcome), # not used
+    (r'/s/beta',                    ShowBetaPage),
+    (r'/s/beta/signup',             SIBTSignUp),
 
     # Processes
     (r'/s/doVote',                  DoVote),
@@ -20,7 +24,6 @@ urlpatterns = [
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
     (r'/s/sendFriendAsks',          SendFriendAsks),
     (r'/s/startPartialInstance',    StartPartialSIBTInstance),
-    (r'/s/storeAnalytics',          StoreAnalytics),
     (r'/s/track/showaction',        TrackSIBTShowAction),
     (r'/s/track/useraction',        TrackSIBTUserAction),
 ]

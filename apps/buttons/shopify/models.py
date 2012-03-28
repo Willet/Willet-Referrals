@@ -36,6 +36,9 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
+    def _validate_self(self):
+        return True
+
     def do_install(self):
         app_name = self.__class__.__name__
 
@@ -70,7 +73,7 @@ class ButtonsShopify(Buttons, AppShopify):
         )
 
         # Start sending email updates
-        if 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
             self.client.subscribe_to_mailing_list(
                 list_name=app_name,
                 list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
@@ -132,7 +135,6 @@ class ButtonsShopify(Buttons, AppShopify):
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
     raise DeprecationWarning('Replaced by ButtonShopify.create_app')
-    ButtonShopify.create_app(client, app_token)
 
 def get_or_create_buttons_shopify_app(client, token):
     raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')

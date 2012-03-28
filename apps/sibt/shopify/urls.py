@@ -14,4 +14,3 @@ urlpatterns = [
     (r'/s/shopify/error.html',     	SIBTShopifyInstallError),
     (r'/s/shopify/v2to3',           SIBTShopifyVersion2To3)
 ]
-

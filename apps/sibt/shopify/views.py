@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import datetime
 import random
 
+from datetime import datetime, timedelta
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
@@ -21,6 +22,7 @@ from apps.action.models       import ButtonLoadAction
 from apps.action.models       import ScriptLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
+from apps.client.shopify.models import *
 from apps.email.models        import Email
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
@@ -43,8 +45,8 @@ from util.consts              import *
 class ShowBetaPage(URIHandler):
     def get(self):
         logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['SIBTShopify'] )
-        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
+        logging.info(SHOPIFY_APPS['AppShopify'] )
+        template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['AppShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
@@ -130,8 +132,6 @@ class SIBTShopifyEditStyle(URIHandler):
         else:
             # Update custom CSS with new rules
             css_dict = app.get_css_dict()
-            
-            #logging.debug('Start css_dict = %s' % json.dumps(css_dict))
 
             for var in post_vars:
                 key = value = None
@@ -140,19 +140,15 @@ class SIBTShopifyEditStyle(URIHandler):
                 except ValueError:
                     continue
 
-                #logging.debug('Updating %s:%s with %s' % (key, value, self.request.get(var)))
-
                 # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
                 if key and value:
 
                     # Add key if it doesn't already exist
                     if not key in css_dict:
-                        #logging.debug('%s not in css_dict, adding {}' % key)
                         css_dict[key] = {}
 
                     css_dict[key][value] = self.request.get(var)
 
-            #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
             # Save updated CSS
             app.set_css(css_dict)
         self.get(app_uuid)
@@ -232,7 +228,8 @@ class SIBTShopifyServeScript(URIHandler):
        for sharing information about a purchase just made by one of our clients"""
     
     def get(self):
-        is_live  = is_asker = show_votes = has_voted= show_top_bar_ask = False
+        votes_count = 0
+        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_mutli_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
@@ -240,17 +237,17 @@ class SIBTShopifyServeScript(URIHandler):
         app         = SIBTShopify.get_by_store_url(shop_url)
         event       = 'SIBTShowingButton'
 
-        if self.request.get('page_url'):
-            target = get_target_url(self.request.get('page_url'))
-        else:
+        target = get_target_url(self.request.get('page_url'))
+        if not target: # in the case that page_url is not of the right format
             target = get_target_url(self.request.headers.get('REFERER'))
+            logging.debug ("got target %s by referrer field" % target)
 
         user = User.get_or_create_by_cookie(self, app)
 
         # Try to find an instance for this { url, user }
-        try:
-            assert(app != None)
-            
+        if not app:
+            logging.debug('no app')
+        else:
             if target and not hasattr(app, 'extra_url'):
                 ''' check if target (almost always window.location.href) has the same domain as store url
                     example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
@@ -266,39 +263,33 @@ class SIBTShopifyServeScript(URIHandler):
                 except:
                     pass # can't decode target as URL; oh well!
             
-            try:
-                # Is User an asker for this URL?
-                logging.debug('trying to get instance for url: %s' % target)
-                instance = SIBTInstance.get_by_asker_for_url(user, target)
-                assert(instance != None)
+            logging.debug('trying to get instance for url: %s' % target)
+            instance = SIBTInstance.get_by_asker_for_url(user, target)
+            
+            if instance:
                 event = 'SIBTShowingResults'
                 logging.debug('got instance by user/target: %s' % instance.uuid)
-            except Exception, e:
-                try:
-                    logging.debug('trying willet_code: %s' % e)
-                    link = Link.get_by_code(willet_code)
-                    instance = link.sibt_instance.get()
-                    assert(instance != None)
-                    event = 'SIBTShowingResults'
-                    logging.debug('got instance by willet_code: %s' % instance.uuid)
-                except Exception, e:
-                    try:
-                        logging.debug('trying actions: %s' % e)
-                        instances = SIBTInstance.all(keys_only=True)\
-                            .filter('url =', target)\
-                            .fetch(100)
-                        key_list = [key.id_or_name() for key in instances]
-                        action = SIBTClickAction.get_for_instance(app, user, target, key_list)
-                        
-                        if action:
-                            instance = action.sibt_instance
-                            assert(instance != None)
-                            logging.debug('got instance by action: %s' % instance.uuid)
-                            event = 'SIBTShowingVote'
-                    except Exception, e:
-                        logging.debug('no instance available: %s' % e)
-        except:
-            logging.debug('no app')
+            
+            if not instance and willet_code:
+                link = Link.get_by_code(willet_code)
+                instance = link.sibt_instance.get()
+                event = 'SIBTShowingResults'
+                logging.debug('got instance by willet_code: %s' % instance.uuid)
+            
+            if not instance:
+                instances = SIBTInstance.all(keys_only=True)\
+                    .filter('url =', target)\
+                    .fetch(100)
+                key_list = [key.id_or_name() for key in instances]
+                action = SIBTClickAction.get_for_instance(app, user, target, key_list)
+                if action:
+                    instance = action.sibt_instance
+                    logging.debug('got instance by action: %s' % instance.uuid)
+                    event = 'SIBTShowingVote'
+            
+            # new visitor?
+            if not instance:
+                logging.debug('no instance available')
 
         # If we have an instance, figure out if 
         # a) Is User asker?
@@ -309,14 +300,17 @@ class SIBTShopifyServeScript(URIHandler):
             asker_pic  = instance.asker.get_attr('pic')
             show_votes = True
 
+            # number of votes.
+            votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
+
             try:
                 asker_name = asker_name.split(' ')[0]
-                if not asker_name:
-                    asker_name = 'I' # "should asker_name buy this?"
             except:
-                logging.warn('error splitting the asker name')
+                pass
+            if not asker_name:
+                asker_name = 'I' # "should asker_name buy this?"
 
-            is_asker = (instance.asker.key() == user.key()) 
+            is_asker = (instance.asker.key() == user.key())
             if not is_asker:
                 logging.debug('not asker, check for vote ...')
                 
@@ -337,13 +331,15 @@ class SIBTShopifyServeScript(URIHandler):
             logging.info('could not get an instance, check page views')
 
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked urls')
-            logging.info(tracked_urls)
+            logging.info('got tracked urls: %r' % tracked_urls)
             if tracked_urls.count(target) >= app.num_shows_before_tb:
                 #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
+            if len (tracked_urls) >= 4:
+                # part of the unsure detection: 4 or more URLs tracked for (app and user)
+                unsure_mutli_view = True
             product = ProductShopify.get_or_fetch(target, app.client)
         else:
             logging.warn("no app and no instance!")
@@ -355,7 +351,18 @@ class SIBTShopifyServeScript(URIHandler):
         else:
             app_css = SIBTShopify.get_default_css()
         
-        # Grab all template values
+        # determine whether to show the results button.
+        # code below makes button show only if vote was started less than 1 day ago.
+        has_results = False
+        logging.debug ("votes_count = %s" % votes_count)
+        if votes_count:
+            time_diff = datetime.now() - instance.created
+            logging.debug ("time_diff = %s" % time_diff)
+            if time_diff <= timedelta(days=1):
+                has_results = True
+        logging.debug ("has_results = %s" % has_results)
+
+                # Grab all template values
         template_values = {
             'URL'            : URL,
             'is_asker'       : is_asker,
@@ -363,7 +370,7 @@ class SIBTShopifyServeScript(URIHandler):
             'has_voted'      : has_voted,
             'is_live'        : is_live,
             'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
-            
+            'unsure_mutli_view': unsure_mutli_view,
             'app'            : app,
             'instance'       : instance,
             'asker_name'     : asker_name, 
@@ -387,6 +394,8 @@ class SIBTShopifyServeScript(URIHandler):
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
+            'has_results'    : has_results,
+            'detect_shopconnection': True,
         }
 
         # Finally, render the JS!
@@ -419,10 +428,7 @@ class SIBTShopifyServeAB (URIHandler):
                                     "Earn $5! Ask your friends what they think!",
                                     "Need advice? Ask your friends! Earn $5!",
                                     "Save $5 by getting advice from friends!",
-                                    # Muck with visitors' intrinsic motivation:
-                                    # If user expects to get nothing but gets one by surprise, he/she will much more likely repeat the same action
-                                    # (enable if you like)
-                                    # "Not sure? Ask your friends.", 
+                                    "Not sure? Ask your friends.",
                                   ]
                 cta_button_text = ab_test( 'sibt_incentive_text', 
                                             ab_test_options, 
@@ -502,7 +508,7 @@ class SIBTShopifyInstallError (URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-
+        
 class SIBTShopifyVersion2To3(URIHandler):
     """ TEMPORARY!!! """
     @admin_required

@@ -41,7 +41,7 @@ class WOSIBShopifyServeScript (URIHandler):
     # (with wands and broomsticks)
     def get(self):
         votes_count = 0
-        is_asker = show_votes = has_voted= show_top_bar_ask = False
+        is_asker = show_votes = has_voted = show_top_bar_ask = False
         instance = share_url = link = asker_name = asker_pic = product = None
         instance_uuid = target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code')

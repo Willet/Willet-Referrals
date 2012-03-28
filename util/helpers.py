@@ -46,6 +46,7 @@ def to_dict(something, recursion=0):
     return output
 
 def get_target_url(referrer):
+    ''' Clean up a URL to only contain protocol://domain.com/file.htm '''
     if referrer is not None:
         target = None
         try:
@@ -105,6 +106,7 @@ def get_request_variables(targets, rh):
     return rd
 
 # Cookie Stuff
+
 def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""
     logging.info("Setting a user cookie: %s" % user_uuid)

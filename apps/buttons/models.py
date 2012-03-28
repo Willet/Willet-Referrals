@@ -27,6 +27,9 @@ class Buttons(App):
         """ Initialize this model """
         super(Buttons, self).__init__(*args, **kwargs)
 
+    def _validate_self(self):
+        return True
+
 
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def get_buttons_app_by_uuid(id):

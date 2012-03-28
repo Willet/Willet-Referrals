@@ -38,20 +38,12 @@
                     data: { email : addr },
                     success: function (tr) {
                         window.close();
-                        /*
-                        document.getElementById('email-field').style.display = 'none';
-                        document.getElementById('email-btn').style.display = 'none';
-                        document.getElementById('email-conf').style.display = 'inline';
-                       $('#cancel-btn').html("Close");
-                       $('#top_text').hide();
-                       */
                     }
                 });
             };
 
             var storeAnalytics = function( evnt ) {
                 $.ajax({
-                    //url: "{{URL}}/s/storeAnalytics?evnt="+ evnt +
                     url: "{{ URL }}{% url TrackSIBTUserAction %}",
                     data: {
                         what: evnt,

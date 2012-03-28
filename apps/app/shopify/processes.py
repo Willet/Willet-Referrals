@@ -21,12 +21,12 @@ class DoUninstalledApp(URIHandler):
         # Grab the ShopifyApp
         store_url = self.request.headers['X-Shopify-Shop-Domain']
         logging.info("Uninstalling store: %s " % store_url)
-        app_class_name = SHOPIFY_APPS[app_name]['class_name'] 
+        app_class_name = app_name
 
         client = ClientShopify.get_by_url(store_url)
 
         # Stop sending email updates
-        if 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
             client.unsubscribe_from_mailing_list(
                 list_name=app_name,
                 list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']

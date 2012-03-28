@@ -13,8 +13,9 @@ from apps.action.models import UserAction
 from apps.user.models   import User
 from apps.app.models    import App
 from util.consts        import *
+from util.urihandler    import URIHandler
 
-class TrackShowAction(webapp.RequestHandler):
+class TrackShowAction(URIHandler):
     def post(self):
         """Javascript can track generic Show Actions"""
         try:
@@ -28,7 +29,7 @@ class TrackShowAction(webapp.RequestHandler):
             logging.error('There was an error storing the action: %s' % e, 
                     exc_info=True)
 
-class TrackUserAction(webapp.RequestHandler):
+class TrackUserAction(URIHandler):
     def post(self):
         """Javascript can track generic user Actions"""
         try:

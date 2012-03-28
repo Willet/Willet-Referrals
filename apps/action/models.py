@@ -27,6 +27,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
     from apps.wosib.actions import *
+
     action_dict = memcache.get_multi(list_keys) 
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
@@ -101,6 +102,9 @@ class Action(Model, polymodel.PolyModel):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Action, self).__init__(*args, **kwargs)
     
+    def _validate_self(self):
+        return True
+
     def put(self):
         """Override util.model.put with some custom shizzbang"""
         # Not the best spot for this, but I can't think of a better spot either ..
@@ -111,12 +115,12 @@ class Action(Model, polymodel.PolyModel):
 
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         bucket = mbc.get_random_bucket()
-        logging.info('bucket: %s' % bucket)
+        # logging.info('bucket: %s' % bucket)
 
         list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
-        logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
+        # logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
         if len(list_identities) > mbc.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
             logging.warn('bucket overflowing, persisting!')
@@ -177,12 +181,13 @@ class Action(Model, polymodel.PolyModel):
     def get_by_user_and_app( user, app ):
         return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
 
+
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class ClickAction( Action ):
     """ Designates a 'click' action for a User. 
-        Currently used for 'Referral' and 'SIBT' Apps """
+        Currently used for 'SIBT' and 'WOSIB' Apps """
     
     # Link that caused the click action ...
     link = db.ReferenceProperty( db.Model, collection_name = "link_clicks" )
@@ -200,20 +205,6 @@ class ClickAction( Action ):
                 self.app_.uuid
         )
 
-## Constructor -----------------------------------------------------------------
-"""
-# Never call this directly
-def create_click_action( user, app, link ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = ClickAction( key_name = uuid,
-                        uuid     = uuid,
-                        user     = user,
-                        app_     = app,
-                        link     = link )
-
-    act.put()
-"""
    
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
@@ -253,21 +244,6 @@ class VoteAction( Action ):
     def get_all_nos():
         return VoteAction.all().filter( 'vote =', 'no' )
 
-## Constructor -----------------------------------------------------------------
-"""
-# Never call this directly
-def create_vote_action( user, app, link, vote ):
-    # Make the action
-    uuid = generate_uuid( 16 )
-    act  = VoteAction( key_name = uuid,
-                       uuid     = uuid,
-                       user     = user,
-                       app_     = app,
-                       link     = link,
-                       vote     = vote )
-
-    act.put() 
-"""
 
 ## -----------------------------------------------------------------------------
 ## LoadAction Subclass ---------------------------------------------------------------

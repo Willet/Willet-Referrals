@@ -54,11 +54,17 @@ class EmailModel(Model):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
         super(EmailModel, self).__init__(*args, **kwargs)
     
+    def __str__(self):
+        return self.address
+    
     @staticmethod
     def _get_from_datastore(created):
         """Datastore retrieval using memcache_key"""
         return db.Query(EmailModel).filter('created =', created).get()
     
+    def _validate_self(self):
+        return True
+
     # Constructor ------------------------------------------------------------------
     @classmethod
     def create(cls, user, email):
@@ -241,7 +247,7 @@ class User(db.Expando):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
+        # logging.debug('User::put(): Saving %s to memcache and datastore.' % key)
         timeout_ms = 100
         while True:
             logging.debug('User::put(): Trying %s.put, timeout_ms=%i.' % (self.__class__.__name__.lower(), timeout_ms))
@@ -284,7 +290,7 @@ class User(db.Expando):
         Each subclass must have a staticmethod _get_from_datastore
         """
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
-        logging.debug('User::get(): Pulling %s from memcache.' % key)
+        # logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
         if not data:
             logging.debug('User::get(): %s not found in memcache, hitting datastore.' % key)
@@ -476,8 +482,11 @@ class User(db.Expando):
         user_ips = self.user_ips.get()
         if not user_ips:
             user_ips = UserIPs.get_or_create(self)
-
-        return ip in user_ips.ips
+        
+        if user_ips: # fix "argument of type 'NoneType' is not iterable" memlag
+            return ip in user_ips.ips
+        else:
+            return []
 
     def get_name_or_handle(self):
         name = self.get_handle()
@@ -606,9 +615,9 @@ class User(db.Expando):
             return None
 
     def is_admin( self ):
-        logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
+        # logging.info("Checking Admin status for %s (%s)" % (self.get_full_name(), self.uuid))
         if hasattr(self, 'user_is_admin'):
-            logging.info("%s might be ADMIN (via cached check) %s" % (self.uuid, self.user_is_admin))
+            logging.info("%s (%s) might be ADMIN (via cached check) %s" % (self.uuid, self.get_full_name(), self.user_is_admin))
             return self.user_is_admin
         is_admin = False
 
@@ -616,7 +625,7 @@ class User(db.Expando):
         # Filter by user email
         for e in emails:
             if e.address in ADMIN_EMAILS:
-                logging.info("%s is an ADMIN (via email check)" % (self.uuid))
+                logging.info("%s (%s) is an ADMIN (via email check)" % (self.uuid, self.get_full_name()))
                 is_admin = True
                 break
 
@@ -626,7 +635,7 @@ class User(db.Expando):
             if user_ips:
                 for i in user_ips.ips:
                     if i in ADMIN_IPS:
-                        logging.info("%s is an ADMIN (via IP check)" % (self.uuid))
+                        logging.info("%s (%s) is an ADMIN (via IP check)" % (self.uuid, self.get_full_name()))
                         is_admin = True
                         break
 
@@ -1048,7 +1057,7 @@ def get_or_create_user_by_email(email, request_handler, app):
     User.get_or_create_by_email(email, request_handler, app)
 
 def get_or_create_user_by_cookie(request_handler, app): 
-    logging.warn('Replaced by User.get_or_create_by_cookie')
+    raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
     User.get_or_create_by_cookie(request_handler, app)
 
 

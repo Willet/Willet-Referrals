@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
-import re, urllib
+import logging, re, urllib
 
 from django.utils                     import simplejson as json
 from google.appengine.api             import urlfetch
@@ -17,6 +17,7 @@ from time                             import time
 from urlparse                         import urlparse
 
 from apps.app.models                  import *
+from apps.client.models               import Client
 from apps.client.shopify.models       import *
 from apps.link.models                 import Link
 from apps.order.models                import *
@@ -26,6 +27,7 @@ from apps.user.models                 import User
 from apps.wosib.actions               import *
 from apps.wosib.models                import WOSIBInstance
 from apps.wosib.models                import PartialWOSIBInstance
+from apps.wosib.models                import WOSIB
 from apps.wosib.shopify.models        import WOSIBShopify
 
 from util.consts                      import *
@@ -40,14 +42,23 @@ class WOSIBVoteDynamicLoader (URIHandler):
         the cart's items, stored in a "WOSIBInstance". '''
     def get (self):
         products = [] # populate this to show products on design page.
+        share_url = ''
         try:
             instance_uuid = self.request.get('instance_uuid')
             wosib_instance = WOSIBInstance.get_by_uuid (instance_uuid)
             # no sane man would compare more than 1000 products from his cart
             products = Product.all().filter('uuid IN', wosib_instance.products).fetch(1000)
             logging.info ("products = %r" % products)
+            
+            try:
+                share_url = wosib_instance.link.get_willt_url()
+            except AttributeError, e:
+                logging.warn ('Faulty link')
+                
+            
             template_values = { 'instance_uuid' : instance_uuid,
-                                'products'      : products
+                                'products'      : products,
+                                'share_url'     : share_url
                               }
             
             path = os.path.join('apps/wosib/templates/', 'vote.html')
@@ -57,7 +68,7 @@ class WOSIBVoteDynamicLoader (URIHandler):
             logging.error ('ono', exc_info = True)
         return
 
-class WOSIBAskDynamicLoader(webapp.RequestHandler):
+class WOSIBAskDynamicLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
@@ -98,8 +109,8 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                     else:
                         logging.warning ("Product of ID %s not found in DB" % shopify_id)
                 
-                if not products:
-                    raise ValueError ('No product could be found with parameters supplied')
+                if not products: # do not raise ValueError - "UnboundLocalError: local variable 'ValueError' referenced before assignment"
+                    raise Exception ('No product could be found with parameters supplied')
 
                 store_domain  = self.request.get('store_url')
                 refer_url = self.request.get( 'refer_url' )
@@ -178,7 +189,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
             self.response.out.write(msg)
         return
 
-class WOSIBShowResults(webapp.RequestHandler):
+class WOSIBShowResults(URIHandler):
     """ Shows the results of an instance """
     def get(self):
         instance_uuid = self.request.get( 'instance_uuid' )

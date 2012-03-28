@@ -11,7 +11,7 @@ import time
 from datetime import timedelta
 
 from django.utils import simplejson
-    
+
 from google.appengine.api import memcache, datastore_errors, taskqueue
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
@@ -48,7 +48,7 @@ class Model(db.Model):
     # Subclasses can add their own fields.
     # Memcaching with non-unique fields yields unexpected results!
     # Failure to cache a given field will raise a warning.
-    _memcache_fields = []
+    memcache_fields = []
 
     def _validate_self(self):
         ''' All Model subclasses containing a _validate_self function
@@ -133,30 +133,25 @@ class Model(db.Model):
         if data:
             try:
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-                #logging.debug('Model::get(): %s found in memcache!' % key)
-            except ProtocolBuffer.ProtocolBufferDecodeError, e:
-                # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
-                pass # logging.debug('%s found in memcache but is not object; trying data (%r) as key.' % (key, data))
+            except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
+                pass # Primary key miss
         
         if data and not obj:
             try:
                 data = memcache.get(data) # look deeper into memcache
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-                #logging.debug ('Model::get(): %s found in memcache!!' % memcache.get(key))
-            except ProtocolBuffer.ProtocolBufferDecodeError, e:
-                # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
-                pass # logging.debug ('Secondary key miss!')
+            except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
+                pass # Secondary key miss
         
         if not data:
-            # object was not found in memcache, pull from db
-            #logging.debug('Memcache miss! (%s) Hitting DB.' % key)
+            # object was not found in memcache
             obj = cls._get_from_datastore(memcache_key)
-            # Throw everything in the memcache when you pull it - it may never be saved
-            if obj:
-                obj._memcache() # update memcache
 
-        if not obj:
-            #logging.warn ('Memcache AND DB miss!')
+        # Throw everything in the memcache when you pull it - it may never be saved
+        if obj:
+            obj._memcache() # update memcache
+        else:
+            # logging.warn ('Memcache AND DB miss for %s!' % key)
             pass
             
         return obj
@@ -165,21 +160,25 @@ class Model(db.Model):
         ''' save object into the memcache with primary and secondary cache keys.
             primary keys point to the object; secondary keys point to the primary key.
         '''
+        sec_keys = []
         try:
             key = self.get_key()
-            #logging.debug('setting new memcache object: %r (%d secondary keys: %r)' % (self, len(self._memcache_fields), self._memcache_fields))
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-
-            for field in self._memcache_fields:
+            for field in self.memcache_fields: # get secondary keys to point to primary key
                 if getattr (self, field, None): # if this object's given property has a non-null value
-                    try: # memcache by custom fields
-                        secondary_key = self.build_key (str (getattr (self, field)))
-                        memcache.set(secondary_key, key, time=MEMCACHE_TIMEOUT)
-                        #logging.debug ("memcahced object by custom key: '%s'" % secondary_key)
-                    except Exception, e:
-                        logging.warn ("Failed to memcache object by custom key '%s': %s" % (secondary_key, e), exc_info=True)
+                    # e.g. sibt-http://ohai.ca if SIBT specifies memcache by a store URL field
+                    sec_keys.append(self.build_key (str (getattr (self, field))))
+            
+            # that is, {sec_key1: primary_key, sec_key2: primary_key, sec_key3: primary_key, primary_key: object_serial}
+            cache_keys_dict = dict(zip(sec_keys, [key] * len(sec_keys)))
+            cache_keys_dict[key] = db.model_to_protobuf(self).Encode() # add primary key
+            
+            try:
+                memcache.set_multi (cache_keys_dict, time=MEMCACHE_TIMEOUT)
+            except Exception, e:
+                logging.warn ("Failed to memcache object by custom key: %s" % e, exc_info=True)
+
         except Exception, e:
-            logging.error("Error setting memcache: %s" % e, exc_info=True)
+            logging.error("Error setting memcache for %s (%d secondary keys: %r)" % (e, self, len(self.memcache_fields), self.memcache_fields), exc_info=True)
 # end class
 
 
