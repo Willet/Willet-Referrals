@@ -298,7 +298,7 @@
                 show_colorbox({
                     href: "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
                                              "&store_url={{ store_url }}" +
-                                             "&url=" + w.location.href,
+                                             "&url=" + ('{{ PAGE }}' || w.location.href),
                     onClosed: ask_callback
                 });
             };
@@ -554,8 +554,9 @@
                 // auto-create product objects using page info (<div class='_willet_...' data-....>)
                 // server decides if the input supplied is good to save.
                 try {
-                    // do NOT send .data()! Will cause unexpected func calls.
-                    var metadata = {
+                    // do NOT send .data() directly! Will cause unexpected func calls.
+                    var data = {
+                        'client_uuid': sibtjs_elem.data('client_uuid') || '', // REQUIRED
                         'sibtversion': sibtjs_elem.data('sibtversion') || sibt_version,
                         'title': sibtjs_elem.data('title') || get_page_title(),
                         'description': sibtjs_elem.data('description') || '',
@@ -566,15 +567,17 @@
                         'type': sibtjs_elem.data('type') || '',
                         'resource_url': '{{ PAGE }}'
                     };
-                    $.ajax({
-                        url: '{{ URL }}{% url CreateProduct %}',
-                        type: "POST",
-                        data: metadata,
-                        dataType: 'json',
-                        success: function () {}, // good job; I don't care
-                        error: function () {}
-                    });
-                    console.log('sent product request');
+                    if (data.client_uuid) {
+                        $.ajax({
+                            url: '{{ URL }}{% url CreateProduct %}',
+                            type: "POST",
+                            data: data,
+                            dataType: 'json',
+                            success: function () {}, // good job; I don't care
+                            error: function () {}
+                        });
+                        console.log('sent product request');
+                    }
                 } catch (e) {}
             }
 
