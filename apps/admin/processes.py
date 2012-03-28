@@ -6,9 +6,8 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import re, logging, urllib
 
 from django.utils import simplejson as json
-from google.appengine.api import urlfetch, memcache
-from google.appengine.ext import webapp
-from google.appengine.api import mail, taskqueue
+from google.appengine.api import urlfetch, memcache, mail, taskqueue
+from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -209,21 +208,29 @@ class UploadEmailsToMailChimp(URIHandler):
         self.post()
 
     def post(self):
-        batch_size = 100
-        offset = self.request.get('offest', 0)
+        batch_size = 50
+        offset = int(self.request.get('offset', 0))
         logging.info('Adding ButtonShopify %i-%i to MailChimp' % (offset, offset+batch_size-1))
         batch = []
+        name = ''
 
         apps = db.Query(ButtonsShopify).fetch(offset=offset, limit=batch_size)
 
         for app in apps:
             if app.client:
-                name = app.client.merchant.get_full_name()
+                try:
+                    name = app.client.merchant.get_full_name()
+                except ReferencePropertyResolveError:
+                    name = app.client.name
                 try:
                     first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
+                except AttributeError:
+                    # name = None, skip this entry
+                    continue
                 except IndexError:
+                    # Split didn't result in 2 parts
                     first_name, last_name = name, ''
-
+                
                 batch.append({ 'FNAME': first_name,
                                'LNAME': last_name,
                                'EMAIL': app.client.email,
@@ -236,21 +243,33 @@ class UploadEmailsToMailChimp(URIHandler):
             email_list_id = SHOPIFY_APPS['ButtonsShopify']['mailchimp_list_id']
 
             if email_list_id:
-                josn_resp = MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id=email_list_id,
+                try:
+                    resp = MailChimp(MAILCHIMP_API_KEY).listBatchSubscribe(id=email_list_id,
                                                                        batch=batch,
                                                                        double_optin=False,
                                                                        update_existing=True,
                                                                        send_welcome=False)
-                resp = json.loads(json_resp)
-                logging.info('ListSubscribe result: %r' % (resp,))
-
-        logging.info('Done')
+                    # Response can be:
+                    #     <bool> True / False (unsubscribe worked, didn't work)
+                    #     <dict> error + message
+                except Exception, e:
+                    # This is bad form to except everything, but we really can't have a failure on install
+                    logging.error('ListBatchSubscribe to ShopConnection FAILED: %r' % (e,), exc_info=True)
+                else:
+                    try:
+                        if 'error' in resp:
+                            logging.warning('ListBatchSubscribe to ShopConnection FAILED: %r' % (resp,))
+                    except TypeError:
+                        # thrown when results is not iterable (eg bool)
+                        logging.info('ListBatchSubscribed to ShopConnection OK: %r' % (resp,))
+                    else:
+                        logging.info('ListBatchSubscribe to ShopConnection OK: %r' % (resp,))                        
 
         # Keep going if haven't reached end
         if len(apps) == batch_size:
             logging.info('Add next batch: %i-%i' % (offset+batch_size, offset+2*batch_size-1))
             taskqueue.add(url=url('UploadEmailsToMailChimp'), params={'offset': offset+batch_size})
-        self.response.out.write('Done: %r' % resp)
+        return
 
 
 class SIBTReset (URIHandler):
@@ -359,7 +378,7 @@ class AppAnalyticsRPC(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class TrackRemoteError(webapp.RequestHandler):
+class TrackRemoteError(URIHandler):
     def get(self):
         referer = self.request.headers.get('referer')
         ua = self.request.headers.get('user-agent')
