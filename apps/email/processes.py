@@ -22,7 +22,7 @@ from util.helpers import remove_html_tags
 from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
-class SendEmailAsync (URIHandler):
+class SendEmailAsync(URIHandler):
     def get (self):
         self.post()
     

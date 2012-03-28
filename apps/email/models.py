@@ -18,13 +18,13 @@ from google.appengine.ext.webapp import template
 from util.consts import *
 from util.helpers import url 
 
-info      = "info@getwillet.com"
-fraser    = 'fraser@getwillet.com'
-brian     = "brian@getwillet.com"
-nick      = 'nick@getwillet.com'
+INFO      = "info@getwillet.com"
+FRASER    = 'fraser@getwillet.com'
+BRIAN     = "brian@getwillet.com"
+NICK      = 'nick@getwillet.com'
 
-dev_team  = '%s, %s' % (fraser, nick)
-from_addr = info
+DEV_TEAM  = '%s, %s, %s' % (FRASER, NICK, BRIAN)
+FROM_ADDR = INFO
 
 
 class Email():
@@ -34,11 +34,15 @@ class Email():
     """
     @staticmethod
     def emailDevTeam(msg):
-        to_addr = dev_team
+        to_addr = DEV_TEAM
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name='Dev Team')
 
     @staticmethod
     def welcomeClient(app_name, to_addr, name, store_name):
@@ -71,8 +75,11 @@ class Email():
         body += """<p>Fraser</p>
                 <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>"""
 
-        logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(fraser, to_addr, subject, body)
+        Email.send_email(from_address=FRASER,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
 
     @staticmethod
     def goodbyeFromFraser(to_addr, name, app_name):
@@ -94,8 +101,11 @@ class Email():
 
         body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
         
-        logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(fraser, to_addr, subject, body)
+        Email.send_email(from_address=FRASER,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
     
     @staticmethod
     def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
@@ -130,8 +140,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing %s" % to_addr)
-        Email.send_email(from_address=from_addr,
+        Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          to_name=to_name.title(),
                          replyto_address=from_addr,
@@ -155,8 +164,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_address=from_addr,
+        Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
                          body=body )
@@ -188,13 +196,15 @@ class Email():
                 'buy_it_percentage': buy_it_percentage
         })
 
-        logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
 
     @staticmethod
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                 client_name, client_domain,
-                 asker_img= None):
+                 client_name, client_domain, asker_img= None):
         subject = "Which one should I buy?"
         to_first_name = from_first_name = ''
 
@@ -222,8 +232,7 @@ class Email():
             }
         )
         
-        logging.info("Emailing %s" % to_addr)
-        Email.send_email(from_address=from_addr,
+        Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          to_name=to_name.title(),
                          replyto_address=from_addr,
@@ -248,7 +257,11 @@ class Email():
         )
         
         logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
     
     @staticmethod
     def WOSIBVoteCompletion(to_addr, name, products):
@@ -270,7 +283,11 @@ class Email():
         })
 
         logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
 
     ### MAILOUTS ###
 
