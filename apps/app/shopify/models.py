@@ -161,8 +161,8 @@ class AppShopify(Model):
                         resp,
                         content
                     )
-                logging.error(message)
-                Email.emailDevTeam(message)
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
         
     def install_script_tags(self, script_tags=None):
         """ Install our script tags onto the Shopify store """
