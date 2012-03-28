@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import hashlib
+import logging
 
 from google.appengine.api   import memcache
 from google.appengine.ext   import db

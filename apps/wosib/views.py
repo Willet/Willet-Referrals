@@ -3,7 +3,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
-import re, urllib
+import logging, re, urllib
 
 from django.utils                     import simplejson as json
 from google.appengine.api             import urlfetch
@@ -17,6 +17,7 @@ from time                             import time
 from urlparse                         import urlparse
 
 from apps.app.models                  import *
+from apps.client.models               import Client
 from apps.client.shopify.models       import *
 from apps.link.models                 import Link
 from apps.order.models                import *
@@ -26,6 +27,7 @@ from apps.user.models                 import User
 from apps.wosib.actions               import *
 from apps.wosib.models                import WOSIBInstance
 from apps.wosib.models                import PartialWOSIBInstance
+from apps.wosib.models                import WOSIB
 from apps.wosib.shopify.models        import WOSIBShopify
 
 from util.consts                      import *
@@ -107,8 +109,8 @@ class WOSIBAskDynamicLoader(URIHandler):
                     else:
                         logging.warning ("Product of ID %s not found in DB" % shopify_id)
                 
-                if not products:
-                    raise ValueError ('No product could be found with parameters supplied')
+                if not products: # do not raise ValueError - "UnboundLocalError: local variable 'ValueError' referenced before assignment"
+                    raise Exception ('No product could be found with parameters supplied')
 
                 store_domain  = self.request.get('store_url')
                 refer_url = self.request.get( 'refer_url' )

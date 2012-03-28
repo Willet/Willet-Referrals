@@ -40,7 +40,11 @@
                         cache: false,
                         data: $(this).serialize(),
                         type: 'POST',
-                        success: function () {
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#success_script .insert').html(
+                                $(this).html().replace("<<client_uuid>>", data.client_uuid);
+                            );
                             $('#success_script').show();
                             $('#sibt_reg_form').slideUp('slow');
                         },
@@ -135,7 +139,16 @@
             <h3>Congratulations!</h3>
             <p>All you need to do now is to paste this snippet into your web pages.</p>
             <pre class="insert">
-&lt;div class=&quot;_willet_sibt&quot; data-sibtversion=&quot;{{ sibt_version }}&quot;&gt;&lt;/div&gt;
+&lt;div class=&quot;_willet_sibt&quot; 
+     data-sibtversion=&quot;{{ sibt_version }}&quot;
+     data-client_uuid=&quot;<<client_uuid>>&quot;
+     data-title=&quot; (name of the product) &quot;
+     data-description=&quot; (product description) &quot;
+     data-images=&quot; (optional: pictures of the product, separated by a comma) &quot;
+     data-image=&quot; (optional: picture of the product) &quot;
+     data-tags=&quot; (optional: tags for the product) &quot;
+     data-price=&quot;19.00&quot;&gt;
+&lt;/div&gt;
 &lt;script type=&quot;text/javascript&quot;&gt;/*&lt;![CDATA[*//*----&gt;*/;!function (d, st) {
     &quot;use strict&quot;; try {
         var jse = d.getElementsByTagName(st)[0], jsa = d.createElement(st);

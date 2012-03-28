@@ -5,6 +5,7 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
 import hashlib
+import logging
 import urllib
 
 from datetime                   import datetime, timedelta

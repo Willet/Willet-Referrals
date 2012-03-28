@@ -100,7 +100,14 @@ class SIBTSignUp(URIHandler):
             return
         
         # installation apparently succeeds
-        self.error (200) # OK
+        response = {
+            'app_uuid': app.uuid,
+            'client_uuid': client.uuid,
+        }
+        
+        logging.info('response: %s' % response)
+        self.response.headers['Content-Type'] = "application/json"
+        self.response.out.write(json.dumps(response))
         return
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
