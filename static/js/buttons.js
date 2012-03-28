@@ -51,6 +51,9 @@
                             "cssFloat": 'left', // FF, Webkit
                             "marginRight": '5px',
                             "marginTop": '0'
+                        },
+                        "onload": function() {
+                            itemShared("Tumblr");
                         }
                     });
 
@@ -92,6 +95,11 @@
                     button.style.width = params.buttonCount ? '90px' : '48px';
                     button.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
                     return button;
+                },
+                "onLoad": function() {
+                    FB.Event.subscribe('edge.create', function(response) {
+                        itemShared("Facebook");
+                    });
                 }
             }
         },
@@ -116,7 +124,10 @@
                             "&media=" + encodeURIComponent( params.photo ) + 
                             "&description=" + encodeURIComponent("I found this on " + params.domain),
                         "className": "pin-it-button",
-                        "innerHTML": "Pin It"
+                        "innerHTML": "Pin It",
+                        "onload": function() {
+                            itemShared("Tumblr");
+                        }
                     });
                     link.setAttribute('count-layout', "horizontal");
 
@@ -150,6 +161,11 @@
 
                     button.appendChild(link);
                     return button;
+                },
+                "onLoad": function() {
+                    twttr.events.bind('tweet', function(event) {
+                        itemShared("Twitter");
+                    });
                 }
             }
         }, 
@@ -166,7 +182,13 @@
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.width = params.buttonCount ? '90px' : '32px';
-                    button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +"></g:plusone>";
+                    button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
+
+                    // Google Plus will only execute a callback in the global namespace, so expose this one...
+                    // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
+                    me.gPlusShared = function(response) {
+                        itemShared("GooglePlus");
+                    };
                     
                     // Google is using the Open Graph spec
                     var t, p, 
@@ -211,7 +233,10 @@
                     var link = createElement({
                         "nodename": "a",
                         "id": "FancyButton",
-                        "href": u
+                        "href": u,
+                        "onload": function() {
+                            itemShared("Tumblr");
+                        }
                     });
                     
                     // a.setAttribute('data-count', ( button_count ? 'true' : 'false' ));
@@ -320,12 +345,10 @@
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
     }
 
-    var getCookies = function() {
-        return _willet.cookies.read(COOKIE_NAME);
-    };
-
-    var clearCookies = function () {
-        _willet.cookies.erase(COOKIE_NAME);
+    var itemShared = function(network) {
+        _willet.debug.set(true);
+        _willet.debug.log(network + " shared!");
+        _willet.debug.set(false);
     };
 
     // Public functions
@@ -438,7 +461,8 @@
                 var script = createElement({
                     "nodename": "script",
                     "type": "text/javascript",
-                    "src": button["script"]
+                    "src": button["script"],
+                    "onload": button["onLoad"]
                 });
                 HEAD.appendChild(script);
                 _willet.debug.log('Buttons: '+ network +' attached');
