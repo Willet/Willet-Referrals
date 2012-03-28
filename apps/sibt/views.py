@@ -49,13 +49,6 @@ class ShowBetaPage(URIHandler):
         }))
 
 
-class SIBTWelcome(URIHandler):
-    # "install done" page. actually installs the apps.
-    def get(self):
-        path = os.path.join('apps/sibt/templates/', 'welcome.html')
-        self.response.out.write(template.render(path, {}))
-
-
 class AskDynamicLoader(URIHandler):
     """Serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
