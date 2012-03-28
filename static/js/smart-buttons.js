@@ -334,9 +334,7 @@
     }
 
     var itemShared = function(network) {
-        _willet.debug.set(true);
-        _willet.debug.log(network + " shared!");
-        _willet.debug.set(false);
+        // for now, do nothing
     };
 
     // Public functions
