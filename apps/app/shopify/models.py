@@ -190,8 +190,10 @@ class AppShopify(Model):
         self._queued_assets = assets
 
     def install_queued(self):
-        """ Install webhooks, script_tags, and assets in parallel """
-        # Parallel requests
+        """ Install webhooks, script_tags, and assets in parallel 
+            Note: first queue everything up, then call this!
+        """
+        # Helper functions
         def handle_webhook_result(rpc, webhook):
             resp = rpc.get_result()
             
@@ -243,7 +245,7 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
-        # Use a helper function to define the scope of the callback.
+        # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
             return lambda: callback_func(**kwargs)
 
