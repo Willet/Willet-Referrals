@@ -254,6 +254,12 @@
                 console.log('Buttons: '+ b +' attached');
             }
 
+            // If Facebook is already loaded,
+            // trigger it to enable Like button
+            try {
+                FB ? FB.XFBML.parse() :; 
+            } catch(e) {}
+
             // Make visible if hidden
             button_div.style.display = 'block';
 
