@@ -377,6 +377,10 @@ class TrackSIBTShowAction(URIHandler):
             duration = self.request.get('duration')
         what = self.request.get('evnt')
         url = self.request.get('target_url')
+        
+        if not what or not user:
+            return # we can't track who did what or what they did; logging this item is not useful.
+        
         try:
             logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, what = %s' % (user, instance, what))
             action_class = globals()[what]
@@ -424,6 +428,10 @@ class TrackSIBTUserAction(URIHandler):
         url = self.request.get('target_url')
         if self.request.get('duration'):
             duration = self.request.get('duration')
+        
+        if not what or not user:
+            return # we can't track who did what or what they did; logging this item is not useful.
+        
         action = None
         try:
             action_class = globals()[what]
