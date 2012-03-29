@@ -288,8 +288,6 @@ class SIBTShopify(SIBT, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        #self.install_webhooks(product_hooks_too=True)
-        #self.install_assets(assets=liquid_assets)
         self.queue_webhooks(product_hooks_too=True)
         self.queue_assets(assets=liquid_assets)
 

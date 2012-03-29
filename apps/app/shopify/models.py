@@ -12,7 +12,7 @@ import hashlib
 import re
 
 from django.utils           import simplejson as json
-from google.appengine.api import urlfetch
+from google.appengine.api   import urlfetch
 from google.appengine.ext   import db
 
 from apps.app.models        import App
@@ -63,23 +63,45 @@ class AppShopify(Model):
         return cls.all().filter('store_url =', store_url).get()
 
     # Parallel Shopify API Calls ------------------------------------------------------------
-    def queue_webhooks(self, product_hooks_too=True, webhooks=None):
+    def queue_webhooks(self, product_hooks_too=False, webhooks=None):
         """ Determine which webhooks will have to be installed,
             and add them to the queue for parallel processing """
-        # pass extra webhooks as a list
-        if webhooks == None:
+        # Avoids mutable default parameter [] error
+        if not webhooks:
             webhooks = []
 
         url      = '%s/admin/webhooks.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
-        headers = {
+        headers  = {
             'content-type':'application/json',
             "Authorization": "Basic %s" % base64.b64encode(("%s:%s") % (username,password))
         }
-        
-        # See what we've already installed
+
+        default_webhooks = [
+            # Install the "App Uninstall" webhook
+            { "webhook": { "address": "%s/a/shopify/webhook/uninstalled/%s/" % (URL, self.class_name()),
+                           "format": "json", "topic": "app/uninstalled" }
+            }
+        ]
+
         if product_hooks_too:
+            default_webhooks.extend([
+                # Install the "Product Creation" webhook
+                { "webhook": { "address": "%s/product/shopify/webhook/create" % ( URL ),
+                               "format": "json", "topic": "products/create" }
+                },
+                # Install the "Product Update" webhook
+                { "webhook": { "address": "%s/product/shopify/webhook/update" % ( URL ),
+                               "format": "json", "topic": "products/update" }
+                },
+                # Install the "Product Delete" webhook
+                { "webhook": { "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                               "format": "json", "topic": "products/delete" }
+                }
+            ])
+        
+            # See what we've already installed
             # First fetch webhooks that already exist
             data = None
             result = urlfetch.fetch(url=url, method='GET', headers=headers)
@@ -97,45 +119,19 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
                 return
-
-
-            # Flag whats already installed so we don't reinstall it
-            product_create = product_delete = product_update = True
+            
+            # Dequeue whats already installed so we don't reinstall it
             for w in data['webhooks']:
-                if w['address'] == '%s/product/shopify/webhook/create' % URL or \
-                   w['address'] == '%s/product/shopify/webhook/create/' % URL:
-                    product_create = False
-                if w['address'] == '%s/product/shopify/webhook/delete' % URL or \
-                   w['address'] == '%s/product/shopify/webhook/delete/' % URL:
-                    product_delete = False
-                if w['address'] == '%s/product/shopify/webhook/update' % URL or \
-                   w['address'] == '%s/product/shopify/webhook/update/' % URL:
-                    product_update = False
+                # Remove trailing '/'
+                address = w['address'] if w['address'][-1:] != '/' else w['address'][:-1]
+                
+                for i, webhook in enumerate(default_webhooks):
+                    if webhook['webhook']['address'] == address:
+                        del(default_webhooks[i])
+                        break
         
-        # If we don't want to install the product webhooks, 
-        # flag all as "already installed"
-        else:
-            product_create = product_delete = product_update = False
-
-        # Install the "App Uninstall" webhook
-        webhooks.append({ "webhook": { "address": "%s/a/shopify/webhook/uninstalled/%s/" % (URL, self.class_name()),
-                                       "format": "json", "topic": "app/uninstalled" }})
-
-        # Install the "Product Creation" webhook
-        if product_create:
-            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/create" % ( URL ),
-                                           "format": "json", "topic": "products/create" }})
+        webhooks.extend(default_webhooks)
         
-        # Install the "Product Update" webhook
-        if product_update:
-            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/update" % ( URL ),
-                                           "format": "json", "topic": "products/update" }})
-
-        # Install the "Product Delete" webhook
-        if product_delete:
-            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/delete" % ( URL ),
-                                           "format": "json", "topic": "products/delete" }})
-
         if webhooks:
             self._webhooks_url = url
             self._queued_webhooks = webhooks
