@@ -92,7 +92,9 @@ class AppShopify(Model):
         # Shopify format: YYYY-MM-DDTHH:MM:mmSHH:MM
         #                 2012-02-15T15:12:21-05:00
         # where SHH:MM is signed UTC offset hours : minutes
-        return datetime.datetime.strptime( dt[::-1].replace(':','',1)[::-1] )
+        time_offset = dt[-6:]
+        time_without_offset = dt[:-6] 
+        return datetime.datetime.strptime(time_without_offset, "%Y-%m-%dT%H:%M:%S" )
     
     @staticmethod
     def _datetime_to_Shopify_str(dt):
@@ -132,15 +134,15 @@ class AppShopify(Model):
         # Make request
         resp, content = h.request(
                 url,
-                method,
+                verb,
                 body    = json.dumps(payload),
                 headers = header
             )
-        
+
         # Good responses
         if int(resp.status) == 200 or int(resp.status) == 201:
-            data = json.loads( content )
-            return content
+            data = json.loads(content)
+            return data
         
         # Bad responses
         else:
@@ -148,18 +150,19 @@ class AppShopify(Model):
             if content:
                 try:
                     data = json.loads(content)
+                    return data
                 except:
                     pass
 
-            Email.emailDevTeam(
-                '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
-                    self.class_name(),
-                    resp.status,
-                    resp.reason,
-                    self.store_url,
-                    data if data else content
-                )        
-            )
+            #Email.emailDevTeam(
+            #    '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
+            #        self.class_name(),
+            #        resp.status,
+            #        resp.reason,
+            #        self.store_url,
+            #        data if data else content
+            #    )        
+            #)
             raise ShopifyAPIError(resp.status, resp.reason, data)
     
     def setup_application_charge(self, settings):
@@ -183,26 +186,28 @@ class AppShopify(Model):
             url where store owner should be redirected to confirm / deny charges
         """
 
-        data = _call_Shopify_API('POST', 'application_charges.json',
+        result = self._call_Shopify_API('POST', 'application_charges.json',
                                 { "application_charge": settings })
+
+        data = result["application_charge"]
         
-        if data.status is not 'pending':
+        if data['status'] != 'pending':
             raise ShopifyBillingError("Setup of application charge was denied", data)
         
-        self.charge_ids.append( data.id )
-        self.charge_names.append( data.name )
-        self.charge_prices.append( data.price )
-        self.charge_createds.append( _Shopify_str_to_datetime(data.created_at) )
+        self.charge_ids.append( data['id'] )
+        self.charge_names.append( data['name'] )
+        self.charge_prices.append( data['price'] )
+        self.charge_createds.append( self._Shopify_str_to_datetime(data['created_at']) )
         self.charge_statuses.append('pending')
 
-        return data.confirmation_url
+        return data['confirmation_url']
     
     def _retrieve_application_charge(self):
         """ Retrieve billing info for customer
 
         Returns: <Object> charge info
         """
-        return _call_Shopify_API('GET', 
+        return self._call_Shopify_API('GET', 
             'application_charges/#%s.json' % self.charge_id)
     
     def activate_application_charge(self, settings):
@@ -232,18 +237,18 @@ class AppShopify(Model):
 
         charge_data = self._retrieve_application_charge()
 
-        if charge_data is 'pending':
+        if charge_data == 'pending':
             # Update status
             charge_data.update({
                 "status":"accepted"
             })
             charge_data.update(settings)
         
-            data = _call_Shopify_API('POST',
+            data = self._call_Shopify_API('POST',
                         'application_charges/#%s/activate.json' % settings.charge_id,
                         { "application_charge": charge_data })
             
-            if data.status is 'accepted':
+            if data['status'] == 'accepted':
                 for i, cid in enumerate(self.charge_ids):
                     if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
@@ -283,27 +288,29 @@ class AppShopify(Model):
             url where store owner should be redirected to confirm / deny charges
         """
         
-        data = _call_Shopify_API('POST', 'recurring_application_charges.json',
+        result = self._call_Shopify_API('POST', 'recurring_application_charges.json',
                                 { "recurring_application_charge": settings })
 
-        if data.status is not 'pending':
+        data = result["recurring_application_charge"]
+
+        if data['status'] != 'pending':
             raise ShopifyBillingError("Setup of recurring billing was denied", data)
         
-        self.recurring_billing_id = data.id
-        self.recurring_billing_name = data.name
-        self.recurring_billing_price = data.price
-        self.recurring_billing_created = _Shopify_str_to_datetime(data.created_at)
-        self.recurring_billing_status = data.status
-        self.recurring_billing_trial_days = data.trial_days
+        self.recurring_billing_id = data['id']
+        self.recurring_billing_name = data['name']
+        self.recurring_billing_price = data['price']
+        self.recurring_billing_created = self._Shopify_str_to_datetime(data['created_at'])
+        self.recurring_billing_status = data['status']
+        self.recurring_billing_trial_days = data['trial_days']
 
-        return data.confirmation_url
+        return data['confirmation_url']
     
     def _retrieve_recurring_billing(self):
         """ Retrieve billing info for customer
 
         Returns: <Object> billing info
         """
-        return _call_Shopify_API('GET', 
+        return self._call_Shopify_API('GET', 
             'recurring_application_charges/#%s.json' % self.recurring_billing_id)
     
     def activate_recurring_billing(self, settings):
@@ -333,18 +340,18 @@ class AppShopify(Model):
         recurring_billing_data = self._retrieve_recurring_billing()
 
         # Check that status isn't cancelled
-        if recurring_billing_data is 'pending':
+        if recurring_billing_data == 'pending':
             # Update status
             recurring_billing_data.update({
                 "status":"accepted"
             })
             recurring_billing_data.update(settings)
         
-            data = _call_Shopify_API('POST',
+            data = self._call_Shopify_API('POST',
                         'recurring_application_charges/#%s/activate.json' % self.recurring_billing_id,
                         { "recurring_application_charge": recurring_billing_data })
             
-            if data.status is 'accepted':
+            if data['status'] == 'accepted':
                 self.recurring_billing_status = "accepted"
             else:
                 raise ShopifyBillingError('Recurring billing activation denied', data)

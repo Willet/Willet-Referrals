@@ -95,7 +95,30 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
 class SmartButtonsShopifyUpgrade(URIHandler):
     """ Starts the upgrade process """
     def get(self):
-        pass
+        shop_url = self.request.get("shop_url")
+
+        existing_app = get_shopify_buttons_by_url(shop_url)
+        if existing_app is None:
+            # TODO: Error, can't upgrade if not installed
+            pass
+
+        # Start the billing process
+        confirm_url = existing_app.setup_recurring_billing({
+            "price":        0.99,
+            "name":         "ShopConnection",
+            "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
+            "test":         "true" # Set to false when live
+            #"trial_days":   0
+        })
+
+        existing_app.put()
+
+        if confirm_url:
+            self.redirect(confirm_url)
+            return
+        else:
+            # TODO: What happened?
+            pass
 
 class SmartButtonsShopifyWelcome(URIHandler):
     """ Shows the user basic installation instructions """
