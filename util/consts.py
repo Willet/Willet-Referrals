@@ -3,6 +3,7 @@
 # consts.py
 # constants for referrals
 
+import inspect
 import os
 import logging
 
@@ -151,6 +152,9 @@ appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:
         logging.info ("appname = %s; loading local_consts" % appname)
-        from local_consts import *
+        from local_consts import LOCAL_CONSTS
+        globals = inspect.currentframe(1).f_globals
+        for key, value in LOCAL_CONSTS:
+            globals[key] = value
     except Exception, e:
         pass
