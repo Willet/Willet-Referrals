@@ -7,10 +7,12 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+import base64
 import hashlib
 import re
 
 from django.utils           import simplejson as json
+from google.appengine.api import urlfetch
 from google.appengine.ext   import db
 
 from apps.app.models        import App
@@ -60,7 +62,231 @@ class AppShopify(Model):
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
 
-    # Shopify API Calls ------------------------------------------------------------
+    # Parallel Shopify API Calls ------------------------------------------------------------
+    def queue_webhooks(self, product_hooks_too=True, webhooks=None):
+        """ Determine which webhooks will have to be installed,
+            and add them to the queue for parallel processing """
+        # pass extra webhooks as a list
+        if webhooks == None:
+            webhooks = []
+
+        url      = '%s/admin/webhooks.json' % self.store_url
+        username = self.settings['api_key'] 
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        headers = {
+            'content-type':'application/json',
+            "Authorization": "Basic %s" % base64.b64encode(("%s:%s") % (username,password))
+        }
+        
+        # See what we've already installed
+        if product_hooks_too:
+            # First fetch webhooks that already exist
+            data = None
+            result = urlfetch.fetch(url=url, method='GET', headers=headers)
+            
+            if 200 <= int(result.status_code) <= 299:
+                data = json.loads(result.content)
+            else:
+                error_msg = 'Error getting webhooks, %s: %s\n%s\n%s\n%s' % (
+                    result.status_code,
+                    url,
+                    self.store_url,
+                    result,
+                    result.content
+                )
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+                return
+
+
+            # Flag whats already installed so we don't reinstall it
+            product_create = product_delete = product_update = True
+            for w in data['webhooks']:
+                if w['address'] == '%s/product/shopify/webhook/create' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/create/' % URL:
+                    product_create = False
+                if w['address'] == '%s/product/shopify/webhook/delete' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/delete/' % URL:
+                    product_delete = False
+                if w['address'] == '%s/product/shopify/webhook/update' % URL or \
+                   w['address'] == '%s/product/shopify/webhook/update/' % URL:
+                    product_update = False
+        
+        # If we don't want to install the product webhooks, 
+        # flag all as "already installed"
+        else:
+            product_create = product_delete = product_update = False
+
+        # Install the "App Uninstall" webhook
+        webhooks.append({ "webhook": { "address": "%s/a/shopify/webhook/uninstalled/%s/" % (URL, self.class_name()),
+                                       "format": "json", "topic": "app/uninstalled" }})
+
+        # Install the "Product Creation" webhook
+        if product_create:
+            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/create" % ( URL ),
+                                           "format": "json", "topic": "products/create" }})
+        
+        # Install the "Product Update" webhook
+        if product_update:
+            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/update" % ( URL ),
+                                           "format": "json", "topic": "products/update" }})
+
+        # Install the "Product Delete" webhook
+        if product_delete:
+            webhooks.append({ "webhook": { "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                                           "format": "json", "topic": "products/delete" }})
+
+        if webhooks:
+            self._webhooks_url = url
+            self._queued_webhooks = webhooks
+
+    def queue_script_tags(self, script_tags=None):
+        """ Determine which script tags will have to be installed,
+            and add them to the queue for parallel processing """
+        if not script_tags:
+            return
+
+        self._script_tags_url = '%s/admin/script_tags.json' % self.store_url
+        self._queued_script_tags = script_tags
+
+    def queue_assets(self, assets=None):
+        """ Determine which assets will have to be installed,
+            and add them to the queue for parallel processing """
+        if not assets:
+            return
+        
+        username = self.settings['api_key'] 
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        headers = {
+            'content-type':'application/json',
+            "Authorization": "Basic %s" % base64.b64encode(("%s:%s") % (username,password))
+        }
+        theme_url = '%s/admin/themes.json' % self.store_url
+        main_id = None
+
+        # Find out which theme is in use
+        result = urlfetch.fetch(url=theme_url, method='GET', headers=headers)
+
+        if 200 <= int(result.status_code) <= 299:
+            # HTTP status 200's == success
+            content = json.loads(result.content)
+            for theme in content['themes']:
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        main_id = theme['id']
+                        break
+        else:
+            error_msg = 'Error getting themes, %s: %s\n%s\n%s\n%s' % (
+                resp.status,
+                theme_url,
+                self.store_url,
+                resp,
+                content
+            )
+            logging.error(error_msg)
+            Email.emailDevTeam(error_msg)
+
+        self._assets_url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
+        self._queued_assets = assets
+
+    def install_queued(self):
+        """ Install webhooks, script_tags, and assets in parallel """
+        # Parallel requests
+        def handle_webhook_result(rpc, webhook):
+            resp = rpc.get_result()
+            
+            if 200 <= int(resp.status_code) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed webhook, %s: %s' % (resp.status_code, webhook['webhook']['topic']))
+            else:
+                error_msg = 'Webhook install failed, %s: %s\n%s\n%s\n%s' % (
+                        resp.status_code,
+                        webhook['webhook']['topic'],
+                        self.store_url,
+                        resp.headers,
+                        resp.content
+                    )
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+
+        def handle_script_tag_result(rpc, script_tag):
+            resp = rpc.get_result()
+
+            if 200 <= int(resp.status_code) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed script tag, %s: %s' % (resp.status_code, script_tag['script_tag']['src']))
+            else:
+                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status_code,
+                    script_tag['script_tag']['src'],
+                    self.store_url,
+                    resp,
+                    content
+                )
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+
+        def handle_asset_result(rpc, asset):
+            resp = get_result()
+            
+            if 200 <= int(resp.status_code) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed asset, %s: %s' % (resp.status_code, asset['asset']['key']))
+            else:
+                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status_code,
+                    asset['asset']['key'],
+                    self.store_url,
+                    resp,
+                    content
+                )
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+
+        # Use a helper function to define the scope of the callback.
+        def create_callback(callback_func, **kwargs):
+            return lambda: callback_func(**kwargs)
+
+        rpcs = []
+        username = self.settings['api_key'] 
+        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        headers = {
+            'content-type':'application/json',
+            "Authorization": "Basic %s" % base64.b64encode(("%s:%s") % (username,password))
+        }
+
+        # Fire off all queued requests
+        if hasattr(self, '_queued_webhooks') and hasattr(self, '_webhooks_url'):
+            for webhook in self._queued_webhooks:
+                rpc = urlfetch.create_rpc()
+                rpc.callback = create_callback(handle_webhook_result, rpc=rpc, webhook=webhook)
+                urlfetch.make_fetch_call(rpc=rpc, url=self._webhooks_url, payload=json.dumps(webhook),
+                                         method='POST', headers=headers)
+                rpcs.append(rpc)
+
+        if hasattr(self, '_queued_script_tags') and hasattr(self, '_script_tags_url'):
+            for script_tag in self._queued_script_tags:
+                rpc = urlfetch.create_rpc()
+                rpc.callback = create_callback(handle_script_tag_result, rpc=rpc, script_tag=script_tag)
+                urlfetch.make_fetch_call(rpc=rpc, url=self._script_tags_url, payload=json.dumps(script_tag),
+                                         method='POST', headers=headers)
+            rpcs.append(rpc)
+
+        if hasattr(self, '_queued_assets') and hasattr(self, '_assets_url'):
+            for asset in self._queued_assets:
+                rpc = urlfetch.create_rpc()
+                rpc.callback = create_callback(handle_asset_result, rpc=rpc, asset=asset)
+                urlfetch.make_fetch_call(rpc=rpc, url=self._assets_url, payload=json.dumps(asset),
+                                         method='POST', headers=headers)
+
+        # Finish all RPCs, and let callbacks process the results.
+        for rpc in rpcs:
+            rpc.wait()
+
+        # All callbacks finished
+        return
+
+    # Synchronous Shopify API Calls -----------------------------------------------------------
     def install_webhooks(self, product_hooks_too=True, webhooks=None):
         """ Install the webhooks into the Shopify store """
         # pass extra webhooks as a list
