@@ -257,7 +257,7 @@
             // If Facebook is already loaded,
             // trigger it to enable Like button
             try {
-                FB ? FB.XFBML.parse() :; 
+                window.FB ? window.FB.XFBML.parse() :; 
             } catch(e) {}
 
             // Make visible if hidden
