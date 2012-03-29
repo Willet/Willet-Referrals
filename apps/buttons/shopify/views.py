@@ -36,8 +36,34 @@ class ButtonsShopifyApproveBilling(URIHandler):
         # Fetch or create the app
         app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
 
+class ButtonsShopifyWelcome(URIHandler):
+    def get( self ):
+        # TODO: put this somewhere smarter
+        shop   = self.request.get( 'shop' )
+        token  = self.request.get( 't' )
 
-class ButtonsShopifyBillingCallback(URIHandler):
+        # Fetch the client
+        client = ClientShopify.get_by_url( shop )
+    
+        # Fetch or create the app
+        app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
+        
+        # If we're setting up billing
+        if confirm_url:
+            self.redirect( confirm_url )
+            return
+
+        # Render the page
+        template_values = {
+            'app'          : app,
+            'shop_owner'   : client.merchant.get_full_name(),
+            'shop_name'    : client.name
+            #'continue_url' : #####!!!!!##### # TODO: What is this for
+        }
+
+        self.response.out.write(self.render_page('welcome.html', template_values))
+
+class SmartButtonsShopifyBillingCallback(URIHandler):
     """ When a customer confirms / denies billing, they are redirected here
 
     Activates billing with Shopify, then redirects customer to installation instructions
@@ -66,30 +92,17 @@ class ButtonsShopifyBillingCallback(URIHandler):
         }
         self.response.out.write(self.render_page('beta.html', template_values))
 
-class ButtonsShopifyWelcome(URIHandler):
-    def get( self ):
-        # TODO: put this somewhere smarter
-        shop   = self.request.get( 'shop' )
-        token  = self.request.get( 't' )
+class SmartButtonsShopifyUpgrade(URIHandler):
+    """ Starts the upgrade process """
+    def get(self):
+        pass
 
-        # Fetch the client
-        client = ClientShopify.get_by_url( shop )
-    
-        # Fetch or create the app
-        app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
-        
-        # If we're setting up billing
-        if confirm_url:
-            self.redirect( confirm_url )
-            return
+class SmartButtonsShopifyWelcome(URIHandler):
+    """ Shows the user basic installation instructions """
+    def get(self):
+        pass
 
-        # Render the page
-        template_values = {
-            'app'          : app,
-            'shop_owner'   : client.merchant.get_full_name(),
-            'shop_name'    : client.name,
-            'continue_url' : #####!!!!!#####
-        }
-
-        self.response.out.write(self.render_page('welcome.html', template_values)) 
-
+class SmartButtonsShopifyBeta(URIHandler):
+    """ If an existing customer clicks through from Shopify """
+    def get(self):
+        pass

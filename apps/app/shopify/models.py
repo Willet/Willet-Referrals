@@ -56,11 +56,11 @@ class AppShopify(Model):
 
     # Recurring billing information
     recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
-    recurring_billing_id         = db.NumberProperty(indexed = False)
+    recurring_billing_id         = db.IntegerProperty(indexed = False)
     recurring_billing_name       = db.StringProperty(indexed = False)
     recurring_billing_price      = db.StringProperty(indexed = False)
     recurring_billing_created    = db.DateTimeProperty(indexed = False)
-    recurring_billing_trial_days = db.NumberProperty(indexed = False)
+    recurring_billing_trial_days = db.IntegerProperty(indexed = False)
     recurring_billing_trial_ends = db.DateTimeProperty(indexed = False)
 
     # One-time charge information
@@ -245,7 +245,7 @@ class AppShopify(Model):
             
             if data.status is 'accepted':
                 for i, cid in enumerate(self.charge_ids):
-                    if cid = settings.charge_id:
+                    if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
                         break
             else:
