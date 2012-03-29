@@ -22,12 +22,28 @@
             margin:auto;
             text-align: left;
             overflow: scroll;
+            padding: 10px;  
         }
-        #sibt_reg_form table td, #sibt_reg_form input {
+        #sibt_reg_form table td, #sibt_reg_form input, 
+        #prod_form table td, #prod_form input, #prod_form p {
             font-size: 1.1em;
+        }
+        #prod_form table {
+            margin-left:50px;
+        }
+        #sibt_reg_form input[type="text"] {
+            width: 500px;
+            max-width: 500px;
+        }
+        #prod_form input[type="text"] {
+            width: 400px;
+            max-width: 400px;
         }
         #error_bar {
             color: #f20;
+        }
+        .deemphasize {
+            color: #888;
         }
     </style>
     <script type="text/javascript">
@@ -66,7 +82,12 @@
                         }
                     });
                 });
-            }   
+            }
+            $('.autofill').each(function() {
+                $('#' + $(this).data('target')).text($(this).attr('placeholder'));
+            }).keyup(function () {
+                $('#' + $(this).data('target')).text($(this).val());
+            });
         });
     </script>
 {% endblock head %}
@@ -141,27 +162,53 @@
         <div id='success_script' style='display:none'>
             <h3>Congratulations!</h3>
             <p>All you need to do now is to paste this snippet into your web pages.</p>
-            <pre class="insert">
-&lt;div class=&quot;_willet_sibt&quot; 
-     data-sibtversion=&quot;{{ sibt_version }}&quot;
-     data-app_uuid=&quot;(app_uuid)&quot;
-     data-client_uuid=&quot;(client_uuid)&quot;
-     data-title=&quot; (name of your product) &quot;
-     data-description=&quot; (product description) &quot;
-     data-images=&quot; (optional: pictures of the product, separated by a comma) &quot;
-     data-image=&quot; (optional: picture of the product) &quot;
-     data-tags=&quot; (optional: tags for the product) &quot;
-     data-price=&quot;19.00&quot;&gt;
-&lt;/div&gt;
-&lt;script type=&quot;text/javascript&quot;&gt;/*&lt;![CDATA[*//*----&gt;*/;!function (d, st) {
-    &quot;use strict&quot;; try {
-        var jse = d.getElementsByTagName(st)[0], jsa = d.createElement(st);
-        jsa.src = '{{ URL }}{% url SIBTServeScript %}' + 
-            '?url=' + encodeURIComponent(window.location.href); // required
-        jse.parentNode.insertBefore(jsa, jse);
-    } catch (e) {}
-}(document, 'script');/*--*//*]]&gt;*/&lt;/script&gt;</pre>
+            <div class="insert">
+<span class="deemphasize">&lt;div class=&quot;_willet_sibt&quot;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-sibtversion=&quot;{{ sibt_version }}&quot;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-app_uuid=&quot;(app_uuid)&quot;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-client_uuid=&quot;(client_uuid)&quot;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-title=</span>&quot;<span id="prodname"></span>&quot;<span class="deemphasize"><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-description=</span>&quot;<span id="proddesc"></span>&quot;<span class="deemphasize"><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-images=</span>&quot;<span id="prodimgs"></span>&quot;<span class="deemphasize"><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-tags=</span>&quot;<span id="prodtags"></span>&quot;<span class="deemphasize"><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data-price=</span>&quot;<span id="prodpric"></span>&quot;<span class="deemphasize">&gt;<br />
+&lt;/div&gt;<br />
+&lt;script type=&quot;text/javascript&quot;&gt;/*&lt;![CDATA[*//*----&gt;*/;!function (d, st) {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&quot;use strict&quot;; try {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var jse = d.getElementsByTagName(st)[0], jsa = d.createElement(st);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jsa.src = '{{ URL }}{% url SIBTServeScript %}' + <br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'?url=' + encodeURIComponent(window.location.href); // required<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jse.parentNode.insertBefore(jsa, jse);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;} catch (e) {}<br />
+}(document, 'script');/*--*//*]]&gt;*/&lt;/script&gt;</span></div>
             <!-- do not reindent lines above -->
+            <div id="prod_form">
+                <p> <br />
+                    Need help with filling in your product details?<br />
+                    Type in the boxes below - the code above will change accordingly.</p>
+                <table>
+                    <tr>
+                        <td style='width:30%'>Product name:</td>
+                        <td><input type="text" class="autofill" data-target="prodname" placeholder="Nice shirt" /></td>
+                    </tr>
+                    <tr>
+                        <td>Description:</td>
+                        <td><input type="text" class="autofill" data-target="proddesc" placeholder="This is a beautiful shirt." /></td>
+                    </tr>
+                    <tr>
+                        <td>Pictures:</td>
+                        <td><input type="text" class="autofill" data-target="prodimgs" placeholder="{{URL}}/static/imgs/use-your-own.png" /></td>
+                    </tr>
+                    <tr>
+                        <td>Tags, e.g. Shoes, Shirts</td>
+                        <td><input type="text" class="autofill" data-target="prodtags" placeholder="Tags" /></td>
+                    </tr>
+                    <tr>
+                        <td>Price:</td>
+                        <td><input type="text" class="autofill" data-target="prodpric" placeholder="1.00" /></td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock content %}
