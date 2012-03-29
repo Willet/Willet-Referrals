@@ -105,4 +105,4 @@ class SmartButtonsShopifyWelcome(URIHandler):
 class SmartButtonsShopifyBeta(URIHandler):
     """ If an existing customer clicks through from Shopify """
     def get(self):
-        pass
+        self.response.out.write(self.render_page('beta.html', {}))
