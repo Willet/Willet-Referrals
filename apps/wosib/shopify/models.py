@@ -73,8 +73,10 @@ class WOSIBShopify(WOSIB, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        self.install_webhooks()
-        self.install_assets(assets=liquid_assets)
+        self.queue_webhooks(product_hooks_too=False)
+        self.queue_assets(assets=liquid_assets)
+
+        self.install_queued()
 
     def _memcache_by_store_url(self):
         success1 = memcache.set(
