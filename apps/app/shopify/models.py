@@ -331,8 +331,6 @@ class AppShopify(Model):
         result = self._call_Shopify_API('POST', 'recurring_application_charges.json',
                                 { "recurring_application_charge": settings })
 
-        logging.info("%s" % result)
-
         data = result["recurring_application_charge"]
 
         if data['status'] != 'pending':
