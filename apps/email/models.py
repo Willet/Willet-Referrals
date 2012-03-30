@@ -7,72 +7,43 @@ Date:  March 2011
 """
 import logging
 import os
-import urllib
-import urllib2
 
-from django.utils                import simplejson as json
-from google.appengine.api        import urlfetch
-from google.appengine.api.mail   import EmailMessage
+from google.appengine.api        import taskqueue
 from google.appengine.ext.webapp import template
-
 from util.consts import *
+from util.helpers import url 
 
-###################
-#### Addresses ####
-###################
+INFO      = "info@getwillet.com"
+FRASER    = 'fraser@getwillet.com'
+BRIAN     = "brian@getwillet.com"
+NICK      = 'nick@getwillet.com'
 
-info      = "info@getwillet.com"
-fraser    = 'fraser@getwillet.com'
-brian     = "brian@getwillet.com"
+DEV_TEAM  = '%s, %s, %s' % (FRASER, NICK, BRIAN)
+FROM_ADDR = INFO
 
-dev_team  = '%s' % (fraser)
-from_addr = info
 
-#####################
-#### Email Class ####
-#####################
 class Email():
-
-#### Dev Team Emails ####
+    """ All email methods are held in this class.  All emails are routed
+        through Email.send_email.  Here we control our email provider.
+        Currently: SendGrid for single recipients, App Engine for multiple recipients
+    """
     @staticmethod
     def emailDevTeam(msg):
-        to_addr = dev_team
+        to_addr = DEV_TEAM
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
  
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name='Dev Team')
 
     @staticmethod
-    def first10Shares(email_addr):
-        subject = '[Willet Referral] We Have Some Results!'
-        to_addr =  email_addr
-        body    = template.render(Email.template_path('first10.html'), {
-            'campaign_id': campaign_id
-        })
-        
-        Email.send_email(from_addr, to_addr, subject, body)
-
-    @staticmethod
-    def invite(infrom_addr, to_addrs, msg, url, app):
-        # TODO(Barbara): Let's be smart about this. We can try to fetch these users 
-        # from the db via email and personalize the email.
-        to_addr = to_addrs.split(',')
-        subject = 'I\'ve Given You A Gift!'
-        body = template.render(Email.template_path('invite.html'),
-            {
-                'from_addr' : infrom_addr,
-                'msg' : msg,
-                'app' : app 
-            }
-        )
-        
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
-
-    @staticmethod
-    def welcomeClient( app_name, to_addr, name, store_name ):
+    def welcomeClient(app_name, to_addr, name, store_name):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
+        body = ''
     
         # Grab first name only
         try:
@@ -80,13 +51,33 @@ class Email():
         except:
             pass
 
-        body = """<p>Hi %s,</p> <p>Thanks for installing "%s"!  We are really excited to work with you and your customers.  We look forward to seeing your customers benefit from getting advice from their friends and your store, %s, getting the exposure it deserves!</p> <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p> <p>Our request is that you let us know your ideas, comments, concerns or challenges! I can promise we will listen and respond to each and every one.</p> <p>Welcome aboard,</p> <p>Cheers,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>""" % (name, app_name, store_name)
+        body += "<p>Hi %s,</p>" % (name,)
+
+        if app_name == 'ShopConnection':
+            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+                  <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
         
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(fraser, to_addr, subject, body)
+        elif app_name == 'Should I Buy This':
+            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
+                  <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
+                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
+
+        else:
+            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
+            return
+
+        body += """<p>Fraser</p>
+                <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p>"""
+
+        Email.send_email(from_address=FRASER,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
 
     @staticmethod
-    def goodbyeFromFraser( to_addr, name, app_name ):
+    def goodbyeFromFraser(to_addr, name, app_name):
         to_addr = to_addr
         subject = 'We are sad to see you go :('
     
@@ -98,13 +89,18 @@ class Email():
 
         if 'SIBT' in app_name:
             app_name = "Should I Buy This"
-        else:
+        elif 'Buttons' in app_name:
             app_name = "ShopConnection"
+        elif 'WOSIB' in app_name:
+            return
 
         body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
         
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(fraser, to_addr, subject, body)
+        Email.send_email(from_address=FRASER,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
     
     @staticmethod
     def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
@@ -139,13 +135,12 @@ class Email():
             }
         )
         
-        logging.info("Emailing %s" % to_addr)
-        Email.send_email(from_address=      from_addr,
-                         to_address=        to_addr,
-                         to_name=           to_name.title(),
-                         replyto_address=   from_addr,
-                         subject=           subject,
-                         body=              body )
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         to_name=to_name.title(),
+                         replyto_address=from_addr,
+                         subject=subject,
+                         body=body )
 
     @staticmethod
     def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
@@ -164,11 +159,10 @@ class Email():
             }
         )
         
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_address= from_addr,
-                         to_address= to_addr,
-                         subject= subject,
-                         body= body )
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body )
 
     @staticmethod
     def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):
@@ -197,21 +191,100 @@ class Email():
                 'buy_it_percentage': buy_it_percentage
         })
 
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
 
-    ### MAILOUTS ###
     @staticmethod
-    def Mailout_Nov28(to_addr, name, app_uuid):
-        subject = 'Updates About "Should I Buy This"!'
+    def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
+                 client_name, client_domain, asker_img= None):
+        subject = "Which one should I buy?"
+        to_first_name = from_first_name = ''
+
+        # Grab first name only
+        try:
+            from_first_name = from_name.split(' ')[0]
+        except:
+            from_first_name = from_name
+        try:
+            to_first_name = to_name.split(' ')[0]
+        except:
+            to_first_name = to_name
+        
+        body = template.render(Email.template_path('wosib_ask.html'),
+            {
+                'from_name'         : from_name.title(),
+                'from_first_name'   : from_first_name.title(),
+                'to_name'           : to_name.title(),
+                'to_first_name'     : to_first_name.title(),
+                'message'           : message,
+                'vote_url'          : vote_url,
+                'asker_img'         : asker_img,
+                'client_name'       : client_name,
+                'client_domain'     : client_domain
+            }
+        )
+        
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         to_name=to_name.title(),
+                         replyto_address=from_addr,
+                         subject=subject,
+                         body=body )
+
+    @staticmethod
+    def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):
+        # similar to SIBTVoteNotification, except because you can't vote 'no',
+        # you are just told someone voted on one of your product choices.
+        to_addr = to_addr
+        subject = 'A Friend Voted!'
+        if name == "":
+            name = "Savvy Shopper"
+        body = template.render(Email.template_path('wosib_voteNotification.html'),
+            {
+                'name'        : name.title(),
+                'cart_url'    : cart_url,
+                'client_name' : client_name,
+                'client_domain' : client_domain 
+            }
+        )
+        
+        logging.info("Emailing '%s'" % to_addr)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
+    
+    @staticmethod
+    def WOSIBVoteCompletion(to_addr, name, products):
+        if name == "":
+            name = "Savvy Shopper"
+        subject = '%s, the votes are in!' % name
+        
+        # would have been much more elegant had django 0.96 gotten the 
+        # {% if array|length > 1 %} notation (it doesn't work in GAE)
+        product = products[0]
+        if len (products) == 1:
+            products = False
+        
         body = template.render(
-            Email.template_path('mailout_nov28.html'), {
+            Email.template_path('wosib_voteCompletion.html'), {
                 'name': name,
-                'app_uuid' : app_uuid
+                'products': products,
+                'product' : product
         })
 
-        logging.info("Emailing X%sX" % to_addr)
-        Email.send_email(from_addr, to_addr, subject, body)
+        logging.info("Emailing '%s'" % to_addr)
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name )
+
+    ### MAILOUTS ###
 
     @staticmethod 
     def template_path(path):
@@ -220,41 +293,16 @@ class Email():
     @staticmethod
     def send_email(from_address, to_address, subject, body,
                    to_name= None, replyto_address= None):
-        if ',' in to_address:
-            try:
-                e = EmailMessage(
-                        sender=from_address, 
-                        to=to_address, 
-                        subject=subject, 
-                        html=body
-                        )
-                e.send()
-            except Exception,e:
-                logging.error('error sending email: %s', e)
-        else:
-            params = {
-                "api_user" : "BarbaraEMac",
-                "api_key"  : "w1llet!!",
-                "to"       : to_address,
-                "subject"  : subject,
-                "html"     : body,
-                "from"     : info,
-                "fromname" : "Willet",
-                "bcc"      : fraser
-            }
-            if to_name:
-                params['toname'] = to_name
-            if replyto_address:
-                params['replyto'] = replyto_address
-
-            #logging.info('https://sendgrid.com/api/mail.send.json?api_key=w1llet!!&%s' % payload)
-
-            result = urlfetch.fetch(
-                url     = 'https://sendgrid.com/api/mail.send.json',
-                payload = urllib.urlencode( params ), 
-                method  = urlfetch.POST,
-                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        taskqueue.add(
+                url=url('SendEmailAsync'),
+                params={
+                    'from_address': from_address,
+                    'to_address': to_address,
+                    'subject': subject,
+                    'body': body,
+                    'to_name': to_name,
+                    'replyto_address': replyto_address
+                }
             )
-            logging.info("%s"% result.content)
 # end class
 

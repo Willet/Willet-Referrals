@@ -15,25 +15,22 @@ from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.analytics_backend.models import *
 from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
 from apps.action.models import ScriptLoadAction
-from apps.referral.models import Referral
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
-from apps.referral.shopify.models import ReferralShopify
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
-from apps.user.models import User
-from apps.analytics_backend.models import *
-
+from apps.user.models import *
 from util                 import httplib2
 from util.consts import *
 from util.helpers import *
@@ -41,7 +38,8 @@ from util.helpers           import url as reverse_url
 from util.urihandler import URIHandler
 from util.memcache_bucket_config import MemcacheBucketConfig 
 
-class Admin( URIHandler ):
+
+class Admin(URIHandler):
     @admin_required
     def get(self, admin):
         links = Link.all()
@@ -53,47 +51,6 @@ class Admin( URIHandler ):
 
         self.response.out.write( str )
 
-class InitRenameFacebookData(webapp.RequestHandler):
-    """Ensure all user models have their facebook properties prefixed exactly
-       'fb_' and not 'facebook_' """
-
-    def get(self):
-
-        users = User.all()
-        logging.info("Fired")
-        for u in [u.uuid for u in users if hasattr(u, 'fb_access_token')\
-            or hasattr(u, 'first_name') or hasattr(u, 'gender') or\
-            hasattr(u, 'last_name') or hasattr(u, 'verifed')]:
-            taskqueue.add(url = '/admin/renamefb',
-                          params = {'uuid': u})
-        self.response.out.write("update dispatched")
-
-class RenameFacebookData(webapp.RequestHandler):
-    """Fetch facebook information about the given user"""
-
-    def post(self):
-        rq_vars = get_request_variables(['uuid'], self)
-        user = User.get( rq_vars['uuid'] )
-        if user:
-            if hasattr(user, 'facebook_access_token'):
-                user.fb_access_token = user.facebook_access_token
-                delattr(user, 'facebook_access_token')
-            for t in ['first_name', 'last_name', 'name', 'verified', 'gender'\
-                , 'email']:
-                if hasattr(user, t):
-                    setattr(user, 'fb_'+t, getattr(user, t))
-                    delattr(user, t)
-            for err, correction in [('verifed', 'verified')]:
-                if hasattr(user, err):
-                    setattr(user, correction, getattr(user, err))
-                    delattr(user, err)
-            user.save()
-            logging.info(user)
-            logging.info(user.uuid)
-
-class ImportPlugin(URIHandler):
-    def get(self):
-        pass
 
 class ShowRoutes(URIHandler):
     def format_route(self, route):
@@ -125,7 +82,7 @@ class ShowRoutes(URIHandler):
                     # we clobbered some urls
                     raise Exception('url route conflict with %s' % app)
             except Exception,e:
-                logging.error('error importing %s: %s' % (app, e), exc_info=True)
+                logging.warn('error importing %s: %s' % (app, e), exc_info=True)
 
         combined_uris = map(self.format_route, combined_uris)
         template_values = {
@@ -137,10 +94,11 @@ class ShowRoutes(URIHandler):
             )
         )
 
+
 class ManageApps(URIHandler):
     def get_app_list(self):
         all_apps = App.all()
-        apps = []
+        apps = {}
         for app in all_apps:
             try:
                 d = {
@@ -150,17 +108,20 @@ class ManageApps(URIHandler):
                     'client': getattr (app, 'client'),
                     'app': app
                 }
-                apps.append(d)
+                if not d['class_name'] in apps:
+                    apps[d['class_name']] = []
+
+                apps[d['class_name']].append(d)
             except Exception,e:
-                logging.error('error adding app: %s' % e, exc_info=True)
+                logging.warn('Error adding app: %s' % e, exc_info=True)
         return apps
     
     @admin_required
     def get(self, client=None):
         template_values = {
-            'apps': self.get_app_list() 
+            'apps': self.get_app_list()
         }
-        
+
         self.response.out.write(self.render_page(
                 'manage_apps.html',
                 template_values
@@ -169,6 +130,7 @@ class ManageApps(URIHandler):
 
     @admin_required
     def post(self, admin=None):
+        ''' does a predefined list of actions on apps.'''
         app_id = self.request.get('app_id')
         action = self.request.get('action')
         app = App.get(app_id)
@@ -199,8 +161,15 @@ class ManageApps(URIHandler):
                 elif action == 'set_number_shows_before_tb':
                     app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
                     app.put()
+                elif action == 'set_style':
+                    app.button_css = self.request.get('button_css')
+                    memcache.get('app-%s-sibt-css' % app.uuid) # found in sibt/models.py
+                    app.put()
+                elif action == 'reset_style':
+                    app.button_css = None
+                    app.put()
                 else:
-                    logging.error("bad action: %s" % action)
+                    logging.warn("bad action: %s" % action)
                 messages.append({
                     'type': 'message',
                     'text': '%s for %s' % (action, app.client.name) 
@@ -232,6 +201,7 @@ class ManageApps(URIHandler):
                 template_values
             )
         ) 
+
 
 class SIBTInstanceStats( URIHandler ):
     def no_code( self ):
@@ -315,86 +285,6 @@ class SIBTInstanceStats( URIHandler ):
         self.response.out.write( str )
         return
 
-class InstallShopifyJunk( URIHandler ):
-    def get( self ):
-        """ Install the webhooks into the Shopify store """
-        webhooks = []
-            
-        store_url = 'http://skuuzi.myshopify.com'
-
-        client = ClientShopify.all().filter( 'url =', store_url ).get()
-
-        url      = '%s/admin/webhooks.json' % client._url
-        username = 'b153f0ccc9298a8636f92247e0bc53dd'
-        password = hashlib.md5('735be9bc6b3e39b352aa5c287f4eead5' + client.token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
-        
-        # Auth the http lib
-        h.add_credentials(username, password)
-        
-        # Install the "App Uninstall" webhook
-        data = {
-            "webhook": {
-                "address": "%s/o/shopify/webhook/create/" % ( URL ),
-                "format" : "json",
-                "topic"  : "orders/create"
-            }
-        }
-
-        webhooks.append(data)
-
-        for webhook in webhooks:
-            logging.info('Installing extra hook %s' % webhook)
-            logging.info("POSTING to %s %r " % (url, data))
-            resp, content = h.request(
-                url,
-                "POST",
-                body = json.dumps(webhook),
-                headers = header
-            )
-            logging.info('%r %r' % (resp, content)) 
-            if int(resp.status) == 401:
-                logging.info('install failed %d webhooks' % len(webhooks))
-
-        logging.info('installed %d webhooks' % len(webhooks))
-
-
-        """ Install our script tags onto the Shopify store """
-        script_tags = []
-
-        url      = '%s/admin/script_tags.json' % client.url
-        username = 'b153f0ccc9298a8636f92247e0bc53dd'
-        password = hashlib.md5('735be9bc6b3e39b352aa5c287f4eead5' + client.token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
-        
-        h.add_credentials(username, password)
-        
-        # Install the SIBT script
-        data = {
-            "script_tag": {
-                "src": "%s/o/shopify/order.js?store=%s" % (
-                    SECURE_URL,
-                    client.url 
-                ),
-                "event": "onload"
-            }
-        }      
-        script_tags.append(data)
-        
-        for script_tag in script_tags:
-            logging.info("POSTING to %s %r " % (url, script_tag) )
-            resp, content = h.request(
-                url,
-                "POST",
-                body = json.dumps(script_tag),
-                headers = header
-            )
-            logging.info('%r %r' % (resp, content))
-            if int(resp.status) == 401:
-                logging.info('install failed %d script_tags' % len(script_tags))
-        logging.info('installed %d script_tags' % len(script_tags))
 
 class ShowActions(URIHandler):
     @admin_required
@@ -406,6 +296,7 @@ class ShowActions(URIHandler):
                 template_values,
             )
         )
+
 
 class GetActionsSince(URIHandler):
     @admin_required
@@ -452,15 +343,14 @@ class GetActionsSince(URIHandler):
                     'user': user,
                     'client': client
                 })
-            #actions_json = ''
-            #actions_json = [to_dict(action) for action in actions]
             actions_json = json.dumps(actions_json)
-            #a_str = 'Got %s from %s' % (actions_json, actions)
+
             self.response.out.write(actions_json)
-            #self.response.out.write(a_str)
+            
         except Exception, e:
             logging.error(e, exc_info=True)
             self.response.out.write(e)
+
 
 class ShowClickActions(URIHandler):
     @admin_required
@@ -559,6 +449,7 @@ class ShowClickActions(URIHandler):
 
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
+
 class FBConnectStats( URIHandler ):
     def get( self ):
         no_connect = SIBTNoConnectFBDialog.all().count()
@@ -577,6 +468,7 @@ class FBConnectStats( URIHandler ):
         
         self.response.out.write(html)
 
+
 class ReloadURIS(URIHandler):
     def get(self):
         if self.request.get('all'):
@@ -592,6 +484,7 @@ class ReloadURIS(URIHandler):
         self.response.out.write(self.render_page('reload_uris.html', 
             template_values))
 
+
 class CheckMBC(URIHandler):
     ''' /admin/check_mbc displays the current number of "memcache buckets".
         /admin/check_mbc?num=50 sets the number of memcache buckets to 50. 
@@ -604,70 +497,10 @@ class CheckMBC(URIHandler):
             mbc.count = int(num) 
             mbc.put()
         
-        #tb_click = SIBTUserClickedTopBarAsk.all().filter('is_admin =', False).count()
-        #b_click = SIBTUserClickedButtonAsk.all().filter('is_admin =', False).count() 
-        #self.response.out.write('top bar: %d' % tb_click)
-        #self.response.out.write('buttons: %d' % b_click)
         self.response.out.write('Count: %d' % mbc.count)
 
-class UpdateStore( URIHandler ):
-    def get(self):
-        store_url = self.request.get( 'store' )
 
-        app = SIBTShopify.get_by_store_url(store_url)
-
-        if app:
-            script_src = """<!-- START willet sibt for Shopify -->
-                <script type="text/javascript">
-                (function(window) {
-                    var hash = window.location.hash;
-                    var hash_index = hash.indexOf('#code=');
-                    var willt_code = hash.substring(hash_index + '#code='.length , hash.length);
-                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+window.location;
-                    var src = "http://%s%s?" + params;
-                    var script = window.document.createElement("script");
-                    script.type = "text/javascript";
-                    script.src = src;
-                    window.document.getElementsByTagName("head")[0].appendChild(script);
-                }(window));
-                </script>""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
-            willet_snippet = script_src + """
-                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
-                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
-                    data-price="{{ product.price | money }}" data-page_source="product"
-                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
-                <!-- END Willet SIBT for Shopify -->"""
-
-            liquid_assets = [{
-                'asset': {
-                    'value': willet_snippet,
-                    'key': 'snippets/willet_sibt.liquid'
-                }
-            }]
-            
-            app.install_assets(assets=liquid_assets)
-
-            url      = '%s/admin/script_tags.json' % app.store_url
-            username = app.settings['api_key'] 
-            password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
-            header   = {'content-type':'application/json'}
-            h        = httplib2.Http()
-            
-            # Auth the http lib
-            h.add_credentials(username, password)
-
-            # First fetch webhooks that already exist
-            resp, content = h.request( url, "GET", headers = header)
-            logging.info( 'Fetching script_tags: %s' % content )
-            data = json.loads( content ) 
-
-            for w in data['script_tags']:
-                if '%s/s/shopify/sibt.js' % URL in w['src']:
-                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
-                    resp, content = h.request( url, "DELETE", headers = header)
-                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
-
-class MemcacheConsole(URIHandler):
+class ShowMemcacheConsole(URIHandler):
     @admin_required
     def post(self, admin):
         key = self.request.get('key')
@@ -710,6 +543,7 @@ class MemcacheConsole(URIHandler):
             )
         )
 
+
 class ShowCounts( URIHandler ):
     def get( self ):
 
@@ -736,32 +570,6 @@ class ShowCounts( URIHandler ):
 
         self.response.out.write( str )
 
-class AnalyticsRPC(URIHandler):
-    @admin_required
-    def get(self, admin):
-        limit = self.request.get('limit') or 3
-        offset = self.request.get('offset') or 0
-        
-        day_slices = GlobalAnalyticsDaySlice.all()\
-                .order('-start')\
-                .fetch(int(limit), offset=int(offset))
-        data = []
-        for ds in day_slices:
-            obj = {}
-
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-            
-            for action in actions_to_count:
-                obj[action] = ds.get_attr(action)
-            data.append(obj)
-
-        response = {
-            'success': True,
-            'data': data 
-        }
-
-        self.response.out.write(json.dumps(response))
 
 class ShowAnalytics(URIHandler):
     @admin_required
@@ -775,6 +583,7 @@ class ShowAnalytics(URIHandler):
             self.render_page('analytics.html', template_values)
         )
 
+
 class ShowAppAnalytics(URIHandler):
     def get(self, app_uuid):
         app = App.get(app_uuid) 
@@ -787,33 +596,6 @@ class ShowAppAnalytics(URIHandler):
             self.render_page('analytics.html', template_values)
         )
 
-class AppAnalyticsRPC(URIHandler):
-    def get(self, app_uuid):
-        app = App.get(app_uuid)
-        limit = self.request.get('limit') or 3
-        offset = self.request.get('offset') or 0
-        
-        day_slices = AppAnalyticsDaySlice.all()\
-                .filter('app_ =', app)\
-                .order('-start')\
-                .fetch(int(limit), offset=int(offset))
-        data = []
-        for ds in day_slices:
-            obj = {}
-
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-            
-            for action in actions_to_count:
-                obj[action] = ds.get_attr(action)
-            data.append(obj)
-
-        response = {
-            'success': True,
-            'data': data 
-        }
-
-        self.response.out.write(json.dumps(response))
 
 class AppAnalyticsCompare(URIHandler):
     @admin_required
@@ -826,31 +608,50 @@ class AppAnalyticsCompare(URIHandler):
             self.render_page('analytics.html', template_values)
         )
 
-class GenerateOlderHourPeriods(URIHandler):
-    def get(self):
-        if self.request.get('reset'):
-            memcache.delete_multi(['day', 'hour', 'day_global', 'hour_global'])
-        else:
-            ensure = self.request.get('ensure')
 
-            oldest_global = GlobalAnalyticsHourSlice.all().order('start').get()
-            hour_global = oldest_global.start - datetime.timedelta(hours=1)
-            memcache.set('hour_global', hour_global)
+class EmailEveryone (URIHandler):
+    # TODO: change mass_mail_client.html to call EmailBatch instead of post
+    # TODO: change EmailBatch request into BatchRequest
+    """ Task Queue-based blast email URL. """
+    @admin_required
+    def get (self, admin):
+        # render the mail client
+        template_values = {}
+        self.response.out.write(self.render_page('mass_mail_client.html', template_values))
 
-            global_day = GlobalAnalyticsDaySlice.all().order('start').get()
-            day_global = global_day.start - datetime.timedelta(days=1)
-            memcache.set('day_global', day_global.date())
+    @admin_required
+    def post (self, admin):
+        batch_size = 100
+        full_name = ''
 
-            oldest_app = AppAnalyticsHourSlice.all().order('start').get() 
-            hour = oldest_app.start - datetime.timedelta(hours=1)
-            memcache.set('hour', hour)
+        logging.info("Sending everyone an email.")
+        
+        app_cls = self.request.get('app_cls')
+        target_version = self.request.get('version')
+        subject = self.request.get('subject')
+        body = self.request.get('body')
 
-            oldest_day = AppAnalyticsDaySlice.all().order('start').get()
-            day = oldest_day.start - datetime.timedelta(days=1)
-            memcache.set('day', day.date())
+        logging.info('Requested email:\nApp Class = %s\nApp version = %r\nSubject = %s\nBody = %s'
+                        % (app_cls, target_version, subject, body))
+        
+        # Check that we have something to email
+        if not (len(subject) > 0) or not (len(body) > 0):
+            self.error(400) # Bad Request
+            return
 
-            if ensure in ['day', 'hour', 'day_global', 'hour_global']:
-                urlfetch.fetch('%s/bea/ensure/%s/' % (URL, ensure))
+        params = {
+            'batch_size':   batch_size,
+            'offset':       0,
+            'app_cls':      app_cls,
+            'subject':      subject,
+            'body':         body
+        }
+        if target_version:
+            params.update({ 'target_version': target_version })
 
-        self.response.out.write(json.dumps({'success':True}))
+        # Initiate batched emailing
+        taskqueue.add(url=url('EmailBatch'), params=params)
 
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write ("%r" % all_emails)
+        return

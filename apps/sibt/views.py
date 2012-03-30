@@ -23,11 +23,11 @@ from apps.client.shopify.models import *
 from apps.link.models           import Link
 from apps.order.models          import *
 from apps.product.shopify.models import ProductShopify
+from apps.sibt.actions          import *
 from apps.sibt.models           import SIBTInstance
 from apps.sibt.models           import PartialSIBTInstance
 from apps.sibt.shopify.models   import SIBTShopify
 from apps.user.models           import User
-from apps.user.models           import get_user_by_cookie
 
 from util.consts                import *
 from util.helpers               import *
@@ -42,14 +42,17 @@ class AskDynamicLoader(webapp.RequestHandler):
     # TODO: THis code is Shopify specific. Refactor.
     def get(self):
         store_domain  = self.request.get('store_url')
-        app           = SIBTShopify.get_by_store_url(self.request.get('store_url'))
+        app           = SIBTShopify.get_by_store_url(store_domain)
         user          = User.get(self.request.get('user_uuid'))
         user_found    = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance( user , User) else False
-        target        = self.request.get( 'url' )
         
-        # Store 'Show' action
-        SIBTShowingAskIframe.create(user, url=target, app=app)
+        # if no URL, then referrer, then everything dies
+        target        = self.request.get ('url', self.request.headers.get('referer'))
+        
+        product_uuid        = self.request.get( 'product_uuid', None ) # optional
+        product_shopify_id  = self.request.get( 'product_id', None ) # optional
+        logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # We need this stuff here to fill in the FB.ui stuff 
         # if the user wants to post on wall
@@ -57,10 +60,30 @@ class AskDynamicLoader(webapp.RequestHandler):
             page_url = urlparse(self.request.headers.get('referer'))
             store_domain = "%s://%s" % (page_url.scheme, page_url.netloc)
         except Exception, e:
-            logging.error('error parsing referer %s' % e)
+            logging.error('error parsing referer %s' % e, exc_info = True)
+        
+        # successive steps to obtain the product using any way possible
+        try:
+            logging.info("getting by url")
+            product = ProductShopify.get_or_fetch (target, app.client) # by URL
+            if not product and product_uuid: # fast (cached)
+                product = ProductShopify.get (product_uuid)
+                target = product.resource_url # fix the missing url
+            if not product and product_shopify_id: # slow, deprecated
+                product = ProductShopify.get_by_shopify_id (product_shopify_id)
+                target = product.resource_url # fix the missing url
+            if not product:
+                # we failed to find a single product!
+                raise LookupError
+        except LookupError:
+            # adandon the rest of the script, because we NEED a product!
+            self.response.out.write("Requested product cannot be found.")
+            return
 
+        # Store 'Show' action
+        SIBTShowingAskIframe.create(user, url=target, app=app)
+        
         # Fix the product description
-        product = ProductShopify.get_or_fetch(target, app.client)
         try:
             ex = '[!\.\?]+'
             productDesc = strip_html(product.description)
@@ -431,7 +454,7 @@ class ShowFBThanks( URIHandler ):
         user_cancelled = True
         app         = None
         post_id     = self.request.get( 'post_id' ) # from FB
-        user        = get_user_by_cookie( self )
+        user        = User.get_by_cookie(self)
         partial     = PartialSIBTInstance.get_by_user( user )
         
         if post_id != "":
@@ -514,3 +537,16 @@ class ShowOnUnloadHook( URIHandler ):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
+
+class SIBTGetUseCount (URIHandler):
+    def get(self):
+        # faking it for now. shows number of button loads divided by 100
+        try:
+            product_uuid = self.request.get ('product_uuid')
+            button_use_count = memcache.get ("usecount-%s" % product_uuid)
+            if button_use_count is None:
+                button_use_count = int (SIBTShowingButton.all().count() / 100)
+                memcache.add ("usecount-%s" % product_uuid, button_use_count)
+            self.response.out.write (str (button_use_count))
+        except:
+            self.response.out.write ('0') # no shame in that?

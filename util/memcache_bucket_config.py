@@ -8,6 +8,7 @@ from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import deferred
 
+from apps.user.models import *
 from util.model import Model
 from util.consts import MEMCACHE_TIMEOUT
 from util.consts import MEMCACHE_BUCKET_COUNTS
@@ -17,10 +18,15 @@ class MemcacheBucketConfig(Model):
     name = db.StringProperty(indexed = True)
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
+    
+    _memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
         super(MemcacheBucketConfig, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     def get_bucket(self, number):
         return '%s:%s' % (self.name, number)
@@ -48,21 +54,21 @@ class MemcacheBucketConfig(Model):
         memcache.set(key, db.model_to_protobuf(entity).Encode(), time=MEMCACHE_TIMEOUT)
 
         bucket = self.get_random_bucket()
-        logging.info('mbc: %s' % self.name)
-        logging.info('bucket: %s' % bucket)
+        #logging.info('mbc: %s' % self.name)
+        #logging.info('bucket: %s' % bucket)
 
         list_identities = memcache.get(bucket) or []
         list_identities.append(key)
 
-        logging.info('bucket length: %d/%d' % (len(list_identities), self.count))
+        #logging.info('bucket length: %d/%d' % (len(list_identities), self.count))
         if len(list_identities) > self.count:
             memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
-            logging.warn('bucket overflowing, persisting!')
+            #logging.warn('bucket overflowing, persisting!')
             deferred.defer(batch_put, self.name, bucket, list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
 
-        logging.info('put_later: %s' % key)
+        #logging.info('put_later: %s' % key)
 
     @staticmethod
     def create(name, count=None):
@@ -90,7 +96,7 @@ class MemcacheBucketConfig(Model):
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
-    from apps.user.models import *
+    # TODO - make classmethod of MemcacheBucketConfig
 
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))
     mbc = MemcacheBucketConfig.get_or_create(mbc_name)

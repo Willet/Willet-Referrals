@@ -9,12 +9,13 @@ import inspect
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
 
-from apps.client.models import get_client_by_email
+from apps.client.models import Client
 from util.consts        import *
 from util.gaesessions   import get_current_session
 from util.templates     import render 
 
-class URIHandler( webapp.RequestHandler ):
+
+class URIHandler(webapp.RequestHandler):
 
     def __init__(self):
         # For simple caching purposes. Do not directly access this. Use self.get_client() instead.
@@ -33,14 +34,12 @@ class URIHandler( webapp.RequestHandler ):
         session = get_current_session()
         session.regenerate_id()
         email   = session.get('email', '')
-        logging.info("GETTING EMAIL: %s" % email)
+        if email:
+            self.db_client = Client.get_by_email(email)
+        else:
+            self.db_client = None
         
-        self.db_client = get_client_by_email( email )
-        
-        logging.debug ("self.db_client = (%s) %s" % (type (self.db_client), self.db_client))
-            
-        if not self.db_client:
-            pass
+        #logging.debug ("client by email's db_client = %s -> (%s) %s" % (email, type (self.db_client), self.db_client))
 
         return self.db_client
     
@@ -85,4 +84,4 @@ class URIHandler( webapp.RequestHandler ):
                 app_path = '/'.join(parts[:-1])
 
         return app_path
-
+# end class

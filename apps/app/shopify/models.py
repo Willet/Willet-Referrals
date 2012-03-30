@@ -6,53 +6,54 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import hashlib, datetime
+import hashlib
+import datetime
+import re
 
-from django.utils         import simplejson as json
-from google.appengine.ext import db
+from django.utils           import simplejson as json
+from google.appengine.ext   import db
 
-from apps.app.models    import App
-from apps.email.models  import Email
+from apps.app.models        import App
+from apps.email.models      import Email
 
-from util               import httplib2
-from util.consts        import *
-from util.errors        import ShopifyAPIError, ShopifyBillingError
-from util.model         import Model
-
+from util                   import httplib2
+from util.consts            import *
+from util.errors           import ShopifyAPIError, ShopifyBillingError
+from util.shopify_helpers   import *
+from util.model             import Model
 
 NUM_SHARE_SHARDS = 15
 
 class AppShopify(Model):
+    """ Model for storing information about a Shopify App.
+        AppShopify classes need not be installable from the Shopify app store,
+        and can be installed as a bundle. Refer to SIBTShopify for example code.
+
+        How Shopify Charges Work:
+
+            Two options, one-time charge or recurring billing
+
+            Both work with same workflow:
+
+            a) Customer requests charging page
+            b) We make Shopify API call, specifying return_url (on our domain)
+            c) Shopify responds with confirmation_url
+            d) We redirect customer to confirmation_url (on shopify domain)
+            e) Customer decides & is sent to return_url?charge_id=### with confirmed / denied status
+            *f) We make Shopify API call to activate the charge
+            g) Shopify responds with 200 OK
+
+            *We actually hit the Shopify API 1st to get all of the charge info
+            before requesting activation.  There is a lot of junk we don't want to
+            store that needs to be included in the activation request
+
+            Note: only 1 recurring billing plan can exist for each store for each app.
+            Create a new recurring billing plan will overwrite any existing ones.
     """
-
-    How Shopify Charges Work:
-
-    Two options, one-time charge or recurring billing
-
-    Both work with same workflow:
-
-    a) Customer requests charging page
-    b) We make Shopify API call, specifying return_url (on our domain)
-    c) Shopify responds with confirmation_url
-    d) We redirect customer to confirmation_url (on shopify domain)
-    e) Customer decides & is sent to return_url?charge_id=### with confirmed / denied status
-    *f) We make Shopify API call to activate the charge
-    g) Shopify responds with 200 OK
-
-    *We actually hit the Shopify API 1st to get all of the charge info
-    before requesting activation.  There is a lot of junk we don't want to
-    store that needs to be included in the activation request
-
-    Note: only 1 recurring billing plan can exist for each store for each app.
-    Create a new recurring billing plan will overwrite any existing ones.
-    """
-    # Shopify's ID for this store
-    store_id  = db.StringProperty(indexed = True)
-    
-    store_url = db.StringProperty(indexed = True)
-
-    # Shopify's token for this store
-    store_token = db.StringProperty(indexed = True)
+    store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
+    store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com
+    extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
+    store_token = db.StringProperty(indexed = True) # Shopify token for this store
 
     # Recurring billing information
     recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
@@ -73,18 +74,19 @@ class AppShopify(Model):
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
         self.get_settings()
-    
+
+    def _validate_self(self):
+        if not re.match("(http|https)://[\w\-~]+.myshopify.com", self.store_url):
+            raise ValueError("<%s.%s> has malformated store url '%s'" % (self.__class__.__module__, self.__class__.__name__, self.store_url))
+        return True
+
     def get_settings(self):
         class_name = self.class_name()
         self.settings = None 
         try:
             self.settings = SHOPIFY_APPS[class_name]
         except Exception, e:
-            logging.error('could not get settings for app %s: %s' % (
-                    class_name,
-                    e
-                )
-            )
+            logging.error('could not get settings for app %s: %s' % (class_name, e))
     
     @staticmethod
     def _Shopify_str_to_datetime(dt):
@@ -104,6 +106,15 @@ class AppShopify(Model):
         dts = dt.isoformat()
         return dts[:-2] + ':' + dts[-2:]
     
+    # Retreivers ------------------------------------------------------------
+    @classmethod
+    def get_by_url(cls, store_url):
+        """ Fetch a Shopify app via the store's url"""
+        store_url = get_shopify_url(store_url)
+
+        logging.info("Shopify: Looking for %s" % store_url)
+        return cls.all().filter('store_url =', store_url).get()
+
     # Shopify API Calls ------------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload= None):
         """ Calls Shopify API
@@ -139,34 +150,36 @@ class AppShopify(Model):
                 headers = header
             )
 
-        # TODO: Check that no 'errors' key exists
+        data = {}
+        error = False
 
-        # Good responses
-        valid_response_codes = [200, 201]
-        if "application/json" in resp['content-type'] and int(resp.status) in valid_response_codes:
-            data = json.loads(content)
-            return data
-        
-        # Bad responses
+        response_actions = {
+            200: lambda x: json.loads(x),
+            201: lambda x: json.loads(x)
+        }
+
+        if "application/json" in resp['content-type']:
+            try:
+                data = response_actions.get(int(resp.status))(content)
+                error = (True if data.get("errors") else False)
+            except TypeError:
+                error = True
         else:
-            data = None
-            if content:
-                try:
-                    data = json.loads(content)
-                    return data
-                except:
-                    pass
+            error = True
 
-        #Email.emailDevTeam(
-        #    '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
-        #        self.class_name(),
-        #        resp.status,
-        #        resp.reason,
-        #        self.store_url,
-        #        data if data else content
-        #    )        
-        #)
-        raise ShopifyAPIError(resp.status, resp.reason, url + ", " + content)
+        if not error:
+            return data
+        else:
+            #Email.emailDevTeam(
+            #    '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
+            #        self.class_name(),
+            #        resp.status,
+            #        resp.reason,
+            #        self.store_url,
+            #        data if data else content
+            #    )        
+            #)
+            raise ShopifyAPIError(resp.status, resp.reason, url + ", " + content)
 
     def _retrieve_single_billing_object(self, charge_type, id):
         """ Retrieve billing info for customer
@@ -318,6 +331,8 @@ class AppShopify(Model):
         result = self._call_Shopify_API('POST', 'recurring_application_charges.json',
                                 { "recurring_application_charge": settings })
 
+        logging.info("%s" % result)
+
         data = result["recurring_application_charge"]
 
         if data['status'] != 'pending':
@@ -395,7 +410,6 @@ class AppShopify(Model):
         if webhooks == None:
             webhooks = []
 
-        logging.info("TOKEN %s" % self.store_token )
         url      = '%s/admin/webhooks.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
@@ -409,12 +423,11 @@ class AppShopify(Model):
         if product_hooks_too:
             # First fetch webhooks that already exist
             resp, content = h.request( url, "GET", headers = header)
-            data = json.loads( content ) 
+            data = json.loads(content) 
             #logging.info('%s %s' % (resp, content))
 
             product_create = product_delete = product_update = True
             for w in data['webhooks']:
-                #logging.info("checking %s"% w['address'])
                 if w['address'] == '%s/product/shopify/webhook/create' % URL or \
                    w['address'] == '%s/product/shopify/webhook/create/' % URL:
                     product_create = False
@@ -431,7 +444,7 @@ class AppShopify(Model):
             product_create = product_delete = product_update = False
 
         # Install the "App Uninstall" webhook
-        data = {
+        webhooks.append({
             "webhook": {
                 "address": "%s/a/shopify/webhook/uninstalled/%s/" % (
                     URL,
@@ -440,61 +453,60 @@ class AppShopify(Model):
                 "format": "json",
                 "topic": "app/uninstalled"
             }
-        }
-        webhooks.append(data)
+        })
 
         # Install the "Product Creation" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/create" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/create"
-            }
-        }
         if product_create:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/create" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/create"
+                }
+            })
         
         # Install the "Product Update" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/update" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/update"
-            }
-        }
         if product_update:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/update" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/update"
+                }
+            })
 
         # Install the "Product Delete" webhook
-        data = {
-            "webhook": {
-                "address": "%s/product/shopify/webhook/delete" % ( URL ),
-                "format" : "json",
-                "topic"  : "products/delete"
-            }
-        }
         if product_delete:
-            webhooks.append(data)
+            webhooks.append({
+                "webhook": {
+                    "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                    "format" : "json",
+                    "topic"  : "products/delete"
+                }
+            })
 
         for webhook in webhooks:
-            logging.info('Installing extra hook %s' % webhook)
-            logging.info("POSTING to %s %r " % (url, webhook))
             resp, content = h.request(
                 url,
                 "POST",
                 body = json.dumps(webhook),
                 headers = header
             )
-            logging.info('%r %r' % (resp, content)) 
-            if int(resp.status) == 401:
-                Email.emailDevTeam(
-                    '%s WEBHOOK INSTALL FAILED\n%s\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
-                        self.store_url,
-                        content
-                    )        
-                )
+            
+            if 200 <= int(resp.status) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed webhook, %s: %s' % (resp.status, webhook['webhook']['topic']))
+            else:
+                error_msg = 'Webhook install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status,
+                    webhook['webhook']['topic'],
+                    self.store_url,
+                    resp,
+                    content
+                )        
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+
         logging.info('installed %d webhooks' % len(webhooks))
 
     def get_script_tags(self):
@@ -547,6 +559,10 @@ class AppShopify(Model):
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
             Must first get the `main` template in use"""
+        if not assets:
+            logging.warn('No assets to install')
+            return
+        
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
@@ -555,16 +571,12 @@ class AppShopify(Model):
         
         main_id = None
 
-        if assets == None:
-            assets = []
-
         # get the theme ID
         theme_url = '%s/admin/themes.json' % self.store_url
-        logging.info('Getting themes %s' % theme_url)
         resp, content = h.request(theme_url, 'GET', headers = header)
 
-        if int(resp.status) == 200:
-            # we are okay
+        if 200 <= int(resp.status) <= 299:
+            # HTTP status 200's == success
             content = json.loads(content)
             for theme in content['themes']:
                 if 'role' in theme and 'id' in theme:
@@ -572,32 +584,37 @@ class AppShopify(Model):
                         main_id = theme['id']
                         break
         else:
-            logging.error('%s error getting themes: \n%s\n%s' % (
-                self.class_name(),
+            error_msg = 'Error getting themes, %s: %s\n%s\n%s\n%s' % (
+                resp.status,
+                theme_url,
+                self.store_url,
                 resp,
                 content
-            ))
-            return
+            )
+            logging.error(error_msg)
+            Email.emailDevTeam(error_msg)
 
         # now post all the assets
         url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
         for asset in assets: 
-            logging.info("POSTING to %s %r " % (url, asset) )
             resp, content = h.request(
                 url,
                 "PUT",
                 body = json.dumps(asset),
                 headers = header
             )
-            logging.info('%r %r' % (resp, content))
-            if int(resp.status) != 200: 
-                Email.emailDevTeam(
-                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
-                        content
-                    )        
+            
+            if 200 <= int(resp.status) <= 299:
+                # HTTP status 200's == success
+                logging.info('Installed asset, %s: %s' % (resp.status, asset['asset']['key']))
+            else:
+                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                    resp.status,
+                    asset['asset']['key'],
+                    self.store_url,
+                    resp,
+                    content
                 )
-
-        logging.info('installed %d assets' % len(assets))
-
+                logging.error(error_msg)
+                Email.emailDevTeam(error_msg)
+# end class

@@ -4,9 +4,12 @@
 # constants for referrals
 
 import os
+import inspect
 import logging
 
 from urlparse import urlunsplit
+
+from google.appengine.api.app_identity import get_application_id
 
 # Product Stuff
 NAME = 'Willet'
@@ -16,8 +19,9 @@ USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE',
 PROTOCOL            = 'http' 
 SECURE_PROTOCOL     = 'https'
 APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
+APP_LIVE            = 'social-referral'
 DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
-URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) 
+URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
 KEYS                = os.environ['HTTP_HOST']
 
@@ -38,6 +42,9 @@ BUTTONS_FACEBOOK_APP_SECRET = '1f8e4c81de61de9dc054685bddf8b50f'
 # Facebook Stuff
 FACEBOOK_APP_ID     = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
+
+# MailChimp Stuff
+MAILCHIMP_API_KEY = 'b58ce277cd799842ed2bdf03b06d603b-us4'
     
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
@@ -59,15 +66,23 @@ SHOPIFY_APPS = {
         'facebook': {
             'app_id': '132803916820614',
             'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
-        }
-    }, 'ReferralShopify': {
-        'api_key': 'c46f84fb6458a72c774504ba372757f1',
-        'api_secret': '82e2c5a9d210be294c046b7bc9ff55eb',
-        'class_name': 'ReferralShopify'        
+        },
+        'mailchimp_list_id': None,
+    }, 'WOSIBShopify': {
+        # repeat keys in SIBT
+        'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
+        'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
+        'class_name': 'WOSIBShopify',
+        'facebook': {
+            'app_id': '132803916820614',
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        },
+        'mailchimp_list_id': None,
     }, 'ButtonsShopify': {
         'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
         'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
-        'class_name': 'ButtonsShopify'       
+        'class_name': 'ButtonsShopify',
+        'mailchimp_list_id': '01629537ab',
     }
 }
 
@@ -94,7 +109,7 @@ MEMCACHE_BUCKET_COUNTS = {
 # number of seconds to memcache an item
 # see: http://stackoverflow.com/questions/2793366/what-is-the-maximum-length-in-seconds-to-store-a-value-in-memcache
 # TODO: Try 2591999 instead
-MEMCACHE_TIMEOUT = 1728000
+MEMCACHE_TIMEOUT = 2591999
 
 # List of root template directories
 # to import templates from
@@ -103,13 +118,15 @@ TEMPLATE_DIRS = (
 )
 
 # Admin whitelist
-ADMIN_EMAILS = [ 'barbara@getwillet.com', 'z4beth@gmail.com',
-                 'foo@bar.com', 'asd@asd.com', 'barbaraemac@gmail.com',
-                 'becmacdo@uwaterloo.ca', 'matt@getwillet.com',
-                 'harrismc@gmail.com', 'fraser.harris@gmail.com',
-                 'b2lai@uwaterloo.ca', 'brian@getwillet.com' ]
+ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
+                 'fraser.harris@gmail.com', 'fraser@getwillet.com',
+                 'b2lai@uwaterloo.ca', 'lpppppl@gmail.com', 'brian@getwillet.com',
+                 'nicholas.terwoord@gmail.com', 'nicholas@getwillet.com' ]
+
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
-              '69.166.16.20'        # VeloCity @ Hub
+              '69.166.16.20',       # VeloCity @ Hub
+              '216.16.232.86',      # Brian Desktop network drop
+              '206.126.92.56'       # Brian House
             ]
 
 # the apps we are using
@@ -130,19 +147,27 @@ INSTALLED_APPS = [
     'order.shopify',
     'product',
     'product.shopify',
-    'referral',
-    'referral.shopify',
     'sibt',
     'sibt.shopify',
+    'wosib',
+    'wosib.shopify',
     'user',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
 
-# Overide settings with local_consts
-#try:
-#    from local_consts import *
-#except Exception, e:
-#    logging.info('no local_consts.py: %s' % e, exc_info=True)
-#    pass
-
+# Overide settings with local_consts unless the google app name is exactly 'social-referral'
+# HT: http://stackoverflow.com/questions/4650622/how-can-i-load-all-keys-from-a-dict-as-local-variables-a-better-aproach
+#
+# NOTE: For this to work, this must be the last line in your util/local_consts.py
+# > LOCAL_CONSTS = dict((name, value) for (name, value) in globals().items()
+# >                                   if name[:1] in string.ascii_uppercase )
+# >
+appname = get_application_id() # e.g. brian-willet
+if appname != APP_LIVE:
+    try:
+        logging.info ("appname = %s; loading local_consts" % appname)
+        from local_consts import LOCAL_CONSTS
+        globals().update(LOCAL_CONSTS)
+    except Exception, e:
+        pass

@@ -20,7 +20,7 @@ from apps.action.models     import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
 
-from util.helpers           import generate_uuid
+from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
 ## -----------------------------------------------------------------------------
@@ -172,25 +172,25 @@ class SIBTVoteAction(VoteAction):
         return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
 
     @staticmethod
-    def get_by_app_and_instance_and_user(a, i, u):
+    def get_by_app_and_instance_and_user(app_, instance, user):
         action = None
-        key = SIBTVoteAction.get_tracking_by_user_and_instance(u, i)
+        key = SIBTVoteAction.get_tracking_by_user_and_instance(user, instance)
         if key:
             action = SIBTVoteAction.get(key)
 
         if not action:
             action = SIBTVoteAction.all()\
-                    .filter('app_ =', a)\
-                    .filter('sibt_instance =', i)\
-                    .filter('user =', u)\
+                    .filter('app_ =', app_)\
+                    .filter('sibt_instance =', instance)\
+                    .filter('user =', user)\
                     .get()
         return action
 
     @staticmethod
-    def get_by_app_and_instance( a, i ):
+    def get_by_app_and_instance( app_, instance ):
         return SIBTVoteAction.all()\
-                .filter('app_ =', a)\
-                .filter('sibt_instance =', i)\
+                .filter('app_ =', app_)\
+                .filter('sibt_instance =', instance)\
                 .get()
 
 class SIBTShowAction(ShowAction):

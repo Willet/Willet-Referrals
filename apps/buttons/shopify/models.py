@@ -14,8 +14,7 @@ from django.utils         import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
-from apps.buttons.models  import Buttons, ClientsButtons, ButtonsFBActions 
-from apps.client.shopify.models   import ClientShopify
+from apps.buttons.models  import Buttons
 from apps.email.models    import Email
 from apps.link.models     import Link
 
@@ -30,9 +29,7 @@ NUM_VOTE_SHARDS = 15
 #       client adds buttons
 #       each button has a buttonFBAction type
 
-# ------------------------------------------------------------------------------
-# Button Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class ButtonsShopify(Buttons, AppShopify):
     billing_enabled = db.BooleanProperty(indexed= False, default= False)
 
@@ -46,6 +43,8 @@ class ButtonsShopify(Buttons, AppShopify):
 
     def do_install( self ):
         """ Install Buttons scripts and webhooks for this store """
+        app_name = self.__class__.__name__
+
         # Define our script tag 
         tags = [{
             "script_tag": {
@@ -58,7 +57,7 @@ class ButtonsShopify(Buttons, AppShopify):
         }]
 
         # Install yourself in the Shopify store
-        self.install_webhooks()
+        self.install_webhooks(product_hooks_too=False)
         self.install_script_tags(script_tags=tags)
 
         # Fire off "personal" email from Fraser
@@ -76,7 +75,14 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
-        return True
+        # Start sending email updates
+        if 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+            self.client.subscribe_to_mailing_list(
+                list_name=app_name,
+                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
+            )
+        
+        return
 
     def do_upgrade(self):
         """ Remove button scripts and add the paid version """
@@ -106,68 +112,65 @@ class ButtonsShopify(Buttons, AppShopify):
         #    )
         #)
 
+    # Constructors ------------------------------------------------------------------------------
+    @classmethod
+    def create_app(cls, client, app_token):
+        """ Constructor """
+        uuid = generate_uuid( 16 )
+        app = cls(key_name=uuid,
+                  uuid=uuid,
+                  client=client,
+                  store_name=client.name, # Store name
+                  store_url=client.url,  # Store url
+                  store_id=client.id,   # Store id
+                  store_token=app_token,
+                  button_selector="_willet_buttons_app" ) 
+        app.put()
 
-# Constructor ------------------------------------------------------------------
+        app.do_install()
+            
+        return app
+
+    # 'Retreive or Construct'ers -----------------------------------------------------------------
+    @classmethod
+    def get_or_create_app(cls, client, token ):
+        """ Try to retrieve the app.  If no app, create one """
+        app = cls.get_by_url(client.url)
+        
+        if app is None:
+            app = cls.create_app(client, token)
+        
+        elif token != None and token != '':
+            if app.store_token != token:
+                # TOKEN mis match, this might be a re-install
+                logging.warn(
+                    'We are going to reinstall this app because the stored\
+                     token does not match the request token\n%s vs %s' % (
+                        app.store_token,
+                        token
+                    )
+                ) 
+                try:
+                    app.store_token = token
+                    app.client      = client
+                    app.old_client  = None
+                    app.put()
+                    
+                    app.do_install()
+                except:
+                    logging.error('encountered error with reinstall', exc_info=True)
+        return app
+
+# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
+    raise DeprecationWarning('Replaced by ButtonShopify.create_app')
+    ButtonShopify.create_app(client, app_token)
 
-    uuid = generate_uuid( 16 )
-    app = ButtonsShopify( key_name          = uuid,
-                          uuid              = uuid,
-                          client            = client,
-                          store_name        = client.name, # Store name
-                          store_url         = client.url,  # Store url
-                          store_id          = client.id,   # Store id
-                          store_token       = app_token,
-                          button_selector   = "_willet_buttons_app",
-                          recurring_billing_status = 'none' )
-    
-    # Define recurring billing settings
-    billing_settings = {
-        "price":        0.99,
-        "name":         "ShopConnection",
-        "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, self.uuid),
-        "test":         "true", # Set to false when live
-        "trial_days":   0
-    }
-    
-    confirm_url = app.setup_recurring_billing(billing_settings)
-    
-    app.put()
-
-    return app, confirm_url
-
-# Accessors --------------------------------------------------------------------
-def get_or_create_buttons_shopify_app( client, token ):
-    confirm_url = None
-    app = get_shopify_buttons_by_url( client.url )
-    
-    if app is None:
-        app, confirm_url = create_shopify_buttons_app(client, token)
-    
-    elif token != None and token != '':
-        if app.store_token != token:
-            # TOKEN mis match, this might be a re-install
-            logging.warn(
-                'We are going to reinstall this app because the stored token does not match the request token\n%s vs %s' % (
-                    app.store_token,
-                    token
-                )
-            ) 
-            try:
-                app.store_token = token
-                app.client      = client
-                app.old_client  = None
-                app.put()
-                
-                confirm_url = app.do_install()
-            except:
-                logging.error('encountered error with reinstall', exc_info=True)
-    return app, confirm_url
+def get_or_create_buttons_shopify_app(client, token):
+    raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
+    ButtonShopify.get_or_create_app(client, token)
 
 def get_shopify_buttons_by_url( store_url ):
-    """ Fetch a Shopify obj from the DB via the store's url"""
-    store_url = get_shopify_url( store_url )
-
-    logging.info("Shopify: Looking for %s" % store_url)
-    return ButtonsShopify.all().filter( 'store_url =', store_url ).get()
+    raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
+    ButtonShopify.get_by_url(store_url)
 

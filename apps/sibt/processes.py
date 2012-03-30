@@ -12,7 +12,6 @@ from google.appengine.ext import webapp, db
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
-from apps.app.models          import get_app_by_id
 from apps.email.models        import Email
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
@@ -20,7 +19,7 @@ from apps.product.models      import Product
 from apps.sibt.actions        import *
 from apps.sibt.models         import SIBTInstance, PartialSIBTInstance
 from apps.user.actions        import UserIsFBLoggedIn
-from apps.user.models         import User, get_or_create_user_by_cookie
+from apps.user.models         import User
 
 from util.consts              import *
 from util.helpers             import url 
@@ -33,11 +32,11 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARE SIBT ON FACEBOOK")
 
-        app  = get_app_by_id(self.request.get('app_uuid'))
+        app  = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = get_or_create_user_by_cookie(self, app)
+            user = User.get_or_create_by_cookie(self, app)
         willt_code = self.request.get('willt_code')
         link = Link.get_by_code(willt_code)
         img = self.request.get('product_img')
@@ -142,8 +141,8 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        app  = get_app_by_id(self.request.get('app_uuid'))
-        user = get_or_create_user_by_cookie(self, app)
+        app  = App.get_by_uuid(self.request.get('app_uuid'))
+        user = User.get_or_create_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         
@@ -382,7 +381,7 @@ class StartSIBTAnalytics(URIHandler):
                 'show_action': 'SIBTShowingButton',
                 'l': [],
                 'counts': {},
-            }        
+            }
         }
         actions_to_check = [
             'SIBTShowingAskIframe',
@@ -648,14 +647,15 @@ class SendFriendAsks( URIHandler ):
                                       product_title= product.title,
                                       client_name=   app.client.name,
                                       client_domain= app.client.domain )
-                        email_share_counter += 1
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)
+                    finally:
+                        email_share_counter += 1
             
             friend_share_counter = fb_share_counter + email_share_counter
 
-            if friend_share_counter > 0:
+            if friend_share_counter > 0: 
                 # create the instance!
                 instance = app.create_instance( user, 
                                                 None, 
@@ -679,7 +679,10 @@ class SendFriendAsks( URIHandler ):
             if not response['data']['warnings']:
                 del response['data']['warnings']
             
-            iuid = instance.uuid if instance else None
+            try:
+                iuid = instance.uuid
+            except:
+                iuid = None
 
             logging.info('Asker: %s\n \
                 Friends: %s\n \

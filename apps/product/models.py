@@ -7,7 +7,7 @@ from apps.client.models     import Client
 from util.model             import Model
 
 class Product(Model, db.polymodel.PolyModel):
-    uuid    = db.StringProperty(indexed=True)
+
     created = db.DateTimeProperty(auto_now_add=True)
     client  = db.ReferenceProperty(Client, collection_name='products')
     
@@ -21,6 +21,8 @@ class Product(Model, db.polymodel.PolyModel):
     images = db.StringListProperty()
 
     price = db.FloatProperty(default=float(0))
+
+    _memcache_fields = ['resource_url']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 

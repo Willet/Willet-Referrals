@@ -46,12 +46,7 @@ class ButtonsShopifyWelcome(URIHandler):
         client = ClientShopify.get_by_url( shop )
     
         # Fetch or create the app
-        app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
-        
-        # If we're setting up billing
-        if confirm_url:
-            self.redirect( confirm_url )
-            return
+        app    = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {
@@ -107,7 +102,7 @@ class SmartButtonsShopifyUpgrade(URIHandler):
     def get(self):
         shop_url = self.request.get("shop_url")
 
-        existing_app = get_shopify_buttons_by_url(shop_url)
+        existing_app = ButtonsShopify.get_by_url(shop_url)
         if existing_app is None:
             # TODO: Error, can't upgrade if not installed
             pass

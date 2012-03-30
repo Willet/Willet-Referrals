@@ -2,11 +2,8 @@
 
 from apps.email.views import *
 from apps.email.processes import *
+from apps.email.models import *
 
 urlpatterns = [
-    # Views
-#    (r'/a/deleteApp', DoDeleteApp),
-
-    # Processes
-    (r'/email/sendEmailInvites', SendEmailInvites),
+    (r'/email/sendasync', SendEmailAsync),
 ]

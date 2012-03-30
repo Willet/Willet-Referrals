@@ -9,51 +9,43 @@
             <div id="splash">
                 <div class="title_bar">
                     <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                    <div>Ask Your Friends</div>
-                    <div class="drop_bar" id="questionOptions">
-                        <div class="holder">
-                            <div class="grey_bar">
-                                Should I buy this?
+                    <div>Need Help Deciding? Ask Your Friends</div>
+                </div>
+                <div class="content narrow">
+                    <!-- 
+                    // Enable when styling complete
+                    {% if incentive_enabled %}
+                    <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
+                    {% endif %}
+                    -->
+                    <div class="message" id="message">
+                        <img alt="product" src="{{ product_images|first }}" />
+                        <textarea id='shareText'>I like this, but...</textarea>
+                        <div class="detailed">Hint: detailed questions get better answers</div>
+                    </div>
+                    <div class="options">
+                        <div class="option left">
+                            <div class="button" id="postOnWall" title="Post to your wall">
+                                <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                                <div class="title">Ask Friends</div>
+                                <div class="subtitle">Post to Facebook</div>
                             </div>
-                            <img alt="arrow" src="/static/sibt/imgs/drop_arrow_29x29.png" />
+                            <div class="hint">
+                                <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
+                                <div>easy &amp; fast</div>
+                            </div>
                         </div>
-                        <ul>
-                            <!-- Question options appended when document ready -->
-                        </ul>
-                    </div>
-                </div>
-                <!-- 
-                // Enable when styling complete
-                {% if incentive_enabled %}
-                <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
-                {% endif %}
-                -->
-                <div class="message" id="message">
-                    <img alt="product" src="{{ product_images|first }}" />
-                    <textarea id='shareText'>{{ AB_share_text|escape }}</textarea>
-                </div>
-                <div class="options">
-                    <div class="option left">
-                        <div class="button" id="postOnWall" title="Post to your wall">
-                            <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
-                            <div class="title">Ask Friends</div>
-                            <div class="subtitle">Post to Facebook</div>
-                        </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>easy &amp; fast</div>
-                        </div>
-                    </div>
-                    <div class="or">or</div>
-                    <div class="option right">
-                        <div class="button" id="showChooseScreen" title="Post to your friends' walls">
-                            <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
-                            <div class="title">Choose Friends</div>
-                            <div class="subtitle">Get trusted advice</div>
-                        </div>
-                        <div class="hint">
-                            <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
-                            <div>best advice</div>
+                        <div class="or">or</div>
+                        <div class="option right">
+                            <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                                <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                                <div class="title">Choose Friends</div>
+                                <div class="subtitle">Get trusted advice</div>
+                            </div>
+                            <div class="hint">
+                                <img alt="hint arrow" src="/static/sibt/imgs/little_arrow.png" />
+                                <div>best advice</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,7 +123,7 @@
                 showScreen('asking');
 
                 // No errors with friends, submit!
-                payload = {
+                var payload = {
                     user_name       : "{{user_name}}",
                     user_uuid       : "{{user_uuid}}",
                     app_uuid        : "{{app_uuid}}",
@@ -184,46 +176,46 @@
 {% block js_functions %}
         // Show or hide list of question options on Splash screen
         // opt - true = show, false = hide
-        var toggleShowQuestionOptions = function (opt) {
-            $('#questionOptions>ul').toggle(opt);
-        };
+        //var toggleShowQuestionOptions = function (opt) {
+        //    $('#questionOptions>ul').toggle(opt);
+        //};
 
         // Question to ask has been selected.  Change button text and 
         // close list of options on Splash screen
-        var selectQuestionOption = function (num) {
-            $('#questionOptions .grey_bar').text(options[num].title);
-            $('#message>textarea').html(options[num].text);
-            toggleShowQuestionOptions();
-        };
+        //var selectQuestionOption = function (num) {
+        //    $('#questionOptions .grey_bar').text(options[num].title);
+        //    $('#message>textarea').html(options[num].text);
+        //    toggleShowQuestionOptions();
+        //};
 {% endblock js_functions %}
 
 {% block js_init %}
             // Close drop down bar if it loses focus
             // Hack because div's dont have blur
-            $("body").click(function (evt) {
-                 var target = evt.target;
-                 if ($(target).parents("#questionOptions").length === 0)  {
-                     toggleShowQuestionOptions(false);
-                 }
-            });
+            //$("body").click(function (evt) {
+            //     var target = evt.target;
+            //     if ($(target).parents("#questionOptions").length === 0)  {
+            //         toggleShowQuestionOptions(false);
+            //     }
+            //});
 
             // Don't change this - click passes values into toggle,
             // which will trigger an animation we don't want. So
             // we wrap in function to block pass-through.
-            $('#questionOptions .grey_bar').click(function () {toggleShowQuestionOptions();
-            });
+            //$('#questionOptions .grey_bar').click(function () {toggleShowQuestionOptions();
+            //});
 
-            $('#questionOptions img').click(function () {
-                toggleShowQuestionOptions();
-            });
+            //$('#questionOptions img').click(function () {
+            //    toggleShowQuestionOptions();
+            //});
 
             // Load up options
-            (function () {
-                var $ul = $('#questionOptions>ul');
-                $.each(options, function (i, opt) {
-                    $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
-                });
-            })();
+            //(function () {
+            //    var $ul = $('#questionOptions>ul');
+            //    $.each(options, function (i, opt) {
+            //        $ul.append("<li onclick='selectQuestionOption("+i+");' >"+opt.title+"</li>");
+            //    });
+            //})();
 
             // OK READY TO GO!
             showScreen('splash');

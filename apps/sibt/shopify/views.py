@@ -21,6 +21,7 @@ from apps.action.models       import ButtonLoadAction
 from apps.action.models       import ScriptLoadAction
 from apps.app.models          import *
 from apps.client.models       import *
+from apps.email.models        import Email
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models         import Link
 from apps.product.shopify.models import ProductShopify
@@ -30,12 +31,12 @@ from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
 from apps.sibt.models         import SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
-from apps.user.models         import get_user_by_cookie
 from apps.user.models         import User
-from apps.user.models         import get_or_create_user_by_cookie
+from apps.wosib.shopify.models import WOSIBShopify
 
 from util.shopify_helpers import get_shopify_url
 from util.helpers             import *
+from util.helpers             import url as build_url
 from util.urihandler          import URIHandler
 from util.consts              import *
 
@@ -48,21 +49,42 @@ class ShowBetaPage(URIHandler):
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class SIBTShopifyWelcome(URIHandler):
+    # "install done" page. actually installs the apps.
     def get(self):
-        logging.info('trying to create app')
+        client_email = shop_owner = shop_name = ''
+        logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
-            logging.debug ('client is %s' % client)        
-            token = self.request.get('t') # token
-            app = SIBTShopify.get_or_create(client, token=token)
             
-            client_email = None
+            token = self.request.get('t') # token
+
+            # update client token (needed when reinstalling)
+            if client and client.token != token:
+                client.token = token
+                client.put()
+            
+            if not client:
+                # client was just put, expected to be in memcache
+                logging.error('Memcache is lagging!')
+            
+            app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
+            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
+            
             shop_owner   = 'Shopify Merchant'
             shop_name    = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
                 client_email = client.email
                 shop_owner   = client.merchant.get_attr('full_name')
                 shop_name    = client.name
+
+                # Query the Shopify API to update all Products
+                taskqueue.add(
+                    url = build_url('FetchShopifyProducts'),
+                    params = {
+                        'client_uuid': client.uuid,
+                        'app_type'   : 'SIBTShopify'
+                    }
+                )
 
             # Switched to new order tracking code on Jan 16
             if app.created > datetime( 2012, 01, 16 ):
@@ -80,47 +102,64 @@ class SIBTShopifyWelcome(URIHandler):
                 'new_order_code' : new_order_code
             }
 
-            self.response.out.write( self.render_page( 'welcome.html', template_values)) 
-        except:
-            logging.error('wtf: (apps/sibt/shopify)', exc_info=True)
+            self.response.out.write(self.render_page('welcome.html', template_values)) 
+        except Exception, e:
+            logging.error('SIbt install error, may require reinstall', exc_info=True)
+            # Email DevTeam
+            Email.emailDevTeam(
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                    (client_email, shop_owner, client.url, shop_name)
+            )
+            self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
+            return
 
 class SIBTShopifyEditStyle(URIHandler):
+    ''' Modifies SIBT button style - internal use only. '''
+    @admin_required
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
+        logging.info('Updating %s with styles: \n%s' % (app.store_url, 
+                                                      [ '%s { %s }' % (var, self.request.get(var)) for var in post_vars ]))
 
         if self.request.get('set_to_default'):
-            logging.error('reset button')
+            # Reset to default CSS
+            logging.debug('reset button')
             app.reset_css()
         else:
+            # Update custom CSS with new rules
             css_dict = app.get_css_dict()
-            for key in css_dict:
-                for value in css_dict[key]:
-                    lookup = '%s:%s' % (key, value)
-                    #logging.info('looking for: %s' % lookup)
-                    if lookup in post_vars:
-                        #logging.info('found with value: %s' % 
-                        #        self.request.get(lookup))
-                        css_dict[key][value] = self.request.get(lookup) 
+            
+            #logging.debug('Start css_dict = %s' % json.dumps(css_dict))
 
+            for var in post_vars:
+                key = value = None
+                try:
+                    (key, value) = var.split(':')
+                except ValueError:
+                    continue
+
+                #logging.debug('Updating %s:%s with %s' % (key, value, self.request.get(var)))
+
+                # Rules stored as "holding-element:specific-element" like "willet_button_v3:others"
+                if key and value:
+
+                    # Add key if it doesn't already exist
+                    if not key in css_dict:
+                        #logging.debug('%s not in css_dict, adding {}' % key)
+                        css_dict[key] = {}
+
+                    css_dict[key][value] = self.request.get(var)
+
+            #logging.debug('Final css_dict = %s' % json.dumps(css_dict))
+            # Save updated CSS
             app.set_css(css_dict)
-        self.get(app_uuid, app = app)
-
-    def get(self, app_uuid, app=None):
-        if not app:
-            app = SIBTShopify.get(app_uuid)
-
-        """
-        client = self.get_client()
-        if client.uuid != app.client.uuid:
-            self.redirect('/')
-        """
+        self.get(app_uuid)
+    
+    @admin_required
+    def get(self, app_uuid):
+        app = SIBTShopify.get(app_uuid)
 
         css_dict = app.get_css_dict()
         css_values = app.get_css()
@@ -129,7 +168,6 @@ class SIBTShopifyEditStyle(URIHandler):
             # because template has issues with variables that have
             # a dash in them
             new_key = key.replace('-', '_').replace('.','_')
-            #logging.warn('adding key:\n%s = %s' % (new_key, css_dict[key]))
             display_dict[new_key] = css_dict[key]
 
         logging.warn('css: %s' % css_values)
@@ -146,125 +184,6 @@ class SIBTShopifyEditStyle(URIHandler):
         
         self.response.out.write(self.render_page('edit_style.html', template_values)) 
 
-class ShowEditPage(URIHandler):
-    def get(self):
-        # Renders a app page
-        """
-        client = self.get_client() # May be None
-        # Request varZ from us
-        app_id       = self.request.get( 'id' )
-        error        = self.request.get( 'error' )
-        error_msg    = self.request.get( 'error_msg')
-        product_name = self.request.get( 'product_name' )
-        target_url   = self.request.get( 'target_url' )
-        share_text   = self.request.get( 'share_text' )
-        
-        # Request varZ from Shopify
-        shopify_url  = self.request.get( 'shop' )
-        shopify_sig  = self.request.get( 'signature' )
-        store_token  = self.request.get( 't' )
-        shopify_timestamp = self.request.get( 'timestamp' )
-        pages = {
-            'one': 'old',
-            'two': 'current',
-            'three': 'next',
-            'four': 'next'
-        } 
-        # Init the template values with a blank app
-        template_values = {
-            'pages': pages,
-            'app' : None,
-            'has_app': False
-        }
-        
-        # Check the Shopify stuff if they gave it to us.
-        # If it fails, let's just say they aren't coming from Shopify.
-        # If we don't have this info, we could be redirecting on an error
-        logging.info("CHECKING SHOPIFY")
-        if shopify_sig != '' and shopify_url != '':
-            # Verify Shopify varZ
-            s = 'shop=%st=%stimestamp=%s' % (shopify_url, store_token, shopify_timestamp)
-            d = hashlib.md5( SIBT_SHOPIFY_API_SHARED_SECRET + s).hexdigest()
-            logging.info('S: %s D: %s' % (shopify_sig, d))
-            
-            # TODO(Barbara): What the heck happened here? Shopify stopped working.
-            #if shopify_sig == d: # ie. if this is valid from shopify
-            logging.info("BARBARBABRBARBABRABRBABRA")
-
-            product_name = shopify_url.split( '.' )[0].capitalize()
-            
-            # Ensure the 'http' is in the URL
-            if 'http' not in shopify_url:
-                shopify_url = 'http://%s' % shopify_url
-
-            # Fetch the sibt app by url
-            app = get_sibt_app_by_url( shopify_url )
-            if app is None:
-                logging.info("NO APP")
-                template_values['show_guiders'] = True
-                template_values['app'] = {
-                    'product_name' : client.name,
-                    'target_url'   : client.url,
-                    'uuid': ''
-                }
-            else:
-                template_values['app']     = app
-                template_values['has_app'] = True 
-                    
-            template_values['shop_owner'] = client.merchant.get_attr('full_name') if client else 'Awesome Bob'
-
-            # The Shopify check failed. Redirecting to normal site. 
-            # TODO(Barbara): This might need to change in the future.
-            #else:
-            #    logging.info("REDIRECTING")
-            #    self.redirect( '/s/edit' )
-            #    return
-
-        # Fake a app to put data in if there is an error
-        if error == '1':
-            template_values['error'] = 'Invalid Shopify store url.'
-            template_values['app'] = { 'product_name' : product_name,
-                                        'target_url'  : target_url,
-                                        'share_text'  : share_text, 
-                                        'store_token' : store_token,
-                                        'uuid': ''
-                                      }
-        elif error == '2':
-            template_values['error'] = 'Please don\'t leave anything blank.'
-            template_values['app'] = { 'product_name' : product_name,
-                                        'target_url'  : target_url,
-                                        'share_text'  : share_text, 
-                                        'store_token' : store_token,
-                                        'uuid': ''
-                                      }
-        elif error == '3':
-            template_values['error'] = 'There was an error with one of your inputs: %s' % error_msg
-            template_values['app'] = { 'product_name' : product_name,
-                                        'target_url'  : target_url,
-                                        'share_text'  : share_text, 
-                                        'store_token' : store_token,
-                                        'uuid': ''
-                                      }
-
-        # Otherwise, 
-        elif app_id != '':
-            
-            # Updating an existing app here:
-            app = get_app_by_id( app_id )
-            if app == None:
-                self.redirect( '/s/edit' )
-                return
-            
-            template_values['has_app'] = True 
-            template_values['app']       = app
-            template_values['analytics'] = True if app.cached_clicks_count != 0 else False
-
-        template_values['BASE_URL']  = URL
-        template_values['has_app'] = False
-        self.response.out.write( self.render_page( 'edit.html', template_values)) 
-        """
-        pass
-
 class ShowFinishedPage(URIHandler):
     def get(self):
         app_id       = self.request.get( 'id' )
@@ -280,7 +199,7 @@ class ShowFinishedPage(URIHandler):
             'app' : None,
             'has_app': False
         }
-        app = get_app_by_id( app_id )
+        app = App.get_by_uuid( app_id )
         if app == None:
             self.redirect( '/s/edit' )
             return
@@ -297,11 +216,18 @@ class ShowFinishedPage(URIHandler):
             )
         ) 
 
-class ShowCodePage( URIHandler ):
+
+class ShowEditPage(URIHandler):
+    def get(self):
+        pass
+
+
+class ShowCodePage(URIHandler):
     def get(self):
        pass
 
-class SIBTShopifyServeScript(webapp.RequestHandler):
+
+class SIBTShopifyServeScript(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -319,29 +245,45 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             target = get_target_url(self.request.headers.get('REFERER'))
 
-        user = get_or_create_user_by_cookie( self, app )
+        user = User.get_or_create_by_cookie(self, app)
 
         # Try to find an instance for this { url, user }
         try:
             assert(app != None)
+            
+            if target and not hasattr(app, 'extra_url'):
+                ''' check if target (almost always window.location.href) has the same domain as store url
+                    example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
+                    
+                    [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
+                '''
+                try:
+                    url_parts = urlparse (target)
+                    if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
+                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                        logging.info ("[SIBT] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
+                        app.put()
+                except:
+                    pass # can't decode target as URL; oh well!
+            
             try:
                 # Is User an asker for this URL?
-                logging.info('trying to get instance for url: %s' % target)
+                logging.debug('trying to get instance for url: %s' % target)
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
                 assert(instance != None)
                 event = 'SIBTShowingResults'
-                logging.info('got instance by user/target: %s' % instance.uuid)
+                logging.debug('got instance by user/target: %s' % instance.uuid)
             except Exception, e:
                 try:
-                    logging.info('trying willet_code: %s' % e)
+                    logging.debug('trying willet_code: %s' % e)
                     link = Link.get_by_code(willet_code)
                     instance = link.sibt_instance.get()
                     assert(instance != None)
                     event = 'SIBTShowingResults'
-                    logging.info('got instance by willet_code: %s' % instance.uuid)
+                    logging.debug('got instance by willet_code: %s' % instance.uuid)
                 except Exception, e:
                     try:
-                        logging.info('trying actions: %s' % e)
+                        logging.debug('trying actions: %s' % e)
                         instances = SIBTInstance.all(keys_only=True)\
                             .filter('url =', target)\
                             .fetch(100)
@@ -351,12 +293,12 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
                         if action:
                             instance = action.sibt_instance
                             assert(instance != None)
-                            logging.info('got instance by action: %s' % instance.uuid)
+                            logging.debug('got instance by action: %s' % instance.uuid)
                             event = 'SIBTShowingVote'
                     except Exception, e:
-                        logging.info('no instance available: %s' % e)
+                        logging.debug('no instance available: %s' % e)
         except:
-            logging.info('no app')
+            logging.debug('no app')
 
         # If we have an instance, figure out if 
         # a) Is User asker?
@@ -370,17 +312,17 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
             try:
                 asker_name = asker_name.split(' ')[0]
                 if not asker_name:
-                    asker_name = 'I' # what?
+                    asker_name = 'I' # "should asker_name buy this?"
             except:
                 logging.warn('error splitting the asker name')
 
             is_asker = (instance.asker.key() == user.key()) 
             if not is_asker:
-                logging.info('not asker, check for vote ...')
+                logging.debug('not asker, check for vote ...')
                 
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
                 
-                logging.info('got a vote action? %s' % vote_action)
+                logging.debug('got a vote action? %s' % vote_action)
                 
                 has_voted = (vote_action != None)
 
@@ -406,12 +348,70 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             logging.warn("no app and no instance!")
 
-        # this should only happen once, can be removed at a later date
-        # TODO remove this code
-        if not hasattr(app, 'button_enabled'):
-            app.button_enabled = True
-            app.put()
+        # a whole bunch of css bullshit!
+        if app:
+            logging.info("got app button css")
+            app_css = app.get_css()
+        else:
+            app_css = SIBTShopify.get_default_css()
+        
+        # Grab all template values
+        template_values = {
+            'URL'            : URL,
+            'is_asker'       : is_asker,
+            'show_votes'     : show_votes,
+            'has_voted'      : has_voted,
+            'is_live'        : is_live,
+            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
+            
+            'app'            : app,
+            'instance'       : instance,
+            'asker_name'     : asker_name, 
+            'asker_pic'      : asker_pic,
+
+            'store_url'      : shop_url,
+            'store_domain'   : getattr (app.client, 'domain', ''),
+            'store_id'       : self.request.get('store_id'),
+            'product_uuid'   : product.uuid if product else "",
+            'product_title'  : product.title if product else "",
+            'product_images' : product.images if product else "",
+            'product_desc'   : product.description if product else "",
+          
+            'user'           : user,
+            'stylesheet'     : '../../plugin/templates/css/colorbox.css',
+            'sibt_version'   : app.version or 2,
+
+            'evnt'           : event,
+            
+            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'willt_code'     : link.willt_url_code if link else "",
+            'app_css'        : app_css,
+        }
+
+        # Finally, render the JS!
+        path = os.path.join('apps/sibt/templates/', 'sibt.js')
+
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+        self.response.out.write(template.render(path, template_values))
+        return
+
+class SIBTShopifyServeAB (URIHandler):
+    """ Serve AB values for SIBTShopifyServeScript in a different JSON request.
+        Hopes are that it speeds up button rendering.
+    """
     
+    def get(self):
+        shop_url    = get_shopify_url(self.request.get('store_url'))
+        app         = SIBTShopify.get_by_store_url(shop_url)
+        user        = User.get_or_create_by_cookie(self, app)
+        
+        # return json format if jsonp is not set
+        jsonp       = self.request.get('jsonp', False)
+        if jsonp:
+            jsonp = True # convert string to boolean
+
         # AB-Test or not depending on if the admin is testing.
         if not user.is_admin():
             if app.incentive_enabled:
@@ -443,80 +443,102 @@ class SIBTShopifyServeScript(webapp.RequestHandler):
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
 
-        # a whole bunch of css bullshit!
-        if app:
-            logging.info("got app button css")
-            app_css = app.get_css()
-        else:
-            app_css = SIBTShopify.get_default_css()
-        
-        # Grab all template values
-        template_values = {
-            'URL'            : URL,
-            'is_asker'       : is_asker,
-            'show_votes'     : show_votes,
-            'has_voted'      : has_voted,
-            'is_live'        : is_live,
-            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
-            
-            'app'            : app,
-            'instance'       : instance,
-            'asker_name'     : asker_name, 
-            'asker_pic'      : asker_pic,
-
-            'store_url'      : shop_url,
-            'store_domain'   : getattr (app.client, 'domain', ''),
-            'store_id'       : self.request.get('store_id'),
-            'product_uuid'   : product.uuid if product else "",
-            'product_title'  : product.title if product else "",
-            'product_images' : product.images if product else "",
-            'product_desc'   : product.description if product else "",
-          
-            'user': user,
-            'stylesheet': 'css/colorbox.css',
-
-            'AB_CTA_text' : cta_button_text,
-
-            'evnt' : event,
-            
-            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'fb_redirect' : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code' : link.willt_url_code if link else "",
-            'app_css': app_css,
-        }
-
-        # Store a script load action.
-        ButtonLoadAction.create( user, app, target )
-
+       
         # Finally, render the JS!
-        path = os.path.join('apps/sibt/templates/', 'sibt.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.response.out.write(template.render(path, template_values))
+        if jsonp: # JSONP
+            self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+            self.response.out.write ('var AB_CTA_text = "%s";' % cta_button_text)
+        else: # JSON
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write ('{ "AB_CTA_text": "%s" }' % cta_button_text)
         return
 
-class SIBTShopifyProductDetection(webapp.RequestHandler):
+
+class SIBTShopifyProductDetection(URIHandler):
     def get(self):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        app       = SIBTShopify.get_by_store_url(store_url)
-        user      = get_or_create_user_by_cookie( self, app )
-        target    = get_target_url(self.request.headers.get('REFERER'))
+        
+        if store_url: # only render if there is a point of doing so
+            app       = SIBTShopify.get_by_store_url(store_url)
+            user      = User.get_or_create_by_cookie(self, app)
+            target    = get_target_url(self.request.headers.get('REFERER'))
 
-        # Store a script load action.
-        ScriptLoadAction.create(user, app, target)
+            # Store a script load action.
+            if not target: # force a referrer so the ScriptLoad always saves
+                # commonly caused by naughty visitors who disables referrer info
+                # http://en.wikipedia.org/wiki/Referrer_spoofing
+                target = "http://no-referrer.com"
+            ScriptLoadAction.create(user, app, target)
 
+            template_values = {
+                'URL' : URL,
+                'store_url': store_url,
+                'user': user,
+                'sibt_button_id': '_willet_shouldIBuyThisButton',
+            }
+            path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+            self.response.headers.add_header('P3P', P3P_HEADER)
+            self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
+            self.response.out.write(template.render(path, template_values))
+        return
+
+
+class SIBTShopifyInstallError (URIHandler):
+    def get (self):
+        """ Displays an error page for when the SIBT app fails to install. 
+            Error emails are not handled by this page. 
+        """
+        
         template_values = {
             'URL' : URL,
-            'store_url': store_url,
-            'user': user,
-            'sibt_button_id': '_willet_shouldIBuyThisButton',
+            'reason': self.request.get('reason', None),
         }
-        path = os.path.join('apps/sibt/templates/', 'sibt_product_detection.js')
+        path = os.path.join('apps/sibt/shopify/templates/', 'install_error.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
-        
         return
+
+
+class SIBTShopifyVersion2To3(URIHandler):
+    """ TEMPORARY!!! """
+    @admin_required
+    def get(self, admin):
+        """ Updates all version 2 SIBT apps to version 3 """
+        logging.warn('TEMPORARY HANDLER')
+
+        apps = SIBTShopify.all().fetch(limit=500)
+        app_stats = {
+            'v1': 0,
+            'v2': 0,
+            'v3': 0
+        }
+        updated_apps = []
+
+        for app in apps:
+            if app.version == '1':
+                app_stats['v1'] += 1
+
+            elif app.version == '2':
+                app_stats['v2'] += 1
+                app.version = '3'
+                db.put_async(app)
+                updated_apps.append(app)
+
+            elif app.version == '3':
+                app_stats['v3'] += 1
+
+            else:
+                logging.warn('App has no version: %r' % app)
+
+        # Now update memcache
+        for app in updated_apps:
+            key = app.get_key()
+            if key:
+                memcache.set(key, db.model_to_protobuf(app).Encode(), time=MEMCACHE_TIMEOUT)
+
+        self.response.out.write("Updated %i v2 apps. Found %i v1 and %i v3 apps." % (app_stats['v2'], app_stats['v1'], app_stats['v3']))
 

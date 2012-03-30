@@ -18,8 +18,6 @@ from apps.app.models            import *
 from apps.client.shopify.models import ClientShopify
 from apps.link.models           import Link
 from apps.user.models           import User
-from apps.user.models           import get_or_create_user_by_cookie
-from apps.user.models           import get_user_by_cookie
 
 from apps.order.models          import *
 
@@ -64,8 +62,6 @@ class ShopifyRedirect( URIHandler ):
 
         if redirect_url != None:
             redirect_url = '%s?%s' % (redirect_url, self.request.query_string)
-        elif app == 'referral':
-            redirect_url = '/r/shopify?%s' % self.request.query_string
         elif app == 'sibt':
             redirect_url = '/s/shopify?%s' % self.request.query_string
         elif app == 'buttons':
@@ -76,16 +72,27 @@ class ShopifyRedirect( URIHandler ):
         self.redirect(redirect_url)
 
 # The "Dos" --------------------------------------------------------------------
-class DoDeleteApp( URIHandler ):
+class DoDeleteApp(URIHandler):
     def post( self ):
         client   = self.get_client()
         app_uuid = self.request.get( 'app_uuid' )
         
         logging.info('app id: %s' % app_uuid)
-        app = get_app_by_id( app_uuid )
+        app = App.get_by_uuid(app_uuid)
         if app.client.key() == client.key():
-            logging.info('deelting')
+            logging.info('deleting')
             app.delete()
         
         self.redirect( '/client/account' )
 
+class ServeShopifyUI(URIHandler):
+    def get (self):
+        app = self.request.get('app')
+
+        if app == 'sibt':
+            redirect_url = '/s/shopify/real-sibt.js?%s' % self.request.query_string
+        elif app == 'wosib':
+            redirect_url = '/w/shopify/wosib_button.js?%s' % self.request.query_string
+
+        logging.info("redirecting app %s to %s" % (app, redirect_url))
+        self.redirect(redirect_url)

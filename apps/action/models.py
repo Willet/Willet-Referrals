@@ -15,18 +15,19 @@ from google.appengine.ext    import deferred
 from google.appengine.ext    import db
 from google.appengine.ext.db import polymodel
 
-from util.consts             import *
-from util.helpers            import generate_uuid
-from util.model              import Model
+#from apps.buttons.actions       import *
+#from apps.gae_bingo.actions     import *
+#from apps.sibt.actions          import *
+#from apps.wosib.actions         import *
+#from util.consts                import *
+from util.helpers               import generate_uuid
+from util.model                 import Model
 from util.memcache_bucket_config import MemcacheBucketConfig
-from util.memcache_ref_prop  import MemcacheReferenceProperty
+from util.memcache_ref_prop     import MemcacheReferenceProperty
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
-    from apps.buttons.actions import *
-    from apps.gae_bingo.actions import *
-    from apps.sibt.actions import *
-    action_dict = memcache.get_multi(list_keys) 
+    """action_dict = memcache.get_multi(list_keys) 
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
 
@@ -70,7 +71,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     if decrementing:
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
-
+    """
 
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
@@ -80,9 +81,6 @@ class Action(Model, polymodel.PolyModel):
         an 'Action' obj will be stored for them.
         This 'Action' class will be subclassed for specific actions
         ie. click, vote, tweet, share, email, etc. """
-
-    # Unique identifier for memcache and DB key
-    uuid            = db.StringProperty( indexed = True )
     
     # Datetime when this model was put into the DB
     created         = db.DateTimeProperty( auto_now_add=True )
@@ -135,8 +133,8 @@ class Action(Model, polymodel.PolyModel):
         """Datastore retrieval using memcache_key"""
         return Action.all().filter('uuid =', uuid).get()
 
-    def validateSelf( self ):
-        pass
+    def _validate_self(self):
+        return True
 
     def __unicode__(self):
         return self.__str__()
@@ -239,7 +237,7 @@ class VoteAction( Action ):
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-    def validateSelf(self):
+    def _validate_self(self):
         if not (self.vote == 'yes' or self.vote == 'no'):
             raise Exception("Vote type needs to be yes or no")
 

@@ -168,13 +168,20 @@ def set_visited_cookie(headers):
 def admin_required( fn ):
     def check(self, param=None):
         from apps.user.models import User
-        user = User.get(read_user_cookie(self))
-
-        if not user.is_admin():
+        user_cookie = read_user_cookie(self)
+        user = User.get(user_cookie) if user_cookie else None
+        
+        try:
+            if not user or not user.is_admin():
+                logging.error('@admin_required: Non-admin is attempting to access protected pages')
+                self.redirect ( '/' )
+                return
+            else:   
+                fn( self, param )
+        except Exception, e:
+            logging.error('@admin_required - Error occured, redirecting to homepage: %s' % e, exc_info=True)
             self.redirect ( '/' )
             return
-        else:   
-            fn( self, param )
     return check
 
 #
@@ -234,21 +241,26 @@ def url(view, *args, **kwargs):
         app = webapp.WSGIApplication.active_instance
         handler = app.get_registered_handler_by_name(view)
 
-        logging.info('handler: %s' % handler)
-
         url = handler.get_url(*args)
 
         qs = kwargs.get('qs', ())
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.info(qs)
-        logging.info('got url: %s' % url)
+        logging.info('url(\'%s\',...) became: %s' % (view,url))
     except:
-        logging.warn('could not reverse url %s' % view)
+        logging.warn('Could not reverse url %s' % view)
 
     return url  
 
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')
     return p.sub('', data)
+
+def create_hash (*args):
+    """Returns a hash from args"""
+    keys = list (args)
+    if SALT:
+        keys.append (SALT)
+    key = "".join(list(('%s$' % str(k)) for k in keys))
+    return hashlib.sha1(key).hexdigest()
