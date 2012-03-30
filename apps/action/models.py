@@ -9,25 +9,22 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
 
-from google.appengine.api    import memcache
-from google.appengine.datastore import entity_pb
-from google.appengine.ext    import deferred
-from google.appengine.ext    import db
-from google.appengine.ext.db import polymodel
+from google.appengine.api           import memcache
+from google.appengine.datastore     import entity_pb
+from google.appengine.ext           import deferred
+from google.appengine.ext           import db
+from google.appengine.ext.db        import polymodel
 
-from util.consts             import *
-from util.helpers            import generate_uuid
-from util.model              import Model
-from util.memcache_bucket_config import MemcacheBucketConfig
-from util.memcache_ref_prop  import MemcacheReferenceProperty
+from util.consts                    import *
+from util.helpers                   import generate_uuid
+from util.model                     import Model
+from util.memcache_bucket_config    import MemcacheBucketConfig
+from util.memcache_ref_prop         import MemcacheReferenceProperty
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
-    from apps.buttons.actions import *
-    from apps.gae_bingo.actions import *
-    from apps.sibt.actions import *
-    from apps.wosib.actions import *
-    action_dict = memcache.get_multi(list_keys) 
+    pass
+    """action_dict = memcache.get_multi(list_keys) 
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
 
@@ -70,7 +67,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
 
     if decrementing:
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
-            mbc.name, mbc.count, bucket_key))
+            mbc.name, mbc.count, bucket_key))"""
 
 
 ## -----------------------------------------------------------------------------
