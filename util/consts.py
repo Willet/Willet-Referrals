@@ -148,13 +148,17 @@ INSTALLED_APPS = [
 ]
 
 # Overide settings with local_consts unless the google app name is exactly 'social-referral'
+# HT: http://stackoverflow.com/questions/4650622/how-can-i-load-all-keys-from-a-dict-as-local-variables-a-better-aproach
+#
+# NOTE: For this to work, this must be the last line in your util/local_consts.py
+# > LOCAL_CONSTS = dict((name, value) for (name, value) in globals().items()
+# >                                   if name[:1] in string.ascii_uppercase )
+# > 
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:
         logging.info ("appname = %s; loading local_consts" % appname)
         from local_consts import LOCAL_CONSTS
-        globals = inspect.currentframe(1).f_globals
-        for key, value in LOCAL_CONSTS:
-            globals[key] = value
+        globals().update(LOCAL_CONSTS)
     except Exception, e:
-        pass
+        logging.error('Could not import LOCAL_CONSTS: %r' % e, exc_info=True)
