@@ -93,7 +93,7 @@
         },
         "Pinterest": {
             "detect": {
-                "method": "image-hack",
+                "method": "image",
                 "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
             },
             "button": {
@@ -126,7 +126,7 @@
         },
         "Twitter": {
             "detect": {
-                "method": "image-hack",
+                "method": "image",
                 "func": function() { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
             },
             "button": {
@@ -159,7 +159,7 @@
         }, 
         "GooglePlus": {
             "detect": {
-                "method": "image-hack",
+                "method": "image",
                 "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
             },
             "button": {
@@ -361,20 +361,22 @@
         document.body.appendChild(detectNetworksDiv);
 
         for (network in SUPPORTED_NETWORKS) {
-            var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
-            _willet.debug.log("Buttons: Attempting to detect " + network);
-            switch (detectNetwork["method"]) {
-                case "image-hack":
-                    var image = createHiddenImage(network, detectNetwork.func());
-                    detectNetworksDiv.appendChild(image);
-                break;
+            if (SUPPORTED_NETWORKS.hasOwnProperty(network)) {
+                var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
+                _willet.debug.log("Buttons: Attempting to detect " + network);
+                switch (detectNetwork["method"]) {
+                    case "image":
+                        var image = createHiddenImage(network, detectNetwork.func());
+                        detectNetworksDiv.appendChild(image);
+                    break;
 
-                case "api":
-                    detectNetwork.func();
-                break;
+                    case "api":
+                        detectNetwork.func();
+                    break;
 
-                default:
-                    //Nothing to do
+                    default:
+                        //Nothing to do
+                }
             }
         }
     };
@@ -425,7 +427,8 @@
                 }
                 
                 for (var network in networks) {
-                    if (xHasKeyY(SUPPORTED_NETWORKS, network)
+                    if (networks.hasOwnProperty(network)
+                        && xHasKeyY(SUPPORTED_NETWORKS, network)
                         && networks[network] === true) {
                         requiredButtons.push(network);
                     }
