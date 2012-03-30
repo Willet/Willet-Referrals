@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
 __author__      = "Willet Inc."
-__copyright__   = "Copyright 2011, Willet Inc."
+__copyright__   = "Copyright 2012, Willet Inc."
 
 import logging, os
 import inspect
 
 from google.appengine.ext        import webapp
 from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp import Request
 
 from apps.client.models import Client
 from util.consts        import *
@@ -15,16 +16,62 @@ from util.gaesessions   import get_current_session
 from util.templates     import render 
 
 
+class SuperRequest(Request):
+    ''' Subclass RequestHandler's request attribute to provide unicode requests.
+        SuperRequest currently converts all request elements of type str to type unicode.
+        
+        You should not need to know about this class.
+    '''
+    _request = None
+
+    def __init__(self, request):
+        self._request = request
+    
+    def get(self, argument_name, default_value=''):
+        logging.debug('called subclassed get() instead: %s = %r' % (argument_name, default_value))
+        
+        # if thing is str, convert it to unicode
+        got = self._request.get(argument_name, default_value)
+        became = got # default for if got is not str
+        if isinstance(got, str):
+            try:
+                became = unicode(got)
+            except UnicodeDecodeError, e:
+                became = unicode(str(got).encode('ignore'))
+
+        logging.debug('turned %r into %r' % (got, became))
+        return became
+    
+    def __getattr__(self, name):
+        try:
+            return Request.__getattr__(self, name)
+        except AttributeError:
+            logging.error("shit")
+            pass
+
+
 class URIHandler(webapp.RequestHandler):
 
     def __init__(self):
-        # For simple caching purposes. Do not directly access this. Use self.get_client() instead.
+        '''
+        super(URIHandler, self).__init__()
+        '''
         try:
             self.response.headers.add_header('P3P', P3P_HEADER)
         except:
             pass
+
         self.db_client = None
 
+    '''
+    def __getattribute__(self,name):
+        original = webapp.RequestHandler.__getattribute__(self, name)
+        if name=='request':
+            if not isinstance(original, SuperRequest):
+                original = SuperRequest(original)
+        return original
+    '''
+    
     # Return None if not authenticated.
     # Otherwise return db instance of client.
     def get_client(self):

@@ -5,6 +5,7 @@
 
 import os
 import logging
+import string
 
 from urlparse import urlunsplit
 
@@ -155,11 +156,19 @@ INSTALLED_APPS = [
     'link',
 ]
 
+def str (string, encoding='utf8', errors=None):
+    ''' patch str to return unicode objects. '''
+    if errors:
+        return unicode(("%s" % string).encode(encoding, errors),encoding)
+    else: # errors=None cannot be passed in
+        return unicode(("%s" % string).encode(encoding),encoding)
+
 # Overide settings with local_consts unless the google app name is exactly 'social-referral'
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:
         logging.info ("appname = %s; loading local_consts" % appname)
-        from local_consts import *
+        import local_consts
+        globals().update(local_consts.LOCAL_CONSTS)
     except Exception, e:
         pass
