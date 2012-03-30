@@ -4,7 +4,6 @@
 # constants for referrals
 
 import os
-import inspect
 import logging
 
 from urlparse import urlunsplit
@@ -168,8 +167,6 @@ if appname != APP_LIVE:
     try:
         logging.info ("appname = %s; loading local_consts" % appname)
         from local_consts import LOCAL_CONSTS
-        globals = inspect.currentframe(1).f_globals
-        for key, value in LOCAL_CONSTS:
-            globals[key] = value
+        globals().update(LOCAL_CONSTS)
     except Exception, e:
-        pass
+        logging.error('Could not import LOCAL_CONSTS: %r' % e, exc_info=True)
