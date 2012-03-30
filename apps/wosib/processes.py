@@ -343,9 +343,9 @@ class SendWOSIBFriendAsks( URIHandler ):
                 else:
                     msg = "I'm not sure which one I should buy. What do you think?"
             if isinstance(msg, str):
-                message = unicode(msg, errors='ignore')
+                message = unicode(msg, 'utf8', errors='ignore')
         except:
-            logging.warrning('error transcoding to unicode', exc_info=True)
+            logging.warning('error transcoding to unicode', exc_info=True)
 
         product_image = "%s/static/imgs/blank.png" % URL # blank
         

@@ -46,6 +46,9 @@ class SendEmailAsync(URIHandler):
         if replyto_address:
             params['replyto'] = replyto_address
 
+        # urlencode does NOT like unicode, but will process utf8 strings encoded in ascii format
+        params = dict((key, params[key].encode('utf8')) for key in params)
+
         if ',' in to_address:
             try:
                 e = EmailMessage(

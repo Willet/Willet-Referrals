@@ -69,16 +69,16 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
         
         try:
             if isinstance(message, str):
-                message = unicode(message, errors='ignore')
+                message = unicode(message, 'utf8', errors='ignore')
 
             if isinstance(img, str):
-                img = unicode(img, errors='ignore')
+                img = unicode(img, 'utf8', errors='ignore')
             
             if isinstance(product_name, str):
-                product_name = unicode(product_name, errors='ignore')
+                product_name = unicode(product_name, 'utf8', errors='ignore')
 
             if isinstance(product_desc, str):
-                product_desc = unicode(product_desc, errors='ignore')
+                product_desc = unicode(product_desc, 'utf8', errors='ignore')
         except:
             logging.info('error transcoding to unicode', exc_info=True)
 
@@ -588,9 +588,9 @@ class SendFriendAsks( URIHandler ):
                     else:
                         msg = "I'm not sure if I should buy this. What do you think?"
                 if isinstance(msg, str):
-                    message = unicode(msg, errors='ignore')
+                    message = unicode(msg, 'utf8', errors='ignore')
             except:
-                logging.warrning('error transcoding to unicode', exc_info=True)
+                logging.warning('error transcoding to unicode', exc_info=True)
 
             # Get product image
             try:
