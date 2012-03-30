@@ -40,6 +40,10 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def get_by_uuid( uuid ):
+        return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
+
     def do_install( self ):
         """ Install Buttons scripts and webhooks for this store """
         # Define our script tag 
@@ -73,6 +77,34 @@ class ButtonsShopify(Buttons, AppShopify):
         )
 
         return True
+
+    def do_upgrade(self):
+        """ Remove button scripts and add the paid version """
+        self.uninstall_script_tags();
+        self.install_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
+                    URL,
+                    self.uuid
+                ),
+                "event": "onload"
+            }
+        }])
+
+        # Fire off "personal" email from Fraser
+        #Email.welcomeClient( "ShopConnection", 
+        #                     self.client.email, 
+        #                     self.client.merchant.get_full_name(), 
+        #                     self.client.name )
+
+        # Email DevTeam
+        #Email.emailDevTeam(
+        #    'ButtonsShopify Upgrade: %s %s %s' % (
+        #        self.uuid,
+        #        self.client.name,
+        #        self.client.url
+        #    )
+        #)
 
 
 # Constructor ------------------------------------------------------------------

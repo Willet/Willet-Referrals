@@ -69,10 +69,18 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
     Activates billing with Shopify, then redirects customer to installation instructions
     """
     def get(self):
-        app = App.get_by_uuid( self.request.get('app_uuid') )
-        charge_id = self.request.get('charge_id')
+        app_uuid =self.request.get('app_uuid')
+        app = ButtonsShopify.get_by_uuid(app_uuid)
+
+        if not app:
+            # TODO: Error! What is going on?!
+            pass
+
+        charge_id = int(self.request.get('charge_id'))
 
         if charge_id == app.recurring_billing_id:
+            logging.info(self.request.arguments())
+
             # Good to go, activate!
             app.activate_recurring_billing({
                 'return_url': self.request.url,
@@ -81,8 +89,10 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
             app.billing_enabled = True
 
             app.put()
+
+            app.do_upgrade();
         else:
-            raise ShopifyBillingError('Charge id in request does not match expected charge id')
+            raise ShopifyBillingError('Charge id in request does not match expected charge id', app.recurring_billing_id)
 
         # Render the page
         template_values = {
@@ -104,10 +114,10 @@ class SmartButtonsShopifyUpgrade(URIHandler):
 
         # Start the billing process
         confirm_url = existing_app.setup_recurring_billing({
-            "price":        0.99,
+            "price":        0.01,
             "name":         "ShopConnection",
             "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
-            "test":         "true" # Set to false when live
+            "test":         "true" # Set to false when live; can't run 'false' when in development
             #"trial_days":   0
         })
 
@@ -128,4 +138,4 @@ class SmartButtonsShopifyWelcome(URIHandler):
 class SmartButtonsShopifyBeta(URIHandler):
     """ If an existing customer clicks through from Shopify """
     def get(self):
-        self.response.out.write(self.render_page('beta.html', {}))
+        self.response.out.write(self.render_page('smart-beta.html', {}))

@@ -139,8 +139,11 @@ class AppShopify(Model):
                 headers = header
             )
 
+        # TODO: Check that no 'errors' key exists
+
         # Good responses
-        if int(resp.status) == 200 or int(resp.status) == 201:
+        valid_response_codes = [200, 201]
+        if "application/json" in resp['content-type'] and int(resp.status) in valid_response_codes:
             data = json.loads(content)
             return data
         
@@ -154,16 +157,39 @@ class AppShopify(Model):
                 except:
                     pass
 
-            #Email.emailDevTeam(
-            #    '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
-            #        self.class_name(),
-            #        resp.status,
-            #        resp.reason,
-            #        self.store_url,
-            #        data if data else content
-            #    )        
-            #)
-            raise ShopifyAPIError(resp.status, resp.reason, data)
+        #Email.emailDevTeam(
+        #    '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
+        #        self.class_name(),
+        #        resp.status,
+        #        resp.reason,
+        #        self.store_url,
+        #        data if data else content
+        #    )        
+        #)
+        raise ShopifyAPIError(resp.status, resp.reason, url + ", " + content)
+
+    def _retrieve_single_billing_object(self, charge_type, id):
+        """ Retrieve billing info for customer
+
+        Returns: <Object> charge info
+        """
+
+        # TODO: Find out why we can't retrieve individual payments (always get 'page not found' after redirect)
+        results = self._call_Shopify_API('GET', '%s.json' % charge_type)
+
+        application_charges = results[charge_type]
+
+        result = {}
+        for charge in application_charges:
+            if charge["id"] == id:
+                result = charge
+                break
+
+        if result is not {}:
+            return {charge_type: result}
+        else:
+            # TODO: Error!
+            pass
     
     def setup_application_charge(self, settings):
         """ Setup one-time charge for store
@@ -207,8 +233,7 @@ class AppShopify(Model):
 
         Returns: <Object> charge info
         """
-        return self._call_Shopify_API('GET', 
-            'application_charges/#%s.json' % self.charge_id)
+        return self._retrieve_single_billing_object('application_charge', self.charge_id)
     
     def activate_application_charge(self, settings):
         """ Activate charge for customer that has approved it
@@ -235,7 +260,9 @@ class AppShopify(Model):
             None
         """
 
-        charge_data = self._retrieve_application_charge()
+        data = self._retrieve_application_charge()
+
+        charge_data = result['application_charges']
 
         if charge_data == 'pending':
             # Update status
@@ -259,8 +286,8 @@ class AppShopify(Model):
             raise ShopifyBillingError('Charge cancelled before activation request', recurring_billing_data)
         
         return
-        
-
+    
+    # TODO: Refactor billing common functionality
     def setup_recurring_billing(self, settings):
         """ Setup store with a recurring blling charge for this app.
 
@@ -310,8 +337,7 @@ class AppShopify(Model):
 
         Returns: <Object> billing info
         """
-        return self._call_Shopify_API('GET', 
-            'recurring_application_charges/#%s.json' % self.recurring_billing_id)
+        return self._retrieve_single_billing_object('recurring_application_charges', self.recurring_billing_id)
     
     def activate_recurring_billing(self, settings):
         """ Activate billing for customer that has approved it
@@ -337,16 +363,19 @@ class AppShopify(Model):
             None
         """
         # First retrieve most of the data from Shopify
-        recurring_billing_data = self._retrieve_recurring_billing()
+        result = self._retrieve_recurring_billing()
+
+        recurring_billing_data = result['recurring_application_charges']
 
         # Check that status isn't cancelled
-        if recurring_billing_data == 'pending':
+        if recurring_billing_data["status"] == 'accepted':
             # Update status
             recurring_billing_data.update({
                 "status":"accepted"
             })
             recurring_billing_data.update(settings)
         
+            # TODO: Why can't I activate this charge?
             data = self._call_Shopify_API('POST',
                         'recurring_application_charges/#%s/activate.json' % self.recurring_billing_id,
                         { "recurring_application_charge": recurring_billing_data })
@@ -467,38 +496,53 @@ class AppShopify(Model):
                     )        
                 )
         logging.info('installed %d webhooks' % len(webhooks))
-        
+
+    def get_script_tags(self):
+        return self.__call_Shopify_API("GET", "script_tags.json")
+    
     def install_script_tags(self, script_tags=None):
         """ Install our script tags onto the Shopify store """
         if script_tags == None:
             script_tags = []
 
-        url      = '%s/admin/script_tags.json' % self.store_url
-        username = self.settings['api_key'] 
-        password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
+        # TODO: Remove cruft if __call_Shopify_API works
+
+        #url      = '%s/admin/script_tags.json' % self.store_url
+        #username = self.settings['api_key'] 
+        #password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
+        #header   = {'content-type':'application/json'}
+        #h        = httplib2.Http()
         
-        h.add_credentials(username, password)
+        #h.add_credentials(username, password)
         
         for script_tag in script_tags:
-            logging.info("POSTING to %s %r " % (url, script_tag) )
-            resp, content = h.request(
-                url,
-                "POST",
-                body = json.dumps(script_tag),
-                headers = header
-            )
-            logging.info('%r %r' % (resp, content))
-            if int(resp.status) == 401:
-                Email.emailDevTeam(
-                    '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
-                        self.class_name(),
-                        resp,
-                        content
-                    )        
-                )
+            self.__call_Shopify_API("POST", "script_tags.json", payload=script_tag);
+            #logging.info("POSTING to %s %r " % (url, script_tag) )
+            #resp, content = h.request(
+            #    url,
+            #    "POST",
+            #    body = json.dumps(script_tag),
+            #    headers = header
+            #)
+            #logging.info('%r %r' % (resp, content))
+            #if int(resp.status) == 401:
+            #    Email.emailDevTeam(
+            #        '%s SCRIPT_TAGS INSTALL FAILED\n%s\n%s' % (
+            #            self.class_name(),
+            #            resp,
+            #            content
+            #        )        
+            #    )
         logging.info('installed %d script_tags' % len(script_tags))
+
+    def uninstall_script_tags(self):
+        result = self.get_script_tags()
+        script_tags = result['script_tags']
+
+        for script_tag in script_tags:
+            self.__call_Shopify_API("DELETE", "script_tags/#%s.json" % script_tag["id"]);
+
+        logging.info('uninstalled %d script_tags' % len(script_tags))
 
     def install_assets(self, assets=None):
         """Installs our assets on the client's store
