@@ -590,7 +590,7 @@ class SendFriendAsks( URIHandler ):
                 if isinstance(msg, str):
                     message = unicode(msg, errors='ignore')
             except:
-                logging.warrning('error transcoding to unicode', exc_info=True)
+                logging.warning('error transcoding to unicode', exc_info=True)
 
             # Get product image
             try:
