@@ -48,7 +48,7 @@ class Model(db.Model):
     # Subclasses can add their own fields.
     # Memcaching with non-unique fields yields unexpected results!
     # Failure to cache a given field will raise a warning.
-    memcache_fields = []
+    _memcache_fields = []
 
     def _validate_self(self):
         ''' All Model subclasses containing a _validate_self function
@@ -163,7 +163,7 @@ class Model(db.Model):
         sec_keys = []
         try:
             key = self.get_key()
-            for field in self.memcache_fields: # get secondary keys to point to primary key
+            for field in self._memcache_fields: # get secondary keys to point to primary key
                 if getattr (self, field, None): # if this object's given property has a non-null value
                     # e.g. sibt-http://ohai.ca if SIBT specifies memcache by a store URL field
                     sec_keys.append(self.build_key (str (getattr (self, field))))
@@ -178,7 +178,7 @@ class Model(db.Model):
                 logging.warn ("Failed to memcache object by custom key: %s" % e, exc_info=True)
 
         except Exception, e:
-            logging.error("Error setting memcache for %s (%d secondary keys: %r)" % (e, self, len(self.memcache_fields), self.memcache_fields), exc_info=True)
+            logging.error("Error setting memcache for %s (%d secondary keys: %r)" % (e, self, len(self._memcache_fields), self._memcache_fields), exc_info=True)
 # end class
 
 
