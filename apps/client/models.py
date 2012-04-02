@@ -46,7 +46,7 @@ class Client(Model, polymodel.PolyModel):
         return cls.all().filter('email =', email).get()
 
     @classmethod
-    def get_by_uuid(uuid):
+    def get_by_uuid(cls, uuid):
         return cls.all().filter('uuid =', uuid).get()
 
     # Mailing list methods --------------------------------------------------------------------------
