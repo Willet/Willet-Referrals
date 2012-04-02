@@ -24,14 +24,14 @@ class ButtonsShopifyBeta(URIHandler):
 class ButtonsShopifyWelcome(URIHandler):
     def get( self ):
         # TODO: put this somewhere smarter
-        shop   = self.request.get('shop')
-        token  = self.request.get('t')
+        shop = self.request.get('shop')
+        token = self.request.get('t')
 
         # Fetch the client
-        client = ClientShopify.get_by_url( shop )
+        client = ClientShopify.get_by_url(shop)
         
         if not client or not token:
-            self.error (400) # bad request
+            self.error(400) # bad request
             return
         
         # update client token (needed when reinstalling)
