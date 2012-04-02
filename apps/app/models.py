@@ -104,7 +104,7 @@ class App(Model, polymodel.PolyModel):
         """add num clicks to this app's share counter"""
         def txn():
             index = random.randint(0, NUM_SHARE_SHARDS-1)
-            shard_name = self.uuid + str(index)
+            shard_name = self.uuid + unicode(index)
             counter = ShareCounter.get_by_key_name(shard_name)
             if counter is None:
                 counter = ShareCounter(key_name=shard_name, 

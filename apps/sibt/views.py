@@ -400,7 +400,7 @@ class ShowResults(webapp.RequestHandler):
             if total == 0:
                 vote_percentage = None
             else:
-                vote_percentage = str(int(float(float(yesses)/float(total))*100))
+                vote_percentage = unicode(int(float(yesses * 100) / total))
 
             product = ProductShopify.get_or_fetch(target, app.client)
 
@@ -547,6 +547,6 @@ class SIBTGetUseCount (URIHandler):
             if button_use_count is None:
                 button_use_count = int (SIBTShowingButton.all().count() / 100)
                 memcache.add ("usecount-%s" % product_uuid, button_use_count)
-            self.response.out.write (str (button_use_count))
+            self.response.out.write (unicode(button_use_count))
         except:
             self.response.out.write ('0') # no shame in that?

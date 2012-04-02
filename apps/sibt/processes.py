@@ -53,7 +53,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
         product = None
         try:
-            product = ProductShopify.get_by_shopify_id( str(product_id) )
+            product = ProductShopify.get_by_shopify_id(unicode(product_id))
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
         try:
@@ -128,7 +128,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
                 response['success'] = True
         except Exception,e:
-            response['data']['message'] = str(e)
+            response['data']['message'] = unicode(e)
             logging.error('we had an error sharing on facebook', exc_info=True)
 
         logging.info('response: %s' % response)
@@ -161,7 +161,7 @@ class StartSIBTInstance(URIHandler):
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
-            response['data']['message'] = str(e)
+            response['data']['message'] = unicode(e)
             logging.error('we had an error creating the instnace', exc_info=True)
 
         self.response.out.write(json.dumps(response))
@@ -622,7 +622,7 @@ class SendFriendAsks( URIHandler ):
 
                 except Exception,e:
                     # Should still do email friends
-                    response['data']['warnings'].append('Error sharing on Facebook: %s' % str(e))
+                    response['data']['warnings'].append('Error sharing on Facebook: %s' % unicode(e))
                     logging.error('we had an error sharing on facebook', exc_info=True)
 
             #--- Second do email friends ---#
@@ -642,7 +642,7 @@ class SendFriendAsks( URIHandler ):
                                       client_name=   app.client.name,
                                       client_domain= app.client.domain )
                     except Exception,e:
-                        response['data']['warnings'].append('Error sharing via email: %s' % str(e))
+                        response['data']['warnings'].append('Error sharing via email: %s' % unicode(e))
                         logging.error('we had an error sharing via email', exc_info=True)
                     finally:
                         email_share_counter += 1

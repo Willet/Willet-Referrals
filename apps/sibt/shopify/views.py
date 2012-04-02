@@ -260,7 +260,7 @@ class SIBTShopifyServeScript(URIHandler):
                 try:
                     url_parts = urlparse (target)
                     if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
-                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
+                        app.extra_url = u"%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
                         logging.info ("[SIBT] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
                         app.put()
                 except:
@@ -362,7 +362,7 @@ class SIBTShopifyServeScript(URIHandler):
             'show_votes'     : show_votes,
             'has_voted'      : has_voted,
             'is_live'        : is_live,
-            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
+            'show_top_bar_ask' : unicode((show_top_bar_ask and (app.top_bar_enabled if app else True))),
             
             'app'            : app,
             'instance'       : instance,
@@ -384,7 +384,7 @@ class SIBTShopifyServeScript(URIHandler):
             'evnt'           : event,
             
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'fb_redirect'    : u"%s%s" % (URL, url( 'ShowFBThanks' )),
             'willt_code'     : link.willt_url_code if link else "",
             'app_css'        : app_css,
         }

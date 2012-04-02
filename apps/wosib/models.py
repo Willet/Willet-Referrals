@@ -170,7 +170,7 @@ class WOSIBInstance(Model):
         def txn():
             logging.info ("Running vote++ transaction")
             index = random.randint(0, NUM_VOTE_SHARDS-1)
-            shard_name = self.uuid + str(index)
+            shard_name = self.uuid + unicode(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
                 counter = VoteCounter(key_name      =shard_name, 

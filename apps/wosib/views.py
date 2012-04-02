@@ -78,7 +78,7 @@ class WOSIBAskDynamicLoader(webapp.RequestHandler):
                 logging.debug ("Getting products by Shopify ID")
 
                 for shopify_id in ids:
-                    product = Product.all().filter ('shopify_id = ', str(shopify_id)).get()
+                    product = Product.all().filter ('shopify_id = ', unicode(shopify_id)).get()
 
                     if product: # could be None of Product is somehow not in DB
                         if len(product.images) > 0:

@@ -135,7 +135,7 @@ class SIBT(App):
                     )
                 )
             except Exception, e:
-               Email.emailDevTeam('SIBT INSTANCE: error printing data: %s' % str(e))
+               Email.emailDevTeam('SIBT INSTANCE: error printing data: %s' % unicode(e))
         return instance
 
 
@@ -250,7 +250,7 @@ class SIBTInstance(Model):
         """Increment this instance's votes (yes) counter"""
         def txn():
             index = random.randint(0, NUM_VOTE_SHARDS-1)
-            shard_name = self.uuid + str(index)
+            shard_name = self.uuid + unicode(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
                 counter = VoteCounter(key_name      =shard_name, 
@@ -265,7 +265,7 @@ class SIBTInstance(Model):
         """Increment this instance's votes (no) counter"""
         def txn():
             index = random.randint(0, NUM_VOTE_SHARDS-1)
-            shard_name = self.uuid + str(index)
+            shard_name = self.uuid + unicode(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
                 counter = VoteCounter(key_name      =shard_name, 

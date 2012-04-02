@@ -173,7 +173,7 @@ class Model(db.Model):
             for field in self._memcache_fields:
                 if getattr (self, field, None): # if this object's given property has a non-null value
                     try: # memcache by custom fields
-                        secondary_key = self.build_key (str (getattr (self, field)))
+                        secondary_key = self.build_key (unicode (getattr (self, field)))
                         memcache.set(secondary_key, key, time=MEMCACHE_TIMEOUT)
                         #logging.debug ("memcahced object by custom key: '%s'" % secondary_key)
                     except Exception, e:

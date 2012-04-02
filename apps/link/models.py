@@ -58,9 +58,9 @@ class Link(Model):
     # the string our client supplied us to identify this user with
     supplied_user_id = db.StringProperty(required=False)
     # keep track of our retweets
-    retweets         = db.ListProperty(str, required=True)
+    retweets         = db.ListProperty(unicode, required=True)
     # the location of the button that spawned this link
-    origin_domain    = db.StringProperty(str, required=False)
+    origin_domain    = db.StringProperty(unicode, required=False)
     # facebook's id for the share
     facebook_share_id  = db.StringProperty()
     # linkedin's id for the share
