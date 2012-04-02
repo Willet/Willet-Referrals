@@ -12,6 +12,7 @@ from google.appengine.runtime import DeadlineExceededError
 from apps.email.models import INFO, FRASER
 
 from util.consts import *
+from util.helpers import to_ascii, to_unicode
 from util.urihandler import URIHandler
 
 
@@ -47,7 +48,7 @@ class SendEmailAsync(URIHandler):
             params['replyto'] = replyto_address
 
         # urlencode does NOT like unicode, but will process utf8 strings encoded in ascii format
-        params = dict((key, params[key].encode('utf8')) for key in params)
+        params = to_ascii(params)
 
         if ',' in to_address:
             try:

@@ -29,6 +29,7 @@ from apps.wosib.models        import PartialWOSIBInstance
 
 from util.consts              import *
 from util.helpers             import remove_html_tags
+from util.helpers             import to_unicode
 from util.helpers             import url 
 from util.strip_html          import strip_html
 from util.urihandler          import URIHandler
@@ -342,8 +343,7 @@ class SendWOSIBFriendAsks( URIHandler ):
                     msg = default_msg
                 else:
                     msg = "I'm not sure which one I should buy. What do you think?"
-            if isinstance(msg, str):
-                message = unicode(msg, 'utf8', errors='ignore')
+            message = to_unicode(msg)
         except:
             logging.warning('error transcoding to unicode', exc_info=True)
 

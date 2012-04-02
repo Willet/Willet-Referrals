@@ -10,6 +10,52 @@ from google.appengine.ext import webapp
 from util.consts  import *
 from util.cookies import LilCookies
 
+def to_unicode(something):
+    ''' Take in a variable of some datatype as input and, if applicable, convert it into unicode.
+        Applicable types: str, unicode, list (flat), dict (flat)
+    '''
+    
+    def conv(me):
+        ''' mini helper to convert <str> into <unicode>. '''
+        return unicode(me, 'utf8', errors='ignore')
+    
+    try:
+        if type(something) is dict:
+            uni_thing = dict((key, conv(something[key])) for key in something)
+        elif type(something) is list:
+            uni_thing = [conv(val) for val in something]
+        elif type(something) is str:
+            uni_thing = conv(something)
+        else: # default passthrough
+            uni_thing = something
+        return uni_thing
+    except Exception, e:
+        logging.error('Unicode conversion error! %s; Returning original value "%s".' % (e, something), exc_info=True)
+        return something
+
+def to_ascii(something):
+    ''' Take in a variable of some datatype as input and, if applicable, convert it into unicode.
+        Applicable types: str, unicode, list (flat), dict (flat)
+    '''
+    
+    def conv(me):
+        ''' mini helper to convert <unicode> into <str>. '''
+        return me.encode('ascii', 'replace')
+    
+    try:
+        if type(something) is dict:
+            asc_thing = dict((key, conv(something[key])) for key in something)
+        elif type(something) is list:
+            asc_thing = [conv(val) for val in something]
+        elif type(something) is str:
+            asc_thing = conv(something)
+        else: # default passthrough
+            asc_thing = something
+        return asc_thing
+    except Exception, e:
+        logging.error('ASCII conversion error! %s; Returning original value "%s".' % (e, something), exc_info=True)
+        return something
+
 def to_dict(something, recursion=0):
     import datetime
     import time

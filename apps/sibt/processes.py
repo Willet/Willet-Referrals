@@ -24,8 +24,9 @@ from apps.user.actions        import UserIsFBLoggedIn
 from apps.user.models         import User
 
 from util.consts              import *
-from util.helpers             import url 
 from util.helpers             import remove_html_tags
+from util.helpers             import to_unicode
+from util.helpers             import url 
 from util.strip_html          import strip_html
 from util.urihandler          import URIHandler
 
@@ -68,17 +69,10 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
             logging.info('could not get product description')
         
         try:
-            if isinstance(message, str):
-                message = unicode(message, 'utf8', errors='ignore')
-
-            if isinstance(img, str):
-                img = unicode(img, 'utf8', errors='ignore')
-            
-            if isinstance(product_name, str):
-                product_name = unicode(product_name, 'utf8', errors='ignore')
-
-            if isinstance(product_desc, str):
-                product_desc = unicode(product_desc, 'utf8', errors='ignore')
+            message = to_unicode(message)
+            img = to_unicode(img)
+            product_name = to_unicode(product_name)
+            product_desc = to_unicode(product_desc)
         except:
             logging.info('error transcoding to unicode', exc_info=True)
 
@@ -587,8 +581,7 @@ class SendFriendAsks( URIHandler ):
                         msg = default_msg
                     else:
                         msg = "I'm not sure if I should buy this. What do you think?"
-                if isinstance(msg, str):
-                    message = unicode(msg, 'utf8', errors='ignore')
+                message = to_unicode(msg)
             except:
                 logging.warning('error transcoding to unicode', exc_info=True)
 
