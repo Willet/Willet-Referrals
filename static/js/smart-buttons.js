@@ -1,7 +1,34 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
  */
-;var _willet = (function(me) {
+;// Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
+var JSON;if(!JSON){JSON={};}
+(function(){'use strict';function f(n){return n<10?'0'+n:n;}
+if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
+f(this.getUTCMonth()+1)+'-'+
+f(this.getUTCDate())+'T'+
+f(this.getUTCHours())+':'+
+f(this.getUTCMinutes())+':'+
+f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
+var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
+function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
+if(typeof rep==='function'){value=rep.call(holder,key,value);}
+switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
+gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
+v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
+if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
+v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
+if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
+rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
+return str('',{'':value});};}
+if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
+return reviver.call(holder,key,value);}
+text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
+('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
+if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
+throw new SyntaxError('JSON.parse');};}}());
+
+var _willet = (function(me) {
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
@@ -35,27 +62,24 @@
                     });
                     button.style.width = '62px';
 
-                    var link = createElement({
-                        "nodename": "a",
-                        "href": 'http://www.tumblr.com/share',
-                        "title": "Share on Tumblr",
-                        "innerHTML": "Share on Tumblr",
-                        "style": {
-                            "display": 'inline-block',
-                            "textIndent": '-9999px',
-                            "textAlign": 'left',
-                            "width": '63px',
-                            "height": '20px',
-                            "background": "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent",
-                            "styleFloat": 'left', // IE
-                            "cssFloat": 'left', // FF, Webkit
-                            "marginRight": '5px',
-                            "marginTop": '0'
-                        },
-                        "onload": function() {
-                            itemShared("Tumblr");
-                        }
-                    });
+                    var link = document.createElement("a");
+                    link.href = 'http://www.tumblr.com/share';
+                    link.title = "Share on Tumblr";
+                    link.innerHTML = "Share on Tumblr";
+                    link.style.display = 'inline-block';
+                    link.style.textIndent = '-9999px';
+                    link.style.textAlign = 'left';
+                    link.style.width = '63px';
+                    link.style.height = '20px';
+                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent"
+                    link.style.styleFloat = 'left';
+                    link.style.cssFloat = 'left';
+                    link.style.marginRight = '5px';
+                    link.style.marginTop = 0;
+
+                    link.onload = function() {
+                        itemShared("Tumblr");
+                    };
 
                     button.appendChild(link);
                     return button;
@@ -67,7 +91,7 @@
                 "method": "api",
                 "func": function() {
                     _willet.messaging.xd.createMessageHandler(function(data) {
-                        var message = data.message;
+                        var message = data && data.message || {};
                         var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
                         updateLoggedInStatus("Facebook", status);
                     }, APP_URL + "/static/plugin/html/detectFB.html");
@@ -105,18 +129,18 @@
                     });
                     button.style.width = params.buttonCount ? '77px' : '43px';
 
-                    var link = createElement({
-                        "nodename": "a",
-                        "href": "http://pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( window.location.href ) + 
-                            "&media=" + encodeURIComponent( params.photo ) + 
-                            "&description=" + encodeURIComponent("I found this on " + params.domain),
-                        "className": "pin-it-button",
-                        "innerHTML": "Pin It",
-                        "onload": function() {
-                            itemShared("Tumblr");
-                        }
-                    });
+                    var link = document.createElement("a");
+                    link.href = "http://pinterest.com/pin/create/button/?" +
+                        "url=" + encodeURIComponent( window.location.href ) + 
+                        "&media=" + encodeURIComponent( params.photo ) + 
+                        "&description=" + encodeURIComponent("I found this on " + params.domain);
+                    link.className = "pin-it-button";
+                    link.innerHTML = "Pin It";
+
+                    link.onload = function() {
+                        itemShared("Tumblr");
+                    };
+
                     link.setAttribute('count-layout', "horizontal");
 
                     button.appendChild(link);
@@ -138,11 +162,9 @@
                     });
                     button.style.width = params.buttonCount ? '98px' : '56px';
 
-                    var link = createElement({
-                        "nodename": "a",
-                        "href": "https://twitter.com/share",
-                        "className": "twitter-share-button"
-                    });
+                    var link = document.createElement("a");
+                    link.href = "https://twitter.com/share";
+                    link.className = "twitter-share-button";
 
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
@@ -170,7 +192,17 @@
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.width = params.buttonCount ? '90px' : '32px';
-                    button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
+
+                    var gPlus = document.createElement("g:plusone");
+                    gPlus.setAttribute("size", "medium");
+                    if (!params.buttonCount) {
+                        gPlus.setAttribute("annotation", "none");
+                    }
+                    gPlus.setAttribute("callback", "_willet.gPlusShared");
+
+                    button.appendChild(gPlus);
+
+                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
 
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
@@ -218,16 +250,15 @@
                         u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
                     }
 
-                    var link = createElement({
-                        "nodename": "a",
-                        "id": "FancyButton",
-                        "href": u,
-                        "onload": function() {
-                            itemShared("Tumblr");
-                        }
-                    });
+                    var link = document.createElement("a");
+                    link.id = "FancyButton";
+                    link.href = u;
+
+                    link.onload = function() {
+                        itemShared("Tumblr");
+                    };
                     
-                    // a.setAttribute('data-count', ( button_count ? 'true' : 'false' ));
+                    link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
                     button.appendChild(link);
                     return button;
                 }
@@ -253,59 +284,42 @@
                 }
             } catch(e) {
                 // Property in destination object not set; create it and set its value.
-                src[prop] = obj[prop];
+                _willet.debug.log("Unable to merge value")
+                // src[prop] = obj[prop];
             }
         }
         return src;
-    }
-
-    var createElement = function (config) {
-        var nodeName = config.nodename || "";
-
-        if (nodeName === "") {
-            //ERROR
-        }
-
-        var modifiedConfig = config;
-        delete modifiedConfig.nodename;
-
-        var element = document.createElement(nodeName);
-        
-        //apply all properties to this
-        element = mergeObject(element, modifiedConfig);
-
-        return element;
     };
 
     var createBasicButton = function (params) {
         var id = params.id || '';
         var buttonSpacing = params.buttonSpacing || "0";
-        var d = createElement({
-            "nodename": "div",
-            "style": {
-                "styleFloat": "left", //IE
-                "cssFloat": "left", //FF, Webkit
-                "marginTop": "0",
-                "marginLeft": "0",
-                "marginBottom": "0",
-                "marginRight": buttonSpacing,
-                "paddingTop": "0",
-                "paddingLeft": "0",
-                "paddingBottom": "0",
-                "paddingRight": "0",
-                "border": "none",
-                "display": "block",
-                "visibility": "visible",
-                "height": "21px",
-                "position": "relative",
-                "overflow": "hidden"
-            },
-            "name": "button",
-            "id": "_willet_" + id,
-            "className": "_willet_social_button"
-        });
+
+        var d = document.createElement("div");
+
+        d.style.styleFloat = "left"; //IE
+        d.style.cssFloat = "left"; //FF, Webkit
+        d.style.marginTop = "0";
+        d.style.marginLeft = "0";
+        d.style.marginBottom = "0";
+        d.style.marginRight = buttonSpacing;
+        d.style.paddingTop = "0";
+        d.style.paddingLeft = "0";
+        d.style.paddingBottom = "0";
+        d.style.paddingRight = "0";
+        d.style.border = "none";
+        d.style.display = "block";
+        d.style.visibility = "visible";
+        d.style.height = "21px";
+        d.style.position = "relative";
+        d.style.overflow = "hidden";
+
+        d.name = "button";
+        d.id = "_willet_" + id;
+        d.className = "_willet_social_button";
+
         return d;
-    }
+    };
 
     var getRequiredButtonsFromElement = function(container) {
         // Get the buttons, should be children of #_willet_buttons_app
@@ -331,7 +345,7 @@
         _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
         LOGGED_IN_NETWORKS[network] = status;
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
-    }
+    };
 
     var itemShared = function(network) {
         // for now, do nothing
@@ -353,10 +367,8 @@
             return image;
         };
 
-        var detectNetworksDiv = createElement({
-            "nodename": "div",
-            "id": DETECT_NETWORKS_DIV_ID
-        });
+        var detectNetworksDiv = document.createElement("div");
+        detectNetworksDiv.id = DETECT_NETWORKS_DIV_ID;
 
         document.body.appendChild(detectNetworksDiv);
 
@@ -379,6 +391,7 @@
                 }
             }
         }
+        return _willet.cookies.read(COOKIE_NAME);
     };
 
     me.createButtons = function(productData) {
@@ -447,12 +460,11 @@
                     "buttonPadding": buttonPadding
                 }));
 
-                var script = createElement({
-                    "nodename": "script",
-                    "type": "text/javascript",
-                    "src": button["script"],
-                    "onload": button["onLoad"]
-                });
+                var script = document.createElement("script");
+                script.type = "text/javascript";
+                script.src = button["script"];
+                script.onload = button["onLoad"];
+
                 HEAD.appendChild(script);
                 _willet.debug.log('Buttons: '+ network +' attached');
             }
@@ -521,37 +533,6 @@
 
     return me;
 } (_willet || {}));
-
-_willet.JSON = (function(){
-    // Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
-    var JSON;if(!JSON){JSON={};}
-    (function(){'use strict';function f(n){return n<10?'0'+n:n;}
-    if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
-    f(this.getUTCMonth()+1)+'-'+
-    f(this.getUTCDate())+'T'+
-    f(this.getUTCHours())+':'+
-    f(this.getUTCMinutes())+':'+
-    f(this.getUTCSeconds())+'Z':null;};String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(key){return this.valueOf();};}
-    var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'},rep;function quote(string){escapable.lastIndex=0;return escapable.test(string)?'"'+string.replace(escapable,function(a){var c=meta[a];return typeof c==='string'?c:'\\u'+('0000'+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+string+'"';}
-    function str(key,holder){var i,k,v,length,mind=gap,partial,value=holder[key];if(value&&typeof value==='object'&&typeof value.toJSON==='function'){value=value.toJSON(key);}
-    if(typeof rep==='function'){value=rep.call(holder,key,value);}
-    switch(typeof value){case'string':return quote(value);case'number':return isFinite(value)?String(value):'null';case'boolean':case'null':return String(value);case'object':if(!value){return'null';}
-    gap+=indent;partial=[];if(Object.prototype.toString.apply(value)==='[object Array]'){length=value.length;for(i=0;i<length;i+=1){partial[i]=str(i,value)||'null';}
-    v=partial.length===0?'[]':gap?'[\n'+gap+partial.join(',\n'+gap)+'\n'+mind+']':'['+partial.join(',')+']';gap=mind;return v;}
-    if(rep&&typeof rep==='object'){length=rep.length;for(i=0;i<length;i+=1){if(typeof rep[i]==='string'){k=rep[i];v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}else{for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=str(k,value);if(v){partial.push(quote(k)+(gap?': ':':')+v);}}}}
-    v=partial.length===0?'{}':gap?'{\n'+gap+partial.join(',\n'+gap)+'\n'+mind+'}':'{'+partial.join(',')+'}';gap=mind;return v;}}
-    if(typeof JSON.stringify!=='function'){JSON.stringify=function(value,replacer,space){var i;gap='';indent='';if(typeof space==='number'){for(i=0;i<space;i+=1){indent+=' ';}}else if(typeof space==='string'){indent=space;}
-    rep=replacer;if(replacer&&typeof replacer!=='function'&&(typeof replacer!=='object'||typeof replacer.length!=='number')){throw new Error('JSON.stringify');}
-    return str('',{'':value});};}
-    if(typeof JSON.parse!=='function'){JSON.parse=function(text,reviver){var j;function walk(holder,key){var k,v,value=holder[key];if(value&&typeof value==='object'){for(k in value){if(Object.prototype.hasOwnProperty.call(value,k)){v=walk(value,k);if(v!==undefined){value[k]=v;}else{delete value[k];}}}}
-    return reviver.call(holder,key,value);}
-    text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function(a){return'\\u'+
-    ('0000'+a.charCodeAt(0).toString(16)).slice(-4);});}
-    if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
-    throw new SyntaxError('JSON.parse');};}}());
-
-    return JSON;
-}());
 
 _willet.debug = (function(){
     var me = {};
@@ -682,7 +663,7 @@ _willet.messaging = (function(){
 
                 if(splitHash.length) {
                     var dataJSONString = splitHash[1];
-                    var data = _willet.JSON.parse(dataJSONString);
+                    var data = JSON.parse(dataJSONString);
                     return data;
                 }
             }
@@ -705,7 +686,7 @@ _willet.messaging = (function(){
                 return;
             }
 
-            payload += MESSAGE_TOKEN + "=" + _willet.JSON.stringify(message);
+            payload += MESSAGE_TOKEN + "=" + JSON.stringify(message);
             
             _willet.debug.log("Messaging.XD: Sending payload..." + payload);
             if (window.parent.postMessage) {
