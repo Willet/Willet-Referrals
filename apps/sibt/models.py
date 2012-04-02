@@ -64,8 +64,9 @@ class SIBT(App):
 
     @classmethod
     def get_by_store_url(cls, url):
+        app = None
         if not url:
-            return None
+            return app
         
         try:
             ua = urlparse.urlsplit(url)
@@ -81,7 +82,6 @@ class SIBT(App):
         if not app:
             # no app in DB by store_url; try again with extra_url
             app = cls.all().filter('extra_url =', url).get()
-
         return app
     
     @staticmethod

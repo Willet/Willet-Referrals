@@ -31,7 +31,7 @@ from apps.order.models        import *
 from apps.sibt.actions        import SIBTClickAction
 from apps.sibt.actions        import SIBTVoteAction
 from apps.sibt.actions import SIBTShowingButton
-from apps.sibt.models         import SIBTInstance
+from apps.sibt.models         import SIBT, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models         import User
 from apps.wosib.shopify.models import WOSIBShopify
@@ -412,44 +412,49 @@ class SIBTShopifyServeAB (URIHandler):
     """
     
     def get(self):
-        shop_url    = get_shopify_url(self.request.get('store_url'))
-        app         = SIBTShopify.get_by_store_url(shop_url)
-        user        = User.get_or_create_by_cookie(self, app)
+        try:
+            app = SIBTShopify.get_by_store_url(get_shopify_url(self.request.get('store_url')))
+        except:
+            app = SIBT.get_by_store_url(get_shopify_url(self.request.get('store_url')))
         
-        # return json format if jsonp is not set
-        jsonp       = self.request.get('jsonp', False)
+        jsonp       = self.request.get('jsonp', False) # return json format if jsonp is not set
+
         if jsonp:
             jsonp = True # convert string to boolean
-
-        # AB-Test or not depending on if the admin is testing.
-        if not user.is_admin():
-            if app.incentive_enabled:
-                ab_test_options = [ "Not sure? Let friends vote! Save $5!",
-                                    "Earn $5! Ask your friends what they think!",
-                                    "Need advice? Ask your friends! Earn $5!",
-                                    "Save $5 by getting advice from friends!",
-                                    "Not sure? Ask your friends.",
-                                  ]
-                cta_button_text = ab_test( 'sibt_incentive_text', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
-            else:
-                ab_test_options = [ "Not sure? Start a vote!",
-                                    "Not sure? Let friends vote!",
-                                    "Need advice? Ask your friends to vote",
-                                    "Need advice? Ask your friends!",
-                                    "Unsure? Get advice from friends!",
-                                    "Unsure? Get your friends to vote!",
-                                    ]
-                cta_button_text = ab_test( 'sibt_button_text6', 
-                                            ab_test_options, 
-                                            user = user,
-                                            app  = app )
+        
+        if not app: # if app can't be gotten, return a file anyway
+            cta_button_text = "Need advice? Ask your friends!"
         else:
-            cta_button_text = "ADMIN: Unsure? Ask your friends!"
+            user        = User.get_or_create_by_cookie(self, app)
 
-       
+            # AB-Test or not depending on if the admin is testing.
+            if not user.is_admin():
+                if app.incentive_enabled:
+                    ab_test_options = [ "Not sure? Let friends vote! Save $5!",
+                                        "Earn $5! Ask your friends what they think!",
+                                        "Need advice? Ask your friends! Earn $5!",
+                                        "Save $5 by getting advice from friends!",
+                                        "Not sure? Ask your friends.",
+                                      ]
+                    cta_button_text = ab_test( 'sibt_incentive_text', 
+                                                ab_test_options, 
+                                                user = user,
+                                                app  = app )
+                else:
+                    ab_test_options = [ "Not sure? Start a vote!",
+                                        "Not sure? Let friends vote!",
+                                        "Need advice? Ask your friends to vote",
+                                        "Need advice? Ask your friends!",
+                                        "Unsure? Get advice from friends!",
+                                        "Unsure? Get your friends to vote!",
+                                        ]
+                    cta_button_text = ab_test( 'sibt_button_text6', 
+                                                ab_test_options, 
+                                                user = user,
+                                                app  = app )
+            else:
+                cta_button_text = "ADMIN: Unsure? Ask your friends!"
+
         # Finally, render the JS!
         self.response.headers.add_header('P3P', P3P_HEADER)
         if jsonp: # JSONP
