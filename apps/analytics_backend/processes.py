@@ -21,7 +21,6 @@ from apps.action.models import Action
 from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
-from apps.buttons.shopify.models import *
 from apps.email.models import Email
 
 """
