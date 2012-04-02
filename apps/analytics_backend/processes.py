@@ -129,18 +129,18 @@ def average_action(app_, action, prop, start, end):
                     .filter('is_admin =', False)\
                     .fetch(limit=None)
         count = len(actions)
-        logging.info ("found count to be %d" % count)
         for action in actions: # no reducing on objects, right?
             prop_sum += action.duration     # float (getattr (action, prop, 0.0))
-                
-        logging.info ("found sum to be %f" % prop_sum)
-        average = prop_sum / count
-        logging.info ("average for %s calculated to be %f" % (action, average))
+            
+        try:
+            average = prop_sum / count
+        except ZeroDivisionError:
+            average = 0
         
         return average
     except Exception, e:
         # e.g. div by 0
-        logging.error("error calculating average for %s: %s" % (action, e), exc_info=True)
+        logging.error("Error calculating average for %s: %s" % (action, e), exc_info=True)
         return 0
 
 def ensure_daily_slices(app):
