@@ -264,7 +264,7 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.app.models.App',
+                        'entity': 'apps.sibt.shopify.models.SIBTShopify',
                         'reader': 'DatastoreKeyInputReader'
                     } 
                 },
@@ -272,7 +272,7 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.app.models.App',
+                        'entity': 'apps.sibt.shopify.models.SIBTShopify',
                         'reader': 'DatastoreKeyInputReader'
                     }
                 },
