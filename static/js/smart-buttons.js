@@ -544,10 +544,20 @@ _willet.debug = (function(){
 
     if (window.console) {
         _log = function () {
-            window.console.log.apply(window.console, arguments);
+            var log = window.console.log;
+            if (log.apply) {
+                log.apply(window.console, arguments);
+            } else {
+                log(arguments)
+            }
         };
         _error = function () {
-            window.console.error.apply(window.console, arguments);
+            var error = window.console.error;
+            if (error.apply) {
+                error.apply(window.console, arguments);
+            } else {
+                error(arguments)
+            }
         };
     }
 
