@@ -21,7 +21,6 @@ from apps.action.models import Action
 from apps.app.models import *
 from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
-from apps.buttons.shopify.models import *
 from apps.email.models import Email
 
 """
@@ -130,18 +129,18 @@ def average_action(app_, action, prop, start, end):
                     .filter('is_admin =', False)\
                     .fetch(limit=None)
         count = len(actions)
-        logging.info ("found count to be %d" % count)
         for action in actions: # no reducing on objects, right?
             prop_sum += action.duration     # float (getattr (action, prop, 0.0))
-                
-        logging.info ("found sum to be %f" % prop_sum)
-        average = prop_sum / count
-        logging.info ("average for %s calculated to be %f" % (action, average))
+            
+        try:
+            average = prop_sum / count
+        except ZeroDivisionError:
+            average = 0
         
         return average
     except Exception, e:
         # e.g. div by 0
-        logging.error("error calculating average for %s: %s" % (action, e), exc_info=True)
+        logging.error("Error calculating average for %s: %s" % (action, e), exc_info=True)
         return 0
 
 def ensure_daily_slices(app):
@@ -265,7 +264,7 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Hourly Analytics Models',
                         'func': f_base % 'ensure_hourly_slices',
-                        'entity': 'apps.app.models.App',
+                        'entity': 'apps.sibt.shopify.models.SIBTShopify',
                         'reader': 'DatastoreKeyInputReader'
                     } 
                 },
@@ -273,7 +272,7 @@ class TimeSlices(webapp.RequestHandler):
                     'mr': {
                         'name': 'Create Daily Analytics Models',
                         'func': f_base % 'ensure_daily_slices',
-                        'entity': 'apps.app.models.App',
+                        'entity': 'apps.sibt.shopify.models.SIBTShopify',
                         'reader': 'DatastoreKeyInputReader'
                     }
                 },
