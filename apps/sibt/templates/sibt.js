@@ -239,7 +239,9 @@
                         try {
                             var iframe_handle = d.getElementById(random_id);
                             iframe_handle.parentNode.removeChild ( iframe_handle );
-                        } catch (e) { }
+                        } catch (e) {
+                            console.log(e.message);
+                        }
                     }
                 }).appendTo("body");
             };
@@ -256,7 +258,9 @@
                 var message = message || 'SIBTUserClickedButtonAsk';
                 try {
                     $('#_willet_padding').hide();
-                } catch (err) {}
+                } catch (err) {
+                    console.log(err.message);
+                }
                 if (is_asker || show_votes) {
                     // we are no longer showing results with the topbar.
                     show_results ();
@@ -348,7 +352,9 @@
                         });
                         console.log('sent product request');
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.log(e.message);
+                }
             };
 
 
@@ -363,7 +369,7 @@
                     // "Show" button in the top right. This handles the clicks to that
                     $.cookie('_willet_topbar_closed', false);
                     topbar_hide_button.slideUp('fast');
-                    if (topbar == null) {
+                    if (topbar === null) {
                         if (show_votes || hash_index !== -1) {
                             show_topbar();
                             store_analytics('SIBTUserReOpenedTopBar');

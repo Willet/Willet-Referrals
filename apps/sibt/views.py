@@ -16,7 +16,7 @@ from django.utils import simplejson as json
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
-from google.appengine.api import taskqueue 
+from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import get_application_id
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -61,7 +61,7 @@ class AskDynamicLoader(URIHandler):
         """ 
             SIBT Ask page
             params:
-                url (required) - the product URL; typically window.location.href
+                url (required): the product URL; typically window.location.href
                 
                 user_uuid (optional)
                 product_uuid (optional)
