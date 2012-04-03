@@ -32,7 +32,8 @@
         if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
         throw new SyntaxError('JSON.parse');};}}());
 
-        var DEBUG = false;
+        var ORIGIN = decodeURIComponent(window.location.href.split("?origin=")[1]) || undefined;
+        var DEBUG =  window.location.href.indexOf("debug") || false;
 
         sendMessage = function(message, targetOrigin) {
             var target = targetOrigin || "*";
@@ -60,7 +61,6 @@
             FB.init({ appId:'119776401486297', status:true, cookie:true, xfbml:true});
             FB.getLoginStatus(function(response){
                 var status = response.status != "unknown";
-                var origin = decodeURIComponent(window.location.href.split("?origin=")[1]) || undefined;
                 sendMessage({
                     "event": "?",
                     "message": {
@@ -68,7 +68,7 @@
                             "status": status
                         }
                     }
-                }, origin);
+                }, ORIGIN);
             }, true);
         };
 

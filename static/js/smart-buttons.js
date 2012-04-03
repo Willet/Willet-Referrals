@@ -45,7 +45,10 @@ var _willet = (function(me) {
     var PROTOCOL = window.location.protocol;
 
     var ELEMENT_NODE = 1;
+    var NOT_FOUND = -1;
 
+    var MAX_BUTTONS = 3;
+    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
     var LOGGED_IN_NETWORKS = {};
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
@@ -338,17 +341,34 @@ var _willet = (function(me) {
                 }
             }
         }
-        return (requiredButtons.length) ? requiredButtons : ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty;
+        return (requiredButtons.length) ? requiredButtons : DEFAULT_BUTTONS; // default for backwards compatibilty;
     };
 
     var updateLoggedInStatus = function(network, status) {
         _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
-        LOGGED_IN_NETWORKS[network] = status;
+        var now = new Date();
+        LOGGED_IN_NETWORKS[network] = { "status": status, "accessed": now.getTime()};
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
     };
 
     var itemShared = function(network) {
-        // for now, do nothing
+        //If someone shares, update the cookie
+        updateLoggedInStatus(network, true);
+    };
+
+    var dictToArray = function(dict) {
+        var result = [];
+
+        for (var key in dict) {
+            if (dict.hasOwnProperty(key)) {
+                result.push({
+                    "key": key,
+                    "value": dict[key]
+                });
+            }
+        }
+
+        return result;
     };
 
     // Public functions
@@ -438,12 +458,25 @@ var _willet = (function(me) {
                 } catch(e) {
                     _willet.debug.log("Buttons: Unable to parse cookie")
                 }
-                
-                for (var network in networks) {
-                    if (networks.hasOwnProperty(network)
-                        && xHasKeyY(SUPPORTED_NETWORKS, network)
-                        && networks[network] === true) {
-                        requiredButtons.push(network);
+
+                networks = dictToArray(networks);
+                networks = networks.sort(function(a,b) {
+                    return b.value.accessed - a.value.accessed;
+                });
+
+                for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                    var network = networks[i];
+                    if (xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
+                        && network.value.status === true) {         //check that the network is enabled
+                        requiredButtons.push(network.key);
+                    }
+                }
+
+                //append default buttons to the end, if they have not already been added
+                for (var i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                    var button = DEFAULT_BUTTONS[i];
+                    if (requiredButtons.indexOf(button) == NOT_FOUND) {
+                        requiredButtons.push(button);
                     }
                 }
             }
@@ -751,7 +784,7 @@ _willet.messaging = (function(){
             //create the iframe
             var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
             var iframe = document.createElement("iframe");
-            iframe.src = url + "?origin=" + originDomain;
+            iframe.src = url + (_willet.debug.isDebugging()? "#debug" : "") + "?origin=" + originDomain;
             iframe.style.display = "none";
 
             document.body.appendChild(iframe);
