@@ -95,9 +95,13 @@ class MemcacheBucketConfig(Model):
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
-    # deferred is going to pickle this, so to remain functional:
-    #   - must be a function so the pickled size is reasonable
-    #   - must import all dependencies so that the unpickled code knows where to look
+    """ Deferred task to put buckets in datastore
+
+    Deferred is going to pickle this, so to remain usable:
+      - must be a function so the pickled size is reasonable
+      - must import all module dependencies so that the unpickled code knows
+        where to find them
+    """
     from apps.user.models import MemcacheBucketConfig, batch_put
 
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))
