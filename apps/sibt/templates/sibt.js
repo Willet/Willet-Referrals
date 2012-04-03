@@ -11,27 +11,37 @@
 
     var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
-    // These ('???' == 'True') guarantee missing tag, ('' == 'True') = false
+    // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     var ask_success = false;
-    var is_asker = ('{{ is_asker }}' == 'True'); // did they ask?
-    var is_live = ('{{ is_live }}' == 'True');
-    var show_votes = ('{{ show_votes }}' == 'True');
-    var has_voted = ('{{ has_voted }}' == 'True');
-    var button_enabled = ('{{ app.button_enabled }}' == 'True');
-    var topbar_enabled = ('{{ app.top_bar_enabled }}' == 'True');
+    var debug = ('{{ debug }}' === 'True');
+    var is_asker = ('{{ is_asker }}' === 'True'); // did they ask?
+    var is_live = ('{{ is_live }}' === 'True');
+    var show_votes = ('{{ show_votes }}' === 'True');
+    var has_voted = ('{{ has_voted }}' === 'True');
+    var button_enabled = ('{{ app.button_enabled }}' === 'True');
+    var topbar_enabled = ('{{ app.top_bar_enabled }}' === 'True');
     var sibt_version = {{sibt_version|default:"3"}};
-    var has_results = ('{{ has_results }}' == 'True');
-    var show_top_bar_ask = ('{{ show_top_bar_ask }}' == 'True');
-    var unsure_mutli_view = ('{{ unsure_mutli_view }}' == 'True'); // true when visitor on page more than (4 times)
-    var detect_shopconnection = ('{{ detect_shopconnection }}' == 'True'); // set this flag on if SIBT needs to be disabled on the same page as Buttons
+    var has_results = ('{{ has_results }}' === 'True');
+    var show_top_bar_ask = ('{{ show_top_bar_ask }}' === 'True');
+    
+    // true when visitor on page more than (4 times)
+    var unsure_multi_view = ('{{ unsure_multi_view }}' === 'True');
+    
+    // true when SIBT needs to be disabled on the same page as Buttons
+    var detect_shopconnection = ('{{ detect_shopconnection }}' === 'True');
     var padding_elem = topbar = topbar_hide_button = willt_code = null;
     var hash_index = -1;
 
     try { // debug if available
-        w.console = (typeof(w.console) === 'object' && (
-                (typeof(w.console.log) === 'function' && typeof(w.console.error) ==='function') ||
-                (typeof(w.console.log) === 'object' && typeof(w.console.error) ==='object')
-            )) ? w.console : { log: function () {}, error: function () {} };
+        if (debug) {
+            w.console = (typeof(w.console) === 'object' && (
+                    (typeof(w.console.log) === 'function' && typeof(w.console.error) ==='function') ||
+                    (typeof(w.console.log) === 'object' && typeof(w.console.error) ==='object')
+                )) ? w.console : { log: function () {}, error: function () {} };
+        } else {
+            // if not debugging, proceed to make empty console
+            throw new Error("I'm sorry, Dave. I'm afraid I can't do that.");
+        }
     } catch (e) {
         w.console = {
             log: function () {},
@@ -54,12 +64,13 @@
 
         var load = function (url, index) {
             // Load one script
-            var script = d.createElement('script'), loaded = false;
+            var script = d.createElement('script');
+            var loaded = false;
             script.setAttribute('type', 'text/javascript');
             script.setAttribute('src', url);
             script.onload = script.onreadystatechange = function() {
                 var rs = this.readyState;
-                if (loaded || (rs && rs!='complete' && rs!='loaded')) return;
+                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) return;
                 loaded = true;
                 d.body.removeChild(script); // Clean up DOM
                 // console.log('loaded ' + url);
@@ -83,7 +94,7 @@
     // Safari cookie storage backup
     var firstTimeSession = 0;
     var doSafariCookieStorage = function () {
-        if (firstTimeSession == 0) {
+        if (firstTimeSession === 0) {
             firstTimeSession = 1;
             d.getElementById('sessionform').submit()
             setTimeout(setCookieStorageFlag, 2000);
@@ -91,35 +102,35 @@
     };
 
     // "Fixes" Safari's problems with XD-storage.
-    if ( navigator.userAgent.indexOf('Safari') != -1 ) {
+    if (navigator.userAgent.indexOf('Safari') !== -1) {
         var holder = d.createElement('div');
         var storageIFrameLoaded = false;
-        var storageIFrame = d.createElement( 'iframe' );
-        storageIFrame.setAttribute( 'src', "{{URL}}{% url UserCookieSafariHack %}" );
-        storageIFrame.setAttribute( 'id', "sessionFrame" );
-        storageIFrame.setAttribute( 'name', "sessionFrame" );
-        storageIFrame.setAttribute( 'onload', "doSafariCookieStorage();" );
+        var storageIFrame = d.createElement('iframe');
+        storageIFrame.setAttribute('src', "{{URL}}{% url UserCookieSafariHack %}");
+        storageIFrame.setAttribute('id', "sessionFrame");
+        storageIFrame.setAttribute('name', "sessionFrame");
+        storageIFrame.setAttribute('onload', "doSafariCookieStorage();");
         storageIFrame.onload = storageIFrame.onreadystatechange = function() {
             var rs = this.readyState;
-            if (rs && rs!='complete' && rs!='loaded') return;
-            if (storageIFrameLoaded) return;
+            if(rs && rs !== 'complete' && rs !== 'loaded') return;
+            if(storageIFrameLoaded) return;
             storageIframeLoaded = true;
             doSafariCookieStorage();
         };
         storageIFrame.style.display = 'none';
 
-        var storageForm = d.createElement( 'form' );
-        storageForm.setAttribute( 'id', 'sessionform' );
-        storageForm.setAttribute( 'action', "{{URL}}{% url UserCookieSafariHack %}" );
-        storageForm.setAttribute( 'method', 'post' );
-        storageForm.setAttribute( 'target', 'sessionFrame' );
-        storageForm.setAttribute( 'enctype', 'application/x-www-form-urlencoded' );
+        var storageForm = d.createElement('form');
+        storageForm.setAttribute('id', 'sessionform');
+        storageForm.setAttribute('action', "{{URL}}{% url UserCookieSafariHack %}" );
+        storageForm.setAttribute('method', 'post');
+        storageForm.setAttribute('target', 'sessionFrame');
+        storageForm.setAttribute('enctype', 'application/x-www-form-urlencoded');
         storageForm.style.display = 'none';
 
-        var storageInput = d.createElement( 'input' );
-        storageInput.setAttribute( 'type', 'text' );
-        storageInput.setAttribute( 'value', '{{user.uuid}}' );
-        storageInput.setAttribute( 'name', 'user_uuid' );
+        var storageInput = d.createElement('input');
+        storageInput.setAttribute('type', 'text');
+        storageInput.setAttribute('value', '{{user.uuid}}');
+        storageInput.setAttribute('name', 'user_uuid');
 
         holder.appendChild( storageIFrame );
         storageForm.appendChild( storageInput );
@@ -131,7 +142,8 @@
 
     // set up a list of scripts to load asynchronously.
     var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
-    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") { // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
         scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
     }
 
@@ -158,7 +170,8 @@
             jQuery.noConflict(); // Suck it, Prototype!
         }
         
-        jQuery(d).ready(function($) { // wait for DOM elements to appear + $ closure!
+        // wait for DOM elements to appear + $ closure!
+        jQuery(d).ready(function($) {
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
@@ -179,8 +192,9 @@
                 ));
             };
 
-            // http://stackoverflow.com/questions/487073
             var is_scrolled_into_view = function (elem) {
+                // http://stackoverflow.com/questions/487073
+                // returns true if elem has dimensions within the viewport.
                 var docViewTop = $(w).scrollTop();
                 var docViewBottom = docViewTop + $(w).height();
                 var elemTop = $(elem).offset().top;
@@ -188,8 +202,9 @@
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
             }
 
-            // find largest image on page: http://stackoverflow.com/questions/3724738
             var get_largest_image = function (within) {
+                // Returns <img>.src for the largest <img> in <elem>within
+                // source: http://stackoverflow.com/questions/3724738
                 within = within || d;
                 var nMaxDim = 0;
                 var largest_image = '';
@@ -217,8 +232,9 @@
                 $('<iframe />', {
                     id: random_id,
                     name: random_id,
-                    css : {'display': 'none'},
-                    src : "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message + "&" + willet_metadata (),
+                    css: {'display': 'none'},
+                    src: "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + 
+                          encodeURIComponent(message) + "&" + willet_metadata(),
                     load: function () {
                         try {
                             var iframe_handle = d.getElementById(random_id);
@@ -240,7 +256,7 @@
                 var message = message || 'SIBTUserClickedButtonAsk';
                 try {
                     $('#_willet_padding').hide();
-                } catch (e) {}
+                } catch (err) {}
                 if (is_asker || show_votes) {
                     // we are no longer showing results with the topbar.
                     show_results ();
@@ -288,8 +304,9 @@
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 show_colorbox({
-                    href: "{{URL}}/s/results.html?" + willet_metadata ({'refer_url': w.location.href}),
-                    onClosed: function () { }
+                    href: "{{URL}}/s/results.html?" + 
+                           willet_metadata ({'refer_url': w.location.href}),
+                    onClosed: function () {}
                 });
             };
 
@@ -347,7 +364,7 @@
                     $.cookie('_willet_topbar_closed', false);
                     topbar_hide_button.slideUp('fast');
                     if (topbar == null) {
-                        if (show_votes || hash_index != -1) {
+                        if (show_votes || hash_index !== -1) {
                             show_topbar();
                             store_analytics('SIBTUserReOpenedTopBar');
                         } else {
@@ -371,8 +388,8 @@
                 // Expand the top bar and load the results iframe
                 var do_vote = function(vote) {
                     // detecting if we just voted or not
-                    var doing_vote = (vote != -1);
-                    var vote_result = (vote == 1);
+                    var doing_vote = (vote !== -1);
+                    var vote_result = (vote === 1);
 
                     // getting the neccesary dom elements
                     var iframe_div = topbar.find('div.iframe');
@@ -384,15 +401,15 @@
                     var hash_index  = hash.indexOf(hash_search);
                     var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
                     var results_src = "{{ URL }}/s/results.html?" +
-                        "willt_code=" + willt_code + 
+                        "willt_code=" + encodeURIComponent(willt_code) + 
                         "&user_uuid={{user.uuid}}" + 
-                        "&doing_vote=" + doing_vote + 
-                        "&vote_result=" + vote_result + 
+                        "&doing_vote=" + encodeURIComponent(doing_vote) + 
+                        "&vote_result=" + encodeURIComponent(vote_result) + 
                         "&is_asker={{is_asker}}" +
                         "&store_id={{store_id}}" +
                         "&store_url={{store_url}}" +
                         "&instance_uuid={{instance.uuid}}" + 
-                        "&url=" + w.location.href; 
+                        "&url=" + encodeURIComponent(w.location.href);
 
                     // show/hide stuff
                     topbar.find('div.vote').hide();
@@ -517,7 +534,7 @@
 
                     $('#_willet_close_button').unbind().bind('click', close_top_bar);
                     
-                    topbar.find( '._willet_wrapper p' )
+                    topbar.find( '._willet_wrapper p')
                         .css('cursor', 'pointer')
                         .click(topbar_onclick);
                     padding_elem.show(); 
@@ -628,7 +645,7 @@
 
                 {% if app.top_bar_enabled %} // add this topbar code only if necessary
                     console.log('topbar enabled');
-                    var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') == 'true');
+                    var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
                     // create the hide button
                     topbar_hide_button = $(d.createElement('div'));
@@ -682,7 +699,7 @@
                         $(purchase_cta).append(button);
                     } else if (sibt_version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                         console.log('v3 button is enabled');
-                        if ($('#_willet_button_v3').length == 0) { // if the v3 button isn't there already
+                        if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                             var button = $("<div />", {
                                 'id': '_willet_button_v3'
                             });
@@ -747,9 +764,9 @@
                         // watch for message; Create IE + others compatible event handler
                         $(w).bind('onmessage message', function(e) {
                             var message = e.originalEvent.data;
-                            if (message == 'shared') {
+                            if (message === 'shared') {
                                 ask_success = true;
-                            } else if (message == 'close') {
+                            } else if (message === 'close') {
                                 $.willet_colorbox.close();
                             }
                         });
@@ -758,7 +775,8 @@
                         var hash = w.location.hash;
                         var hash_search = '#open_sibt=';
                         hash_index = hash.indexOf(hash_search);
-                        if (has_results && hash_index != -1) { // if vote has results and voter came from an email
+                        if (has_results && hash_index !== -1) {
+                            // if vote has results and voter came from an email
                             console.log("has results?");
                             show_results ();
                         }

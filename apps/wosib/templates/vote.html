@@ -130,8 +130,8 @@
                 "image" : "{{product.images.0}}" || "/static/imgs/noimage-willet.png",
                 "product_uuid": "{{product.uuid}}",
             },
-        {% endfor %} ];
-
+        {% endfor %} {}];
+        _willet_cart_products.pop(); // remove trailing {} to fix IE trailing comma
 
         // Widget class
         // Base widget, same basic functionality
@@ -198,13 +198,15 @@
             $('#cart_items_display').append(this.elem);
         };
 
-        
-        for (var x in _willet_cart_products) {
+        var x = 0;
+        for (x = 0; x < _willet_cart_products.length; x++) {
             // add products onto page.
-            var prod = new Product (_willet_cart_products[x].product_uuid, 
-                                    _willet_cart_products[x].title, 
-                                    _willet_cart_products[x].image,
-                                    _willet_cart_products[x].product_id);
+            var prod = new Product (
+                _willet_cart_products[x].product_uuid, 
+                _willet_cart_products[x].title, 
+                _willet_cart_products[x].image,
+                _willet_cart_products[x].product_id
+            );
             prod.attach ();
         }
         

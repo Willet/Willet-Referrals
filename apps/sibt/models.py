@@ -10,26 +10,24 @@ import hashlib
 import logging
 import random
 import urlparse
-from datetime import datetime
+
 from datetime import timedelta
 
-from django.utils         import simplejson as json
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.sibt.actions    import SIBTClickAction
-from apps.sibt.actions    import SIBTInstanceCreated
-from apps.app.models      import App
-from apps.email.models    import Email
+from apps.sibt.actions import SIBTClickAction
+from apps.sibt.actions import SIBTInstanceCreated
+from apps.app.models import App
+from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import bingo
-from apps.link.models     import Link
-from apps.user.models     import User
-from apps.vote.models     import VoteCounter
+from apps.user.models import User
+from apps.vote.models import VoteCounter
 
-from util.consts          import *
-from util.helpers         import generate_uuid
-from util.model           import Model
+from util.consts import *
+from util.helpers import generate_uuid
+from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_VOTE_SHARDS = 15
@@ -125,7 +123,7 @@ class SIBT(App):
                 email=''
             )
         
-        app = SIBT.get(hashlib.md5(domain).hexdigest())
+        app = SIBT.get(domain)
         if not app:
             logging.debug ("app not found; creating one.")
             app = SIBT.create(client, domain)

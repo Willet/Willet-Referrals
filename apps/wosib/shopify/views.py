@@ -40,18 +40,29 @@ class WOSIBShopifyServeScript (URIHandler):
     # chucks out a javascript that helps detect events and show wizards
     # (with wands and broomsticks)
     def get(self):
+        asker_name = None
+        asker_pic = None
+        bar_or_tab = ''
+        has_voted = False
+        instance = None
+        instance_uuid = ''
+        is_asker = False
+        link = None
+        product = None
+        share_url = None
+        show_top_bar_ask = False
+        show_votes = False
+        target = ''
         votes_count = 0
-        is_asker = show_votes = has_voted = show_top_bar_ask = False
-        instance = share_url = link = asker_name = asker_pic = product = None
-        instance_uuid = target   = bar_or_tab = ''
+
         willet_code = self.request.get('willt_code')
-        shop_url    = get_shopify_url(self.request.get('store_url'))
+        shop_url = get_shopify_url(self.request.get('store_url'))
         if not shop_url: # backup (most probably hit)
-            shop_url    = get_target_url(self.request.headers.get('REFERER')) # probably ok
-        logging.debug ("shop_url = %s" % shop_url)
-        app         = WOSIBShopify.get_by_store_url(shop_url)
-        app_sibt    = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
-        event       = 'WOSIBShowingButton'
+            shop_url = get_target_url(self.request.headers.get('REFERER')) # probably ok
+        logging.debug("shop_url = %s" % shop_url)
+        app = WOSIBShopify.get_by_store_url(shop_url)
+        app_sibt = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
+        event = 'WOSIBShowingButton'
 
         target = get_target_url(self.request.headers.get('REFERER'))
 
@@ -128,20 +139,20 @@ class WOSIBShopifyServeScript (URIHandler):
         
         # Grab all template values
         template_values = {
-            'URL'            : URL,
-            'app'            : app,
-            'app_css'        : app_sibt.get_css(),
-            'instance'       : instance,
-            'store_domain'   : getattr (app_sibt.client, 'domain', ''),
-            'store_id'       : self.request.get('store_id'),
-            'user'           : user,
-            'instance_uuid'  : instance_uuid,
-            'stylesheet'     : '../../plugin/templates/css/colorbox.css',
-            'evnt'           : event,
+            'URL': URL,
+            'app': app,
+            'app_css': app_sibt.get_css(),
+            'instance': instance,
+            'store_domain': getattr (app_sibt.client, 'domain', ''),
+            'store_id': self.request.get('store_id'),
+            'user': user,
+            'instance_uuid': instance_uuid,
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'evnt': event,
             'cta_button_text': cta_button_text,
-            'shop_url'       : shop_url,
-            # this thing tells client JS if the user had created an instance
-            'has_results'    : 'true' if has_results else 'false',
+            'shop_url': shop_url,
+            # tells client JS if the user had created an instance
+            'has_results': 'true' if has_results else 'false',
         }
 
         path = os.path.join('apps/wosib/templates/', 'wosib_button.js')

@@ -49,7 +49,7 @@ class Product(Model, db.polymodel.PolyModel):
         
         # set uuid to its most "useful" hash.
         uu_format = "%s-%s" % (client.domain, title)
-        uuid = hashlib.md5(uu_format).hexdigest()
+        uuid = Product.build_secondary_key(uu_format)
         
         product = Product(
             key_name=uuid,
@@ -70,7 +70,7 @@ class Product(Model, db.polymodel.PolyModel):
     def get_or_create(title, description='', images=[], tags=[], price=0.0, client=None, resource_url='', type=''):
         if client and client.domain and title: # can check for existence
             uu_format = "%s-%s" % (client.domain, title)
-            uuid = hashlib.md5(uu_format).hexdigest()
+            uuid = Product.build_secondary_key(uu_format)
             product = Product.get(uuid)
             if product:
                 return product

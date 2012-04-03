@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
-# consts.py
-# constants for referrals
+"""consts.py
+Constants for willet-referrals
+"""
 
 import inspect
-import os
 import logging
-
-from google.appengine.api.app_identity import get_application_id
+import os
 
 from urlparse import urlunsplit
 
@@ -17,26 +16,27 @@ from google.appengine.api.app_identity import get_application_id
 NAME = 'Willet'
 
 # Domain Stuff
-USING_DEV_SERVER    = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
-PROTOCOL            = 'http' 
-SECURE_PROTOCOL     = 'https'
-APP_DOMAIN          = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
-APP_LIVE            = 'social-referral'
-DOMAIN              = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
-URL                 = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
-SECURE_URL          = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
-KEYS                = os.environ['HTTP_HOST']
+USING_DEV_SERVER = True if 'Development' in os.environ.get('SERVER_SOFTWARE', "") else False
+PROTOCOL = 'http' 
+SECURE_PROTOCOL = 'https'
+APP_DOMAIN = 'None' if USING_DEV_SERVER else 'social-referral.appspot.com'
+APP_LIVE = 'social-referral'
+APP_LIVE_DEBUG = bool(get_application_id() != APP_LIVE) # False on live
+DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
+URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
+SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
+KEYS = os.environ['HTTP_HOST']
 
 # Our BS P3P Header
 P3P_HEADER = 'CP="IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT"'
 
 # Campaign Stuff
-LANDING_CAMPAIGN_UUID  = '28e530db44bf45e5'
+LANDING_CAMPAIGN_UUID = '28e530db44bf45e5'
 LANDING_CAMPAIGN_STORE = '962072'
 FACEBOOK_QUERY_URL = 'https://graph.facebook.com/'
 
 # Facebook Stuff
-FACEBOOK_APP_ID     = '181838945216160'
+FACEBOOK_APP_ID = '181838945216160'
 FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
 # MailChimp Stuff
@@ -45,8 +45,8 @@ MAILCHIMP_API_KEY = 'b58ce277cd799842ed2bdf03b06d603b-us4'
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
 MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
-MIXPANEL_SECRET  = 'd1c0a8833b32d0922f6ef91704925b5f'
-MIXPANEL_TOKEN   = '5e7c1fdd252ecdccfecf1682df9f76a2'
+MIXPANEL_SECRET = 'd1c0a8833b32d0922f6ef91704925b5f'
+MIXPANEL_TOKEN = '5e7c1fdd252ecdccfecf1682df9f76a2'
 
 # Google Social Graph API Stuff
 GOOGLE_SOCIAL_GRAPH_API_URL = 'https://socialgraph.googleapis.com/otherme?'
@@ -88,6 +88,11 @@ SHOPIFY_APPS = {
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
     }
+}
+
+# UNSURE_DETECTION: values for deciding whether a user is "unsure".
+UNSURE_DETECTION = {
+    'url_count_for_app_and_user': 4, 
 }
 
 # controls the number of memcache buckets

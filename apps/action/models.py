@@ -5,55 +5,53 @@
 # ie. ClickAction, VoteAction, ViewAction, etc
 
 __author__    = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 
-from google.appengine.api           import memcache
-from google.appengine.datastore     import entity_pb
-from google.appengine.ext           import deferred
-from google.appengine.ext           import db
-from google.appengine.ext.db        import polymodel
+from google.appengine.api import memcache
+from google.appengine.ext import db, deferred
+from google.appengine.ext.db import polymodel
 
-from util.consts                    import *
-from util.helpers                   import generate_uuid
-from util.model                     import Model
-from util.memcache_bucket_config    import MemcacheBucketConfig
-from util.memcache_ref_prop         import MemcacheReferenceProperty
+from util.consts import *
+from util.helpers import generate_uuid
+from util.memcache_bucket_config import MemcacheBucketConfig
+from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.model import Model
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
     pass
 
-## -----------------------------------------------------------------------------
-## Action SuperClass -----------------------------------------------------------
-## -----------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
+## Action SuperClass ----------------------------------------------------------
+## ----------------------------------------------------------------------------
 class Action(Model, polymodel.PolyModel):
     """ Whenever a 'User' completes a Willet Action,
         an 'Action' obj will be stored for them.
         This 'Action' class will be subclassed for specific actions
-        ie. click, vote, tweet, share, email, etc. """
+        ie. click, vote, tweet, share, email, etc.
+    """
     
     # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty( auto_now_add=True )
-    
+    created = db.DateTimeProperty(auto_now_add=True)
     # Length of time a compound action had persisted prior to its creation
-    duration        = db.FloatProperty( default = 0.0 )
-    
+    duration = db.FloatProperty(default = 0.0)
     # Person who did the action
-    user            = MemcacheReferenceProperty( db.Model, collection_name = 'user_actions' )
-    
+    user = MemcacheReferenceProperty(db.Model, collection_name = 'user_actions')
     # True iff this Action's User is an admin
-    is_admin        = db.BooleanProperty( default = False )
-    
+    is_admin = db.BooleanProperty(default = False)
     # The App that this Action is for
-    app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
+    app_ = db.ReferenceProperty(db.Model, collection_name = 'app_actions')
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
         super(Action, self).__init__(*args, **kwargs)
     
     def _validate_self(self):
+        if self.duration < 0:
+            raise ValueError('duration cannot be less than 0 seconds')
+
         return True
 
     def put(self):
@@ -122,26 +120,28 @@ class Action(Model, polymodel.PolyModel):
         return Action.all().filter( 'user =', user ).get()
 
     @staticmethod
-    def get_by_app( app, admins_too = False ):
+    def get_by_app(app, admins_too = False):
+        app_actions = Action.all().filter('app_ =', app)
         if admins_too:
-            return Action.all().filter( 'app_ =', app ).get()
+            return app_actions.get()
         else:
-            return Action.all().filter( 'app_ =', app ).filter('is_admin =', False).get()
+            return app_actions.filter('is_admin =', False).get()
 
     @staticmethod
-    def get_by_user_and_app( user, app ):
-        return Action.all().filter( 'user =', user).filter( 'app_ =', app ).get()
+    def get_by_user_and_app(user, app):
+        return Action.all().filter('user =', user).filter('app_ =', app).get()
 
 
 ## -----------------------------------------------------------------------------
 ## ClickAction Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class ClickAction( Action ):
+class ClickAction(Action):
     """ Designates a 'click' action for a User. 
-        Currently used for 'SIBT' and 'WOSIB' Apps """
+        Currently used for 'SIBT' and 'WOSIB' Apps
+    """
     
     # Link that caused the click action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_clicks" )
+    link = db.ReferenceProperty(db.Model, collection_name = "link_clicks")
     
     def __init__(self, *args, **kwargs):
         super(ClickAction, self).__init__(*args, **kwargs)
@@ -280,18 +280,18 @@ class ShowAction(Action):
     what = db.StringProperty()
 
     # url/page this was shown on 
-    url = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
     
     @staticmethod
     def create(user, app, what, url):
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = ShowAction(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                what = what,
-                url = url
+            key_name=uuid,
+            uuid=uuid,
+            user=user,
+            app_=app,
+            what=what,
+            url=url
         )
         
         action.put()
@@ -314,18 +314,18 @@ class UserAction(Action):
     what = db.StringProperty()
 
     # url/page this was acted on 
-    url = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
     
     @staticmethod
     def create(user, app, what, url):
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = UserAction(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                what = what,
-                url = url
+            key_name=uuid,
+            uuid=uuid,
+            user=user,
+            app_=app,
+            what=what,
+            url=url
         )
         
         action.put()

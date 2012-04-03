@@ -35,8 +35,10 @@ class Client(Model, polymodel.PolyModel):
     url     = db.LinkProperty  ( indexed = True )
     domain  = db.LinkProperty  ( indexed = True )
 
+    _memcache_fields = ['domain', 'email', 'url']
+
     def __init__(self, *args, **kwargs):
-        self._memcache_key = hashlib.md5(kwargs['email']).hexdigest() if 'email' in kwargs else None 
+        self._memcache_key = Client.build_secondary_key(kwargs['email']) if 'email' in kwargs else None 
         super(Client, self).__init__(*args, **kwargs)
     
     def _validate_self(self):
@@ -54,7 +56,7 @@ class Client(Model, polymodel.PolyModel):
             client. Code must supply a user object for Client to be created.
         """
 
-        uuid = hashlib.md5(url).hexdigest()
+        uuid = Client.build_secondary_key(url)
 
         if not user:
             raise ValueError ("User is missing")
@@ -94,7 +96,7 @@ class Client(Model, polymodel.PolyModel):
 
     @classmethod
     def get_by_url (cls, url):
-        res = cls.get(hashlib.md5(url).hexdigest()) # wild try w/ memcache?
+        res = cls.get(url) # wild try w/ memcache?
         if res:
             return res
         # memcache miss?
@@ -107,7 +109,7 @@ class Client(Model, polymodel.PolyModel):
     # Retrievers ------------------------------------------------------------------------------------
     @classmethod
     def get_by_email(cls, email):
-        client = cls.get(hashlib.md5(email).hexdigest())
+        client = cls.get(email)
         if client:
             return client
         return cls.all().filter('email =', email).get()

@@ -1,18 +1,18 @@
 #!/usr/bin/python
-
-# Model - a base model for all of our models
-# ObjectListProperty - list of objects, transparently serialized in the db
+"""
+Model - a base model for all of our models
+ObjectListProperty - list of objects, transparently serialized in the db
+"""
 
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2012, Willet, Inc"
 
+import hashlib
 import logging
-import time
-from datetime import timedelta
 
 from django.utils import simplejson
 
-from google.appengine.api import memcache, datastore_errors, taskqueue
+from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
 from google.appengine.ext import deferred
@@ -22,14 +22,21 @@ from util.consts import MEMCACHE_TIMEOUT
 
 def async_model_put(model):
     """ Helper method to write and memcache models asynchronously.
-        Deferred can't use a bound method (not pickle-able), so we need this function
+        Deferred can't use a bound method (not pickle-able), so we need 
+        this function
     """
     try:
         db.put(model)
         key = model.get_key()
-        memcache.set(key, db.model_to_protobuf(model).Encode(), time=MEMCACHE_TIMEOUT)
-    except Exception, e:
-        logging.error('Error saving model %s: %s' % (model, e), exc_info=True)
+        memcache.set(
+            key,
+            db.model_to_protobuf(model).Encode(),
+            time=MEMCACHE_TIMEOUT
+        )
+    except Exception, err: # TODO: replace with specific class
+        logging.error('Error saving model %r: %s' % 
+                      (model, err),
+                      exc_info=True)
     return True
 
 
@@ -42,16 +49,19 @@ class Model(db.Model):
     @classmethod
     def _get_from_datastore(cls, memcache_key):
         """ Datastore retrieval using memcache_key """
-        raise NotImplementedError('_get_from_datastore should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
+        raise NotImplementedError('_get_from_datastore should be \
+                                      implemented by <%s.%s>' % 
+                                      (cls.__class__.__module__, 
+                                       cls.__class__.__name__))
 
     # DB fields by which this object will be memcached.
     # Subclasses can add their own fields.
     # Memcaching with non-unique fields yields unexpected results!
     # Failure to cache a given field will raise a warning.
-    memcache_fields = []
+    _memcache_fields = []
 
     def _validate_self(self):
-        ''' All Model subclasses containing a _validate_self function
+        """ All Model subclasses containing a _validate_self function
             will be checked for errors when they are put().
             This function can either raise an exception when its contents are 
             deemed invalid, or automatically correct its contents.
@@ -64,11 +74,13 @@ class Model(db.Model):
             Example with data correction:
             def _validate_self(self):
                 self.url = get_shopify_url(self.url)
-        '''
+        """
         # Subclasses must override this
-        raise NotImplementedError('_validate_self should be implemented by <%s.%s>' % (self.__class__.__module__, self.__class__.__name__))
+        raise NotImplementedError(
+            '_validate_self should be implemented by <%s.%s>' % (
+             self.__class__.__module__, self.__class__.__name__))
 
-    # Database methods -----------------------------------------------------------------
+    # Database methods --------------------------------------------------------
     def put(self):
         """Stores model instance in memcache and database"""
         try:
@@ -87,7 +99,9 @@ class Model(db.Model):
         
         # Immediately add to memcache so requests get new state
         key = self.get_key()
-        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+        memcache.set(key=key,
+                     value=db.model_to_protobuf(self).Encode(),
+                     time=MEMCACHE_TIMEOUT)
 
         # Memcache will be updated after model is given datastore key
         deferred.defer(async_model_put, self, _queue='model-deferred')
@@ -95,90 +109,147 @@ class Model(db.Model):
         return True
 
     def _put(self):
-        ''' Helper method to write and memcache models.'''
+        """ Helper method to write and memcache models."""
         try:
             db.put(self)
             key = self.get_key()
-            memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
+            memcache.set(
+                key=key,
+                value=db.model_to_protobuf(self).Encode(),
+                time=MEMCACHE_TIMEOUT
+            )
         except Exception, e:
-            logging.error('Error saving model <%s:%s>: %s' % (self.__class__.__module__,self.__class__.__name__, e), exc_info=True)
+            logging.error('Error saving model <%s:%s>: %s' % (
+                           self.__class__.__module__, 
+                           self.__class__.__name__, e),
+                          exc_info=True)
         return True
 
-    # Storage key methods -------------------------------------------------------------------
+    # Storage key methods -----------------------------------------------------
     def get_key(self):
+        """ instance-bound method; returns its memcache key. """
         if hasattr(self, 'memcache_class'):
             return '%s-%s' % (self.memcache_class, self._memcache_key)
         else:
-            return '%s-%s' % (self.__class__.__name__.lower(), self._memcache_key)
+            class_name = self.__class__.__name__.lower()
+            return '%s-%s' % (class_name, self._memcache_key)
 
     @classmethod
     def build_key(cls, memcache_key):
+        """ class-bound method; returns a new memcache key based on 
+            class settings.
+        """
         if hasattr(cls, 'memcache_class'):
             key = '%s-%s' % (cls.memcache_class, memcache_key)
         else:
             key = '%s-%s' % (cls.__name__.lower(), memcache_key)
         return key
     
-    # Retrievers --------------------------------------------------------------------------
     @classmethod
-    def get(cls, memcache_key):
+    def build_secondary_key (cls, field_value):
+        """ models memcached with _memcache_fields defined will have 
+            secondary memcache keys in the form of class-md5(field_value).
+        """
+        field_hash = hashlib.md5(unicode(field_value)).hexdigest()
+        if hasattr(cls, 'memcache_class'):
+            key = '%s-%s' % (cls.memcache_class, field_hash)
+        else:
+            key = '%s-%s' % (cls.__name__.lower(), field_hash)
+        return key
+    
+    # Retrievers --------------------------------------------------------------
+    @classmethod
+    def get(cls, identifier):
         """ Checks memcache for model before hitting database
 
         Each class must define a _get_from_datastore
         """
         obj = None
-        key = cls.build_key(memcache_key)
-        data = memcache.get(key)
+        key = cls.build_key(identifier)
 
+        # look if identifier is the primary key
+        data = memcache.get(key)
+        if not data:
+            logging.debug('got nothing as primary key - try as secondary')
+            # build_secondary_key will hash the param to match cache key format
+            secondary_key = cls.build_secondary_key(identifier)
+            # check if we can get anything by using identifier as secondary key
+            data = memcache.get(secondary_key)
+        
+        # data can be either a string primary key or a protocol buffer or None
         if data:
             try:
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-            except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
+            except ProtocolBuffer.ProtocolBufferDecodeError, e:
+                # if data is not unserializable,
+                # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Primary key miss
         
         if data and not obj:
             try:
                 data = memcache.get(data) # look deeper into memcache
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-            except ProtocolBuffer.ProtocolBufferDecodeError, e: # fails with ProtocolBuffer.ProtocolBufferDecodeError if data is not unserializable
+            except ProtocolBuffer.ProtocolBufferDecodeError, e:
+                # if data is not unserializable,
+                # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Secondary key miss
         
         if not data:
-            # object was not found in memcache
-            obj = cls._get_from_datastore(memcache_key)
+            # object was not found in memcache; use identifier as DB key
+            obj = cls._get_from_datastore(identifier)
 
-        # Throw everything in the memcache when you pull it - it may never be saved
+        # Save in the memcache when you pull it - it may never be saved
         if obj:
             obj._memcache() # update memcache
         else:
-            # logging.warn ('Memcache AND DB miss for %s!' % key)
             pass
             
         return obj
     
     def _memcache(self):
-        ''' save object into the memcache with primary and secondary cache keys.
-            primary keys point to the object; secondary keys point to the primary key.
-        '''
+        """ Save object into the memcache with primary and secondary cache keys
+            
+            - Primary keys point to the object
+            - Secondary keys point to the primary key
+        """
         sec_keys = []
+        field_value = None
+        
         try:
             key = self.get_key()
-            for field in self.memcache_fields: # get secondary keys to point to primary key
-                if getattr (self, field, None): # if this object's given property has a non-null value
-                    # e.g. sibt-http://ohai.ca if SIBT specifies memcache by a store URL field
-                    sec_keys.append(self.build_key (str (getattr (self, field))))
             
-            # that is, {sec_key1: primary_key, sec_key2: primary_key, sec_key3: primary_key, primary_key: object_serial}
+            # get all secondary keys of non-null value to point to primary key
+            for field in self._memcache_fields:
+                if getattr (self, field, None):
+                    # e.g. sibt-{md5('http://abc.com')}
+                    field_value = unicode(getattr(self, field))
+                    sec_key = self.build_secondary_key(field_value)
+                    sec_keys.append(sec_key)
+            
+            # that is, {sec_key1: primary_key,
+            #           sec_key2: primary_key,
+            #           sec_key3: primary_key, and
+            #           primary_key: object_serial}
             cache_keys_dict = dict(zip(sec_keys, [key] * len(sec_keys)))
-            cache_keys_dict[key] = db.model_to_protobuf(self).Encode() # add primary key
+            
+            # then point primary key to encoded model
+            cache_keys_dict[key] = db.model_to_protobuf(self).Encode()
             
             try:
                 memcache.set_multi (cache_keys_dict, time=MEMCACHE_TIMEOUT)
             except Exception, e:
-                logging.warn ("Failed to memcache object by custom key: %s" % e, exc_info=True)
+                logging.warn (
+                    "Failed to memcache object by custom key: %s" % e,
+                    exc_info=True
+                )
 
         except Exception, e:
-            logging.error("Error setting memcache for %s (%d secondary keys: %r)" % (e, self, len(self.memcache_fields), self.memcache_fields), exc_info=True)
+            logging.error("Error setting memcache for %s (%d secondary keys: \
+                           %r)" % (e,
+                                   self,
+                                   len(self._memcache_fields),
+                                   self._memcache_fields),
+                           exc_info=True)
 # end class
 
 
@@ -201,7 +272,7 @@ class ObjectListProperty(db.ListProperty):
     
     class Record():
         def __init__(self, who, timestamp=None):
-            self.who = who.key() if hasattr(who, 'key') else who # Some user model
+            self.who = who.key() if hasattr(who, 'key') else who # Some user
             self.timestamp = timestamp if timestamp else time.time()
     
     class Usage_Tracker(db.Model):
@@ -221,13 +292,14 @@ class ObjectListProperty(db.ListProperty):
         super(ObjectListProperty, self).__init__(str, *args, **kwargs) #!
 
     def __repr__(self):
-        return '<%s.%s at %s\n%s> containing <%s.%s>' % (self.__class__.__module__,
-                                        self.__class__.__name__,
-                                        hex(id(self)), 
-                                        str('\n '.join('%s : %s' % (k, repr(v)) 
-                                            for (k, v) in self.__dict.iteritems())),
-                                        self._cls.__class__.__module__,
-                                        self._cls.__class__.__name__)
+        return '<%s.%s at %s\n%s> containing <%s.%s>' % \
+                 (self.__class__.__module__,
+                  self.__class__.__name__,
+                  hex(id(self)), 
+                  str('\n '.join('%s : %s' % (k, repr(v)) 
+                      for (k, v) in self.__dict.iteritems())),
+                  self._cls.__class__.__module__,
+                  self._cls.__class__.__name__)
     
     def validate_list_contents(self, value):
         """Validates that all items in the list are of the correct type.

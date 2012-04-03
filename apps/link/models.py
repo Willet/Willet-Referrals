@@ -258,7 +258,7 @@ def get_a_willt_code():
     counter = CodeCounter.get_by_key_name(str(counter_index))
     if not counter: # links haven't been link/init'ed yet
         CodeCounter.generate_counters()
-        # redo
+        # re-get counter object
         counter = CodeCounter.get_by_key_name(str(counter_index))
     c = counter.get_next()
     return c

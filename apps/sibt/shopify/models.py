@@ -4,28 +4,23 @@
 # Extends from "Referral", which extends from "App"
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
-import datetime
 import hashlib
 import inspect
 import logging
 
-from django.utils                   import simplejson as json
-from google.appengine.api           import memcache
-from google.appengine.datastore     import entity_pb
-from google.appengine.ext           import db
-from google.appengine.ext.webapp    import template
+from django.utils import simplejson as json
+from google.appengine.api import memcache
+from google.appengine.ext import db
+from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
-from apps.client.models      import Client
-from apps.email.models       import Email
-from apps.sibt.models        import SIBT 
-from apps.user.models        import User
-from util                    import httplib2
-from util.consts             import *
-from util.helpers            import generate_uuid
-from util.helpers            import url as reverse_url
+from apps.email.models import Email
+from apps.sibt.models import SIBT
+from util.consts import *
+from util.helpers import generate_uuid
+from util.helpers import url as reverse_url
 
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------

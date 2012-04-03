@@ -18,15 +18,15 @@ use_library('django', '0.96')
 # our intelligent uri router
 
 def main():
-    old_len = 0
-    new_len = 0
-    reload_uris = memcache.get('reload_uris')
     import_error = False
-    
+    new_len = 0
+    old_len = 0
+    reload_uris = memcache.get('reload_uris')
+
     try:
         combined_uris = memcache.get('combined_uris')
     except:
-        reload_uris   = True
+        reload_uris = True
         combined_uris = False
 
     if reload_uris or not combined_uris:
@@ -39,7 +39,7 @@ def main():
                 __import__(import_str, globals(), locals(), [], -1)
                 app_urls = sys.modules[import_str]
                 combined_uris.extend(app_urls.urlpatterns)
-    
+
                 old_len = new_len
                 new_len = len(combined_uris)
 

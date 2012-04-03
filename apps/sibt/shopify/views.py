@@ -4,43 +4,36 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import datetime
-import random
 
 from datetime import datetime, timedelta
-from django.utils import simplejson as json
-from google.appengine.api import taskqueue
-from google.appengine.api import urlfetch
-from google.appengine.api import memcache
-from google.appengine.ext import webapp
-from google.appengine.ext import db 
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
 from urlparse import urlparse
 
-from apps.action.models       import ButtonLoadAction
-from apps.action.models       import ScriptLoadAction
-from apps.app.models          import *
-from apps.client.models       import *
+from google.appengine.api import taskqueue
+from google.appengine.api import memcache
+from google.appengine.ext import db
+from google.appengine.ext.webapp import template
+
+from apps.action.models import ButtonLoadAction, ScriptLoadAction
+from apps.app.models import *
+from apps.client.models import *
 from apps.client.shopify.models import *
-from apps.email.models        import Email
+from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models         import Link
+from apps.link.models import Link
+from apps.order.models import *
 from apps.product.shopify.models import ProductShopify
-from apps.order.models        import *
-from apps.sibt.actions        import SIBTClickAction
-from apps.sibt.actions        import SIBTVoteAction
-from apps.sibt.actions import SIBTShowingButton
-from apps.sibt.models         import SIBT, SIBTInstance
+from apps.sibt.actions import SIBTClickAction, SIBTShowingButton, SIBTVoteAction
+from apps.sibt.models import SIBT, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
-from apps.user.models         import User
+from apps.user.models import User
 from apps.wosib.shopify.models import WOSIBShopify
 
+from util.consts import *
+from util.helpers import *
+from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
-from util.helpers             import *
-from util.helpers             import url as build_url
-from util.urihandler          import URIHandler
-from util.consts              import *
+from util.urihandler import URIHandler
 
 class ShowBetaPage(URIHandler):
     def get(self):
@@ -229,7 +222,7 @@ class SIBTShopifyServeScript(URIHandler):
     
     def get(self):
         votes_count = 0
-        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_mutli_view = False
+        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target   = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
@@ -310,7 +303,7 @@ class SIBTShopifyServeScript(URIHandler):
             if not asker_name:
                 asker_name = 'I' # "should asker_name buy this?"
 
-            is_asker = (instance.asker.key() == user.key())
+            is_asker = bool(instance.asker.key() == user.key())
             if not is_asker:
                 logging.debug('not asker, check for vote ...')
                 
@@ -318,7 +311,7 @@ class SIBTShopifyServeScript(URIHandler):
                 
                 logging.debug('got a vote action? %s' % vote_action)
                 
-                has_voted = (vote_action != None)
+                has_voted = bool(vote_action)
 
             try:
                 if link == None: 
@@ -337,9 +330,9 @@ class SIBTShopifyServeScript(URIHandler):
                 # user has viewed page more than once
                 # show top-bar-ask
                 show_top_bar_ask = True 
-            if len (tracked_urls) >= 4:
-                # part of the unsure detection: 4 or more URLs tracked for (app and user)
-                unsure_mutli_view = True
+            if len (tracked_urls) >= UNSURE_DETECTION['url_count_for_app_and_user']:
+                # part of the unsure detection: ^ or more URLs tracked for (app and user)
+                unsure_multi_view = True
             product = ProductShopify.get_or_fetch(target, app.client)
         else:
             logging.warn("no app and no instance!")
@@ -354,7 +347,7 @@ class SIBTShopifyServeScript(URIHandler):
         # determine whether to show the results button.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
-        logging.debug ("votes_count = %s" % votes_count)
+        # logging.debug ("votes_count = %s" % votes_count)
         if votes_count:
             time_diff = datetime.now() - instance.created
             logging.debug ("time_diff = %s" % time_diff)
@@ -362,40 +355,44 @@ class SIBTShopifyServeScript(URIHandler):
                 has_results = True
         logging.debug ("has_results = %s" % has_results)
 
-                # Grab all template values
+        # Grab all template values
         template_values = {
-            'URL'            : URL,
-            'is_asker'       : is_asker,
-            'show_votes'     : show_votes,
-            'has_voted'      : has_voted,
-            'is_live'        : is_live,
-            'show_top_bar_ask' : str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
-            'unsure_mutli_view': unsure_mutli_view,
-            'app'            : app,
-            'instance'       : instance,
-            'asker_name'     : asker_name, 
-            'asker_pic'      : asker_pic,
+            'debug': APP_LIVE_DEBUG,
+            'URL': URL,
 
-            'store_url'      : shop_url,
-            'store_domain'   : getattr (app.client, 'domain', ''),
-            'store_id'       : self.request.get('store_id'),
-            'product_uuid'   : product.uuid if product else "",
-            'product_title'  : product.title if product else "",
-            'product_images' : product.images if product else "",
-            'product_desc'   : product.description if product else "",
-          
-            'user'           : user,
-            'stylesheet'     : '../../plugin/templates/css/colorbox.css',
-            'sibt_version'   : app.version or 2,
+            'app': app,
+            'sibt_version': app.version or 10,
+            'app_css': app_css,
+            'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'detect_shopconnection': True,
 
-            'evnt'           : event,
-            
+            'instance': instance,
+            'is_live': is_live,
+            'show_votes': show_votes,
+            'show_top_bar_ask': str((show_top_bar_ask and (app.top_bar_enabled if app else True))),
+            'unsure_multi_view': unsure_multi_view,
+            'has_results': has_results,
+
+            'user': user,
+            'has_voted': has_voted,
+            'is_asker': is_asker,
+            'asker_name': asker_name, 
+            'asker_pic': asker_pic,
+
+            'store_url': shop_url,
+            'store_domain': getattr (app.client, 'domain', ''),
+            'store_id': self.request.get('store_id'),
+
+            'product_uuid': product.uuid if product else "",
+            'product_title': product.title if product else "",
+            'product_images': product.images if product else "",
+            'product_desc': product.description if product else "",
+
+            'evnt': event,
+
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
             'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
-            'willt_code'     : link.willt_url_code if link else "",
-            'app_css'        : app_css,
-            'has_results'    : has_results,
-            'detect_shopconnection': True,
+            'willt_code': link.willt_url_code if link else "",
         }
 
         # Finally, render the JS!
@@ -414,15 +411,12 @@ class SIBTShopifyServeAB (URIHandler):
     def get(self):
         try:
             app = SIBTShopify.get_by_store_url(get_shopify_url(self.request.get('store_url')))
-        except:
+        except db.KindError:
             app = SIBT.get_by_store_url(get_shopify_url(self.request.get('store_url')))
         
-        jsonp       = self.request.get('jsonp', False) # return json format if jsonp is not set
+        jsonp = bool(self.request.get('jsonp', False)) # return json format if jsonp is not set
 
-        if jsonp:
-            jsonp = True # convert string to boolean
-        
-        if not app: # if app can't be gotten, return a file anyway
+        if not app: # if we can't get the app, return a file anyway
             cta_button_text = "Need advice? Ask your friends!"
         else:
             user        = User.get_or_create_by_cookie(self, app)

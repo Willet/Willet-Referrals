@@ -68,13 +68,14 @@
 
 {% block ajax_methods %}
         // Sends analytic data point to server
-        var storeAnalytics = function( evnt ) {
-            var payload = { what          : evnt,
-                            instance_uuid : '',
-                            app_uuid      : '{{ app_uuid }}',
-                            user_uuid     : '{{ user_uuid }}',
-                            target_url    : '{{ target_url }}'
-                          };
+        var storeAnalytics = function(evnt) {
+            var payload = {
+                evnt: evnt,
+                instance_uuid: '',
+                app_uuid: '{{ app_uuid }}',
+                user_uuid: '{{ user_uuid }}',
+                target_url: '{{ target_url }}'
+            };
             $.ajax({
                 url      : "{{ URL }}{% url TrackSIBTUserAction %}",
                 dataType : 'json',
