@@ -89,7 +89,7 @@ class ButtonsShopify(Buttons, AppShopify):
     def do_upgrade(self):
         """ Remove button scripts and add the paid version """
         self.uninstall_script_tags();
-        self.install_script_tags(script_tags=[{
+        self.queue_script_tags(script_tags=[{
             "script_tag": {
                 "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
                     URL,
@@ -98,6 +98,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 "event": "onload"
             }
         }])
+        self.install_queued()
 
         # Fire off "personal" email from Fraser
         #Email.welcomeClient( "ShopConnection", 
