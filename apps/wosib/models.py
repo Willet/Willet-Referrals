@@ -95,12 +95,16 @@ class WOSIBInstance(Model):
     created = db.DateTimeProperty(auto_now_add = True, indexed = True)
 
     # The User who asked WOSIB to their friends
-    asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances')
+    asker = MemcacheReferenceProperty(db.Model,
+                                      collection_name='wosib_instances')
 
     # Parent App that "owns" these instances
-    app_ = db.ReferenceProperty(db.Model, collection_name="app_wosib_instances")
+    app_ = db.ReferenceProperty(db.Model,
+                                collection_name="app_wosib_instances")
 
-    link = db.ReferenceProperty(db.Model, collection_name='wosib_instance_links', indexed=False)
+    link = db.ReferenceProperty(db.Model,
+                                collection_name='wosib_instance_links',
+                                indexed=False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
     products = db.StringListProperty(db.Text, indexed=True)
@@ -171,12 +175,12 @@ class WOSIBInstance(Model):
         """Increment this instance's votes counter
            For compatibility reasons, the field 'yesses' is used to keep count"""
         def txn():
-            logging.info ("Running vote++ transaction")
+            logging.info("Running vote++ transaction")
             index = random.randint(0, NUM_VOTE_SHARDS-1)
             shard_name = self.uuid + str(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = VoteCounter(key_name      =shard_name, 
+                counter = VoteCounter(key_name=shard_name, 
                                       instance_uuid=self.uuid)
             counter.yesses += 1
             counter.put()
