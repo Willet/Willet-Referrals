@@ -3,24 +3,15 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib
 import logging
 import re
-import urllib
 
-from datetime import datetime, timedelta
-from time import time
 from urlparse import urlparse, urlunsplit
 
-from django.utils import simplejson as json
-
-from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import get_application_id
-from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.app.models import *
 from apps.client.models import *
@@ -32,12 +23,10 @@ from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
-from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 
 from util.consts import *
 from util.helpers import *
-from util.shopify_helpers import get_shopify_url as format_url
 from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
@@ -450,7 +439,6 @@ class ShowFBThanks(URIHandler):
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
     def get(self):
-        email = ""
         incentive_enabled = False
         user_cancelled = True
         app = None
@@ -490,7 +478,8 @@ class ShowFBThanks(URIHandler):
                                           url('VoteDynamicLoader'),
                                           ('instance_uuid=%s' % instance.uuid),
                                           ''])
-            logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
+            logging.info ("link.target_url changed to %s (%s)" % (
+                           link.target_url, instance.uuid))
 
             # increment link stuff
             link.app_.increment_shares()
@@ -508,10 +497,12 @@ class ShowFBThanks(URIHandler):
             # Now, remove the PartialSIBTInstance. We're done with it!
             partial.delete()
 
-        template_values = { 'email'          : user.get_attr('email'),
-                            'user_cancelled' : user_cancelled,
-                            'incentive_enabled' : app.incentive_enabled if app else False }
-        
+        template_values = {
+            'email': user.get_attr('email'),
+            'user_cancelled': user_cancelled,
+            'incentive_enabled': app.incentive_enabled if app else False
+        }
+
         path = os.path.join('apps/sibt/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -521,12 +512,14 @@ class ShowFBThanks(URIHandler):
 class ColorboxJSServer(URIHandler):
     """ Called to load Colorbox.js """
     def get(self):
-        template_values = { 'URL'           : URL,
-                            'app_uuid'      : self.request.get('app_uuid'),
-                            'user_uuid'     : self.request.get('user_uuid'),
-                            'instance_uuid' : self.request.get('instance_uuid'),
-                            'target_url'    : self.request.get('target_url') }
-       
+        template_values = {
+            'URL': URL,
+            'app_uuid': self.request.get('app_uuid'),
+            'user_uuid': self.request.get('user_uuid'),
+            'instance_uuid': self.request.get('instance_uuid'),
+            'target_url': self.request.get('target_url')
+        }
+
         path = os.path.join('apps/sibt/templates/js/', 'jquery.colorbox.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
