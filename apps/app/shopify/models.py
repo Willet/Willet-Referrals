@@ -195,22 +195,7 @@ class AppShopify(Model):
         Returns: <Object> charge info
         """
 
-        # TODO: Find out why we can't retrieve individual payments (always get 'page not found' after redirect)
-        results = self._call_Shopify_API('GET', '%s.json' % charge_type)
-
-        application_charges = results[charge_type]
-
-        result = {}
-        for charge in application_charges:
-            if charge["id"] == id:
-                result = charge
-                break
-
-        if result is not {}:
-            return {charge_type: result}
-        else:
-            # TODO: Error!
-            pass
+        return self._call_Shopify_API('GET', '%s/%s.json' % (charge_type, id))
     
     def setup_application_charge(self, settings):
         """ Setup one-time charge for store

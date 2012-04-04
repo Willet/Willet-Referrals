@@ -22,6 +22,7 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
+from util.errors                    import ShopifyBillingError
 
 NUM_VOTE_SHARDS = 15
 
@@ -61,7 +62,7 @@ class ButtonsShopify(Buttons, AppShopify):
             elif 100000 <= count:
                 return 19.99 #enterprise
             else:
-                pass #TODO: Error
+                raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
 
         # Method 2a: The Tuple-Dict Two-Step
         def method2a(count):
@@ -79,7 +80,7 @@ class ButtonsShopify(Buttons, AppShopify):
             if len(keys) is 1 and plans.get(keys[0]):
                 return plans.get(keys[0])
             else:
-                pass # TODO error! We messed up our ranges, or the key wasn't found!
+                raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
 
         # Method 2b: The Tuple-Dict one step
         def method2b(count):
@@ -97,7 +98,7 @@ class ButtonsShopify(Buttons, AppShopify):
             if len(plan_prices) is 1:
                 return plan_prices[0]
             else:
-                pass #TODO: Error!
+                raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
 
         return method1(count)
 

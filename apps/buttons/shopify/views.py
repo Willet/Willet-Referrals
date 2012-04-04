@@ -68,14 +68,11 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
         app = ButtonsShopify.get_by_uuid(app_uuid)
 
         if not app:
-            # TODO: Error! What is going on?!
-            pass
+            logging.error("error calling billing callback: 'app' not found")
 
         charge_id = int(self.request.get('charge_id'))
 
         if charge_id == app.recurring_billing_id:
-            logging.info(self.request.arguments())
-
             # Good to go, activate!
             app.activate_recurring_billing({
                 'return_url': self.request.url,
@@ -98,7 +95,7 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
             'shop_owner' : client.merchant.get_full_name(),
             'shop_name'  : client.name
         }
-        self.response.out.write(self.render_page('beta.html', template_values))
+        self.response.out.write(self.render_page('smart-welcome.html', template_values))
 
 class SmartButtonsShopifyUpgrade(URIHandler):
     """ Starts the upgrade process """
@@ -106,9 +103,8 @@ class SmartButtonsShopifyUpgrade(URIHandler):
         shop_url = self.request.get("shop_url")
 
         existing_app = ButtonsShopify.get_by_url(shop_url)
-        if existing_app is None:
-            # TODO: Error, can't upgrade if not installed
-            pass
+        if not existing_app:
+            logging.error("error calling billing callback: 'existing_app' not found")
 
         price = existing_app.get_price()
 
@@ -117,7 +113,7 @@ class SmartButtonsShopifyUpgrade(URIHandler):
             "price":        price,
             "name":         "ShopConnection",
             "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
-            "test":         "true" # Set to false when live; can't run 'false' when in development
+            "test":         not USING_DEV_SERVER
             #"trial_days":   0
         })
 
@@ -127,8 +123,8 @@ class SmartButtonsShopifyUpgrade(URIHandler):
             self.redirect(confirm_url)
             return
         else:
-            # TODO: What happened?
-            pass
+            # Can this even occur?
+            raise ShopifyBillingError('No confirmation URL provided by Shopify API', {})
 
 class SmartButtonsShopifyWelcome(URIHandler):
     """ Shows the user basic installation instructions """
