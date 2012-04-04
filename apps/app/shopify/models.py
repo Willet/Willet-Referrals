@@ -32,10 +32,10 @@ class AppShopify(Model):
         AppShopify classes need not be installable from the Shopify app store,
         and can be installed as a bundle. Refer to SIBTShopify for example code.
     """
-    store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
-    store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com
-    extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
-    store_token = db.StringProperty(indexed = True) # Shopify token for this store
+    store_id  = db.StringProperty(indexed=True) # Shopify's ID for this store
+    store_url = db.StringProperty(indexed=True) # must be the http://*.myshopify.com
+    extra_url = db.StringProperty(indexed=True, required=False, default='') # custom domain
+    store_token = db.StringProperty(indexed=True) # Shopify token for this store
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
@@ -190,7 +190,7 @@ class AppShopify(Model):
         """ Install webhooks, script_tags, and assets in parallel 
             Note: first queue everything up, then call this!
         """
-        # Helper functions
+        # Callback function for webhooks
         def handle_webhook_result(rpc, webhook):
             resp = rpc.get_result()
             
@@ -208,6 +208,7 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for script tags
         def handle_script_tag_result(rpc, script_tag):
             resp = rpc.get_result()
 
@@ -225,6 +226,7 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for assets
         def handle_asset_result(rpc, asset):
             resp = rpc.get_result()
             
@@ -242,16 +244,19 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
-        def deadline_exceeded_catch(callback_func, **kwargs):
-            try:
-                callback_func(**kwargs)
-            except DeadlineExceededError:
-                logging.error('Installation failed, deadline exceeded:\n%s' % (
-                    '\n'.join( [ "%s= %r" % (key, value) for key, value in kwargs.items() ] ) ))
-
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
-            return lambda: deadline_exceeded_catch(callback_func, **kwargs)
+            # Lambda function
+            def deadline_exceeded_catch():
+                try:
+                    callback_func(**kwargs)
+                except DeadlineExceededError:
+                    params_str = '\n'.join([ "%s= %r" % (key, value) for key, value in kwargs.items()])
+                    error_msg = 'Installation failed, deadline exceeded:\n%s' % (params_str,)
+                    logging.error(error_msg)
+                    Email.emailDevTeam(error_msg)
+
+            return lambda: deadline_exceeded_catch()
 
         rpcs = []
         username = self.settings['api_key'] 
