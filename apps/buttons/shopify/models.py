@@ -42,24 +42,23 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_by_uuid( uuid ):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
 
-    @staticmethod
-    def get_price():
-        result = AppShopify._call_Shopify_API("GET", "orders/count.json")
+    def get_price(self):
+        result = self._call_Shopify_API("GET", "orders/count.json")
         count = result["count"]
 
         # Method 1: The long 'if'
         def method1(count):
             if 0 <= count < 10:
                 return 0.99 #non-profit
-            else if 10 <= count < 100:
+            elif 10 <= count < 100:
                 return 2.99 #basic
-            else if 100 <= count < 1000:
+            elif 100 <= count < 1000:
                 return 5.99 #professional
-            else if 1000 <= count < 10000:
+            elif 1000 <= count < 10000:
                 return 9.99 #business
-            else if 10000 <= count < 100000:
+            elif 10000 <= count < 100000:
                 return 17.99 #unlimited
-            else if 100000 <= count:
+            elif 100000 <= count:
                 return 19.99 #enterprise
             else:
                 pass #TODO: Error

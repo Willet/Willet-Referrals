@@ -107,7 +107,7 @@ class SmartButtonsShopifyUpgrade(URIHandler):
             # TODO: Error, can't upgrade if not installed
             pass
 
-        price = ButtonsShopify.get_price()
+        price = existing_app.get_price()
 
         # Start the billing process
         confirm_url = existing_app.setup_recurring_billing({

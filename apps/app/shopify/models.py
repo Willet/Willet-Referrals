@@ -182,7 +182,7 @@ class AppShopify(Model):
             #        data if data else content
             #    )        
             #)
-            raise ShopifyAPIError(resp.status, resp.reason, url + ", " + content)
+            raise ShopifyAPIError(resp.status, resp.reason, url + ", " + json.dumps(payload) + ", " + content)
 
     def _retrieve_single_billing_object(self, charge_type, id):
         """ Retrieve billing info for customer
