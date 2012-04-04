@@ -11,13 +11,13 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # models
+from apps.app.models import App
 from apps.link.models import CodeCounter
 from apps.link.models import Link
-from apps.app.models import App
 
 # helpers
-from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.consts import *
+from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.urihandler import URIHandler
 
 class TrackWilltURL(URIHandler):
@@ -64,21 +64,24 @@ class CleanBadLinks(URIHandler):
     def get(self):
         links = Link.all().filter('user =', None)
 
-        count = 0
-        str = 'Cleaning the bad links'
-        for l in links:
-            clicks = l.count_clicks()
-            try:
-                if l.user == None and clicks != 0:
-                    count += 1
-                    str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
+        if links:
+            count = 0
+            str   = 'Cleaning the bad links'
+            for l in links:
+                clicks = l.count_clicks()
+                try:
+                    if l.user == None and clicks != 0:
+                        count += 1
+                        str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
+                        l.delete()
+                except Exception,e:
                     l.delete()
-            except Exception,e:
-                l.delete()
-                logging.warn('probably unable to resolve property: %s' % e)
+                    logging.warn('probably unable to resolve property: %s' % e)
 
-        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % (count, str))
+            logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
+        else:
+            logging.info("CleanBadLinks Report: No bad links found")
 
 class IncrementCodeCounter(URIHandler):
     """ This was getting called every time a willet code was being

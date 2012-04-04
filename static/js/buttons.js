@@ -2,8 +2,9 @@
  * Buttons JS. Copyright Willet Inc, 2012
  */
 ;(function () {
+    "use strict";
     var here = window.location.href.split('#')[0] + '.json';
-    // var console = { log: function () {}, error: function () {} };
+    var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
         //    && typeof(window.console.error) ==='function' )
@@ -39,20 +40,11 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
-    var button_div = document.getElementById('_willet_buttons_app');
     var _init_buttons = function(data) {
-        /* data is product json 
-         */
         console.log("Buttons: finding buttons placeholder on page");
-        /**
-         * INSERT IFRAME WITH DATA
-         */
-        if (button_div && button_div.dataset.loaded) {
-            console.log ('double execution detected!!');
-            return; // loading buttons.js twice fails them both.
-        }
+        var button_div = document.getElementById('_willet_buttons_app');
 
-        if (button_div && window._willet_iframe_loaded == undefined) {
+        if (button_div && window._willet_iframe_loaded === undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
 
             // Get options from tag
@@ -183,8 +175,20 @@
                 Facebook: {
                     create: function () {
                         var d = createButton('facebook');
+                        d.style.overflow = 'visible';
                         d.style.width = button_count ? '90px' : '48px';
                         d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                        var s = document.createElement('style');
+                        s.type = 'text/css';
+                        s.media = 'screen';
+                        var css = ".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
+                                 +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }";
+                        if (s.styleSheet) {
+                            s.styleSheet.cssText = css; // IE
+                        } else { 
+                            s.appendChild(document.createTextNode(css)); // Every other browser
+                        }
+                        d.appendChild(s);
                         return d;
                     },
                     script: protocol+'//connect.facebook.net/en_US/all.js#xfbml=1'
@@ -192,7 +196,7 @@
                 Twitter: {
                     create: function () {
                         var d = createButton('twitter');
-                        d.style.width = button_count ? '98px' : '56px';
+                        d.style.width = button_count ? '100px' : '58px';
 
                         var a = document.createElement('a');
                         a.href = 'https://twitter.com/share';
@@ -207,7 +211,7 @@
                 GooglePlus: {
                     create: function () {
                         var d = createButton('googleplus');
-                        d.style.width = button_count ? '90px' : '32px';
+                        d.style.width = button_count ? '74px' : '32px';
                         d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
                         // Google is using the Open Graph spec
                         var t, p, 

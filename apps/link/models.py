@@ -25,7 +25,10 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 NUM_SHARDS = 25
 
 def put_link(memcache_key):
-    """Deferred task to put a link to datastore"""
+    """Deferred task to put a link to datastore
+
+        Should remain a function because it is pickled by deferred
+    """
     try:
         data = memcache.get(memcache_key)
         if data:
@@ -72,6 +75,11 @@ class Link(Model):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['willt_url_code'] if 'willt_url_code' in kwargs else None 
         super(Link, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        if not self.user:
+            logging.warn('Validation warning: link has no user')
+        return True
     
     def _validate_self(self):
         return True
@@ -213,6 +221,9 @@ class CodeCounter(Model):
     total_counter_nums = db.IntegerProperty(indexed=False,
                                             required=True,
                                             default=20)
+
+    def _validate_self(self):
+        return True
     
     def _validate_self(self):
         # there is not much to check - count can be higher than total_counter_nums

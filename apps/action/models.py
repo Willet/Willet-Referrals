@@ -21,7 +21,54 @@ from util.model import Model
 
 """Helper method to persist actions to datastore"""
 def persist_actions(bucket_key, list_keys, decrementing=False):
-    pass
+    from apps.buttons.actions import *
+    from apps.gae_bingo.actions import *
+    from apps.sibt.actions import *
+    from apps.wosib.actions import *
+    action_dict = memcache.get_multi(list_keys) 
+
+    mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
+
+    logging.info('batch putting a list of actions from memcache: %s' % list_keys)
+    actions_to_put = []
+    had_error = False
+    for key in list_keys:
+        data = action_dict.get(key)
+        try:
+            action = db.model_from_protobuf(entity_pb.EntityProto(data))
+            if action:
+                actions_to_put.append(action)
+        except AssertionError, e:
+            # there was an error getting all the actions
+            # let's decrement the number of buckets
+            # but before we can do this we have to save the last bucket so
+            # it's contents are not deleted
+
+            old_key = mbc.get_bucket(mbc.count)
+            if bucket_key != old_key and not decrementing and not had_error:
+                # we dont want to do this for the last bucket because it will
+                # duplicate the entries we are about to create
+                old_count = mbc.count
+                mbc.decrement_count()
+                logging.warn(
+                    'encounted error, going to decrement buckets from %s to %s' 
+                    % (old_count, mbc.count), exc_info=True)
+
+                last_keys = memcache.get(old_key) or []
+                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
+                deferred.defer(persist_actions, old_key, last_keys, decrementing=True, _queue='slow-deferred')
+                had_error = True
+        except Exception, e:
+            logging.error('error getting action: %s' % e, exc_info=True)
+
+    try:
+        db.put_async(actions_to_put)
+    except Exception, e:
+        logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
+
+    if decrementing:
+        logging.warn('decremented mbc `%s` to %d and removed %s' % (
+            mbc.name, mbc.count, bucket_key))
 
 ## ----------------------------------------------------------------------------
 ## Action SuperClass ----------------------------------------------------------
