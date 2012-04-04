@@ -6,6 +6,7 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
+import sys
 import hashlib
 import logging
 import datetime
@@ -40,6 +41,66 @@ class ButtonsShopify(Buttons, AppShopify):
     @staticmethod
     def get_by_uuid( uuid ):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
+
+    @staticmethod
+    def get_price():
+        result = AppShopify._call_Shopify_API("GET", "orders/count.json")
+        count = result["count"]
+
+        # Method 1: The long 'if'
+        def method1(count):
+            if 0 <= count < 10:
+                return 0.99 #non-profit
+            else if 10 <= count < 100:
+                return 2.99 #basic
+            else if 100 <= count < 1000:
+                return 5.99 #professional
+            else if 1000 <= count < 10000:
+                return 9.99 #business
+            else if 10000 <= count < 100000:
+                return 17.99 #unlimited
+            else if 100000 <= count:
+                return 19.99 #enterprise
+            else:
+                pass #TODO: Error
+
+        # Method 2a: The Tuple-Dict Two-Step
+        def method2a(count):
+            # Apparently, python can use tuples as keys; Awesome!
+            plans = {
+                (0, 10)             : 0.99,     #"non-profit"
+                (10, 100)           : 2.99,     #"basic"
+                (100, 1000)         : 5.99,     #"professional"
+                (1000, 10000)       : 9.99,     #"business"
+                (10000, 100000)     : 17.99,    #"unlimited"
+                (100000, sys.maxint): 19.99     #"enterprise"
+            }
+
+            keys = filter(lambda x: x[0] <= count < x[1], plans)
+            if len(keys) is 1 and plans.get(keys[0]):
+                return plans.get(keys[0])
+            else:
+                pass # TODO error! We messed up our ranges, or the key wasn't found!
+
+        # Method 2b: The Tuple-Dict one step
+        def method2b(count):
+            # Apparently, python can use tuples as keys; Awesome!
+            plans = {
+                (0, 10)             : 0.99,     #"non-profit"
+                (10, 100)           : 2.99,     #"basic"
+                (100, 1000)         : 5.99,     #"professional"
+                (1000, 10000)       : 9.99,     #"business"
+                (10000, 100000)     : 17.99,    #"unlimited"
+                (100000, sys.maxint): 19.99     #"enterprise"
+            }
+
+            plan_prices = [value for key, value in plans.iteritems() if key[0] <= count < key[1]]
+            if len(plan_prices) is 1:
+                return plan_prices[0]
+            else:
+                pass #TODO: Error!
+
+        return method1(count)
 
     def do_install( self ):
         """ Install Buttons scripts and webhooks for this store """
