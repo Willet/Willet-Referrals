@@ -156,16 +156,21 @@ class AppShopify(Model):
         data = {}
         error = False
 
-        response_actions = {
-            200: lambda x: json.loads(x),
-            201: lambda x: json.loads(x)
-        }
-
         if "application/json" in resp['content-type']:
+            if int(resp.status) is 200 and content.strip() == "":
+                return True #Some responses don't return JSON
+
+            response_actions = {
+                200: lambda x: json.loads(x),
+                201: lambda x: json.loads(x)
+            }
+
             try:
                 data = response_actions.get(int(resp.status))(content)
                 error = (True if data.get("errors") else False)
-            except TypeError:
+            except TypeError: #Key Didn't exist
+                error = True
+            except ValueError: #Couldn't parse JSON
                 error = True
         else:
             error = True
@@ -288,10 +293,10 @@ class AppShopify(Model):
             charge_data.update(settings)
         
             data = self._call_Shopify_API('POST',
-                        'application_charges/#%s/activate.json' % settings.charge_id,
+                        'application_charges/%s/activate.json' % settings.charge_id,
                         { "application_charge": charge_data })
             
-            if data['status'] == 'accepted':
+            if data is True:
                 for i, cid in enumerate(self.charge_ids):
                     if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
@@ -387,16 +392,17 @@ class AppShopify(Model):
         if recurring_billing_data["status"] == 'accepted':
             # Update status
             recurring_billing_data.update({
-                "status":"accepted"
+                "status": "accepted",
+                "billing_on": recurring_billing_data["updated_at"]
             })
             recurring_billing_data.update(settings)
         
             # TODO: Why can't I activate this charge?
             data = self._call_Shopify_API('POST',
-                        'recurring_application_charges/#%s/activate.json' % self.recurring_billing_id,
+                        'recurring_application_charges/%s/activate.json' % self.recurring_billing_id,
                         { "recurring_application_charge": recurring_billing_data })
             
-            if data['status'] == 'accepted':
+            if data is True:
                 self.recurring_billing_status = "accepted"
             else:
                 raise ShopifyBillingError('Recurring billing activation denied', data)
@@ -479,14 +485,14 @@ class AppShopify(Model):
             self._queued_webhooks = webhooks
 
     def get_script_tags(self):
-        return self.__call_Shopify_API("GET", "script_tags.json")
+        return self._call_Shopify_API("GET", "script_tags.json")
 
     def uninstall_script_tags(self):
         result = self.get_script_tags()
         script_tags = result['script_tags']
 
         for script_tag in script_tags:
-            self.__call_Shopify_API("DELETE", "script_tags/#%s.json" % script_tag["id"]);
+            self._call_Shopify_API("DELETE", "script_tags/%s.json" % script_tag["id"]);
 
         logging.info('uninstalled %d script_tags' % len(script_tags))
 
