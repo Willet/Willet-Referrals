@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import re, logging, urllib
 
@@ -57,11 +57,11 @@ class UpdateStore( URIHandler ):
             
             app.install_assets(assets=liquid_assets)
 
-            url      = '%s/admin/script_tags.json' % app.store_url
+            url = '%s/admin/script_tags.json' % app.store_url
             username = app.settings['api_key'] 
             password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
-            header   = {'content-type':'application/json'}
-            h        = httplib2.Http()
+            header = {'content-type':'application/json'}
+            h = httplib2.Http()
             
             # Auth the http lib
             h.add_credentials(username, password)

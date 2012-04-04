@@ -4,8 +4,8 @@
 # Specific to Shopify
 # Stores information about a purchase / point of conversion
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
 
@@ -19,12 +19,12 @@ from util.helpers import generate_uuid
 # ------------------------------------------------------------------------------
 class OrderShopify( Order ):
     """Model storing shopify_order data"""
-    order_token    = db.StringProperty( indexed = True )
-    order_id       = db.StringProperty( indexed = True )
-    order_number   = db.StringProperty( indexed = False )
+    order_token = db.StringProperty( indexed = True )
+    order_id = db.StringProperty( indexed = True )
+    order_number = db.StringProperty( indexed = False )
     
-    store_name     = db.StringProperty( indexed = False )
-    store_url      = db.StringProperty( indexed = False, required=False, default=None )
+    store_name = db.StringProperty( indexed = False )
+    store_url = db.StringProperty( indexed = False, required=False, default=None )
     
     referring_site = db.StringProperty( indexed = False, required=False, default=None ) # might be useful
 
@@ -51,17 +51,17 @@ class OrderShopify( Order ):
 
         uuid = generate_uuid( 16 )
 
-        o = OrderShopify( key_name     = uuid,
-                          uuid         = uuid,
-                          order_token  = order_token,
-                          order_id     = str(order_id),
-                          client       = client,
-                          store_name   = client.name,
-                          store_url    = client.url,
+        o = OrderShopify( key_name = uuid,
+                          uuid = uuid,
+                          order_token = order_token,
+                          order_id = str(order_id),
+                          client = client,
+                          store_name = client.name,
+                          store_url = client.url,
                           order_number = str(order_num),
                           subtotal_price = float(subtotal), 
                           referring_site = referrer,
-                          user         = user )
+                          user = user )
         o.put()
 
         return o # return incase the caller wants it

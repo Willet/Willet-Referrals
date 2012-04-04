@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-__author__      = "Sy Khader"
-__copyright__   = "Copyright 2011, The Willet Corportation"
+__author__ = "Sy Khader"
+__copyright__ = "Copyright 2011, The Willet Corportation"
 
 
 from google.appengine.api import urlfetch, memcache, users, taskqueue

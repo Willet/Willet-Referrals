@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
@@ -122,7 +122,7 @@ class WOSIBVoteAction(VoteAction):
     product_uuid = db.StringProperty( indexed = True, required = True )
     
     # URL that was voted on
-    url           = db.LinkProperty( indexed = True )
+    url = db.LinkProperty( indexed = True )
 
     ## Constructor
     @staticmethod
@@ -130,11 +130,11 @@ class WOSIBVoteAction(VoteAction):
         # Make the action
         uuid = generate_uuid( 16 )
         action = WOSIBVoteAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 product_uuid = product,
                                 wosib_instance = instance )
         
@@ -203,12 +203,12 @@ class WOSIBShowAction(ShowAction):
     def create(user, instance, what):
         # Make the action
         uuid = generate_uuid( 16 )
-        act  = WOSIBShowAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        act = WOSIBShowAction(  key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
         act.put()
@@ -314,11 +314,11 @@ class WOSIBShowingResults(WOSIBShowAction):
 
         action = WOSIBShowingResults(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 wosib_instance = instance
         )
@@ -344,11 +344,11 @@ class WOSIBShowingVote(WOSIBShowAction):
         
         action = WOSIBShowingVote(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 wosib_instance = instance
         )
@@ -367,11 +367,11 @@ class WOSIBInstanceAction(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBVoteAction(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 wosib_instance = instance,
                 what = what
         )
@@ -408,13 +408,13 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
         uuid = generate_uuid(16)
         action = WOSIBInstanceCreated(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
-                what     = what,
-                medium   = medium,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
+                what = what,
+                medium = medium,
                 wosib_instance = instance
         )
         action.put()
@@ -529,10 +529,10 @@ class WOSIBUserClickedButtonAsk(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBUserClickedButtonAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -559,10 +559,10 @@ class WOSIBAskUserClickedShare(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBAskUserClickedShare(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -588,10 +588,10 @@ class WOSIBConnectFBCancelled(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBConnectFBCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -617,10 +617,10 @@ class WOSIBFBConnected(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBFBConnected(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -646,10 +646,10 @@ class WOSIBFriendChoosingCancelled(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBFriendChoosingCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -674,11 +674,11 @@ class WOSIBNoConnectFBCancelled(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBNoConnectFBCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what     = what
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
+                what = what
         )
         action.put()
         return action
@@ -702,10 +702,10 @@ class WOSIBNoConnectFBDialog(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBNoConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -731,10 +731,10 @@ class WOSIBConnectFBDialog(UserAction):
         uuid = generate_uuid( 16 )
         action = WOSIBConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -751,12 +751,12 @@ class WOSIBUserAction(UserAction):
     def create(user, instance, what):
         # Make the action
         uuid = generate_uuid( 16 )
-        act  = WOSIBUserAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        act = WOSIBUserAction(  key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
         act.put()

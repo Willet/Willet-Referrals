@@ -3,8 +3,8 @@
 # Buttons model
 # Extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 from google.appengine.ext import db
 
@@ -18,10 +18,10 @@ NUM_VOTE_SHARDS = 15
 class Buttons(App):
     """Clients install the buttons App"""  
 
-    title_selector       = db.StringProperty()
+    title_selector = db.StringProperty()
     description_selector = db.StringProperty()
-    image_selector       = db.StringProperty()
-    button_selector      = db.StringProperty()
+    image_selector = db.StringProperty()
+    button_selector = db.StringProperty()
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """

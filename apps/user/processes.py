@@ -112,7 +112,7 @@ class FetchFacebookFriends(URIHandler):
 
 class QueryGoogleSocialGraphAPI( URIHandler ):
     def get( self ):
-        id   = self.request.get( 'id' )
+        id = self.request.get( 'id' )
         uuid = self.request.get( 'uuid' )
         user = User.get( uuid )
 
@@ -206,7 +206,7 @@ def unpacker(obj, user):
             l = len(tmp)
             if l >= 2:
                 user.first_name = tmp[0]
-                user.last_name  = tmp[l-1]
+                user.last_name = tmp[l-1]
         elif 'photo' in k:
             user.photo = v
 
@@ -233,4 +233,4 @@ class UpdateFBAccessToken( URIHandler ):
     def post( self ):
         user = User.get( self.request.get( 'user_uuid' ) )
         user.update( fb_access_token = self.request.get( 'accessToken' ),
-                     fb_identity     = self.request.get( 'fbUserId' ) ) 
+                     fb_identity = self.request.get( 'fbUserId' ) ) 

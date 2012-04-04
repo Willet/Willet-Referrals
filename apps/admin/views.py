@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import re, urllib, sys
 from inspect import getmodule
@@ -235,12 +235,12 @@ class SIBTInstanceStats( URIHandler ):
         link = Link.get_by_code( willt_code )
 
         instance = link.sibt_instance.get()
-        asker    = instance.asker
+        asker = instance.asker
 
         # Get all actions
         actions = Action.all().filter( 'sibt_instance =', instance )
-        clicks  = SIBTClickAction.get_by_instance( instance )
-        votes   = SIBTVoteAction.get_by_instance( instance )
+        clicks = SIBTClickAction.get_by_instance( instance )
+        votes = SIBTVoteAction.get_by_instance( instance )
         
         # Init the page
         str = "<h1>SIBT Instance: "
@@ -506,9 +506,9 @@ class ShowMemcacheConsole(URIHandler):
         key = self.request.get('key')
         value = None
         clear_value = self.request.get('clear')
-        new_value   = self.request.get('value')
-        protobuf    = self.request.get('protobuf')
-        messages    = []
+        new_value = self.request.get('value')
+        protobuf = self.request.get('protobuf')
+        messages = []
         if key:
             logging.info('looking up key: %s' % key)
             value = memcache.get(key)

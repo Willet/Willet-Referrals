@@ -3,8 +3,8 @@
 # WOSIB model
 # Extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
@@ -40,7 +40,7 @@ class WOSIB(App):
     
     # stored as App
 
-    store_name    = db.StringProperty( indexed = True )
+    store_name = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -69,13 +69,13 @@ class WOSIB(App):
         uuid = generate_uuid( 16 )
         
         # Now, make the object
-        instance = WOSIBInstance(key_name     = uuid,
-                                uuid         = uuid,
-                                asker        = user,
-                                app_         = self,
-                                link         = link,
-                                products     = products,
-                                url          = link.target_url)
+        instance = WOSIBInstance(key_name = uuid,
+                                uuid = uuid,
+                                asker = user,
+                                app_ = self,
+                                link = link,
+                                products = products,
+                                url = link.target_url)
         # set end if None
         if end == None:
             six_hours = timedelta(hours=6)
@@ -103,7 +103,7 @@ class WOSIBInstance(Model):
     link = db.ReferenceProperty(db.Model, collection_name='wosib_instance_links', indexed=False)
 
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
-    products     = db.StringListProperty(db.Text, indexed=True)
+    products = db.StringListProperty(db.Text, indexed=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -230,9 +230,9 @@ class PartialWOSIBInstance(Model):
         instance = cls.get_by_user(user)
         if instance:
             logging.info ("Updating existing %s." % cls.__name__)
-            instance.link    = link
+            instance.link = link
             instance.products = products
-            instance.app_    = app
+            instance.app_ = app
         else:
             # make a new one (user doesn't have an existing partial instance).
             uuid = generate_uuid( 16 )

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
@@ -24,20 +24,20 @@ from util.urihandler import URIHandler
 class CreateShopifyOrder(URIHandler):
     def get(self):
         # Grab the important peeps
-        user   = User.get_by_cookie(self)
+        user = User.get_by_cookie(self)
         client = get_client_by_uuid( self.request.get('client_uuid') )
 
         # Grab order deets
-        order_id  = self.request.get('order_id')
+        order_id = self.request.get('order_id')
         order_num = self.request.get('order_num')
-        subtotal  = self.request.get('subtotal')
-        ref_site  = self.request.get('ref_site')
-        email     = self.request.get('email')
-        name      = self.request.get('name')
+        subtotal = self.request.get('subtotal')
+        ref_site = self.request.get('ref_site')
+        email = self.request.get('email')
+        name = self.request.get('name')
         marketing = self.request.get('marketing')
 
         # Grab the products
-        items     = []
+        items = []
         num_items = self.request.get('num_items')
         for i in range(0, int(num_items)):
             product = ProductShopify.get_by_shopify_id(str(self.request.get('item%d' % i)))
@@ -45,13 +45,13 @@ class CreateShopifyOrder(URIHandler):
                 items.append(product.key())
        
         # Make the Order
-        o = OrderShopify.create( user      = user,
-                                 client    = client,
+        o = OrderShopify.create( user = user,
+                                 client = client,
                                  order_token = '', # Phasing this out.
-                                 order_id  = order_id,
+                                 order_id = order_id,
                                  order_num = order_num, 
-                                 subtotal  = subtotal,
-                                 referrer  = ref_site )
+                                 subtotal = subtotal,
+                                 referrer = ref_site )
 
         # Store the purchased items in the order
         o.products.extend( items )
@@ -59,10 +59,10 @@ class CreateShopifyOrder(URIHandler):
 
         # Update the User's info
         if user:
-            user.update(first_name        = name.split(' ')[0],
-                        last_name         = name.split(' ')[1],
-                        full_name         = name,
-                        email             = email,
+            user.update(first_name = name.split(' ')[0],
+                        last_name = name.split(' ')[1],
+                        full_name = name,
+                        email = email,
                         accepts_marketing = marketing)
         else:
             logging.error('NO USER: ')
@@ -81,14 +81,14 @@ class OrderIframeNotification(URIHandler):
         return # turning this off for a bit
 
         client = get_client_by_uuid( self.request.get('client_uuid') )
-        user   = User.get( self.request.get('user_uuid') )
+        user = User.get( self.request.get('user_uuid') )
         if user is None:
             user = User.get_by_cookie(self)
 
         # Grab order info from url
-        url      = self.request.get( 'url' ).split( '/' )
-        l        = len( url )
-        token    = url[ l - 1 ]
+        url = self.request.get( 'url' ).split( '/' )
+        l = len( url )
+        token = url[ l - 1 ]
         store_id = url[ l - 2 ]
 
         # Try to fetch order.
@@ -168,20 +168,20 @@ class OrderWebhookNotification(URIHandler):
 
                 # Store User/ Customer data
                 elif k == 'billing_address':
-                    address1           = v['address1']
-                    address2           = v['address2']
-                    city               = v['city']
-                    province           = v['province']
-                    country_code       = v['country_code']
-                    postal_code        = v['zip']
-                    latitude           = v['latitude']
-                    longitude          = v['longitude']
-                    phone              = v['phone']
+                    address1 = v['address1']
+                    address2 = v['address2']
+                    city = v['city']
+                    province = v['province']
+                    country_code = v['country_code']
+                    postal_code = v['zip']
+                    latitude = v['latitude']
+                    longitude = v['longitude']
+                    phone = v['phone']
                 elif k == 'email':
                     email = v
                 elif k == 'customer':
-                    first_name         = v['first_name']
-                    last_name          = v['last_name']
+                    first_name = v['first_name']
+                    last_name = v['last_name']
                     shopify_id = v['id']
                 elif k == 'browser_ip':
                     ip = v
@@ -199,21 +199,21 @@ class OrderWebhookNotification(URIHandler):
      
             # Update the User's info
             if user:
-                user.update(first_name         = first_name,
-                            last_name          = last_name,
-                            address1           = address1,
-                            address2           = address2,
-                            city               = city,
-                            province           = province,
-                            country_code       = country_code,
-                            postal_code        = postal_code,
-                            latitude           = latitude,
-                            longitude          = longitude,
-                            phone              = phone,
-                            email              = email,
-                            shopify_id         = shopify_id,
-                            ip                 = ip,
-                            accepts_marketing  = accepts_marketing)
+                user.update(first_name = first_name,
+                            last_name = last_name,
+                            address1 = address1,
+                            address2 = address2,
+                            city = city,
+                            province = province,
+                            country_code = country_code,
+                            postal_code = postal_code,
+                            latitude = latitude,
+                            longitude = longitude,
+                            phone = phone,
+                            email = email,
+                            shopify_id = shopify_id,
+                            ip = ip,
+                            accepts_marketing = accepts_marketing)
             else:
                 logging.error('NO USER: %s' % token)
 

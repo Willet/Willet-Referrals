@@ -3,8 +3,8 @@
 # Data models for our Users
 # our Users are our client's clients
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
 import sys
@@ -48,7 +48,7 @@ from util.model import Model
 class EmailModel(Model):
     created = db.DateTimeProperty(auto_now_add=True)
     address = db.EmailProperty(indexed=True)
-    user    = MemcacheReferenceProperty( db.Model, collection_name = 'emails' )
+    user = MemcacheReferenceProperty( db.Model, collection_name = 'emails' )
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
@@ -155,16 +155,16 @@ def deferred_user_put(bucket_key, list_keys, decrementing=False):
 # ------------------------------------------------------------------------------
 class User(db.Expando):
     # General Junk
-    uuid                  = db.StringProperty(indexed = True)
-    creation_time         = db.DateTimeProperty(auto_now_add = True)
-    client                = db.ReferenceProperty(db.Model, collection_name='client_user')
-    memcache_bucket       = db.StringProperty( indexed = False, default = "")
-    twitter_access_token  = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
+    uuid = db.StringProperty(indexed = True)
+    creation_time = db.DateTimeProperty(auto_now_add = True)
+    client = db.ReferenceProperty(db.Model, collection_name='client_user')
+    memcache_bucket = db.StringProperty( indexed = False, default = "")
+    twitter_access_token = db.ReferenceProperty(db.Model, collection_name='twitter-oauth')
     linkedin_access_token = db.ReferenceProperty(db.Model, collection_name='linkedin-users')
   # user -> User.get_full_name
     
     # referrer is deprecated
-    referrer              = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
+    referrer = db.ReferenceProperty(db.Model, collection_name='user-referrer') # will be User.uuid
     
     # Memcache Bucket Config name
     _memcache_bucket_name = '_willet_user_put_bucket'
@@ -214,7 +214,7 @@ class User(db.Expando):
         
         key = self.get_key()
 
-        mbc    = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
+        mbc = MemcacheBucketConfig.get_or_create(self._memcache_bucket_name)
         bucket = self.memcache_bucket
         
         # If we haven't set the bucket OR
@@ -806,7 +806,7 @@ class User(db.Expando):
     def fb_post_to_friends(self, ids, names, msg, img, name, desc, store_domain, link):
 
         # First, fetch the user's data.
-        taskqueue.add( url    = url('FetchFacebookData'),
+        taskqueue.add( url = url('FetchFacebookData'),
                        params = { 'user_uuid' : self.uuid, 
                                   'fb_id'     : self.fb_identity } )
 
@@ -856,7 +856,7 @@ class User(db.Expando):
         # For each person, share the message
         fb_share_ids = []
         for i in range( 0, len( ids ) ):
-            id   = ids[i]
+            id = ids[i]
             name = names[i]
 
             # Update the params - personalize the msg
@@ -870,7 +870,7 @@ class User(db.Expando):
                 #logging.info(facebook_share_url + params)
                 fb_response = urlfetch.fetch( facebook_share_url, 
                                               payload,
-                                              method   = urlfetch.POST,
+                                              method = urlfetch.POST,
                                               deadline = 7 )
             except urlfetch.DownloadError, e: 
                 logging.error('Error sending fb request: %s' % e)
@@ -886,7 +886,7 @@ class User(db.Expando):
                     
                     """
                     taskqueue.add(
-                        url    = url('FetchFriendFacebookData'),
+                        url = url('FetchFriendFacebookData'),
                         params = { 'fb_id' : id }
                     )
                     """
@@ -903,7 +903,7 @@ class User(db.Expando):
     def fb_post_multiple_products_to_friends (self, ids, names, msg, img, store_domain, link):
 
         # First, fetch the user's data.
-        taskqueue.add( url    = url('FetchFacebookData'),
+        taskqueue.add( url = url('FetchFacebookData'),
                        params = { 'user_uuid' : self.uuid, 
                                   'fb_id'     : self.fb_identity } )
 
@@ -929,7 +929,7 @@ class User(db.Expando):
         # For each person, share the message
         fb_share_ids = []
         for i in range( 0, len( ids ) ):
-            id   = ids[i]
+            id = ids[i]
             name = names[i]
 
             # Update the params - personalize the msg
@@ -943,7 +943,7 @@ class User(db.Expando):
                 #logging.info(facebook_share_url + params)
                 fb_response = urlfetch.fetch( facebook_share_url, 
                                               payload,
-                                              method   = urlfetch.POST,
+                                              method = urlfetch.POST,
                                               deadline = 7 )
             except urlfetch.DownloadError, e: 
                 logging.error('Error sending fb request: %s' % e)
@@ -959,7 +959,7 @@ class User(db.Expando):
                     
                     """
                     taskqueue.add(
-                        url    = url('FetchFriendFacebookData'),
+                        url = url('FetchFriendFacebookData'),
                         params = { 'fb_id' : id }
                     )
                     """
@@ -1066,7 +1066,7 @@ def get_or_create_user_by_cookie(request_handler, app):
 # -----
 class UserIPs(Model):
     user = MemcacheReferenceProperty(User, collection_name="user_ips")
-    ips  = db.StringListProperty(default=None)
+    ips = db.StringListProperty(default=None)
     _memcache_bucket_name = '_willet_user_ips_bucket'
 
     def __init__(self, *args, **kwargs):

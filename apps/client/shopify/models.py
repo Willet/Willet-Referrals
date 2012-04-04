@@ -3,8 +3,8 @@
 # client models
 # data models for our clients and associated methods
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, urllib, urllib2
 
@@ -40,11 +40,11 @@ class ClientShopify( Client ):
     # hint: nobody uses the shopify_stores back-reference.
 
     # Store properties
-    # name    = db.StringProperty( indexed = False )
-    # url     = db.LinkProperty  ( indexed = True )
-    # domain  = db.LinkProperty  ( indexed = True )
-    token   = db.StringProperty( default = '' )
-    id      = db.StringProperty( indexed = True )
+    # name = db.StringProperty( indexed = False )
+    # url = db.LinkProperty  ( indexed = True )
+    # domain = db.LinkProperty  ( indexed = True )
+    token = db.StringProperty( default = '' )
+    id = db.StringProperty( indexed = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this obj """
@@ -70,34 +70,34 @@ class ClientShopify( Client ):
         logging.info( 'MERCHANT Key %s' % merchant.key() )
 
         # Now, make the store
-        uuid  = generate_uuid( 16 )
+        uuid = generate_uuid( 16 )
         domain = get_shopify_url( data['domain'] )
         if domain == '':
             domain = url_
 
         store = ClientShopify( key_name = uuid,
-                               uuid     = uuid,
-                               email    = data['email'],
+                               uuid = uuid,
+                               email = data['email'],
                                passphrase = '',
-                               name     = data['name'],
-                               url      = url_,
-                               domain   = domain,
-                               token    = token,
-                               id       = str(data['id']),
+                               name = data['name'],
+                               url = url_,
+                               domain = domain,
+                               token = token,
+                               id = str(data['id']),
                                merchant = merchant  )
         
         store.put () # critical install-time process; it cannot wait
 
         # Update the merchant with data from Shopify
-        merchant.update( full_name  = data['shop_owner'], 
-                         address1   = data['address1'],
-                         address2   = data['address2'] if hasattr( data, 'address2') else '',
-                         city       = data['city'],
-                         province   = data['province'],
-                         country    = data['country'],
+        merchant.update( full_name = data['shop_owner'], 
+                         address1 = data['address1'],
+                         address2 = data['address2'] if hasattr( data, 'address2') else '',
+                         city = data['city'],
+                         province = data['province'],
+                         country = data['country'],
                          postal_code= data['zip'],
-                         phone      = data['phone'],
-                         client     = store )
+                         phone = data['phone'],
+                         client = store )
         
         logging.info({
             'client_uuid': uuid,
@@ -145,7 +145,7 @@ class ClientShopify( Client ):
         """ Fetch images for all the products in this store """
 
         # Construct the API URL
-        url      = '%s/admin/products.json' % (self.url)
+        url = '%s/admin/products.json' % (self.url)
         logging.info ("url = %s" % url)
         
         # Fix inputs ( legacy )
@@ -160,8 +160,8 @@ class ClientShopify( Client ):
         # Constuct the API URL
         username = settings['api_key'] 
         password = hashlib.md5(settings['api_secret'] + self.token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
+        header = {'content-type':'application/json'}
+        h = httplib2.Http()
         
         # Auth the http lib
         h.add_credentials(username, password)
@@ -195,11 +195,11 @@ def get_store_info(store_url, store_token, app_type):
     settings = SHOPIFY_APPS[app_type]
 
     # Constuct the API URL
-    url      = '%s/admin/shop.json' % ( store_url )
+    url = '%s/admin/shop.json' % ( store_url )
     username = settings['api_key'] 
     password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
-    header   = {'content-type':'application/json'}
-    h        = httplib2.Http()
+    header = {'content-type':'application/json'}
+    h = httplib2.Http()
     
     # Auth the http lib
     h.add_credentials(username, password)
@@ -209,7 +209,7 @@ def get_store_info(store_url, store_token, app_type):
     
     details = json.loads( content ) 
     logging.info( details )
-    shop    = details['shop']
+    shop = details['shop']
     logging.info('shop: %s' % (shop))
     
     return shop

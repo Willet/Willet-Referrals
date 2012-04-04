@@ -4,8 +4,8 @@
 # Stores information about a purchase / point of conversion
 # Will be subclassed
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
 from google.appengine.api import memcache
@@ -23,19 +23,19 @@ class Order( Model, polymodel.PolyModel ):
     """Model storing purchase order data"""
 
     # Datetime when this Order was first stored in the DB
-    created        = db.DateTimeProperty(auto_now_add=True)
+    created = db.DateTimeProperty(auto_now_add=True)
 
     # User who completed this Order (ie. buyer)
-    user           = MemcacheReferenceProperty( db.Model, default = None, collection_name="purchases" )
+    user = MemcacheReferenceProperty( db.Model, default = None, collection_name="purchases" )
     
     # Person who is selling the wareZ (ie. seller )
-    client         = db.ReferenceProperty( db.Model, collection_name="orders" )
+    client = db.ReferenceProperty( db.Model, collection_name="orders" )
     
     # Total price of this Order (taxes not incl)
     subtotal_price = db.FloatProperty( indexed = False ) # no taxes
     
     # Products that were purchased in this order
-    products       = db.ListProperty( db.Key )
+    products = db.ListProperty( db.Key )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""

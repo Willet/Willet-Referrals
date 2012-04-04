@@ -214,8 +214,8 @@ def urlnorm(uri):
 
 
 # Cache filename construction (original borrowed from Venus http://intertwingly.net/code/venus/)
-re_url_scheme    = re.compile(r'^\w+://')
-re_slash         = re.compile(r'[?/:|]+')
+re_url_scheme = re.compile(r'^\w+://')
+re_slash = re.compile(r'[?/:|]+')
 
 def safename(filename):
     """Return a filename suitable for the cache.
@@ -513,7 +513,7 @@ class DigestAuthentication(Authentication):
         KD = lambda s, d: H("%s:%s" % (s, d))
         A2 = "".join([method, ":", request_uri])
         self.challenge['cnonce'] = cnonce or _cnonce()
-        request_digest  = '"%s"' % KD(H(self.A1), "%s:%s:%s:%s:%s" % (self.challenge['nonce'],
+        request_digest = '"%s"' % KD(H(self.A1), "%s:%s:%s:%s:%s" % (self.challenge['nonce'],
                     '%08x' % self.challenge['nc'],
                     self.challenge['cnonce'],
                     self.challenge['qop'], H(A2)
@@ -590,7 +590,7 @@ class HmacDigestAuthentication(Authentication):
         created = time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
         cnonce = _cnonce()
         request_digest = "%s:%s:%s:%s:%s" % (method, request_uri, cnonce, self.challenge['snonce'], headers_val)
-        request_digest  = hmac.new(self.key, request_digest, self.hashmod).hexdigest().lower()
+        request_digest = hmac.new(self.key, request_digest, self.hashmod).hexdigest().lower()
         headers['authorization'] = 'HMACDigest username="%s", realm="%s", snonce="%s", cnonce="%s", uri="%s", created="%s", response="%s", headers="%s"' % (
                 self.credentials[0],
                 self.challenge['realm'],

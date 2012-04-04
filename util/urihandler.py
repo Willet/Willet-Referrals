@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-__author__      = "Willet Inc."
-__copyright__   = "Copyright 2011, Willet Inc."
+__author__ = "Willet Inc."
+__copyright__ = "Copyright 2011, Willet Inc."
 
 import logging, os
 import inspect
@@ -35,7 +35,7 @@ class URIHandler(webapp.RequestHandler):
 
         session = get_current_session()
         session.regenerate_id()
-        email   = session.get('email', '')
+        email = session.get('email', '')
         if email:
             self.db_client = Client.get_by_email(email)
         else:

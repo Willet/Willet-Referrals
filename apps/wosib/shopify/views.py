@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
 import random
@@ -94,7 +94,7 @@ class WOSIBShopifyServeScript (URIHandler):
             logging.info ("votes_count = %s" % votes_count)
             
             asker_name = instance.asker.get_first_name()
-            asker_pic  = instance.asker.get_attr('pic')
+            asker_pic = instance.asker.get_attr('pic')
             show_votes = True
 
             try:

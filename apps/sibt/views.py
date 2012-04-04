@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import hashlib
 import logging
@@ -453,10 +453,10 @@ class ShowFBThanks(URIHandler):
         email = ""
         incentive_enabled = False
         user_cancelled = True
-        app         = None
-        post_id     = self.request.get( 'post_id' ) # from FB
-        user        = User.get_by_cookie(self)
-        partial     = PartialSIBTInstance.get_by_user( user )
+        app = None
+        post_id = self.request.get( 'post_id' ) # from FB
+        user = User.get_by_cookie(self)
+        partial = PartialSIBTInstance.get_by_user( user )
         
         if post_id != "":
             user_cancelled = False

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 from datetime import datetime
 import re
@@ -111,7 +111,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARESIBTONFACEBOOK")
 
-        app  = App.get_by_uuid(self.request.get('app_uuid'))
+        app = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
         if not user:
             logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
@@ -220,7 +220,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
 class StartSIBTInstance(URIHandler):
     def post(self):
-        app  = App.get_by_uuid(self.request.get('app_uuid'))
+        app = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get_or_create_by_cookie(self, app)
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')

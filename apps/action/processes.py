@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Barbara Macdonald"
-__copyright__   = "Copyright 2012, Barbara"
+__author__ = "Barbara Macdonald"
+__copyright__ = "Copyright 2012, Barbara"
 
 import logging
 import datetime

@@ -4,8 +4,8 @@
 # A parent class for all social 'apps'
 # ie. Referral, 'Should I buy this?', etc
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, random, urllib2, datetime
 
@@ -34,13 +34,13 @@ class App(Model, polymodel.PolyModel):
     memcache_class = 'app'
     
     # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty( auto_now_add=True )
+    created = db.DateTimeProperty( auto_now_add=True )
     
     # Person who created/installed this App
-    client          = db.ReferenceProperty( db.Model, collection_name = 'apps' )
+    client = db.ReferenceProperty( db.Model, collection_name = 'apps' )
     
     # Defaults to None, only set if this App has been deleted
-    old_client      = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
+    old_client = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
     
     store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com if AppShopify
     extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
@@ -55,7 +55,7 @@ class App(Model, polymodel.PolyModel):
     # version 2 uses asset api to include liquid
     # version 3: "sweet buttons upgrade"
     # version 10: merge SIBT into ShopConnection app
-    version    = db.StringProperty(default='10', indexed=False)
+    version = db.StringProperty(default='10', indexed=False)
     
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
@@ -76,7 +76,7 @@ class App(Model, polymodel.PolyModel):
     def delete(self):
         """ When someone uninstalls, put in a saved state """
         self.old_client = self.client
-        self.client     = None
+        self.client = None
         self.put()
 
     # Stubs --------------------------------------------------------------------
@@ -150,5 +150,5 @@ class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
 
     app_id = db.StringProperty(indexed=True, required=True)
-    count  = db.IntegerProperty(indexed=False, required=True, default=0)
+    count = db.IntegerProperty(indexed=False, required=True, default=0)
 

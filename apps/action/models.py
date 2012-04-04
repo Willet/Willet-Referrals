@@ -4,7 +4,7 @@
 # A parent class for all User actions 
 # ie. ClickAction, VoteAction, ViewAction, etc
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
@@ -227,11 +227,11 @@ class ScriptLoadAction( LoadAction ):
     @staticmethod
     def create( user, app, url ):
         uuid = generate_uuid( 16 )
-        act  = ScriptLoadAction( key_name = uuid,
-                                 uuid     = uuid,
-                                 user     = user,
-                                 app_     = app,
-                                 url      = url )
+        act = ScriptLoadAction( key_name = uuid,
+                                 uuid = uuid,
+                                 user = user,
+                                 app_ = app,
+                                 url = url )
 
         act.put()
 
@@ -254,11 +254,11 @@ class ButtonLoadAction( LoadAction ):
     @staticmethod
     def create( user, app, url ):
         uuid = generate_uuid( 16 )
-        act  = ButtonLoadAction( key_name = uuid,
-                                 uuid     = uuid,
-                                 user     = user,
-                                 app_     = app,
-                                 url      = url )
+        act = ButtonLoadAction( key_name = uuid,
+                                 uuid = uuid,
+                                 user = user,
+                                 app_ = app,
+                                 url = url )
         
         act.put()
 

@@ -3,8 +3,8 @@
 # client models
 # data models for our clients and associated methods
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, urllib, urllib2
 
@@ -27,13 +27,13 @@ from util.helpers import generate_uuid
 class Client(Model, polymodel.PolyModel):
     """A Client or the website"""
     creation_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
-    email         = db.StringProperty  (indexed=True)
+    email = db.StringProperty  (indexed=True)
 
     merchant = MemcacheReferenceProperty(db.Model, collection_name = "stores")
     # Store properties
-    name    = db.StringProperty( indexed = False )
-    url     = db.LinkProperty  ( indexed = True )
-    domain  = db.LinkProperty  ( indexed = True )
+    name = db.StringProperty( indexed = False )
+    url = db.LinkProperty  ( indexed = True )
+    domain = db.LinkProperty  ( indexed = True )
 
     _memcache_fields = ['domain', 'email', 'url']
 

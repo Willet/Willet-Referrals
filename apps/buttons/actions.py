@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
@@ -33,12 +33,12 @@ class WantAction( Action ):
     def create( user, app, link ):
         # Make the action
         uuid = generate_uuid( 16 )
-        act  = WantAction( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app,
-                           link     = link,
-                           url      = link.target_url )
+        act = WantAction( key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app,
+                           link = link,
+                           url = link.target_url )
         act.put()
 
     # Accessors

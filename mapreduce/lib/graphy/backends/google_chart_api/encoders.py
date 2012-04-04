@@ -128,7 +128,7 @@ class BaseChartEncoder(object):
 
     encoder = self._GetDataEncoder(chart)
     result = util.EncodeData(chart, series_data, y_min, y_max, encoder)
-    result.update(util.JoinLists(marker     = markers))
+    result.update(util.JoinLists(marker = markers))
     return result
 
   def _GetColors(self, chart):
@@ -182,10 +182,10 @@ class BaseChartEncoder(object):
       if axis.label_gridlines:
         axis_label_gridlines.append("%d,%d" % (i, -mark_length))
 
-    return util.JoinLists(axis_type       = axis_types,
-                          axis_range      = axis_ranges,
-                          axis_label      = axis_labels,
-                          axis_position   = axis_label_positions,
+    return util.JoinLists(axis_type = axis_types,
+                          axis_range = axis_ranges,
+                          axis_label = axis_labels,
+                          axis_position = axis_label_positions,
                           axis_tick_marks = axis_label_gridlines,
                          )
 

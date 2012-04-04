@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import hashlib
 import random
@@ -217,7 +217,7 @@ class StartPartialWOSIBInstance( URIHandler ):
 
 class StartWOSIBInstance(URIHandler):
     def post(self):
-        app  = App.get (self.request.get('app_uuid'))
+        app = App.get (self.request.get('app_uuid'))
         link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
         products = self.request.get( 'product_uuids' )
         logging.info ('products = %s' % products)

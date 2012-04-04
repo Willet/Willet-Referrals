@@ -3,8 +3,8 @@
 # SIBTShopify model
 # Extends from "Referral", which extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import hashlib
 import inspect
@@ -170,8 +170,8 @@ class SIBTShopify(SIBT, AppShopify):
                 logging.warn("Reinstalling app.")
                 try:
                     app.store_token = token
-                    app.client      = app.old_client if app.old_client else client
-                    app.old_client  = None
+                    app.client = app.old_client if app.old_client else client
+                    app.old_client = None
                     app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 

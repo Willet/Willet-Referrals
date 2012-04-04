@@ -3,8 +3,8 @@
 # SIBT model
 # Extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
@@ -52,7 +52,7 @@ class SIBT(App):
     num_shows_before_tb = db.IntegerProperty(default=1)
 
     # Name of the store - used here for caching purposes.
-    store_name    = db.StringProperty( indexed = True )
+    store_name = db.StringProperty( indexed = True )
 
     memcache_fields = ['link', 'created', 'end_datetime', 'store_url', 'extra_url']
 
@@ -162,14 +162,14 @@ class SIBT(App):
         uuid = generate_uuid( 16 )
         
         # Now, make the object
-        instance = SIBTInstance(key_name     = uuid,
-                                uuid         = uuid,
-                                asker        = user,
-                                app_         = self,
-                                link         = link,
-                                product_img  = img,
-                                motivation   = motivation,
-                                url          = link.target_url)
+        instance = SIBTInstance(key_name = uuid,
+                                uuid = uuid,
+                                asker = user,
+                                app_ = self,
+                                link = link,
+                                product_img = img,
+                                motivation = motivation,
+                                url = link.target_url)
         # set end if None
         if end == None:
             six_hours = timedelta(hours=6)
@@ -225,28 +225,28 @@ class SIBTInstance(Model):
     motivation = db.StringProperty(default="")
 
     # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty(auto_now_add=True)
+    created = db.DateTimeProperty(auto_now_add=True)
     
     # The User who asked SIBT to their friends?
-    asker           = MemcacheReferenceProperty( db.Model, collection_name='sibt_instances' )
+    asker = MemcacheReferenceProperty( db.Model, collection_name='sibt_instances' )
    
     # Parent App that "owns" these instances
-    app_            = db.ReferenceProperty( db.Model, collection_name="instances" )
+    app_ = db.ReferenceProperty( db.Model, collection_name="instances" )
 
     # The Link for this instance (1 per instance)
-    link            = db.ReferenceProperty( db.Model, collection_name="sibt_instance" )
+    link = db.ReferenceProperty( db.Model, collection_name="sibt_instance" )
     
     # URL of the Link (here for quick filter)
-    url             = db.LinkProperty  ( indexed = True )
+    url = db.LinkProperty  ( indexed = True )
     
     # URL of the product image
-    product_img     = db.LinkProperty  ( indexed = False )
+    product_img = db.LinkProperty  ( indexed = False )
     
     # Datetime when this instance should shut down and email asker 
-    end_datetime    = db.DateTimeProperty()
+    end_datetime = db.DateTimeProperty()
 
     # True iff end_datetime < now. False, otherwise.
-    is_live         = db.BooleanProperty( default = True )
+    is_live = db.BooleanProperty( default = True )
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -375,16 +375,16 @@ class PartialSIBTInstance(Model):
     
 
     # User is the only index.
-    user        = MemcacheReferenceProperty(db.Model, 
+    user = MemcacheReferenceProperty(db.Model, 
                                        collection_name='partial_sibt_instances',
                                        indexed=True)
-    link        = db.ReferenceProperty(db.Model, 
+    link = db.ReferenceProperty(db.Model, 
                                        collection_name='link_partial_sibt_instances',
                                        indexed=False)
-    product     = db.ReferenceProperty(db.Model, 
+    product = db.ReferenceProperty(db.Model, 
                                        collection_name='product_partial_sibt_instances',
                                        indexed=False)
-    app_        = db.ReferenceProperty( db.Model,
+    app_ = db.ReferenceProperty( db.Model,
                                        collection_name='app_partial_sibt_instances',
                                        indexed=False)
 
@@ -403,9 +403,9 @@ class PartialSIBTInstance(Model):
     def create(cls, user, app, link, product):
         instance = cls.get_by_user(user)
         if instance:
-            instance.link    = link
+            instance.link = link
             instance.product = product
-            instance.app_    = app
+            instance.app_ = app
         else: 
             uuid = generate_uuid(16)
 

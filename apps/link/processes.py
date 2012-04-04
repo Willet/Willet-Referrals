@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Sy Khader"
-__copyright__   = "Copyright 2011, The Willet Corporation"
+__author__ = "Sy Khader"
+__copyright__ = "Copyright 2011, The Willet Corporation"
 
 import re, logging, Cookie, os, urllib, urllib2, time, datetime, simplejson
 
@@ -65,7 +65,7 @@ class CleanBadLinks(URIHandler):
         links = Link.all().filter('user =', None)
 
         count = 0
-        str   = 'Cleaning the bad links'
+        str = 'Cleaning the bad links'
         for l in links:
             clicks = l.count_clicks()
             try:

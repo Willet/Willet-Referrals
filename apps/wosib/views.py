@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 import urllib2
@@ -103,7 +103,7 @@ class WOSIBAskDynamicLoader(URIHandler):
                 if not products: # do not raise ValueError - "UnboundLocalError: local variable 'ValueError' referenced before assignment"
                     raise Exception ('No product could be found with parameters supplied')
 
-                store_domain  = self.request.get('store_url')
+                store_domain = self.request.get('store_url')
                 refer_url = self.request.get( 'refer_url' )
                 logging.info ("refer_url = %s" % refer_url)
                 app = WOSIBShopify.get_by_store_url(store_domain)
@@ -235,19 +235,19 @@ class WOSIBShowFBThanks( URIHandler ):
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
     def get( self ):
-        email       = ""
+        email = ""
         user_cancelled = True
-        app         = None
-        post_id     = self.request.get( 'post_id' ) # from FB
-        user        = User.get_by_cookie( self )
-        partial     = PartialWOSIBInstance.get_by_user( user )
+        app = None
+        post_id = self.request.get( 'post_id' ) # from FB
+        user = User.get_by_cookie( self )
+        partial = PartialWOSIBInstance.get_by_user( user )
         
         if post_id != "":
             user_cancelled = False
 
             # Grab stuff from PartialWOSIBInstance
-            app      = partial.app_
-            link     = partial.link 
+            app = partial.app_
+            link = partial.link 
             products = partial.products # is ["id","id","id"], not object!
 
             # Make the Instance!

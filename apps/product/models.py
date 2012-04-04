@@ -11,7 +11,7 @@ from util.model import Model
 class Product(Model, db.polymodel.PolyModel):
 
     created = db.DateTimeProperty(auto_now_add=True)
-    client  = db.ReferenceProperty(Client, collection_name='products')
+    client = db.ReferenceProperty(Client, collection_name='products')
     description = db.TextProperty()
     images = db.StringListProperty() # list of urls to images 
     price = db.FloatProperty(default=float(0))

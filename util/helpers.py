@@ -51,7 +51,7 @@ def get_target_url(referrer):
         target = None
         try:
             page_url = urlparse( referrer )
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+            target = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
             return target
         except Exception, e:
             logging.warn('error parsing referer %s: %s' % (

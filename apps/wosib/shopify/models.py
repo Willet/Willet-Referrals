@@ -2,8 +2,8 @@
 
 # WOSIBShopify model
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
 import hashlib
@@ -35,7 +35,7 @@ class WOSIBShopify(WOSIB, AppShopify):
     # WOSIB is a subset of SIBT, and, as such, does not have a version number.
     # To obtain the WOSIB version, load its SIBT counterpart 
     # with get_by_store_url() and read its version number.
-    # version    = db.StringProperty(default='2', indexed=False)
+    # version = db.StringProperty(default='2', indexed=False)
     
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -100,12 +100,12 @@ class WOSIBShopify(WOSIB, AppShopify):
     def create(client, token, email_client=True):
         uuid = generate_uuid( 16 )
         app = WOSIBShopify (
-                        key_name    = uuid,
-                        uuid        = uuid,
-                        client      = client,
-                        store_name  = client.name, # Store name
-                        store_url   = client.url, # Store url
-                        store_id    = client.id, # Store id
+                        key_name = uuid,
+                        uuid = uuid,
+                        client = client,
+                        store_name = client.name, # Store name
+                        store_url = client.url, # Store url
+                        store_id = client.id, # Store id
                         store_token = token)
         app.put()
         

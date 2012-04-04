@@ -13,12 +13,12 @@ from google.appengine.ext.webapp import template
 from util.consts import *
 from util.helpers import url 
 
-INFO      = "info@getwillet.com"
-FRASER    = 'fraser@getwillet.com'
-BRIAN     = "brian@getwillet.com"
-NICK      = 'nick@getwillet.com'
+INFO = "info@getwillet.com"
+FRASER = 'fraser@getwillet.com'
+BRIAN = "brian@getwillet.com"
+NICK = 'nick@getwillet.com'
 
-DEV_TEAM  = '%s, %s, %s' % (FRASER, NICK, BRIAN)
+DEV_TEAM = '%s, %s, %s' % (FRASER, NICK, BRIAN)
 FROM_ADDR = INFO
 
 

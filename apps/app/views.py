@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -17,7 +17,7 @@ from util.consts import *
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp( URIHandler ):
     def post( self ):
-        client   = self.get_client()
+        client = self.get_client()
         app_uuid = self.request.get( 'app_uuid' )
         
         logging.info('app id: %s' % app_uuid)

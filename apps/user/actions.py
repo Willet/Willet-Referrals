@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
@@ -27,10 +27,10 @@ class UserCreate( Action ):
     def create( user, app ):
         # Make the action
         uuid = generate_uuid( 16 )
-        act  = UserCreate( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app )
+        act = UserCreate( key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app )
         act.put()
 
     @staticmethod
@@ -51,10 +51,10 @@ class UserIsFBLoggedIn(Action):
     def create(user, app=None, instance=None, url=None):
         # Make the action
         uuid = generate_uuid( 16 )
-        act  = UserIsFBLoggedIn( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app )
+        act = UserIsFBLoggedIn( key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app )
         act.put()
         logging.debug("PUT USER can haz facebooks")
 

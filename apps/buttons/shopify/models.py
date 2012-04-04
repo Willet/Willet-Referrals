@@ -3,8 +3,8 @@
 # Buttons model
 # Extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
@@ -121,8 +121,8 @@ class ButtonsShopify(Buttons, AppShopify):
                 ) 
                 try:
                     app.store_token = token
-                    app.client      = client
-                    app.old_client  = None
+                    app.client = client
+                    app.old_client = None
                     app.put()
                     
                     app.do_install()

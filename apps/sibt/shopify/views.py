@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
 
@@ -65,12 +65,12 @@ class SIBTShopifyWelcome(URIHandler):
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
             
-            shop_owner   = 'Shopify Merchant'
-            shop_name    = 'Your Shopify Store'
+            shop_owner = 'Shopify Merchant'
+            shop_name = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
                 client_email = client.email
-                shop_owner   = client.merchant.get_attr('full_name')
-                shop_name    = client.name
+                shop_owner = client.merchant.get_attr('full_name')
+                shop_name = client.name
 
                 # Query the Shopify API to update all Products
                 taskqueue.add(
@@ -175,7 +175,7 @@ class SIBTShopifyEditStyle(URIHandler):
 
 class ShowFinishedPage(URIHandler):
     def get(self):
-        app_id       = self.request.get( 'id' )
+        app_id = self.request.get( 'id' )
         pages = {
             'one': 'old',
             'two': 'old',
@@ -194,9 +194,9 @@ class ShowFinishedPage(URIHandler):
             return
             
         template_values['has_app'] = True 
-        template_values['app']       = app
+        template_values['app'] = app
         template_values['analytics'] = True if app.cached_clicks_count != 0 else False
-        template_values['BASE_URL']  = URL
+        template_values['BASE_URL'] = URL
 
         self.response.out.write(
             self.render_page(
@@ -222,13 +222,13 @@ class SIBTShopifyServeScript(URIHandler):
     
     def get(self):
         votes_count = 0
-        is_live  = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
+        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
-        target   = bar_or_tab = ''
+        target = bar_or_tab = ''
         willet_code = self.request.get('willt_code') 
-        shop_url    = get_shopify_url(self.request.get('store_url'))
-        app         = SIBTShopify.get_by_store_url(shop_url)
-        event       = 'SIBTShowingButton'
+        shop_url = get_shopify_url(self.request.get('store_url'))
+        app = SIBTShopify.get_by_store_url(shop_url)
+        event = 'SIBTShowingButton'
 
         target = get_target_url(self.request.get('page_url'))
         if not target: # in the case that page_url is not of the right format
@@ -288,9 +288,9 @@ class SIBTShopifyServeScript(URIHandler):
         # a) Is User asker?
         # b) Has this User voted?
         if instance:
-            is_live    = instance.is_live
+            is_live = instance.is_live
             asker_name = instance.asker.get_first_name()
-            asker_pic  = instance.asker.get_attr('pic')
+            asker_pic = instance.asker.get_attr('pic')
             show_votes = True
 
             # number of votes.
@@ -419,7 +419,7 @@ class SIBTShopifyServeAB (URIHandler):
         if not app: # if we can't get the app, return a file anyway
             cta_button_text = "Need advice? Ask your friends!"
         else:
-            user        = User.get_or_create_by_cookie(self, app)
+            user = User.get_or_create_by_cookie(self, app)
 
             # AB-Test or not depending on if the admin is testing.
             if not user.is_admin():
@@ -433,7 +433,7 @@ class SIBTShopifyServeAB (URIHandler):
                     cta_button_text = ab_test( 'sibt_incentive_text', 
                                                 ab_test_options, 
                                                 user = user,
-                                                app  = app )
+                                                app = app )
                 else:
                     ab_test_options = [ "Not sure? Start a vote!",
                                         "Not sure? Let friends vote!",
@@ -445,7 +445,7 @@ class SIBTShopifyServeAB (URIHandler):
                     cta_button_text = ab_test( 'sibt_button_text6', 
                                                 ab_test_options, 
                                                 user = user,
-                                                app  = app )
+                                                app = app )
             else:
                 cta_button_text = "ADMIN: Unsure? Ask your friends!"
 
@@ -467,9 +467,9 @@ class SIBTShopifyProductDetection(URIHandler):
         store_url = self.request.get('store_url')
         
         if store_url: # only render if there is a point of doing so
-            app       = SIBTShopify.get_by_store_url(store_url)
-            user      = User.get_or_create_by_cookie(self, app)
-            target    = get_target_url(self.request.headers.get('REFERER'))
+            app = SIBTShopify.get_by_store_url(store_url)
+            user = User.get_or_create_by_cookie(self, app)
+            target = get_target_url(self.request.headers.get('REFERER'))
 
             # Store a script load action.
             if not target: # force a referrer so the ScriptLoad always saves

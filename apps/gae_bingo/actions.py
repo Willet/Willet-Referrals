@@ -1,6 +1,6 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
@@ -16,7 +16,7 @@ from util.helpers import generate_uuid
 class GaeBingoAlt( Action ):
     """ Stores the variation that a given User sees"""
     conversion_name = db.StringProperty( indexed = True )
-    alt             = db.StringProperty( indexed = False )
+    alt = db.StringProperty( indexed = False )
 
     def __str__(self):
         return 'GaeBingoAlt: %s(%s) %s: %s' % ( self.user.get_full_name(), 
@@ -31,12 +31,12 @@ class GaeBingoAlt( Action ):
 
         if act.count() == 0:
             uuid = generate_uuid( 16 )
-            act  = GaeBingoAlt( key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = app,
+            act = GaeBingoAlt( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = app,
                                 conversion_name = conversion_name,
-                                alt      = alt )
+                                alt = alt )
             act.put()
 
     ## Accessors  

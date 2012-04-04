@@ -45,24 +45,24 @@ class Link(Model):
        track of how many unique clicks it receives"""
        
     # destination of the link, supplied by our clients
-    target_url     = db.LinkProperty(indexed = True)
+    target_url = db.LinkProperty(indexed = True)
     # our unique identifier code for this Link
     willt_url_code = db.StringProperty( indexed = True )
     # our client's app that this link is associated with
-    app_           = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+    app_ = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
 
-    creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
+    creation_time = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
-    tweet_id       = db.StringProperty(required=False, default='', indexed=True)
-    user           = MemcacheReferenceProperty(db.Model, collection_name = 'user_')
+    tweet_id = db.StringProperty(required=False, default='', indexed=True)
+    user = MemcacheReferenceProperty(db.Model, collection_name = 'user_')
     # the string our client supplied us to identify this user with
     supplied_user_id = db.StringProperty(required=False)
     # keep track of our retweets
-    retweets         = db.ListProperty(str, required=True)
+    retweets = db.ListProperty(str, required=True)
     # the location of the button that spawned this link
-    origin_domain    = db.StringProperty(str, required=False)
+    origin_domain = db.StringProperty(str, required=False)
     # facebook's id for the share
-    facebook_share_id  = db.StringProperty()
+    facebook_share_id = db.StringProperty()
     # linkedin's id for the share
     linkedin_share_url = db.StringProperty(required=False, default='', indexed=True)
 
@@ -168,14 +168,14 @@ class Link(Model):
         logging.debug('called Link.create')
         code = encode_base62(get_a_willt_code())
         logging.debug('got code %s' %  code)
-        link = Link(key_name         = code,
-                    target_url       = targetURL,
-                    willt_url_code   = code,
+        link = Link(key_name = code,
+                    target_url = targetURL,
+                    willt_url_code = code,
                     supplied_user_id = usr,
-                    app_             = app,
-                    user             = user,
-                    origin_domain    = domain,
-                    retweets         = [])
+                    app_ = app,
+                    user = user,
+                    origin_domain = domain,
+                    retweets = [])
 
         #link.put()
         link.memcache_by_code()

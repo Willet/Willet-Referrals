@@ -4,8 +4,8 @@
 # A parent class for all social 'apps'
 # ie. Referral, 'Should I buy this?', etc
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import re
@@ -29,7 +29,7 @@ class AppShopify(App):
         AppShopify classes need not be installable from the Shopify app store,
         and can be installed as a bundle. Refer to SIBTShopify for example code.
     """
-    store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
+    store_id = db.StringProperty(indexed = True) # Shopify's ID for this store
     store_token = db.StringProperty(indexed = True) # Shopify token for this store
 
     def __init__(self, *args, **kwargs):
@@ -65,11 +65,11 @@ class AppShopify(App):
         if webhooks == None:
             webhooks = []
 
-        url      = '%s/admin/webhooks.json' % self.store_url
+        url = '%s/admin/webhooks.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
+        header = {'content-type':'application/json'}
+        h = httplib2.Http()
         
         # Auth the http lib
         h.add_credentials(username, password)
@@ -167,11 +167,11 @@ class AppShopify(App):
         if script_tags == None:
             script_tags = []
 
-        url      = '%s/admin/script_tags.json' % self.store_url
+        url = '%s/admin/script_tags.json' % self.store_url
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
+        header = {'content-type':'application/json'}
+        h = httplib2.Http()
         
         h.add_credentials(username, password)
         
@@ -206,8 +206,8 @@ class AppShopify(App):
         
         username = self.settings['api_key'] 
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
-        header   = {'content-type':'application/json'}
-        h        = httplib2.Http()
+        header = {'content-type':'application/json'}
+        h = httplib2.Http()
         h.add_credentials(username, password)
         
         main_id = None

@@ -42,11 +42,11 @@ class ProductShopify(Product):
             
             # Make the product
             product = ProductShopify(
-                    key_name     = uuid,
-                    uuid         = uuid,
-                    client       = client,
+                    key_name = uuid,
+                    uuid = uuid,
+                    client = client,
                     resource_url = url,
-                    images       = images
+                    images = images
             )
 
         # Now, update it with info.
@@ -126,20 +126,20 @@ class ProductShopify(Product):
 
 
         # Update the Product
-        self.shopify_id    = str(data['id'])
-        self.title         = data[ 'title' ]
+        self.shopify_id = str(data['id'])
+        self.title = data[ 'title' ]
         self.json_response = json.dumps( data )
         
         if type:
-            self.type          = type
+            self.type = type
         if price != 0.0:
-            self.price         = price
+            self.price = price
         if images:
-            self.images        = images
+            self.images = images
         if description:
-            self.description   = description
+            self.description = description
         if tags:
-            self.tags          = tags
+            self.tags = tags
 
         if hasattr( self, 'processed' ):
             delattr( self, 'processed' )
