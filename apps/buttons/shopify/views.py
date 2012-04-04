@@ -87,7 +87,7 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
             raise ShopifyBillingError('Charge id in request does not match expected charge id', app.recurring_billing_id)
 
         # Fetch the client
-        client = ClientShopify.get_by_uuid(app_uuid)
+        client = ClientShopify.get_by_id(app.store_id)
 
         # Render the page
         template_values = {
