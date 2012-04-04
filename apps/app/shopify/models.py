@@ -11,18 +11,18 @@ import base64
 import hashlib
 import re
 
-from django.utils           import simplejson as json
-from google.appengine.api   import urlfetch
-from google.appengine.ext   import db
+from django.utils             import simplejson as json
+from google.appengine.api     import urlfetch
+from google.appengine.ext     import db
 from google.appengine.runtime import DeadlineExceededError
 
-from apps.app.models        import App
-from apps.email.models      import Email
+from apps.app.models          import App
+from apps.email.models        import Email
 
-from util                   import httplib2
-from util.consts            import *
-from util.shopify_helpers   import *
-from util.model             import Model
+from util                     import httplib2
+from util.consts              import *
+from util.shopify_helpers     import *
+from util.model               import Model
 
 NUM_SHARE_SHARDS = 15
 
