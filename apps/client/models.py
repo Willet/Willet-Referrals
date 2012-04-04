@@ -31,9 +31,9 @@ class Client(Model, polymodel.PolyModel):
 
     merchant = MemcacheReferenceProperty(db.Model, collection_name = "stores")
     # Store properties
-    name = db.StringProperty( indexed = False )
-    url = db.LinkProperty  ( indexed = True )
-    domain = db.LinkProperty  ( indexed = True )
+    name = db.StringProperty(indexed = False)
+    url = db.LinkProperty  (indexed = True)
+    domain = db.LinkProperty  (indexed = True)
 
     _memcache_fields = ['domain', 'email', 'url']
 
@@ -87,7 +87,7 @@ class Client(Model, polymodel.PolyModel):
     def get_or_create (url, request_handler=None, user=None):
         client = Client.get_by_url(url)
         if not client:
-            client = Client.create( 
+            client = Client.create(
                 url,
                 request_handler,
                 user
@@ -141,7 +141,7 @@ class Client(Model, polymodel.PolyModel):
                                               'STORENAME': self.name,
                                               'STOREURL': self.url }),
                                 double_optin=False,
-                                send_welcome=False )
+                                send_welcome=False)
                 # Response can be:
                 #     <bool> True / False (unsubscribe worked, didn't work)
                 #     <dict> error + message
@@ -169,7 +169,7 @@ class Client(Model, polymodel.PolyModel):
                                 email_address=self.email,
                                 delete_member=False,
                                 send_notify=False,
-                                send_goodbye=False )
+                                send_goodbye=False)
                 # Response can be:
                 #     <bool> True / False (unsubscribe worked, didn't work)
                 #     <dict> error + message

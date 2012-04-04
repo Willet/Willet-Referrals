@@ -22,7 +22,7 @@ class ButtonsShopifyBeta(URIHandler):
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class ButtonsShopifyWelcome(URIHandler):
-    def get( self ):
+    def get(self):
         # TODO: put this somewhere smarter
         shop = self.request.get('shop')
         token = self.request.get('t')

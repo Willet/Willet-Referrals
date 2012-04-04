@@ -187,7 +187,7 @@ class BaseChartEncoder(object):
                           axis_label = axis_labels,
                           axis_position = axis_label_positions,
                           axis_tick_marks = axis_label_gridlines,
-                         )
+                        )
 
   def _GetGridParams(self, chart):
     """Collect params related to grid lines."""

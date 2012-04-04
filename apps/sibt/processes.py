@@ -129,7 +129,7 @@ class ShareSIBTInstanceOnFacebook(URIHandler):
 
         product = None
         try:
-            product = ProductShopify.get_by_shopify_id( str(product_id) )
+            product = ProductShopify.get_by_shopify_id(str(product_id))
         except:
             logging.info('Could not get product by id %s' % product_id, exc_info=True)
         try:
@@ -225,7 +225,7 @@ class StartSIBTInstance(URIHandler):
         link = Link.get_by_code(self.request.get('willt_code'))
         img = self.request.get('product_img')
         
-        logging.info("Starting SIBT instance for %s" % link.target_url )
+        logging.info("Starting SIBT instance for %s" % link.target_url)
 
         # defaults
         response = {
@@ -253,8 +253,8 @@ class StartSIBTInstance(URIHandler):
 class DoVote(URIHandler):
     def post(self):
         user = None
-        instance_uuid = self.request.get( 'instance_uuid' )
-        instance = SIBTInstance.get( instance_uuid )
+        instance_uuid = self.request.get('instance_uuid')
+        instance = SIBTInstance.get(instance_uuid)
         app = instance.app_
         user_uuid = self.request.get('user_uuid')
         if user_uuid:
@@ -266,7 +266,7 @@ class DoVote(URIHandler):
         which = self.request.get('which', 'yes')
         
         # Make a Vote action for this User
-        action = SIBTVoteAction.create( user, instance, which )
+        action = SIBTVoteAction.create(user, instance, which)
 
         # Count the vote.
         if which.lower() == "yes":
@@ -542,7 +542,7 @@ class StartSIBTAnalytics(URIHandler):
                                     logging.info('ignoring %s over %s' % (
                                         a,
                                         next_show_button
-                                    ))
+                                   ))
                                     continue
                             things[t]['counts'][action] += 1
                             logging.info('%s + 1' % action)
@@ -581,7 +581,7 @@ class StartSIBTAnalytics(URIHandler):
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
 
-class SendFriendAsks( URIHandler ):
+class SendFriendAsks(URIHandler):
     """ Sends messages to email & FB friends 
 
     Expected inputs:
@@ -602,7 +602,7 @@ class SendFriendAsks( URIHandler ):
             message: <String> description of outcome
             warnings: <Array> [ <string> explanation of any incompleted friend asks ] 
     """
-    def post( self ):
+    def post(self):
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
         
         # Fetch arguments 
@@ -697,7 +697,7 @@ class SendFriendAsks( URIHandler ):
             
             # Check formatting of share message
             try:
-                if len( msg ) == 0:
+                if len(msg) == 0:
                     if default_msg:
                         msg = default_msg
                     else:
@@ -731,14 +731,14 @@ class SendFriendAsks( URIHandler ):
                     ids.append(fid)
                     names.append(fname)
                 try:
-                    fb_share_ids = user.fb_post_to_friends( ids,
+                    fb_share_ids = user.fb_post_to_friends(ids,
                                                             names,
                                                             msg,
                                                             product_image,
                                                             product.title,
                                                             product_desc,
                                                             app.client.domain,
-                                                            link )
+                                                            link)
                     fb_share_counter += len(fb_share_ids)
                     logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
@@ -773,7 +773,7 @@ class SendFriendAsks( URIHandler ):
 
             if friend_share_counter > 0: 
                 # create the instance!
-                instance = app.create_instance( user, 
+                instance = app.create_instance(user, 
                                                 None, 
                                                 link, 
                                                 product_image, 

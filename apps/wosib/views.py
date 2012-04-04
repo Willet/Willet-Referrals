@@ -104,7 +104,7 @@ class WOSIBAskDynamicLoader(URIHandler):
                     raise Exception ('No product could be found with parameters supplied')
 
                 store_domain = self.request.get('store_url')
-                refer_url = self.request.get( 'refer_url' )
+                refer_url = self.request.get('refer_url')
                 logging.info ("refer_url = %s" % refer_url)
                 app = WOSIBShopify.get_by_store_url(store_domain)
 
@@ -135,7 +135,7 @@ class WOSIBAskDynamicLoader(URIHandler):
                 
                 user = User.get(self.request.get('user_uuid'))
                 user_found = 1 if hasattr(user, 'fb_access_token') else 0
-                user_is_admin = user.is_admin() if isinstance( user , User) else False
+                user_is_admin = user.is_admin() if isinstance(user , User) else False
                 target = "%s%s?instance_uuid=%s" % (
                     URL,
                     url('WOSIBVoteDynamicLoader'),
@@ -161,8 +161,8 @@ class WOSIBAskDynamicLoader(URIHandler):
                     'app': app,
                     'willt_code': link.willt_url_code, # used to create full instances
                     'products': products,
-                    'fb_redirect': "%s%s" % (URL, url( 'WOSIBShowFBThanks' )),
-                    'store_domain': self.request.get( 'store_url' ),
+                    'fb_redirect': "%s%s" % (URL, url('WOSIBShowFBThanks')),
+                    'store_domain': self.request.get('store_url'),
                     'title' : "Which one should I buy?",
                     'product_desc': random_product['product_desc'],
                     'image': random_image,
@@ -192,7 +192,7 @@ class WOSIBAskDynamicLoader(URIHandler):
 class WOSIBShowResults(URIHandler):
     """ Shows the results of an instance """
     def get(self):
-        instance_uuid = self.request.get( 'instance_uuid' )
+        instance_uuid = self.request.get('instance_uuid')
         wosib_instance = WOSIBInstance.get(instance_uuid)
         if not wosib_instance:
             raise Exception ('instance not found')
@@ -231,16 +231,16 @@ class WOSIBShowResults(URIHandler):
         return
 
 
-class WOSIBShowFBThanks( URIHandler ):
+class WOSIBShowFBThanks(URIHandler):
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
-    def get( self ):
+    def get(self):
         email = ""
         user_cancelled = True
         app = None
-        post_id = self.request.get( 'post_id' ) # from FB
-        user = User.get_by_cookie( self )
-        partial = PartialWOSIBInstance.get_by_user( user )
+        post_id = self.request.get('post_id') # from FB
+        user = User.get_by_cookie(self)
+        partial = PartialWOSIBInstance.get_by_user(user)
         
         if post_id != "":
             user_cancelled = False
@@ -281,9 +281,9 @@ class WOSIBShowFBThanks( URIHandler ):
         
         elif partial != None:
             # Create cancelled action
-            #WOSIBNoConnectFBCancelled.create( user, 
+            #WOSIBNoConnectFBCancelled.create(user, 
             #                                  url=partial.link.target_url,
-            #                                  app=partial.app_ )
+            #                                  app=partial.app_)
             pass # TODO: WOSIB Analytics
 
         if partial:
@@ -291,7 +291,7 @@ class WOSIBShowFBThanks( URIHandler ):
             partial.delete()
 
         template_values = {
-            'email': user.get_attr( 'email' ),
+            'email': user.get_attr('email'),
             'user_cancelled': user_cancelled
         }
         
@@ -302,7 +302,7 @@ class WOSIBShowFBThanks( URIHandler ):
 
 
 class ShowWOSIBColorboxCSS (URIHandler):
-    def get( self ):
+    def get(self):
         template_values = {
             'URL': URL,
             'app_uuid': self.request.get('app_uuid')
@@ -314,8 +314,8 @@ class ShowWOSIBColorboxCSS (URIHandler):
         return
 
 
-class WOSIBColorboxJSServer( URIHandler ):
-    def get( self ):
+class WOSIBColorboxJSServer(URIHandler):
+    def get(self):
         template_values = {
             'URL': URL,
             'app_uuid': self.request.get('app_uuid'),

@@ -47,7 +47,7 @@ class Link(Model):
     # destination of the link, supplied by our clients
     target_url = db.LinkProperty(indexed = True)
     # our unique identifier code for this Link
-    willt_url_code = db.StringProperty( indexed = True )
+    willt_url_code = db.StringProperty(indexed = True)
     # our client's app that this link is associated with
     app_ = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
 

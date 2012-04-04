@@ -34,19 +34,19 @@ class App(Model, polymodel.PolyModel):
     memcache_class = 'app'
     
     # Datetime when this model was put into the DB
-    created = db.DateTimeProperty( auto_now_add=True )
+    created = db.DateTimeProperty(auto_now_add=True)
     
     # Person who created/installed this App
-    client = db.ReferenceProperty( db.Model, collection_name = 'apps' )
+    client = db.ReferenceProperty(db.Model, collection_name = 'apps')
     
     # Defaults to None, only set if this App has been deleted
-    old_client = db.ReferenceProperty( db.Model, collection_name = 'deleted_apps' )
+    old_client = db.ReferenceProperty(db.Model, collection_name = 'deleted_apps')
     
     store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com if AppShopify
     extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
 
     # For Apps that use a click counter, this is the cached amount
-    cached_clicks_count = db.IntegerProperty( default = 0 )
+    cached_clicks_count = db.IntegerProperty(default = 0)
 
     # Version number of the app
     # Version 1 = [Beginning, Nov. 22, 2011]
@@ -100,7 +100,7 @@ class App(Model, polymodel.PolyModel):
             url = '/a/appClicksCounter', 
             name = 'app_ClicksCounter_%s_%s' % (
                 self.uuid,
-                generate_uuid( 10 )),
+                generate_uuid(10)),
             params = {
                 'app_uuid' : self.uuid
             }
@@ -139,7 +139,7 @@ class App(Model, polymodel.PolyModel):
         self.add_shares(1)
 
 
-def get_app_by_id( id ):
+def get_app_by_id(id):
     raise DeprecationWarning('Replaced by App.get_by_uuid')
     return App.get_by_uuid(id)
 

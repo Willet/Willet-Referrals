@@ -57,10 +57,6 @@ def main():
 
         memcache.set('combined_uris', combined_uris)
         memcache.set('reload_uris', reload_uris)
-    else:
-        pass # logging.warn('using memcached uris!') # too verbose - we always use memcached uris
-
-    #logging.info('running application with patterns: %s' % combined_uris)
 
     try:
         application = webapp.WSGIApplication(

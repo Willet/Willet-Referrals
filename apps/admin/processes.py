@@ -20,9 +20,9 @@ from util.mailchimp import MailChimp
 from util.urihandler import URIHandler
 
 
-class UpdateStore( URIHandler ):
+class UpdateStore(URIHandler):
     def get(self):
-        store_url = self.request.get( 'store' )
+        store_url = self.request.get('store')
 
         app = SIBTShopify.get_by_store_url(store_url)
 
@@ -67,15 +67,15 @@ class UpdateStore( URIHandler ):
             h.add_credentials(username, password)
 
             # First fetch webhooks that already exist
-            resp, content = h.request( url, "GET", headers = header)
-            logging.info( 'Fetching script_tags: %s' % content )
-            data = json.loads( content ) 
+            resp, content = h.request(url, "GET", headers = header)
+            logging.info('Fetching script_tags: %s' % content)
+            data = json.loads(content) 
 
             for w in data['script_tags']:
                 if '%s/s/shopify/sibt.js' % URL in w['src']:
-                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
-                    resp, content = h.request( url, "DELETE", headers = header)
-                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
+                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'])
+                    resp, content = h.request(url, "DELETE", headers = header)
+                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content))
 
 
 class EmailBatch(URIHandler):
@@ -86,7 +86,7 @@ class EmailBatch(URIHandler):
     def get (self):
         self.post() # yup, taskqueues are randomly GET or POST.
 
-    def post( self ):
+    def post(self):
         """ Expected inputs:
             - batch_size: (int) 0 - 1000
             - offset: (int) database offset

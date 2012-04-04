@@ -19,23 +19,23 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 # ------------------------------------------------------------------------------
 # Order Class Definition -------------------------------------------------------
 # ------------------------------------------------------------------------------
-class Order( Model, polymodel.PolyModel ):
+class Order(Model, polymodel.PolyModel):
     """Model storing purchase order data"""
 
     # Datetime when this Order was first stored in the DB
     created = db.DateTimeProperty(auto_now_add=True)
 
     # User who completed this Order (ie. buyer)
-    user = MemcacheReferenceProperty( db.Model, default = None, collection_name="purchases" )
+    user = MemcacheReferenceProperty(db.Model, default = None, collection_name="purchases")
     
-    # Person who is selling the wareZ (ie. seller )
-    client = db.ReferenceProperty( db.Model, collection_name="orders" )
+    # Person who is selling the wareZ (ie. seller)
+    client = db.ReferenceProperty(db.Model, collection_name="orders")
     
     # Total price of this Order (taxes not incl)
-    subtotal_price = db.FloatProperty( indexed = False ) # no taxes
+    subtotal_price = db.FloatProperty(indexed = False) # no taxes
     
     # Products that were purchased in this order
-    products = db.ListProperty( db.Key )
+    products = db.ListProperty(db.Key)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""
@@ -47,10 +47,10 @@ class Order( Model, polymodel.PolyModel ):
         return True
 
     @staticmethod
-    def _get_from_datastore( uuid ):
+    def _get_from_datastore(uuid):
         """Datastore retrieval using memcache_key"""
         return Order.all().filter('uuid =', uuid).get()
 
 # Accessors --------------------------------------------------------------------
-def get_order_by_uuid( uuid ):
-    return Order.all().filter( 'uuid =', uuid ).get()
+def get_order_by_uuid(uuid):
+    return Order.all().filter('uuid =', uuid).get()

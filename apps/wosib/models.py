@@ -40,7 +40,7 @@ class WOSIB(App):
     
     # stored as App
 
-    store_name = db.StringProperty( indexed = True )
+    store_name = db.StringProperty(indexed = True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -49,14 +49,14 @@ class WOSIB(App):
     def _validate_self(self):
         return True
 
-    def handleLinkClick( self, urihandler, link ):
-        logging.info("WOSIBAPP HANDLING LINK CLICK" )
+    def handleLinkClick(self, urihandler, link):
+        logging.info("WOSIBAPP HANDLING LINK CLICK")
 
         # Fetch User by cookie
         user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
-        # act = WOSIBClickAction.create( user, self, link )
+        # act = WOSIBClickAction.create(user, self, link)
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -66,7 +66,7 @@ class WOSIB(App):
     def create_instance(self, user, end, link, products):
         logging.info("MAKING A WOSIB INSTANCE")
         # Make the properties
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         
         # Now, make the object
         instance = WOSIBInstance(key_name = uuid,
@@ -95,10 +95,10 @@ class WOSIBInstance(Model):
     created = db.DateTimeProperty(auto_now_add = True, indexed = True)
 
     # The User who asked WOSIB to their friends
-    asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances' )
+    asker = MemcacheReferenceProperty(db.Model, collection_name='wosib_instances')
 
     # Parent App that "owns" these instances
-    app_ = db.ReferenceProperty(db.Model, collection_name="app_wosib_instances" )
+    app_ = db.ReferenceProperty(db.Model, collection_name="app_wosib_instances")
 
     link = db.ReferenceProperty(db.Model, collection_name='wosib_instance_links', indexed=False)
 
@@ -128,9 +128,9 @@ class WOSIBInstance(Model):
 
     # ----------------------------------------------------------------------------
     def get_winning_products (self):
-        ''' returns an array of products with the most votes in the instance.
+        """ returns an array of products with the most votes in the instance.
             array can be of one item. 
-        '''
+        """
         
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
         instance_product_votes = [Action.\
@@ -162,7 +162,7 @@ class WOSIBInstance(Model):
         if total is None:
             total = 0
             for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
+            filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
                 total += counter.yesses
             memcache.add(key=self.uuid+"WOSIBVoteCounter_count", value=total)
         return total
@@ -190,11 +190,11 @@ class WOSIBInstance(Model):
 # PartialWOSIBInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
 class PartialWOSIBInstance(Model):
-    ''' Each User can have at most 1 PartialInstance:
+    """ Each User can have at most 1 PartialInstance:
         - created when facebook connect starts
         - expires when user cancels facebook connect
         - deleted never
-    '''
+    """
 
     user = MemcacheReferenceProperty(db.Model, 
                                      collection_name='partial_wosib_instances',
@@ -235,14 +235,14 @@ class PartialWOSIBInstance(Model):
             instance.app_ = app
         else:
             # make a new one (user doesn't have an existing partial instance).
-            uuid = generate_uuid( 16 )
+            uuid = generate_uuid(16)
 
             instance = cls(key_name=uuid,
                            uuid=uuid,
                            user=user,
                            link=link, 
                            products=products, # type StringList
-                           app_=app )
+                           app_=app)
         instance.put()
         return instance
 

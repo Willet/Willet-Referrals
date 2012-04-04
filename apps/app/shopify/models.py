@@ -77,7 +77,7 @@ class AppShopify(App):
         # See what we've already installed and flag it so we don't double install
         if product_hooks_too:
             # First fetch webhooks that already exist
-            resp, content = h.request( url, "GET", headers = header)
+            resp, content = h.request(url, "GET", headers = header)
             data = json.loads(content) 
             #logging.info('%s %s' % (resp, content))
 
@@ -114,7 +114,7 @@ class AppShopify(App):
         if product_create:
             webhooks.append({
                 "webhook": {
-                    "address": "%s/product/shopify/webhook/create" % ( URL ),
+                    "address": "%s/product/shopify/webhook/create" % (URL),
                     "format" : "json",
                     "topic"  : "products/create"
                 }
@@ -124,7 +124,7 @@ class AppShopify(App):
         if product_update:
             webhooks.append({
                 "webhook": {
-                    "address": "%s/product/shopify/webhook/update" % ( URL ),
+                    "address": "%s/product/shopify/webhook/update" % (URL),
                     "format" : "json",
                     "topic"  : "products/update"
                 }
@@ -134,7 +134,7 @@ class AppShopify(App):
         if product_delete:
             webhooks.append({
                 "webhook": {
-                    "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                    "address": "%s/product/shopify/webhook/delete" % (URL),
                     "format" : "json",
                     "topic"  : "products/delete"
                 }

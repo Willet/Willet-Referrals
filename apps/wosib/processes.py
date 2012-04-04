@@ -202,28 +202,28 @@ class TrackWOSIBUserAction(URIHandler):
 
         self.response.out.write('')
 
-class StartPartialWOSIBInstance( URIHandler ):
+class StartPartialWOSIBInstance(URIHandler):
     def get (self):
         self.post()
     
-    def post( self ):
-        app = App.get( self.request.get( 'app_uuid' ) )
-        link = Link.get_by_code( self.request.get( 'willt_code' ) )
+    def post(self):
+        app = App.get(self.request.get('app_uuid'))
+        link = Link.get_by_code(self.request.get('willt_code'))
         
-        products = self.request.get( 'product_uuids' )
+        products = self.request.get('product_uuids')
         logging.info ('products = %s' % products)
-        user = User.get( self.request.get( 'user_uuid' ) )
-        PartialWOSIBInstance.create( user, app, link, products.split(',') )
+        user = User.get(self.request.get('user_uuid'))
+        PartialWOSIBInstance.create(user, app, link, products.split(','))
 
 class StartWOSIBInstance(URIHandler):
     def post(self):
         app = App.get (self.request.get('app_uuid'))
         link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
-        products = self.request.get( 'product_uuids' )
+        products = self.request.get('product_uuids')
         logging.info ('products = %s' % products)
-        user = User.get( self.request.get( 'user_uuid' ) )
+        user = User.get(self.request.get('user_uuid'))
 
-        logging.info("Starting WOSIB instance for %s" % link.target_url )
+        logging.info("Starting WOSIB instance for %s" % link.target_url)
 
         # defaults
         response = {
@@ -254,7 +254,7 @@ class StartWOSIBAnalytics(URIHandler):
         self.response.out.write("No analytics yet")
 
 
-class SendWOSIBFriendAsks( URIHandler ):
+class SendWOSIBFriendAsks(URIHandler):
     """ Sends messages to email & FB friends 
 
     Expected inputs:
@@ -277,7 +277,7 @@ class SendWOSIBFriendAsks( URIHandler ):
     def get (self):
         self.post()
     
-    def post( self ):
+    def post(self):
         logging.info("TARGETTED_SHARE_WOSIB_EMAIL_AND_FB")
 
         # Fetch arguments 
@@ -368,14 +368,14 @@ class SendWOSIBFriendAsks( URIHandler ):
                 ids.append(fid)
                 names.append(fname)
             try:
-                fb_share_ids = user.fb_post_to_friends( ids,
+                fb_share_ids = user.fb_post_to_friends(ids,
                                                         names,
                                                         msg,
                                                         random_product.images[0], # product image
                                                         random_product.title, # product title
                                                         random_product.description,
                                                         app.client.domain,
-                                                        link )
+                                                        link)
                 fb_share_counter += len(fb_share_ids)
                 logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
@@ -398,7 +398,7 @@ class SendWOSIBFriendAsks( URIHandler ):
                                    vote_url=link.get_willt_url(),
                                    asker_img=a['pic'],
                                    client_name=app.client.name,
-                                   client_domain=app.client.domain )
+                                   client_domain=app.client.domain)
                 except Exception,e:
                     response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                     logging.error('we had an error sharing via email', exc_info=True)
@@ -409,7 +409,7 @@ class SendWOSIBFriendAsks( URIHandler ):
 
         if friend_share_counter > 0:
             # create the instance!
-            instance = app.create_instance( user, 
+            instance = app.create_instance(user, 
                                             None, 
                                             link, 
                                             product_uuids)

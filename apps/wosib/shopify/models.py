@@ -47,7 +47,7 @@ class WOSIBShopify(WOSIB, AppShopify):
     def do_install(self, email_client=True):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
-        script_src = '''<!-- START willet wosib for Shopify -->
+        script_src = """<!-- START willet wosib for Shopify -->
             <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
                 var _willet_no_image = "http://%s/static/imgs/noimage.png";
@@ -63,11 +63,11 @@ class WOSIBShopify(WOSIB, AppShopify):
                 {}];
                 _willet_cart_items.pop(); // remove trailing element... IE7 trailing comma patch
 
-                var _willet_st = document.createElement( 'script' );
+                var _willet_st = document.createElement('script');
                 _willet_st.type = 'text/javascript';
                 _willet_st.src = _willet_wosib_script;
                 window.document.getElementsByTagName("head")[0].appendChild(_willet_st);
-            </script>''' % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
+            </script>""" % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
 
         liquid_assets = [{
             'asset': {
@@ -98,7 +98,7 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     @staticmethod
     def create(client, token, email_client=True):
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         app = WOSIBShopify (
                         key_name = uuid,
                         uuid = uuid,

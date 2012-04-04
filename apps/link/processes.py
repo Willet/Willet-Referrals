@@ -25,11 +25,11 @@ class TrackWilltURL(URIHandler):
        for the presence of a cookie that it also sets in order to ensure
        incremental click-throughs are unique"""
 
-    def get( self, code ):
+    def get(self, code):
         self.response.headers.add_header('P3P', P3P_HEADER)
-        logging.info("PATH %s" % self.request.url )
+        logging.info("PATH %s" % self.request.url)
         if APP_DOMAIN not in self.request.url:
-            self.redirect( '%s/%s' % (URL, code) )
+            self.redirect('%s/%s' % (URL, code))
             return
 
         # Fetch the Link
@@ -43,7 +43,7 @@ class TrackWilltURL(URIHandler):
         if not is_blacklisted(self.request.headers['User-Agent']):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
 
-            link.app_.handleLinkClick( self, link )
+            link.app_.handleLinkClick(self, link)
             
             # TODO(Barbara): Remove this when we make Referral app use Actions
             set_clicked_cookie(self.response.headers, code)
@@ -78,7 +78,7 @@ class CleanBadLinks(URIHandler):
                 l.delete()
                 logging.warn('probably unable to resolve property: %s' % e)
 
-        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
+        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % (count, str))
 
 class IncrementCodeCounter(URIHandler):
     """ This was getting called every time a willet code was being

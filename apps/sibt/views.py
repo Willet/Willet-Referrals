@@ -84,10 +84,10 @@ class AskDynamicLoader(URIHandler):
 
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
-        user_is_admin = user.is_admin() if isinstance( user , User) else False
+        user_is_admin = user.is_admin() if isinstance(user , User) else False
         
-        product_uuid = self.request.get( 'product_uuid', None ) # optional
-        product_shopify_id = self.request.get( 'product_shopify_id', None ) # optional
+        product_uuid = self.request.get('product_uuid', None) # optional
+        product_shopify_id = self.request.get('product_shopify_id', None) # optional
         logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # successive steps to obtain the product using any way possible
@@ -154,7 +154,7 @@ class AskDynamicLoader(URIHandler):
             ab_opt = ab_test('sibt_share_text3',
                               ab_share_options,
                               user = user,
-                              app = app )
+                              app = app)
         else:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
 
@@ -171,7 +171,7 @@ class AskDynamicLoader(URIHandler):
             'user_pic': user.get_attr('pic') if user_found else None,
 
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'], # doesn't actually involve Shopify
-            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'fb_redirect'    : "%s%s" % (URL, url('ShowFBThanks')),
             'user_has_fb_token': user_found,
 
             'product_uuid': product.uuid,
@@ -211,7 +211,7 @@ class VoteDynamicLoader(URIHandler):
             # stage 2: get instance by willet code in URL
             if not instance and self.request.get('willt_code'):
                 logging.info('trying to get instance for code: %s' % self.request.get('willt_code'))
-                link = Link.get_by_code( self.request.get('willt_code') )
+                link = Link.get_by_code(self.request.get('willt_code'))
                 if not link:
                     # no willt code, asker probably came back to page with
                     # no hash code
@@ -319,7 +319,7 @@ class ShowResults(URIHandler):
             if not instance and self.request.get('willt_code'):
                 logging.info('trying to get instance for code: %s' % \
                               self.request.get('willt_code'))
-                link = Link.get_by_code( self.request.get('willt_code') )
+                link = Link.get_by_code(self.request.get('willt_code'))
                 if not link:
                     # no willt code, asker probably came back to page with
                     # no hash code
@@ -361,7 +361,7 @@ class ShowResults(URIHandler):
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
                 
                 logging.info('got vote action: %s' % vote_action)
-                has_voted = (vote_action != None)
+                has_voted = bool(vote_action != None)
                 if not has_voted:
                     if doing_vote:
                         # the user wanted to vote too
@@ -449,21 +449,21 @@ class ShowFBThanks(URIHandler):
         We know the user just shared on FB, so create an instance etc. """
 
     # http://barbara-willet.appspot.com/s/fb_thanks.html?post_id=122604129_220169211387499#_=_
-    def get( self ):
+    def get(self):
         email = ""
         incentive_enabled = False
         user_cancelled = True
         app = None
-        post_id = self.request.get( 'post_id' ) # from FB
+        post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
-        partial = PartialSIBTInstance.get_by_user( user )
+        partial = PartialSIBTInstance.get_by_user(user)
         
         if post_id != "":
             user_cancelled = False
 
             # GAY BINGO
             if not user.is_admin():
-                bingo( 'sibt_fb_no_connect_dialog' )
+                bingo('sibt_fb_no_connect_dialog')
             
             # Grab stuff from PartialSIBTInstance
             try:
@@ -500,15 +500,15 @@ class ShowFBThanks(URIHandler):
             logging.info('incremented link and added user')
         elif partial != None:
             # Create cancelled action
-            SIBTNoConnectFBCancelled.create( user, 
+            SIBTNoConnectFBCancelled.create(user, 
                                              url=partial.link.target_url,
-                                             app=partial.app_ )
+                                             app=partial.app_)
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!
             partial.delete()
 
-        template_values = { 'email'          : user.get_attr( 'email' ),
+        template_values = { 'email'          : user.get_attr('email'),
                             'user_cancelled' : user_cancelled,
                             'incentive_enabled' : app.incentive_enabled if app else False }
         
@@ -520,7 +520,7 @@ class ShowFBThanks(URIHandler):
 
 class ColorboxJSServer(URIHandler):
     """ Called to load Colorbox.js """
-    def get( self ):
+    def get(self):
         template_values = { 'URL'           : URL,
                             'app_uuid'      : self.request.get('app_uuid'),
                             'user_uuid'     : self.request.get('user_uuid'),
@@ -741,7 +741,7 @@ class SIBTServeScript(URIHandler):
             
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
-            'fb_redirect': "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
             'willt_code': link.willt_url_code if link else "",
         }
         

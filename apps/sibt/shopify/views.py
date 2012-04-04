@@ -38,7 +38,7 @@ from util.urihandler import URIHandler
 class ShowBetaPage(URIHandler):
     def get(self):
         logging.info(SHOPIFY_APPS)
-        logging.info(SHOPIFY_APPS['SIBTShopify'] )
+        logging.info(SHOPIFY_APPS['SIBTShopify'])
         template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
         
         self.response.out.write(self.render_page('beta.html', template_values))
@@ -82,7 +82,7 @@ class SIBTShopifyWelcome(URIHandler):
                 )
 
             # Switched to new order tracking code on Jan 16
-            if app.created > datetime( 2012, 01, 16 ):
+            if app.created > datetime(2012, 01, 16):
                 new_order_code = 1
             else:
                 new_order_code = 0
@@ -109,7 +109,7 @@ class SIBTShopifyWelcome(URIHandler):
             return
 
 class SIBTShopifyEditStyle(URIHandler):
-    ''' Modifies SIBT button style - internal use only. '''
+    """ Modifies SIBT button style - internal use only. """
     @admin_required
     def post(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
@@ -175,7 +175,7 @@ class SIBTShopifyEditStyle(URIHandler):
 
 class ShowFinishedPage(URIHandler):
     def get(self):
-        app_id = self.request.get( 'id' )
+        app_id = self.request.get('id')
         pages = {
             'one': 'old',
             'two': 'old',
@@ -188,9 +188,9 @@ class ShowFinishedPage(URIHandler):
             'app' : None,
             'has_app': False
         }
-        app = App.get_by_uuid( app_id )
+        app = App.get_by_uuid(app_id)
         if app == None:
-            self.redirect( '/s/edit' )
+            self.redirect('/s/edit')
             return
             
         template_values['has_app'] = True 
@@ -242,11 +242,11 @@ class SIBTShopifyServeScript(URIHandler):
             logging.debug('no app')
         else:
             if target and not hasattr(app, 'extra_url'):
-                ''' check if target (almost always window.location.href) has the same domain as store url
+                """ check if target (almost always window.location.href) has the same domain as store url
                     example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
                     
                     [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
-                '''
+                """
                 try:
                     url_parts = urlparse (target)
                     if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
@@ -391,7 +391,7 @@ class SIBTShopifyServeScript(URIHandler):
             'evnt': event,
 
             'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
-            'fb_redirect'    : "%s%s" % (URL, url( 'ShowFBThanks' )),
+            'fb_redirect'    : "%s%s" % (URL, url('ShowFBThanks')),
             'willt_code': link.willt_url_code if link else "",
         }
 
@@ -430,10 +430,10 @@ class SIBTShopifyServeAB (URIHandler):
                                         "Save $5 by getting advice from friends!",
                                         "Not sure? Ask your friends.",
                                       ]
-                    cta_button_text = ab_test( 'sibt_incentive_text', 
+                    cta_button_text = ab_test('sibt_incentive_text', 
                                                 ab_test_options, 
                                                 user = user,
-                                                app = app )
+                                                app = app)
                 else:
                     ab_test_options = [ "Not sure? Start a vote!",
                                         "Not sure? Let friends vote!",
@@ -442,10 +442,10 @@ class SIBTShopifyServeAB (URIHandler):
                                         "Unsure? Get advice from friends!",
                                         "Unsure? Get your friends to vote!",
                                         ]
-                    cta_button_text = ab_test( 'sibt_button_text6', 
+                    cta_button_text = ab_test('sibt_button_text6', 
                                                 ab_test_options, 
                                                 user = user,
-                                                app = app )
+                                                app = app)
             else:
                 cta_button_text = "ADMIN: Unsure? Ask your friends!"
 

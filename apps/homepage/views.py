@@ -56,21 +56,21 @@ class ShowMorePage(URIHandler):
         
         self.response.out.write(self.render_page('more.html', template_values))
 
-class ShowAboutPage( URIHandler ):
+class ShowAboutPage(URIHandler):
     # Renders the main template
     def get(self):
         template_values = { }
         
         self.response.out.write(self.render_page('about.html', template_values))
 
-class ShowContactPage( URIHandler ):
+class ShowContactPage(URIHandler):
     # Renders the main template
     def get(self):
         template_values = []
         
         self.response.out.write(self.render_page('contact.html', template_values))
 
-class ShowDemoSitePage( URIHandler ):
+class ShowDemoSitePage(URIHandler):
     # Renders the main template
     def get(self, page):
         template_values = {

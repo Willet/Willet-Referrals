@@ -51,7 +51,7 @@ class URIHandler(webapp.RequestHandler):
         return '' # default is str(nothing)
     
     def get_user(self):
-        ''' Reads a cookie, returns user. Does not auto-create. '''
+        """ Reads a cookie, returns user. Does not auto-create. """
         user_cookie = read_user_cookie(self)
         if user_cookie:
             user = User.get(user_cookie)
@@ -85,7 +85,7 @@ class URIHandler(webapp.RequestHandler):
         elif app_path != None:
             path = os.path.join(app_path, path)
 
-        logging.info("Rendering %s" % path )
+        logging.info("Rendering %s" % path)
         self.response.headers.add_header('P3P', P3P_HEADER)
         return render(path, merged_values)
         #return template.render(path, merged_values)

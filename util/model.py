@@ -313,7 +313,7 @@ class ObjectListProperty(db.ListProperty):
         """
         for item in value:
             if not isinstance(item, self._cls):
-                raise db.BadValueError('%s Items in %s must all be of type %r' % (debug_info(), self.name, self._cls) )
+                raise db.BadValueError('%s Items in %s must all be of type %r' % (debug_info(), self.name, self._cls))
         return value
     
     def get_value_for_datastore(self, model_instance):

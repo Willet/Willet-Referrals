@@ -41,7 +41,7 @@ class CreateProduct(URIHandler):
         
         # a None client will prevent creation
         if title and images and price and client:
-            Product.get_or_create( # will not create again if it already exists
+            Product.get_or_create(# will not create again if it already exists
                 title=title,
                 description=description,
                 images=images,

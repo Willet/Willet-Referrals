@@ -58,10 +58,10 @@ class ButtonsShopify(Buttons, AppShopify):
         self.install_script_tags(script_tags=tags)
 
         # Fire off "personal" email from Fraser
-        Email.welcomeClient( "ShopConnection", 
+        Email.welcomeClient("ShopConnection", 
                              self.client.email, 
                              self.client.merchant.get_full_name(), 
-                             self.client.name )
+                             self.client.name)
         
         # Email DevTeam
         Email.emailDevTeam(
@@ -85,7 +85,7 @@ class ButtonsShopify(Buttons, AppShopify):
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         app = cls(key_name=uuid,
                   uuid=uuid,
                   client=client,
@@ -93,7 +93,7 @@ class ButtonsShopify(Buttons, AppShopify):
                   store_url=client.url,  # Store url
                   store_id=client.id,   # Store id
                   store_token=app_token,
-                  button_selector="_willet_buttons_app" ) 
+                  button_selector="_willet_buttons_app") 
         app.put()
 
         app.do_install()
@@ -102,7 +102,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
     # 'Retreive or Construct'ers -----------------------------------------------------------------
     @classmethod
-    def get_or_create_app(cls, client, token ):
+    def get_or_create_app(cls, client, token):
         """ Try to retrieve the app.  If no app, create one """
         app = cls.get_by_url(client.url)
         
@@ -140,7 +140,7 @@ def get_or_create_buttons_shopify_app(client, token):
     raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
     ButtonShopify.get_or_create_app(client, token)
 
-def get_shopify_buttons_by_url( store_url ):
+def get_shopify_buttons_by_url(store_url):
     raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
     ButtonShopify.get_by_url(store_url)
 

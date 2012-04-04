@@ -20,9 +20,9 @@ class SendEmailAsync(URIHandler):
         self.post()
     
     def post (self):
-        ''' Taskqueue-based email allows pages to be displayed 
+        """ Taskqueue-based email allows pages to be displayed 
             before emails are done sending.
-        '''
+        """
         
         from_address = self.request.get('from_address')
         to_address = self.request.get('to_address')
@@ -48,12 +48,10 @@ class SendEmailAsync(URIHandler):
 
         if ',' in to_address:
             try:
-                e = EmailMessage(
-                        sender=from_address, 
-                        to=to_address, 
-                        subject=subject, 
-                        html=body
-                        )
+                e = EmailMessage(sender=from_address, 
+                                 to=to_address, 
+                                 subject=subject, 
+                                 html=body)
                 e.send()
             except Exception,e:
                 logging.error('Error sending email: %s', e)

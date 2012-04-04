@@ -52,7 +52,7 @@ class SIBT(App):
     num_shows_before_tb = db.IntegerProperty(default=1)
 
     # Name of the store - used here for caching purposes.
-    store_name = db.StringProperty( indexed = True )
+    store_name = db.StringProperty(indexed = True)
 
     memcache_fields = ['link', 'created', 'end_datetime', 'store_url', 'extra_url']
 
@@ -84,7 +84,7 @@ class SIBT(App):
     
     @staticmethod
     def create(client, token):
-        uuid = hashlib.md5('SIBT' + client.url).hexdigest() # generate_uuid( 16 )
+        uuid = hashlib.md5('SIBT' + client.url).hexdigest() # generate_uuid(16)
         logging.debug("creating SIBT version '%s'" % App.CURRENT_INSTALL_VERSION)
         app = SIBT(
             key_name=uuid,
@@ -107,7 +107,7 @@ class SIBT(App):
 
     @staticmethod
     def get_or_create(client = None, domain = ''):
-        ''' create a SIBT app (used like a profile) for a specific domain. '''
+        """ create a SIBT app (used like a profile) for a specific domain. """
         
         # SIBT JS has a 'client', but its meaning is much less significant than 
         # that of Shopify Clients.
@@ -138,18 +138,18 @@ class SIBT(App):
     def _validate_self(self):
         return True
 
-    def handleLinkClick( self, urihandler, link ):
-        logging.info("SIBTAPP HANDLING LINK CLICK" )
+    def handleLinkClick(self, urihandler, link):
+        logging.info("SIBTAPP HANDLING LINK CLICK")
 
         # Fetch User by cookie
         user = User.get_or_create_by_cookie(urihandler, self)
 
         # Create a ClickAction
-        act = SIBTClickAction.create( user, self, link )
+        act = SIBTClickAction.create(user, self, link)
 
         # GAY BINGO!
         if not user.is_admin():
-            bingo( 'sibt_share_text3' )
+            bingo('sibt_share_text3')
 
         # Go to where the link points
         # Flag it so we know they came from the short link
@@ -159,7 +159,7 @@ class SIBT(App):
         logging.info("MAKING A SIBT INSTANCE")
         logging.debug("DIALOG %s" % dialog)
         # Make the properties
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         
         # Now, make the object
         instance = SIBTInstance(key_name = uuid,
@@ -183,7 +183,7 @@ class SIBT(App):
         
         # GAY BINGO
         if not user.is_admin():
-            bingo( 'sibt_share_text3' )
+            bingo('sibt_share_text3')
 
         if not user.is_admin() and "social-referral" in URL:
             try:
@@ -228,25 +228,25 @@ class SIBTInstance(Model):
     created = db.DateTimeProperty(auto_now_add=True)
     
     # The User who asked SIBT to their friends?
-    asker = MemcacheReferenceProperty( db.Model, collection_name='sibt_instances' )
+    asker = MemcacheReferenceProperty(db.Model, collection_name='sibt_instances')
    
     # Parent App that "owns" these instances
-    app_ = db.ReferenceProperty( db.Model, collection_name="instances" )
+    app_ = db.ReferenceProperty(db.Model, collection_name="instances")
 
     # The Link for this instance (1 per instance)
-    link = db.ReferenceProperty( db.Model, collection_name="sibt_instance" )
+    link = db.ReferenceProperty(db.Model, collection_name="sibt_instance")
     
     # URL of the Link (here for quick filter)
-    url = db.LinkProperty  ( indexed = True )
+    url = db.LinkProperty  (indexed = True)
     
     # URL of the product image
-    product_img = db.LinkProperty  ( indexed = False )
+    product_img = db.LinkProperty  (indexed = False)
     
     # Datetime when this instance should shut down and email asker 
     end_datetime = db.DateTimeProperty()
 
     # True iff end_datetime < now. False, otherwise.
-    is_live = db.BooleanProperty( default = True )
+    is_live = db.BooleanProperty(default = True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -308,7 +308,7 @@ class SIBTInstance(Model):
         if total is None:
             total = 0
             for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
+            filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
                 total += counter.yesses
             memcache.add(key=self.uuid+"VoteCounter_yesses", value=total)
         
@@ -320,7 +320,7 @@ class SIBTInstance(Model):
         if total is None:
             total = 0
             for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch( NUM_VOTE_SHARDS ):
+            filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
                 total += counter.nos
             memcache.add(key=self.uuid+"VoteCounter_nos", value=total)
         
@@ -361,7 +361,7 @@ class SIBTInstance(Model):
 # PartialSIBTInstance Class Definition -----------------------------------------
 # ------------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
-    '''
+    """
     https://github.com/train07/Willet-Referrals/commit/812ab6bd76b9737a1e83d84055b1fe19947e91d4#commitcomment-851293
     Whenever someone doesn't FB connect, we start a PartialInstance and open up 
     a FB dialog. We don't know if they actually pushed the message to FB or not,
@@ -371,7 +371,7 @@ class PartialSIBTInstance(Model):
     deleted. If the person closes the window, the PartialInstance stays, but
     ... "expires".
     Each User can have at most 1 PartialInstance.
-    '''
+    """
     
 
     # User is the only index.
@@ -384,7 +384,7 @@ class PartialSIBTInstance(Model):
     product = db.ReferenceProperty(db.Model, 
                                        collection_name='product_partial_sibt_instances',
                                        indexed=False)
-    app_ = db.ReferenceProperty( db.Model,
+    app_ = db.ReferenceProperty(db.Model,
                                        collection_name='app_partial_sibt_instances',
                                        indexed=False)
 

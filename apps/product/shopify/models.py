@@ -30,9 +30,9 @@ class ProductShopify(Product):
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
-        product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
+        product = ProductShopify.get_by_shopify_id(str(data['id']))
         if not product:
-            uuid = generate_uuid( 16 )
+            uuid = generate_uuid(16)
 
             images = []
             if 'images' in data:
@@ -56,7 +56,7 @@ class ProductShopify(Product):
 
     @classmethod
     def get_by_shopify_id(cls, id):
-        id = str( id )
+        id = str(id)
         data = memcache.get(cls._get_memcache_key(id))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
@@ -67,10 +67,10 @@ class ProductShopify(Product):
 
     @classmethod
     def get_or_fetch(cls, url, client):
-        ''' returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
+        """ returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
             fire a JSON request to Shopify servers to get the product's
             information, create the Product object, and returns that.
-        '''
+        """
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = Product.get_by_url(url)
         if not product:
@@ -83,7 +83,7 @@ class ProductShopify(Product):
                 )
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
-                product = ProductShopify.get_by_shopify_id( str(data['id']) )
+                product = ProductShopify.get_by_shopify_id(str(data['id']))
                 if product:
                     product.add_url(url)
                 else:
@@ -128,7 +128,7 @@ class ProductShopify(Product):
         # Update the Product
         self.shopify_id = str(data['id'])
         self.title = data[ 'title' ]
-        self.json_response = json.dumps( data )
+        self.json_response = json.dumps(data)
         
         if type:
             self.type = type
@@ -141,8 +141,8 @@ class ProductShopify(Product):
         if tags:
             self.tags = tags
 
-        if hasattr( self, 'processed' ):
-            delattr( self, 'processed' )
+        if hasattr(self, 'processed'):
+            delattr(self, 'processed')
 
         self.put()
 

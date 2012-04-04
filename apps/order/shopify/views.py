@@ -33,7 +33,7 @@ class OrderJSLoader(URIHandler):
             shop_url = 'http://%s' % shop_url 
 
         # Grab Shopify Store
-        client = ClientShopify.get_by_url( shop_url )
+        client = ClientShopify.get_by_url(shop_url)
 
         # Grab all template values
         template_values = {

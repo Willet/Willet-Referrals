@@ -240,7 +240,7 @@ class TimeSlices(URIHandler):
         Thanks for being consistent, mapreduce. """
 
     def post(self, action, scope):
-        return self.get( action, scope )
+        return self.get(action, scope)
 
     def get(self, action, scope):
         """Handler to run our analytics methods. Because there is a lot of

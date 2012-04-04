@@ -424,7 +424,7 @@ def _toggle_speedups(enabled):
         encoding=None,
         object_hook=None,
         object_pairs_hook=None,
-    )
+   )
     global _default_encoder
     _default_encoder = JSONEncoder(
        skipkeys=False,
@@ -435,4 +435,4 @@ def _toggle_speedups(enabled):
        separators=None,
        encoding='utf-8',
        default=None,
-   )
+  )

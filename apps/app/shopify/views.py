@@ -18,7 +18,7 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 # The "Shows" ------------------------------------------------------------------
-class ShopifyRedirect( URIHandler ):
+class ShopifyRedirect(URIHandler):
     # Renders a app page
     def get(self):
         # Request varZ from us
@@ -64,9 +64,9 @@ class ShopifyRedirect( URIHandler ):
 
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp(URIHandler):
-    def post( self ):
+    def post(self):
         client = self.get_client()
-        app_uuid = self.request.get( 'app_uuid' )
+        app_uuid = self.request.get('app_uuid')
         
         logging.info('app id: %s' % app_uuid)
         app = App.get_by_uuid(app_uuid)
@@ -74,7 +74,7 @@ class DoDeleteApp(URIHandler):
             logging.info('deleting')
             app.delete()
         
-        self.redirect( '/client/account' )
+        self.redirect('/client/account')
 
 class ServeShopifyUI(URIHandler):
     def get (self):

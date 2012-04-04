@@ -31,7 +31,7 @@ class Product(Model, db.polymodel.PolyModel):
 
     @classmethod
     def _get_memcache_key (cls, unique_identifier):
-        ''' unique_identifier can be URL or ID '''
+        """ unique_identifier can be URL or ID """
         return '%s:%s' % (cls.__name__.lower(), str (unique_identifier))
 
     @staticmethod
@@ -41,9 +41,9 @@ class Product(Model, db.polymodel.PolyModel):
     
     @staticmethod
     def create(title, description='', images=[], tags=[], price=0.0, client=None, resource_url='', type=''):
-        '''Creates a product in the datastore. 
+        """Creates a product in the datastore. 
            Accepts datastore fields, returns Product object.
-        '''
+        """
         if not client:
             raise AttributeError("Must have client")
         
@@ -103,10 +103,10 @@ class Product(Model, db.polymodel.PolyModel):
 
     @classmethod
     def get_or_fetch(cls, url, client):
-        ''' returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
+        """ returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
             fire a JSON request to Shopify servers to get the product's
             information, create the Product object, and returns that.
-        '''
+        """
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = Product.get_by_url(url)
         if not product:

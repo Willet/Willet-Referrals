@@ -431,7 +431,7 @@ class MapperSpec(JsonMixin):
                json["mapper_params"],
                json["mapper_shard_count"],
                json.get("mapper_output_writer")
-               )
+              )
 
 
 class MapreduceSpec(JsonMixin):

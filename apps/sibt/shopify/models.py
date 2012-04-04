@@ -103,12 +103,12 @@ class SIBTShopify(SIBT, AppShopify):
             'button_background_color': '#C1F0F5',
             'button_text_align': 'center',
             'button_border_radius': '4',
-            'button_background_image': '''  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
+            'button_background_image': """  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -o-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -moz-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -webkit-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -ms-linear-gradient(top, #c9f7fa, #a1eff5);
-                                       ''',
+                                       """,
             'button_box_shadow': '0 1px 0 #BBB',
             'button_shadow_hover': '#BBB',
             'button_others': '', # place whatever extra CSS in here
@@ -139,7 +139,7 @@ class SIBTShopify(SIBT, AppShopify):
     # Constructors -----------------------------------------------------------------------------
     @staticmethod
     def create(client, token, email_client=True):
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         logging.debug("Creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
             key_name=uuid,
@@ -256,10 +256,10 @@ class SIBTShopify(SIBT, AppShopify):
 
         # Fire off "personal" email from Fraser
         if email_client:
-            Email.welcomeClient( "Should I Buy This", 
+            Email.welcomeClient("Should I Buy This", 
                                  self.client.merchant.get_attr('email'), 
                                  self.client.merchant.get_full_name(), 
-                                 self.client.name )
+                                 self.client.name)
 
     # CSS Methods -------------------------------------------------------------
     def reset_css(self):
@@ -289,7 +289,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def generate_css(self):
         class_defaults = SIBTShopify.get_default_dict()
-        logging.info('class_defaults : %s' % class_defaults )
+        logging.info('class_defaults : %s' % class_defaults)
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)

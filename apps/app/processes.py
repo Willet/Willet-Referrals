@@ -33,7 +33,7 @@ class BatchRequest(URIHandler):
         app_cls = self.request.get('app_cls')
         target_version = self.request.get('target_version')
         method = self.request.get('method')
-        params = json.loads( self.request.get('params'))
+        params = json.loads(self.request.get('params'))
 
         if not batch_size or not (offset >= 0) or not app_cls:
             self.error(400) # Bad Request
@@ -78,11 +78,11 @@ class BatchRequest(URIHandler):
 
 
 class AppClicksCounter(URIHandler):
-    def post( self ): 
+    def post(self): 
         app = App.get_by_uuid(self.request.get('app_uuid'))
         
         app.cached_clicks_count = 0
-        if hasattr( app, 'links_' ):
+        if hasattr(app, 'links_'):
             for l in app.links_:
                 app.cached_clicks_count += l.count_clicks()
 

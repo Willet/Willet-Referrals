@@ -49,7 +49,7 @@ class Admin(URIHandler):
             if l.user == None and clicks != 0:
                 str += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
-        self.response.out.write( str )
+        self.response.out.write(str)
 
 
 class ShowRoutes(URIHandler):
@@ -130,7 +130,7 @@ class ManageApps(URIHandler):
 
     @admin_required
     def post(self, admin=None):
-        ''' does a predefined list of actions on apps.'''
+        """ does a predefined list of actions on apps."""
         app_id = self.request.get('app_id')
         action = self.request.get('action')
         app = App.get(app_id)
@@ -203,44 +203,44 @@ class ManageApps(URIHandler):
         ) 
 
 
-class SIBTInstanceStats( URIHandler ):
-    def no_code( self ):
+class SIBTInstanceStats(URIHandler):
+    def no_code(self):
         str += "<h1> Live Instances </h1>"
-        live_instances = SIBTInstance.all().filter( 'is_live =', True )
+        live_instances = SIBTInstance.all().filter('is_live =', True)
         for l in live_instances:
             try:
                 if not l.asker.is_admin():
-                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code )
+                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code)
             except:
                 pass
         
         str += "<br /><br /><h1> Dead Instances </h1>"
-        dead_instances = SIBTInstance.all().filter( 'is_live =', False )
+        dead_instances = SIBTInstance.all().filter('is_live =', False)
         for l in dead_instances:
             try:
                 if not l.asker.is_admin():
-                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code )
+                    str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.willt_url_code, l.app_.store_name, l.link.willt_url_code)
             except:
                 pass
         return str
 
 
-    def get( self ):
-        willt_code = self.request.get( 'w' )
+    def get(self):
+        willt_code = self.request.get('w')
 
         if willt_code == '':
-            self.response.out.write( self.no_code( ) )
+            self.response.out.write(self.no_code())
             return
 
-        link = Link.get_by_code( willt_code )
+        link = Link.get_by_code(willt_code)
 
         instance = link.sibt_instance.get()
         asker = instance.asker
 
         # Get all actions
-        actions = Action.all().filter( 'sibt_instance =', instance )
-        clicks = SIBTClickAction.get_by_instance( instance )
-        votes = SIBTVoteAction.get_by_instance( instance )
+        actions = Action.all().filter('sibt_instance =', instance)
+        clicks = SIBTClickAction.get_by_instance(instance)
+        votes = SIBTVoteAction.get_by_instance(instance)
         
         # Init the page
         str = "<h1>SIBT Instance: "
@@ -253,25 +253,25 @@ class SIBTInstanceStats( URIHandler ):
         str += "# Votes: %d</h2>" % votes.count() if votes else 0
 
         str += "<p>Product: <a href='%s'>%s</a></p>" % (link.target_url, link.target_url)
-        str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token )
+        str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token)
         
         str += "<br /><br />"
         str += "<table width='100%'><tr><td width='15%'> Time </td> <td width='15%'> Action </td> <td width='50%'> User </td></tr>"
         
         # Actions
-        so = sorted( actions, key=lambda x: x.created, reverse=True )
+        so = sorted(actions, key=lambda x: x.created, reverse=True)
         for a in so:
-            logging.info("actions %s" % a.user )
+            logging.info("actions %s" % a.user)
             u = a.user
 
-            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__ )         
+            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__)         
             
-            if hasattr( u, 'fb_access_token' ):
+            if hasattr(u, 'fb_access_token'):
                 str += "<a href='https://graph.facebook.com/%s?access_token=%s'>%s</a>" % (u.fb_identity, u.fb_access_token, u.get_full_name())
             else:
                 str += "'%s'" % u.get_full_name()
 
-            if hasattr( u, 'ips' ):
+            if hasattr(u, 'ips'):
                 str += " IPs: %s " % u.ips
             
                 str += " Admin? %s</td> </tr>" % u.is_admin()
@@ -282,7 +282,7 @@ class SIBTInstanceStats( URIHandler ):
 
         str += '<div class="fb-comments" data-href="%s?%s" data-num-posts="5" data-width="500"></div>' % (instance.url, instance.uuid)
         
-        self.response.out.write( str )
+        self.response.out.write(str)
         return
 
 
@@ -411,7 +411,7 @@ class ShowClickActions(URIHandler):
                                     logging.info('ignoring %s over %s' % (
                                         a,
                                         next_show_button
-                                    ))
+                                   ))
                                     continue
                             things[t]['counts'][action] += 1
                             logging.info('%s + 1' % action)
@@ -450,13 +450,13 @@ class ShowClickActions(URIHandler):
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
 
-class FBConnectStats( URIHandler ):
-    def get( self ):
+class FBConnectStats(URIHandler):
+    def get(self):
         no_connect = SIBTNoConnectFBDialog.all().count()
         connect = SIBTConnectFBDialog.all().count()
 
-        instance_connect = SIBTInstanceCreated.all().filter( 'medium =', "ConnectFB" ).count()
-        instance_noconnect = SIBTInstanceCreated.all().filter( 'medium =', "NoConnectFB" ).count()
+        instance_connect = SIBTInstanceCreated.all().filter('medium =', "ConnectFB").count()
+        instance_noconnect = SIBTInstanceCreated.all().filter('medium =', "NoConnectFB").count()
 
         html = "<h2> Opportunity Counts </h2>"
         html += "<p>No Connect Dialog: %d</p>" % no_connect
@@ -486,9 +486,9 @@ class ReloadURIS(URIHandler):
 
 
 class CheckMBC(URIHandler):
-    ''' /admin/check_mbc displays the current number of "memcache buckets".
+    """ /admin/check_mbc displays the current number of "memcache buckets".
         /admin/check_mbc?num=50 sets the number of memcache buckets to 50. 
-        Default seems to be 20 or 25. '''
+        Default seems to be 20 or 25. """
     @admin_required
     def get(self, admin):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
@@ -544,8 +544,8 @@ class ShowMemcacheConsole(URIHandler):
         )
 
 
-class ShowCounts( URIHandler ):
-    def get( self ):
+class ShowCounts(URIHandler):
+    def get(self):
 
         btn_shows = SIBTShowingButton.all().count()
 
@@ -568,7 +568,7 @@ class ShowCounts( URIHandler ):
         str += "<p>Shared the Ask: %d</p>" % ask_share
         str += "<p>FB Connect Cancelled: %d</p>" % connect_cancelled
 
-        self.response.out.write( str )
+        self.response.out.write(str)
 
 
 class ShowAnalytics(URIHandler):
