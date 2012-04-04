@@ -62,10 +62,10 @@ class LineStyle(object):
     self.color = color
 
 
-LineStyle.solid = LineStyle(1, 1, 0)
+LineStyle.solid  = LineStyle(1, 1, 0)
 LineStyle.dashed = LineStyle(1, 8, 4)
 LineStyle.dotted = LineStyle(1, 2, 4)
-LineStyle.thick_solid = LineStyle(2, 1, 0)
+LineStyle.thick_solid  = LineStyle(2, 1, 0)
 LineStyle.thick_dashed = LineStyle(2, 8, 4)
 LineStyle.thick_dotted = LineStyle(2, 2, 4)
 

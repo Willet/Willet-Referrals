@@ -46,5 +46,5 @@ def _GetChartFactory(chart_class, display_class):
 # TODO: fix these so they have nice docs in ipython (give them __doc__)
 LineChart = _GetChartFactory(line_chart.LineChart, encoders.LineChartEncoder)
 Sparkline = _GetChartFactory(line_chart.Sparkline, encoders.SparklineEncoder)
-BarChart = _GetChartFactory(bar_chart.BarChart, encoders.BarChartEncoder)
-PieChart = _GetChartFactory(pie_chart.PieChart, encoders.PieChartEncoder)
+BarChart  = _GetChartFactory(bar_chart.BarChart, encoders.BarChartEncoder)
+PieChart  = _GetChartFactory(pie_chart.PieChart, encoders.PieChartEncoder)

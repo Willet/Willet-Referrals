@@ -37,7 +37,7 @@ import math
 import os
 import random
 try:
- import json as simplejson
+  import json as simplejson
 except ImportError:
   from mapreduce.lib import simplejson
 import time
@@ -431,7 +431,7 @@ class MapperSpec(JsonMixin):
                json["mapper_params"],
                json["mapper_shard_count"],
                json.get("mapper_output_writer")
-              )
+               )
 
 
 class MapreduceSpec(JsonMixin):

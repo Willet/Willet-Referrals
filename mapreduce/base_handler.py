@@ -22,7 +22,7 @@
 
 import logging
 try:
- import json as simplejson
+  import json as simplejson
 except ImportError:
   from mapreduce.lib import simplejson
 

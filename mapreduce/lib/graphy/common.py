@@ -313,7 +313,7 @@ class BaseChart(object):
     """
     MinPoint = lambda data: min(x for x in data if x is not None)
     MaxPoint = lambda data: max(x for x in data if x is not None)
-    mins = [MinPoint(series.data) for series in self.data if series.data]
+    mins  = [MinPoint(series.data) for series in self.data if series.data]
     maxes = [MaxPoint(series.data) for series in self.data if series.data]
     if not mins or not maxes:
       return None, None # No data, just bail.

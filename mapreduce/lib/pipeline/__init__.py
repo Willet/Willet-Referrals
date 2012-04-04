@@ -17,11 +17,11 @@
 try:
   from pipeline import *
 except ImportError, e:
- import logging
+  import logging
   logging.warning(
       'Could not load Pipeline API. Will fix path for testing. %s: %s',
       e.__class__.__name__, str(e))
- import testutil
+  import testutil
   testutil.fix_path()
   del logging
   from pipeline import *

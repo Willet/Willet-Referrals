@@ -367,7 +367,7 @@ class ShowClickActions(URIHandler):
                 'show_action': 'SIBTShowingButton',
                 'l': [],
                 'counts': {},
-            }        
+            }
         }
         actions_to_check = [
             'SIBTShowingAskIframe',
@@ -411,7 +411,7 @@ class ShowClickActions(URIHandler):
                                     logging.info('ignoring %s over %s' % (
                                         a,
                                         next_show_button
-                                   ))
+                                    ))
                                     continue
                             things[t]['counts'][action] += 1
                             logging.info('%s + 1' % action)

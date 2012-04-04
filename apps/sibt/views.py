@@ -171,7 +171,7 @@ class AskDynamicLoader(URIHandler):
             'user_pic': user.get_attr('pic') if user_found else None,
 
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'], # doesn't actually involve Shopify
-            'fb_redirect'    : "%s%s" % (URL, url('ShowFBThanks')),
+            'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
             'user_has_fb_token': user_found,
 
             'product_uuid': product.uuid,

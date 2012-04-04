@@ -38,7 +38,7 @@ class OrderShopify(Order):
     # Constructor
     @staticmethod
     def create(user, client, order_token, order_id = "", 
-                order_num = "", subtotal = 0.0, referrer = ""):
+               order_num = "", subtotal = 0.0, referrer = ""):
         """ Create an Order for a Shopify store """
 
         # Don't duplicate orders!
@@ -51,17 +51,17 @@ class OrderShopify(Order):
 
         uuid = generate_uuid(16)
 
-        o = OrderShopify(key_name = uuid,
-                          uuid = uuid,
-                          order_token = order_token,
-                          order_id = str(order_id),
-                          client = client,
-                          store_name = client.name,
-                          store_url = client.url,
-                          order_number = str(order_num),
-                          subtotal_price = float(subtotal), 
-                          referring_site = referrer,
-                          user = user)
+        o = OrderShopify(key_name=uuid,
+                         uuid=uuid,
+                         order_token=order_token,
+                         order_id=str(order_id),
+                         client=client,
+                         store_name=client.name,
+                         store_url=client.url,
+                         order_number=str(order_num),
+                         subtotal_price=float(subtotal), 
+                         referring_site=referrer,
+                         user=user)
         o.put()
 
         return o # return incase the caller wants it

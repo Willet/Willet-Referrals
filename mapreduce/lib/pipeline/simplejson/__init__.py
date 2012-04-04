@@ -112,11 +112,11 @@ from decimal import Decimal
 from decoder import JSONDecoder, JSONDecodeError
 from encoder import JSONEncoder
 def _import_OrderedDict():
- import collections
+    import collections
     try:
         return collections.OrderedDict
     except AttributeError:
- import ordered_dict
+        import ordered_dict
         return ordered_dict.OrderedDict
 OrderedDict = _import_OrderedDict()
 
@@ -403,9 +403,9 @@ def loads(s, encoding=None, cls=None, object_hook=None, parse_float=None,
 
 
 def _toggle_speedups(enabled):
- import mapreduce.lib.simplejson.decoder as dec
- import mapreduce.lib.simplejson.encoder as enc
- import mapreduce.lib.simplejson.scanner as scan
+    import mapreduce.lib.simplejson.decoder as dec
+    import mapreduce.lib.simplejson.encoder as enc
+    import mapreduce.lib.simplejson.scanner as scan
     c_make_encoder = _import_c_make_encoder()
     if enabled:
         dec.scanstring = dec.c_scanstring or dec.py_scanstring
@@ -424,7 +424,7 @@ def _toggle_speedups(enabled):
         encoding=None,
         object_hook=None,
         object_pairs_hook=None,
-   )
+    )
     global _default_encoder
     _default_encoder = JSONEncoder(
        skipkeys=False,
@@ -435,4 +435,4 @@ def _toggle_speedups(enabled):
        separators=None,
        encoding='utf-8',
        default=None,
-  )
+   )

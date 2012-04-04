@@ -506,7 +506,7 @@ def delete(filename):
   if filename.startswith(files_blobstore._BLOBSTORE_DIRECTORY):
     files_blobstore._delete(filename)
   else:
-    raise InvalidFileNameError('Unsupported file name: %s' % filename)
+    raise InvalidFileNameError( 'Unsupported file name: %s' % filename)
 
 
 def _get_capabilities():

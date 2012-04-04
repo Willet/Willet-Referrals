@@ -36,13 +36,13 @@ import google.appengine.api.api_base_pb
 class FileServiceErrors(ProtocolBuffer.ProtocolMessage):
 
 
-  OK =    0
+  OK           =    0
   API_TEMPORARILY_UNAVAILABLE =    1
   REQUEST_TOO_LARGE =    3
   RESPONSE_TOO_LARGE =    4
   INVALID_FILE_NAME =    5
   OPERATION_NOT_SUPPORTED =    6
-  IO_ERROR =    7
+  IO_ERROR     =    7
   PERMISSION_DENIED =    8
   WRONG_CONTENT_TYPE =    9
   FILE_NOT_OPENED =   10
@@ -52,7 +52,7 @@ class FileServiceErrors(ProtocolBuffer.ProtocolMessage):
   EXISTENCE_ERROR =  100
   FINALIZATION_ERROR =  101
   UNSUPPORTED_CONTENT_TYPE =  102
-  READ_ONLY =  103
+  READ_ONLY    =  103
   EXCLUSIVE_LOCK_FAILED =  104
   EXISTENCE_ERROR_METADATA_NOT_FOUND =  105
   EXISTENCE_ERROR_METADATA_FOUND =  106
@@ -462,7 +462,7 @@ class KeyValues(ProtocolBuffer.ProtocolMessage):
 class FileContentType(ProtocolBuffer.ProtocolMessage):
 
 
-  RAW =    0
+  RAW          =    0
   DEPRECATED_1 =    2
   INVALID_TYPE =  127
 
@@ -1041,8 +1041,8 @@ class CreateResponse(ProtocolBuffer.ProtocolMessage):
 class OpenRequest(ProtocolBuffer.ProtocolMessage):
 
 
-  APPEND =    1
-  READ =    2
+  APPEND       =    1
+  READ         =    2
 
   _OpenMode_NAMES = {
     1: "APPEND",
@@ -3370,7 +3370,7 @@ class ReadKeyValueResponse(ProtocolBuffer.ProtocolMessage):
 class ShuffleEnums(ProtocolBuffer.ProtocolMessage):
 
 
-  CSV_INPUT =    0
+  CSV_INPUT    =    0
   RECORDS_KEY_VALUE_PROTO_INPUT =    1
 
   _InputFormat_NAMES = {
@@ -3383,7 +3383,7 @@ class ShuffleEnums(ProtocolBuffer.ProtocolMessage):
 
 
 
-  CSV_OUTPUT =    0
+  CSV_OUTPUT   =    0
   RECORDS_KEY_MULTI_VALUE_PROTO_OUTPUT =    1
 
   _OutputFormat_NAMES = {
@@ -3396,10 +3396,10 @@ class ShuffleEnums(ProtocolBuffer.ProtocolMessage):
 
 
 
-  UNKNOWN =    1
-  RUNNING =    2
-  SUCCESS =    3
-  FAILURE =    4
+  UNKNOWN      =    1
+  RUNNING      =    2
+  SUCCESS      =    3
+  FAILURE      =    4
   INVALID_INPUT =    5
   OUTPUT_ALREADY_EXISTS =    6
   INCORRECT_SHUFFLE_SIZE_BYTES =    7

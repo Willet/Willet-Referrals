@@ -168,18 +168,20 @@ class Link(Model):
         logging.debug('called Link.create')
         code = encode_base62(get_a_willt_code())
         logging.debug('got code %s' %  code)
-        link = Link(key_name = code,
-                    target_url = targetURL,
-                    willt_url_code = code,
-                    supplied_user_id = usr,
-                    app_ = app,
-                    user = user,
-                    origin_domain = domain,
-                    retweets = [])
+        link = Link(key_name=code,
+                    target_url=targetURL,
+                    willt_url_code=code,
+                    supplied_user_id=usr,
+                    app_=app,
+                    user=user,
+                    origin_domain=domain,
+                    retweets=[])
 
         #link.put()
         link.memcache_by_code()
-        deferred.defer(put_link, Link.get_memcache_key_for_code(code), _queue='slow-deferred')
+        deferred.defer(put_link,
+                       Link.get_memcache_key_for_code(code),
+                       _queue='slow-deferred')
         
         logging.info("Successful put of Link %s" % code)
         return link

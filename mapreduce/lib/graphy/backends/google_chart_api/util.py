@@ -60,7 +60,7 @@ LONG_NAMES = dict(
   title='chtt',
   title_style='chts',
   callback='callback',
- )
+  )
 
 """ Used for parameters which involve joining multiple values."""
 JOIN_DELIMS = dict(
