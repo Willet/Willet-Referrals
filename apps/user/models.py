@@ -53,6 +53,9 @@ class EmailModel(Model):
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['created'] if 'created' in kwargs else generate_uuid(16)
         super(EmailModel, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
     
     @staticmethod
     def _get_from_datastore(created):

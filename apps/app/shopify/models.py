@@ -14,6 +14,7 @@ import re
 from django.utils           import simplejson as json
 from google.appengine.api   import urlfetch
 from google.appengine.ext   import db
+from google.appengine.runtime import DeadlineExceededError
 
 from apps.app.models        import App
 from apps.email.models      import Email
@@ -578,7 +579,7 @@ class AppShopify(Model):
                 Email.emailDevTeam(error_msg)
 
         def handle_asset_result(rpc, asset):
-            resp = get_result()
+            resp = rpc.get_result()
             
             if 200 <= int(resp.status_code) <= 299:
                 # HTTP status 200's == success
@@ -594,9 +595,16 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        def deadline_exceeded_catch(callback_func, **kwargs):
+            try:
+                callback_func(**kwargs)
+            except DeadlineExceededError:
+                logging.error('Installation failed, deadline exceeded:\n%s' % (
+                    '\n'.join( [ "%s= %r" % (key, value) for key, value in kwargs.items() ] ) ))
+
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
-            return lambda: callback_func(**kwargs)
+            return lambda: deadline_exceeded_catch(callback_func, **kwargs)
 
         rpcs = []
         username = self.settings['api_key'] 
@@ -632,8 +640,11 @@ class AppShopify(Model):
 
         # Finish all RPCs, and let callbacks process the results.
         for rpc in rpcs:
-            rpc.wait()
-
+            try:
+                rpc.wait()
+            except DeadlineExceededError:
+                rpc.callback()
+        
         # All callbacks finished
         return
 # end class
