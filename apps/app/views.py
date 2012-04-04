@@ -3,16 +3,16 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-from google.appengine.ext               import webapp
-from google.appengine.ext.webapp        import template
-from google.appengine.ext.webapp.util   import run_wsgi_app
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.app.models    import * 
+from apps.app.models import * 
 from apps.client.models import Client
 
-from util.helpers       import *
-from util.urihandler    import URIHandler
-from util.consts        import *
+from util.helpers import *
+from util.urihandler import URIHandler
+from util.consts import *
 
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp( URIHandler ):

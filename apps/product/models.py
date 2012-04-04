@@ -3,10 +3,10 @@
 import hashlib
 import logging
 
-from google.appengine.api   import memcache
-from google.appengine.ext   import db
-from apps.client.models     import Client
-from util.model             import Model
+from google.appengine.api import memcache
+from google.appengine.ext import db
+from apps.client.models import Client
+from util.model import Model
 
 class Product(Model, db.polymodel.PolyModel):
 

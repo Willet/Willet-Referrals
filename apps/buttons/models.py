@@ -8,9 +8,9 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 from google.appengine.ext import db
 
-from apps.app.models      import App
+from apps.app.models import App
 
-from util.model           import Model
+from util.model import Model
 
 NUM_VOTE_SHARDS = 15
 

@@ -3,7 +3,7 @@
 import logging
 
 from apps.client.shopify.models import ClientShopify
-from util.urihandler            import URIHandler
+from util.urihandler import URIHandler
 
 class FetchShopifyProducts( URIHandler ):
     """ Query the Shopify API to fetch all Products. """

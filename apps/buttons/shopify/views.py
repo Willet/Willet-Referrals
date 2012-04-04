@@ -2,16 +2,16 @@
 
 import logging
 
-from google.appengine.ext           import webapp
-from google.appengine.ext.webapp    import template
-from urlparse                       import urlparse
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from urlparse import urlparse
 
-from apps.buttons.shopify.models    import * 
-from apps.client.shopify.models     import ClientShopify
-from apps.sibt.shopify.models       import * 
-from apps.wosib.shopify.models      import * 
-from util.consts                    import *
-from util.urihandler                import URIHandler
+from apps.buttons.shopify.models import * 
+from apps.client.shopify.models import ClientShopify
+from apps.sibt.shopify.models import * 
+from apps.wosib.shopify.models import * 
+from util.consts import *
+from util.urihandler import URIHandler
 
 class ButtonsShopifyBeta(URIHandler):
     def get(self):

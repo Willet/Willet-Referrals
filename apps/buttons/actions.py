@@ -5,10 +5,10 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
 import logging
-from google.appengine.ext    import db
+from google.appengine.ext import db
 
 from apps.action.models import Action
-from util.helpers       import generate_uuid
+from util.helpers import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## WantAction Subclass --------------------------------------------------------

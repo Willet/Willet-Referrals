@@ -8,15 +8,15 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 import datetime
 import logging
 
-from google.appengine.api   import memcache
-from google.appengine.ext   import db
+from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models     import Action
-from apps.action.models     import ClickAction
-from apps.action.models     import ShowAction
-from apps.action.models     import UserAction
-from apps.action.models     import VoteAction
+from apps.action.models import Action
+from apps.action.models import ClickAction
+from apps.action.models import ShowAction
+from apps.action.models import UserAction
+from apps.action.models import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
 

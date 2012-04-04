@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from apps.sibt.views     import *
+from apps.sibt.views import *
 from apps.sibt.processes import *
 
 urlpatterns = [

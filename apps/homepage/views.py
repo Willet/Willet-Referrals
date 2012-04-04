@@ -14,9 +14,9 @@ from google.appengine.api import urlfetch, memcache
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
-from util.helpers    import *
+from util.helpers import *
 from util.urihandler import URIHandler
-from util.consts     import *
+from util.consts import *
 from util.gaesessions import get_current_session
 
 class ShowLandingPage(URIHandler):

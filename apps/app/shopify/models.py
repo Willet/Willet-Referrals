@@ -10,16 +10,16 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import re
 
-from django.utils           import simplejson as json
-from google.appengine.ext   import db
+from django.utils import simplejson as json
+from google.appengine.ext import db
 
-from apps.app.models        import App
-from apps.email.models      import Email
+from apps.app.models import App
+from apps.email.models import Email
 
-from util                   import httplib2
-from util.consts            import *
-from util.shopify_helpers   import *
-from util.model             import Model
+from util import httplib2
+from util.consts import *
+from util.shopify_helpers import *
+from util.model import Model
 
 NUM_SHARE_SHARDS = 15
 

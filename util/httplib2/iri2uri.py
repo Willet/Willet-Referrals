@@ -77,7 +77,7 @@ def iri2uri(uri):
     return uri
         
 if __name__ == "__main__":
-    import unittest
+ import unittest
 
     class Test(unittest.TestCase):
 

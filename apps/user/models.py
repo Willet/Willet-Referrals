@@ -12,12 +12,12 @@ import inspect
 
 from django.utils import simplejson
 
-from calendar  import monthrange
-from datetime  import datetime, timedelta, time as datetime_time
-from decimal   import *
-from time      import time
-from hmac      import new as hmac
-from hashlib   import sha1
+from calendar import monthrange
+from datetime import datetime, timedelta, time as datetime_time
+from decimal import *
+from time import time
+from hmac import new as hmac
+from hashlib import sha1
 from traceback import print_tb
 
 from google.appengine.api import memcache
@@ -28,19 +28,19 @@ from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
-from apps.email.models              import Email
-from apps.user.actions              import UserCreate
+from apps.email.models import Email
+from apps.user.actions import UserCreate
 
-from util.consts                    import ADMIN_EMAILS
-from util.consts                    import ADMIN_IPS
-from util.consts                    import FACEBOOK_QUERY_URL
-from util.consts                    import MEMCACHE_TIMEOUT
-from util.consts                    import USING_DEV_SERVER
-from util.helpers                   import *
-from util.memcache_bucket_config    import MemcacheBucketConfig
-from util.memcache_bucket_config    import batch_put 
-from util.memcache_ref_prop         import MemcacheReferenceProperty
-from util.model                     import Model
+from util.consts import ADMIN_EMAILS
+from util.consts import ADMIN_IPS
+from util.consts import FACEBOOK_QUERY_URL
+from util.consts import MEMCACHE_TIMEOUT
+from util.consts import USING_DEV_SERVER
+from util.helpers import *
+from util.memcache_bucket_config import MemcacheBucketConfig
+from util.memcache_bucket_config import batch_put 
+from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.model import Model
 
 # ------------------------------------------------------------------------------
 # EmailModel Class Definition --------------------------------------------------

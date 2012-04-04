@@ -8,13 +8,13 @@ __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
 import logging
-from google.appengine.api    import memcache
-from google.appengine.ext    import db
+from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from util.model              import Model, ObjectListProperty
-from util.helpers            import generate_uuid
-from util.memcache_ref_prop  import MemcacheReferenceProperty
+from util.model import Model, ObjectListProperty
+from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 
 # ------------------------------------------------------------------------------
 # Order Class Definition -------------------------------------------------------

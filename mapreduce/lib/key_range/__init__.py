@@ -28,7 +28,7 @@ import os
 
 
 try:
-  import json as simplejson
+ import json as simplejson
 except ImportError:
   try:
     from mapreduce.lib import simplejson

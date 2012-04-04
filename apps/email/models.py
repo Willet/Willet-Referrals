@@ -8,7 +8,7 @@ Date:  March 2011
 import logging
 import os
 
-from google.appengine.api        import taskqueue
+from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 from util.consts import *
 from util.helpers import url 

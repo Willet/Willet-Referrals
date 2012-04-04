@@ -3,7 +3,7 @@
 import random
 import logging
 
-from google.appengine.ext    import db
+from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import deferred

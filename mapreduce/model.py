@@ -37,7 +37,7 @@ import math
 import os
 import random
 try:
-  import json as simplejson
+ import json as simplejson
 except ImportError:
   from mapreduce.lib import simplejson
 import time

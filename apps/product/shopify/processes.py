@@ -10,11 +10,11 @@ from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.client.shopify.models  import ClientShopify
+from apps.client.shopify.models import ClientShopify
 from apps.product.shopify.models import ProductShopify
 
-from util.consts     import *
-from util.helpers    import *
+from util.consts import *
+from util.helpers import *
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 

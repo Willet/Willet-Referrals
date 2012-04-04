@@ -2,14 +2,14 @@
 
 import logging
 
-from django.utils               import simplejson as json
-from google.appengine.api       import urlfetch
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.product.models        import Product
-from util.helpers               import generate_uuid
+from apps.product.models import Product
+from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
 class ProductShopify(Product):

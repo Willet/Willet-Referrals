@@ -9,10 +9,10 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import logging
 
-from google.appengine.ext    import db
-from apps.order.models       import Order
-from util.model              import Model
-from util.helpers            import generate_uuid
+from google.appengine.ext import db
+from apps.order.models import Order
+from util.model import Model
+from util.helpers import generate_uuid
 
 # ------------------------------------------------------------------------------
 # OrderShopify Class Definition ------------------------------------------------

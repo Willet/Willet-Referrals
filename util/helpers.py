@@ -7,12 +7,12 @@ from urlparse import urlparse
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 
-from util.consts  import *
+from util.consts import *
 from util.cookies import LilCookies
 
 def to_dict(something, recursion=0):
-    import datetime
-    import time
+ import datetime
+ import time
     output = {}
 
     SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)

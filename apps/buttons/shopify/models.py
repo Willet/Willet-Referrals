@@ -10,16 +10,16 @@ import hashlib
 import logging
 import datetime
 
-from django.utils         import simplejson as json
+from django.utils import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
-from apps.buttons.models  import Buttons
-from apps.email.models    import Email
-from apps.link.models     import Link
+from apps.buttons.models import Buttons
+from apps.email.models import Email
+from apps.link.models import Link
 
-from util.consts          import *
-from util.helpers         import generate_uuid
+from util.consts import *
+from util.helpers import generate_uuid
 from util.shopify_helpers import get_shopify_url
 
 NUM_VOTE_SHARDS = 15

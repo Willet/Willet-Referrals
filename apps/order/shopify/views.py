@@ -15,7 +15,7 @@ from time import time
 from urlparse import urlparse
 
 from apps.client.shopify.models import ClientShopify
-from apps.user.models   import User
+from apps.user.models import User
 
 from util.consts import SECURE_URL
 from util.urihandler import URIHandler

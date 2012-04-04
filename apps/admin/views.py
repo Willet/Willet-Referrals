@@ -31,10 +31,10 @@ from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.sibt.models import SIBTInstance
 from apps.user.models import *
-from util                 import httplib2
+from util import httplib2
 from util.consts import *
 from util.helpers import *
-from util.helpers           import url as reverse_url
+from util.helpers import url as reverse_url
 from util.urihandler import URIHandler
 from util.memcache_bucket_config import MemcacheBucketConfig 
 

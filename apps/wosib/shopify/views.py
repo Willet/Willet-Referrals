@@ -6,35 +6,35 @@ __copyright__   = "Copyright 2012, Willet, Inc"
 import datetime
 import random
 
-from datetime                         import datetime, timedelta
-from django.utils                     import simplejson as json
-from google.appengine.api             import taskqueue
-from google.appengine.api             import memcache
-from google.appengine.ext             import webapp
-from google.appengine.ext             import db 
-from google.appengine.ext.webapp      import template
+from datetime import datetime, timedelta
+from django.utils import simplejson as json
+from google.appengine.api import taskqueue
+from google.appengine.api import memcache
+from google.appengine.ext import webapp
+from google.appengine.ext import db 
+from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
-from time                             import time
-from urlparse                         import urlparse
+from time import time
+from urlparse import urlparse
 
-from apps.action.models               import ButtonLoadAction
-from apps.action.models               import ScriptLoadAction
-from apps.app.models                  import *
-from apps.client.models               import *
-from apps.gae_bingo.gae_bingo         import ab_test
-from apps.link.models                 import Link
-from apps.order.models                import *
-from apps.product.shopify.models      import ProductShopify
-from apps.sibt.shopify.models         import SIBTShopify
-from apps.user.models                 import User
-from apps.wosib.actions               import WOSIBVoteAction
-from apps.wosib.models                import WOSIBInstance
-from apps.wosib.shopify.models        import WOSIBShopify
+from apps.action.models import ButtonLoadAction
+from apps.action.models import ScriptLoadAction
+from apps.app.models import *
+from apps.client.models import *
+from apps.gae_bingo.gae_bingo import ab_test
+from apps.link.models import Link
+from apps.order.models import *
+from apps.product.shopify.models import ProductShopify
+from apps.sibt.shopify.models import SIBTShopify
+from apps.user.models import User
+from apps.wosib.actions import WOSIBVoteAction
+from apps.wosib.models import WOSIBInstance
+from apps.wosib.shopify.models import WOSIBShopify
 
-from util.consts                      import *
-from util.helpers                     import *
-from util.shopify_helpers             import get_shopify_url
-from util.urihandler                  import URIHandler
+from util.consts import *
+from util.helpers import *
+from util.shopify_helpers import get_shopify_url
+from util.urihandler import URIHandler
 
 class WOSIBShopifyServeScript (URIHandler):
     # chucks out a javascript that helps detect events and show wizards

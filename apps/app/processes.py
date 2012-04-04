@@ -6,11 +6,11 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 from google.appengine.api import memcache, taskqueue, urlfetch
 from google.appengine.ext import webapp
 
-from apps.app.models      import App, ShareCounter
-from apps.user.models     import * 
-from util.consts          import *
-from util.helpers         import *
-from util.urihandler      import URIHandler
+from apps.app.models import App, ShareCounter
+from apps.user.models import * 
+from util.consts import *
+from util.helpers import *
+from util.urihandler import URIHandler
 
 
 class BatchRequest(URIHandler):

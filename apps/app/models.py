@@ -9,21 +9,21 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, random, urllib2, datetime
 
-from decimal              import *
-from django.utils         import simplejson as json
+from decimal import *
+from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.link.models     import Link
-from apps.user.models     import User
+from apps.link.models import Link
+from apps.user.models import User
 
-from util.consts          import *
-from util.helpers         import generate_uuid
-from util.helpers         import url 
-from util.model           import Model
+from util.consts import *
+from util.helpers import generate_uuid
+from util.helpers import url 
+from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 NUM_SHARE_SHARDS = 15

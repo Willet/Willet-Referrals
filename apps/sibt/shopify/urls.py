@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from apps.sibt.shopify.views     import *
+from apps.sibt.shopify.views import *
 
 urlpatterns = [
     (r'/s/shopify',             	SIBTShopifyWelcome),

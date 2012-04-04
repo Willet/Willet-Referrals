@@ -46,8 +46,8 @@ import errno
 try:
     from hashlib import sha1 as _sha, md5 as _md5
 except ImportError:
-    import sha
-    import md5
+ import sha
+ import md5
     _sha = sha.new
     _md5 = md5.new
 import hmac
@@ -61,7 +61,7 @@ except ImportError:
 
 # Build the appropriate socket wrapper for ssl
 try:
-    import ssl # python 2.6
+ import ssl # python 2.6
     ssl_SSLError = ssl.SSLError
     def _ssl_wrap_socket(sock, key_file, cert_file,
                          disable_validation, ca_certs):

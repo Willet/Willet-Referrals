@@ -6,15 +6,15 @@ __copyright__   = "Copyright 2011, Willet Inc."
 import logging, os
 import inspect
 
-from google.appengine.ext        import webapp
+from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
 from apps.client.models import Client
-from apps.user.models   import User
-from util.consts        import *
-from util.cookies       import LilCookies
-from util.gaesessions   import get_current_session
-from util.templates     import render 
+from apps.user.models import User
+from util.consts import *
+from util.cookies import LilCookies
+from util.gaesessions import get_current_session
+from util.templates import render 
 
 
 class URIHandler(webapp.RequestHandler):

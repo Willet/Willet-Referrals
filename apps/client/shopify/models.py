@@ -8,26 +8,26 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, urllib, urllib2
 
-from datetime               import datetime
-from decimal                import *
-from django.utils           import simplejson as json
-from google.appengine.api   import memcache
-from google.appengine.api   import urlfetch
-from google.appengine.api   import taskqueue
-from google.appengine.ext   import db
+from datetime import datetime
+from decimal import *
+from django.utils import simplejson as json
+from google.appengine.api import memcache
+from google.appengine.api import urlfetch
+from google.appengine.api import taskqueue
+from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from apps.client.models     import Client
-from apps.link.models       import Link 
+from apps.client.models import Client
+from apps.link.models import Link 
 from apps.product.shopify.models import ProductShopify
-from apps.user.models       import User
+from apps.user.models import User
 
-from util                   import httplib2
-from util.consts            import *
-from util.errors            import *
-from util.helpers           import generate_uuid
-from util.helpers           import url as build_url 
-from util.shopify_helpers   import get_shopify_url
+from util import httplib2
+from util.consts import *
+from util.errors import *
+from util.helpers import generate_uuid
+from util.helpers import url as build_url 
+from util.shopify_helpers import get_shopify_url
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
 # ------------------------------------------------------------------------------

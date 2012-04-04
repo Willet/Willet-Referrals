@@ -6,9 +6,9 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 import datetime
 import logging
 
-from google.appengine.ext   import db
-from apps.action.models     import Action
-from util.helpers           import generate_uuid
+from google.appengine.ext import db
+from apps.action.models import Action
+from util.helpers import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## GaeBingoAlt Subclass --------------------------------------------------------

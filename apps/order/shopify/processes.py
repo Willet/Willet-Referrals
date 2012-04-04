@@ -6,20 +6,20 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import hashlib
 import logging
 
-from django.utils                import simplejson as json
-from google.appengine.api        import urlfetch
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
 
-from apps.app.models             import App
-from apps.client.models          import get_client_by_uuid
-from apps.client.shopify.models  import ClientShopify
-from apps.order.shopify.models   import OrderShopify
+from apps.app.models import App
+from apps.client.models import get_client_by_uuid
+from apps.client.shopify.models import ClientShopify
+from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
-from apps.user.models            import User
-from apps.user.actions           import UserCreate
+from apps.user.models import User
+from apps.user.actions import UserCreate
 
-from util                        import httplib2
-from util.helpers                import *
-from util.urihandler             import URIHandler
+from util import httplib2
+from util.helpers import *
+from util.urihandler import URIHandler
 
 class CreateShopifyOrder(URIHandler):
     def get(self):
