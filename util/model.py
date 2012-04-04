@@ -166,11 +166,11 @@ class Model(db.Model):
         """
         obj = None
         key = cls.build_key(identifier)
+        method = 'magic' # huh? get() got an object without doing anything
 
         # look if identifier is the primary key
         data = memcache.get(key)
         if not data:
-            logging.debug('got nothing as primary key - try as secondary')
             # build_secondary_key will hash the param to match cache key format
             secondary_key = cls.build_secondary_key(identifier)
             # check if we can get anything by using identifier as secondary key
@@ -180,6 +180,7 @@ class Model(db.Model):
         if data:
             try:
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+                method = 'primary key'
             except ProtocolBuffer.ProtocolBufferDecodeError, e:
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
@@ -189,6 +190,7 @@ class Model(db.Model):
             try:
                 data = memcache.get(data) # look deeper into memcache
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+                method = 'secondary key'
             except ProtocolBuffer.ProtocolBufferDecodeError, e:
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
@@ -200,9 +202,11 @@ class Model(db.Model):
 
         # Save in the memcache when you pull it - it may never be saved
         if obj:
+            method = 'datastore'
+            logging.debug('model.get via %s => %r' % (method, obj))
             obj._memcache() # update memcache
         else:
-            pass
+            logging.warn('model.get DB miss for %s' % identifier)
             
         return obj
     

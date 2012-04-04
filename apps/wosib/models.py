@@ -120,7 +120,7 @@ class WOSIBInstance(Model):
         return cls.all().filter('link =', link).get()
 
     @classmethod
-    def get_by_user_and_app (user, app_):
+    def get_by_user_and_app (cls, user, app_):
         # returns only the most recent instance.
         # function makes sense only when one instance is active per user per store.
         return cls.all().filter('asker =', user).filter('app_ =', app_)\

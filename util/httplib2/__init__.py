@@ -46,8 +46,8 @@ import errno
 try:
     from hashlib import sha1 as _sha, md5 as _md5
 except ImportError:
- import sha
- import md5
+    import sha
+    import md5
     _sha = sha.new
     _md5 = md5.new
 import hmac
@@ -61,7 +61,7 @@ except ImportError:
 
 # Build the appropriate socket wrapper for ssl
 try:
- import ssl # python 2.6
+    import ssl # python 2.6
     ssl_SSLError = ssl.SSLError
     def _ssl_wrap_socket(sock, key_file, cert_file,
                          disable_validation, ca_certs):
@@ -177,7 +177,7 @@ DEFAULT_MAX_REDIRECTS = 5
 
 # Default CA certificates file bundled with httplib2.
 CA_CERTS = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "cacerts.txt")
+        os.path.dirname(os.path.abspath(__file__ )), "cacerts.txt")
 
 # Which headers are hop-by-hop headers by default
 HOP_BY_HOP = ['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade']
@@ -214,8 +214,8 @@ def urlnorm(uri):
 
 
 # Cache filename construction (original borrowed from Venus http://intertwingly.net/code/venus/)
-re_url_scheme = re.compile(r'^\w+://')
-re_slash = re.compile(r'[?/:|]+')
+re_url_scheme    = re.compile(r'^\w+://')
+re_slash         = re.compile(r'[?/:|]+')
 
 def safename(filename):
     """Return a filename suitable for the cache.
@@ -500,10 +500,10 @@ class DigestAuthentication(Authentication):
         qop = self.challenge.get('qop', 'auth')
         self.challenge['qop'] = ('auth' in [x.strip() for x in qop.split()]) and 'auth' or None
         if self.challenge['qop'] is None:
-            raise UnimplementedDigestAuthOptionError(_("Unsupported value for qop: %s." % qop))
+            raise UnimplementedDigestAuthOptionError( _("Unsupported value for qop: %s." % qop))
         self.challenge['algorithm'] = self.challenge.get('algorithm', 'MD5').upper()
         if self.challenge['algorithm'] != 'MD5':
-            raise UnimplementedDigestAuthOptionError(_("Unsupported value for algorithm: %s." % self.challenge['algorithm']))
+            raise UnimplementedDigestAuthOptionError( _("Unsupported value for algorithm: %s." % self.challenge['algorithm']))
         self.A1 = "".join([self.credentials[0], ":", self.challenge['realm'], ":", self.credentials[1]])
         self.challenge['nc'] = 1
 
@@ -513,7 +513,7 @@ class DigestAuthentication(Authentication):
         KD = lambda s, d: H("%s:%s" % (s, d))
         A2 = "".join([method, ":", request_uri])
         self.challenge['cnonce'] = cnonce or _cnonce()
-        request_digest = '"%s"' % KD(H(self.A1), "%s:%s:%s:%s:%s" % (self.challenge['nonce'],
+        request_digest  = '"%s"' % KD(H(self.A1), "%s:%s:%s:%s:%s" % (self.challenge['nonce'],
                     '%08x' % self.challenge['nc'],
                     self.challenge['cnonce'],
                     self.challenge['qop'], H(A2)
@@ -561,13 +561,13 @@ class HmacDigestAuthentication(Authentication):
             self.challenge['reason'] = 'unauthorized'
         self.challenge['salt'] = self.challenge.get('salt', '')
         if not self.challenge.get('snonce'):
-            raise UnimplementedHmacDigestAuthOptionError(_("The challenge doesn't contain a server nonce, or this one is empty."))
+            raise UnimplementedHmacDigestAuthOptionError( _("The challenge doesn't contain a server nonce, or this one is empty."))
         self.challenge['algorithm'] = self.challenge.get('algorithm', 'HMAC-SHA-1')
         if self.challenge['algorithm'] not in ['HMAC-SHA-1', 'HMAC-MD5']:
-            raise UnimplementedHmacDigestAuthOptionError(_("Unsupported value for algorithm: %s." % self.challenge['algorithm']))
+            raise UnimplementedHmacDigestAuthOptionError( _("Unsupported value for algorithm: %s." % self.challenge['algorithm']))
         self.challenge['pw-algorithm'] = self.challenge.get('pw-algorithm', 'SHA-1')
         if self.challenge['pw-algorithm'] not in ['SHA-1', 'MD5']:
-            raise UnimplementedHmacDigestAuthOptionError(_("Unsupported value for pw-algorithm: %s." % self.challenge['pw-algorithm']))
+            raise UnimplementedHmacDigestAuthOptionError( _("Unsupported value for pw-algorithm: %s." % self.challenge['pw-algorithm']))
         if self.challenge['algorithm'] == 'HMAC-MD5':
             self.hashmod = _md5
         else:
@@ -590,7 +590,7 @@ class HmacDigestAuthentication(Authentication):
         created = time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
         cnonce = _cnonce()
         request_digest = "%s:%s:%s:%s:%s" % (method, request_uri, cnonce, self.challenge['snonce'], headers_val)
-        request_digest = hmac.new(self.key, request_digest, self.hashmod).hexdigest().lower()
+        request_digest  = hmac.new(self.key, request_digest, self.hashmod).hexdigest().lower()
         headers['authorization'] = 'HMACDigest username="%s", realm="%s", snonce="%s", cnonce="%s", uri="%s", created="%s", response="%s", headers="%s"' % (
                 self.credentials[0],
                 self.challenge['realm'],
@@ -1190,13 +1190,13 @@ and more.
         if auth:
             if auth.response(response, body):
                 auth.request(method, request_uri, headers, body)
-                (response, content) = self._conn_request(conn, request_uri, method, body, headers)
+                (response, content) = self._conn_request(conn, request_uri, method, body, headers )
                 response._stale_digest = 1
 
         if response.status == 401:
             for authorization in self._auth_from_challenge(host, request_uri, headers, response, content):
                 authorization.request(method, request_uri, headers, body)
-                (response, content) = self._conn_request(conn, request_uri, method, body, headers,)
+                (response, content) = self._conn_request(conn, request_uri, method, body, headers, )
                 if response.status != 401:
                     self.authorizations.append(authorization)
                     authorization.response(response, body)
@@ -1208,7 +1208,7 @@ and more.
                 # remembering first to strip the ETag header and decrement our 'depth'
                 if redirections:
                     if not response.has_key('location') and response.status != 300:
-                        raise RedirectMissingLocation(_("Redirected but the response is missing a Location: header."), response, content)
+                        raise RedirectMissingLocation( _("Redirected but the response is missing a Location: header."), response, content)
                     # Fix-up relative redirects (which violate an RFC 2616 MUST)
                     if response.has_key('location'):
                         location = response['location']
@@ -1443,7 +1443,7 @@ a string that contains the response entity body.
                     response.reason = str(e)
                 elif isinstance(e, socket.timeout):
                     content = "Request Timeout"
-                    response = Response({
+                    response = Response( {
                             "content-type": "text/plain",
                             "status": "408",
                             "content-length": len(content)
@@ -1451,7 +1451,7 @@ a string that contains the response entity body.
                     response.reason = "Request Timeout"
                 else:
                     content = str(e)
-                    response = Response({
+                    response = Response( {
                             "content-type": "text/plain",
                             "status": "400",
                             "content-length": len(content)
