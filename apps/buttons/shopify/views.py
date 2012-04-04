@@ -113,7 +113,7 @@ class SmartButtonsShopifyUpgrade(URIHandler):
             "price":        price,
             "name":         "ShopConnection",
             "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
-            "test":         not USING_DEV_SERVER
+            "test":         USING_DEV_SERVER
             #"trial_days":   0
         })
 
