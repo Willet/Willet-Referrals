@@ -30,12 +30,12 @@ NUM_SHARE_SHARDS = 15
 
 
 class App(Model, polymodel.PolyModel):
-    
+
     memcache_class = 'app' # static memcache class name
     created = db.DateTimeProperty(auto_now_add=True) # Datetime when this model was put into the DB
     client = db.ReferenceProperty(db.Model, collection_name='apps') # Person who created/installed this App
     old_client = db.ReferenceProperty(db.Model, collection_name='deleted_apps') # Defaults to None, only set if this App has been deleted
-    cached_clicks_count = db.IntegerProperty( default = 0 ) # For Apps that use a click counter, this is the cached amount
+    cached_clicks_count = db.IntegerProperty(default=0) # For Apps that use a click counter, this is the cached amount
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 

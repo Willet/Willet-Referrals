@@ -11,8 +11,9 @@ from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.buttons.shopify.models import ButtonsShopify
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
+from apps.buttons.shopify.models import ButtonsShopify
+from apps.email.models import Email
 from apps.link.models import Link
 
 from util.consts import *
@@ -387,11 +388,7 @@ class TrackRemoteError(URIHandler):
         error = self.request.get('error')
         script = self.request.get('script')
         stack_trace = self.request.get('st')
-        mail.send_mail(
-            sender = 'rf.rs error reporting <Barbara@rf.rs>',
-            to = 'fraser@getwillet.com',
-            subject = 'Javascript callback error',
-            body = """We encountered an error
+        msg = """Client JS error:
                 Page:       %s
                 Script:     %s
                 User Agent: %s
@@ -407,5 +404,6 @@ class TrackRemoteError(URIHandler):
                     stack_trace
             )
         )
+        Email.emailDevTeam()
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
