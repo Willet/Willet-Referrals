@@ -55,12 +55,12 @@ class BatchRequest(URIHandler):
         # If reached batch size, start another batch at the next offset
         if len(apps) == batch_size:
             p = {
-                'batch_size':       batch_size,
-                'offset':           offset + batch,
-                'app_cls':          app_cls,
-                'target_version':   target_version,
-                'method':           method,
-                'params':           self.request.get('params')
+                'batch_size': batch_size,
+                'offset': offset + batch,
+                'app_cls': app_cls,
+                'target_version': target_version,
+                'method': method,
+                'params': self.request.get('params')
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
@@ -73,14 +73,17 @@ class BatchRequest(URIHandler):
                     continue
                 getattr(app, method)()
             except Exception, e:
-                logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__, app.__class__.__name__, method, e))
+                logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__,
+                                                               app.__class__.__name__,
+                                                               method,
+                                                               e))
                 continue
 
 
 class AppClicksCounter(URIHandler):
     def post(self): 
         app = App.get_by_uuid(self.request.get('app_uuid'))
-        
+
         app.cached_clicks_count = 0
         if hasattr(app, 'links_'):
             for l in app.links_:

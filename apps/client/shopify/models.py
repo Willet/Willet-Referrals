@@ -30,19 +30,15 @@ from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
-# ------------------------------------------------------------------------------
-# ClientShopify Class Definition -----------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# ClientShopify Class Definition ----------------------------------------------
+# -----------------------------------------------------------------------------
 class ClientShopify(Client):
+    """A Client of a Shopify website.
     
-    # User
-    # merchant = MemcacheReferenceProperty(db.Model, collection_name = "shopify_stores")
-    # hint: nobody uses the shopify_stores back-reference.
-
-    # Store properties
-    # name = db.StringProperty(indexed = False)
-    # url = db.LinkProperty  (indexed = True)
-    # domain = db.LinkProperty  (indexed = True)
+    ClientShopify models are meant for Shopify shops only - use Client to 
+    store information about stores without a specific platform.
+    """
     token = db.StringProperty(default = '')
     id = db.StringProperty(indexed = True)
 
@@ -131,14 +127,15 @@ class ClientShopify(Client):
         return ClientShopify.all().filter('uuid =', uuid).get()
 
     @staticmethod
-    def get_or_create(store_url, store_token='', request_handler=None, app_type=""):
+    def get_or_create(store_url, store_token='',
+                      request_handler=None, app_type=""):
         store = ClientShopify.get_by_url(store_url)
 
         if not store:
             store = ClientShopify.create(store_url, 
-                                          store_token, 
-                                          request_handler,
-                                          app_type)
+                                         store_token, 
+                                         request_handler,
+                                         app_type)
         return store
 
     def get_products(self, app_type):
@@ -182,7 +179,7 @@ class ClientShopify(Client):
         for p in products:
             ProductShopify.create_from_json(self, p) 
 
-# Shopify API Calls  -----------------------------------------------------------
+# Shopify API Calls  ----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):
     
     # Fix inputs (legacy)

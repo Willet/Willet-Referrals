@@ -1,19 +1,13 @@
 #!/usr/bin/python
 
-# client models
-# data models for our clients and associated methods
+"""Client models: data models for our clients and associated methods."""
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib, logging, urllib, urllib2
+import logging
 
-from datetime import datetime
 from decimal import *
-from django.utils import simplejson as json
-from google.appengine.api import memcache
-from google.appengine.api import urlfetch
-from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
@@ -25,11 +19,15 @@ from util.helpers import generate_uuid
 
 
 class Client(Model, polymodel.PolyModel):
-    """A Client or the website"""
-    creation_time = db.DateTimeProperty(auto_now_add = True, indexed = False)
-    email = db.StringProperty  (indexed=True)
+    """A Client of the website.
+    
+    Client models can be for any platform - use ClientShopify to easily
+    authenticate with Shopify shops.
+    """
+    creation_time = db.DateTimeProperty(auto_now_add=True, indexed=False)
+    email = db.StringProperty(indexed=True)
 
-    merchant = MemcacheReferenceProperty(db.Model, collection_name = "stores")
+    merchant = MemcacheReferenceProperty(db.Model, collection_name="stores")
     # Store properties
     name = db.StringProperty(indexed = False)
     url = db.LinkProperty  (indexed = True)
@@ -38,7 +36,9 @@ class Client(Model, polymodel.PolyModel):
     _memcache_fields = ['domain', 'email', 'url']
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = Client.build_secondary_key(kwargs['email']) if 'email' in kwargs else None 
+        self._memcache_key = None
+        if 'email' in kwargs:
+            self._memcache_key = Client.build_secondary_key(kwargs['email'])
         super(Client, self).__init__(*args, **kwargs)
     
     def _validate_self(self):
@@ -59,26 +59,24 @@ class Client(Model, polymodel.PolyModel):
         uuid = Client.build_secondary_key(url)
 
         if not user:
-            raise ValueError ("User is missing")
+            raise ValueError("User is missing")
         
         try:
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
-        except AttributeError, e:
+        except AttributeError:
             msg = "User supplied must have at least name and one email address"
-            logging.error (msg, exc_info=True)
-            raise AttributeError (msg) # can't really skip that
+            logging.error(msg, exc_info=True)
+            raise AttributeError(msg)  # can't really skip that
 
         # Now, make the store
-        client = Client(
-            key_name=uuid,
-            uuid=uuid,
-            name=user_name,
-            email=user_email,
-            url=url,
-            domain=url, # I really don't see the difference.
-            merchant=user
-        )
+        client = Client(key_name=uuid,
+                        uuid=uuid,
+                        name=user_name,
+                        email=user_email,
+                        url=url,
+                        domain=url,  # I really don't see the difference.
+                        merchant=user)
         client.put()
 
         return client
@@ -87,15 +85,14 @@ class Client(Model, polymodel.PolyModel):
     def get_or_create (url, request_handler=None, user=None):
         client = Client.get_by_url(url)
         if not client:
-            client = Client.create(
-                url,
-                request_handler,
-                user
-            )
+            client = Client.create(url=url,
+                                   request_handler=request_handler,
+                                   user=user)
         return client
 
+    # Retrievers --------------------------------------------------------------
     @classmethod
-    def get_by_url (cls, url):
+    def get_by_url(cls, url):
         res = cls.get(url) # wild try w/ memcache?
         if res:
             return res
@@ -103,10 +100,9 @@ class Client(Model, polymodel.PolyModel):
         res = db.Query(cls).filter('url =', url).get()
         if res:
             return res
-        # domain is the less-authoritative field, but if we need to use it, we will
+        # domain is the less-authoritative field, but try it anyway
         return db.Query(cls).filter('domain =', url).get()
 
-    # Retrievers ------------------------------------------------------------------------------------
     @classmethod
     def get_by_email(cls, email):
         client = cls.get(email)
@@ -118,10 +114,11 @@ class Client(Model, polymodel.PolyModel):
     def get_by_uuid(cls, uuid):
         return cls.all().filter('uuid =', uuid).get()
 
-    # Mailing list methods --------------------------------------------------------------------------
+    # Mailing list methods ----------------------------------------------------
     def subscribe_to_mailing_list(self, list_name='', list_id=None):
-        """ Add client to MailChimp
-             MailChimp API Docs: http://apidocs.mailchimp.com/api/1.3/listsubscribe.func.php
+        """Add client to MailChimp.
+        
+        MailChimp API Docs: http://apidocs.mailchimp.com/api/1.3/listsubscribe.func.php
         """
         resp = {}
         first_name, last_name = '',''

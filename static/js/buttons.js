@@ -322,7 +322,7 @@
                     } else {  
                         // Didn't work, just silently bail
                         console.log("Buttons: request for product.json failed");
-                    }  
+                    }
                 } else {
                     console.log("state is not 4 yet");
                 }

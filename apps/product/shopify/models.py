@@ -41,13 +41,11 @@ class ProductShopify(Product):
                 images = [str(image['src']) for image in data['images']]
             
             # Make the product
-            product = ProductShopify(
-                    key_name = uuid,
-                    uuid = uuid,
-                    client = client,
-                    resource_url = url,
-                    images = images
-            )
+            product = ProductShopify(key_name=uuid,
+                                     uuid=uuid,
+                                     client=client,
+                                     resource_url=url,
+                                     images=images)
 
         # Now, update it with info.
         # update_from_json will PUT the obj.
@@ -78,8 +76,8 @@ class ProductShopify(Product):
             try:
                 # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
-                        url = '%s.json' % url,
-                        method = urlfetch.GET
+                        url='%s.json' % url,
+                        method=urlfetch.GET
                 )
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
