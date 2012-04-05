@@ -14,6 +14,6 @@ urlpatterns = [
 
     (r'/b/shopify/instructions',     	ButtonsShopifyInstructions),
 
-    (r'/b/shopify/error.html',     		ButtonsShopifyError),
+    (r'/b/shopify/error.html',     		ButtonsShopifyInstallError),
 ]
 

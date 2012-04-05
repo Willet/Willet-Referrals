@@ -45,7 +45,7 @@ class ButtonsShopifyWelcome(URIHandler):
                 shop_name    = client.name
 
             # Fetch or create the app
-            app    = ButtonsShopify.get_or_create_app(client, token=token)
+            app = ButtonsShopify.get_or_create_app(client, token=token)
 
             # Find out what the app should cost
             price = app.get_price()
@@ -64,7 +64,7 @@ class ButtonsShopifyWelcome(URIHandler):
             logging.error('Smart-buttons install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                'Smart-buttons install error, may require reinstall: %s, %s, %s, %s' % 
                     (client_email, shop_owner, shop_url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('ButtonsShopifyInstallError'), e))
@@ -120,7 +120,7 @@ class ButtonsShopifyUpgrade(URIHandler):
             logging.error('Smart-buttons install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                'Smart-buttons install error, may require reinstall: %s, %s, %s, %s' % 
                     (client_email, shop_owner, shop_url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('ButtonsShopifyInstallError'), e))
@@ -178,7 +178,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
             self.response.out.write(self.render_page('welcome.html', template_values))
 
         except Exception, e:
-            logging.error('SIbt install error, may require reinstall', exc_info=True)
+            logging.error('Smart-buttons install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
                 'Smart-buttons install error, may require reinstall: %s, %s, %s, %s' % 
