@@ -21,44 +21,64 @@ class ButtonsShopifyBeta(URIHandler):
         
         self.response.out.write(self.render_page('beta.html', template_values))
 
-class ButtonsShopifyApproveBilling(URIHandler):
-    """ Where a customer is directed after they accept an app install through Shopify 
-
-    Gets billing confirmation_url from Shopify, then redirects user there
-    """
-    def get(self): 
-        shop   = self.request.get('shop')
-        token  = self.request.get('t')
-
-        # Fetch the client
-        client = ClientShopify.get_by_url( shop )
-        
-        # Fetch or create the app
-        app, confirm_url  = get_or_create_buttons_shopify_app(client, token=token)
-
 class ButtonsShopifyWelcome(URIHandler):
-    def get( self ):
+    """ After the installation process, provide an opportunity to upgrade"""
+    def get(self):
         # TODO: put this somewhere smarter
         shop   = self.request.get( 'shop' )
         token  = self.request.get( 't' )
 
         # Fetch the client
         client = ClientShopify.get_by_url( shop )
-    
+
         # Fetch or create the app
         app    = ButtonsShopify.get_or_create_app(client, token=token)
 
-        # Render the page
+        # Find out what the app should cost
+        # TODO: We should probably store the price so that it doesn't change between now and then.
+        #       However, we can't let it be controlled client-side.
+        price = app.get_price()
+
         template_values = {
-            'app'          : app,
-            'shop_owner'   : client.merchant.get_full_name(),
-            'shop_name'    : client.name
-            #'continue_url' : #####!!!!!##### # TODO: What is this for
+            'app'        : app,
+            'shop_owner' : client.merchant.get_full_name(),
+            'shop_name'  : client.name,
+            'price'      : price,
+            'shop_url'   : shop
         }
+        
+        self.response.out.write(self.render_page('upsell.html', template_values))
 
-        self.response.out.write(self.render_page('welcome.html', template_values))
+class ButtonsShopifyUpgrade(URIHandler):
+    """ Starts the upgrade process """
+    def get(self):
+        shop_url = self.request.get("shop_url")
 
-class SmartButtonsShopifyBillingCallback(URIHandler):
+        existing_app = ButtonsShopify.get_by_url(shop_url)
+        if not existing_app:
+            logging.error("error calling billing callback: 'existing_app' not found")
+
+        price = existing_app.get_price()
+
+        # Start the billing process
+        confirm_url = existing_app.setup_recurring_billing({
+            "price":        price,
+            "name":         "ShopConnection",
+            "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
+            "test":         USING_DEV_SERVER
+            #"trial_days":   0
+        })
+
+        existing_app.put()
+
+        if confirm_url:
+            self.redirect(confirm_url)
+            return
+        else:
+            # Can this even occur?
+            raise ShopifyBillingError('No confirmation URL provided by Shopify API', {})
+
+class ButtonsShopifyBillingCallback(URIHandler):
     """ When a customer confirms / denies billing, they are redirected here
 
     Activates billing with Shopify, then redirects customer to installation instructions
@@ -95,43 +115,26 @@ class SmartButtonsShopifyBillingCallback(URIHandler):
             'shop_owner' : client.merchant.get_full_name(),
             'shop_name'  : client.name
         }
-        self.response.out.write(self.render_page('smart-welcome.html', template_values))
+        self.response.out.write(self.render_page('welcome.html', template_values))
 
-class SmartButtonsShopifyUpgrade(URIHandler):
-    """ Starts the upgrade process """
-    def get(self):
-        shop_url = self.request.get("shop_url")
+class ButtonsShopifyInstructions(URIHandler):
+    def get( self ):
+        # TODO: put this somewhere smarter
+        shop   = self.request.get( 'shop' )
+        token  = self.request.get( 't' )
 
-        existing_app = ButtonsShopify.get_by_url(shop_url)
-        if not existing_app:
-            logging.error("error calling billing callback: 'existing_app' not found")
+        # Fetch the client
+        client = ClientShopify.get_by_url( shop )
+    
+        # Fetch or create the app
+        app    = ButtonsShopify.get_or_create_app(client, token=token)
 
-        price = existing_app.get_price()
+        # Render the page
+        template_values = {
+            'app'          : app,
+            'shop_owner'   : client.merchant.get_full_name(),
+            'shop_name'    : client.name
+            #'continue_url' : #####!!!!!##### # TODO: What is this for
+        }
 
-        # Start the billing process
-        confirm_url = existing_app.setup_recurring_billing({
-            "price":        price,
-            "name":         "ShopConnection",
-            "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
-            "test":         USING_DEV_SERVER
-            #"trial_days":   0
-        })
-
-        existing_app.put()
-
-        if confirm_url:
-            self.redirect(confirm_url)
-            return
-        else:
-            # Can this even occur?
-            raise ShopifyBillingError('No confirmation URL provided by Shopify API', {})
-
-class SmartButtonsShopifyWelcome(URIHandler):
-    """ Shows the user basic installation instructions """
-    def get(self):
-        pass
-
-class SmartButtonsShopifyBeta(URIHandler):
-    """ If an existing customer clicks through from Shopify """
-    def get(self):
-        self.response.out.write(self.render_page('smart-beta.html', {}))
+        self.response.out.write(self.render_page('welcome.html', template_values))
