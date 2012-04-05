@@ -1,7 +1,7 @@
-/**
- * Buttons JS. Copyright Willet Inc, 2012
- */
 ;(function () {
+    /**
+     * Buttons JS. Copyright Willet Inc, 2012
+     */
     "use strict";
     var here = window.location.href.split('#')[0] + '.json';
     var console = { log: function () {}, error: function () {} };
@@ -40,9 +40,10 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
+    var button_div = document.getElementById('_willet_buttons_app');
+
     var _init_buttons = function(data) {
         console.log("Buttons: finding buttons placeholder on page");
-        var button_div = document.getElementById('_willet_buttons_app');
 
         if (button_div && window._willet_iframe_loaded === undefined) {
             console.log("Buttons: found placeholder, attaching iframe");
