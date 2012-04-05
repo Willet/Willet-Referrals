@@ -34,7 +34,7 @@ def async_model_put(model):
 
 
 class Model(db.Model):
-    """A generic extension of db.Model"""
+    """A generic extension of db.Model which transparently supports memcaching"""
 
     # Unique identifier for memcache and DB key
     uuid = db.StringProperty(indexed=True)
@@ -181,7 +181,6 @@ class Model(db.Model):
         except Exception, e:
             logging.error("Error setting memcache: %s" % e, exc_info=True)
 # end class
-
 
 class ObjectListProperty(db.ListProperty):
     """A property that stores a list of serializable class instances.

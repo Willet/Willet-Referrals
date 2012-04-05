@@ -10,3 +10,4 @@ util/local_consts.py
 .ropeproject
 aeenv.py
 *.DS_Store
+*.idea
