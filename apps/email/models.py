@@ -8,8 +8,10 @@ Date:  March 2011
 import logging
 import os
 
-from google.appengine.api        import taskqueue
-from google.appengine.ext.webapp import template
+from google.appengine.api              import taskqueue
+from google.appengine.api.app_identity import get_application_id
+from google.appengine.ext.webapp       import template
+
 from util.consts import *
 from util.helpers import url 
 
@@ -21,6 +23,15 @@ NICK      = 'nick@getwillet.com'
 DEV_TEAM  = '%s, %s, %s' % (FRASER, NICK, BRIAN)
 FROM_ADDR = INFO
 
+DEV_APPS = {
+    # see above for key names
+    INFO: [],
+    FRASER: ['fraser-willet'],
+    BRIAN: ['brian-willet', 'brian-willet2', 'brian-willet3', 'brian-willet4'],
+    NICK: ['willet-nterwoord'],
+    
+    DEV_TEAM: [APP_LIVE] # email everyone if on live server
+}
 
 class Email():
     """ All email methods are held in this class.  All emails are routed
@@ -29,15 +40,20 @@ class Email():
     """
     @staticmethod
     def emailDevTeam(msg):
-        to_addr = DEV_TEAM
+        ''' If on a dev site, this function will only email its site owner (see DEV_APPS). '''
+        to_addrs = []
         subject = '[Willet]'
         body    = '<p> %s </p>' % msg
- 
-        Email.send_email(from_address=FROM_ADDR,
-                         to_address=to_addr,
-                         subject=subject,
-                         body=body,
-                         to_name='Dev Team')
+        
+        appname = get_application_id()
+        to_addrs = [dev_member for dev_member in DEV_APPS if appname in DEV_APPS[dev_member]]
+        
+        if to_addrs:
+            Email.send_email(from_address=FROM_ADDR,
+                             to_address=','.join(to_addrs),
+                             subject=subject,
+                             body=body,
+                             to_name='Dev Team')
 
     @staticmethod
     def welcomeClient(app_name, to_addr, name, store_name):
