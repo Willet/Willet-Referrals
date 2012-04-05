@@ -9,7 +9,8 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 import sys
 import hashlib
 import logging
-import datetime
+from datetime import datetime, timedelta
+from urllib import urlencode
 
 from django.utils         import simplejson as json
 from google.appengine.ext import db
@@ -44,25 +45,36 @@ class ButtonsShopify(Buttons, AppShopify):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
 
     def get_price(self):
-        result = self._call_Shopify_API("GET", "orders/count.json")
-        count = result["count"]
+        now = datetime.now()
+        query_params = {
+            "status": "closed", #assuming "closed" means completed
+            "created_at_min": (now - timedelta(days=365)).strftime("%Y-%m-%d %H:%M"),
+            "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
+        }
+
+        urlencoded_params = "?" + urlencode(query_params)
+
+        result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
+        count = int(result["count"]) / 12 #average over the year
 
         if 0 <= count < 10:
-            return 0.99 #non-profit
+            price = 0.99 #non-profit
         elif 10 <= count < 100:
-            return 2.99 #basic
+            price = 2.99 #basic
         elif 100 <= count < 1000:
-            return 5.99 #professional
+            price = 5.99 #professional
         elif 1000 <= count < 10000:
-            return 9.99 #business
+            price = 9.99 #business
         elif 10000 <= count < 100000:
-            return 17.99 #unlimited
+            price = 17.99 #unlimited
         elif 100000 <= count:
-            return 19.99 #enterprise
+            price = 19.99 #enterprise
         else:
             raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
 
-        return method1(count)
+        self.recurring_billing_price = str(price)
+        self.put()
+        return price
 
     def do_install( self ):
         """ Install Buttons scripts and webhooks for this store """

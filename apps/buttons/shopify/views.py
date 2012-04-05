@@ -35,8 +35,6 @@ class ButtonsShopifyWelcome(URIHandler):
         app    = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Find out what the app should cost
-        # TODO: We should probably store the price so that it doesn't change between now and then.
-        #       However, we can't let it be controlled client-side.
         price = app.get_price()
 
         template_values = {
@@ -56,15 +54,20 @@ class ButtonsShopifyUpgrade(URIHandler):
 
         existing_app = ButtonsShopify.get_by_url(shop_url)
         if not existing_app:
-            logging.error("error calling billing callback: 'existing_app' not found")
+            logging.error("error calling billing callback: 'existing_app' not found. Install first?")
 
-        price = existing_app.get_price()
+        logging.info("Billing price: %s" % existing_app.recurring_billing_price)
+
+        if existing_app.recurring_billing_price:
+            price = existing_app.recurring_billing_price
+        else:
+            price = existing_app.get_price()
 
         # Start the billing process
         confirm_url = existing_app.setup_recurring_billing({
             "price":        price,
             "name":         "ShopConnection",
-            "return_url":   "%s/sb/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
+            "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
             "test":         USING_DEV_SERVER
             #"trial_days":   0
         })
