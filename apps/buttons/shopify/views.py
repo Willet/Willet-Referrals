@@ -208,7 +208,7 @@ class ButtonsShopifyInstructions(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html', template_values))
 
-class ButtonsShopifyError(URIHandler):
+class ButtonsShopifyInstallError(URIHandler):
     def get (self):
         """ Displays an error page for when the Buttons app fails to install or upgrade. 
             Error emails are not handled by this page. 
