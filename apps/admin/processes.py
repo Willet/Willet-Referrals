@@ -404,6 +404,6 @@ class TrackRemoteError(URIHandler):
                     stack_trace
             )
         )
-        Email.emailDevTeam()
+        Email.emailDevTeam(msg)
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
