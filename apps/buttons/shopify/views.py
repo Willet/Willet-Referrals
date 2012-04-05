@@ -11,6 +11,8 @@ from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
 from util.errors                    import ShopifyBillingError
 from util.urihandler                import URIHandler
+from apps.email.models              import Email
+from util.helpers                   import url as build_url
 
 class ButtonsShopifyBeta(URIHandler):
     """ If an existing customer clicks through from Shopify """
@@ -24,13 +26,23 @@ class ButtonsShopifyBeta(URIHandler):
 class ButtonsShopifyWelcome(URIHandler):
     """ After the installation process, provide an opportunity to upgrade"""
     def get(self):
+        client_email = ''
+        shop_owner = ''
+        shop_name = ''
+        shop_url = ''
         try:
             # TODO: put this somewhere smarter
-            shop   = self.request.get( 'shop' )
-            token  = self.request.get( 't' )
+            shop_url = self.request.get( 'shop' )
+            token = self.request.get( 't' )
 
             # Fetch the client
-            client = ClientShopify.get_by_url( shop )
+            client       = ClientShopify.get_by_url( shop_url )
+            shop_owner   = 'Shopify Merchant'
+            shop_name    = 'Your Shopify Store'
+            if client is not None and client.merchant is not None:
+                client_email = client.email
+                shop_owner   = client.merchant.get_full_name()
+                shop_name    = client.name
 
             # Fetch or create the app
             app    = ButtonsShopify.get_or_create_app(client, token=token)
@@ -40,20 +52,20 @@ class ButtonsShopifyWelcome(URIHandler):
 
             template_values = {
                 'app'        : app,
-                'shop_owner' : client.merchant.get_full_name(),
-                'shop_name'  : client.name,
+                'shop_owner' : shop_owner,
+                'shop_name'  : shop_name,
                 'price'      : price,
-                'shop_url'   : shop,
+                'shop_url'   : shop_url,
                 'token'      : token,
             }
             
             self.response.out.write(self.render_page('upsell.html', template_values))
         except Exception, e:
-            logging.error('SIbt install error, may require reinstall', exc_info=True)
+            logging.error('Smart-buttons install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
                 'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
-                    (client_email, shop_owner, client.url, shop_name)
+                    (client_email, shop_owner, shop_url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('ButtonsShopifyInstallError'), e))
             return
@@ -61,12 +73,26 @@ class ButtonsShopifyWelcome(URIHandler):
 class ButtonsShopifyUpgrade(URIHandler):
     """ Starts the upgrade process """
     def get(self):
+        client_email = ''
+        shop_owner = ''
+        shop_name = ''
+        shop_url = ''
         try:
             shop_url = self.request.get("shop_url")
 
             existing_app = ButtonsShopify.get_by_url(shop_url)
             if not existing_app:
                 logging.error("error calling billing callback: 'existing_app' not found. Install first?")
+
+            # Fetch the client
+            client       = ClientShopify.get_by_id(existing_app.store_id)
+            shop_owner   = 'Shopify Merchant'
+            shop_name    = 'Your Shopify Store'
+            if client is not None and client.merchant is not None:
+                client_email = client.email
+                shop_owner   = client.merchant.get_full_name()
+                shop_name    = client.name
+                shop_url     = client.url 
 
             if existing_app.recurring_billing_price:
                 price = existing_app.recurring_billing_price
@@ -91,11 +117,11 @@ class ButtonsShopifyUpgrade(URIHandler):
                 raise ShopifyBillingError('No confirmation URL provided by Shopify API', {})
 
         except Exception, e:
-            logging.error('SIbt install error, may require reinstall', exc_info=True)
+            logging.error('Smart-buttons install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
                 'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
-                    (client_email, shop_owner, client.url, shop_name)
+                    (client_email, shop_owner, shop_url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('ButtonsShopifyInstallError'), e))
             return
@@ -106,9 +132,23 @@ class ButtonsShopifyBillingCallback(URIHandler):
     Activates billing with Shopify, then redirects customer to installation instructions
     """
     def get(self):
+        client_email = ''
+        shop_owner = ''
+        shop_name = ''
+        shop_url = ''
         try:
             app_uuid =self.request.get('app_uuid')
             app = ButtonsShopify.get_by_uuid(app_uuid)
+
+            # Fetch the client
+            client       = ClientShopify.get_by_id(app.store_id)
+            shop_owner   = 'Shopify Merchant'
+            shop_name    = 'Your Shopify Store'
+            if client is not None and client.merchant is not None:
+                client_email = client.email
+                shop_owner   = client.merchant.get_full_name()
+                shop_name    = client.name
+                shop_url     = client.url 
 
             if not app:
                 logging.error("error calling billing callback: 'app' not found")
@@ -128,15 +168,12 @@ class ButtonsShopifyBillingCallback(URIHandler):
                 app.do_upgrade()
             else:
                 raise ShopifyBillingError('Charge id in request does not match expected charge id', app.recurring_billing_id)
-
-            # Fetch the client
-            client = ClientShopify.get_by_id(app.store_id)
-
+            
             # Render the page
             template_values = {
                 'app'        : app,
-                'shop_owner' : client.merchant.get_full_name(),
-                'shop_name'  : client.name
+                'shop_owner' : shop_owner,
+                'shop_name'  : shop_name
             }
             self.response.out.write(self.render_page('welcome.html', template_values))
 
@@ -144,8 +181,8 @@ class ButtonsShopifyBillingCallback(URIHandler):
             logging.error('SIbt install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
-                    (client_email, shop_owner, client.url, shop_name)
+                'Smart-buttons install error, may require reinstall: %s, %s, %s, %s' % 
+                    (client_email, shop_owner, shop_url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('ButtonsShopifyInstallError'), e))
             return

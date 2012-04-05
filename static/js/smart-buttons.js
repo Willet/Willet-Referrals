@@ -272,9 +272,9 @@ var _willet = (function(me) {
     // Private functions
     var xHasKeyY = function(dict, key) {
         if (dict[key]) {
-            return true
+            return true;
         } else {
-            return false
+            return false;
         }
     };
 
