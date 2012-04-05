@@ -87,6 +87,7 @@ actions_to_average = [
 # removing duplicates for the lazy
 actions_to_average = list(set(actions_to_average))
 
+
 class AnalyticsTimeSlice(db.Expando):
     start = db.DateTimeProperty()
     end = db.DateTimeProperty()
@@ -109,6 +110,7 @@ class AnalyticsTimeSlice(db.Expando):
 
     def __str__(self):
         return '%s-%s' % (self.__class__.__name__, self.start)
+
 
 class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
     """Generic Time Slice
@@ -164,21 +166,7 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
         return cls._get_from_datastore(app_, start)
-        #key = cls.build_key(app_, start)
-        #logging.debug('Model::get(): Pulling %s from memcache.' % key)
-        #data = memcache.get(key)
-        #if not data:
-        #    logging.debug('%s::get(): %s not found in memcache, \
-        #            hitting datastore.' % (cls, key))
-        #    entity = cls._get_from_datastore(app_, start)
-        #    if entity:
-        #        logging.debug('setting new memcache entity: %s' % key)
-        #        memcache.set(key, db.model_to_protobuf(entity).Encode(), 
-        #                time=MEMCACHE_TIMEOUT)
-        #    return entity
-        #else:
-        #    logging.debug('Model::get(): %s found in memcache!' % key)
-        #    return db.model_from_protobuf(entity_pb.EntityProto(data))
+
 
 class AppAnalyticsHourSlice(AppAnalyticsTimeSlice):
     """A TimeSlice is a period of time with a start and end datetime that 
@@ -211,6 +199,7 @@ class AppAnalyticsHourSlice(AppAnalyticsTimeSlice):
 
         return ahs, created
 
+
 class AppAnalyticsDaySlice(AppAnalyticsTimeSlice):
     @classmethod
     def create(cls, app_, start, put=True):
@@ -232,6 +221,7 @@ class AppAnalyticsDaySlice(AppAnalyticsTimeSlice):
             created = True
 
         return ahs, created
+
 
 class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
     def put(self):
@@ -271,17 +261,7 @@ class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
         Also, should it be: get_from_datastore OR _get_from_datastore?
         """
         return cls._get_from_datastore(start)
-        #key = cls.build_key(start)
-        #logging.debug('Model::get(): Pulling %s from memcache.' % key)
-        #data = memcache.get(key)
-        #if not data:
-        #    entity = cls._get_from_datastore(start)
-        #    if entity:
-        #        memcache.set(key, db.model_to_protobuf(entity).Encode(), 
-        #                time=MEMCACHE_TIMEOUT)
-        #    return entity
-        #else:
-        #    return db.model_from_protobuf(entity_pb.EntityProto(data))
+
 
 class GlobalAnalyticsHourSlice(GlobalAnalyticsTimeSlice):
     @classmethod
@@ -302,6 +282,7 @@ class GlobalAnalyticsHourSlice(GlobalAnalyticsTimeSlice):
             created = True
         return gats, created
 
+
 class GlobalAnalyticsDaySlice(GlobalAnalyticsTimeSlice):
     @classmethod
     def create(cls, start, put=True):
@@ -320,4 +301,3 @@ class GlobalAnalyticsDaySlice(GlobalAnalyticsTimeSlice):
             gats = cls.create(start, put=put)
             created = True
         return gats, created
-
