@@ -80,7 +80,7 @@ var _willet = (function(me) {
                     link.style.marginRight = '5px';
                     link.style.marginTop = 0;
 
-                    link.onload = function() {
+                    link.onclick = function() {
                         itemShared("Tumblr");
                     };
 
@@ -140,8 +140,8 @@ var _willet = (function(me) {
                     link.className = "pin-it-button";
                     link.innerHTML = "Pin It";
 
-                    link.onload = function() {
-                        itemShared("Tumblr");
+                    link.onclick = function() {
+                        itemShared("Pinterest");
                     };
 
                     link.setAttribute('count-layout', "horizontal");
@@ -257,8 +257,8 @@ var _willet = (function(me) {
                     link.id = "FancyButton";
                     link.href = u;
 
-                    link.onload = function() {
-                        itemShared("Tumblr");
+                    link.onclick = function() {
+                        itemShared("Fancy");
                     };
                     
                     link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
