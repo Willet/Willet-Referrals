@@ -47,7 +47,6 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_price(self):
         now = datetime.now()
         query_params = {
-            "status": "closed", #assuming "closed" means completed
             "created_at_min": (now - timedelta(days=365)).strftime("%Y-%m-%d %H:%M"),
             "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
         }

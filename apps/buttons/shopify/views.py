@@ -42,7 +42,8 @@ class ButtonsShopifyWelcome(URIHandler):
             'shop_owner' : client.merchant.get_full_name(),
             'shop_name'  : client.name,
             'price'      : price,
-            'shop_url'   : shop
+            'shop_url'   : shop,
+            'token'      : token,
         }
         
         self.response.out.write(self.render_page('upsell.html', template_values))
