@@ -11,19 +11,19 @@ import hashlib
 import datetime
 import re
 
-from django.utils           import simplejson as json
-from google.appengine.api   import urlfetch
-from google.appengine.ext   import db
+from django.utils             import simplejson as json
+from google.appengine.api     import urlfetch
+from google.appengine.ext     import db
 from google.appengine.runtime import DeadlineExceededError
 
-from apps.app.models        import App
-from apps.email.models      import Email
+from apps.app.models          import App
+from apps.email.models        import Email
 
-from util                   import httplib2
-from util.consts            import *
-from util.errors           import ShopifyAPIError, ShopifyBillingError
-from util.shopify_helpers   import *
-from util.model             import Model
+from util                     import httplib2
+from util.consts              import *
+from util.errors              import ShopifyAPIError, ShopifyBillingError
+from util.shopify_helpers     import *
+from util.model               import Model
 
 NUM_SHARE_SHARDS = 15
 
@@ -53,10 +53,10 @@ class AppShopify(Model):
             Note: only 1 recurring billing plan can exist for each store for each app.
             Create a new recurring billing plan will overwrite any existing ones.
     """
-    store_id  = db.StringProperty(indexed = True) # Shopify's ID for this store
-    store_url = db.StringProperty(indexed = True) # must be the http://*.myshopify.com
-    extra_url = db.StringProperty(indexed = True, required = False, default = '') # custom domain
-    store_token = db.StringProperty(indexed = True) # Shopify token for this store
+    store_id  = db.StringProperty(indexed=True) # Shopify's ID for this store
+    store_url = db.StringProperty(indexed=True) # must be the http://*.myshopify.com
+    extra_url = db.StringProperty(indexed=True, required=False, default='') # custom domain
+    store_token = db.StringProperty(indexed=True) # Shopify token for this store
 
     # Recurring billing information
     recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
@@ -536,7 +536,7 @@ class AppShopify(Model):
         """ Install webhooks, script_tags, and assets in parallel 
             Note: first queue everything up, then call this!
         """
-        # Helper functions
+        # Callback function for webhooks
         def handle_webhook_result(rpc, webhook):
             resp = rpc.get_result()
             
@@ -554,6 +554,7 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for script tags
         def handle_script_tag_result(rpc, script_tag):
             resp = rpc.get_result()
 
@@ -571,6 +572,7 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for assets
         def handle_asset_result(rpc, asset):
             resp = rpc.get_result()
             
@@ -588,16 +590,19 @@ class AppShopify(Model):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
-        def deadline_exceeded_catch(callback_func, **kwargs):
-            try:
-                callback_func(**kwargs)
-            except DeadlineExceededError:
-                logging.error('Installation failed, deadline exceeded:\n%s' % (
-                    '\n'.join( [ "%s= %r" % (key, value) for key, value in kwargs.items() ] ) ))
-
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
-            return lambda: deadline_exceeded_catch(callback_func, **kwargs)
+            # Lambda function
+            def deadline_exceeded_catch():
+                try:
+                    callback_func(**kwargs)
+                except DeadlineExceededError:
+                    params_str = '\n'.join([ "%s= %r" % (key, value) for key, value in kwargs.items()])
+                    error_msg = 'Installation failed, deadline exceeded:\n%s' % (params_str,)
+                    logging.error(error_msg)
+                    Email.emailDevTeam(error_msg)
+
+            return lambda: deadline_exceeded_catch()
 
         rpcs = []
         username = self.settings['api_key'] 
