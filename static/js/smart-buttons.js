@@ -49,7 +49,6 @@ var _willet = (function(me) {
 
     var MAX_BUTTONS = 3;
     var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
-    var LOGGED_IN_NETWORKS = {};
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
             "detect": {
@@ -268,30 +267,15 @@ var _willet = (function(me) {
             }
         }
     };
+    var loggedInNetworks = {};
 
     // Private functions
     var xHasKeyY = function(dict, key) {
-        return dict[key] || false;
-    };
-
-    // Source: http://stackoverflow.com/a/383245/165988
-    // Slightly modified
-    var mergeObject = function (src, obj) {
-        for (var prop in obj) {
-            try {
-                // Property in destination object set; update its value.
-                if ( obj[prop].constructor==Object ) {
-                    src[prop] = mergeObject(src[prop], obj[prop]);
-                } else {
-                    src[prop] = obj[prop];
-                }
-            } catch(e) {
-                // Property in destination object not set; create it and set its value.
-                _willet.debug.log("Unable to merge value")
-                // src[prop] = obj[prop];
-            }
+        if (dict[key]) {
+            return true
+        } else {
+            return false
         }
-        return src;
     };
 
     var createBasicButton = function (params) {
@@ -347,8 +331,8 @@ var _willet = (function(me) {
     var updateLoggedInStatus = function(network, status) {
         _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
         var now = new Date();
-        LOGGED_IN_NETWORKS[network] = { "status": status, "accessed": now.getTime()};
-        _willet.cookies.create(COOKIE_NAME, JSON.stringify(LOGGED_IN_NETWORKS), COOKIE_EXPIRY_IN_DAYS);
+        loggedInNetworks[network] = { "status": status, "accessed": now.getTime()};
+        _willet.cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
     };
 
     var itemShared = function(network) {
@@ -423,17 +407,13 @@ var _willet = (function(me) {
             var buttonSpacing = (buttonsDiv.getAttribute('button_spacing') ?  buttonsDiv.getAttribute('button_spacing') : '5') + 'px';
             var buttonPadding = (buttonsDiv.getAttribute('button_padding') ? buttonsDiv.getAttribute('button_padding') : '5') + 'px';
 
-            buttonsDiv = mergeObject(buttonsDiv, {
-                "style": {
-                    "styleFloat": "left", //IE
-                    "cssFloat": "left", //FF, Webkit
-                    "minWidth": "240px",
-                    "height": "22px",
-                    "padding": buttonPadding,
-                    "border": "none",
-                    "margin": "0"
-                }    
-            });
+            buttonsDiv.style.styleFloat = "left"; //IE
+            buttonsDiv.style.cssFloat = "left"; //FF, Webkit
+            buttonsDiv.style.minWidth = "240px";
+            buttonsDiv.style.height = "22px";
+            buttonsDiv.style.padding = "buttonPadding";
+            buttonsDiv.style.border = "none";
+            buttonsDiv.style.margin = "0";
 
             // Grab the photo
             var photo = '';
@@ -481,8 +461,8 @@ var _willet = (function(me) {
                 }
             }
 
-            for (var index in requiredButtons) {
-                var network = requiredButtons[index];
+            for (var i = 0; i < requiredButtons.length; i++) {
+                var network = requiredButtons[i];
                 var button = SUPPORTED_NETWORKS[network]["button"];
                 buttonsDiv.appendChild(button.create({
                     "domain": DOMAIN,
@@ -501,6 +481,12 @@ var _willet = (function(me) {
                 HEAD.appendChild(script);
                 _willet.debug.log('Buttons: '+ network +' attached');
             }
+
+            // If Facebook is already loaded,
+            // trigger it to enable Like button
+            try {
+                window.FB && window.FB.XFBML.parse(); 
+            } catch(e) {}
 
             // Make visible if hidden
             buttonsDiv.style.display = 'block';
@@ -603,7 +589,7 @@ _willet.debug = (function(){
         me.error = (debug) ? _error: function() {};
         isDebugging = debug;
 
-        for(var i in callbacks) {
+        for(var i = 0; i < callbacks.length; i++) {
             callbacks[i](debug);
         }
     }
@@ -784,7 +770,7 @@ _willet.messaging = (function(){
             //create the iframe
             var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
             var iframe = document.createElement("iframe");
-            iframe.src = url + (_willet.debug.isDebugging()? "#debug" : "") + "?origin=" + originDomain;
+            iframe.src = url + "?origin=" + originDomain + (_willet.debug.isDebugging()? "#debug" : "");
             iframe.style.display = "none";
 
             document.body.appendChild(iframe);
@@ -796,5 +782,9 @@ _willet.messaging = (function(){
     return me;
 }());
 
-_willet.debug.set(false); //set to true if you want logging turned on
-_willet.init();
+try {
+    _willet.debug.set(false); //set to true if you want logging turned on
+    _willet.init();
+} catch(e) {
+    //TODO: Fire an email
+}

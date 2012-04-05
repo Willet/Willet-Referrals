@@ -6,7 +6,7 @@ from google.appengine.ext           import webapp
 from google.appengine.ext.webapp    import template
 from urlparse                       import urlparse
 
-from apps.buttons.shopify.models    import * 
+from apps.buttons.shopify.models    import ButtonsShopify 
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
 from util.errors                    import ShopifyBillingError
@@ -57,8 +57,6 @@ class ButtonsShopifyUpgrade(URIHandler):
         if not existing_app:
             logging.error("error calling billing callback: 'existing_app' not found. Install first?")
 
-        logging.info("Billing price: %s" % existing_app.recurring_billing_price)
-
         if existing_app.recurring_billing_price:
             price = existing_app.recurring_billing_price
         else:
@@ -70,7 +68,6 @@ class ButtonsShopifyUpgrade(URIHandler):
             "name":         "ShopConnection",
             "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" % (URL, existing_app.uuid),
             "test":         USING_DEV_SERVER
-            #"trial_days":   0
         })
 
         existing_app.put()
@@ -106,7 +103,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
 
             app.put()
 
-            app.do_upgrade();
+            app.do_upgrade()
         else:
             raise ShopifyBillingError('Charge id in request does not match expected charge id', app.recurring_billing_id)
 
@@ -138,7 +135,6 @@ class ButtonsShopifyInstructions(URIHandler):
             'app'          : app,
             'shop_owner'   : client.merchant.get_full_name(),
             'shop_name'    : client.name
-            #'continue_url' : #####!!!!!##### # TODO: What is this for
         }
 
         self.response.out.write(self.render_page('welcome.html', template_values))

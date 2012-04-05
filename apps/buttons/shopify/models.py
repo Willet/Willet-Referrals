@@ -6,7 +6,6 @@
 __author__      = "Willet, Inc."
 __copyright__   = "Copyright 2011, Willet, Inc"
 
-import sys
 import hashlib
 import logging
 from datetime import datetime, timedelta
@@ -23,7 +22,7 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
-from util.errors                    import ShopifyBillingError
+from util.errors          import ShopifyBillingError
 
 NUM_VOTE_SHARDS = 15
 
@@ -71,7 +70,7 @@ class ButtonsShopify(Buttons, AppShopify):
         else:
             raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
 
-        self.recurring_billing_price = str(price)
+        self.recurring_billing_price = unicode(price)
         self.put()
         return price
 
@@ -134,20 +133,14 @@ class ButtonsShopify(Buttons, AppShopify):
         }])
         self.install_queued()
 
-        # Fire off "personal" email from Fraser
-        #Email.welcomeClient( "ShopConnection", 
-        #                     self.client.email, 
-        #                     self.client.merchant.get_full_name(), 
-        #                     self.client.name )
-
         # Email DevTeam
-        #Email.emailDevTeam(
-        #    'ButtonsShopify Upgrade: %s %s %s' % (
-        #        self.uuid,
-        #        self.client.name,
-        #        self.client.url
-        #    )
-        #)
+        Email.emailDevTeam(
+            'ButtonsShopify Upgrade: %s %s %s' % (
+                self.uuid,
+                self.client.name,
+                self.client.url
+            )
+        )
 
     # Constructors ------------------------------------------------------------------------------
     @classmethod

@@ -93,16 +93,28 @@ class AppShopify(Model):
     
     @staticmethod
     def _Shopify_str_to_datetime(dt):
-        # Removes colon at 3rd to last character
-        # Shopify format: YYYY-MM-DDTHH:MM:mmSHH:MM
-        #                 2012-02-15T15:12:21-05:00
-        # where SHH:MM is signed UTC offset hours : minutes
+        """ Convert a shopify datetime string into a datetime object
+
+            The Shopify API returns a non-standard date format (YYYY-MM-DDTHH:MM:mmSHH:MM).
+            We convert it into a dattime object. Unfortunately, the %z format parameter
+            is not available on many platforms, including OS X and Google App Engine,
+            so we cannot obtain the user's timezone information (SHH:MM) in a convenient
+            way. Instead, we disregard the timezone information.
+
+        """
         time_offset = dt[-6:]
         time_without_offset = dt[:-6] 
         return datetime.datetime.strptime(time_without_offset, "%Y-%m-%dT%H:%M:%S" )
     
     @staticmethod
     def _datetime_to_Shopify_str(dt):
+        """ Convert a datetime object to a Shopify datetime string
+
+            The Shopify API expects a non-standard date format (YYYY-MM-DDTHH:MM:mmSHH:MM).
+            We take an ISO formatted datetime string an adjust it to something Shopify
+            understands.
+
+        """
         # Adds colon as 3rd to last character
         # UTC format: YYYY-MM-DDTHH:MM:mmSHHMM
         # where SHHMM is signed UTC offset in hours minutes
@@ -168,9 +180,7 @@ class AppShopify(Model):
             try:
                 data = response_actions.get(int(resp.status))(content)
                 error = (True if data.get("errors") else False)
-            except TypeError: #Key Didn't exist
-                error = True
-            except ValueError: #Couldn't parse JSON
+            except TypeError, ValueError: #Key Didn't exist, or couldn't parse JSON
                 error = True
         else:
             error = True
@@ -187,30 +197,7 @@ class AppShopify(Model):
             #        data if data else content
             #    )        
             #)
-            raise ShopifyAPIError(resp.status, resp.reason, url + ", " + json.dumps(payload) + ", " + content)
-
-    def _retrieve_single_billing_object(self, charge_type, id):
-        """ Retrieve billing info for customer
-
-        Returns: <Object> charge info
-        """
-
-        # TODO: Find out why we can't retrieve individual payments (always get 'page not found' after redirect)
-        results = self._call_Shopify_API('GET', '%s.json' % charge_type)
-
-        application_charges = results[charge_type]
-
-        result = {}
-        for charge in application_charges:
-            if charge["id"] == id:
-                result = charge
-                break
-
-        if result is not {}:
-            return {charge_type: result}
-        else:
-            # TODO: Error!
-            pass
+            raise ShopifyAPIError(resp.status, resp.reason, "URL: %s, PAYLOAD: %s, CONTENT: %s" % (url, payload, content))
     
     def setup_application_charge(self, settings):
         """ Setup one-time charge for store
@@ -254,7 +241,7 @@ class AppShopify(Model):
 
         Returns: <Object> charge info
         """
-        return self._retrieve_single_billing_object('application_charge', self.charge_id)
+        return self._call_Shopify_API('GET', 'application_charges/%s.json' % self.charge_id)
     
     def activate_application_charge(self, settings):
         """ Activate charge for customer that has approved it
@@ -283,7 +270,7 @@ class AppShopify(Model):
 
         data = self._retrieve_application_charge()
 
-        charge_data = result['application_charges']
+        charge_data = result['application_charge']
 
         if charge_data == 'pending':
             # Update status
@@ -358,7 +345,7 @@ class AppShopify(Model):
 
         Returns: <Object> billing info
         """
-        return self._retrieve_single_billing_object('recurring_application_charges', self.recurring_billing_id)
+        return self._call_Shopify_API('GET', 'recurring_application_charges/%s.json' % self.recurring_billing_id)
     
     def activate_recurring_billing(self, settings):
         """ Activate billing for customer that has approved it
@@ -386,7 +373,7 @@ class AppShopify(Model):
         # First retrieve most of the data from Shopify
         result = self._retrieve_recurring_billing()
 
-        recurring_billing_data = result['recurring_application_charges']
+        recurring_billing_data = result['recurring_application_charge']
 
         # Check that status isn't cancelled
         if recurring_billing_data["status"] == 'accepted':

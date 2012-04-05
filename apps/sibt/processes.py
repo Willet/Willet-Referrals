@@ -171,7 +171,7 @@ class StartSIBTInstance(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class DoVote( URIHandler ):
+class DoVote(URIHandler):
     def post(self):
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
@@ -229,8 +229,7 @@ class GetExpiredSIBTInstances(URIHandler):
         logging.info('expiring %d instances' % expired_instances.count())
 
 
-class RemoveExpiredSIBTInstance(webapp.RequestHandler):
-    """ ### Why is this a webapp.RequestHandler instead of URIHandler ??? """
+class RemoveExpiredSIBTInstance(URIHandler):
     def post(self):
         return self.get()
     
