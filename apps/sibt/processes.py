@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__copyright__   = "Copyright 2012, Willet, Inc"
 
 import re
 import hashlib
@@ -9,8 +9,6 @@ import hashlib
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.ext import webapp, db
-from google.appengine.ext.webapp import template 
-from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.action.models       import UserAction
 from apps.app.models          import App
@@ -32,7 +30,7 @@ from util.urihandler          import URIHandler
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
-        logging.info("SHARESIBTONFACEBOOK")
+        logging.info("SHARE SIBT ON FACEBOOK")
 
         app  = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
@@ -173,7 +171,7 @@ class StartSIBTInstance(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class DoVote( URIHandler ):
+class DoVote(URIHandler):
     def post(self):
         user_uuid = self.request.get('user_uuid')
         if user_uuid != None:
@@ -231,7 +229,7 @@ class GetExpiredSIBTInstances(URIHandler):
         logging.info('expiring %d instances' % expired_instances.count())
 
 
-class RemoveExpiredSIBTInstance(webapp.RequestHandler):
+class RemoveExpiredSIBTInstance(URIHandler):
     def post(self):
         return self.get()
     

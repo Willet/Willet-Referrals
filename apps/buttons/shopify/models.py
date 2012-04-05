@@ -8,7 +8,8 @@ __copyright__   = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
-import datetime
+from datetime import datetime, timedelta
+from urllib import urlencode
 
 from django.utils         import simplejson as json
 from google.appengine.ext import db
@@ -21,6 +22,7 @@ from apps.link.models     import Link
 from util.consts          import *
 from util.helpers         import generate_uuid
 from util.shopify_helpers import get_shopify_url
+from util.errors          import ShopifyBillingError
 
 NUM_VOTE_SHARDS = 15
 
@@ -31,12 +33,49 @@ NUM_VOTE_SHARDS = 15
 
 
 class ButtonsShopify(Buttons, AppShopify):
+    billing_enabled = db.BooleanProperty(indexed= False, default= False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
 
-    def do_install(self):
+    @staticmethod
+    def get_by_uuid( uuid ):
+        return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
+
+    def get_price(self):
+        now = datetime.now()
+        query_params = {
+            "created_at_min": (now - timedelta(days=365)).strftime("%Y-%m-%d %H:%M"),
+            "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
+        }
+
+        urlencoded_params = "?" + urlencode(query_params)
+
+        result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
+        count = int(result["count"]) / 12 #average over the year
+
+        if 0 <= count < 10:
+            price = 0.99 #non-profit
+        elif 10 <= count < 100:
+            price = 2.99 #basic
+        elif 100 <= count < 1000:
+            price = 5.99 #professional
+        elif 1000 <= count < 10000:
+            price = 9.99 #business
+        elif 10000 <= count < 100000:
+            price = 17.99 #unlimited
+        elif 100000 <= count:
+            price = 19.99 #enterprise
+        else:
+            raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
+
+        self.recurring_billing_price = unicode(price)
+        self.put()
+        return price
+
+    def do_install( self ):
+        """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
         # Define our script tag 
@@ -79,6 +118,29 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         
         return
+
+    def do_upgrade(self):
+        """ Remove button scripts and add the paid version """
+        self.uninstall_script_tags();
+        self.queue_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
+                    URL,
+                    self.uuid
+                ),
+                "event": "onload"
+            }
+        }])
+        self.install_queued()
+
+        # Email DevTeam
+        Email.emailDevTeam(
+            'ButtonsShopify Upgrade: %s %s %s' % (
+                self.uuid,
+                self.client.name,
+                self.client.url
+            )
+        )
 
     # Constructors ------------------------------------------------------------------------------
     @classmethod
@@ -128,8 +190,6 @@ class ButtonsShopify(Buttons, AppShopify):
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         return app
-# end class
-
 
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
