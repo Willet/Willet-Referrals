@@ -11,7 +11,9 @@ from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
 from apps.buttons.shopify.models import ButtonsShopify
+from apps.email.models import Email
 from apps.link.models import Link
 
 from util.consts import *
@@ -20,6 +22,7 @@ from util.mailchimp import MailChimp
 from util.urihandler import URIHandler
 
 
+# DEPRECIATED ???
 class UpdateStore(URIHandler):
     def get(self):
         store_url = self.request.get('store')
@@ -48,14 +51,13 @@ class UpdateStore(URIHandler):
                     data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
                 <!-- END Willet SIBT for Shopify -->"""
 
-            liquid_assets = [{
+            app.queue_assets([{
                 'asset': {
                     'value': willet_snippet,
                     'key': 'snippets/willet_sibt.liquid'
                 }
-            }]
-            
-            app.install_assets(assets=liquid_assets)
+            }])
+            app.install_queued()
 
             url = '%s/admin/script_tags.json' % app.store_url
             username = app.settings['api_key'] 
@@ -67,15 +69,15 @@ class UpdateStore(URIHandler):
             h.add_credentials(username, password)
 
             # First fetch webhooks that already exist
-            resp, content = h.request(url, "GET", headers = header)
-            logging.info('Fetching script_tags: %s' % content)
-            data = json.loads(content) 
+            resp, content = h.request(url, "GET", headers=header)
+            logging.info( 'Fetching script_tags: %s' % content )
+            data = json.loads( content ) 
 
             for w in data['script_tags']:
                 if '%s/s/shopify/sibt.js' % URL in w['src']:
-                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'])
-                    resp, content = h.request(url, "DELETE", headers = header)
-                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content))
+                    url = '%s/admin/script_tags/%s.json' % (app.store_url, w['id'] )
+                    resp, content = h.request(url, "DELETE", headers=header)
+                    logging.info("Uninstalling: URL: %s Result: %s %s" % (url, resp, content) )
 
 
 class EmailBatch(URIHandler):
@@ -386,11 +388,7 @@ class TrackRemoteError(URIHandler):
         error = self.request.get('error')
         script = self.request.get('script')
         stack_trace = self.request.get('st')
-        mail.send_mail(
-            sender = 'rf.rs error reporting <Barbara@rf.rs>',
-            to = 'fraser@getwillet.com',
-            subject = 'Javascript callback error',
-            body = """We encountered an error
+        msg = """Client JS error:
                 Page:       %s
                 Script:     %s
                 User Agent: %s
@@ -406,5 +404,6 @@ class TrackRemoteError(URIHandler):
                     stack_trace
             )
         )
+        Email.emailDevTeam(msg)
         self.redirect('%s/static/imgs/noimage.png' % URL)
 

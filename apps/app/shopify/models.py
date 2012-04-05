@@ -30,39 +30,43 @@ NUM_SHARE_SHARDS = 15
 
 class AppShopify(App):
     """ Model for storing information about a Shopify App.
-        AppShopify classes need not be installable from the Shopify app store,
-        and can be installed as a bundle. Refer to SIBTShopify for example code.
+
+    AppShopify classes need not be installable from the Shopify app store,
+    and can be installed as a bundle. Refer to SIBTShopify for example code.
     """
-    store_id = db.StringProperty(indexed = True) # Shopify's ID for this store
-    store_token = db.StringProperty(indexed = True) # Shopify token for this store
+    store_id = db.StringProperty(indexed=True) # Shopify's ID for the store
+    store_token = db.StringProperty(indexed=True) # Shopify token for the store
 
     def __init__(self, *args, **kwargs):
         super(AppShopify, self).__init__(*args, **kwargs)
         self.get_settings()
 
     def _validate_self(self):
-        if not re.match("(http|https)://[\w\-~]+.myshopify.com", self.store_url):
-            raise ValueError("<%s.%s> has malformated store url '%s'" % (self.__class__.__module__, self.__class__.__name__, self.store_url))
+        if not re.match("https?://[\w\-~]+.myshopify.com", self.store_url):
+            err_msg = "<%s.%s> has malformated store url '%s'"
+            raise ValueError(err_msg % (self.__class__.__module__,
+                                        self.__class__.__name__,
+                                        self.store_url))
         return True
 
     def get_settings(self):
         class_name = self.class_name()
-        self.settings = None 
+        self.settings = None
         try:
             self.settings = SHOPIFY_APPS[class_name]
         except Exception, e:
             logging.error('could not get settings for app %s: %s' % (class_name, e))
 
-    # Retreivers ------------------------------------------------------------
+    # Retreivers --------------------------------------------------------------
     @classmethod
     def get_by_url(cls, store_url):
-        """ Fetch a Shopify app via the store's url"""
+        """Fetch a Shopify app via the store's url."""
         store_url = get_shopify_url(store_url)
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
 
-    # Shopify API Calls ------------------------------------------------------------
+    # Shopify API Calls -------------------------------------------------------
     def queue_webhooks(self, product_hooks_too=False, webhooks=None):
         """ Determine which webhooks will have to be installed,
             and add them to the queue for parallel processing """
@@ -71,7 +75,7 @@ class AppShopify(App):
             webhooks = []
 
         url = '%s/admin/webhooks.json' % self.store_url
-        username = self.settings['api_key'] 
+        username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         headers  = {
             'content-type':'application/json',
@@ -88,15 +92,15 @@ class AppShopify(App):
         if product_hooks_too:
             default_webhooks.extend([
                 # Install the "Product Creation" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/create" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/create" % (URL),
                                "format": "json", "topic": "products/create" }
                 },
                 # Install the "Product Update" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/update" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/update" % (URL),
                                "format": "json", "topic": "products/update" }
                 },
                 # Install the "Product Delete" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/delete" % (URL),
                                "format": "json", "topic": "products/delete" }
                 }
             ])
@@ -189,7 +193,7 @@ class AppShopify(App):
         """ Install webhooks, script_tags, and assets in parallel 
             Note: first queue everything up, then call this!
         """
-        # Helper functions
+        # Callback function for webhooks
         def handle_webhook_result(rpc, webhook):
             resp = rpc.get_result()
             
@@ -207,6 +211,7 @@ class AppShopify(App):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for script tags
         def handle_script_tag_result(rpc, script_tag):
             resp = rpc.get_result()
 
@@ -224,6 +229,7 @@ class AppShopify(App):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
+        # Callback function for assets
         def handle_asset_result(rpc, asset):
             resp = rpc.get_result()
             
@@ -241,16 +247,19 @@ class AppShopify(App):
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
 
-        def deadline_exceeded_catch(callback_func, **kwargs):
-            try:
-                callback_func(**kwargs)
-            except DeadlineExceededError:
-                logging.error('Installation failed, deadline exceeded:\n%s' % (
-                    '\n'.join( [ "%s= %r" % (key, value) for key, value in kwargs.items() ] ) ))
-
         # Use a helper function to define the scope of the callback
         def create_callback(callback_func, **kwargs):
-            return lambda: deadline_exceeded_catch(callback_func, **kwargs)
+            # Lambda function
+            def deadline_exceeded_catch():
+                try:
+                    callback_func(**kwargs)
+                except DeadlineExceededError:
+                    params_str = '\n'.join([ "%s= %r" % (key, value) for key, value in kwargs.items()])
+                    error_msg = 'Installation failed, deadline exceeded:\n%s' % (params_str,)
+                    logging.error(error_msg)
+                    Email.emailDevTeam(error_msg)
+
+            return lambda: deadline_exceeded_catch()
 
         rpcs = []
         username = self.settings['api_key'] 
