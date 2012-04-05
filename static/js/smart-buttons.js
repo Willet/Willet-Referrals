@@ -2,7 +2,7 @@
  * Buttons JS. Copyright Willet Inc, 2012
  */
 ;// Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
-var JSON;if(!JSON){JSON={};}
+var JSON;if(!window.JSON){window.JSON={};}
 (function(){'use strict';function f(n){return n<10?'0'+n:n;}
 if(typeof Date.prototype.toJSON!=='function'){Date.prototype.toJSON=function(key){return isFinite(this.valueOf())?this.getUTCFullYear()+'-'+
 f(this.getUTCMonth()+1)+'-'+
@@ -338,6 +338,19 @@ var _willet = (function(me) {
     var itemShared = function(network) {
         //If someone shares, update the cookie
         updateLoggedInStatus(network, true);
+
+        //Also, send us an email!
+        var error = encodeURIComponent(network + ": Share detected!");
+        var script = encodeURIComponent("smart-buttons.js");
+        var st = encodeURIComponent("No errors");
+
+        var params = "error=" + error + "&script=" + script + "&st=" + st;
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = APP_URL + "/admin/ithinkiateacookie?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
     };
 
     var dictToArray = function(dict) {
@@ -787,4 +800,19 @@ try {
     _willet.init();
 } catch(e) {
     //TODO: Fire an email
+    (function() {
+        var error = encodeURIComponent("Error initializing smart-buttons");
+        var script = encodeURIComponent("smart-buttons.js");
+
+        //TODO: include line number
+        var st = encodeURIComponent(e.toString());
+
+        var params = "error=" + error + "&script=" + script + "&st=" + st;
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
+    }()); 
 }
