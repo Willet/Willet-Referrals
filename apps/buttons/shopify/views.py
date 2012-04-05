@@ -218,8 +218,7 @@ class ButtonsShopifyInstallError(URIHandler):
             'URL' : URL,
             'reason': self.request.get('reason', None),
         }
-        path = os.path.join('apps/buttons/shopify/templates/', 'install_error.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        self.response.out.write(template.render(path, template_values))
+        self.response.out.write(self.render_page('install_error.html', template_values))
         return
