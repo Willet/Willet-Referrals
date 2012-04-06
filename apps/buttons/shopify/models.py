@@ -3,24 +3,24 @@
 # Buttons model
 # Extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
 from datetime import datetime, timedelta
 from urllib import urlencode
 
-from django.utils         import simplejson as json
+from django.utils import simplejson as json
 from google.appengine.ext import db
 
 from apps.app.shopify.models import AppShopify
-from apps.buttons.models  import Buttons
-from apps.email.models    import Email
-from apps.link.models     import Link
+from apps.buttons.models import Buttons
+from apps.email.models import Email
+from apps.link.models import Link
 
-from util.consts          import *
-from util.helpers         import generate_uuid
+from util.consts import *
+from util.helpers import generate_uuid
 from util.shopify_helpers import get_shopify_url
 from util.errors          import ShopifyBillingError
 
@@ -38,6 +38,9 @@ class ButtonsShopify(Buttons, AppShopify):
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(ButtonsShopify, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        return True
 
     @staticmethod
     def get_by_uuid( uuid ):
@@ -96,10 +99,10 @@ class ButtonsShopify(Buttons, AppShopify):
         self.install_queued()
 
         # Fire off "personal" email from Fraser
-        Email.welcomeClient( "ShopConnection", 
+        Email.welcomeClient("ShopConnection", 
                              self.client.email, 
                              self.client.merchant.get_full_name(), 
-                             self.client.name )
+                             self.client.name)
         
         # Email DevTeam
         Email.emailDevTeam(
@@ -111,7 +114,7 @@ class ButtonsShopify(Buttons, AppShopify):
         )
 
         # Start sending email updates
-        if 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
             self.client.subscribe_to_mailing_list(
                 list_name=app_name,
                 list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
@@ -146,7 +149,7 @@ class ButtonsShopify(Buttons, AppShopify):
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         app = cls(key_name=uuid,
                   uuid=uuid,
                   client=client,
@@ -154,7 +157,7 @@ class ButtonsShopify(Buttons, AppShopify):
                   store_url=client.url,  # Store url
                   store_id=client.id,   # Store id
                   store_token=app_token,
-                  button_selector="_willet_buttons_app" ) 
+                  button_selector="_willet_buttons_app") 
         app.put()
 
         app.do_install()
@@ -163,7 +166,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
     # 'Retreive or Construct'ers -----------------------------------------------------------------
     @classmethod
-    def get_or_create_app(cls, client, token ):
+    def get_or_create_app(cls, client, token):
         """ Try to retrieve the app.  If no app, create one """
         app = cls.get_by_url(client.url)
         
@@ -182,8 +185,8 @@ class ButtonsShopify(Buttons, AppShopify):
                 ) 
                 try:
                     app.store_token = token
-                    app.client      = client
-                    app.old_client  = None
+                    app.client = client
+                    app.old_client = None
                     app.put()
                     
                     app.do_install()
@@ -194,13 +197,12 @@ class ButtonsShopify(Buttons, AppShopify):
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
     raise DeprecationWarning('Replaced by ButtonShopify.create_app')
-    ButtonShopify.create_app(client, app_token)
 
 def get_or_create_buttons_shopify_app(client, token):
     raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
     ButtonShopify.get_or_create_app(client, token)
 
-def get_shopify_buttons_by_url( store_url ):
+def get_shopify_buttons_by_url(store_url):
     raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
     ButtonShopify.get_by_url(store_url)
 

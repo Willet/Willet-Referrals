@@ -3,7 +3,7 @@
  */
 ;(function () {
     "use strict";
-    var here = window.location + '.json';
+    var here = window.location.href.split('#')[0] + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
@@ -64,6 +64,7 @@
             button_div.style.margin = '0';
 
             var protocol = window.location.protocol; //'http:'; // For local testing
+            var store_url = protocol + '//' + location.hostname; // http:|//example.com
 
             var createButton = function (id) {
                 id = id || '';
@@ -91,8 +92,20 @@
             }
 
             // Supported buttons
-            var supported_buttons = ['Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
+            var supported_buttons = ['AskFriends', 'Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
             var buttons = {
+                AskFriends: { // does not allow asking/voting unless SIBT-JS is also installed!
+                    create: function () {
+                        var d = createButton();
+                        d.id = 'mini_sibt_button';
+                        d.style.cursor = 'pointer';
+                        d.style.display = 'inline-block';
+                        d.style.background = "url('" + protocol + "//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"; // change to master domain after deploying
+                        d.style.width = '80px';
+                        return d;
+                    },
+                    script: protocol+'//brian-willet.appspot.com/s/sibt.js?url=' + window.location.href
+                },
                 Tumblr: {
                     create: function () {
                         var d = createButton('tumblr');
@@ -226,7 +239,7 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['Fancy','Pinterest','Tumblr']; // default for backwards compatibilty
+            var req_buttons = ['Tumblr','Fancy','Pinterest']; // default for backwards compatibilty
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;
@@ -255,6 +268,7 @@
             while (j--) {
                 b = req_buttons[j];
                 button_div.appendChild( buttons[b].create() );
+                console.log('Button: '+ buttons[b].create() +' attached');
                 t  = document.createElement( 'script' );
                 t.type = 'text/javascript';
                 t.src = buttons[b].script;
@@ -299,32 +313,24 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
+                            if (button_div) {
+                                button_div.dataset.loaded = true;
+                            }
+                        } else {
+                            console.log("No data");
                         }
                     } else {  
                         // Didn't work, just silently bail
                         console.log("Buttons: request for product.json failed");
-                    }  
-                }  
-            };  
+                    }
+                } else {
+                    console.log("state is not 4 yet");
+                }
+            };
             req.send(null);
         } catch (e) {
             // Didn't work, just silently bail
             console.log("Buttons: "+e);
         }
     })();
-    /*(function() { // for local testing
-        _init_buttons({
-            product: {
-                images: [
-                    { created_at: "2012-02-03T11:42:17+09:00",
-                    id: 166600132,
-                    position: 1,
-                    product_id: 81809292,
-                    updated_at: "2012-02-03T11:42:17+09:00",
-                    src:'/static/imgs/beer_200.png' }
-                ]
-            },
-            title: "Glass of beer"
-        });
-    })();*/
 })();

@@ -1,58 +1,63 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import datetime
 import logging
 
-from google.appengine.api   import memcache
-from google.appengine.ext   import db
+from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models     import Action
-from apps.action.models     import ClickAction
-from apps.action.models     import ShowAction
-from apps.action.models     import UserAction
-from apps.action.models     import VoteAction
+from apps.action.models import Action
+from apps.action.models import ClickAction
+from apps.action.models import ShowAction
+from apps.action.models import UserAction
+from apps.action.models import VoteAction
 
-from util.helpers           import generate_uuid
+from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
-## -----------------------------------------------------------------------------
-## WOSIBClickAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
+## WOSIBClickAction Subclass --------------------------------------------------
+## ----------------------------------------------------------------------------
 class WOSIBClickAction(ClickAction):
     """ Designates a 'click' action for a User on a WOSIB instance. """
 
-    wosib_instance = db.ReferenceProperty(db.Model, collection_name="wosib_click_actions")
+    wosib_instance = db.ReferenceProperty(db.Model,
+                                          collection_name="wosib_click_actions")
 
     # URL that was clicked on
     url = db.LinkProperty(indexed = True)
 
     def __str__(self):
-        return 'WOSIBCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'WOSIBCLICK: %s(%s) %s' % (self.user.get_full_name(),
+                                          self.user.uuid,
+                                          self.app_.uuid)
 
     ## Constructor 
     @staticmethod
-    def create( user, app, link ):
+    def create(user, app, link):
         # Make the action
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBClickAction(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                link = link,
-                url = link.target_url,
-                wosib_instance = link.wosib_instance.get()
+                key_name=uuid,
+                uuid=uuid,
+                user=user,
+                app_=app,
+                link=link,
+                url=link.target_url,
+                wosib_instance=link.wosib_instance.get()
         )
 
         action.put()
 
         tracking_keys = memcache.get(action.get_tracking_key()) or []
         tracking_keys.append(action.get_key())
-        memcache.set(action.get_tracking_key(), tracking_keys, time=MEMCACHE_TIMEOUT)
+        memcache.set(action.get_tracking_key(),
+                     tracking_keys,
+                     time=MEMCACHE_TIMEOUT)
         
         return action 
 
@@ -108,67 +113,68 @@ class WOSIBClickAction(ClickAction):
         )
 
 
-## -----------------------------------------------------------------------------
-## WOSIBVoteAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
+## WOSIBVoteAction Subclass ---------------------------------------------------
+## ----------------------------------------------------------------------------
 class WOSIBVoteAction(VoteAction):
     """ Designates a 'vote' action for a User on a WOSIB instance. 
         Currently used for 'WOSIB' App """
 
-    wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_vote_actions" )
+    wosib_instance = db.ReferenceProperty(db.Model,
+                                          collection_name="wosib_vote_actions")
     
     # because WOSIB contains more than one product, we have to record which
     # product to which this vote corresponds
-    product_uuid = db.StringProperty( indexed = True, required = True )
+    product_uuid = db.StringProperty(indexed = True, required = True)
     
     # URL that was voted on
-    url           = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
 
     ## Constructor
     @staticmethod
     def create(user, instance, product):
         # Make the action
-        uuid = generate_uuid( 16 )
-        action = WOSIBVoteAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
-                                product_uuid = product,
-                                wosib_instance = instance )
+        uuid = generate_uuid(16)
+        action = WOSIBVoteAction(key_name=uuid,
+                                 uuid=uuid,
+                                 user=user,
+                                 app_=instance.app_,
+                                 link=instance.link,
+                                 url=instance.link.target_url,
+                                 product_uuid=product,
+                                 wosib_instance=instance)
         
         action.put()
         
         # we memcache by classname-instance_uuid-user_uuid
         # so we can look it up really easily later on
-        memcache.set(action.get_tracking_key(), action.get_key(), time=MEMCACHE_TIMEOUT)
+        memcache.set(action.get_tracking_key(),
+                     action.get_key(),
+                     time=MEMCACHE_TIMEOUT)
 
         return action
     
     def __str__(self):
-        return 'WOSIBVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'WOSIBVOTE: %s(%s) %s' % (self.user.get_full_name(),
+                                         self.user.uuid,
+                                         self.app_.uuid)
 
     @classmethod
     def get_tracking_by_user_and_instance(cls, user, wosib_instance):
-        tracking_key = '%s-%s-%s' % (
-            cls.__name__,
-            wosib_instance.uuid,
-            user.uuid
-        )
+        tracking_key = '%s-%s-%s' % (cls.__name__,
+                                     wosib_instance.uuid,
+                                     user.uuid)
         return memcache.get(tracking_key) or None 
     
     def get_tracking_key(self):
-        return '%s-%s-%s' % (
-            self.__class__.__name__,
-            self.wosib_instance.uuid,
-            self.user.uuid
-        )
+        return '%s-%s-%s' % (self.__class__.__name__,
+                             self.wosib_instance.uuid,
+                             self.user.uuid)
 
     ## Accessors 
     @staticmethod
-    def get_by_instance( instance ):
-        return WOSIBVoteAction.all().filter( 'wosib_instance =', instance )
+    def get_by_instance(instance):
+        return WOSIBVoteAction.all().filter('wosib_instance =', instance)
 
     @staticmethod
     def get_by_app_and_instance_and_user(app_, instance, user):
@@ -186,7 +192,7 @@ class WOSIBVoteAction(VoteAction):
         return action
 
     @staticmethod
-    def get_by_app_and_instance( app_, instance ):
+    def get_by_app_and_instance(app_, instance):
         return WOSIBVoteAction.all()\
                 .filter('app_ =', app_)\
                 .filter('wosib_instance =', instance)\
@@ -194,21 +200,24 @@ class WOSIBVoteAction(VoteAction):
 
 
 class WOSIBShowAction(ShowAction):
-    ''' Class for storing WOSIB actions - whenever a UI component is shown or hidden. 
-        If a user is detected, the WOSIBUserAction class is recommended instead. '''
-    wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_show_actions" )
+    """ Class for storing WOSIB actions.
+    
+    If a user is detected, the WOSIBUserAction class is recommended instead.
+    """
+    wosib_instance = db.ReferenceProperty(db.Model,
+                                          collection_name="wosib_show_actions")
 
     ## Constructor
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = WOSIBShowAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        uuid = generate_uuid(16)
+        act = WOSIBShowAction( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
         act.put()
@@ -233,7 +242,7 @@ class WOSIBShowAction(ShowAction):
 
     ## Accessors 
     @staticmethod
-    def get_by_instance( instance ):
+    def get_by_instance(instance):
         return WOSIBShowAction.all().filter('wosib_instance =', instance)
 
     @staticmethod
@@ -250,7 +259,7 @@ class WOSIBShowAction(ShowAction):
 
 
 class WOSIBShowingButton(WOSIBShowAction):
-    ''' Action created when the WOSIB button is rendered on page. '''
+    """ Action created when the WOSIB button is rendered on page. """
     @staticmethod
     def create(user, **kwargs):
         app = None
@@ -262,7 +271,7 @@ class WOSIBShowingButton(WOSIBShowAction):
             logging.error('invalid parameters: %s' % e, exc_info=True)
 
         what = 'WOSIBShowingButton'
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBShowingButton(
                 key_name = uuid,
                 uuid = uuid,
@@ -297,7 +306,7 @@ class WOSIBShowingButton(WOSIBShowAction):
 
 
 class WOSIBShowingResults(WOSIBShowAction):
-    ''' Action created when the check results button is clicked. '''
+    """ Action created when the check results button is clicked. """
     # TODO: WOSIB Analytics
     
     @staticmethod
@@ -314,11 +323,11 @@ class WOSIBShowingResults(WOSIBShowAction):
 
         action = WOSIBShowingResults(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 wosib_instance = instance
         )
@@ -327,7 +336,7 @@ class WOSIBShowingResults(WOSIBShowAction):
 
 
 class WOSIBShowingVote(WOSIBShowAction):
-    ''' Action created when the vote page is loaded. '''
+    """ Action created when the vote page is loaded. """
     # TODO: WOSIB Analytics
     
     @staticmethod
@@ -343,35 +352,35 @@ class WOSIBShowingVote(WOSIBShowAction):
             logging.error('error getting instance: %s' % e, exc_info=True)
         
         action = WOSIBShowingVote(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
-                what = what,
-                wosib_instance = instance
+                key_name=uuid,
+                uuid=uuid,
+                user=user,
+                app_=instance.app_,
+                link=instance.link,
+                url=instance.link.target_url,
+                what=what,
+                wosib_instance=instance
         )
         action.put()
         return action
 
 
 class WOSIBInstanceAction(UserAction):
-    ''' Generic class for actions with an instance available. '''
+    """ Generic class for actions with an instance available. """
     wosib_instance = db.ReferenceProperty(db.Model, collection_name="wosib_inst_actions")
 
     ## Constructor
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBVoteAction(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 wosib_instance = instance,
                 what = what
         )
@@ -388,9 +397,9 @@ class WOSIBInstanceAction(UserAction):
 
 
 class WOSIBInstanceCreated(WOSIBInstanceAction):
-    ''' Class created when a WOSIB instance is made. '''
+    """ Class created when a WOSIB instance is made. """
     # TODO: WOSIB Analytics
-    medium = db.StringProperty( default="", indexed=True )
+    medium = db.StringProperty(default="", indexed=True)
 
     @staticmethod
     def create(user, **kwargs):
@@ -408,13 +417,13 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
         uuid = generate_uuid(16)
         action = WOSIBInstanceCreated(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
-                what     = what,
-                medium   = medium,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
+                what = what,
+                medium = medium,
                 wosib_instance = instance
         )
         action.put()
@@ -425,7 +434,7 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
 ## WOSIB Show event with NO INSTANCE
 ##
 class WOSIBShowingAskIframe(ShowAction):
-    ''' Class created when the primary ask window is opened. '''
+    """ Class created when the primary ask window is opened. """
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBAskIframe'
@@ -510,9 +519,9 @@ class WOSIBOverlayCancelled(ShowAction):
 
 
 class WOSIBUserClickedButtonAsk(UserAction):
-    ''' Class created when the WOSIB button is clicked. 
+    """ Class created when the WOSIB button is clicked. 
         However, since the button is the only way to open the WOSIB ask window,
-        it serves the same purpose as WOSIBShowingAskIframe.'''
+        it serves the same purpose as WOSIBShowingAskIframe."""
     # TODO: WOSIB Analytics
     @staticmethod
     def create(user, **kwargs):
@@ -526,13 +535,13 @@ class WOSIBUserClickedButtonAsk(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBUserClickedButtonAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -541,7 +550,7 @@ class WOSIBUserClickedButtonAsk(UserAction):
 
 
 class WOSIBAskUserClickedShare(UserAction):
-    ''' Class created when WOSIB instance is shared to everyone on FB.'''
+    """ Class created when WOSIB instance is shared to everyone on FB."""
     # TODO: WOSIB Analytics
 
     @staticmethod
@@ -556,13 +565,13 @@ class WOSIBAskUserClickedShare(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBAskUserClickedShare(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -570,7 +579,7 @@ class WOSIBAskUserClickedShare(UserAction):
 
 
 class WOSIBConnectFBCancelled(UserAction):
-    ''' Class created when user decides not to authorize the SIBT/WOSIB app.'''
+    """ Class created when user decides not to authorize the SIBT/WOSIB app."""
     # TODO: WOSIB Analytics
 
     @staticmethod
@@ -585,13 +594,13 @@ class WOSIBConnectFBCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBConnectFBCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -599,7 +608,7 @@ class WOSIBConnectFBCancelled(UserAction):
 
 
 class WOSIBFBConnected(UserAction):
-    ''' Class created when user authorizes the SIBT/WOSIB app.'''
+    """ Class created when user authorizes the SIBT/WOSIB app."""
     # TODO: WOSIB Analytics
 
     @staticmethod
@@ -614,13 +623,13 @@ class WOSIBFBConnected(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBFBConnected(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -628,7 +637,7 @@ class WOSIBFBConnected(UserAction):
 
 
 class WOSIBFriendChoosingCancelled(UserAction):
-    ''' Class created when user gives up while on the choose friends screen.'''
+    """ Class created when user gives up while on the choose friends screen."""
     # TODO: WOSIB Analytics
 
     @staticmethod
@@ -643,13 +652,13 @@ class WOSIBFriendChoosingCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBFriendChoosingCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -657,7 +666,7 @@ class WOSIBFriendChoosingCancelled(UserAction):
 
 
 class WOSIBNoConnectFBCancelled(UserAction):
-    ''' Class created when user clicks share, but decides not to post on FB.'''
+    """ Class created when user clicks share, but decides not to post on FB."""
 
     @staticmethod
     def create(user, **kwargs):
@@ -671,21 +680,19 @@ class WOSIBNoConnectFBCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
-        action = WOSIBNoConnectFBCancelled(
-                key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what     = what
-        )
+        uuid = generate_uuid(16)
+        action = WOSIBNoConnectFBCancelled(key_name=uuid,
+                                           uuid=uuid,
+                                           user=user,
+                                           app_=app,
+                                           url=url,
+                                           what=what)
         action.put()
         return action
 
 
 class WOSIBNoConnectFBDialog(UserAction):
-    ''' Class created when user clicks share.'''
+    """ Class created when user clicks share."""
 
     @staticmethod
     def create(user, **kwargs):
@@ -699,13 +706,13 @@ class WOSIBNoConnectFBDialog(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBNoConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -713,8 +720,8 @@ class WOSIBNoConnectFBDialog(UserAction):
 
 
 class WOSIBConnectFBDialog(UserAction):
-    '''Action created when user connects with FB and fetch FB friends, on 
-       Choose Friends screen'''
+    """Action created when user connects with FB and fetch FB friends, on 
+       Choose Friends screen"""
     
     @staticmethod
     def create(user, **kwargs):
@@ -728,13 +735,13 @@ class WOSIBConnectFBDialog(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = WOSIBConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -742,21 +749,22 @@ class WOSIBConnectFBDialog(UserAction):
 
 
 class WOSIBUserAction(UserAction):
-    '''Generic action for all actions relatable to a single user.'''
+    """Generic action for all actions relatable to a single user."""
     
-    wosib_instance = db.ReferenceProperty( db.Model, collection_name="wosib_user_actions" )
+    wosib_instance = db.ReferenceProperty(db.Model,
+                                          collection_name="wosib_user_actions")
 
     ## Constructor
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = WOSIBUserAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        uuid = generate_uuid(16)
+        act = WOSIBUserAction( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 wosib_instance = instance)
         act.put()

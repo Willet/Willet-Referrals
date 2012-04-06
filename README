@@ -2,8 +2,7 @@ Welcome to the Willet repo!
 Last-Updated: Feb 13, 2012
 
 #### Files ####
- - appengine_config.py: Can't remember what this does. I'm pretty sure it's
-                        used for gaesessions.
+ - appengine_config.py: used for gaesessions.
 
  - urls.py: Crawls the repo looking for urls.py files (only looks in dirs 
             specified within util/consts.py). As it crawls, it builds a 
@@ -55,7 +54,7 @@ Last-Updated: Feb 13, 2012
 
  - w3c/: Privacy policy etc stored here. You'll never need to go in here ever!
 
-##### Yamls ####
+#### Yamls ####
 GAE is controlled using yaml files. The syntax is really straight-forward!
 
  - app.yaml: Controls the WHOLE APP! The most important part is 'application'
