@@ -72,7 +72,6 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
 
-
 ## -----------------------------------------------------------------------------
 ## Action SuperClass -----------------------------------------------------------
 ## -----------------------------------------------------------------------------
