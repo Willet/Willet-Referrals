@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 from datetime import datetime
 import re
@@ -10,20 +10,24 @@ import urlparse
 
 from django.utils import simplejson as json
 from google.appengine.api import taskqueue
-from google.appengine.ext import db
+from google.appengine.ext import webapp, db
 
 from apps.app.models import App
+from apps.action.models import UserAction
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.link.models import Link
 from apps.product.shopify.models import ProductShopify
 from apps.product.models import Product
 from apps.sibt.actions import *
-from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
+from apps.sibt.models import SIBT
+from apps.sibt.models import SIBTInstance, PartialSIBTInstance
+from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models import User
 
 from util.consts import *
 from util.helpers import url
+from util.helpers import remove_html_tags
 from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
@@ -109,7 +113,7 @@ class SIBTSignUp(URIHandler):
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
-        logging.info("SHARESIBTONFACEBOOK")
+        logging.info("SHARE SIBT ON FACEBOOK")
 
         app = App.get_by_uuid(self.request.get('app_uuid'))
         user = User.get(self.request.get('user_uuid'))
