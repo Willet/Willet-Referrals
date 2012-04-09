@@ -196,14 +196,12 @@ class ButtonsShopifyBillingCallback(URIHandler):
                                                      template_values))
         else:
             #The user declined to pay, redirect to upsell page
-            if app.recurring_billing_price:
-                price = app.recurring_billing_price
-            else:
-                price = app.get_price()
+            page = build_url("ButtonsShopifyWelcome", qs={
+                "t": app.store_token,
+                "shop": app.store_url,
+                "app": "ButtonsShopify"
+            })
 
-            page = 'welcome?t=%s&shop=%s&app=%s' % (app.store_token,
-                                                        app.store_url,
-                                                        "ButtonsShopify")
             self.redirect(page)
 
 class ButtonsShopifyInstructions(URIHandler):
