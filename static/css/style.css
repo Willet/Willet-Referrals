@@ -284,6 +284,7 @@ div#starburst>div>div {
     position: relative;
 }
 .content-container {
+    margin-top: 50px;
     background-color: #F6F6F6;
 }
 .content-container>h1 {
