@@ -600,6 +600,7 @@ class SIBTServeScript(URIHandler):
         """
         # declare vars.
         app = None
+        app_css = ''
         asker_name = ''
         asker_pic = ''
         domain = ''
@@ -634,13 +635,15 @@ class SIBTServeScript(URIHandler):
             return
 
         try:  # raises KindError both when decode fails and when app is absent
-            app = SIBTShopify.get(domain)  # check if site is Shopify
+            # check if site is Shopify; get the Shopify app if possible
+            app = SIBTShopify.get_by_store_url(domain)
             if not app:
                 raise db.KindError("don't have SIBTShopify for site")
         except db.KindError:
             logging.debug('This domain does not have a SIBTShopify app. '
                           'Trying to get SIBT app.')
-            app = SIBT.get(domain)  # if site is not Shopify, use the SIBT app
+            # if site is not Shopify, use the SIBT app
+            app = SIBT.get_by_store_url(domain)
 
         if app:
             client = app.client
@@ -753,6 +756,11 @@ class SIBTServeScript(URIHandler):
         # have client, app, user, and maybe instance
         logging.debug('%r' % [user, page_url, instance])
 
+        try:
+            app_css = app.get_css()  # only Shopify apps have CSS
+        except AttributeError:
+            app_css = ''  # it was not a SIBTShopify
+
         is_safari = 'safari' in self.get_browser() and not \
                     'chrome' in self.get_browser()
 
@@ -775,6 +783,8 @@ class SIBTServeScript(URIHandler):
             'app': app, # if missing, django omits these silently
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
             'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'popup_stylesheet': '../../plugin/templates/css/popup.css',
+            'app_css': app_css, # SIBT-JS does not allow custom CSS.
             'detect_shopconnection': True,
 
             # instance info
@@ -794,10 +804,6 @@ class SIBTServeScript(URIHandler):
             'asker_pic': asker_pic,
             'is_asker': is_asker,
             'unsure_mutli_view': unsure_mutli_view,
-
-            ''' these properties cannot be used automatically on SIBT-JS.
-            'app_css': app_css, # SIBT-JS does not allow custom CSS.
-            '''
 
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],

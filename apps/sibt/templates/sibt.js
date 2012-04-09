@@ -12,18 +12,18 @@
     var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
+    var sibt_version = {{sibt_version|default:"3"}};
     var ask_success = false;
     var debug = ('{{ debug }}' === 'True');
     var is_asker = ('{{ is_asker }}' === 'True'); // did they ask?
     var is_live = ('{{ is_live }}' === 'True');
+    var has_results = ('{{ has_results }}' === 'True');
     var show_votes = ('{{ show_votes }}' === 'True');
     var has_voted = ('{{ has_voted }}' === 'True');
     var button_enabled = ('{{ app.button_enabled }}' === 'True');
     var topbar_enabled = ('{{ app.top_bar_enabled }}' === 'True');
-    var bottom_popup_enabled = ('{{ app.bottom_popup_enabled }}' === 'True');
-    var sibt_version = {{sibt_version|default:"3"}};
-    var has_results = ('{{ has_results }}' === 'True');
     var show_top_bar_ask = ('{{ show_top_bar_ask }}' === 'True');
+    var bottom_popup_enabled = ('{{ app.bottom_popup_enabled }}' === 'True');
     
     // true when visitor on page more than (4 times)
     var unsure_multi_view = ('{{ unsure_multi_view }}' === 'True');
@@ -156,6 +156,7 @@
 
         // load CSS for colorbox as soon as possible!!
         var _willet_css = {% include stylesheet %}
+        var _willet_popup_css = '{% include popup_stylesheet %}';
         var _willet_app_css = '{{ app_css }}';
         var _willet_style = d.createElement('style');
         var _willet_head  = d.getElementsByTagName('head')[0];
@@ -163,9 +164,9 @@
         _willet_style.setAttribute('charset','utf-8');
         _willet_style.setAttribute('media','all');
         if (_willet_style.styleSheet) {
-            _willet_style.styleSheet.cssText = _willet_css + _willet_app_css;
+            _willet_style.styleSheet.cssText = _willet_css + _willet_popup_css + _willet_app_css;
         } else {
-            var rules = d.createTextNode(_willet_css + _willet_app_css);
+            var rules = d.createTextNode(_willet_css + _willet_popup_css + _willet_app_css);
             _willet_style.appendChild(rules);
         }
         _willet_head.appendChild(_willet_style);
@@ -576,6 +577,14 @@
                 };
             {% endif %} ; // app.top_bar_enabled
 
+            // save past products' images
+            // check if page is visited twice or more in a row
+            if (get_largest_image() !== $.cookie('product1_image')) {
+                // image 1 is more recent; shift products
+                $.cookie('product2_image', $.cookie('product1_image'));
+                $.cookie('product1_image', get_largest_image());
+            }
+
             // SIBT Connection will be prioritised and show if both SIBT and SIBT Connection exist on page.
             var sibt_elem = $('#mini_sibt_button').eq(0); // SIBT for ShopConnection (SIBT Connection)
             var purchase_cta = $('#_willet_shouldIBuyThisButton').eq(0); // SIBT standalone (v2, v3)
@@ -687,69 +696,6 @@
                     }
                 {% endif %} ; // app.top_bar_enabled
 
-                // if app.bottom_popup_enabled %} // add this topbar code only if necessary
-                {% if True %}
-                    console.log('bottom popup enabled');
-
-                    var popup = $('<div />', {
-                        'id': 'willet_sibt_popup',
-                        'css': {
-                            'display': 'none'
-                        }
-                    });
-                    popup
-                        .append('<h2 class="title">Hey! Need help deciding?</h2>')
-                        .append($('<div />', {
-                            'id': 'product_selector'
-                         }))
-                        .append(
-                            '<button class="cta">Ask your friends</button>' +
-                            '<a id="anti_cta" href="#">No thanks</a>'
-                        );
-                    $('#product_selector').append(
-                        '<div class="product">' +
-                            '<img class="image" src="' + product1_image + '" />' +
-                        '</div>' +
-                        '<span class="or">or</span>' +
-                        '<div class="product">' +
-                            '<img class="image" src="' + product2_image + '"/>' +
-                        '</div>'
-                    );
-                    
-                    var show_popup = function () {
-                        popup.fadeIn('slow');
-                    };
-                    var hide_popup = function () {
-                        popup.fadeOut('slow');
-                    };
-                    
-                    $(w).scroll(function () {
-                        var pageHeight, scrollTop, threshold;
-                        
-                        pageHeight = $(d).height();
-                        scrollTop = $(w).scrollTop();
-                        // 0.5 appears more like 60% on scrolling (because scroll*TOP*)
-                        threshold = pageHeight * 0.5;
-                        
-                        if (scrollTop > threshold) {
-                            if (!popup.is(':visible') && !clickedOff) {
-                                show_popup();
-                            }
-                        } else {
-                            if (popup.is(':visible')) {
-                                hide_popup();
-                            }
-                        }
-                    });
-                    $('#willet_sibt_popup #anti_cta').click(function (e) {
-                        clickedOff = true;
-                        e.preventDefault();
-                        hide_popup();
-                    });
-
-                    $('body').prepend(popup);
-                {% endif %} ; // app.top_bar_enabled
-
                 {% if app.button_enabled %} // add this button code only if necessary
                     if (sibt_version <= 2) {
                         console.log('v2 button is enabled');
@@ -830,6 +776,74 @@
                     }
                 {% endif %} // app.button_enabled
             } // if #_willet_shouldIBuyThisButton
+
+            {% if app.bottom_popup_enabled %} // add this topbar code only if necessary
+                // if user visited at least two product pages
+                if ($.cookie('product1_image') && $.cookie('product2_image')) {
+                    console.log('bottom popup enabled');
+                    var clickedOff = false;
+                    var product1_image = $.cookie('product1_image') || '';
+                    var product2_image = $.cookie('product2_image') || '';
+
+                    var popup = $('<div />', {
+                        'id': 'willet_sibt_popup',
+                        'css': {
+                            'display': 'none'
+                        }
+                    });
+                    $('body').prepend(popup);
+                    popup
+                        .append('<h2 class="title">Hey! Need help deciding?</h2>')
+                        .append($('<div />', {
+                            'id': 'product_selector'
+                            }))
+                        .append(
+                            '<button class="cta">Ask your friends</button>' +
+                            '<a id="anti_cta" href="#">No thanks</a>'
+                        );
+                    $('#product_selector').append(
+                        '<div class="product">' +
+                            '<img class="image" src="' + product1_image + '" />' +
+                        '</div>' +
+                        '<span class="or">or</span>' +
+                        '<div class="product">' +
+                            '<img class="image" src="' + product2_image + '"/>' +
+                        '</div>'
+                    );
+
+                    var show_popup = function () { popup.fadeIn('slow'); };
+                    var hide_popup = function () { popup.fadeOut('slow'); };
+
+                    $(w).scroll(function () {
+                        var pageHeight, scrollTop, threshold;
+
+                        pageHeight = $(d).height();
+                        scrollTop = $(w).scrollTop();
+                        // 0.5 appears more like 60% on scrolling (because scroll*TOP*)
+                        threshold = pageHeight * 0.3;
+
+                        if (scrollTop > threshold) {
+                            if (!popup.is(':visible') && !clickedOff) {
+                                show_popup();
+                            }
+                        } else {
+                            if (popup.is(':visible')) {
+                                hide_popup();
+                            }
+                        }
+                    });
+                    $('#willet_sibt_popup .cta').click(function () {
+                        console.log('did something');
+                        show_ask();
+                        hide_popup();
+                    });
+                    $('#willet_sibt_popup #anti_cta').click(function (e) {
+                        clickedOff = true;
+                        e.preventDefault();
+                        hide_popup();
+                    });
+                }
+            {% endif %} ; // app.top_bar_enabled
 
             // Load jQuery colorbox
             if (!$.willet_colorbox) {

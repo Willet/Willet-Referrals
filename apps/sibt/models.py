@@ -42,7 +42,10 @@ class SIBT(App):
     button_enabled = db.BooleanProperty(default=True)
     
     # if the top bar is enabled for this app 
-    top_bar_enabled = db.BooleanProperty(default=True)
+    top_bar_enabled = db.BooleanProperty(default=False)
+
+    # if the bottom popup is enabled for this app
+    bottom_popup_enabled = db.BooleanProperty(default=False)
 
     # if incentivized asks is enabled
     incentive_enabled = db.BooleanProperty(default=False)

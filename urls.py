@@ -18,8 +18,8 @@ use_library('django', '0.96')
 # our intelligent uri router
 
 def main():
-    """ Starts the webapp.
-    
+    """Starts the webapp.
+
     If the reload_uris flag is set to true, a new URL map will be regenerated
     using urls.py of all INSTALLED_APPS.
     """
