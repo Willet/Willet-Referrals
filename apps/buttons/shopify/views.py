@@ -130,7 +130,8 @@ class ButtonsShopifyUpgrade(URIHandler):
             "name":         "ShopConnection",
             "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" %
                             (URL, existing_app.uuid),
-            "test":         USING_DEV_SERVER
+            "test":         USING_DEV_SERVER,
+            "trial_days":   15
         })
 
         existing_app.put()
