@@ -163,7 +163,6 @@ class ButtonsShopifyBillingCallback(URIHandler):
         client  = ClientShopify.get_by_id(app.store_id)
         details = get_details(self, provided_client=client)
 
-
         if not app:
             error("error calling billing callback: 'app' not found")
 
@@ -171,15 +170,16 @@ class ButtonsShopifyBillingCallback(URIHandler):
 
         if charge_id == app.recurring_billing_id:
             # Good to go, activate!
-            app.activate_recurring_billing({
+            success = app.activate_recurring_billing({
                 'return_url': self.request.url,
                 'test': 'true'
             })
-            app.billing_enabled = True
 
-            app.put()
-
-            app.do_upgrade()
+            #If the user declined to pay, just install the normal app
+            if success:
+                app.billing_enabled = True
+                app.put()
+                app.do_upgrade()
         else:
             raise ShopifyBillingError('Charge id in request does not match '
                                       'expected charge id',
