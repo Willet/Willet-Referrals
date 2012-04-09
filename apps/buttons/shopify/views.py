@@ -12,11 +12,9 @@ from apps.email.models              import Email
 from util.helpers                   import url as build_url
 
 def catch_error(fn):
-    """Decorator for catching errors in ButtonsShopify install
-    """
+    """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
-        """Wrapped function, assumed to be a URI Handler
-        """
+        """Wrapped function, assumed to be a URI Handler."""
         client_email = ''
         shop_owner   = ''
         shop_name    = ''
@@ -44,8 +42,7 @@ def catch_error(fn):
     return wrapped
 
 def get_details(uri_handler=None, provided_client=None):
-    """ Given a URIHandler, returns a dictionary of details we expect
-    """
+    """Given a URIHandler, returns a dictionary of details we expect."""
     if uri_handler is None and uri_handler.request is None:
         raise RuntimeError("No URI Handler provided!")
 
@@ -69,10 +66,9 @@ def get_details(uri_handler=None, provided_client=None):
     return details
 
 class ButtonsShopifyBeta(URIHandler):
-    """ If an existing customer clicks through from Shopify """
+    """If an existing customer clicks through from Shopify."""
     def get(self):
-        """ Display the default 'welcome' page
-        """
+        """Display the default 'welcome' page."""
         template_values = {
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
         }
@@ -80,11 +76,10 @@ class ButtonsShopifyBeta(URIHandler):
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class ButtonsShopifyWelcome(URIHandler):
-    """ After the installation process, provide an opportunity to upgrade"""
+    """After the installation process, provide an opportunity to upgrade."""
     @catch_error
     def get(self):
-        """ Display upgrade options
-        """
+        """Display upgrade options."""
         token = self.request.get( 't' )
         details = get_details(self)
 
@@ -107,11 +102,10 @@ class ButtonsShopifyWelcome(URIHandler):
                                                  template_values))
 
 class ButtonsShopifyUpgrade(URIHandler):
-    """ Starts the upgrade process """
+    """Starts the upgrade process."""
     @catch_error
     def get(self):
-        """ Begin the upgrade process
-        """
+        """Begin the upgrade process."""
         details = get_details(self)
 
         existing_app = ButtonsShopify.get_by_url(details["shop_url"])
@@ -145,15 +139,14 @@ class ButtonsShopifyUpgrade(URIHandler):
                                       'Shopify API', {})
 
 class ButtonsShopifyBillingCallback(URIHandler):
-    """ When a customer confirms / denies billing, they are redirected here
+    """When a customer confirms / denies billing, they are redirected here.
 
     Activates billing with Shopify, then redirects customer to installation
-    instructions
+    instructions.
     """
     @catch_error
     def get(self):
-        """ Activate the billing charges after Shopify has setup the charge
-        """
+        """Activate the billing charges after Shopify has setup the charge."""
 
         app_uuid =self.request.get('app_uuid')
         app = ButtonsShopify.get_by_uuid(app_uuid)
@@ -205,12 +198,10 @@ class ButtonsShopifyBillingCallback(URIHandler):
             self.redirect(page)
 
 class ButtonsShopifyInstructions(URIHandler):
-    """ Actions for the instructions page
-    """
+    """Actions for the instructions page."""
     @catch_error
     def get( self ):
-        """ Displays post-installation instructions
-        """
+        """Displays post-installation instructions."""
         details = get_details(self)
         token  = self.request.get( 't' )
 
@@ -229,11 +220,10 @@ class ButtonsShopifyInstructions(URIHandler):
                                                  template_values))
 
 class ButtonsShopifyInstallError(URIHandler):
-    """ Actions for the error page
-    """
+    """Actions for the error page."""
     def get (self):
-        """ Displays an error page for when the Buttons app fails to install
-            or upgrade. Error emails are not handled by this page.
+        """Displays an error page for when the Buttons app fails to install
+           or upgrade. Error emails are not handled by this page.
         """
         
         template_values = {

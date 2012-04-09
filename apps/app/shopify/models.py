@@ -180,7 +180,7 @@ class AppShopify(Model):
             try:
                 data = response_actions.get(int(resp.status))(content)
                 error = (True if data.get("errors") else False)
-            except (TypeError, ValueError): #Key Didn't exist,
+            except (TypeError, ValueError):  # Key Didn't exist,
             # or couldn't parse JSON
                 error = True
         else:
