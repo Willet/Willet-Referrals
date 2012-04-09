@@ -169,31 +169,42 @@ class ButtonsShopifyBillingCallback(URIHandler):
 
         charge_id = int(self.request.get('charge_id'))
 
-        if charge_id == app.recurring_billing_id:
-            # Good to go, activate!
-            success = app.activate_recurring_billing({
-                'return_url': self.request.url,
-                'test': 'true'
-            })
-
-            #If the user declined to pay, just install the normal app
-            if success:
-                app.billing_enabled = True
-                app.put()
-                app.do_upgrade()
-        else:
+        if charge_id != app.recurring_billing_id:
             raise ShopifyBillingError('Charge id in request does not match '
                                       'expected charge id',
                                       app.recurring_billing_id)
 
-        # Render the page
-        template_values = {
-            'app'        : app,
-            'shop_owner' : details["shop_owner"],
-            'shop_name'  : details["shop_name"]
-        }
-        self.response.out.write(self.render_page('welcome.html',
-                                                 template_values))
+        # Good to go, activate!
+        success = app.activate_recurring_billing({
+            'return_url': self.request.url,
+            'test': 'true'
+        })
+
+        if success:
+            app.billing_enabled = True
+            app.put()
+            app.do_upgrade()
+
+            template_values = {
+                'app'        : app,
+                'shop_owner' : details["shop_owner"],
+                'shop_name'  : details["shop_name"]
+            }
+
+            # Render the page
+            self.response.out.write(self.render_page('welcome.html',
+                                                     template_values))
+        else:
+            #The user declined to pay, redirect to upsell page
+            if app.recurring_billing_price:
+                price = app.recurring_billing_price
+            else:
+                price = app.get_price()
+
+            page = 'welcome?t=%s&shop=%s&app=%s' % (app.store_token,
+                                                        app.store_url,
+                                                        "ButtonsShopify")
+            self.redirect(page)
 
 class ButtonsShopifyInstructions(URIHandler):
     """ Actions for the instructions page
