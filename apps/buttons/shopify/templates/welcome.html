@@ -30,11 +30,24 @@
         .instruction-step input {
             margin: 0;
         }
+        .step-num {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            padding: 1px 7px 1px 9px;
+            font-size: 20px;
+            color: #FFF;
+            background-color: #0496AC;
+            border-radius: 18px;
+            -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+        }
 
         /*----------------------------  ONE-OFFS ---------------------*/
 
         .shopconnection-logo {
-            border: 1px solid #FFF;
+            border: 1px solid #93BC8B;
             border-radius: 10px;
             width: 60px;
             height: 60px;
@@ -53,7 +66,7 @@
         <div class="lower-10 span-24 last
                     right_col installation-steps">
             <div class="prepend-2 span-5 append-1 append-bottom"> 1. Register Store </div>
-            <div class="prepend-1 span-5 append-1 append-bottom"> 2. Pick a version </div>
+            <div class="prepend-1 span-5 append-1 append-bottom"> 2. Pick Version </div>
             <div class="prepend-1 span-6 append-1 append-bottom on-this-step last"> 3. Setup ShopConnection </div>
         </div>
         
@@ -71,7 +84,8 @@
             <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                 <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                             box-design instruction-step">
-                    <p><strong>1. In</strong> your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
+                    <div class="step-num">1.</div>
+                    <p><strong>In</strong> your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
                     
                     <img class="span-18" src="/static/imgs/template_editor.png" />
                 </div>
@@ -81,8 +95,9 @@
                 <div class="prepend-1 span-18 append-1 last
                             box-design instruction-step">
                     <div class="span-10">
+                        <div class="step-num">2.</div>
                         <p class="lower-50"> 
-                            <strong>2. Under</strong> the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippets</em>, try looking under <em>Templates</em>.
+                            <strong>Under</strong> the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippets</em>, try looking under <em>Templates</em>.
                         </p>
                     </div>
                     <div class="prepend-2 span-6 last">
@@ -94,8 +109,9 @@
             <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                 <div class="prepend-1 span-18 append-1 last
                             box-design instruction-step">
+                    <div class="step-num">3.</div>
                     <p>
-                        <strong>3. Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
+                        <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
                         place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
                     </p>
                     <img class="span-18" src="/static/imgs/form.png" />
@@ -105,8 +121,9 @@
             <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                 <div class="prepend-1 span-18 append-1 last
                             box-design instruction-step">
+                    <div class="step-num">4.</div>
                     <p>
-                        <strong>4. Once </strong>you've picked a spot, add this code:
+                        <strong>Once </strong>you've picked a spot, add this code:
                         <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
                     </p>
                 </div>
@@ -115,8 +132,9 @@
             <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                 <div class="prepend-1 span-18 append-1 last
                             box-design instruction-step">
+                    <div class="step-num">5.</div>
                     <p>
-                        <strong>5. Click</strong> <em>save</em> near the top of the screen.
+                        <strong>Click</strong> <em>save</em> near the top of the screen.
                     </p>
                     <img class="span-18" src="/static/imgs/save.png" />
                 </div>
@@ -125,6 +143,7 @@
             <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                 <div class="prepend-1 span-18 append-1 last
                             box-design instruction-step">
+                    <div class="step-num">✓</div>
                     <p class="center"><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
                     <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
                 </div>

@@ -281,6 +281,7 @@ div#starburst>div>div {
     -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
     -moz-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
     box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    position: relative;
 }
 .content-container {
     background-color: #F6F6F6;
