@@ -60,18 +60,11 @@
     </script>
 {% endblock head %}
 
-{% block body-addendum %}
-        <div class="installation-steps">
-            <ol>
-                <li class="on-this-step">1. Register Store </li>
-                <li>2. Pick Version </li>
-                <li>3. Setup ShopConnection </li>
-            </ol>
-        </div>
-{% endblock %}
+{% block header-class %}tall{% endblock %}
 
 {% block content %}
-                    <div class="span-24 last lower-15 center">
+                    <div class="lower-50 span-24 last
+                                center">
                         <img width="400px" src="/static/imgs/shopconnection_text.png">
                     </div>
 
@@ -117,3 +110,13 @@
                         </div>
                     </div>
 {% endblock content %}
+
+{% block body-addendum %}
+        <div class="installation-steps">
+            <ul>
+                <li class="on-this-step">1. Register Store </li>
+                <li>2. Pick Version </li>
+                <li>3. Setup ShopConnection </li>
+            </ul>
+        </div>
+{% endblock %}

@@ -62,20 +62,12 @@
     </style>
 {% endblock head %}
 
-{% block body-addendum %}
-        <div class="installation-steps">
-            <ol>
-                <li>Register Store </li>
-                <li>Pick Version </li>
-                <li class="on-this-step">Setup ShopConnection </li>
-            </ol>
-        </div>
-{% endblock body-addendum %}
+{% block header-class %}tall{% endblock %}
 
 {% block content %}        
-                <div class="lower-50 span-24 last">
+                <div class="lower-10 span-24 last">
                     <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
-                    <h3 class="hi-shop-owner">{{shop_owner}}, terrific choice.<br />
+                    <h3 class="hi-shop-owner">{{ shop_owner }}, terrific choice.<br />
                                               Let's determine where to place the buttons on your product pages:
                     </h3>
                 </div>
@@ -168,3 +160,13 @@
                     </div>
                 </div>
 {% endblock content %}
+
+{% block body-addendum %}
+        <div class="installation-steps">
+            <ul>
+                <li>1. Register Store </li>
+                <li>2. Pick Version </li>
+                <li class="on-this-step">3. Setup ShopConnection </li>
+            </ul>
+        </div>
+{% endblock body-addendum %}
