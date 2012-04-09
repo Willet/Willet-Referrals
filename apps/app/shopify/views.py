@@ -1,43 +1,34 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
-import re
-import urllib
+from time import time
 
-from django.utils               import simplejson as json
-from google.appengine.api       import memcache
-from google.appengine.api       import urlfetch
-from google.appengine.ext       import webapp
-from google.appengine.ext.webapp      import template
-from google.appengine.ext.webapp.util import run_wsgi_app
-from time                       import time
-
-from apps.app.models            import * 
+from apps.app.models import * 
 from apps.client.shopify.models import ClientShopify
-from apps.link.models           import Link
-from apps.user.models           import User
+from apps.link.models import Link
+from apps.user.models import User
 
-from apps.order.models          import *
+from apps.order.models import *
 
-from util.gaesessions           import get_current_session
-from util.helpers               import *
-from util.urihandler            import URIHandler
-from util.consts                import *
+from util.consts import *
+from util.gaesessions import get_current_session
+from util.helpers import *
+from util.urihandler import URIHandler
 
 # The "Shows" ------------------------------------------------------------------
-class ShopifyRedirect( URIHandler ):
+class ShopifyRedirect(URIHandler):
     # Renders a app page
     def get(self):
         # Request varZ from us
-        app          = self.request.get( 'app' )
+        app = self.request.get('app')
         
         # Request varZ from Shopify
-        shopify_url  = self.request.get( 'shop' )
-        shopify_sig  = self.request.get( 'signature' )
-        store_token  = self.request.get( 't' )
-        shopify_timestamp = self.request.get( 'timestamp' )
+        shopify_url = self.request.get('shop')
+        shopify_sig = self.request.get('signature')
+        store_token = self.request.get('t')
+        shopify_timestamp = self.request.get('timestamp')
 
         # Get the store or create a new one
         client = ClientShopify.get_or_create(shopify_url, store_token, self, app)
@@ -48,8 +39,8 @@ class ShopifyRedirect( URIHandler ):
         
         # remember form values
         session['correctEmail'] = client.email
-        session['email']        = client.email
-        session['reg-errors']   = []
+        session['email'] = client.email
+        session['reg-errors'] = []
         
         logging.info("CLIENT: %s" % client.email)
 
@@ -73,9 +64,9 @@ class ShopifyRedirect( URIHandler ):
 
 # The "Dos" --------------------------------------------------------------------
 class DoDeleteApp(URIHandler):
-    def post( self ):
-        client   = self.get_client()
-        app_uuid = self.request.get( 'app_uuid' )
+    def post(self):
+        client = self.get_client()
+        app_uuid = self.request.get('app_uuid')
         
         logging.info('app id: %s' % app_uuid)
         app = App.get_by_uuid(app_uuid)
@@ -83,7 +74,7 @@ class DoDeleteApp(URIHandler):
             logging.info('deleting')
             app.delete()
         
-        self.redirect( '/client/account' )
+        self.redirect('/client/account')
 
 class ServeShopifyUI(URIHandler):
     def get (self):

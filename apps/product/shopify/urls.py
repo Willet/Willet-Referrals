@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from apps.product.shopify.views     import *
+from apps.product.shopify.views import *
 from apps.product.shopify.processes import *
 
 urlpatterns = [

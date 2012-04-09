@@ -1,7 +1,7 @@
 /*
 -*  Willet Social CSS
 -*  Author: Fraser Harris
--*  Copyright Willet Inc, 2011
+-*  Copyright Willet Inc, 2012
 */
 
 @import url("/static/css/fonts.css");
@@ -19,6 +19,7 @@ div#main {
     position: relative;
     padding-top: 0;
     padding-bottom: 75px; /* must be same height as the footer + gap */
+    z-index: 100; /* above clouds */
     
 }
 div#header {
@@ -28,11 +29,11 @@ div#header > div {
 }
 div#footer {
     height: 145px;
-    margin-top: -145px;
+    margin-top: -90px;
 }
 div#footer > div {
     position: relative;
-    margin-top: -145px; /* negative value of footer height */
+    margin-top: -140px; /* negative value of footer height */
     min-height: 20%;
     clear: both;
 }
@@ -42,57 +43,81 @@ div#footer > div {
 html {
     color: #484848;
 	background-color: #E8F7FB;
-    font-family: 'PT Sans', Arial, sans-serif;
+    font-family: 'Overlclock', 'PT Sans', Arial, sans-serif;
 }
 
 body {
-    font-size: 62.5%;
+    font-size: 62.5%; /* Reasonable em's in range 1 - 3 */
+}
+
+/*
+h1, h2, h3, h4 {
+    font-family: 'Open Sans','Myriad Pro','Myriad','Helvetica','Arial',sans-serif;
+    font-weight: bold;
+    color: #373737;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    font-smoothing: antialiased;
 }
 h1 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
-    font-size: 4.0em;
-    font-style: italic;
-    font-weight: bold;
-    color: #474747;
+    font-size: 2.8em;
     margin: 0 0 30px 0;
-    letter-spacing: -2px;
+}
+*/
+
+h1, h2, h3 {
+    font-family: Merriweather, Georgia, 'times new roman', times, serif;
+    font-weight: bold;
+    color: #1f454d;
+}
+h1 {
+    font-size: 4.0em;
+    margin: 0 0 30px 0;
 }
 
 h2 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
-    color: #006280;
+    /*
+    font-size: 2.0em;
+    margin: 0 0 15px 0;
+    */
     font-size: 2.8em;
-    font-weight: bold;
-    font-style: italic;
     margin-bottom: 15px;
-    letter-spacing: 0px;
 }
 
 h3 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    /*font-size: 1.5em;*/
     font-size: 2.0em;
-    letter-spacing: -1px;
 }
+h4 {
+    font-size: 1.5em;
+}
+
 p, td, ul li {
-    font-size: 1.7em;
+    font-size: 1.5em;
 }
+
 li {
     margin-bottom: 1.0em;
 }
+
 p+p {
     text-indent: 0;
 }
+
 a, a:link, a:visited {
-    font-family: 'PT Sans', Arial, sans-serif;
     color: #056380;
     text-decoration: none;
 }
+
 a:hover {
     text-shadow: #474747 1px 1px 1px;
 }
+
 a:active {
     color: #B00C0B;
 }
+
 ul.bar {
     float: right;
     list-style-type: none;
@@ -100,15 +125,18 @@ ul.bar {
     list-style-image: none;
     margin-top: 10px;
 }
+
 ul.bar>li {
     float: right;
     display: inline;
 }
+
 ul.bar>li.last {
     padding-right: none;
 }
+
 ol {
-    font-size:1.5em;
+    font-size:1.0em;
 }
 
 /* -------------------- GENERALLY USEFUL CLASSES ---------------------------- */
@@ -275,10 +303,45 @@ div#starburst>div>div {
     background-image: url("/static/imgs/starburst.png");
 }
 
+/*--------------------------------- CONTENT CONTAINER ---------------------------*/
+
+.box-design {
+    -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    -moz-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    position: relative;
+}
+.content-container {
+    background-color: #F6F6F6;
+}
+.content-container>h1 {
+    text-align: center;
+    font-size: 2.8em;
+    margin: 30px 20px 10px 20px;
+}
+.content-container>h2 {
+    text-align: left;
+    margin: 30px 20px 10px 20px;
+}
+.content-container>h3 {
+    font-family: "Helvetica Neue","Helvetica","Arial",sans-serif;
+    color: #0496AC;
+    text-align: center;
+}
+.content-container>hr {
+    width: 80%;
+    margin: 0 10%;
+    height: 0px;
+    align: center;
+    border-bottom: 1px dashed #DDD;
+
+}
+
 /*--------------------------------- CALL TO ACTION ---------------------------*/
 
 .call_to_action {
     border: 2px solid #FFF;
+    font-family: helvetica, arial, tahoma, sans-serif;
     padding: 10px 30px 10px 20px;
     max-height: 100px;
     font-size: 0.9em;
@@ -305,7 +368,7 @@ div#starburst>div>div {
 }
 .call_to_action.big {
     color: white;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: helvetica, arial, tahoma, sans-serif;
     font-size: 3.0em;
     font-style: italic;
     font-weight: bold;
@@ -383,6 +446,7 @@ div.call_to_action div.subtitle {
 }
 
 .new_call_to_action {
+    font-family: helvetica, arial, tahoma, sans-serif;
     text-align: center;
     display:inline-block;
     -webkit-border-radius:3px;
@@ -427,97 +491,6 @@ background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
 	color:#fff;
 }
 
-/*--------------------- TWEET TO ACTION --------------------------------------*/
-
-.tweet_to_action {
-    border: 2px solid #A4CCE5;
-    padding: 8px 8px 8px 8px;
-    width: 290px;
-    height: 50px;
-    position: relative;
-    font-size: 0.9em;
-    color: #186487;
-    font-family: 'trebuchet ms', helvetica, sans-serif; 
-    text-align: center;
-    text-shadow: none;
-    background-color: #E8F3F9;
-    background-image: -moz-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -webkit-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -ms-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -o-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: linear-gradient(top, #FFF 14%, #D5E6EF);
-    -pie-background: linear-gradient(top, #FFF 14%, #D5E6EF);
-    -khtml-box-shadow: 0 0 10px #C0C0C0;
-    -o-box-shadow: 0 0 10px #C0C0C0;
-    -webkit-box-shadow: 0 0 10px #C0C0C0;
-    -moz-box-shadow: 0 0 10px #C0C0C0;
-    box-shadow: 0 0 10px #C0C0C0;
-    -khtml-border-radius: 20px;
-    -o-border-radius: 20px;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action:hover {
-    border: 2px solid #53A3D6;
-    color: #0B3752;
-    cursor: pointer;
-    background-color: #D8EBF6;
-    background-image: -moz-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -webkit-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -ms-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -o-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: linear-gradient(top, #FFF 14%, #BFDFED);
-    -pie-background: linear-gradient(top, #FFF 14%, #BFDFED);
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action:active {
-    color: #658A9D;
-    border: 2px solid #7AB8DF;
-    background-color: #CEE5F4;
-    background-image: none;
-    -pie-background: none;
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action div.title {
-    float: left;
-    width: 240px;
-    font-size: 25px;
-    line-height: 30px;
-    text-align: center;
-    text-shadow: 1px 1px white;
-}
-.tweet_to_action div.subtitle {
-    float: left;
-    width: 240px;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    text-shadow: 1px 1px white;
-}
-.tweet_to_action div.title:hover, .tweet_to_action div.subtitle:hover {
-    text-shadow: 1px 1px #F5F7F9;
-}
-.tweet_to_action div.title:active, .tweet_to_action div.subtitle:active {
-    text-shadow: 1px 1px #DEECF3;
-}
-.tweet_to_action div.bird {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    width: 50px;
-    height: 50px;
-    background-image: url('../imgs/willet_bird_50.png');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-}
-.tweet_to_action:hover div.bird {
-    background-position: 0 -50px;
-}
-.tweet_to_action:active div.bird {
-    background-position: 0 -100px;
-}
 
 /* -------------------------------- BASE -------------------------------------*/
 
@@ -697,6 +670,14 @@ div#right_header a:active {
     box-shadow: inset 0px 0px 2px 2px rgba(0,0,0,0.25);
 
 }
+div.installation-steps>div {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #888;
+}
+div.installation-steps>div.on-this-step {
+    color: #333;
+}
 /*******************************************************************************
 |                                   PAGES                                      |
 |******************************************************************************/
@@ -808,24 +789,6 @@ td.title {
     color: #ae0909;
 }
 
-#influencer_title {
-    font-size: 1.6em;
-}
-
-.influencer {
-    background-color: #4747474;
-    border-radius: 5px;
-    margin-bottom: 1px;
-    color: white;
-    text-align: center;
-    font-size: 1.4em;
-}
-
-.influencer a {
-    text-shadow: none;
-    color: white;
-}
-
 .profile_pic {
     height: 30px;
     margin: 5px 0px 0px 0px;
@@ -835,21 +798,13 @@ td.title {
 .number {
     text-align: center;
     color: black;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: Merriweather, Georgia, 'times new roman', times, serif;
     font-size: 1.7em;
     font-style: italic;
     font-weight: bold;
     letter-spacing: -2px;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
-}
-
-.smaller_data {
-    font-size: 1.3em;
-}
-
-.click_ratio {
-    font-size: 1.5em;
 }
 
 .clicks {
@@ -874,15 +829,13 @@ td.title {
     font-weight: bold;
     font-style: italic;
 }
-#twitter-preview {
-    border-radius: 5px;
-}
 
 .button,
 .button:visited,
 button, 
 button:visited {
     display:inline-block;
+    font-family: helvetica, arial, tahoma, sans-serif;
     -webkit-border-radius:3px;
     -moz-border-radius:3px;
     border-radius:3px;
@@ -899,16 +852,13 @@ button:visited {
     width:auto;
     background-color:#ae432e;
     color: #fff;
-
     border:1px solid;
     padding:8px 15px;
     margin-bottom:2px;
     font-weight:bold;
     cursor:pointer;
     font-size: 15px;
-    
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
-
     border-color:#cb6652 #b74d39 #803121;
     background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
     background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
@@ -916,7 +866,7 @@ button:visited {
     -webkit-box-shadow:0 1px 2px #999;
     -moz-box-shadow:0 1px 2px #999;
     box-shadow:0 1px 2px #999;
-    color:#fce8e3;
+    /*color:#fce8e3;*/
 }
 .button:hover,
 button:hover { 
@@ -950,14 +900,14 @@ button.grey,
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    background: rgb(238,238,238);
-    background: -moz-linear-gradient(top, rgba(238,238,238,1) 0%, rgba(204,204,204,1) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(204,204,204,1)));
-    background: -webkit-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
-    background: -o-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
-    background: -ms-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: rgb(220,220,220);
+    background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(167,167,167,1)));
+    background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -o-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
-    background: linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
     color: white;
     border: 1px solid;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.5);
@@ -976,33 +926,6 @@ button.grey:hover {
 .button img,
 button img {
     float: left;
-}
-.regular_button {
-  background: -moz-linear-gradient(top, #bde8f5 0%, #006280 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #bde8f5), color-stop(100%, #006280));
-  border: solid 1px #006280;
-  color: white;
-  cursor: pointer;
-  display: inline-block;
-  font-size: 75%;
-  font-weight: bold;
-  margin-left: 6px;
-  min-width: 40px;
-  padding: 3px 5px;
-  text-align: center;
-  text-decoration: none;
-  /* Rounded corners */
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  /* End rounded corners */
-}
-
-.regular_button:hover {
-  background: -moz-linear-gradient(top, #006280 0%, #bde8f5 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #006280), color-stop(100%, #bde8f5 ));
-  border: solid 1px #006280;
-  color: #006280;
 }
 
 .landing {

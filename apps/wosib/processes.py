@@ -1,45 +1,40 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import hashlib
 import random
-import re
 
 from datetime import datetime
 from django.utils import simplejson as json
+from urlparse import urlunsplit
+
 from google.appengine.api import taskqueue
-from google.appengine.ext import webapp, db
-from google.appengine.ext.webapp import template 
-from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext import db
 
-from apps.action.models       import UserAction
-from apps.app.models          import App
-from apps.email.models        import Email
-from apps.link.models         import Link
-from apps.product.shopify.models import ProductShopify
-from apps.product.models      import Product
-from apps.user.models         import User
-from apps.user.actions        import UserIsFBLoggedIn
-from apps.user.models         import User
-from apps.wosib.actions       import *
-from apps.wosib.models        import WOSIBInstance
-from apps.wosib.models        import PartialWOSIBInstance
+from apps.app.models import App
+from apps.email.models import Email
+from apps.link.models import Link
+from apps.product.models import Product
+from apps.user.models import User
+from apps.user.models import User
+from apps.wosib.actions import *
+from apps.wosib.models import WOSIBInstance
+from apps.wosib.models import PartialWOSIBInstance
 
-from util.consts              import *
-from util.helpers             import remove_html_tags
-from util.helpers             import url 
-from util.strip_html          import strip_html
-from util.urihandler          import URIHandler
+from util.consts import *
+from util.helpers import url
+from util.urihandler import URIHandler
 
 
-class DoWOSIBVote(URIHandler):
+class WOSIBDoVote(URIHandler):
     def post(self):
-        # since WOSIBInstances contain more than one product, clients
-        # just call DoWOSIBVote multiple time to vote on each product
-        # they select. (right now, the UI permits selection of only 
-        # product per vote anyway)
+        """ Since WOSIBInstances contain more than one product, clients
+            just call WOSIBDoVote multiple time to vote on each product
+            they select. (right now, the UI permits selection of only 
+            product per vote anyway)
+        """
         instance_uuid = self.request.get('instance_uuid')
         logging.info ("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get('product_uuid')
@@ -50,7 +45,7 @@ class DoWOSIBVote(URIHandler):
 
         # Make a Vote action for this User
         action = WOSIBVoteAction.create(user, instance, product_uuid)
-        instance.increment_votes () # increase instance vote counter
+        instance.increment_votes() # increase instance vote counter
         instance.put()
 
         # Tell the Asker they got a vote!
@@ -87,7 +82,7 @@ class GetExpiredWOSIBInstances(URIHandler):
             )
         logging.info('expiring %d instances' % expired_instances.count())
 
-class RemoveExpiredWOSIBInstance(webapp.RequestHandler):
+class RemoveExpiredWOSIBInstance(URIHandler):
     def post(self):
         return self.get()
     
@@ -119,8 +114,12 @@ class TrackWOSIBShowAction(URIHandler):
 
     def post(self):
         """So javascript can track a wosib specific show actions"""
+        app = None
+        action = None
+        instance = None
         success = False
-        instance = app = user = action = None
+        user = None
+
         if self.request.get('instance_uuid'):
             instance = WOSIBInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
@@ -166,8 +165,12 @@ class TrackWOSIBUserAction(URIHandler):
 
     def post(self):
         """So javascript can track a wosib specific show actions"""
+        app = None
+        action = None
+        instance = None
         success = False
-        instance = app = user = action = None
+        user = None
+
         if self.request.get('instance_uuid'):
             instance = WOSIBInstance.get(self.request.get('instance_uuid')) 
         if self.request.get('app_uuid'):
@@ -177,7 +180,6 @@ class TrackWOSIBUserAction(URIHandler):
         what = self.request.get('what')
         url = self.request.get('target_url')
 
-        action = None
         try:
             action_class = globals()[what]
             action = action_class.create(user, 
@@ -200,28 +202,28 @@ class TrackWOSIBUserAction(URIHandler):
 
         self.response.out.write('')
 
-class StartPartialWOSIBInstance( URIHandler ):
+class StartPartialWOSIBInstance(URIHandler):
     def get (self):
         self.post()
     
-    def post( self ):
-        app = App.get( self.request.get( 'app_uuid' ) )
-        link = Link.get_by_code( self.request.get( 'willt_code' ) )
+    def post(self):
+        app = App.get(self.request.get('app_uuid'))
+        link = Link.get_by_code(self.request.get('willt_code'))
         
-        products = self.request.get( 'product_uuids' )
+        products = self.request.get('product_uuids')
         logging.info ('products = %s' % products)
-        user = User.get( self.request.get( 'user_uuid' ) )
-        PartialWOSIBInstance.create( user, app, link, products.split(',') )
+        user = User.get(self.request.get('user_uuid'))
+        PartialWOSIBInstance.create(user, app, link, products.split(','))
 
 class StartWOSIBInstance(URIHandler):
     def post(self):
-        app  = App.get (self.request.get('app_uuid'))
+        app = App.get (self.request.get('app_uuid'))
         link = Link.get_by_code(self.request.get('willt_code')) # this is crazy
-        products = self.request.get( 'product_uuids' )
+        products = self.request.get('product_uuids')
         logging.info ('products = %s' % products)
-        user = User.get( self.request.get( 'user_uuid' ) )
+        user = User.get(self.request.get('user_uuid'))
 
-        logging.info("Starting WOSIB instance for %s" % link.target_url )
+        logging.info("Starting WOSIB instance for %s" % link.target_url)
 
         # defaults
         response = {
@@ -252,7 +254,7 @@ class StartWOSIBAnalytics(URIHandler):
         self.response.out.write("No analytics yet")
 
 
-class SendWOSIBFriendAsks( URIHandler ):
+class SendWOSIBFriendAsks(URIHandler):
     """ Sends messages to email & FB friends 
 
     Expected inputs:
@@ -275,22 +277,22 @@ class SendWOSIBFriendAsks( URIHandler ):
     def get (self):
         self.post()
     
-    def post( self ):
+    def post(self):
         logging.info("TARGETTED_SHARE_WOSIB_EMAIL_AND_FB")
-        
+
         # Fetch arguments 
-        friends     = json.loads( self.request.get('friends') )
-        asker       = json.loads( self.request.get('asker') )
-        msg         = self.request.get( 'msg' )
-        default_msg = self.request.get( 'default_msg' )
-        app         = App.get( self.request.get('app_uuid') ) # Could be <WOSIB>, <WOSIBShopify> or something...
-        link        = Link.get_by_code( self.request.get( 'willt_code' ) )
-        user        = User.get( self.request.get( 'user_uuid' ) )
-        fb_token    = self.request.get('fb_access_token')
-        fb_id       = self.request.get('fb_id')
+        friends = json.loads(self.request.get('friends'))
+        asker = json.loads(self.request.get('asker'))
+        msg = self.request.get('msg')
+        default_msg = self.request.get('default_msg')
+        app = App.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
+        link = Link.get_by_code(self.request.get('willt_code'))
+        user = User.get(self.request.get('user_uuid'))
+        fb_token = self.request.get('fb_access_token')
+        fb_id = self.request.get('fb_id')
 
         product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
-        fb_friends    = []
+        fb_friends = []
         email_friends = []
         email_share_counter = 0
         fb_share_counter = 0
@@ -337,15 +339,15 @@ class SendWOSIBFriendAsks( URIHandler ):
 
         # Check formatting of share message
         try:
-            if len( msg ) == 0:
+            if len(msg) == 0:
                 if default_msg:
                     msg = default_msg
                 else:
                     msg = "I'm not sure which one I should buy. What do you think?"
             if isinstance(msg, str):
-                message = unicode(msg, errors='ignore')
+                msg = unicode(msg, errors='ignore')
         except:
-            logging.warrning('error transcoding to unicode', exc_info=True)
+            logging.warning('error transcoding to unicode', exc_info=True)
 
         product_image = "%s/static/imgs/blank.png" % URL # blank
         
@@ -366,14 +368,14 @@ class SendWOSIBFriendAsks( URIHandler ):
                 ids.append(fid)
                 names.append(fname)
             try:
-                fb_share_ids = user.fb_post_to_friends( ids,
+                fb_share_ids = user.fb_post_to_friends(ids,
                                                         names,
                                                         msg,
                                                         random_product.images[0], # product image
                                                         random_product.title, # product title
                                                         random_product.description,
                                                         app.client.domain,
-                                                        link )
+                                                        link)
                 fb_share_counter += len(fb_share_ids)
                 logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
@@ -396,7 +398,7 @@ class SendWOSIBFriendAsks( URIHandler ):
                                    vote_url=link.get_willt_url(),
                                    asker_img=a['pic'],
                                    client_name=app.client.name,
-                                   client_domain=app.client.domain )
+                                   client_domain=app.client.domain)
                 except Exception,e:
                     response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                     logging.error('we had an error sharing via email', exc_info=True)
@@ -407,12 +409,17 @@ class SendWOSIBFriendAsks( URIHandler ):
 
         if friend_share_counter > 0:
             # create the instance!
-            instance = app.create_instance( user, 
+            instance = app.create_instance(user, 
                                             None, 
                                             link, 
                                             product_uuids)
             # change link to reflect to the vote page.
-            link.target_url = "%s://%s%s?instance_uuid=%s" % (PROTOCOL, DOMAIN, url ('WOSIBVoteDynamicLoader'), instance.uuid)
+            link.target_url = urlunsplit([PROTOCOL,
+                                          DOMAIN,
+                                          url('WOSIBVoteDynamicLoader'),
+                                          ('instance_uuid=%s' % instance.uuid),
+                                          ''])
+
             logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
             link.put()
             link.memcache_by_code() # doubly memcached

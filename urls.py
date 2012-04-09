@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import logging
 import sys
 
 # generic URL router for willet
@@ -8,8 +9,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api import memcache
 from google.appengine.dist import use_library
 
-from util.consts import *
-from util.helpers import *
+from util.consts import INSTALLED_APPS, USING_DEV_SERVER
 
 from apps.gae_bingo.middleware import GAEBingoWSGIMiddleware
 
@@ -18,11 +18,17 @@ use_library('django', '0.96')
 # our intelligent uri router
 
 def main():
-    old_len = 0
-    new_len = 0
-    reload_uris = memcache.get('reload_uris')
-    import_error = False
+    """ Starts the webapp.
     
+    If the reload_uris flag is set to true, a new URL map will be regenerated
+    using urls.py of all INSTALLED_APPS.
+    """
+    combined_uris = memcache.get('combined_uris') or []
+    import_error = False
+    new_len = 0
+    old_len = 0
+    reload_uris = memcache.get('reload_uris')
+
     try:
         combined_uris = memcache.get('combined_uris')
     except:
@@ -31,7 +37,7 @@ def main():
 
     if reload_uris or not combined_uris:
         # if we have no uris, or if we are rewriting
-        logging.info('reloading uris %s %s' % (reload_uris, combined_uris))
+        logging.info('reloading uris %r' % (reload_uris))
         combined_uris = []
         for app in INSTALLED_APPS: # INSTALLED_APPS came from consts.py
             try:
@@ -39,43 +45,29 @@ def main():
                 __import__(import_str, globals(), locals(), [], -1)
                 app_urls = sys.modules[import_str]
                 combined_uris.extend(app_urls.urlpatterns)
-    
+
                 old_len = new_len
                 new_len = len(combined_uris)
 
                 if old_len + len(app_urls.urlpatterns) > new_len:
                     # we clobbered some urls
-                    raise Exception('url route conflict with %s' % app)
-            except Exception, e:
-                logging.error('error importing %s: %s' % (app, e), exc_info=True)
+                    raise ImportError('url route conflict with %s' % app)
+            except ImportError, err:
+                logging.error('error importing %s: %s' % (app, err), 
+                              exc_info=True)
                 import_error = True
 
-        if import_error:
-            reload_uris = True
-        else:
-            reload_uris = False
+        reload_uris = bool(import_error)
 
         memcache.set('combined_uris', combined_uris)
         memcache.set('reload_uris', reload_uris)
-    else:
-        pass # logging.warn('using memcached uris!') # too verbose - we always use memcached uris
-        
 
-    #logging.info('running application with patterns: %s' % combined_uris)
+    application = webapp.WSGIApplication(combined_uris,
+                                         debug=USING_DEV_SERVER)
+    # insert GAEBingo middlewhere
+    application = GAEBingoWSGIMiddleware(application)
 
-    try:
-        application = webapp.WSGIApplication(
-            combined_uris,
-            debug=USING_DEV_SERVER
-        )
-    
-        # insert GAEBingo middlewhere
-        application = GAEBingoWSGIMiddleware(application)
-
-        run_wsgi_app(application)
-    except:
-        logging.error('There was an error running the application', exc_info=True)
-        raise Exception('we need to fix something')
+    run_wsgi_app(application)
 
 if __name__ == '__main__':
     main()

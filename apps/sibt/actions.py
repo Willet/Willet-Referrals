@@ -2,21 +2,21 @@
 
 # Actions for SIBT
 # SIBTClickAction, 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
 import logging
 
-from google.appengine.api   import memcache
-from google.appengine.ext   import db
+from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models     import Action
-from apps.action.models     import ClickAction
-from apps.action.models     import ShowAction
-from apps.action.models     import UserAction
-from apps.action.models     import VoteAction
+from apps.action.models import Action
+from apps.action.models import ClickAction
+from apps.action.models import ShowAction
+from apps.action.models import UserAction
+from apps.action.models import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
 
@@ -40,9 +40,9 @@ class SIBTClickAction(ClickAction):
 
     ## Constructor 
     @staticmethod
-    def create( user, app, link ):
+    def create(user, app, link):
         # Make the action
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTClickAction(
                 key_name = uuid,
                 uuid = uuid,
@@ -120,24 +120,24 @@ class SIBTVoteAction(VoteAction):
     """ Designates a 'vote' action for a User on a SIBT instance. 
         Currently used for 'SIBT' App """
 
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="vote_actions" )
+    sibt_instance = db.ReferenceProperty(db.Model, collection_name="vote_actions")
 
     # URL that was voted on
-    url           = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
 
     ## Constructor
     @staticmethod
     def create(user, instance, vote):
         # Make the action
-        uuid = generate_uuid( 16 )
-        action = SIBTVoteAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        uuid = generate_uuid(16)
+        action = SIBTVoteAction( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 sibt_instance = instance,
-                                vote     = vote )
+                                vote = vote)
         #super(SIBTVoteAction, act).create()
         action.put()
         
@@ -168,8 +168,8 @@ class SIBTVoteAction(VoteAction):
 
     ## Accessors 
     @staticmethod
-    def get_by_instance( instance ):
-        return SIBTVoteAction.all().filter( 'sibt_instance =', instance )
+    def get_by_instance(instance):
+        return SIBTVoteAction.all().filter('sibt_instance =', instance)
 
     @staticmethod
     def get_by_app_and_instance_and_user(app_, instance, user):
@@ -187,26 +187,26 @@ class SIBTVoteAction(VoteAction):
         return action
 
     @staticmethod
-    def get_by_app_and_instance( app_, instance ):
+    def get_by_app_and_instance(app_, instance):
         return SIBTVoteAction.all()\
                 .filter('app_ =', app_)\
                 .filter('sibt_instance =', instance)\
                 .get()
 
 class SIBTShowAction(ShowAction):
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="show_actions" )
+    sibt_instance = db.ReferenceProperty(db.Model, collection_name="show_actions")
 
     ## Constructor
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = SIBTShowAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        uuid = generate_uuid(16)
+        act = SIBTShowAction( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 sibt_instance = instance)
         #super(SIBTShowAction, act).create()
@@ -224,7 +224,7 @@ class SIBTShowAction(ShowAction):
 
     ## Accessors 
     @staticmethod
-    def get_by_instance( instance ):
+    def get_by_instance(instance):
         return SIBTShowAction.all().filter('sibt_instance =', instance)
 
     @staticmethod
@@ -251,7 +251,7 @@ class SIBTShowingButton(ShowAction):
             logging.error('invalid parameters: %s' % e, exc_info=True)
 
         what = 'SIBTShowingButton'
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTShowingButton(
                 key_name = uuid,
                 uuid = uuid,
@@ -299,11 +299,11 @@ class SIBTShowingResults(SIBTShowAction):
 
         action = SIBTShowingResults(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 sibt_instance = instance
         )
@@ -326,11 +326,11 @@ class SIBTShowingResultsToAsker(SIBTShowAction):
 
         action = SIBTShowingResultsToAsker(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 sibt_instance = instance
         )
@@ -353,11 +353,11 @@ class SIBTShowingVote(SIBTShowAction):
         
         action = SIBTShowingVote(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 what = what,
                 sibt_instance = instance
         )
@@ -372,14 +372,14 @@ class SIBTInstanceAction(UserAction):
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTVoteAction(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
                 sibt_instance = instance,
                 what = what
         )
@@ -396,7 +396,7 @@ class SIBTInstanceAction(UserAction):
         )
 
 class SIBTVisitLength(UserAction):
-    '''action recording the length of visits (if onbeforeunload is called).'''
+    """action recording the length of visits (if onbeforeunload is called)."""
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -412,14 +412,14 @@ class SIBTVisitLength(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTVisitLength(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what     = what,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
+                what = what,
                 duration = duration
         )
         action.put()
@@ -427,7 +427,7 @@ class SIBTVisitLength(UserAction):
         return action
 
 class SIBTInstanceCreated(SIBTInstanceAction):
-    medium = db.StringProperty( default="", indexed=True )
+    medium = db.StringProperty(default="", indexed=True)
 
     @staticmethod
     def create(user, **kwargs):
@@ -445,13 +445,13 @@ class SIBTInstanceCreated(SIBTInstanceAction):
         uuid = generate_uuid(16)
         action = SIBTInstanceCreated(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = instance.app_,
-                link     = instance.link,
-                url      = instance.link.target_url,
-                what     = what,
-                medium   = medium,
+                uuid = uuid,
+                user = user,
+                app_ = instance.app_,
+                link = instance.link,
+                url = instance.link.target_url,
+                what = what,
+                medium = medium,
                 sibt_instance = instance
         )
         #super(SIBTInstanceCreated, action).create()
@@ -611,19 +611,19 @@ class SIBTUserClickedTopBarAsk(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserClickedTopBarAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
 
         # Score bingo for bar or button
-        bingo( 'sibt_bar_or_tab' )
+        bingo('sibt_bar_or_tab')
         
         return action
 
@@ -640,13 +640,13 @@ class SIBTUserClickedButtonAsk(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserClickedButtonAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -666,19 +666,19 @@ class SIBTUserClickedOverlayAsk(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserClickedOverlayAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
 
         # Score bingo for bar or button
-        bingo( 'sibt_overlay_style' )
+        bingo('sibt_overlay_style')
         
         return action 
 
@@ -695,19 +695,19 @@ class SIBTUserClickedTabAsk(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserClickedOverlayAsk(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
         
         # Score bingo for bar or button
-        bingo( 'sibt_bar_or_tab' )
+        bingo('sibt_bar_or_tab')
 
         return action 
 
@@ -724,13 +724,13 @@ class SIBTUserClosedTopBar(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserClosedTopBar(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -749,13 +749,13 @@ class SIBTUserReOpenedTopBar(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTUserReOpenedTopBar(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -774,13 +774,13 @@ class SIBTAskUserClickedEditMotivation(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTAskUserClickedEditMotivation(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -799,13 +799,13 @@ class SIBTAskUserClickedShare(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTAskUserClickedShare(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -824,13 +824,13 @@ class SIBTConnectFBCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTConnectFBCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -849,13 +849,13 @@ class SIBTFBConnected(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTFBConnected(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -874,13 +874,13 @@ class SIBTFriendChoosingCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTFriendChoosingCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -899,14 +899,14 @@ class SIBTNoConnectFBCancelled(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTNoConnectFBCancelled(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
-                what     = what
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
+                what = what
         )
         action.put()
         return action
@@ -924,13 +924,13 @@ class SIBTNoConnectFBDialog(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTNoConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
@@ -949,32 +949,32 @@ class SIBTConnectFBDialog(UserAction):
         except Exception,e:
             logging.error(e, exc_info=True)
 
-        uuid = generate_uuid( 16 )
+        uuid = generate_uuid(16)
         action = SIBTConnectFBDialog(
                 key_name = uuid,
-                uuid     = uuid,
-                user     = user,
-                app_     = app,
-                url      = url,
+                uuid = uuid,
+                user = user,
+                app_ = app,
+                url = url,
                 what = what
         )
         action.put()
         return action
 
 class SIBTUserAction(UserAction):
-    sibt_instance = db.ReferenceProperty( db.Model, collection_name="sibt_user_actions" )
+    sibt_instance = db.ReferenceProperty(db.Model, collection_name="sibt_user_actions")
 
     ## Constructor
     @staticmethod
     def create(user, instance, what):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = SIBTUserAction(  key_name = uuid,
-                                uuid     = uuid,
-                                user     = user,
-                                app_     = instance.app_,
-                                link     = instance.link,
-                                url      = instance.link.target_url,
+        uuid = generate_uuid(16)
+        act = SIBTUserAction( key_name = uuid,
+                                uuid = uuid,
+                                user = user,
+                                app_ = instance.app_,
+                                link = instance.link,
+                                url = instance.link.target_url,
                                 what = what,
                                 sibt_instance = instance)
         #super(SIBTShowAction, act).create()
