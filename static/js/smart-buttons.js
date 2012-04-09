@@ -457,12 +457,28 @@ var _willet = (function(me) {
                     return b.value.accessed - a.value.accessed;
                 });
 
+                //append detected buttons
                 for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var network = networks[i];
                     if (xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
                         && network.value.status === true) {         //check that the network is enabled
                         requiredButtons.push(network.key);
                     }
+                }
+
+                //append user's buttons if there is space, and they have not
+                //already been added
+                var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+                for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                    var button = usersButtons[i];
+                    if (requiredButtons.indexOf(button) == NOT_FOUND) {
+                        requiredButtons.push(button);
+                    }
+                }
+                // Now remove all children of #_willet_buttons_app
+                var i = buttonsDiv.childNodes.length;
+                while (i--) {
+                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
                 }
 
                 //append default buttons to the end, if they have not already been added
@@ -474,6 +490,7 @@ var _willet = (function(me) {
                 }
             }
 
+            //create the required buttons
             for (var i = 0; i < requiredButtons.length; i++) {
                 var network = requiredButtons[i];
                 var button = SUPPORTED_NETWORKS[network]["button"];
