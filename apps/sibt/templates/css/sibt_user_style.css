@@ -1,3 +1,84 @@
+/* willet_sibt_popup: SIBT+WOSIB bottom right popup window CSS */
+#willet_sibt_popup {
+    display: none;
+
+    /* do not use Overclock unless client already has it = fast */
+    background-color:#f9f9f6;
+    font-family: 'Overclock', 'PT Sans', Arial, sans-serif;
+    font-size: 13px;
+    text-align: center;
+    width: 320px;
+    height: 200px;
+    box-shadow: 0 8px 16px 0 #ccc;
+    border: 1px #cdd solid;
+    border-top-left-radius: 10px;
+    padding: 10px;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+}
+#willet_sibt_popup>.title {
+    color: #006280;
+    font-size: 16px;
+    margin: 15px 0 20px 0;
+    text-align: center;
+}
+#willet_sibt_popup>div#product_selector {
+    margin: auto;
+    height: 80px;
+    width: 218px;
+    text-align: center;
+}
+#willet_sibt_popup>div#product_selector>* {
+    float: left;
+}
+#willet_sibt_popup>div#product_selector>.or {
+    display: inline-block;
+    margin: 0 30px;
+    line-height: 70px;
+}
+#willet_sibt_popup>div#product_selector>div.product {
+    display: inline-block;
+}
+
+#willet_sibt_popup>div#product_selector>div.product>img.image {
+    display: block;
+    margin: auto;
+    background: #fff;
+    padding: 3px;
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 2px 4px 0 #ccc;
+    border: 1px #cdd solid;
+}
+#willet_sibt_popup>div#product_selector>div.product>.title
+{
+    font-size: 11px;
+    margin-top: 6px;
+}
+#willet_sibt_popup>button.cta {
+    background: #006280;
+    border-color:#2082A0;
+    color: #fff;
+    font-size: 15px;
+
+    display: inline-block;
+    cursor: pointer;
+    border: 1px solid;
+    padding: 6px;
+    margin: 20px 16px 2px 0;
+
+    border-radius: 5px;
+    box-shadow:0 1px 2px #999;
+    color:#fce8e3;
+}
+#willet_sibt_popup>#anti_cta {
+    color: #333;
+        text-decoration: none;
+        border-bottom: 1px dashed #333;
+    }
+}
+
 #_willet_button_v3 {
 	width: {{ willet_button_v3.width }}px;
 	height: {{ willet_button_v3.height }}px;

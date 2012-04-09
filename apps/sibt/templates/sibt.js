@@ -79,18 +79,18 @@
         };
         storageIFrame.style.display = 'none';
 
-        var storageForm = document.createElement( 'form' );
-        storageForm.setAttribute( 'id', 'sessionform' );
-        storageForm.setAttribute( 'action', "{{URL}}{% url UserCookieSafariHack %}" );
-        storageForm.setAttribute( 'method', 'post' );
-        storageForm.setAttribute( 'target', 'sessionFrame' );
-        storageForm.setAttribute( 'enctype', 'application/x-www-form-urlencoded' );
+        var storageForm = document.createElement('form');
+        storageForm.setAttribute('id', 'sessionform');
+        storageForm.setAttribute('action', "{{URL}}{% url UserCookieSafariHack %}");
+        storageForm.setAttribute('method', 'post');
+        storageForm.setAttribute('target', 'sessionFrame');
+        storageForm.setAttribute('enctype', 'application/x-www-form-urlencoded');
         storageForm.style.display = 'none';
 
-        var storageInput = document.createElement( 'input' );
-        storageInput.setAttribute( 'type', 'text' );
-        storageInput.setAttribute( 'value', '{{user.uuid}}' );
-        storageInput.setAttribute( 'name', 'user_uuid' );
+        var storageInput = document.createElement('input');
+        storageInput.setAttribute('type', 'text');
+        storageInput.setAttribute('value', '{{user.uuid}}');
+        storageInput.setAttribute('name', 'user_uuid');
 
         holder.appendChild( storageIFrame );
         storageForm.appendChild( storageInput );
