@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc."
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc."
 
 import hashlib, re, datetime, sys
 
@@ -14,9 +14,9 @@ from google.appengine.api import urlfetch, memcache
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.datastore_errors import BadValueError
 
-from util.helpers    import *
+from util.helpers import *
 from util.urihandler import URIHandler
-from util.consts     import *
+from util.consts import *
 from util.gaesessions import get_current_session
 
 class ShowLandingPage(URIHandler):
@@ -56,21 +56,21 @@ class ShowMorePage(URIHandler):
         
         self.response.out.write(self.render_page('more.html', template_values))
 
-class ShowAboutPage( URIHandler ):
+class ShowAboutPage(URIHandler):
     # Renders the main template
     def get(self):
         template_values = { }
         
         self.response.out.write(self.render_page('about.html', template_values))
 
-class ShowContactPage( URIHandler ):
+class ShowContactPage(URIHandler):
     # Renders the main template
     def get(self):
         template_values = []
         
         self.response.out.write(self.render_page('contact.html', template_values))
 
-class ShowDemoSitePage( URIHandler ):
+class ShowDemoSitePage(URIHandler):
     # Renders the main template
     def get(self, page):
         template_values = {

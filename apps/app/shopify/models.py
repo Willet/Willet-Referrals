@@ -3,60 +3,60 @@
 # The AppShopify Model
 # A parent class for all Shopify social 'apps'
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import base64
 import hashlib
 import datetime
 import re
 
-from django.utils             import simplejson as json
-from google.appengine.api     import urlfetch
-from google.appengine.ext     import db
+from django.utils import simplejson as json
+
+from google.appengine.api import urlfetch
+from google.appengine.ext import db
 from google.appengine.runtime import DeadlineExceededError
 
-from apps.app.models          import App
-from apps.email.models        import Email
+from apps.app.models import App
+from apps.email.models import Email
 
-from util                     import httplib2
-from util.consts              import *
-from util.errors              import ShopifyAPIError, ShopifyBillingError
-from util.shopify_helpers     import *
-from util.model               import Model
+from util import httplib2
+from util.consts import *
+from util.errors import ShopifyAPIError, ShopifyBillingError
+from util.shopify_helpers import *
+from util.model import Model
 
 NUM_SHARE_SHARDS = 15
 
 class AppShopify(Model):
     """ Model for storing information about a Shopify App.
-        AppShopify classes need not be installable from the Shopify app store,
-        and can be installed as a bundle. Refer to SIBTShopify for example code.
 
-        How Shopify Charges Work:
+    AppShopify classes need not be installable from the Shopify app store,
+    and can be installed as a bundle. Refer to SIBTShopify for example code.
 
-            Two options, one-time charge or recurring billing
+    How Shopify Charges Work:
 
-            Both work with same workflow:
+        Two options, one-time charge or recurring billing
 
-            a) Customer requests charging page
-            b) We make Shopify API call, specifying return_url (on our domain)
-            c) Shopify responds with confirmation_url
-            d) We redirect customer to confirmation_url (on shopify domain)
-            e) Customer decides & is sent to return_url?charge_id=### with confirmed / denied status
-            *f) We make Shopify API call to activate the charge
-            g) Shopify responds with 200 OK
+        Both work with same workflow:
 
-            *We actually hit the Shopify API 1st to get all of the charge info
-            before requesting activation.  There is a lot of junk we don't want to
-            store that needs to be included in the activation request
+        a) Customer requests charging page
+        b) We make Shopify API call, specifying return_url (on our domain)
+        c) Shopify responds with confirmation_url
+        d) We redirect customer to confirmation_url (on shopify domain)
+        e) Customer decides & is sent to return_url?charge_id=### with confirmed / denied status
+        *f) We make Shopify API call to activate the charge
+        g) Shopify responds with 200 OK
 
-            Note: only 1 recurring billing plan can exist for each store for each app.
-            Create a new recurring billing plan will overwrite any existing ones.
+        *We actually hit the Shopify API 1st to get all of the charge info
+        before requesting activation.  There is a lot of junk we don't want to
+        store that needs to be included in the activation request
+
+        Note: only 1 recurring billing plan can exist for each store for each app.
+        Create a new recurring billing plan will overwrite any existing ones.
     """
-    store_id  = db.StringProperty(indexed=True) # Shopify's ID for this store
-    store_url = db.StringProperty(indexed=True) # must be the http://*.myshopify.com
-    extra_url = db.StringProperty(indexed=True, required=False, default='') # custom domain
-    store_token = db.StringProperty(indexed=True) # Shopify token for this store
+    store_id = db.StringProperty(indexed=True) # Shopify's ID for the store
+    store_token = db.StringProperty(indexed=True) # Shopify token for the store
 
     # Recurring billing information
     recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
@@ -79,13 +79,16 @@ class AppShopify(Model):
         self.get_settings()
 
     def _validate_self(self):
-        if not re.match("(http|https)://[\w\-~]+.myshopify.com", self.store_url):
-            raise ValueError("<%s.%s> has malformated store url '%s'" % (self.__class__.__module__, self.__class__.__name__, self.store_url))
+        if not re.match("https?://[\w\-~]+.myshopify.com", self.store_url):
+            err_msg = "<%s.%s> has malformated store url '%s'"
+            raise ValueError(err_msg % (self.__class__.__module__,
+                                        self.__class__.__name__,
+                                        self.store_url))
         return True
 
     def get_settings(self):
         class_name = self.class_name()
-        self.settings = None 
+        self.settings = None
         try:
             self.settings = SHOPIFY_APPS[class_name]
         except Exception, e:
@@ -121,16 +124,16 @@ class AppShopify(Model):
         dts = dt.isoformat()
         return dts[:-2] + ':' + dts[-2:]
     
-    # Retreivers ------------------------------------------------------------
+    # Retreivers --------------------------------------------------------------
     @classmethod
     def get_by_url(cls, store_url):
-        """ Fetch a Shopify app via the store's url"""
+        """Fetch a Shopify app via the store's url."""
         store_url = get_shopify_url(store_url)
 
         logging.info("Shopify: Looking for %s" % store_url)
         return cls.all().filter('store_url =', store_url).get()
 
-    # Shopify API Calls ------------------------------------------------------------
+    # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload= None):
         """ Calls Shopify API
 
@@ -425,15 +428,15 @@ class AppShopify(Model):
         if product_hooks_too:
             default_webhooks.extend([
                 # Install the "Product Creation" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/create" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/create" % (URL),
                                "format": "json", "topic": "products/create" }
                 },
                 # Install the "Product Update" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/update" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/update" % (URL),
                                "format": "json", "topic": "products/update" }
                 },
                 # Install the "Product Delete" webhook
-                { "webhook": { "address": "%s/product/shopify/webhook/delete" % ( URL ),
+                { "webhook": { "address": "%s/product/shopify/webhook/delete" % (URL),
                                "format": "json", "topic": "products/delete" }
                 }
             ])

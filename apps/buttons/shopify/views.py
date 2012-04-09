@@ -61,7 +61,7 @@ def get_details(uri_handler=None, provided_client=None):
         details["client_email"] = ""
         details["shop_owner"]   = "Shopify Merchant"
         details["shop_name"]    = "Your Shopify Store"
-        details["client"]       = ""
+        details["client"]       = None
 
     return details
 
@@ -204,10 +204,21 @@ class ButtonsShopifyInstructions(URIHandler):
         """Displays post-installation instructions."""
         details = get_details(self)
         token  = self.request.get( 't' )
+        client = details["client"]
+
+        if not client or not token:
+            self.error(400) # bad request
+            return
+
+        # update client token (needed when reinstalling)
+        if client.token != token:
+            logging.debug ("token was %s; updating to %s." %
+                           (client.token if client else None, token))
+            client.token = token
+            client.put()
 
         # Fetch or create the app
-        app    = ButtonsShopify.get_or_create_app(details["client"],
-                                                  token=token)
+        app    = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {
@@ -235,3 +246,4 @@ class ButtonsShopifyInstallError(URIHandler):
         self.response.out.write(self.render_page('install_error.html',
                                                  template_values))
         return
+

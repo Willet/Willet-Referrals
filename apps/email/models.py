@@ -8,19 +8,19 @@ Date:  March 2011
 import logging
 import os
 
-from google.appengine.api              import taskqueue
+from google.appengine.api import taskqueue
 from google.appengine.api.app_identity import get_application_id
-from google.appengine.ext.webapp       import template
+from google.appengine.ext.webapp import template
 
 from util.consts import *
 from util.helpers import url 
 
-INFO      = "info@getwillet.com"
-FRASER    = 'fraser@getwillet.com'
-BRIAN     = "brian@getwillet.com"
-NICK      = 'nick@getwillet.com'
+INFO = "info@getwillet.com"
+FRASER = 'fraser@getwillet.com'
+BRIAN = "brian@getwillet.com"
+NICK = 'nick@getwillet.com'
 
-DEV_TEAM  = '%s, %s, %s' % (FRASER, NICK, BRIAN)
+DEV_TEAM = '%s, %s, %s' % (FRASER, NICK, BRIAN)
 FROM_ADDR = INFO
 
 DEV_APPS = {
@@ -156,10 +156,10 @@ class Email():
                          to_name=to_name.title(),
                          replyto_address=from_addr,
                          subject=subject,
-                         body=body )
+                         body=body)
 
     @staticmethod
-    def SIBTVoteNotification( to_addr, name, vote_type, vote_url, product_img, client_name, client_domain ):
+    def SIBTVoteNotification(to_addr, name, vote_type, product_url, product_img, client_name, client_domain):
         to_addr = to_addr
         subject = 'A Friend Voted!'
         if name == "":
@@ -168,7 +168,7 @@ class Email():
             {
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
-                'vote_url'      : vote_url,
+                'product_url'   : product_url,
                 'product_img'   : product_img,
                 'client_name'   : client_name,
                 'client_domain' : client_domain 
@@ -178,7 +178,7 @@ class Email():
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
-                         body=body )
+                         body=body)
 
     @staticmethod
     def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):
@@ -189,7 +189,7 @@ class Email():
         if total == 0:
             buy_it_percentage = 0
         else:
-            buy_it_percentage = int(float( float(yesses) / float(total) ) * 100)
+            buy_it_percentage = int(float(float(yesses) / float(total)) * 100)
 
         if yesses > noes:
             buy_it = True
@@ -211,7 +211,7 @@ class Email():
                          to_address=to_addr,
                          subject=subject,
                          body=body,
-                         to_name=name )
+                         to_name=name)
 
     @staticmethod
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
@@ -248,10 +248,10 @@ class Email():
                          to_name=to_name.title(),
                          replyto_address=from_addr,
                          subject=subject,
-                         body=body )
+                         body=body)
 
     @staticmethod
-    def WOSIBVoteNotification( to_addr, name, cart_url, client_name, client_domain ):
+    def WOSIBVoteNotification(to_addr, name, cart_url, client_name, client_domain):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
         to_addr = to_addr
@@ -272,7 +272,7 @@ class Email():
                          to_address=to_addr,
                          subject=subject,
                          body=body,
-                         to_name=name )
+                         to_name=name)
     
     @staticmethod
     def WOSIBVoteCompletion(to_addr, name, products):
@@ -298,7 +298,7 @@ class Email():
                          to_address=to_addr,
                          subject=subject,
                          body=body,
-                         to_name=name )
+                         to_name=name)
 
     ### MAILOUTS ###
 
@@ -321,4 +321,3 @@ class Email():
                 }
             )
 # end class
-

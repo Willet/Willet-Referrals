@@ -1,25 +1,25 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
 import logging
-from google.appengine.ext    import db
+from google.appengine.ext import db
 
 from apps.action.models import Action
-from util.helpers       import generate_uuid
+from util.helpers import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## WantAction Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class WantAction( Action ):
+class WantAction(Action):
     """ Stored if a User wants an item. """
     
-    url = db.LinkProperty( indexed = True )
+    url = db.LinkProperty(indexed = True)
 
     # Link that caused the want action ...
-    link = db.ReferenceProperty( db.Model, collection_name = "link_wants" )
+    link = db.ReferenceProperty(db.Model, collection_name = "link_wants")
     
     def __str__(self):
         return 'Want: %s(%s) %s' % (
@@ -30,15 +30,15 @@ class WantAction( Action ):
 
     ## Constructor 
     @staticmethod
-    def create( user, app, link ):
+    def create(user, app, link):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = WantAction( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app,
-                           link     = link,
-                           url      = link.target_url )
+        uuid = generate_uuid(16)
+        act = WantAction(key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app,
+                           link = link,
+                           url = link.target_url)
         act.put()
 
     # Accessors

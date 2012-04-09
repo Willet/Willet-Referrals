@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from apps.wosib.views     import *
+from apps.wosib.views import *
 from apps.wosib.processes import *
 
 urlpatterns = [
@@ -13,7 +13,7 @@ urlpatterns = [
     (r'/w/colorbox.css',            ShowWOSIBColorboxCSS),
 
     # Processes
-    (r'/w/doVote',                  DoWOSIBVote),
+    (r'/w/doVote',                  WOSIBDoVote),
     (r'/w/getExpired',              GetExpiredWOSIBInstances),
     (r'/w/removeExpired',           RemoveExpiredWOSIBInstance),
     (r'/w/instance/start',          StartWOSIBInstance),

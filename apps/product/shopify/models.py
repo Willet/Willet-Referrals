@@ -2,25 +2,22 @@
 
 import logging
 
-from django.utils               import simplejson as json
-from google.appengine.api       import urlfetch
+from django.utils import simplejson as json
+from google.appengine.api import urlfetch
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
-from apps.product.models        import Product
-from util.helpers               import generate_uuid
+from apps.product.models import Product
+from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
 class ProductShopify(Product):
     
     shopify_id = db.StringProperty(indexed = True)
-    resource_url = db.StringProperty(default = "") # product page url & main lookup key
     json_response = db.TextProperty(indexed = False) # add more product fields to json as necessary
-    type = db.StringProperty(indexed = False) # The type of product
-    tags = db.StringListProperty(indexed = False) # A list of tags to describe the product
 
-    _memcache_fields = ['resource_url', 'shopify_id']
+    memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)
@@ -33,9 +30,9 @@ class ProductShopify(Product):
     @staticmethod
     def create_from_json(client, data, url=None):
         # Don't make it if we already have it
-        product = ProductShopify.get_by_shopify_id( str( data['id'] ) )
+        product = ProductShopify.get_by_shopify_id(str(data['id']))
         if not product:
-            uuid = generate_uuid( 16 )
+            uuid = generate_uuid(16)
 
             images = []
             if 'images' in data:
@@ -44,13 +41,11 @@ class ProductShopify(Product):
                 images = [str(image['src']) for image in data['images']]
             
             # Make the product
-            product = ProductShopify(
-                    key_name     = uuid,
-                    uuid         = uuid,
-                    client       = client,
-                    resource_url = url,
-                    images       = images
-            )
+            product = ProductShopify(key_name=uuid,
+                                     uuid=uuid,
+                                     client=client,
+                                     resource_url=url,
+                                     images=images)
 
         # Now, update it with info.
         # update_from_json will PUT the obj.
@@ -58,24 +53,8 @@ class ProductShopify(Product):
         return product
 
     @classmethod
-    def _get_memcache_key (cls, unique_identifier):
-        ''' unique_identifier can be URL or ID '''
-        return '%s:%s' % (cls.__name__.lower(), str (unique_identifier))
-
-    @classmethod
-    def get_by_url(cls, url):
-        
-        data = memcache.get(cls._get_memcache_key(url))
-        if data:
-            product = db.model_from_protobuf(entity_pb.EntityProto(data))
-        else:
-            product = cls.all().filter('resource_url =', url).get()
-        
-        return product
-
-    @classmethod
     def get_by_shopify_id(cls, id):
-        id = str( id )
+        id = str(id)
         data = memcache.get(cls._get_memcache_key(id))
         if data:
             product = db.model_from_protobuf(entity_pb.EntityProto(data))
@@ -84,26 +63,25 @@ class ProductShopify(Product):
 
         return product
 
-    @staticmethod
-    def get_or_fetch(url, client):
-        ''' returns a product from our datastore, or if it is not found, 
+    @classmethod
+    def get_or_fetch(cls, url, client):
+        """ returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
             fire a JSON request to Shopify servers to get the product's
             information, create the Product object, and returns that.
-        '''
+        """
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
-        product = ProductShopify.get_by_url(url)
+        product = Product.get_by_url(url)
         if not product:
-            if not product:
-                logging.warn('Could not get product for url: %s' % url)
+            logging.warn('Could not get product for url: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
                 result = urlfetch.fetch(
-                        url = '%s.json' % url,
-                        method = urlfetch.GET
+                        url='%s.json' % url,
+                        method=urlfetch.GET
                 )
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
-                product = ProductShopify.get_by_shopify_id( str(data['id']) )
+                product = ProductShopify.get_by_shopify_id(str(data['id']))
                 if product:
                     product.add_url(url)
                 else:
@@ -146,23 +124,23 @@ class ProductShopify(Product):
 
 
         # Update the Product
-        self.shopify_id    = str(data['id'])
-        self.title         = data[ 'title' ]
-        self.json_response = json.dumps( data )
+        self.shopify_id = str(data['id'])
+        self.title = data[ 'title' ]
+        self.json_response = json.dumps(data)
         
         if type:
-            self.type          = type
+            self.type = type
         if price != 0.0:
-            self.price         = price
+            self.price = price
         if images:
-            self.images        = images
+            self.images = images
         if description:
-            self.description   = description
+            self.description = description
         if tags:
-            self.tags          = tags
+            self.tags = tags
 
-        if hasattr( self, 'processed' ):
-            delattr( self, 'processed' )
+        if hasattr(self, 'processed'):
+            delattr(self, 'processed')
 
         self.put()
 

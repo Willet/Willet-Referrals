@@ -1,22 +1,5 @@
 <html>
-    <head>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-        <script type="text/javascript">
-        if (typeof jQuery == 'undefined'){
-            document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
-        }
-        </script>
-        <script type="text/javascript">
-            $(document).ready(function() {
-                // close the iframe
-                var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
-                target.postMessage(
-                    'close',
-                    '*'
-                );
-            });            
-        </script>
-    </head>
+    <head></head>
     <body style="center">
         <p>This vote is now over.</p>
     </body>
