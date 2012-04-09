@@ -589,11 +589,11 @@ div#header>div#cloud_top {
 div#header.tall>div#white {
     height:50px;
 }
-div#header>div#cloud_bottom {
+div#header.tall>div#cloud_bottom {
     top: 50px;
 }
 
-div#header>div#cloud_top {
+div#header.tall>div#cloud_top {
     margin-top: 50px;
 }
 div#wrap {
