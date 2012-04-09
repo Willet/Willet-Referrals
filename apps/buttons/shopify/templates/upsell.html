@@ -189,191 +189,103 @@
     </style>
 {% endblock head %}
 
+{% block body-addendum %}
+		<div class="installation-steps">
+            <ol>
+                <li>Register Store </li>
+                <li class="on-this-step">Pick Version </li>
+                <li>Setup ShopConnection </li>
+            </ol>
+        </div>
+{% endblock body-addendum %}
+
 {% block content %}
-		<div class="lower-10 span-24 last
-                    right_col installation-steps">
-            <div class="prepend-2 span-5 append-1 append-bottom"> 1. Register Store </div>
-            <div class="prepend-1 span-5 append-1 append-bottom on-this-step"> 2. Pick Version </div>
-            <div class="prepend-1 span-6 append-1 append-bottom last"> 3. Setup ShopConnection </div>
-        </div>
+                <div class="lower-50 span-24 last">
+                    <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
+                    <h3 class="hi-shop-owner">{{shop_owner}}, thanks for installing ShopConnection.<br />
+                                              Please choose which version is right for your store:
+                    </h3>
+                </div>
 
-        <div class="lower-50 span-24 last">
-            <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
-            <h3 class="hi-shop-owner">{{shop_owner}}, thanks for installing ShopConnection.<br />
-                                      Please choose which version is right for your store:
-            </h3>
-        </div>
+                <div class="prepend-top span-24 last
+                            box-design content-container" >
+                    <h1>Grow Your Business By Increasing Your Stores Sharing</h1>
+                    <h3>For a limited time, Smart ShopConnection is free for 15 days. Upgrade, downgrade, or cancel anytime.</h3>
 
-        <div class="prepend-top span-24 last
-                    box-design content-container" >
-            <h1>Grow Your Business By Increasing Your Stores Sharing</h1>
-            <h3>For a limited time, Smart ShopConnection is free for 15 days. Upgrade, downgrade, or cancel anytime.</h3>
-
-            <div class="prepend-top prepend-1 span-22 append-1 append-bottom last">
-        		<div class="span-9 
-                            pricing-col box-design">
-        			<ul>
-                        <li class="title">ShopConnection</li>
-                        <li class="price">Free</li>
-                        <li class="features">
-                            <ul>
-                                <li>Social buttons - <i>Pinterest, etc</i></li>
-                                <li>Simple installation with support</li>
-                                <li class="not-included">Personalized sharing</li>
-                                <li class="not-included">Weekly sharing report</li>
-                                <li class="not-included">Customization control panel</li>
-                                <li class="blank">intentionally left blank</li>
+                    <div class="prepend-top prepend-1 span-22 append-1 append-bottom last">
+                		<div class="span-9 
+                                    pricing-col box-design">
+                			<ul>
+                                <li class="title">ShopConnection</li>
+                                <li class="price">Free</li>
+                                <li class="features">
+                                    <ul>
+                                        <li>Social buttons - <i>Pinterest, etc</i></li>
+                                        <li>Simple installation with support</li>
+                                        <li class="not-included">Personalized sharing</li>
+                                        <li class="not-included">Weekly sharing report</li>
+                                        <li class="not-included">Customization control panel</li>
+                                        <li class="blank">intentionally left blank</li>
+                                    </ul>
+                                </li>
                             </ul>
-                        </li>
-                    </ul>
-                    <div class="call-to-action">
-                        <div class="narrow">
-                            <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
-                                <button class="grey">Choose</button>
-                            </a>
+                            <div class="call-to-action">
+                                <div class="narrow">
+                                    <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
+                                        <button class="grey">Choose</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span-1">
+                            <div style="visibility:hidden">Hack to force span</div>
+                        </div>
+                        <div class="span-12 last
+                                    pricing-col box-design">
+                            <div class="seal">
+                                Guaranteed to increase sharing
+                            </div>
+                            <ul>
+                                <li class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</li>
+                                <li class="price"><span class="dollar">$</span>4.99<span class="per-month">/ month</span></li>
+                                <li class="features">
+                                    <ul>
+                                        <li>Social buttons - <i>Pinterest, etc</i></li>
+                                        <li>Simple installation with support</li>
+                                        <li>Personalized sharing <a href="#learn">Learn more</a></li>
+                                        <li>Weekly sharing report <span class="coming-soon">(coming soon)</span></li>
+                                        <li>Customization control panel <span class="coming-soon">(coming soon)</span></li>
+                                        <li>15 day no-risk trial</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="call-to-action">
+                                <div class="wide">
+                                    <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
+                                        <button class="blue">Start your free trial!</button>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="span-1">
-                    <div style="visibility: hidden">Hack to force span</div>
-                </div>
-                <div class="span-12 last
-                            pricing-col box-design">
-                    <div class="seal">
-                        Guaranteed to increase sharing
-                    </div>
-                    <ul>
-                        <li class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</li>
-                        <li class="price"><span class="dollar">$</span>4.99<span class="per-month">/ month</span></li>
-                        <li class="features">
-                            <ul>
-                                <li>Social buttons - <i>Pinterest, etc</i></li>
-                                <li>Simple installation with support</li>
-                                <li>Personalized sharing <a href="#learn">Learn more</a></li>
-                                <li>Weekly sharing report <span class="coming-soon">(coming soon)</span></li>
-                                <li>Customization control panel <span class="coming-soon">(coming soon)</span></li>
-                                <li>15 day no-risk trial</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <div class="call-to-action">
-                        <div class="wide">
-                            <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
-                                <button class="blue">Start your free trial!</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="clear"></div>
+                    <div class="clear"></div>
 
-            <hr />
+                    <hr />
 
-            <h1 id="learn">Learn More About <span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</h1>
-            <div class="lower-25 prepend-2 span-20 append-2 append-bottom last">
-                <div class="span-7 append-1
-                            explanation-col">
-                    <p>
-                        Stop guessing which social networks your customers use. Personalize which buttons 
-                        appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
-                    </p>
-                </div>
-                <div class="span-12 last">
-                    <div style="width:450px; height:250px; border: 1px solid black; text-align: center; line-height: 250px;">
-                        Video
-                    </div>
-                </div>
-            </div>
- 
-            <div class="lower-25 prepend-1 span-22 append-1 append-bottom last">
-                <div class="prepend-1 span-20 append-1">
-                    <h2 id="faq">Frequently Asked Questions</h2>
-                </div>
-                <div class="lower-25 prepend-1 span-20 append-1 append-bottom last
-                             box-design faq">
-                    <ul>
-                        <li>
-                            <h4>How do you determine which social networks a customer uses?</h4>
-                            <p>The largest social networks feature passive ways to determine if someone is a
-                                user, without revealing anything about that person. In addition, we make
-                                a note whenever someone shares with a network.
+                    <h1 id="learn">Learn More About <span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</h1>
+                    <div class="lower-25 prepend-2 span-20 append-2 append-bottom last">
+                        <div class="span-7 append-1
+                                    explanation-col">
+                            <p>
+                                Stop guessing which social networks your customers use. Personalize which buttons 
+                                appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
                             </p>
-                        </li>
-                        <li>
-                            <h4>What if you don't find any networks they are using?</h4>
-                            <p>Smart ShopConnection always displays 3 social buttons. We will default to the
-                                3 that you choose. we use Pinterest, Tumblr, and the Fancy if you haven't set a default.
-                            </p>
-                        </li>
-                        <li>
-                            <h4>Are there any privacy concerns with this?</h4>
-                            <p>Nope. We don't determine any personal information, and everything happens
-                                on your customers' computer.  It is never shared or stored elsewhere.
-                            </p>
-                        </li>
-                </div>
-            </div>
-            <div class="clear"></div>
-
-            <hr />
-
-            <h1>Choose The Right ShopConnection For Your Store</h1>
-            <div class="prepend-top prepend-1 span-22 append-1 append-bottom last">
-                <div class="span-9 
-                            pricing-col box-design">
-                    <ul>
-                        <li class="title">ShopConnection</li>
-                        <li class="price">Free</li>
-                        <li class="features">
-                            <ul>
-                                <li>Social buttons - <i>Pinterest, etc</i></li>
-                                <li>Simple installation with support</li>
-                                <li class="not-included">Personalized sharing</li>
-                                <li class="not-included">Weekly sharing report</li>
-                                <li class="not-included">Customization control panel</li>
-                                <li class="blank">intentionally left blank</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <div class="call-to-action">
-                        <div class="narrow">
-                            <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
-                                <button class="grey">Choose</button>
-                            </a>
+                        </div>
+                        <div class="span-12 last">
+                            <div style="width:450px; height:250px; border: 1px solid black; text-align: center; line-height: 250px;">
+                                Video
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="span-1">
-                    <div style="visibility: hidden">Hack to force span</div>
-                </div>
-                <div class="span-12 last
-                            pricing-col box-design">
-                    <div class="seal">
-                        Guaranteed to increase sharing
-                    </div>
-                    <ul>
-                        <li class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</li>
-                        <li class="price"><span class="dollar">$</span>4.99<span class="per-month">/ month</span></li>
-                        <li class="features">
-                            <ul>
-                                <li>Social buttons - <i>Pinterest, etc</i></li>
-                                <li>Simple installation with support</li>
-                                <li>Personalized sharing <a href="#learn">Learn more</a></li>
-                                <li>Weekly sharing report <span class="coming-soon">(coming soon)</span></li>
-                                <li>Customization control panel <span class="coming-soon">(coming soon)</span></li>
-                                <li>15 day no-risk trial</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <div class="call-to-action">
-                        <div class="wide">
-                            <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
-                                <button class="blue">Start your free trial!</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="clear"></div>
-        </div>
 {% endblock content %}
