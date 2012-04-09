@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2012, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 from google.appengine.ext import db
 from google.appengine.api import memcache
@@ -16,5 +16,5 @@ class VoteCounter(db.Model):
     """Sharded counter for voting counts"""
 
     instance_uuid = db.StringProperty(indexed=True, required=True)
-    yesses        = db.IntegerProperty(indexed=False, required=True, default=0)
-    nos           = db.IntegerProperty(indexed=False, required=True, default=0)
+    yesses = db.IntegerProperty(indexed=False, required=True, default=0)
+    nos = db.IntegerProperty(indexed=False, required=True, default=0)

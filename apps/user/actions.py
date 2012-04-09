@@ -1,19 +1,19 @@
 #!/usr/bin/env/python
 
-__author__    = "Willet, Inc."
+__author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import datetime
 import logging
-from google.appengine.ext    import db
+from google.appengine.ext import db
 
 from apps.action.models import Action
-from util.helpers       import generate_uuid
+from util.helpers import generate_uuid
 
 ## -----------------------------------------------------------------------------
 ## UserCreate Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
-class UserCreate( Action ):
+class UserCreate(Action):
     """ Stored when a new User is created. """
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
@@ -24,18 +24,18 @@ class UserCreate( Action ):
 
     ## Constructor 
     @staticmethod
-    def create( user, app ):
+    def create(user, app):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = UserCreate( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app )
+        uuid = generate_uuid(16)
+        act = UserCreate(key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app)
         act.put()
 
     @staticmethod
-    def get_by_user( user ):
-        return UserCreate.all().filter( 'user =', user ).get()
+    def get_by_user(user):
+        return UserCreate.all().filter('user =', user).get()
 
 class UserIsFBLoggedIn(Action):
     """ Stored when a new User is created. """
@@ -50,15 +50,15 @@ class UserIsFBLoggedIn(Action):
     @staticmethod
     def create(user, app=None, instance=None, url=None):
         # Make the action
-        uuid = generate_uuid( 16 )
-        act  = UserIsFBLoggedIn( key_name = uuid,
-                           uuid     = uuid,
-                           user     = user,
-                           app_     = app )
+        uuid = generate_uuid(16)
+        act = UserIsFBLoggedIn(key_name = uuid,
+                           uuid = uuid,
+                           user = user,
+                           app_ = app)
         act.put()
         logging.debug("PUT USER can haz facebooks")
 
     @staticmethod
-    def get_by_user( user ):
+    def get_by_user(user):
         return UserIsFBLoggedIn.all().filter('user =', user).get()
 

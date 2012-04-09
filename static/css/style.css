@@ -1,7 +1,7 @@
 /*
 -*  Willet Social CSS
 -*  Author: Fraser Harris
--*  Copyright Willet Inc, 2011
+-*  Copyright Willet Inc, 2012
 */
 
 @import url("/static/css/fonts.css");
@@ -29,11 +29,11 @@ div#header > div {
 }
 div#footer {
     height: 145px;
-    margin-top: -145px;
+    margin-top: -90px;
 }
 div#footer > div {
     position: relative;
-    margin-top: -145px; /* negative value of footer height */
+    margin-top: -140px; /* negative value of footer height */
     min-height: 20%;
     clear: both;
 }
@@ -43,12 +43,14 @@ div#footer > div {
 html {
     color: #484848;
 	background-color: #E8F7FB;
-    font-family: 'PT Sans', Arial, sans-serif;
+    font-family: 'Overlclock', 'PT Sans', Arial, sans-serif;
 }
 
 body {
     font-size: 62.5%; /* Reasonable em's in range 1 - 3 */
 }
+
+/*
 h1, h2, h3, h4 {
     font-family: 'Open Sans','Myriad Pro','Myriad','Helvetica','Arial',sans-serif;
     font-weight: bold;
@@ -62,37 +64,60 @@ h1 {
     font-size: 2.8em;
     margin: 0 0 30px 0;
 }
+*/
+
+h1, h2, h3 {
+    font-family: Merriweather, Georgia, 'times new roman', times, serif;
+    font-weight: bold;
+    color: #1f454d;
+}
+h1 {
+    font-size: 4.0em;
+    margin: 0 0 30px 0;
+}
 
 h2 {
+    /*
     font-size: 2.0em;
     margin: 0 0 15px 0;
+    */
+    font-size: 2.8em;
+    margin-bottom: 15px;
 }
+
 h3 {
-    font-size: 1.5em;
+    /*font-size: 1.5em;*/
+    font-size: 2.0em;
 }
 h4 {
     font-size: 1.5em;
 }
+
 p, td, ul li {
     font-size: 1.5em;
 }
+
 li {
     margin-bottom: 1.0em;
 }
+
 p+p {
     text-indent: 0;
 }
+
 a, a:link, a:visited {
-    font-family: 'PT Sans', Arial, sans-serif;
     color: #056380;
     text-decoration: none;
 }
+
 a:hover {
     text-shadow: #474747 1px 1px 1px;
 }
+
 a:active {
     color: #B00C0B;
 }
+
 ul.bar {
     float: right;
     list-style-type: none;
@@ -100,13 +125,16 @@ ul.bar {
     list-style-image: none;
     margin-top: 10px;
 }
+
 ul.bar>li {
     float: right;
     display: inline;
 }
+
 ul.bar>li.last {
     padding-right: none;
 }
+
 ol {
     font-size:1.0em;
 }
@@ -313,6 +341,7 @@ div#starburst>div>div {
 
 .call_to_action {
     border: 2px solid #FFF;
+    font-family: helvetica, arial, tahoma, sans-serif;
     padding: 10px 30px 10px 20px;
     max-height: 100px;
     font-size: 0.9em;
@@ -339,7 +368,7 @@ div#starburst>div>div {
 }
 .call_to_action.big {
     color: white;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: helvetica, arial, tahoma, sans-serif;
     font-size: 3.0em;
     font-style: italic;
     font-weight: bold;
@@ -417,6 +446,7 @@ div.call_to_action div.subtitle {
 }
 
 .new_call_to_action {
+    font-family: helvetica, arial, tahoma, sans-serif;
     text-align: center;
     display:inline-block;
     -webkit-border-radius:3px;
@@ -461,97 +491,6 @@ background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
 	color:#fff;
 }
 
-/*--------------------- TWEET TO ACTION --------------------------------------*/
-
-.tweet_to_action {
-    border: 2px solid #A4CCE5;
-    padding: 8px 8px 8px 8px;
-    width: 290px;
-    height: 50px;
-    position: relative;
-    font-size: 0.9em;
-    color: #186487;
-    font-family: 'trebuchet ms', helvetica, sans-serif; 
-    text-align: center;
-    text-shadow: none;
-    background-color: #E8F3F9;
-    background-image: -moz-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -webkit-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -ms-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: -o-linear-gradient(top, #FFF 14%, #D5E6EF);
-    background-image: linear-gradient(top, #FFF 14%, #D5E6EF);
-    -pie-background: linear-gradient(top, #FFF 14%, #D5E6EF);
-    -khtml-box-shadow: 0 0 10px #C0C0C0;
-    -o-box-shadow: 0 0 10px #C0C0C0;
-    -webkit-box-shadow: 0 0 10px #C0C0C0;
-    -moz-box-shadow: 0 0 10px #C0C0C0;
-    box-shadow: 0 0 10px #C0C0C0;
-    -khtml-border-radius: 20px;
-    -o-border-radius: 20px;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action:hover {
-    border: 2px solid #53A3D6;
-    color: #0B3752;
-    cursor: pointer;
-    background-color: #D8EBF6;
-    background-image: -moz-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -webkit-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -ms-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: -o-linear-gradient(top, #FFF 14%, #BFDFED);
-    background-image: linear-gradient(top, #FFF 14%, #BFDFED);
-    -pie-background: linear-gradient(top, #FFF 14%, #BFDFED);
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action:active {
-    color: #658A9D;
-    border: 2px solid #7AB8DF;
-    background-color: #CEE5F4;
-    background-image: none;
-    -pie-background: none;
-    behavior: ("../js/PIE.htc");
-}
-.tweet_to_action div.title {
-    float: left;
-    width: 240px;
-    font-size: 25px;
-    line-height: 30px;
-    text-align: center;
-    text-shadow: 1px 1px white;
-}
-.tweet_to_action div.subtitle {
-    float: left;
-    width: 240px;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    text-shadow: 1px 1px white;
-}
-.tweet_to_action div.title:hover, .tweet_to_action div.subtitle:hover {
-    text-shadow: 1px 1px #F5F7F9;
-}
-.tweet_to_action div.title:active, .tweet_to_action div.subtitle:active {
-    text-shadow: 1px 1px #DEECF3;
-}
-.tweet_to_action div.bird {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    width: 50px;
-    height: 50px;
-    background-image: url('../imgs/willet_bird_50.png');
-    background-repeat: no-repeat;
-    background-position: 0 0;
-}
-.tweet_to_action:hover div.bird {
-    background-position: 0 -50px;
-}
-.tweet_to_action:active div.bird {
-    background-position: 0 -100px;
-}
 
 /* -------------------------------- BASE -------------------------------------*/
 
@@ -850,24 +789,6 @@ td.title {
     color: #ae0909;
 }
 
-#influencer_title {
-    font-size: 1.6em;
-}
-
-.influencer {
-    background-color: #4747474;
-    border-radius: 5px;
-    margin-bottom: 1px;
-    color: white;
-    text-align: center;
-    font-size: 1.4em;
-}
-
-.influencer a {
-    text-shadow: none;
-    color: white;
-}
-
 .profile_pic {
     height: 30px;
     margin: 5px 0px 0px 0px;
@@ -877,21 +798,13 @@ td.title {
 .number {
     text-align: center;
     color: black;
-    font-family: 'trebuchet ms', helvetica, sans-serif;
+    font-family: Merriweather, Georgia, 'times new roman', times, serif;
     font-size: 1.7em;
     font-style: italic;
     font-weight: bold;
     letter-spacing: -2px;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
-}
-
-.smaller_data {
-    font-size: 1.3em;
-}
-
-.click_ratio {
-    font-size: 1.5em;
 }
 
 .clicks {
@@ -916,15 +829,13 @@ td.title {
     font-weight: bold;
     font-style: italic;
 }
-#twitter-preview {
-    border-radius: 5px;
-}
 
 .button,
 .button:visited,
 button, 
 button:visited {
     display:inline-block;
+    font-family: helvetica, arial, tahoma, sans-serif;
     -webkit-border-radius:3px;
     -moz-border-radius:3px;
     border-radius:3px;
@@ -1015,33 +926,6 @@ button.grey:hover {
 .button img,
 button img {
     float: left;
-}
-.regular_button {
-  background: -moz-linear-gradient(top, #bde8f5 0%, #006280 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #bde8f5), color-stop(100%, #006280));
-  border: solid 1px #006280;
-  color: white;
-  cursor: pointer;
-  display: inline-block;
-  font-size: 75%;
-  font-weight: bold;
-  margin-left: 6px;
-  min-width: 40px;
-  padding: 3px 5px;
-  text-align: center;
-  text-decoration: none;
-  /* Rounded corners */
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-  /* End rounded corners */
-}
-
-.regular_button:hover {
-  background: -moz-linear-gradient(top, #006280 0%, #bde8f5 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #006280), color-stop(100%, #bde8f5 ));
-  border: solid 1px #006280;
-  color: #006280;
 }
 
 .landing {

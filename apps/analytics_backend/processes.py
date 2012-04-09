@@ -23,6 +23,8 @@ from apps.app.shopify.models import *
 from apps.sibt.shopify.models import *
 from apps.email.models import Email
 
+from util.urihandler import URIHandler
+
 """
 Analytics Backend!
 Based on:
@@ -232,12 +234,12 @@ def build_global_daily_stats(global_slice):
             global_slice.increment(action, hour_slice.get_attr(action))
     yield op.db.Put(global_slice)
 
-class TimeSlices(webapp.RequestHandler):
+class TimeSlices(URIHandler):
     """ Funnily enough, sometimes GET or POST is called. 
         Thanks for being consistent, mapreduce. """
 
     def post(self, action, scope):
-        return self.get( action, scope )
+        return self.get(action, scope)
 
     def get(self, action, scope):
         """Handler to run our analytics methods. Because there is a lot of
@@ -365,132 +367,8 @@ class TimeSlices(webapp.RequestHandler):
         data = {'success': True, 'mapreduce_id': mapreduce_id}
         self.response.out.write(json.dumps(data))
 
-class AnalyticsDone(webapp.RequestHandler):
+class AnalyticsDone(URIHandler):
     def get(self):
         Email.emailDevTeam('Finished running analytics')
         self.response.out.write(json.dumps({'success': True}))
-
-
-#class EnsureGlobalHourlySlices(webapp.RequestHandler):
-#    def get(self):
-#        today = datetime.datetime.today()
-#        hours = range(24)
-#        created_list = []
-#        for hour in hours:
-#            val = today - datetime.timedelta(hours=hour)
-#            gats, created = GlobalAnalyticsHourSlice.get_or_create(start=val, 
-#                    put=False) 
-#            if created:
-#                created_list.append(gats)
-#        db.put(created_list)
-
-#class EnsureGlobalDaySlices(webapp.RequestHandler):
-#    def get(self):
-#        today = datetime.date.today()
-#        days = range(7)
-#        created_list = []
-#        for day in days:
-#            val = today - datetime.timedelta(days=hour)
-#            gats, created = GlobalAnalyticsDaySlice.get_or_create(start=val, 
-#                    put=False) 
-#            if created:
-#                created_list.append(gats)
-#        db.put(created_list)
-
-###
-# These classes initiate the map reduce jobs
-###
-#class EnsureHourlyAppSlices(webapp.RequestHandler):
-#    """Ensures the objects for the APP STATS
-#    Run as a map reduce job because we have to create an HOUR time slice
-#    FOR EACH APP"""
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Create Hourly Analytics Models',
-#            'apps.analytics_backend.processes.ensure_hourly_slices',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.app.models.App'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
-
- 
-
-################
-
-#class EnsureDailyAppSlices(webapp.RequestHandler):
-#    """Ensures the objects for the APP STATS
-#    Run as a map reduce job because we have to create a DAY time slice
-#    FOR EACH APP"""
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Create Daily Analytics Models',
-#            'apps.analytics_backend.processes.ensure_daily_slices',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.app.models.App'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
-
-
-
-################
-
-#class RunHourlyActionAnalytics(webapp.RequestHandler):
-#    """Runs the hour stats for all APPS"""
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Computing Hourly Action Analytics',
-#            'apps.analytics_backend.processes.build_hourly_stats',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.analytics_backend.models.AppAnalyticsHourSlice'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
-
-
-
-################
-
-#class RunDailyActionAnalytics(webapp.RequestHandler):
-#    """Runs the hour stats for all APPS"""
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Computing Daily Action Analytics',
-#            'apps.analytics_backend.processes.build_daily_stats',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.analytics_backend.models.AppAnalyticsDaySlice'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
-
-
-
-
-################
-
-#class RunHourlyGlobalActionAnalytics(webapp.RequestHandler):
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Computing Hourly Global Action Analytics',
-#            'apps.analytics_backend.processes.build_global_hourly_stats',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.analytics_backend.models.GlobalAnalyticsHourSlice'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
-
-
-################
-
-#class RunDailyGlobalActionAnalytics(webapp.RequestHandler):
-#    def get(self):
-#        mapreduce_id = control.start_map(
-#            'Computing Daily Global Action Analytics',
-#            'apps.analytics_backend.processes.build_global_daily_stats',
-#            'mapreduce.input_readers.DatastoreInputReader',
-#            {'entity_kind': 'apps.analytics_backend.models.GlobalAnalyticsDailySlice'},
-#            shard_count=10
-#        )
-#        self.response.out.write('started: %s' % mapreduce_id)
 

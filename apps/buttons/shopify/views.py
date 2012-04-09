@@ -2,17 +2,18 @@
 
 import logging
 
-from google.appengine.ext           import webapp
-from google.appengine.ext.webapp    import template
-from urlparse                       import urlparse
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from urlparse import urlparse
 
-from apps.buttons.shopify.models    import ButtonsShopify 
-from apps.client.shopify.models     import ClientShopify
-from util.consts                    import *
-from util.errors                    import ShopifyBillingError
-from util.urihandler                import URIHandler
-from apps.email.models              import Email
-from util.helpers                   import url as build_url
+from apps.buttons.shopify.models import ButtonsShopify 
+from apps.client.shopify.models import ClientShopify
+
+from util.consts import *
+from util.errors import ShopifyBillingError
+from util.urihandler import URIHandler
+from apps.email.models import Email
+from util.helpers import url as build_url
 
 class ButtonsShopifyBeta(URIHandler):
     """ If an existing customer clicks through from Shopify """
@@ -190,14 +191,24 @@ class ButtonsShopifyBillingCallback(URIHandler):
 class ButtonsShopifyInstructions(URIHandler):
     def get( self ):
         # TODO: put this somewhere smarter
-        shop   = self.request.get( 'shop' )
-        token  = self.request.get( 't' )
+        shop = self.request.get('shop')
+        token = self.request.get('t')
 
         # Fetch the client
-        client = ClientShopify.get_by_url( shop )
+        client = ClientShopify.get_by_url(shop)
+        
+        if not client or not token:
+            self.error(400) # bad request
+            return
+        
+        # update client token (needed when reinstalling)
+        if client.token != token:
+            logging.debug ("token was %s; updating to %s." % (client.token if client else None, token))
+            client.token = token
+            client.put()
     
         # Fetch or create the app
-        app    = ButtonsShopify.get_or_create_app(client, token=token)
+        app = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {

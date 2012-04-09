@@ -13,7 +13,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from apps.link.models import CodeCounter
 from apps.link.models import Link
-from apps.app.models import App
+from apps.app.models import get_app_by_id, App
 
 # helpers
 from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
@@ -54,38 +54,36 @@ class InitCodes(webapp.RequestHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""
     def get(self):
-        n = 20
-        for i in range(n):
+        n = 0
+        for i in range(20):
             ac = CodeCounter(
                 count=i,
                 total_counter_nums=20,
                 key_name = str(i)
             )
             ac.put()
+            n += 1
         self.response.out.write(str(n) + " counters initialized")
 
 class CleanBadLinks( webapp.RequestHandler ):
     def get(self):
         links = Link.all().filter('user =', None)
 
-        if links:
-            count = 0
-            str   = 'Cleaning the bad links'
-            for l in links:
-                clicks = l.count_clicks()
-                try:
-                    if l.user == None and clicks != 0:
-                        count += 1
-                        str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
+        count = 0
+        str   = 'Cleaning the bad links'
+        for l in links:
+            clicks = l.count_clicks()
+            try:
+                if l.user == None and clicks != 0:
+                    count += 1
+                    str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
-                        l.delete()
-                except Exception,e:
                     l.delete()
-                    logging.warn('probably unable to resolve property: %s' % e)
+            except Exception,e:
+                l.delete()
+                logging.warn('probably unable to resolve property: %s' % e)
 
-            logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
-        else:
-            logging.info("CleanBadLinks Report: No bad links found")
+        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
 
 class IncrementCodeCounter(webapp.RequestHandler):
     """ This was getting called every time a willet code was being

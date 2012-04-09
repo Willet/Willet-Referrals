@@ -3,7 +3,7 @@
 import random
 import logging
 
-from google.appengine.ext    import db
+from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import deferred
@@ -18,7 +18,7 @@ class MemcacheBucketConfig(Model):
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
     
-    _memcache_fields = ['id', 'name']
+    memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
