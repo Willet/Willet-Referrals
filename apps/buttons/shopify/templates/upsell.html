@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% endblock head %}
+
+
+
+{% block content %}
+		<div class="lower-15 span-24 last right_col">
+            <div id="right_header" class="span-24 last">
+                <p><a target="_blank" href="{% url ShowBetaPage %}">Check Out Our Other Shopify App!</a></p>
+            </div>
+        </div>
+
+        <div class="lower-50 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
+        <div class="lower-50 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Pick a version </div>
+        <div class="lower-50 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Setup ShopConnection </div>
+
+		<h1 class="span-24 last center">You're almost done installing ShopConnection!</h1>
+		<div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
+			<div class="center span-24 last append-bottom">
+                <p>
+                    {{shop_owner}}, thanks for installing "ShopConnection"!  
+                    <br />
+                    Which would you prefer?
+                </p>
+
+                <p><a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">FREE version</a></p>
+                <p><a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">PREMIUM version (Only ${{price}} / month)</a></p>
+            </div>
+		</div>
+
+
+{% endblock content %}
