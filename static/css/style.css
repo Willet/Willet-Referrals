@@ -19,6 +19,7 @@ div#main {
     position: relative;
     padding-top: 0;
     padding-bottom: 75px; /* must be same height as the footer + gap */
+    z-index: 100; /* above clouds */
     
 }
 div#header {
@@ -46,35 +47,34 @@ html {
 }
 
 body {
-    font-size: 62.5%;
+    font-size: 62.5%; /* Reasonable em's in range 1 - 3 */
+}
+h1, h2, h3, h4 {
+    font-family: 'Open Sans','Myriad Pro','Myriad','Helvetica','Arial',sans-serif;
+    font-weight: bold;
+    color: #373737;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    font-smoothing: antialiased;
 }
 h1 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
-    font-size: 4.0em;
-    font-style: italic;
-    font-weight: bold;
-    color: #474747;
+    font-size: 2.8em;
     margin: 0 0 30px 0;
-    letter-spacing: -2px;
 }
 
 h2 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
-    color: #006280;
-    font-size: 2.8em;
-    font-weight: bold;
-    font-style: italic;
-    margin-bottom: 15px;
-    letter-spacing: 0px;
-}
-
-h3 {
-    font-family: 'trebuchet ms', helvetica, sans-serif;
     font-size: 2.0em;
-    letter-spacing: -1px;
+    margin: 0 0 15px 0;
+}
+h3 {
+    font-size: 1.5em;
+}
+h4 {
+    font-size: 1.5em;
 }
 p, td, ul li {
-    font-size: 1.7em;
+    font-size: 1.5em;
 }
 li {
     margin-bottom: 1.0em;
@@ -108,7 +108,7 @@ ul.bar>li.last {
     padding-right: none;
 }
 ol {
-    font-size:1.5em;
+    font-size:1.0em;
 }
 
 /* -------------------- GENERALLY USEFUL CLASSES ---------------------------- */
@@ -273,6 +273,39 @@ div#starburst>div>div {
     margin-top: -170px;
     margin-left: -840px;
     background-image: url("/static/imgs/starburst.png");
+}
+
+/*--------------------------------- CONTENT CONTAINER ---------------------------*/
+
+.box-design {
+    -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    -moz-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
+}
+.content-container {
+    background-color: #F6F6F6;
+}
+.content-container>h1 {
+    text-align: center;
+    font-size: 2.8em;
+    margin: 30px 20px 10px 20px;
+}
+.content-container>h2 {
+    text-align: left;
+    margin: 30px 20px 10px 20px;
+}
+.content-container>h3 {
+    font-family: "Helvetica Neue","Helvetica","Arial",sans-serif;
+    color: #0496AC;
+    text-align: center;
+}
+.content-container>hr {
+    width: 80%;
+    margin: 0 10%;
+    height: 0px;
+    align: center;
+    border-bottom: 1px dashed #DDD;
+
 }
 
 /*--------------------------------- CALL TO ACTION ---------------------------*/
@@ -697,6 +730,14 @@ div#right_header a:active {
     box-shadow: inset 0px 0px 2px 2px rgba(0,0,0,0.25);
 
 }
+div.installation-steps>div {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #888;
+}
+div.installation-steps>div.on-this-step {
+    color: #333;
+}
 /*******************************************************************************
 |                                   PAGES                                      |
 |******************************************************************************/
@@ -899,16 +940,13 @@ button:visited {
     width:auto;
     background-color:#ae432e;
     color: #fff;
-
     border:1px solid;
     padding:8px 15px;
     margin-bottom:2px;
     font-weight:bold;
     cursor:pointer;
     font-size: 15px;
-    
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
-
     border-color:#cb6652 #b74d39 #803121;
     background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
     background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
@@ -916,7 +954,7 @@ button:visited {
     -webkit-box-shadow:0 1px 2px #999;
     -moz-box-shadow:0 1px 2px #999;
     box-shadow:0 1px 2px #999;
-    color:#fce8e3;
+    /*color:#fce8e3;*/
 }
 .button:hover,
 button:hover { 
@@ -950,14 +988,14 @@ button.grey,
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    background: rgb(238,238,238);
-    background: -moz-linear-gradient(top, rgba(238,238,238,1) 0%, rgba(204,204,204,1) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(238,238,238,1)), color-stop(100%,rgba(204,204,204,1)));
-    background: -webkit-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
-    background: -o-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
-    background: -ms-linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: rgb(220,220,220);
+    background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(167,167,167,1)));
+    background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -o-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
+    background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
-    background: linear-gradient(top, rgba(238,238,238,1) 0%,rgba(204,204,204,1) 100%);
+    background: linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
     color: white;
     border: 1px solid;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.5);

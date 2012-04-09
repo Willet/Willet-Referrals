@@ -21,89 +21,118 @@
             padding: 0px 0px 0px 0px;
             margin-bottom: 5px;
         }
+        .instruction-step {
+            background-color: #FFF;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            font-size: 1.0em;
+        }
+        .instruction-step input {
+            margin: 0;
+        }
+
+        /*----------------------------  ONE-OFFS ---------------------*/
+
+        .shopconnection-logo {
+            border: 1px solid #FFF;
+            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            float: left;
+        }
+        .hi-shop-owner {
+            color: #0496AC;
+            text-shadow: 1px 1px 1px #FFF;
+            line-height: 2em;
+            padding-left: 90px;
+        }
     </style>
 {% endblock head %}
 
-
-
 {% block content %}
-        <div class="lower-15 span-24 last right_col">
-            <div id="right_header" class="span-24 last">
-                <p><a target="_blank" href="/s/shopify/beta">Check Out Our Other Shopify App!</a></p>
-            </div>
+        <div class="lower-10 span-24 last
+                    right_col installation-steps">
+            <div class="prepend-2 span-5 append-1 append-bottom"> 1. Register Store </div>
+            <div class="prepend-1 span-5 append-1 append-bottom"> 2. Pick a version </div>
+            <div class="prepend-1 span-6 append-1 append-bottom on-this-step last"> 3. Setup ShopConnection </div>
+        </div>
+        
+        <div class="lower-50 span-24 last">
+            <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
+            <h3 class="hi-shop-owner">{{shop_owner}}, terrific choice.<br />
+                                      Let's determine where to place the buttons on your product pages:
+            </h3>
         </div>
 
-        <div class="lower-50 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
-        <div class="lower-50 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 2. Pick a version </div>
-        <div class="lower-50 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold;"> 3. Setup ShopConnection </div>
-        
-        <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
-        <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
-            <div class="center span-24 last append-bottom">
-                <p>
-                    {{shop_owner}}, thanks for installing "ShopConnection"!  
-                    <br />
-                    Now, let's determine where to place the buttons on your product pages.
-                </p>
+        <div class="prepend-top span-24 last
+                    box-design content-container" >
+            <h1>Integration Guide for {{shop_name}}</h1>
+
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                            box-design instruction-step">
+                    <p><strong>1. In</strong> your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
+                    
+                    <img class="span-18" src="/static/imgs/template_editor.png" />
+                </div>
+            </div>
+
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="span-10">
+                        <p class="lower-50"> 
+                            <strong>2. Under</strong> the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippets</em>, try looking under <em>Templates</em>.
+                        </p>
+                    </div>
+                    <div class="prepend-2 span-6 last">
+                         <img src="/static/imgs/snippets_product.png" />
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <p>
+                        <strong>3. Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
+                        place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
+                    </p>
+                    <img class="span-18" src="/static/imgs/form.png" />
+                </div> 
+            </div>
+
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <p>
+                        <strong>4. Once </strong>you've picked a spot, add this code:
+                        <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
+                    </p>
+                </div>
+            </div>
+            
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <p>
+                        <strong>5. Click</strong> <em>save</em> near the top of the screen.
+                    </p>
+                    <img class="span-18" src="/static/imgs/save.png" />
+                </div>
+            </div>
+            
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <p class="center"><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
+                    <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
+                </div>
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <p>1. In your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
-                
-                <img class="span-18" src="/static/imgs/template_editor.png" />
-            </div>
-            
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
-
-            <div class="prepend-top prepend-3 span-12 append-bottom">
-                <p class="lower-50"> 
-                    2. Under the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippts</em>, try looking under
-                    <em>Templates</em>.
-                </p>
-            </div>
-            
-            <div class="prepend-top prepend-2 span-6 last append-bottom">
-                 <img src="/static/imgs/snippets_product.png" />
-            </div>
-
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
-            
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>3. Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to
-                    place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
-                </p>
-                 
-                 <img class="span-18" src="/static/imgs/form.png" />
-            </div>
-            
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
-            
-            <div class="prepend-top prepend-3 span-18 append-3 last">
-                <p>
-                    <strong>4. Once </strong>you've picked a spot, add this code:
-                    <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
-                </p>
-            </div>
-           
-            <hr style="height: 10px; width: 500px; margin-left: auto; margin-right: auto;"></hr> 
-            
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>5. Click</strong> <em>save</em> near the top of the screen.
-                </p>
-                 
-                 <img class="span-18" src="/static/imgs/save.png" />
-            </div>
-            
-            <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
-                <br />
-                <p>Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
-            </div>
-
-            <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Email fraser@getwillet.com!</h3>
+                <h3 class="center">Want to customize the look or location of the buttons? Check out our <a target="_blank" href="http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html">Customization Guide</a><br />
+                                   Have other questions? Email: fraser@getwillet.com</h3>
                 <br />
 
                 <div class="center">
