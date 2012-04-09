@@ -27,7 +27,13 @@ def main():
     import_error = False
     new_len = 0
     old_len = 0
-    reload_uris = memcache.get('reload_uris') or True
+    reload_uris = memcache.get('reload_uris')
+
+    try:
+        combined_uris = memcache.get('combined_uris')
+    except:
+        reload_uris   = True
+        combined_uris = False
 
     if reload_uris or not combined_uris:
         # if we have no uris, or if we are rewriting
@@ -56,10 +62,8 @@ def main():
         memcache.set('combined_uris', combined_uris)
         memcache.set('reload_uris', reload_uris)
 
-    application = webapp.WSGIApplication(
-        combined_uris,
-        debug=USING_DEV_SERVER
-    )
+    application = webapp.WSGIApplication(combined_uris,
+                                         debug=USING_DEV_SERVER)
     # insert GAEBingo middlewhere
     application = GAEBingoWSGIMiddleware(application)
 

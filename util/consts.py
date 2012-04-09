@@ -158,13 +158,8 @@ INSTALLED_APPS = [
 # NOTE: For this to work, this must be the last line in your util/local_consts.py
 # > ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 # > LOCAL_CONSTS = dict((name, value) for (name, value) in globals().items()
-<<<<<<< HEAD
 # >                                   if name[:1] in ascii_uppercase)
 # > 
-=======
-# >                                   if name[:1] in string.ascii_uppercase )
-# >
->>>>>>> master
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:
