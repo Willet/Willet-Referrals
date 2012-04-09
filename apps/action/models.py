@@ -81,20 +81,13 @@ class Action(Model, polymodel.PolyModel):
         This 'Action' class will be subclassed for specific actions
         ie. click, vote, tweet, share, email, etc. """
     
-    # Datetime when this model was put into the DB
-    created         = db.DateTimeProperty( auto_now_add=True )
     
-    # Length of time a compound action had persisted prior to its creation
-    duration        = db.FloatProperty( default = 0.0 )
-    
-    # Person who did the action
-    user            = MemcacheReferenceProperty( db.Model, collection_name = 'user_actions' )
-    
-    # True iff this Action's User is an admin
-    is_admin        = db.BooleanProperty( default = False )
-    
-    # The App that this Action is for
-    app_            = db.ReferenceProperty( db.Model, collection_name = 'app_actions' )
+    created = db.DateTimeProperty(auto_now_add=True) # Datetime when this model was put into the DB
+    duration = db.FloatProperty(default=0.0) # Length of time a compound action had persisted prior to its creation
+    user = MemcacheReferenceProperty(db.Model, collection_name='user_actions') # Person who did the action
+    is_admin = db.BooleanProperty(default=False) # True iff this Action's User is an admin
+    app_ = db.ReferenceProperty(db.Model, collection_name='app_actions') # The App that this Action is for
+   #name -> Action.get_class_name()
     
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
