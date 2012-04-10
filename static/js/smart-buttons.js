@@ -123,7 +123,9 @@ var _willet = (function(me) {
                 "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
             },
             "button": {
-                "script": PROTOCOL + '//assets.pinterest.com/js/pinit.js',
+                // Workaround until Pinterest has an API:
+                // http://stackoverflow.com/questions/9622503/pinterest-button-has-a-callback
+                "script": "", //PROTOCOL + '//assets.pinterest.com/js/pinit.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'pinterest',
@@ -139,8 +141,20 @@ var _willet = (function(me) {
                     link.className = "pin-it-button";
                     link.innerHTML = "Pin It";
 
+                    link.style.position = "absolute";
+                    link.style.background = "url('http://assets.pinterest.com/images/pinit6.png')";
+                    link.style.font = "11px Arial, sans-serif";
+                    link.style.textIndent = "-9999em"
+                    link.style.fontSize = ".01em";
+                    link.style.color = "#CD1F1F";
+                    link.style.height = "20px";
+                    link.style.width = "43px";
+                    link.style.backgroundPosition = "0 -7px";
+
                     link.onclick = function() {
                         itemShared("Pinterest");
+                        window.open(link.href, 'signin', 'height=300,width=665');
+                        return false;
                     };
 
                     link.setAttribute('count-layout', "horizontal");
@@ -509,12 +523,15 @@ var _willet = (function(me) {
                     "buttonPadding": buttonPadding
                 }));
 
-                var script = document.createElement("script");
-                script.type = "text/javascript";
-                script.src = button["script"];
-                script.onload = button["onLoad"];
+                if (button["script"] !== "") {
+                    var script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = button["script"];
+                    script.onload = button["onLoad"];
 
-                HEAD.appendChild(script);
+                    HEAD.appendChild(script);
+                }
+
                 _willet.debug.log('Buttons: '+ network +' attached');
             }
 
@@ -822,7 +839,6 @@ try {
     _willet.debug.set(false); //set to true if you want logging turned on
     _willet.init();
 } catch(e) {
-    //TODO: Fire an email
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
         var script = encodeURIComponent("smart-buttons.js");
