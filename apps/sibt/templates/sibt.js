@@ -579,7 +579,8 @@
 
             // save past products' images
             // check if page is visited twice or more in a row
-            if (get_largest_image() !== $.cookie('product1_image')) {
+            if (get_largest_image() !== $.cookie('product1_image') &&
+                get_largest_image() !== $.cookie('product2_image')) {
                 // image 1 is more recent; shift products
                 $.cookie('product2_image', $.cookie('product1_image'));
                 $.cookie('product1_image', get_largest_image());
