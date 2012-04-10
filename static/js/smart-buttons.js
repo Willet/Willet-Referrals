@@ -343,8 +343,12 @@ var _willet = (function(me) {
         var error = encodeURIComponent(network + ": Share detected!");
         var script = encodeURIComponent("smart-buttons.js");
         var st = encodeURIComponent("No errors");
+        var subject = error;
 
-        var params = "error=" + error + "&script=" + script + "&st=" + st;
+        var params = "subject=" + subject
+                   + "&error="  + error
+                   + "&script=" + script
+                   + "&st="     + st;
 
         var _willetImage = document.createElement("img");
         _willetImage.src = APP_URL + "/admin/ithinkiateacookie?" + params;
