@@ -1,4 +1,5 @@
-;(function (w, d) {
+(function (w, d) {
+    "use strict";
     /*
      * Willet's "Should I Buy This"
      * Copyright Willet Inc, 2012
@@ -9,32 +10,57 @@
      * w and d are aliases of window and document.
      */
 
-    var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
+    // declare vars
+    var app, instance, sys, topbar, user;
+
+    var hash_index = -1;
+    var padding_elem = null;
+    var topbar = null;
+    var topbar_hide_button = null;
+    var willt_code = null;
+    // CSS rules (except colorbox_css, which includes its own 'quotes';)
+    var colorbox_css = {% include stylesheet %}
+    var popup_css = '{% include popup_stylesheet %}';
+    var app_css = '{{ app_css }}';
+
+    // set up a list of scripts to load asynchronously.
+    var scripts_to_load = ['{{URL}}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") { // str comparison is OK
+        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
+    }
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
-    var sibt_version = {{sibt_version|default:"3"}};
-    var ask_success = false;
-    var debug = ('{{ debug }}' === 'True');
-    var is_asker = ('{{ is_asker }}' === 'True'); // did they ask?
-    var is_live = ('{{ is_live }}' === 'True');
-    var has_results = ('{{ has_results }}' === 'True');
-    var show_votes = ('{{ show_votes }}' === 'True');
-    var has_voted = ('{{ has_voted }}' === 'True');
-    var button_enabled = ('{{ app.button_enabled }}' === 'True');
-    var topbar_enabled = ('{{ app.top_bar_enabled }}' === 'True');
-    var show_top_bar_ask = ('{{ show_top_bar_ask }}' === 'True');
-    var bottom_popup_enabled = ('{{ app.bottom_popup_enabled }}' === 'True');
-    
-    // true when visitor on page more than (4 times)
-    var unsure_multi_view = ('{{ unsure_multi_view }}' === 'True');
-    
-    // true when SIBT needs to be disabled on the same page as Buttons
-    var detect_shopconnection = ('{{ detect_shopconnection }}' === 'True');
-    var padding_elem = topbar = topbar_hide_button = willt_code = null;
-    var hash_index = -1;
+    sys = {
+        'debug': ('{{debug}}' === 'True'),
+        '$_conflict': !(w.$ && w.$.fn && w.$.fn.jquery)
+    };
+    app = {
+        // true when SIBT needs to be disabled on the same page as Buttons
+        'detect_shopconnection': ('{{detect_shopconnection}}' === 'True'),
+        'features': {
+            'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
+            'button': ('{{app.button_enabled}}' === 'True'),
+            'topbar': ('{{app.top_bar_enabled}}' === 'True')
+        },
+        'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
+        // true when visitor on page more than (4 times)
+        'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+        'version': {{sibt_version|default:"3"}}
+    };
+    instance = {
+        'has_results': ('{{has_results}}' === 'True'),
+        'is_live': ('{{is_live}}' === 'True'),
+        'show_votes': ('{{show_votes}}' === 'True')
+    };
+    user = {
+        'ask_success': false, // did they JUST ask?
+        'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
+        'is_asker': ('{{is_asker}}' === 'True') // did they ask?
+    };
 
     try { // debug if available
-        if (debug) {
+        if (sys.debug) {
             if (!(typeof(w.console) === 'object' &&
                 (typeof(w.console.log) === 'function' || 
                  typeof(w.console.log) === 'object') &&
@@ -55,7 +81,8 @@
 
     var manage_script_loading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when all are finished loading
-        var i = scripts_not_ready = scripts.length;
+        var i, scripts_not_ready;
+        i = scripts_not_ready = scripts.length;
         var ready_callback = ready_callback || function () {};
 
         var script_loaded = function (index) {
@@ -88,13 +115,12 @@
             load(scripts[i], i);
         }
     };
-    
-    
+
     // Stores user_uuid for all browsers - differently for Safari.
     var setCookieStorageFlag = function() {
         w.cookieSafariStorageReady = true;
     };
-    
+
     // Safari cookie storage backup
     var firstTimeSession = 0;
     var doSafariCookieStorage = function () {
@@ -144,46 +170,38 @@
         setCookieStorageFlag();
     }
 
-    // set up a list of scripts to load asynchronously.
-    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
-    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
-    }
-
     // Once all dependencies are loading, fire this function
     var init = function () {
 
         // load CSS for colorbox as soon as possible!!
-        var _willet_css = {% include stylesheet %}
-        var _willet_popup_css = '{% include popup_stylesheet %}';
-        var _willet_app_css = '{{ app_css }}';
-        var _willet_style = d.createElement('style');
-        var _willet_head  = d.getElementsByTagName('head')[0];
-        _willet_style.type = 'text/css';
-        _willet_style.setAttribute('charset','utf-8');
-        _willet_style.setAttribute('media','all');
-        if (_willet_style.styleSheet) {
-            _willet_style.styleSheet.cssText = _willet_css + _willet_popup_css + _willet_app_css;
+        var styles = colorbox_css + popup_css + app_css;
+        var willet_style = d.createElement('style');
+        var head_elem = d.getElementsByTagName('head')[0];
+            willet_style.type = 'text/css';
+            willet_style.setAttribute('charset','utf-8');
+            willet_style.setAttribute('media','all');
+        if (willet_style.styleSheet) {
+            willet_style.styleSheet.cssText = styles;
         } else {
-            var rules = d.createTextNode(_willet_css + _willet_popup_css + _willet_app_css);
-            _willet_style.appendChild(rules);
+            willet_style.appendChild(d.createTextNode(styles));
         }
-        _willet_head.appendChild(_willet_style);
+        head_elem.appendChild(willet_style);
 
-        if ($_conflict) {
+        if (sys.$_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
         }
-        
+
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
 
             // jQuery shaker plugin
-            (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})(jQuery);
+            {% include '../../plugin/templates/js/jquery.shaker.js' %}
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
+            // jQuery image derpdown plugin (shows image dropdown box)
+            {% include '../../sibt/templates/js/jquery.imagedropdown.js' %}
 
-            var willet_metadata = function (more) {
+            var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ? will be added for you.
                 // add more query properties with the "more" param.
                 return $.param($.extend ({}, // blank original
@@ -238,8 +256,8 @@
                     id: random_id,
                     name: random_id,
                     css: {'display': 'none'},
-                    src: "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + 
-                          encodeURIComponent(message) + "&" + willet_metadata(),
+                    src: "{{URL}}{% url TrackSIBTShowAction %}?evnt=" +
+                          encodeURIComponent(message) + "&" + metadata(),
                     load: function () {
                         try {
                             var iframe_handle = d.getElementById(random_id);
@@ -250,11 +268,11 @@
                     }
                 }).appendTo("body");
             };
-            
+
             // Called when ask iframe is closed
             var ask_callback = function( fb_response ) {
-                if (ask_success) {
-                    is_asker = true;
+                if (user.ask_success === true) {
+                    user.is_asker = true;
                     $('#_willet_button').html('Refresh the page to see your results!');
                 }
             };
@@ -266,7 +284,7 @@
                 } catch (err) {
                     console.log(err.message);
                 }
-                if (is_asker || show_votes) {
+                if (user.is_asker || instance.show_votes) {
                     // we are no longer showing results with the topbar.
                     show_results ();
                 } else {
@@ -274,7 +292,7 @@
                     show_ask ();
                 }
             };
-            
+
             var show_colorbox = function (options) {
                 var defaults = {
                     transition: 'fade',
@@ -291,11 +309,11 @@
                 if ($.willet_colorbox) {
                     $.willet_colorbox(options);
                 } else { // backup
-                    console.log("opening window");
+                    console.log("opening new window");
                     var width = parseInt(options.innerWidth);
                     var height = parseInt(options.innerHeight);
-                    var left = (screen.width - width) /2;
-                    var top = (screen.height - height) /2;
+                    var left = (screen.width - width) / 2;
+                    var top = (screen.height - height) / 2;
                     var new_window = window.open(
                         options.href, // url
                         '_blank', // name
@@ -308,13 +326,12 @@
                     new_window.focus();
                 }
             }
-            
+
             var show_results = function () {
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 show_colorbox({
-                    href: "{{URL}}/s/results.html?" + 
-                           willet_metadata ({'refer_url': w.location.href}),
+                    href: "{{URL}}/s/results.html?" + metadata({'refer_url': w.location.href}),
                     onClosed: function () {}
                 });
             };
@@ -328,6 +345,21 @@
                 });
             };
 
+            var add_scroll_shaking = function (elem) {
+                var $elem = $(elem);
+                $(w).scroll(function () {
+                    if (is_scrolled_into_view($elem) && !$elem.data('shaken_yet')) {
+                        setTimeout(function () {
+                            $elem.shaker();
+                            setTimeout(function () {
+                                $elem.shaker.stop();
+                                $elem.data('shaken_yet', true);
+                            }, 600); // shake duration
+                        }, 700); // wait for ?ms until it shakes
+                    }
+                });
+            }
+
             var save_product = function(data) {
                 // auto-create product objects using page info, using
                 // (<div class='_willet_...' data-....>) or otherwise
@@ -337,7 +369,7 @@
                     // do NOT send .data() directly! Will cause unexpected func calls.
                     var data = {
                         'client_uuid': data.client_uuid || '{{ client.uuid }}', // REQUIRED
-                        'sibtversion': data.sibtversion || sibt_version,
+                        'sibtversion': data.sibtversion || app.version,
                         'title': data.title || '{{ product.title }}' || get_page_title(),
                         'description': data.description || '{{ product.description }}',
                         'images': data.images || '',
@@ -349,7 +381,7 @@
                     };
                     if (data.client_uuid) {
                         $.ajax({
-                            url: '{{ URL }}{% url CreateProduct %}',
+                            url: '{{URL}}{% url CreateProduct %}',
                             type: "POST",
                             data: data,
                             dataType: 'json',
@@ -376,7 +408,7 @@
                     $.cookie('_willet_topbar_closed', false);
                     topbar_hide_button.slideUp('fast');
                     if (topbar === null) {
-                        if (show_votes || hash_index !== -1) {
+                        if (instance.show_votes || hash_index !== -1) {
                             show_topbar();
                             store_analytics('SIBTUserReOpenedTopBar');
                         } else {
@@ -412,12 +444,12 @@
                     var hash_search = '#code=';
                     var hash_index  = hash.indexOf(hash_search);
                     var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-                    var results_src = "{{ URL }}/s/results.html?" +
+                    var results_src = "{{URL}}/s/results.html?" +
                         "willt_code=" + encodeURIComponent(willt_code) + 
                         "&user_uuid={{user.uuid}}" + 
                         "&doing_vote=" + encodeURIComponent(doing_vote) + 
                         "&vote_result=" + encodeURIComponent(vote_result) + 
-                        "&is_asker={{is_asker}}" +
+                        "&is_asker=" + user.is_asker + 
                         "&store_id={{store_id}}" +
                         "&store_url={{store_url}}" +
                         "&instance_uuid={{instance.uuid}}" + 
@@ -425,22 +457,22 @@
 
                     // show/hide stuff
                     topbar.find('div.vote').hide();
-                    if (doing_vote || has_voted) {
+                    if (doing_vote || user.has_voted) {
                         topbar.find('div.message').html('Thanks for voting!').fadeIn();
-                    } else if (is_asker) {
+                    } else if (user.is_asker) {
                         topbar.find('div.message').html('Your friends say:   ').fadeIn();
                     }
 
                     // start loading the iframe
                     iframe_div.show();
                     iframe.attr('src', ''); 
-                    iframe.attr('src', results_src); 
-                
+                    iframe.attr('src', results_src);
+
                     iframe.fadeIn('medium');
                 };
                 var do_vote_yes = function() { do_vote(1);};
                 var do_vote_no = function() { do_vote(0);};
-                
+
                 var build_top_bar_html = function (is_ask_bar) {
                     // Builds the top bar html
                     // is_ask_bar option boolean
@@ -450,14 +482,14 @@
                         var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                         var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
                             "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
-                            "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                            "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
                             "</div>" +
                         "</div>";
                     } else {
                         var asker_text = '';
                         var message = 'Should <em>{{ asker_name }}</em> Buy This?';
                         var image_src = '{{ asker_pic }}';
-                        
+
                         var bar_html = "<div class='_willet_wrapper'> " +
                             "<div class='asker'>" +
                                 "<div class='pic'><img src='" + image_src + "' /></div>" +
@@ -471,14 +503,14 @@
                             "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+ 
                             "</div>" +
                             "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
-                            "   <img src='{{ URL }}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                            "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
                             "</div>" +
                         "</div>";
                     }
                     return bar_html;
                 };
-                
-                var show_topbar = function() {
+
+                var show_topbar = function () {
                     // Shows the vote top bar
                     var body = $('body'); 
 
@@ -504,18 +536,18 @@
                     padding_elem.show(); 
                     topbar.slideDown('slow');
 
-                    if (!is_live) {
+                    if (!instance.is_live) {
                         // voting is over folks!
                         topbar.find('div.message').html('Voting is over!');
                         toggle_results();
-                    } else if (show_votes && !has_voted && !is_asker) {
+                    } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
                         // show voting!
                         topbar.find('div.vote').show();
-                    } else if (has_voted && !is_asker) {
+                    } else if (user.has_voted && !user.is_asker) {
                         // someone has voted && not the asker!
                         topbar.find('div.message').html('Thanks for voting!').fadeIn();
                         toggle_results();
-                    } else if (is_asker) {
+                    } else if (user.is_asker) {
                         // showing top bar to asker!
                         topbar.find('div.message').html('Your friends say:   ').fadeIn();
                         toggle_results();
@@ -545,7 +577,7 @@
                     var iframe_div = topbar.find('div.iframe');
 
                     $('#_willet_close_button').unbind().bind('click', close_top_bar);
-                    
+
                     topbar.find( '._willet_wrapper p')
                         .css('cursor', 'pointer')
                         .click(topbar_onclick);
@@ -559,8 +591,8 @@
                     store_analytics('SIBTTopBarShareSuccess');
                     var iframe = topbar.find('div.iframe iframe');
                     var iframe_div = topbar.find('div.iframe');
-                    
-                    is_asker = true;
+
+                    user.is_asker = true;
 
                     iframe_div.fadeOut('fast', function() {
                         topbar.animate({height: '40'}, 500);
@@ -598,8 +630,9 @@
 
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
-                    'background': (has_results? "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
-                                                "url('{{ URL }}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
+                    'background': (instance.has_results?
+                                    "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
+                                    "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
                     'width': '80px',
                     'height': '21px',
                     'cursor': 'pointer',
@@ -607,19 +640,7 @@
                 });
 
                 // shake ONLY the SIBT button when scrolled into view
-                var shaken_yet = false;
-                $(w).scroll (function () {
-                    if (is_scrolled_into_view (sibtjs_elem) && !shaken_yet) {
-                        setTimeout (function () {
-                            $(sibtjs_elem).shaker();
-                            setTimeout (function () {
-                                $(sibtjs_elem).shaker.stop();
-                                shaken_yet = true;
-                            }, 600); // shake duration
-                        }, 700); // wait for ?ms until it shakes
-                    }
-                });
-                
+                add_scroll_shaking(sibtjs_elem);
                 save_product(sibtjs_elem.data());
             }
 
@@ -630,32 +651,20 @@
 
                 sibt_elem.click(button_onclick);
                 
-                if (has_results) {
+                if (instance.has_results) {
                     sibt_elem.css ({
-                        'background': "url('{{ URL }}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
+                        'background': "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
                         'cursor': 'pointer',
                         'width': '80px'
                     });
                 }
                 // shake ONLY the SIBT button when scrolled into view
-                var shaken_yet = false;
-                $(w).scroll (function () {
-                    if (is_scrolled_into_view (sibt_elem) && !shaken_yet) {
-                        setTimeout (function () {
-                            $(sibt_elem).shaker();
-                            setTimeout (function () {
-                                $(sibt_elem).shaker.stop();
-                                shaken_yet = true;
-                            }, 600); // shake duration
-                        }, 700); // wait for ?ms until it shakes
-                    }
-                });
-                
+                add_scroll_shaking(sibt_elem);
                 save_product(sibt_elem.data());
             }
 
             // SIBT standalone
-            if (!(detect_shopconnection && sibt_elem.length) && // if SIBT can show, and
+            if (!(app.detect_shopconnection && sibt_elem.length) && // if SIBT can show, and
                 purchase_cta.length > 0) {                      // if SIBT *should* show
                 console.log('#_willet_shouldIBuyThisButton exists');
                 store_analytics();
@@ -676,9 +685,9 @@
                         .css('display', 'none')
                         .click(unhide_topbar);
                     
-                    if ( show_top_bar_ask ) {
+                    if (app.show_top_bar_ask) {
                         topbar_hide_button.html('Get advice!');
-                    } else if( is_asker ) {
+                    } else if(user.is_asker) {
                         topbar_hide_button.html('See your results!');
                     } else {
                         topbar_hide_button.html('Help {{ asker_name }}!');
@@ -686,7 +695,7 @@
 
                     $('body').prepend(topbar_hide_button);
 
-                    if (show_top_bar_ask) {
+                    if (app.show_top_bar_ask) {
                         if (cookie_topbar_closed) {
                             // user has hidden the top bar
                             topbar_hide_button.slideDown('fast');
@@ -698,14 +707,14 @@
                 {% endif %} ; // app.top_bar_enabled
 
                 {% if app.button_enabled %} // add this button code only if necessary
-                    if (sibt_version <= 2) {
+                    if (app.version <= 2) {
                         console.log('v2 button is enabled');
                         var button = d.createElement('a');
                         var button_html = '';
                         // only add button if it's enabled in the app 
-                        if (is_asker) {
+                        if (user.is_asker) {
                             button_html = 'See what your friends said!';
-                        } else if (show_votes) {
+                        } else if (instance.show_votes) {
                             button_html = 'Help {{ asker_name }} by voting!';
                         } else {
                             var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
@@ -720,7 +729,7 @@
                             .attr('class','_willet_button willet_reset')
                             .click(button_onclick);
                         $(purchase_cta).append(button);
-                    } else if (sibt_version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
+                    } else if (app.version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                         console.log('v3 button is enabled');
                         if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                             var button = $("<div />", {
@@ -742,7 +751,7 @@
 
                         // if server sends a flag that indicates "results available"
                         // (not necessarily "finished") then show finished button
-                        if (has_results) {
+                        if (instance.has_results) {
                             $('#_willet_button_v3 .button').hide ();
                             $('<div />', {
                                 'id': "_willet_SIBT_results",
@@ -760,40 +769,19 @@
                         if ($wbtn.length > 0) {
                             $wbtn = $($wbtn[0]);
                         }
-                        if ($wbtn) {
-                            var shaken_yet = false;
-                            $(w).scroll (function () { // shake ONLY the SIBT button when scrolled into view
-                                if (is_scrolled_into_view ($wbtn) && !shaken_yet) {
-                                    setTimeout (function () {
-                                        $($wbtn).shaker();
-                                        setTimeout (function () {
-                                            $($wbtn).shaker.stop();
-                                            shaken_yet = true;
-                                        }, 400); // shake duration
-                                    }, 750); // wait for ?ms until it shakes
-                                }
-                            });
-                        }
+                        add_scroll_shaking($wbtn);
                     }
                 {% endif %} // app.button_enabled
             } // if #_willet_shouldIBuyThisButton
 
             {% if app.bottom_popup_enabled %} // add this topbar code only if necessary
-                // if user visited at least two product pages
-                if ($.cookie('product1_image') && $.cookie('product2_image')) {
-                    console.log('bottom popup enabled');
-                    var clickedOff = false;
-                    var product1_image = $.cookie('product1_image') || '';
-                    var product2_image = $.cookie('product2_image') || '';
-                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-
+                var build_bottom_popup = function () {
                     var popup = $('<div />', {
                         'id': 'willet_sibt_popup',
                         'css': {
                             'display': 'none'
                         }
                     });
-                    $('body').prepend(popup);
                     popup
                         .append('<h2 class="title">Hey! Need help deciding?</h2>')
                         .append($('<div />', {
@@ -804,22 +792,34 @@
                             '<a id="anti_cta" href="#">No thanks</a>'
                         );
                     $('#product_selector').append(
-                        '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' + 
+                        '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
                         '<div class="product">' +
                             '<img class="image" src="' + product1_image + '" />' +
                         '</div>' +
                         '<span class="or">OR</span>' +
                         '<div class="product">' +
                             '<img class="image" src="' + product2_image + '"/>' +
-                        '</div>' + 
+                        '</div>' +
                         '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
                     );
+                    return popup;
+                }
 
+                // if user visited at least two product pages
+                if ($.cookie('product1_image') && $.cookie('product2_image')) {
+                    console.log('bottom popup enabled');
+                    var clickedOff = false;
+                    var product1_image = $.cookie('product1_image') || '';
+                    var product2_image = $.cookie('product2_image') || '';
+                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+
+                    var popup = build_bottom_popup();
                     var show_popup = function () { popup.fadeIn('slow'); };
                     var hide_popup = function () { popup.fadeOut('slow'); };
+                    $('body').prepend(popup);
 
                     $(w).scroll(function () {
-                        var pageHeight, scrollTop, threshold;
+                        var pageHeight, scrollPos, threshold;
 
                         pageHeight = $(d).height();
                         scrollPos = $(w).scrollTop() + $(w).height();
@@ -848,41 +848,40 @@
                 } else {
                     console.log('cookies not populated yet');
                 }
-            {% endif %} ; // app.top_bar_enabled
+            {% endif %} ; // app.bottom_popup_enabled
 
             // Load jQuery colorbox
             if (!$.willet_colorbox) {
-                manage_script_loading(
-                    ['{{ URL }}/s/js/jquery.colorbox.js?' + willet_metadata ()], function () {
-                        $.willet_colorbox.init (); // init colorbox last
-                        
-                        // watch for message; Create IE + others compatible event handler
-                        $(w).bind('onmessage message', function(e) {
-                            var message = e.originalEvent.data;
-                            if (message === 'shared') {
-                                ask_success = true;
-                            } else if (message === 'close') {
-                                $.willet_colorbox.close();
-                            }
-                        });
-                        
-                        // auto-show results on hash
-                        var hash = w.location.hash;
-                        var hash_search = '#open_sibt=';
-                        hash_index = hash.indexOf(hash_search);
-                        if (has_results && hash_index !== -1) {
-                            // if vote has results and voter came from an email
-                            console.log("has results?");
-                            show_results ();
+                $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
+                    $.willet_colorbox.init(); // init colorbox last
+
+                    // watch for message; Create IE + others compatible event handler
+                    $(w).bind('onmessage message', function(e) {
+                        var message = e.originalEvent.data;
+                        if (message === 'shared') {
+                            user.ask_success = true;
+                        } else if (message === 'close') {
+                            $.willet_colorbox.close();
                         }
+                    });
+
+                    // auto-show results on hash
+                    var hash = w.location.hash;
+                    var hash_search = '#open_sibt=';
+                    hash_index = hash.indexOf(hash_search);
+                    if (instance.has_results && hash_index !== -1) {
+                        // if vote has results and voter came from an email
+                        console.log("has results?");
+                        show_results ();
                     }
-                );
+                });
             }
 
             // analytics to record the amount of time this script has been loaded
             $('<iframe />', {
-                css : {'display': 'none'},
-                src : "{{ URL }}{% url ShowOnUnloadHook %}?" + willet_metadata ({'evnt': 'SIBTVisitLength'})
+                css: {'display': 'none'},
+                src: "{{URL}}{% url ShowOnUnloadHook %}?" +
+                      metadata({'evnt': 'SIBTVisitLength'})
             }).appendTo("body");
         });
     };
