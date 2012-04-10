@@ -604,7 +604,7 @@
                     'cursor': 'pointer',
                     'display': 'inline-block'
                 });
-                
+
                 // shake ONLY the SIBT button when scrolled into view
                 var shaken_yet = false;
                 $(w).scroll (function () {
@@ -821,11 +821,10 @@
                         var pageHeight, scrollTop, threshold;
 
                         pageHeight = $(d).height();
-                        scrollTop = $(w).scrollTop();
-                        // 0.5 appears more like 60% on scrolling (because scroll*TOP*)
-                        threshold = pageHeight * 0.3;
+                        scrollPos = $(w).scrollTop() + $(w).height();
+                        threshold = pageHeight * 0.5;
 
-                        if (scrollTop > threshold) {
+                        if (scrollPos >= threshold) {
                             if (!popup.is(':visible') && !clickedOff) {
                                 show_popup();
                             }
