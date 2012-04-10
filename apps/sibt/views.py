@@ -634,13 +634,13 @@ class SIBTServeScript(URIHandler):
             return
 
         try:  # raises KindError both when decode fails and when app is absent
-            app = SIBTShopify.get(domain)  # check if site is Shopify
+            app = SIBTShopify.get_by_store_url(domain)  # check if site is Shopify
             if not app:
                 raise db.KindError("don't have SIBTShopify for site")
         except db.KindError:
             logging.debug('This domain does not have a SIBTShopify app. '
                           'Trying to get SIBT app.')
-            app = SIBT.get(domain)  # if site is not Shopify, use the SIBT app
+            app = SIBT.get_by_store_url(domain)  # if site is not Shopify, use the SIBT app
 
         if app:
             client = app.client
