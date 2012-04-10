@@ -784,6 +784,7 @@
                     var clickedOff = false;
                     var product1_image = $.cookie('product1_image') || '';
                     var product2_image = $.cookie('product2_image') || '';
+                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
 
                     var popup = $('<div />', {
                         'id': 'willet_sibt_popup',
@@ -798,17 +799,19 @@
                             'id': 'product_selector'
                             }))
                         .append(
-                            '<button class="cta">Ask your friends</button>' +
+                            '<button class="cta">' + AB_CTA_text + '</button>' +
                             '<a id="anti_cta" href="#">No thanks</a>'
                         );
                     $('#product_selector').append(
+                        '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' + 
                         '<div class="product">' +
                             '<img class="image" src="' + product1_image + '" />' +
                         '</div>' +
-                        '<span class="or">or</span>' +
+                        '<span class="or">OR</span>' +
                         '<div class="product">' +
                             '<img class="image" src="' + product2_image + '"/>' +
-                        '</div>'
+                        '</div>' + 
+                        '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
                     );
 
                     var show_popup = function () { popup.fadeIn('slow'); };
@@ -842,6 +845,8 @@
                         e.preventDefault();
                         hide_popup();
                     });
+                } else {
+                    console.log('cookies not populated yet');
                 }
             {% endif %} ; // app.top_bar_enabled
 
