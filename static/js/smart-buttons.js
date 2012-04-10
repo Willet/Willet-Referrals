@@ -200,7 +200,7 @@ var _willet = (function(me) {
                     if (!params.buttonCount) {
                         gPlus.setAttribute("annotation", "none");
                     }
-                    gPlus.setAttribute("callback", "_willet.gPlusShared");
+                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
@@ -208,8 +208,10 @@ var _willet = (function(me) {
 
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
-                    me.gPlusShared = function(response) {
-                        itemShared("GooglePlus");
+                    window._willet_GooglePlusShared = function(response) {
+                        if (response && response.state && response.state === "on") {
+                            itemShared("GooglePlus");
+                        }
                     };
                     
                     // Google is using the Open Graph spec
