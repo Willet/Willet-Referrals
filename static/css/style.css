@@ -220,7 +220,7 @@ p.code {
     font-size:.9em;
 }
 .left_33, .mid_33, .right_33 {
-    float: left:
+    float: left;
     width: 30%;
 }
 /* CLEAR FIX*/
@@ -456,9 +456,9 @@ div.call_to_action div.subtitle {
     }
 
 .new_call_to_action:hover {
-background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
-	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+	background: -webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+	background: -o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
 	color:#fff;
 }
 
