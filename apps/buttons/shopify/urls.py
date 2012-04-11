@@ -16,6 +16,7 @@ urlpatterns = [
 
     (r'/b/shopify/error.html',     		ButtonsShopifyInstallError),
 
-    (r'/b/shopify/item_shared',         ButtonsShopifyItemShared)
+    (r'/b/shopify/item_shared',         ButtonsShopifyItemShared),
+    (r'/b/shopify/item_shared_report',  ButtonsShopifyItemSharedReport)
 ]
 

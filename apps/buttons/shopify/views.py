@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """ 'Get' functions for the ShopConnection application
 """
+from collections import defaultdict
 
 from logging                        import error, info
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
@@ -290,3 +291,50 @@ class ButtonsShopifyItemShared(URIHandler):
             info("No app found!")
 
         self.redirect('%s/static/imgs/noimage.png' % URL)
+
+class ButtonsShopifyItemSharedReport(URIHandler):
+    def get(self):
+        product_page = self.request.get('referer')
+
+        # We only want the scheme and location to build the url
+        store_url    = "%s://%s" % urlparse(product_page)[:2]
+        app = ButtonsShopify.get_by_url(store_url)
+
+        if app is None:
+            return
+        share_period = SharePeriod.all()\
+                        .filter('app_uuid =', app.uuid)\
+                        .order('-app_uuid')\
+                        .order('-end')\
+                        .get()
+
+        if share_period is None:
+            return
+
+        items = share_period.shares
+
+        # Maybe look into itertools.groupby?
+        popular_items  = dict()
+        popular_shares = defaultdict(int)
+        for item in items:
+            if not item.name in popular_items:
+                popular_items[item.name] = defaultdict(int)
+            popular_items[item.name][item.network] += 1
+            popular_items[item.name]["total_shares"] += 1
+            popular_items[item.name]["img"] = item.img_url
+            popular_items[item.name]["url"] = item.url
+
+            popular_shares[item.network]   += 1
+            popular_shares["total_shares"] += 1
+
+        top_items = sorted(popular_items.iteritems(),
+                           key=lambda(k,v): v["total_shares"],
+                           reverse=True)
+
+        top_shares = sorted(popular_shares.iteritems(),
+                            key=lambda(k,v): v,
+                            reverse=True)
+
+        info(top_items)
+        info(top_shares)
+

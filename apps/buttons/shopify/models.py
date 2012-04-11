@@ -207,6 +207,7 @@ class SharedItem():
             url    : URL where item is located, if available
             img_url: URL of image for item, if available
         """
+        # Should we also include a unique item ID? Can we obtain one?
         self.name    = name
         self.network = network
         self.url     = url
@@ -244,7 +245,6 @@ class SharePeriod(Model):
         if instance is None or now > instance.end:
             # Go back to Monday
             # http://stackoverflow.com/questions/1622038/find-mondays-date-with-python
-            now   = date.today()
             start = now - timedelta(days=now.weekday())
             end   = start + timedelta(weeks=1)
 
