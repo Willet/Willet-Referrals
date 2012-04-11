@@ -1,174 +1,197 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <style>
-        .pricing-table {
-            background-color: white;
-            padding: 30px 0;
-        }
-        .pricing-table li {
-            margin: 7px 0 8px 0;
-            height: 25px;
-            border-bottom: 1px dotted #999;
-        }
-        .pricing-table li.premium {
-            margin-top: 20px;
-        }
-        .pricing-table>div {
-            float: left;
-        }
-        .description {
-            width: 40%;
-            margin-left: 5%;
-        }
-        .description ul {
-            margin: 101px 0 0 0;
-            padding: 0;
-        }
-        .description li {
-            color: #444;
-        }
-        .pricing-col {
-            border: 1px solid #E0E0E0;
-            height: 380px;
-            margin: 0;
-            position: relative;
-            padding-top: 20px;
-            color: #444;
-            text-shadow: rgba(210, 210, 210, 0.296875) 1px 1px 0px;
-            background-color: #F0F0F0;
-        }
-        .pricing-col.smart {
-            width: 30%;
-        }
-        .pricing-col.basic {
-            width: 20%;
-        }
-        .pricing-col ul {
-            margin: 0;
-            padding: 0;
-            list-style-type: none;
-        }
-        .pricing-col>ul {
-        }
-        .pricing-col>ul>li {
-            padding: 0;
-            border: 0;
-        }
-        .pricing-col li {
-            font-size: 1.3em;
-            height: 25px;
-        }
-        .pricing-col li.title, .pricing-col li.price {
-            border: 0;
-            text-align: center;
-            margin: 0 0 15px 0;
-        }
-        .pricing-col li.title {
-            letter-spacing: 0.05em;
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-        .pricing-col li.price {
-            font-size: 2.2em;
-        }
-        .pricing-col span.dollar {
-            font-size: 0.7em;
-            vertical-align: text-top;
-        }
-        .pricing-col span.per-month {
-            font-size: 0.7em;
-            vertical-align: text-bottom;
-        }
-        .pricing-col li.features ul {
-        }
-        .pricing-col li.features li {
-            text-align: center;
-            position: relative;
-            color: green;
-        }
-        .pricing-col li.features li.not-included {
-            color: #B8B8B8;
-        }
-        .pricing-col li.features li.blank {
-            visibility: hidden;
-        }
-        .pricing-col li.features a {
-            font-size: 0.9em;
-            border-bottom: 1px dotted #056380;
-        }
-        .pricing-col li.call-to-action {
-            position: absolute;
-            bottom: 25px;
-            width: 100%;
-        }
-        .pricing-col li.call-to-action>div {
-            margin: 0 auto;
-        }
-        .pricing-col .narrow {
-            width: 93px;
-        }
-        .pricing-col .wide {
-            width: 190px;
-        }
-        .pricing-col button {
-            text-align: center;
-        }
-        .explanation-col p {
-            font-size: 1.5em;
-            margin-top: 40px;
-            text-align: justify;
-        }
+        <link rel="stylesheet" href="/static/css/colorbox.css" type="text/css" />
+        <script src="/static/js/jquery.colorbox-min.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            $(document).ready(function () {
+                $('a.learn').colorbox({ href:'/b/shopify/learn div#content',
+                                        innerWidth: '600px',
+                                        innerHeight: '441px',
+                                        fixed: true
+                                    });
+            });
+        </script>
+        <style>
+            /*------------------------  PAGE STYLES ---------------------*/
+            .pricing-table {
+                background-color: white;
+                padding: 30px 0;
+                margin: 0 0 30px 0;
+            }
+            .pricing-table li {
+                padding: 9px 0 4px 0;
+                margin: 0;
+                height: 25px;
+                border-bottom: 1px dotted #999;
+            }
+            .pricing-table li.premium {
+                background-color: #FFEBEB;
+                padding-top: 15px;
+                padding-bottom: 7px;
+            }
+            .pricing-table>div {
+                float: left;
+            }
+            .description {
+                width: 40%;
+                margin-left: 5%;
+            }
+            .description ul {
+                margin: 107px 0 0 0;
+                padding: 0;
+            }
+            .description li {
+                color: #444;
+                padding-left: 15px;
+            }
+            .pricing-col {
+                border: 1px solid #E0E0E0;
+                margin: 0;
+                position: relative;
+                color: #444;
+                text-shadow: rgba(210, 210, 210, 0.296875) 1px 1px 0px;
+                background-color: #EDFFFF;
+                overflow: hidden;
+            }
+            .pricing-col.smart {
+                width: 30%;
+                border-radius: 15px 0 0 5px;
+                border-right: 0;
+                z-index: 2;
+            }
+            .pricing-col.smart .title {
+                border-radius: 15px 0 0 0;
+            }
+            .pricing-col.basic {
+                width: 20%;
+                border-radius: 0 15px 5px 0;
+                z-index: 1;
+            }
+            .pricing-col.basic .title {
+                border-radius: 0 15px 0 0;
+            }
+            .pricing-col ul {
+                margin: 0;
+                padding: 0;
+                list-style-type: none;
+            }
+            .pricing-col .title, .pricing-col .price {
+                border: 0;
+                text-align: center;
+                margin: 0;
+            }
+            .pricing-col .title {
+                letter-spacing: 0.05em;
+                font-size: 2.0em;
+                font-weight: bold;
+                color: #FFF;
+                background-color: #333;
+                padding: 10px 0 16px 0;
+            }
+            .pricing-col .price {
+                font-size: 2.0em;
+                padding: 10px 0 10px 0;
+            }
+            .pricing-col span.dollar {
+                font-size: 0.6em;
+                vertical-align: text-top;
+            }
+            .pricing-col span.per-month {
+                font-size: 0.6em;
+                vertical-align: text-bottom;
+            }
+            .pricing-col .features li {
+                text-align: center;
+                position: relative;
+                color: green;
+            }
+            .pricing-col .features li.not-included {
+                color: #B8B8B8;
+            }
+            .pricing-col .features a {
+                font-size: 0.9em;
+                border-bottom: 1px dotted #056380;
+            }
+            .pricing-col .call-to-action {
+                position: relative;
+                width: 100%;
+                padding: 15px 0;
+            }
+            .pricing-col .call-to-action>div {
+                margin: 0 auto;
+            }
+            .pricing-col .narrow {
+                width: 93px;
+            }
+            .pricing-col .wide {
+                width: 190px;
+            }
+            .pricing-col button {
+                text-align: center;
+            }
 
-        /*----------------------------  ONE-OFFS ---------------------*/
+            /*----------------------------  ONE-OFFS ---------------------*/
 
-        .shopconnection-logo {
-            border: 1px solid #93BC8B;
-            border-radius: 10px;
-            width: 60px;
-            height: 60px;
-            float: left;
-        }
-        .hi-shop-owner {
-            color: #0496AC;
-            text-shadow: 1px 1px 1px #FFF;
-            line-height: 2em;
-            padding-left: 90px;
-        }
-        .seal {
-            width: 95px;
-            height: 45px;
-            background-image: url('/static/imgs/gold_seal_125x125.png');
-            padding: 40px 15px;
-            position: absolute;
-            top: -20px;
-            right: -20px;
-            font-size: 1.2em;
-            font-weight: bold;
-            line-height: 14px;
-            text-align: center;
-        }
-        .under-wave {
-            position: relative;
-        }
-        .under-wave>img {
-            position: absolute;
-            bottom: -4px;
-            left: -4px;
-        }
-        .coming-soon {
-            font-style: italic;
-            color: #777;
-        }
-    </style>
+            .shopconnection-header {
+                height: 62px;
+                margin: 10px 0;
+            }
+            .shopconnection-header img {
+                border: 1px solid #93BC8B;
+                border-radius: 10px;
+                width: 60px;
+                height: 60px;
+                float: left;
+            }
+            .shopconnection-header h3 {
+                color: #0496AC;
+                text-shadow: 1px 1px 1px #FFF;
+                line-height: 2em;
+                padding-left: 90px;
+                margin: 0;
+            }
+            .learn {
+                border-bottom: 1px dotted #056380;
+            }
+            .under-wave {
+                position: relative;
+            }
+            .under-wave>img {
+                position: absolute;
+                bottom: -4px;
+                left: -4px;
+            }
+            .coming-soon {
+                font-style: italic;
+                color: #777;
+            }
+
+            /*---------------------------- COLORBOX INJECT --------------------*/
+            .video-container {
+                padding: 20px 20px 0 20px;
+            }
+            .video-container iframe {
+                display: block;
+                width: 560px;
+                height: 315px;
+                margin: 0 auto;
+                border: 0;
+            }
+            .video-container p {
+                margin: 20px 10%;
+                text-align: justify;
+            }
+        </style>
 {% endblock head %}
 
 {% block header-class %}tall{% endblock %}
 
 {% block content %}
-                <div class="lower-10 span-24 last">
-                    <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
-                    <h3 class="hi-shop-owner">{{ shop_owner }}, thanks for installing ShopConnection.<br />
+                <div class="span-24 last
+                            shopconnection-header">
+                    <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+                    <h3>{{ shop_owner }}, thanks for installing ShopConnection.<br />
                                               Please choose which version is right for your store:
                     </h3>
                 </div>
@@ -178,83 +201,56 @@
                     <h1>Grow Your Business By Increasing Your Stores Sharing</h1>
                     <h3>For a limited time, Smart ShopConnection is free for 15 days. Upgrade, downgrade, or cancel anytime.</h3>
 
-                    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
-                		<div class="prepend-1 span-18 append-1
+                    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
+                		<div class="span-18
                                     box-design pricing-table">
                             <div class="description">
                                 <ul>
                                     <li>Social buttons - <i>Pinterest, etc</i></li>
                                     <li>Simple installation with support</li>
-                                    <li class="premium">Personalized sharing <a href="#learn">Learn more</a></li>
+                                    <li class="premium">Personalized sharing &nbsp;&nbsp;<a href="/b/shopify/learn" class="learn">Learn more</a></li>
                                     <li>Weekly sharing report</li>
                                     <li>Customization control panel</li>
                                     <li>15 day no-risk trial</li>
                                 </ul>
                             </div>
-                            <div class="pricing-col smart">
-                                <ul>
-                                    <li class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span></li>
-                                    <li class="price"><span class="dollar">$</span>4.99<span class="per-month">/ month</span></li>
-                                    <li class="features">
-                                        <ul>
-                                            <li>✓</li>
-                                            <li>✓</li>
-                                            <li class="premium">✓</li>
-                                            <li class="coming-soon">coming soon</li>
-                                            <li class="coming-soon">coming soon</li>
-                                            <li>✓</li>
-                                        </ul>
-                                    </li>
-                                    <li class="call-to-action">
-                                        <div class="wide">
-                                            <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
-                                                <button class="blue">Start your free trial!</button>
-                                            </a>
-                                        </div>
-                                    </li>
+                            <div class="pricing-col box-design smart">
+                                <div class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span></div>
+                                <div class="price"><span class="dollar">$</span>{{ price }}<span class="per-month">/ month</span></div>
+                                <ul class="features">
+                                    <li>✓</li>
+                                    <li>✓</li>
+                                    <li class="premium">✓</li>
+                                    <li class="coming-soon">coming soon</li>
+                                    <li class="coming-soon">coming soon</li>
+                                    <li>✓</li>
                                 </ul>
+                                <div class="call-to-action">
+                                    <div class="wide">
+                                        <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
+                                            <button class="blue">Start your free trial!</button>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="pricing-col basic">
-                    			<ul class="option">
-                                    <li class="title">Basic</li>
-                                    <li class="price">Free</li>
-                                    <li class="features">
-                                        <ul>
-                                            <li>✓</li>
-                                            <li>✓</li>
-                                            <li class="not-included premium">✗</li>
-                                            <li class="not-included">✗</li>
-                                            <li class="not-included">✗</li>
-                                            <li class="blank">intentionally left blank</li>
-                                        </ul>
-                                    </li>
-                                    <li class="call-to-action">
-                                        <div class="narrow">
-                                            <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
-                                                <button class="blue">Choose</button>
-                                            </a>
-                                        </div>
-                                    </li>
+                            <div class="pricing-col box-design basic">
+                                <div class="title">Basic</div>
+                                <div class="price">Free</div>
+                                <ul class="features">
+                                    <li>✓</li>
+                                    <li>✓</li>
+                                    <li class="not-included premium">✗</li>
+                                    <li class="not-included">✗</li>
+                                    <li class="not-included">✗</li>
+                                    <li class="not-included">✗</li>
                                 </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="clear"></div>
-
-                    <hr />
-
-                    <h1 id="learn">Learn More About <span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</h1>
-                    <div class="lower-25 prepend-2 span-20 append-2 append-bottom last">
-                        <div class="span-7 append-1
-                                    explanation-col">
-                            <p>
-                                Stop guessing which social networks your customers use. Personalize which buttons 
-                                appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
-                            </p>
-                        </div>
-                        <div class="span-12 last">
-                            <div style="width:450px; height:250px; border: 1px solid black; text-align: center; line-height: 250px;">
-                                Video
+                                <div class="call-to-action">
+                                    <div class="narrow">
+                                        <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
+                                            <button class="blue">Choose</button>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1,73 +1,79 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <script>
-        $(document).ready(function() {
-            $('#go_to_shopify').click(function() {
-                window.location = "{{app.store_url}}/admin";
+        <script>
+            $(document).ready(function() {
+                $('#go_to_shopify').click(function() {
+                    window.location = "{{app.store_url}}/admin";
 
+                });
+                SnapABug.setUserEmail('{{ client_email }}');
+                SnapABug.startChat('Hi - if you run into any problems, i\'m here to help :-)';
             });
-            SnapABug.setUserEmail('{{ client_email }}');
-            SnapABug.startChat('Hi - if you run into any problems, i\'m here to help :-)';
-        });
-    </script>
+        </script>
 
-    <style>
-        p {
-            padding: 0px 0px 0px 0px;
-            margin-bottom: 10px;
-        }
-        h2 {
-            padding: 0px 0px 0px 0px;
-            margin-bottom: 5px;
-        }
-        .instruction-step {
-            background-color: #FFF;
-            padding-top: 30px;
-            padding-bottom: 30px;
-            font-size: 1.0em;
-        }
-        .instruction-step input {
-            margin: 0;
-        }
-        .step-num {
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            padding: 1px 7px 1px 9px;
-            font-size: 20px;
-            color: #FFF;
-            background-color: #0496AC;
-            border-radius: 18px;
-            -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-            -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-            box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
-        }
+        <style>
+            p {
+                padding: 0px 0px 0px 0px;
+                margin-bottom: 10px;
+            }
+            h2 {
+                padding: 0px 0px 0px 0px;
+                margin-bottom: 5px;
+            }
+            .instruction-step {
+                background-color: #FFF;
+                padding-top: 30px;
+                padding-bottom: 30px;
+                font-size: 1.0em;
+            }
+            .instruction-step input {
+                margin: 0;
+            }
+            .step-num {
+                position: absolute;
+                top: -10px;
+                left: -10px;
+                padding: 1px 7px 1px 9px;
+                font-size: 20px;
+                color: #FFF;
+                background-color: #0496AC;
+                border-radius: 18px;
+                -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+                -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+                box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            }
 
-        /*----------------------------  ONE-OFFS ---------------------*/
+            /*----------------------------  ONE-OFFS ---------------------*/
 
-        .shopconnection-logo {
-            border: 1px solid #93BC8B;
-            border-radius: 10px;
-            width: 60px;
-            height: 60px;
-            float: left;
-        }
-        .hi-shop-owner {
-            color: #0496AC;
-            text-shadow: 1px 1px 1px #FFF;
-            line-height: 2em;
-            padding-left: 90px;
-        }
-    </style>
+            .shopconnection-header {
+                height: 62px;
+                margin: 10px 0;
+            }
+            .shopconnection-header img {
+                border: 1px solid #93BC8B;
+                border-radius: 10px;
+                width: 60px;
+                height: 60px;
+                float: left;
+            }
+            .shopconnection-header h3 {
+                color: #0496AC;
+                text-shadow: 1px 1px 1px #FFF;
+                line-height: 2em;
+                padding-left: 90px;
+                margin: 0;
+            }
+        </style>
 {% endblock head %}
 
 {% block header-class %}tall{% endblock %}
 
 {% block content %}        
-                <div class="lower-10 span-24 last">
-                    <img class="shopconnection-logo" src="/static/imgs/ShopConnection_icon_60x60.png" />
-                    <h3 class="hi-shop-owner">{{ shop_owner }}, terrific choice.<br />
+                <div class="lower-10 span-24 last
+                            shopconnection-header">
+                    <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+                    <h3>{{ shop_owner }}, terrific choice.<br />
                                               Let's determine where to place the buttons on your product pages:
                     </h3>
                 </div>
