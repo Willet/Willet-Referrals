@@ -2,14 +2,16 @@
 """ 'Get' functions for the ShopConnection application
 """
 
-from logging                        import error
-from apps.buttons.shopify.models    import ButtonsShopify 
+from logging                        import error, info
+from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
 from util.errors                    import ShopifyBillingError
 from util.urihandler                import URIHandler
 from apps.email.models              import Email
 from util.helpers                   import url as build_url
+from urlparse                       import urlparse
+from django.utils                   import simplejson as json
 
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
@@ -247,3 +249,44 @@ class ButtonsShopifyInstallError(URIHandler):
                                                  template_values))
         return
 
+class ButtonsShopifyItemShared(URIHandler):
+    """Handles whenever a share takes place"""
+    def get(self):
+        """Handles a single share event.
+
+        We assume that we receive one argument 'message' which is JSON
+        of the following form:
+            "name"    : name of the product
+            "network" : network we are sharing on
+            "img"     : url for time product image (optional)
+        """
+        product_page = self.request.headers.get('referer')
+
+        # We only want the scheme and location to build the url
+        store_url    = "%s://%s" % urlparse(product_page)[:2]
+
+        message  = self.request.get('message')
+
+        details = dict()
+        try:
+            details = json.loads(message)
+        except:  # What Exception is thrown?
+            info("No JSON found / Unable to parse JSON!")
+
+        app = ButtonsShopify.get_by_url(store_url)
+
+        if app is not None:
+            # Create a new share item
+            item = SharedItem(details.get("name"),
+                              details.get("network"),
+                              product_page,
+                              img_url=details.get("img"))
+
+            share_period = SharePeriod.get_or_create(app);
+            share_period.shares.append(item)
+            share_period.put()
+
+        else:
+            info("No app found!")
+
+        self.redirect('%s/static/imgs/noimage.png' % URL)

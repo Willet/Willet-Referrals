@@ -365,7 +365,18 @@ class ObjectListProperty(db.ListProperty):
                 return self._cls.deserialize(s)
         else:
             def string_to_item(s):
-                return self._cls(**(simplejson.loads(s)))
+                # Fails if keys are unicode in Python 2.5
+                # Convert the keys to UTF-8
+                # Note: This will not recursively encode the keys
+                # Note: Switching to python 2.7 alleviates the problem
+
+                data = simplejson.loads(s)
+
+                converted_data = dict()
+                for key, value in data.iteritems():
+                    converted_data[key.encode('utf-8')] = value
+
+                return self._cls(**converted_data)
 
         if db_list is not None and type(db_list) is list:
             return [ string_to_item(value) for value in db_list ]

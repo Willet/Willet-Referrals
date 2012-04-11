@@ -2,13 +2,15 @@
 
 # Buttons model
 # Extends from "App"
+from apps.app.models import App
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from time import time
+from datetime import datetime, timedelta, date
 from urllib import urlencode
 
 from django.utils import simplejson as json
@@ -19,6 +21,7 @@ from apps.buttons.models import Buttons
 from apps.email.models import Email
 from apps.link.models import Link
 
+from util.model import Model, ObjectListProperty
 from util.consts import *
 from util.helpers import generate_uuid
 from util.shopify_helpers import get_shopify_url
@@ -193,6 +196,62 @@ class ButtonsShopify(Buttons, AppShopify):
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         return app
+
+class SharedItem():
+    """An object that contains information about a share"""
+    def __init__(self, name, network, url, img_url=None, created=None):
+        """Constructor for SharedItems
+
+            name   : Name of the item
+            network: Network that the item was shared on
+            url    : URL where item is located, if available
+            img_url: URL of image for item, if available
+        """
+        self.name    = name
+        self.network = network
+        self.url     = url
+        self.img_url = img_url
+        self.created = created if created else time()
+
+class SharePeriod(Model):
+    """Model that manages shares for an application over some period"""
+    app_uuid = db.StringProperty(indexed=True)
+    start    = db.DateProperty(indexed=True)
+    end      = db.DateProperty(indexed=True)
+    shares   = ObjectListProperty(SharedItem, indexed=False)
+
+    def __init__(self, *args, **kwargs):
+        """Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(SharePeriod, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        """Ensure that this object is in a valid state"""
+        return (self.start < self.end)
+
+    @classmethod
+    def get_or_create(cls, app):
+        """Gets or creates a new SharePeriod instance"""
+        now = date.today()
+
+        # Get the latest period for this app
+        instance = cls.all()\
+                    .filter('app_uuid =', app.uuid)\
+                    .order('-app_uuid')\
+                    .order('-end')\
+                    .get()
+
+        if instance is None or now > instance.end:
+            # Go back to Monday
+            # http://stackoverflow.com/questions/1622038/find-mondays-date-with-python
+            now   = date.today()
+            start = now - timedelta(days=now.weekday())
+            end   = start + timedelta(weeks=1)
+
+            instance = cls(app_uuid=app.uuid, start=start, end=end)
+
+        return instance
+
 
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
