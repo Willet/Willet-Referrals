@@ -1,0 +1,98 @@
+						<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+						<script>
+							google.load('swfobject','2.1');
+						</script>   
+					    <script type="text/javascript">
+					    	var intervalID = null,
+					    		max_ratio_reached = 0,
+					    		// Player State enum
+					    		UNSTARTED  = -1,
+					    		ENDED      = 0,
+					    		PLAYING    = 1,
+					    		PAUSED     = 2,
+					    		BUFFERING  = 3,
+					    		VIDEO_CUED = 5;
+
+					    	// This function is called when video is playing
+					    	// Track video progression by quarters
+					    	function onPlayingUpdate() {
+					    		var ratio = 0,
+					    			ytplayer = document.getElementById("ytPlayer");
+							    try {
+							    	ratio = ytplayer.getCurrentTime() / ytplayer.getDuration();
+							    } catch (err) {
+							    	// Report error? Divide by zero?
+							    }
+
+							    if (( ratio > 0.9  && max_ratio_reached < 4 ) ||
+							    	( ratio > 0.75 && max_ratio_reached < 3 ) ||
+							    	( ratio > 0.5  && max_ratio_reached < 2 ) ||
+							    	( ratio > 0.25 && max_ratio_reached < 1 )) {
+							    	max_ratio_reached += 1;
+							    	window._gaq.push(['_trackEvent', 'Video', 'Reached', max_ratio_reached]);
+							    }
+							}
+
+							// This function is called when the player changes state
+							function onPlayerStateChange(newState) {
+								var ytplayer = document.getElementById("ytPlayer"),
+									pageTracker = _gat._getTracker("UA-23764505-9");
+
+								switch (newState) {
+
+									case PLAYING:
+										// Track load
+										pageTracker._trackPageview("/b/shopify/datum_video");
+										window._gaq.push(['_trackEvent', 'Video', 'Load']);
+
+										// Start timer tracker
+										intervalID = window.setInterval(onPlayingUpdate, 250);
+										onPlayingUpdate();
+										break;
+
+									case FINISHED:
+								    	intervalID && window.clearInterval(intervalID);
+								    	break;
+
+								    default:
+								    	break;
+								}
+							}
+
+							// This function is automatically called by the player once it loads
+							function onYouTubePlayerReady(playerId) {
+								var ytplayer = document.getElementById("ytPlayer");
+								ytplayer.addEventListener("onStateChange", "onPlayerStateChange");
+							}
+
+							// The "main method" of this sample. Called when someone clicks "Run".
+							function loadPlayer() {
+								var videoID = "7JF-583xVFk",
+									params = { allowScriptAccess: "always",
+											   modestbranding: 1,
+											   rel: 0 },
+									atts = { id: "ytPlayer" };
+
+								swfobject.embedSWF("http://www.youtube.com/v/" + videoID + 
+								                   "?version=3&enablejsapi=1&playerapiid=player1", 
+								                   "videoDiv", "560", "315", "9", null, null, params, atts);
+							}
+
+							// Get video loading
+							google.setOnLoadCallback(loadPlayer);
+					    </script>
+						<div class="video-container">
+							<style>
+						    	#videoDiv {
+						    		width: 560px;
+						    		height: 315px;
+						    		text-align: center;
+						    		line-height: 560px;
+						    	}
+						    </style>
+						    <div id="videoDiv">Loading...</div>
+						    <p>
+						        Stop guessing which social networks your customers use. Personalize which buttons 
+						        appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
+						    </p>
+						</div>

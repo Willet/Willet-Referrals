@@ -7,13 +7,11 @@ urlpatterns = [
     (r'/b/shopify/beta',        		ButtonsShopifyBeta),
     (r'/b/shopify/',            		ButtonsShopifyBeta),
     (r'/b/shopify',             		ButtonsShopifyBeta),
-
+    (r'/b/shopify/learn',				ButtonsShopifyLearn),
     (r'/b/shopify/welcome', 			ButtonsShopifyWelcome),
     (r'/b/shopify/upgrade', 			ButtonsShopifyUpgrade),
     (r'/b/shopify/billing_callback', 	ButtonsShopifyBillingCallback),
-
     (r'/b/shopify/instructions',     	ButtonsShopifyInstructions),
-
     (r'/b/shopify/error.html',     		ButtonsShopifyInstallError),
 ]
 
