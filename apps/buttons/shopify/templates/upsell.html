@@ -7,19 +7,15 @@
             $(document).ready(function () {
                 $('a.learn').click(function(event) {
                     event.stopPropagation();
+                    event.preventDefault();
 
                     $.colorbox({
                         inline: true,
                         href: '.video-container',
                         innerWidth: '600px',
                         innerHeight: '441px',
-                        fixed: true,
-                        onComplete: function () {
-                            window.load_video && window.load_video();
-                        }
+                        fixed: true
                     });
-
-                    return false;
                 });
 
                 $('#install_smart').click(function () {
@@ -240,12 +236,12 @@
                                 <div class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span></div>
                                 <div class="price"><span class="dollar">$</span>{{ price }}<span class="per-month">/ month</span></div>
                                 <ul class="features">
-                                    <li>✓</li>
-                                    <li>✓</li>
-                                    <li class="premium">✓</li>
+                                    <li>&#x2713;</li>
+                                    <li>&#x2713;</li>
+                                    <li class="premium">&#x2713;</li>
                                     <li class="coming-soon">coming soon</li>
                                     <li class="coming-soon">coming soon</li>
-                                    <li>✓</li>
+                                    <li>&#x2713;</li>
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="wide">
@@ -259,12 +255,12 @@
                                 <div class="title">Basic</div>
                                 <div class="price">Free</div>
                                 <ul class="features">
-                                    <li>✓</li>
-                                    <li>✓</li>
-                                    <li class="not-included premium">✗</li>
-                                    <li class="not-included">✗</li>
-                                    <li class="not-included">✗</li>
-                                    <li class="not-included">✗</li>
+                                    <li>&#x2713;</li>
+                                    <li>&#x2713;</li>
+                                    <li class="not-included premium">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="narrow">
