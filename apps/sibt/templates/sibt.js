@@ -594,6 +594,7 @@
 
             {% if app.bottom_popup_enabled %}
                 var build_bottom_popup = function () {
+                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     var popup = $('<div />', {
                         'id': 'willet_sibt_popup',
                         'css': {'display': 'none'}
@@ -605,6 +606,21 @@
                             '<button class="cta">' + AB_CTA_text + '</button>' +
                             '<a id="anti_cta" href="#">No thanks</a>'
                         );
+                    return popup;
+                }
+
+                // if user visited at least two different product pages
+                if ($.cookie('product1_image') && $.cookie('product2_image')) {
+                    console.log('bottom popup enabled');
+                    var clickedOff = false;
+
+                    var popup = build_bottom_popup();
+                    var show_popup = function () { popup.fadeIn('slow'); };
+                    var hide_popup = function () { popup.fadeOut('slow'); };
+
+                    var product1_image = $.cookie('product1_image') || '';
+                    var product2_image = $.cookie('product2_image') || '';
+                    $('body').prepend(popup);
                     $('#product_selector').append(
                         '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
                         '<div class="product">' +
@@ -616,21 +632,6 @@
                         '</div>' +
                         '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
                     );
-                    return popup;
-                }
-
-                // if user visited at least two product pages
-                if ($.cookie('product1_image') && $.cookie('product2_image')) {
-                    console.log('bottom popup enabled');
-                    var clickedOff = false;
-                    var product1_image = $.cookie('product1_image') || '';
-                    var product2_image = $.cookie('product2_image') || '';
-                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-
-                    var popup = build_bottom_popup();
-                    var show_popup = function () { popup.fadeIn('slow'); };
-                    var hide_popup = function () { popup.fadeOut('slow'); };
-                    $('body').prepend(popup);
 
                     $(w).scroll(function () {
                         var pageHeight, scrollPos, threshold;

@@ -26,7 +26,7 @@
 #willet_sibt_popup>div#product_selector {
     margin: auto;
     height: 80px;
-    width: 218px;
+    width: 300px;
     text-align: center;
 }
 #willet_sibt_popup>div#product_selector>* {
@@ -34,7 +34,7 @@
 }
 #willet_sibt_popup>div#product_selector>.or {
     display: inline-block;
-    margin: 0 30px;
+    margin: 0 20px;
     line-height: 70px;
 }
 #willet_sibt_popup>div#product_selector>div.product {
