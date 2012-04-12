@@ -13,17 +13,13 @@
                         href: '.video-container',
                         innerWidth: '600px',
                         innerHeight: '441px',
-                        fixed: true
+                        fixed: true,
+                        onComplete: function () {
+                            window.load_video && window.load_video();
+                        }
                     });
 
-                    // Load video
-                    try {
-                        window.load_video();
-                        return false; // No problems, stop redirect
-                    } catch (e) {
-                        alert(e);
-                        return true;
-                    }
+                    return false;
                 });
 
                 $('#install_smart').click(function () {
@@ -185,7 +181,7 @@
             .under-wave>img {
                 position: absolute;
                 bottom: -4px;
-                left: -4px;
+                left: 0;
             }
             .coming-soon {
                 font-style: italic;
@@ -234,7 +230,7 @@
                                 <ul>
                                     <li>Social buttons - <i>Pinterest, etc</i></li>
                                     <li>Simple installation with support</li>
-                                    <li class="premium">Personalized sharing &nbsp;&nbsp;<a href="/b/shopify/learn" class="learn">Learn more</a></li>
+                                    <li class="premium">Smart buttons &nbsp;&nbsp;<a href="/b/shopify/learn" class="learn">Learn more</a></li>
                                     <li>Weekly sharing report</li>
                                     <li>Customization control panel</li>
                                     <li>15 day no-risk trial</li>
