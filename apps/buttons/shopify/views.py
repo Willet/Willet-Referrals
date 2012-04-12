@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """ 'Get' functions for the ShopConnection application
 """
-from collections import defaultdict
+from collections                    import defaultdict
+from datetime                       import date
 
 from logging                        import error, info
+from google.appengine.api           import taskqueue
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
@@ -292,26 +294,47 @@ class ButtonsShopifyItemShared(URIHandler):
 
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
-class ButtonsShopifyItemSharedReport(URIHandler):
+class ButtonsShopifyEmailReports(URIHandler):
+    """Queues the report emails"""
     def get(self):
-        product_page = self.request.get('referer')
+        info("Preparing reports...")
+
+        apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
+
+        for app in apps:
+            info("Setting up taskqueue for %s" % app.client.name)
+            params = {
+                "store": app.store_url,
+            }
+            url = build_url('ButtonsShopifyItemSharedReport')
+            info("taskqueue URL: %s" % url)
+            taskqueue.add(queue_name='buttonsEmail', url=url, params=params)
+
+class ButtonsShopifyItemSharedReport(URIHandler):
+    """Sends individual emails"""
+    def post(self):
+        product_page = self.request.get('store')
 
         # We only want the scheme and location to build the url
         store_url    = "%s://%s" % urlparse(product_page)[:2]
         app = ButtonsShopify.get_by_url(store_url)
 
+        info("Preparing individual report for %s..." % store_url)
+
         if app is None:
+            info("App not found!")
             return
+
         share_period = SharePeriod.all()\
                         .filter('app_uuid =', app.uuid)\
-                        .order('-app_uuid')\
                         .order('-end')\
                         .get()
 
         if share_period is None:
+            info("No share period found matching criteria")
             return
 
-        items = share_period.shares
+        items          = share_period.shares
 
         # Maybe look into itertools.groupby?
         popular_items  = dict()
@@ -337,4 +360,11 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         info(top_items)
         info(top_shares)
+
+        Email.emailDevTeam(
+            'Sending test email for report: \n\n'\
+            '%s,\n' \
+            '%s' %
+            (top_items, top_shares)
+        )
 

@@ -36,7 +36,7 @@ NUM_VOTE_SHARDS = 15
 
 
 class ButtonsShopify(Buttons, AppShopify):
-    billing_enabled = db.BooleanProperty(indexed= False, default= False)
+    billing_enabled = db.BooleanProperty(indexed=True, default= False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -238,7 +238,6 @@ class SharePeriod(Model):
         # Get the latest period for this app
         instance = cls.all()\
                     .filter('app_uuid =', app.uuid)\
-                    .order('-app_uuid')\
                     .order('-end')\
                     .get()
 
