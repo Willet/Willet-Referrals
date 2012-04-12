@@ -27,7 +27,7 @@ from apps.user.models import User
 from util.consts import *
 from util.helpers import *
 from util.strip_html import strip_html
-from util.urihandler import URIHandler
+from util.urihandler import URIHandler  
 
 
 class ShowBetaPage(URIHandler):
@@ -47,62 +47,61 @@ class AskDynamicLoader(URIHandler):
     """
     
     def get(self):
-        """Shows the SIBT Ask page.
+        """Shows the SIBT Ask page. Also used by SIBTShopify.
 
         params:
             url (required): the product URL; typically window.location.href
+            products (required): UUIDs of all products to be included
+                                 (first UUID will be primary product)
 
             user_uuid (optional)
-            product_uuid (optional)
-            product_shopify_id (optional)
         """
+        fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         page_url = self.request.get('url', self.request.headers.get('referer'))
-        product = product_shopify = None
+        product = None
+        product_images = []
+        product_uuids = self.request.get('products', '').split(',')
+
         try:
             url_parts = urlparse(page_url)
             store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
-            logging.error('error parsing referer %s' % e, exc_info = True)
-        
+            logging.error('error parsing referer %s' % e, exc_info=True)
+
         app = SIBT.get_by_store_url(store_domain)
         if not app:
-            logging.error("could not find SIBT app for %s" % store_domain)
-            self.response.out.write("Please register at http://rf.rs to use this product.")
+            msg = "could not find SIBT app for %s" % store_domain
+            logging.error(msg)
+            self.response.out.write(msg)
             return
 
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
-        
-        product_uuid = self.request.get('product_uuid', None) # optional
-        product_shopify_id = self.request.get('product_shopify_id', None) # optional
-        logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # successive steps to obtain the product using any way possible
         try:
+            # get this page's product (we will be using it differently though)
             logging.info("getting by url")
-            product = Product.get_or_fetch (page_url, app.client) # by URL
-            if not product and product_uuid: # fast (cached)
-                product = Product.get (product_uuid)
-            if not product and product_shopify_id: # slow, deprecated
-                product_shopify = ProductShopify.get_by_shopify_id (product_shopify_id)
-            if not product: # last resort: assume site is Shopify, and hit (product url).json
-                product_shopify = ProductShopify.get_or_fetch(url=page_url,
-                                                              client=app.client)
+            product = Product.get_or_fetch(page_url, app.client)
 
-            # if we used a Shopify method, reget this product by its uuid so we get the non-shopify object
-            if product_shopify:
-                product = Product.get(product_shopify.uuid)
-            
-            if not product:
+            products = [Product.get(uuid) for uuid in product_uuids]
+            if not products[0]:
                 # we failed to find a single product!
                 raise LookupError
         except LookupError:
             # adandon the rest of the script, because we NEED a product!
-            self.response.out.write("Product on this page is not in our database yet. <br /> \
-                Please specify a product on your page with a div class=_willet_sibt element.")
+            logging.error("Could not find products %r" % product_uuids)
+            self.response.out.write("Products requested are not in our database yet.")
             return
+
+        # compile list of product images (one image from each product)
+        try:
+            product_images = [getattr(prod, 'images')[0] for prod in products]
+        except IndexError:
+            logging.debug("product has no images")
+            product_images = ['']
 
         if not page_url: # if somehow it's still missing, fix the missing url
             page_url = product.resource_url
@@ -123,13 +122,13 @@ class AskDynamicLoader(URIHandler):
                 productDesc += '.'
         except Exception, e:
             productDesc = ''
-            logging.warn('Probably no product description: %s' % e, exc_info=True)
+            logging.warn('Probably no product description: %s' % e,
+                         exc_info=True)
 
-        # Make a new Link
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
-        # we will be replacing this target url with the vote page url once we get an instance.
+        # Make a new Link.
+        # we will be replacing this target url with the vote page url once
+        # we get an instance.
+        origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         link = Link.create(page_url, app, origin_domain, user)
         
         # Which share message should we use?
@@ -140,19 +139,19 @@ class AskDynamicLoader(URIHandler):
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
         
-        if not user_is_admin:
-            ab_opt = ab_test('sibt_share_text3',
-                              ab_share_options,
-                              user = user,
-                              app = app)
-        else:
+        if user_is_admin:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
+        else:
+            ab_opt = ab_test('sibt_share_text3',
+                             ab_share_options,
+                             user=user,
+                             app=app)
 
         template_values = {
             'URL': URL,
 
             'app_uuid': app.uuid,
-            'user_uuid': self.request.get('user_uuid'),
+            'user_uuid': self.request.get('user_uuid', ''),
             'target_url': page_url,
             'store_domain': store_domain,
 
@@ -160,13 +159,14 @@ class AskDynamicLoader(URIHandler):
             'user_name': user.get_full_name() if user_found else None,
             'user_pic': user.get_attr('pic') if user_found else None,
 
-            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'], # doesn't actually involve Shopify
+            'FACEBOOK_APP_ID': fb_app_id,
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
             'user_has_fb_token': user_found,
 
-            'product_uuid': product.uuid,
-            'product_title': product.title if product else "",
-            'product_images': product.images if product and len(product.images) > 0 else [],
+            'products': product_uuids,
+            'product_uuid': product[0].uuid,  # deprecated
+            'product_title': products[0].title or "",
+            'product_images': product_images,
             'product_desc': productDesc,
 
             'share_url': link.get_willt_url(),

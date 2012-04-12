@@ -457,10 +457,17 @@ class TrackSIBTUserAction(URIHandler):
 
 
 class StartPartialSIBTInstance(URIHandler):
-    """ A Partial(.*)Instance differs from a formal Instance in that they auto-expire after an hour. """
+    """A Partial(.*)Instance differs from a formal Instance in that
+    they auto-expire after an hour.
+    """
     def post(self):
+        """Starts a PartialSIBTInstance.
+
+        This controller does NOT check if the product UUIDs supplied
+        corresponds to a DB Product (because it costs reads).
+        """
         msg = None # error (a non-None value will invoke logging)
-        
+
         app = App.get(self.request.get('app_uuid'))
         if not app:
             msg = "Not sure which App for which to create partial instance"
@@ -469,22 +476,32 @@ class StartPartialSIBTInstance(URIHandler):
         if not link:
             msg = "willt_code does not correspond to working link"
 
-        product = Product.get(self.request.get('product_uuid'))
-        if not product:
-            msg = "Cannot get product with uuid %s" % self.request.get('product_uuid')
+        # product_uuids: ['uuid','uuid','uuid'] or [''] edge case
+        # product_uuid (singular, deprecated) is used only if
+        # product_uuids is missing.
+        product_uuids = self.request.get('products', '').split(',')
+        if not product_uuids[0]:  # ? '' evals to False; [''] evals to True.
+            product_uuids = [self.request.get('product_uuid')]
+
+        if not product_uuids[0]:
+            msg = "Cannot get products"
 
         user = User.get(self.request.get('user_uuid'))
         if not user:
             msg = "User %s not found in DB" % self.request.get('user_uuid')
         
         try:
-            PartialSIBTInstance.create(user, app, link, product)
-        except Exception, e: # if it fails for god-knows-what, report it too
-            msg = "%s" % e
+            PartialSIBTInstance.create(user=user,
+                                       app=app,
+                                       link=link,
+                                       products=product_uuids)
+        except Exception, err: # if it fails for god-knows-what, report it too
+            msg = "%s" % err
         
         if msg:
-            logging.error('Cannot create PartialSIBTInstance: %s (%r)' % (e, [app, link, product, user]))
-            self.response.out.write(e) # this is for humans to read
+            logging.error('Cannot create PartialSIBTInstance: %s (%r)' % (
+                           msg, [app, link, product_uuids, user]))
+            self.response.out.write(msg)  # this is for humans to read
         return
 
 

@@ -248,9 +248,12 @@ class SIBTInstance(Model):
     # URL of the Link (here for quick filter)
     url = db.LinkProperty(indexed=True)
 
-    # URL of the product image
+    # URL of the product image (deprecated v11+)
     product_img = db.LinkProperty(indexed=False)
-    
+
+    # use self.get_products() to get products as objects
+    products = db.StringListProperty(db.Text, indexed=True)
+
     # Datetime when this instance should shut down and email asker 
     end_datetime = db.DateTimeProperty()
 
@@ -268,6 +271,41 @@ class SIBTInstance(Model):
     @staticmethod 
     def _get_from_datastore(uuid):
         return db.Query(SIBTInstance).filter('uuid =', uuid).get()
+
+    def get_products(self):
+        """Returns this instance's products as objects."""
+        return [Product.get(product_uuid) for product_uuid in self.products]
+
+    def get_winning_products (self):
+        """Returns an array of products with the most votes in the instance.
+
+        Array returned can be of one item.
+        """
+        instance_product_votes = []
+        for product_uuid in self.products:
+            product_votes = Action.all()\
+                                  .filter('sibt_instance =', self)\
+                                  .filter('product_uuid =', product_uuid)\
+                                  .count()  # get vote counts for each product
+            # [votes, votes, votes]
+            instance_product_votes.append(product_votes)
+        logging.debug("instance_product_votes = %r" % instance_product_votes)
+
+        # mash the list into a dict: {uuid: votes, uuid: votes, uuid: votes}
+        instance_product_dict = dict(zip(self.products, instance_product_votes))
+        logging.debug("instance_product_dict = %r" % instance_product_dict)
+
+        if instance_product_votes.count(max(instance_product_votes)) > 1:
+            # that is, if multiple items have the same score
+            winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0],
+                                            self.products)
+            return Product.all()\
+                          .filter('uuid IN', winning_products_uuids)\
+                          .fetch(1000)
+        else:
+            # that is, if one product is winning the voting
+            winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
+            return [Product.get(winning_product_uuid)]
 
     # Accessor ----------------------------------------------------------------
     @staticmethod
@@ -364,7 +402,7 @@ class SIBTInstance(Model):
 class PartialSIBTInstance(Model):
     """http://goo.gl/SWi1P
 
-    Whenever someone doesn't FB connect, we start a PartialInstance and open up 
+    Whenever someone doesn't FB connect, we start a PartialInstance and open up
     a FB dialog. We don't know if they actually pushed the message to FB or not,
     right? This is why it's only a Partial Instance. When the User is redirected
     to our "Thanks" screen, we complete the partialinstance and make a full one
@@ -381,18 +419,17 @@ class PartialSIBTInstance(Model):
     link = db.ReferenceProperty(db.Model, 
                                 collection_name='link_partial_sibt_instances',
                                 indexed=False)
-    # user can choose between multiple products on the UI, but user can only
-    # select _one_ product to start a vote
+    # deprecated (SIBT now should accept 2 or more products)
     product = db.ReferenceProperty(db.Model, 
                                    collection_name='product_partial_sibt_instances',
                                    indexed=False)
+
+    # use self.get_products() to get products as objects
+    products = db.StringListProperty(db.Text, indexed=True)
+
     app_ = db.ReferenceProperty(db.Model,
                                 collection_name='app_partial_sibt_instances',
                                 indexed=False)
-
-    # products are stored as 'uuid','uuid','uuid' because object lists
-    # aren't possible (or you can use Fraser's ObjectListProperty)
-    products = db.StringListProperty(db.Text, indexed=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -406,15 +443,22 @@ class PartialSIBTInstance(Model):
     def _validate_self(self):
         return True
 
-    """ Users can only have 1 of these ever.
-        If they already have one, update it.
-        Otherwise, make a new one. """
+    def get_products(self):
+        """Returns this instance's products as objects."""
+        return [Product.get(product_uuid) for product_uuid in self.products]
+
     @classmethod
-    def create(cls, user, app, link, products=None, product=None):
+    def create(cls, user, app, link, product=None, products=None):
+        """Users can only have 1 of these ever.
+
+        If they already have one, update it.
+        Otherwise, make a new one.
+        """
         instance = cls.get_by_user(user)
         if instance:
             instance.link = link
             instance.product = product
+            instance.products = products
             instance.app_ = app
         else: 
             uuid = generate_uuid(16)
@@ -424,6 +468,7 @@ class PartialSIBTInstance(Model):
                            user=user,
                            link=link, 
                            product=product,
+                           products=products,
                            app_=app)
         instance.put()
         return instance

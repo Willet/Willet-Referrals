@@ -11,7 +11,7 @@
      */
 
     // declare vars
-    var app, instance, sys, topbar, user;
+    var app, instance, products, sys, topbar, user;
 
     var hash_index = -1;
     var padding_elem = null;
@@ -54,8 +54,10 @@
         'is_live': ('{{is_live}}' === 'True'),
         'show_votes': ('{{show_votes}}' === 'True')
     };
+    products = [
+        // list of products {'uuid': ..., 'title': ..., 'price': ..., ...}
+    ];
     user = {
-        'ask_success': false, // did they JUST ask?
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
         'is_asker': ('{{is_asker}}' === 'True') // did they ask?
     };
@@ -206,7 +208,7 @@
                 // constructs the 'willet' query string - no prefixing ? will be added for you.
                 // add more query properties with the "more" param.
                 return $.param($.extend ({}, // blank original
-                    { 
+                    {
                         'app_uuid': '{{ app.uuid }}',
                         'user_uuid': '{{ user.uuid }}',
                         'instance_uuid': '{{ instance.uuid }}',
@@ -247,6 +249,15 @@
                 return d.title || '';
             };
 
+            var get_product_uuids = function () {
+                var i, uuids;
+                uuids = [];
+                for (i = 0; i < products.length; i++) {
+                    uuids.push(products[i].uuid);
+                }
+                return uuids;
+            }
+
             // Send action to server
             var store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
@@ -262,20 +273,12 @@
                     load: function () {
                         try {
                             var iframe_handle = d.getElementById(random_id);
-                            iframe_handle.parentNode.removeChild ( iframe_handle );
+                            iframe_handle.parentNode.removeChild (iframe_handle);
                         } catch (e) {
                             console.log(e.message);
                         }
                     }
                 }).appendTo("body");
-            };
-
-            // Called when ask iframe is closed
-            var ask_callback = function( fb_response ) {
-                if (user.ask_success === true) {
-                    user.is_asker = true;
-                    $('#_willet_button').html('Refresh the page to see your results!');
-                }
             };
 
             var button_onclick = function(e, message) {
@@ -304,7 +307,8 @@
                     initialHeight: 0,
                     innerWidth: '600px',
                     innerHeight: '400px',
-                    fixed: true
+                    fixed: true,
+                    onClosed: function () {}
                 };
                 options = $.extend({}, defaults, options);
                 if ($.willet_colorbox) {
@@ -333,17 +337,16 @@
                 // this can be detected if a finished flag is raised.
                 show_colorbox({
                     href: "{{URL}}/s/results.html?" + 
-                           metadata({'refer_url': w.location.href}),
-                    onClosed: function () {}
+                           metadata({'refer_url': w.location.href})
                 });
             };
 
-            var show_ask = function ( message ) {
+            var show_ask = function (message) {
                 // shows the ask your friends iframe
                 show_colorbox({
-                    href: "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" + 
-                                             "&url=" + ('{{ PAGE }}' || w.location.href),
-                    onClosed: ask_callback
+                    href: "{{URL}}{% url AskDynamicLoader %}?user_uuid={{ user.uuid }}" +
+                                                           "&url=" + ('{{ PAGE }}' || w.location.href) +
+                                                           "&products=" + get_product_uuids()
                 });
             };
 
@@ -399,218 +402,7 @@
 
 
             {% if app.top_bar_enabled %} // add this topbar code only if necessary
-                var topbar_onclick = function(e) {
-                    // Onclick event handler for the 'sibt' button
-                    button_onclick(e, 'SIBTUserClickedTopBarAsk');
-                };
-
-                var unhide_topbar = function() {
-                    // When a user hides the top bar, it shows the little
-                    // "Show" button in the top right. This handles the clicks to that
-                    $.cookie('_willet_topbar_closed', false);
-                    topbar_hide_button.slideUp('fast');
-                    if (topbar === null) {
-                        if (instance.show_votes || hash_index !== -1) {
-                            show_topbar();
-                            store_analytics('SIBTUserReOpenedTopBar');
-                        } else {
-                            show_topbar_ask();
-                            store_analytics('SIBTShowingTopBarAsk');
-                        }
-                    } else {
-                        topbar.slideDown('fast'); 
-                        store_analytics('SIBTUserReOpenedTopBar');
-                    }
-                };
-
-                var close_top_bar = function() {
-                    // Hides the top bar and padding
-                    $.cookie('_willet_topbar_closed', true);
-                    topbar.slideUp('fast'); 
-                    topbar_hide_button.slideDown('fast');
-                    store_analytics('SIBTUserClosedTopBar');
-                };
-
-                // Expand the top bar and load the results iframe
-                var do_vote = function(vote) {
-                    // detecting if we just voted or not
-                    var doing_vote = (vote !== -1);
-                    var vote_result = (vote === 1);
-
-                    // getting the neccesary dom elements
-                    var iframe_div = topbar.find('div.iframe');
-                    var iframe = topbar.find('div.iframe iframe');
-
-                    // constructing the iframe src
-                    var hash        = w.location.hash;
-                    var hash_search = '#code=';
-                    var hash_index  = hash.indexOf(hash_search);
-                    var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-                    var results_src = "{{URL}}/s/results.html?" +
-                        "willt_code=" + encodeURIComponent(willt_code) + 
-                        "&user_uuid={{user.uuid}}" + 
-                        "&doing_vote=" + encodeURIComponent(doing_vote) + 
-                        "&vote_result=" + encodeURIComponent(vote_result) + 
-                        "&is_asker=" + user.is_asker + 
-                        "&store_id={{store_id}}" +
-                        "&store_url={{store_url}}" +
-                        "&instance_uuid={{instance.uuid}}" + 
-                        "&url=" + encodeURIComponent(w.location.href);
-
-                    // show/hide stuff
-                    topbar.find('div.vote').hide();
-                    if (doing_vote || user.has_voted) {
-                        topbar.find('div.message').html('Thanks for voting!').fadeIn();
-                    } else if (user.is_asker) {
-                        topbar.find('div.message').html('Your friends say:   ').fadeIn();
-                    }
-
-                    // start loading the iframe
-                    iframe_div.show();
-                    iframe.attr('src', ''); 
-                    iframe.attr('src', results_src);
-
-                    iframe.fadeIn('medium');
-                };
-                var do_vote_yes = function() { do_vote(1);};
-                var do_vote_no = function() { do_vote(0);};
-
-                var build_top_bar_html = function (is_ask_bar) {
-                    // Builds the top bar html
-                    // is_ask_bar option boolean
-                    // if true, loads ask_in_the_bar iframe
-
-                    if (is_ask_bar || false) {
-                        var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-                        var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
-                            "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
-                            "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                            "</div>" +
-                        "</div>";
-                    } else {
-                        var asker_text = '';
-                        var message = 'Should <em>{{ asker_name }}</em> Buy This?';
-                        var image_src = '{{ asker_pic }}';
-
-                        var bar_html = "<div class='_willet_wrapper'> " +
-                            "<div class='asker'>" +
-                                "<div class='pic'><img src='" + image_src + "' /></div>" +
-                            "</div>" +
-                            "<div class='message'>" + message + "</div>" +
-                            "<div class='vote last' style='display: none'>" +
-                            "    <button id='yesBtn' class='yes'>Yes</button> "+
-                            "    <button id='noBtn' class='no'>No</button> "+
-                            "</div> "+
-                            "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
-                            "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+ 
-                            "</div>" +
-                            "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
-                            "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                            "</div>" +
-                        "</div>";
-                    }
-                    return bar_html;
-                };
-
-                var show_topbar = function() {
-                    // Shows the vote top bar
-                    var body = $('body'); 
-
-                    // create the padding for the top bar
-                    padding_elem = d.createElement('div');
-                    padding_elem = $(padding_elem)
-                        .attr('id', '_willet_padding')
-                        .css('display', 'none');
-
-                    topbar = d.createElement('div');
-                    topbar = $(topbar)
-                        .attr('id', '_willet_sibt_bar')
-                        .css('display', "none")
-                        .html(build_top_bar_html());
-                    body.prepend(padding_elem);
-                    body.prepend(topbar);
-
-                    // bind event handlers
-                    $('#_willet_close_button').unbind().bind('click', close_top_bar);
-                    $('#yesBtn').click(do_vote_yes);
-                    $('#noBtn').click(do_vote_no);
-
-                    padding_elem.show(); 
-                    topbar.slideDown('slow');
-
-                    if (!instance.is_live) {
-                        // voting is over folks!
-                        topbar.find('div.message').html('Voting is over!');
-                        toggle_results();
-                    } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
-                        // show voting!
-                        topbar.find('div.vote').show();
-                    } else if (user.has_voted && !user.is_asker) {
-                        // someone has voted && not the asker!
-                        topbar.find('div.message').html('Thanks for voting!').fadeIn();
-                        toggle_results();
-                    } else if (user.is_asker) {
-                        // showing top bar to asker!
-                        topbar.find('div.message').html('Your friends say:   ').fadeIn();
-                        toggle_results();
-                    }
-                };
-
-                var show_topbar_ask = function() {
-                    //Shows the ask top bar
-
-                    // create the padding for the top bar
-                    padding_elem = d.createElement('div');
-
-                    padding_elem = $(padding_elem)
-                        .attr('id', '_willet_padding')
-                        .css('display', 'none');
-
-                    topbar = $('<div />', {
-                        'id': '_willet_sibt_ask_bar',
-                        'class': 'willet_reset',
-                        'css': {
-                            'display', 'none'
-                        }
-                    });
-                    topbar.html(build_top_bar_html(true));
-
-                    $("body").prepend(padding_elem).prepend(topbar);
-
-                    var iframe = topbar.find('div.iframe iframe');
-                    var iframe_div = topbar.find('div.iframe');
-
-                    $('#_willet_close_button').unbind().bind('click', close_top_bar);
-                    
-                    topbar.find( '._willet_wrapper p')
-                        .css('cursor', 'pointer')
-                        .click(topbar_onclick);
-                    padding_elem.show(); 
-                    topbar.slideDown('slow'); 
-                };
-
-                var topbar_ask_success = function () {
-                    // if we get a postMessage from the iframe
-                    // that the share was successful
-                    store_analytics('SIBTTopBarShareSuccess');
-                    var iframe = topbar.find('div.iframe iframe');
-                    var iframe_div = topbar.find('div.iframe');
-                    
-                    user.is_asker = true;
-
-                    iframe_div.fadeOut('fast', function() {
-                        topbar.animate({height: '40'}, 500);
-                        iframe.attr('src', ''); 
-                        toggle_results();
-                    });
-                };
-                
-                var toggle_results = function() {
-                    // Used to toggle the results view
-                    // iframe has no source, hasnt been loaded yet
-                    // and we are FOR SURE showing it
-                    do_vote(-1);
-                };
+                {% include 'sibt_topbar_funcs.inc.js' %}
             {% endif %} ; // app.top_bar_enabled
 
             // save past products' images
@@ -620,6 +412,24 @@
                 // image 1 is more recent; shift products
                 $.cookie('product2_image', $.cookie('product1_image'));
                 $.cookie('product1_image', get_largest_image());
+            }
+            if (w._willet_product_json) {
+                // we can't store descriptions in under cookies' 4kB
+                products.push({
+                    'id': w._willet_product_json.id,
+                    'title': w._willet_product_json.title,
+                    // 'description': w._willet_product_json.description,
+                    'images': w._willet_product_json.images, // [...]
+                    'url': w.location.href
+                });
+            } else {
+                products.push({
+                    'id': 0,
+                    'title': get_page_title(),
+                    // 'description': '',
+                    'images': [get_largest_image(d)],
+                    'url': w.location.href
+                });
             }
 
             // SIBT Connection will be prioritised and show if both SIBT and SIBT Connection exist on page.
@@ -861,10 +671,7 @@
 
                     // watch for message; Create IE + others compatible event handler
                     $(w).bind('onmessage message', function(e) {
-                        var message = e.originalEvent.data;
-                        if (message === 'shared') {
-                            user.ask_success = true;
-                        } else if (message === 'close') {
+                        if (e.originalEvent.data === 'close') {
                             $.willet_colorbox.close();
                         }
                     });
