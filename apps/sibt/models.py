@@ -98,8 +98,8 @@ class SIBT(App):
                    version=App.CURRENT_INSTALL_VERSION)
 
         try:
-            app.store_id=client.id # Store id
-        except AttributeError: # non-Shopify Shops need not Shop ID
+            app.store_id = client.id  # Store id
+        except AttributeError:  # non-Shopify Shops need not Shop ID
             logging.warn('Store created without store_id '
                          '(ok if not installing SIBT for Shopify)')
             pass
@@ -157,12 +157,12 @@ class SIBT(App):
 
         # Go to where the link points
         # Flag it so we know they came from the short link
-        urihandler.redirect('%s#code=%s' % (link.target_url, link.willt_url_code))
+        urihandler.redirect('%s#code=%s' % (link.target_url,
+                                            link.willt_url_code))
 
-    def create_instance(self, user, end, link, products=None,
-                        img="", motivation=None, dialog=""):
-        logging.info("MAKING A SIBT INSTANCE")
-        logging.debug("DIALOG %s" % dialog)
+    def create_instance(self, user, end, link, img="",
+                        motivation=None, dialog=""):
+        logging.info("Making a SIBT instance (dialog = %s)" % dialog)
         # Make the properties
         uuid = generate_uuid(16)
 
@@ -190,7 +190,8 @@ class SIBT(App):
         if not user.is_admin():
             bingo('sibt_share_text3')
 
-        if not user.is_admin() and "social-referral" in URL:
+        # "if it is a non-admin share on live server"
+        if not user.is_admin() and not APP_LIVE_DEBUG:
             try:
                 Email.emailDevTeam("""
                     SIBT INSTANCE:<br />
@@ -222,41 +223,39 @@ class SIBT(App):
         return instance
 
 
-# -----------------------------------------------------------------------------
-# SIBTInstance Class Definition -----------------------------------------------
-# -----------------------------------------------------------------------------
 class SIBTInstance(Model):
+    """Class definition for SIBT "Instances".
 
+    A SIBT Instance is an encapsulated event class that stores the state of a
+    given use of SIBT - chiefly created when a user creates a product vote.
+    """
     # the users motivation for sharing (unknown use / deprecated)
     motivation = db.StringProperty(default="")
 
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)
-    
+
     # The User who asked SIBT to their friends?
-    asker = MemcacheReferenceProperty(db.Model, collection_name='sibt_instances')
-   
+    asker = MemcacheReferenceProperty(db.Model,
+                                      collection_name='sibt_instances')
+
     # Parent App that "owns" these instances
     app_ = db.ReferenceProperty(db.Model, collection_name="instances")
 
     # The Link for this instance (1 per instance)
     link = db.ReferenceProperty(db.Model, collection_name="sibt_instance")
-    
+
     # URL of the Link (here for quick filter)
-    url = db.LinkProperty  (indexed = True)
-    
-    # URL of the product image (deprecated)
-    product_img = db.LinkProperty  (indexed = False)
+    url = db.LinkProperty(indexed=True)
+
+    # URL of the product image
+    product_img = db.LinkProperty(indexed=False)
     
     # Datetime when this instance should shut down and email asker 
     end_datetime = db.DateTimeProperty()
 
     # True iff end_datetime < now. False, otherwise.
-    is_live = db.BooleanProperty(default = True)
-
-    # products are stored as 'uuid','uuid','uuid' because object lists
-    # aren't possible (or you can use Fraser's ObjectListProperty)
-    products = db.StringListProperty(db.Text, indexed=True)
+    is_live = db.BooleanProperty(default=True)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -270,9 +269,10 @@ class SIBTInstance(Model):
     def _get_from_datastore(uuid):
         return db.Query(SIBTInstance).filter('uuid =', uuid).get()
 
-    # Accessor ---------------------------------------------------------------------
+    # Accessor ----------------------------------------------------------------
     @staticmethod
     def get_by_asker_for_url(user, url, only_live=True):
+        """Retrieve an instance by its user object and link URL (not model)."""
         data = memcache.get('%s-%s' % (user.uuid, url))
         if data:
             instance = db.model_from_protobuf(entity_pb.EntityProto(data))
@@ -283,18 +283,12 @@ class SIBTInstance(Model):
                 .filter('url =', db.Link(url))\
                 .get()
             if instance:
-                instance.memcache_by_asker_and_url()
+                instance._memcache()
         return instance
-
-    @classmethod
-    def get_by_user_and_app (cls, user, app_):
-        # returns only the most recent instance.
-        # function makes sense only when one instance is active per user per store.
-        return cls.all().filter('asker =', user).filter('app_ =', app_)\
-                  .order('-created').get()
 
     @staticmethod
     def get_by_link(link, only_live=True):
+        """Retrieve an instance by its associated link object."""
         return SIBTInstance.all()\
                 .filter('is_live =', only_live)\
                 .filter('link =', link)\
@@ -304,49 +298,13 @@ class SIBTInstance(Model):
     def get_by_uuid(uuid):
         return SIBTInstance.get(uuid)
 
-    # -------------------------------------------------------------------------
-    def get_winning_products (self):
-        """ returns an array of products with the most votes in the instance.
-            array can be of one item.
-        """
-
-        # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
-        instance_product_votes = [Action.\
-                                    all().\
-                                    filter('wosib_instance =', self).\
-                                    filter('product_uuid =', product_uuid)\
-                                    .count() for product_uuid in self.products] # [votes,votes,votes]
-        logging.debug ("instance_product_votes = %r" % instance_product_votes)
-
-        instance_product_dict = dict (zip (self.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
-        logging.debug ("instance_product_dict = %r" % instance_product_dict)
-
-        if instance_product_votes.count(max(instance_product_votes)) > 1:
-            # that is, if multiple items have the same score
-            winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], self.products)
-            return Product\
-                       .all()\
-                       .filter('uuid IN', winning_products_uuids)\
-                       .fetch(1000)
-        else:
-            # that is, if one product is winning the voting
-            winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
-            return [Product.all().filter('uuid =', winning_product_uuid).get()]
-
     def get_votes_count(self):
-        """Count this instance's votes count
-           For compatibility reasons, the field 'yesses' is used to keep count"""
-        total = memcache.get(self.uuid+"WOSIBVoteCounter_count")
-        if total is None:
-            total = 0
-            for counter in VoteCounter.all().\
-            filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
-                total += counter.yesses
-            memcache.add(key=self.uuid+"WOSIBVoteCounter_count", value=total)
+        """Count this instance's total number of votes."""
+        total = self.get_yesses_count() + self.get_nos_count()
         return total
 
     def get_yesses_count(self):
-        """Count this instance's yes count"""
+        """Count this instance's yes count."""
         total = memcache.get(self.uuid+"VoteCounter_yesses")
         if total is None:
             total = 0
@@ -354,11 +312,11 @@ class SIBTInstance(Model):
             filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
                 total += counter.yesses
             memcache.add(key=self.uuid+"VoteCounter_yesses", value=total)
-        
+
         return total
 
     def get_nos_count(self):
-        """Count this instance's no count"""
+        """Count this instance's no count."""
         total = memcache.get(self.uuid+"VoteCounter_nos")
         if total is None:
             total = 0
@@ -366,11 +324,11 @@ class SIBTInstance(Model):
             filter('instance_uuid =', self.uuid).fetch(NUM_VOTE_SHARDS):
                 total += counter.nos
             memcache.add(key=self.uuid+"VoteCounter_nos", value=total)
-        
+
         return total
-    
+
     def increment_yesses(self):
-        """Increment this instance's votes (yes) counter"""
+        """Increment this instance's votes (yes) counter."""
         def txn():
             index = random.randint(0, NUM_VOTE_SHARDS-1)
             shard_name = self.uuid + str(index)
@@ -383,7 +341,7 @@ class SIBTInstance(Model):
 
         db.run_in_transaction(txn)
         memcache.incr(self.uuid+"VoteCounter_yesses")
-    
+
     def increment_nos(self):
         """Increment this instance's votes (no) counter"""
         def txn():
@@ -391,7 +349,7 @@ class SIBTInstance(Model):
             shard_name = self.uuid + str(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = VoteCounter(key_name      =shard_name, 
+                counter = VoteCounter(key_name=shard_name,
                                       instance_uuid=self.uuid)
             counter.nos += 1
             counter.put()
@@ -405,6 +363,7 @@ class SIBTInstance(Model):
 # -----------------------------------------------------------------------------
 class PartialSIBTInstance(Model):
     """http://goo.gl/SWi1P
+
     Whenever someone doesn't FB connect, we start a PartialInstance and open up 
     a FB dialog. We don't know if they actually pushed the message to FB or not,
     right? This is why it's only a Partial Instance. When the User is redirected
@@ -412,6 +371,7 @@ class PartialSIBTInstance(Model):
     and delete the partial one. If the person cancels, the PartialInstance is 
     deleted. If the person closes the window, the PartialInstance stays, but
     ... "expires".
+
     Each User can have at most 1 PartialInstance.
     """
     # User is the only index.
@@ -421,11 +381,11 @@ class PartialSIBTInstance(Model):
     link = db.ReferenceProperty(db.Model, 
                                 collection_name='link_partial_sibt_instances',
                                 indexed=False)
-    # deprecated above v11
+    # user can choose between multiple products on the UI, but user can only
+    # select _one_ product to start a vote
     product = db.ReferenceProperty(db.Model, 
                                    collection_name='product_partial_sibt_instances',
                                    indexed=False)
-    products = db.ReferenceProperty(db.Model, indexed=False)
     app_ = db.ReferenceProperty(db.Model,
                                 collection_name='app_partial_sibt_instances',
                                 indexed=False)
@@ -455,7 +415,6 @@ class PartialSIBTInstance(Model):
         if instance:
             instance.link = link
             instance.product = product
-            instance.products = products
             instance.app_ = app
         else: 
             uuid = generate_uuid(16)
@@ -465,7 +424,6 @@ class PartialSIBTInstance(Model):
                            user=user,
                            link=link, 
                            product=product,
-                           products=products,
                            app_=app)
         instance.put()
         return instance

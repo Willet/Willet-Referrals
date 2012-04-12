@@ -47,14 +47,14 @@ class AskDynamicLoader(URIHandler):
     """
     
     def get(self):
-        """ 
-            SIBT Ask page
-            params:
-                url (required): the product URL; typically window.location.href
-                
-                user_uuid (optional)
-                product_uuid (optional)
-                product_shopify_id (optional)
+        """Shows the SIBT Ask page.
+
+        params:
+            url (required): the product URL; typically window.location.href
+
+            user_uuid (optional)
+            product_uuid (optional)
+            product_shopify_id (optional)
         """
         page_url = self.request.get('url', self.request.headers.get('referer'))
         product = product_shopify = None

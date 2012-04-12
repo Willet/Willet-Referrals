@@ -47,7 +47,7 @@
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
         // true when visitor on page more than (4 times)
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
-        'version': {{sibt_version|default:"3"}}
+        'version': {{sibt_version|default:"11"}}
     };
     instance = {
         'has_results': ('{{has_results}}' === 'True'),
@@ -734,7 +734,7 @@
                             .click(button_onclick);
                         $(purchase_cta).append(button);
                     } else if (app.version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
-                        console.log('v3 button is enabled');
+                        console.log('v3+ button is enabled');
                         if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                             var button = $("<div />", {
                                 'id': '_willet_button_v3'

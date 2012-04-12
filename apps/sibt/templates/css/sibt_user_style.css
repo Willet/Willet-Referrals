@@ -4,7 +4,7 @@
 
     /* do not use Overclock unless client already has it = fast */
     background-color:#f9f9f6;
-    font-family: 'Overclock', 'PT Sans', Arial, sans-serif;
+    font-family: Overclock, PT Sans, Arial, sans-serif;
     font-size: 13px;
     text-align: center;
     width: 320px;
