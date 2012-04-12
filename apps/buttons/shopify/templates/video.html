@@ -68,7 +68,9 @@
 							// The "main method" of this sample. Called when someone clicks "Run".
 							function loadPlayer() {
 								var videoID = "7JF-583xVFk",
-									params = { allowScriptAccess: "always" },
+									params = { allowScriptAccess: "always",
+											   modestbranding: 1,
+											   rel: 0 },
 									atts = { id: "ytPlayer" };
 
 								swfobject.embedSWF("http://www.youtube.com/v/" + videoID + 
