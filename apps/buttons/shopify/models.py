@@ -2,6 +2,7 @@
 
 # Buttons model
 # Extends from "App"
+from itertools import groupby
 from apps.app.models import App
 
 __author__ = "Willet, Inc."
@@ -250,6 +251,53 @@ class SharePeriod(Model):
             instance = cls(app_uuid=app.uuid, start=start, end=end)
 
         return instance
+
+    def get_shares_grouped_by_network(self):
+        items = self.shares
+        sorted_items   = sorted(items, key=lambda v: v.network)
+        group_by_network_iter = groupby(sorted_items, lambda v: v.network)
+
+        items_by_network  = list()
+        for network_name, network in group_by_network_iter:
+            network_count = len(list(network))
+            percent = (100 * network_count) / len(self.shares)
+            items_by_network.append({
+                "network": network_name,
+                "shares": network_count,
+                "percent": percent
+            })
+
+        return items_by_network
+
+    #Maybe Refactor to use sort_shares_by_network? common functionality?
+    def get_shares_grouped_by_product(self):
+        items = self.shares
+        sorted_items   = sorted(items, key=lambda v: v.name)
+        group_by_name_iter = groupby(sorted_items, lambda v: v.name)
+
+        items_by_name  = list()
+        for product_name, product in group_by_name_iter:
+            item = dict()
+            item["name"] = product_name
+            product_shares = list(product) # evaluates the iterator
+            total_shares = len(product_shares)
+            item["total_shares"] = total_shares
+
+            networks = list()
+            group_by_network_iter = groupby(product_shares,
+                                            lambda v: v.network)
+            for network_name, network in group_by_network_iter:
+                network_count = len(list(network))
+                percent = (100 * network_count) / total_shares
+                networks.append({
+                    "network": network_name,
+                    "shares": network_count,
+                    "percent": percent
+                })
+            item["networks"] = sorted(networks, key=lambda v: v["shares"],
+                                      reverse=True)
+            items_by_name.append(item)
+        return items_by_name
 
 
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)

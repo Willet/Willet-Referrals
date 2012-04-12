@@ -312,6 +312,9 @@ class ButtonsShopifyEmailReports(URIHandler):
 
 class ButtonsShopifyItemSharedReport(URIHandler):
     """Sends individual emails"""
+    def get(self):
+        self.post()
+
     def post(self):
         product_page = self.request.get('store')
 
@@ -334,29 +337,18 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             info("No share period found matching criteria")
             return
 
-        items          = share_period.shares
+        shares_by_name    = share_period.get_shares_grouped_by_product()
+        shares_by_network = share_period.get_shares_grouped_by_network()
 
-        # Maybe look into itertools.groupby?
-        popular_items  = dict()
-        popular_shares = defaultdict(int)
-        for item in items:
-            if not item.name in popular_items:
-                popular_items[item.name] = defaultdict(int)
-            popular_items[item.name][item.network] += 1
-            popular_items[item.name]["total_shares"] += 1
-            popular_items[item.name]["img"] = item.img_url
-            popular_items[item.name]["url"] = item.url
+        info(shares_by_name)
+        info(shares_by_network)
 
-            popular_shares[item.network]   += 1
-            popular_shares["total_shares"] += 1
-
-        top_items = sorted(popular_items.iteritems(),
-                           key=lambda(k,v): v["total_shares"],
-                           reverse=True)
-
-        top_shares = sorted(popular_shares.iteritems(),
-                            key=lambda(k,v): v,
-                            reverse=True)
+        top_items        = sorted(shares_by_name,
+                                  key=lambda v: v["total_shares"],
+                                  reverse=True)[:10]
+        top_shares       = sorted(shares_by_network,
+                                  key=lambda v: v['shares'],
+                                  reverse=True)
 
         info(top_items)
         info(top_shares)
