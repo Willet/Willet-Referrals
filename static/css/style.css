@@ -452,13 +452,13 @@ div.call_to_action div.subtitle {
     -moz-box-shadow:0 1px 2px #999;
     box-shadow:0 1px 2px #999;
     color: #fce8e3;
-    }
+}
 
 .new_call_to_action:hover {
-background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-	background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
-	background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-	color:#fff;
+    background: -moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+    background: -o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    color:#fff;
 }
 
 /*--------------------- TWEET TO ACTION --------------------------------------*/
@@ -736,8 +736,16 @@ div.installation-steps>div {
     font-weight: bold;
     color: #888;
 }
-div.installation-steps>div.on-this-step {
-    color: #333;
+div.installation-steps li::after {
+    content: '&#x276D;';
+    font-size: 25px;
+    padding-left: 10px;
+    position: relative;
+    top: -3px;
+}
+div.installation-steps li.on-this-step {
+    color: #FFF;
+    text-shadow: 1px 1px 1px #555;
 }
 /*******************************************************************************
 |                                   PAGES                                      |
