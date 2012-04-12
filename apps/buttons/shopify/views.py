@@ -353,10 +353,14 @@ class ButtonsShopifyItemSharedReport(URIHandler):
         info(top_items)
         info(top_shares)
 
-        Email.emailDevTeam(
-            'Sending test email for report: \n\n'\
-            '%s,\n' \
-            '%s' %
-            (top_items, top_shares)
-        )
+        client = ClientShopify.get_by_url(store_url)
+        if client is None or (client is not None and client.merchant is None):
+            info("No client!")
+            return
 
+        email = client.email
+        shop  = client.name
+        name  = client.merchant.get_full_name()
+
+        Email.reportSmartButtons(email, top_items, top_shares,
+                                 shop_name=shop, client_name=name)

@@ -122,6 +122,33 @@ class Email():
                          subject=subject,
                          body=body,
                          to_name=name)
+
+    @staticmethod
+    def reportSmartButtons(to_addr, item_shares, network_shares,
+                           shop_name=None, client_name=None):
+        if shop_name is None:
+            shop_name = ""
+
+        if client_name is None:
+            client_name = ""
+
+        body = template.render(
+            Email.template_path('smart_buttons_report.html'),
+            {
+                'shop_name'     : shop_name,
+                'client_name'   : client_name,
+                'item_shares'   : item_shares,
+                'network_shares': network_shares
+            }
+        )
+
+        subject = "Weekly Smart Buttons Report"
+
+        Email.send_email(from_address=FROM_ADDR,
+                         to_address=to_addr,
+                         to_name=client_name.title(),
+                         subject=subject,
+                         body=body)
     
     @staticmethod
     def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
