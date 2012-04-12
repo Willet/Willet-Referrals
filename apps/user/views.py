@@ -8,7 +8,7 @@ from util.urihandler import URIHandler
 class ShowProfilePage(URIHandler):
     def get(self, app_id = None, user_id = None):
         app = App.get_by_uuid(app_id)
-        user = User.get( user_id )
+        user = User.get(user_id)
 
         if not app:
             logging.error("""Tried to get user profile without defining
@@ -60,7 +60,7 @@ class ShowProfilePage(URIHandler):
 
 class ShowProfileJSON (URIHandler):
     def get(self, user_id = None):
-        user = User.get( user_id )
+        user = User.get(user_id)
         response = {}
         success = False
         if user:
@@ -81,12 +81,12 @@ class ShowProfileJSON (URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class UserCookieSafariHack( URIHandler ):
-    def post( self ):
+class UserCookieSafariHack(URIHandler):
+    def post(self):
         self.get()
 
-    def get( self ):
-        user = User.get( self.request.get( 'user_uuid' ) )   
+    def get(self):
+        user = User.get(self.request.get('user_uuid'))   
         if user:
-            set_user_cookie( self, user.uuid )
+            set_user_cookie(self, user.uuid)
         self.response.headers.add_header('P3P', P3P_HEADER)

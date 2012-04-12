@@ -48,24 +48,24 @@ class Link(Model):
        track of how many unique clicks it receives"""
        
     # destination of the link, supplied by our clients
-    target_url     = db.LinkProperty(indexed = True)
+    target_url = db.LinkProperty(indexed = True)
     # our unique identifier code for this Link
-    willt_url_code = db.StringProperty( indexed = True )
+    willt_url_code = db.StringProperty(indexed = True)
     # our client's app that this link is associated with
-    app_           = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
+    app_ = db.ReferenceProperty(db.Model, collection_name = 'links_', indexed=True) 
 
-    creation_time  = db.DateTimeProperty(auto_now_add = True,indexed = True)
+    creation_time = db.DateTimeProperty(auto_now_add = True,indexed = True)
     # twitter's identifier for the tweet in question
-    tweet_id       = db.StringProperty(required=False, default='', indexed=True)
-    user           = MemcacheReferenceProperty(db.Model, collection_name = 'user_')
+    tweet_id = db.StringProperty(required=False, default='', indexed=True)
+    user = MemcacheReferenceProperty(db.Model, collection_name = 'user_')
     # the string our client supplied us to identify this user with
     supplied_user_id = db.StringProperty(required=False)
     # keep track of our retweets
-    retweets         = db.ListProperty(str, required=True)
+    retweets = db.ListProperty(str, required=True)
     # the location of the button that spawned this link
-    origin_domain    = db.StringProperty(str, required=False)
+    origin_domain = db.StringProperty(str, required=False)
     # facebook's id for the share
-    facebook_share_id  = db.StringProperty()
+    facebook_share_id = db.StringProperty()
     # linkedin's id for the share
     linkedin_share_url = db.StringProperty(required=False, default='', indexed=True)
 
@@ -81,6 +81,9 @@ class Link(Model):
             logging.warn('Validation warning: link has no user')
         return True
     
+    def _validate_self(self):
+        return True
+
     @staticmethod
     def _get_from_datastore(willt_url_code):
         """Datastore retrieval using memcache_key"""
@@ -126,7 +129,7 @@ class Link(Model):
         else:
             # if testing, just output the testing domain
             return 'http://' + DOMAIN + '/' + self.willt_url_code
-    
+
     def count_retweets(self):
         return len(self.retweets)
 
@@ -173,18 +176,20 @@ class Link(Model):
         logging.debug('called Link.create')
         code = encode_base62(get_a_willt_code())
         logging.debug('got code %s' %  code)
-        link = Link(key_name         = code,
-                    target_url       = targetURL,
-                    willt_url_code   = code,
-                    supplied_user_id = usr,
-                    app_             = app,
-                    user             = user,
-                    origin_domain    = domain,
-                    retweets         = [])
+        link = Link(key_name=code,
+                    target_url=targetURL,
+                    willt_url_code=code,
+                    supplied_user_id=usr,
+                    app_=app,
+                    user=user,
+                    origin_domain=domain,
+                    retweets=[])
 
         #link.put()
         link.memcache_by_code()
-        deferred.defer(put_link, Link.get_memcache_key_for_code(code), _queue='slow-deferred')
+        deferred.defer(put_link,
+                       Link.get_memcache_key_for_code(code),
+                       _queue='slow-deferred')
         
         logging.info("Successful put of Link %s" % code)
         return link
@@ -220,6 +225,10 @@ class CodeCounter(Model):
     def _validate_self(self):
         return True
     
+    def _validate_self(self):
+        # there is not much to check - count can be higher than total_counter_nums
+        return True
+    
     def get_next(self):
         #c = self.count
         #self.count += self.total_counter_nums
@@ -232,6 +241,20 @@ class CodeCounter(Model):
             }
         )
         return self.count
+    
+    @staticmethod
+    def generate_counters (total=20):
+        try:
+            for i in range(total):
+                ac = CodeCounter(
+                    count=i,
+                    total_counter_nums=total,
+                    key_name = str(i)
+                )
+                ac.put()
+            return True
+        except db.Timeout, e:
+            return False
 
     def __init__(self, *args, **kwargs):
        self._memcache_key = kwargs['count'] if 'count' in kwargs else None 
@@ -246,6 +269,10 @@ def get_a_willt_code():
     """Get a counter at random and return an unused code"""
     counter_index = random.randint(0,19)
     counter = CodeCounter.get_by_key_name(str(counter_index))
+    if not counter: # links haven't been link/init'ed yet
+        CodeCounter.generate_counters()
+        # re-get counter object
+        counter = CodeCounter.get_by_key_name(str(counter_index))
     c = counter.get_next()
     return c
 

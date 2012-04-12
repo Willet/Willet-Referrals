@@ -64,7 +64,7 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, c
                                     alternative_params, 
                                     conversion_name,
                                     conversion_type
-                                    )
+                                   )
 
                     bingo_cache.add_experiment(exp, alts)
 
@@ -109,7 +109,7 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, c
 
     # Barbara's Code
     if user:
-        GaeBingoAlt.create( user, app, canonical_name, returned_content )
+        GaeBingoAlt.create(user, app, canonical_name, returned_content)
 
     return returned_content
 

@@ -125,7 +125,7 @@ class MemcacheReferenceProperty(db.Property):
 
             else:
                 # Check for instance in memcache first
-                instance = memcache.get( self.memcache_key )
+                instance = memcache.get(self.memcache_key)
                 
                 if instance:
                     # Convert to model from protobuf
@@ -152,18 +152,18 @@ class MemcacheReferenceProperty(db.Property):
         """Set reference."""
 
         if not self.memcache_key:
-            if isinstance( value, datastore.Key ):
-                obj = db.get( value )
+            if isinstance(value, datastore.Key):
+                obj = db.get(value)
                 
                 if obj:
                     self.memcache_key = obj.get_key()
                 else:
-                    self.memcache_key = memcache.get( str( value ) ) 
+                    self.memcache_key = memcache.get(str(value)) 
 
-            elif isinstance( value, db.Model ):
+            elif isinstance(value, db.Model):
                 self.memcache_key = value.get_key()
             else:
-                raise TypeError( 'Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model> (supplied %s)' % type (value))
+                raise TypeError('Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model> (supplied %s)' % type (value))
         
         if self.memcache_key is None or self.memcache_key == '':
             logging.error('Cannot create memcache key for %s!' % value)
