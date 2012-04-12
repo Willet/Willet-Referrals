@@ -32,9 +32,9 @@ from util.model import Model
 NUM_VOTE_SHARDS = 15
 
 
-# ------------------------------------------------------------------------------
-# WOSIB Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# WOSIB Class Definition ------------------------------------------------------
+# -----------------------------------------------------------------------------
 class WOSIB(App):
     """Model storing the data for a client's WOSIB app"""
     
@@ -86,9 +86,9 @@ class WOSIB(App):
         return instance
 
 
-# ------------------------------------------------------------------------------
-# WOSIBInstance Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# WOSIBInstance Class Definition ----------------------------------------------
+# -----------------------------------------------------------------------------
 class WOSIBInstance(Model):
 
     # Datetime when this model was put into the DB
@@ -118,7 +118,7 @@ class WOSIBInstance(Model):
     def _get_from_datastore(cls, uuid):
         return cls.all().filter('uuid =', uuid).get()
 
-    # Accessors -------------------------------------------------------------------
+    # Accessors ---------------------------------------------------------------
     @classmethod
     def get_by_link(cls, link):
         return cls.all().filter('link =', link).get()
@@ -130,7 +130,7 @@ class WOSIBInstance(Model):
         return cls.all().filter('asker =', user).filter('app_ =', app_)\
                   .order('-created').get()
 
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def get_winning_products (self):
         """ returns an array of products with the most votes in the instance.
             array can be of one item. 

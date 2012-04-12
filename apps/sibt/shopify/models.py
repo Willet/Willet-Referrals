@@ -26,7 +26,7 @@ from util.helpers import url as reverse_url
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTShopify(SIBT, AppShopify):
-    # CSS to style the button.
+    # CSS to style the button (deprecated for SIBTShopify v11+)
     button_css = db.TextProperty(default=None,required=False)
     
     def _validate_self(self):
@@ -183,10 +183,32 @@ class SIBTShopify(SIBT, AppShopify):
             pass
         return app
 
-    # Shopify API calls -------------------------------------------------------------
+    # Shopify API calls -------------------------------------------------------
     def do_install(self, email_client=True):
-        """Installs this instance"""
-        if self.version == '3': # sweet buttons has different on-page snippet.
+        """Installs this app."""
+
+        # SIBT2 (multiple products)
+        if self.version == '10' or self.version == '11':
+            willet_snippet = """<!-- START willet sibt for Shopify -->
+                <div id="_willet_shouldIBuyThisButton"></div>
+                <script type="text/javascript">
+                (function(w, d) {
+                    var hash = w.location.hash;
+                    var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
+                    var product_json = {{ product | json }};
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+w.location;
+                    if (product_json) {
+                        params += '&product_id=' + product_json.id;
+                    }
+                    var src = "http://%s%s?" + params;
+                    var script = d.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    d.getElementsByTagName("head")[0].appendChild(script);
+                }(window, document));
+                </script>
+                <!-- END Willet SIBT for Shopify -->""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+        elif self.version == '3': # sweet buttons has different on-page snippet.
             script_src = """<!-- START willet sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {

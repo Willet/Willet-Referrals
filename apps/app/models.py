@@ -49,14 +49,15 @@ class App(Model, polymodel.PolyModel):
 
     # Version number of the app
     # Version 1 = [Beginning, Nov. 22, 2011]
-    # Version 2 = [Nov. 23, 2011, Present]
+    # Version 2 = [Nov. 23, 2011, Feb. 2012]
     # version 3: "sweet buttons upgrade"
-    # version 10: merge SIBT into ShopConnection app
-    version = db.StringProperty(default='10', indexed=False)
+    # version 10: merge SIBT into ShopConnection app as SIBT-JS
+    # version 11: SIBT v2 (add WOSIB-like functionality)
+    version = db.StringProperty(default='11', indexed=False)
 
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
-    CURRENT_INSTALL_VERSION = '10'
+    CURRENT_INSTALL_VERSION = '11'
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 

@@ -37,6 +37,7 @@
     };
     app = {
         // true when SIBT needs to be disabled on the same page as Buttons
+        'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
         'detect_shopconnection': ('{{detect_shopconnection}}' === 'True'),
         'features': {
             'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
@@ -195,7 +196,7 @@
         jQuery(d).ready(function($) {
 
             // jQuery shaker plugin
-            {% include '../../plugin/templates/js/jquery.shaker.js' %}
+            (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
             // jQuery image derpdown plugin (shows image dropdown box)
@@ -309,11 +310,11 @@
                 if ($.willet_colorbox) {
                     $.willet_colorbox(options);
                 } else { // backup
-                    console.log("opening new window");
+                    console.log("opening window");
                     var width = parseInt(options.innerWidth);
                     var height = parseInt(options.innerHeight);
-                    var left = (screen.width - width) / 2;
-                    var top = (screen.height - height) / 2;
+                    var left = (screen.width - width) /2;
+                    var top = (screen.height - height) /2;
                     var new_window = window.open(
                         options.href, // url
                         '_blank', // name
@@ -331,7 +332,8 @@
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 show_colorbox({
-                    href: "{{URL}}/s/results.html?" + metadata({'refer_url': w.location.href}),
+                    href: "{{URL}}/s/results.html?" + 
+                           metadata({'refer_url': w.location.href}),
                     onClosed: function () {}
                 });
             };
@@ -364,7 +366,7 @@
                 // auto-create product objects using page info, using
                 // (<div class='_willet_...' data-....>) or otherwise
                 // server decides if the input supplied is good to save.
-                // does not guarantee saving; does not have return value; asynchronous.
+                // does not guarantee saving; no return value; asynchronous.
                 try {
                     // do NOT send .data() directly! Will cause unexpected func calls.
                     var data = {
@@ -510,7 +512,7 @@
                     return bar_html;
                 };
 
-                var show_topbar = function () {
+                var show_topbar = function() {
                     // Shows the vote top bar
                     var body = $('body'); 
 
@@ -564,12 +566,14 @@
                         .attr('id', '_willet_padding')
                         .css('display', 'none');
 
-                    topbar  = d.createElement('div');
-                    topbar = $(topbar)
-                        .attr('id', '_willet_sibt_ask_bar')
-                        .attr('class', 'willet_reset')
-                        .css('display', "none")
-                        .html(build_top_bar_html(true));
+                    topbar = $('<div />', {
+                        'id': '_willet_sibt_ask_bar',
+                        'class': 'willet_reset',
+                        'css': {
+                            'display', 'none'
+                        }
+                    });
+                    topbar.html(build_top_bar_html(true));
 
                     $("body").prepend(padding_elem).prepend(topbar);
 
@@ -577,7 +581,7 @@
                     var iframe_div = topbar.find('div.iframe');
 
                     $('#_willet_close_button').unbind().bind('click', close_top_bar);
-
+                    
                     topbar.find( '._willet_wrapper p')
                         .css('cursor', 'pointer')
                         .click(topbar_onclick);
@@ -591,7 +595,7 @@
                     store_analytics('SIBTTopBarShareSuccess');
                     var iframe = topbar.find('div.iframe iframe');
                     var iframe_div = topbar.find('div.iframe');
-
+                    
                     user.is_asker = true;
 
                     iframe_div.fadeOut('fast', function() {
@@ -650,7 +654,7 @@
                 store_analytics();
 
                 sibt_elem.click(button_onclick);
-                
+
                 if (instance.has_results) {
                     sibt_elem.css ({
                         'background': "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
@@ -823,7 +827,7 @@
 
                         pageHeight = $(d).height();
                         scrollPos = $(w).scrollTop() + $(w).height();
-                        threshold = pageHeight * 0.5;
+                        threshold = pageHeight * app.bottom_popup_trigger;
 
                         if (scrollPos >= threshold) {
                             if (!popup.is(':visible') && !clickedOff) {
