@@ -57,9 +57,13 @@ class AskDynamicLoader(URIHandler):
             user_uuid (optional)
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
-        page_url = self.request.get('url', self.request.headers.get('referer'))
+        page_url = self.request.get('target_url') or \
+                   self.request.headers.get('referer')
         product = None
         product_images = []
+
+        # because of how Model.get() works, products _might_ also work if you
+        # supply a product's Shopify ID (if applicable).
         product_uuids = self.request.get('products', '').split(',')
 
         try:
@@ -99,6 +103,7 @@ class AskDynamicLoader(URIHandler):
         # compile list of product images (one image from each product)
         try:
             product_images = [getattr(prod, 'images')[0] for prod in products]
+            logging.debug("product images: %r" % product_images)
         except IndexError:
             logging.debug("product has no images")
             product_images = ['']
@@ -163,8 +168,8 @@ class AskDynamicLoader(URIHandler):
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
             'user_has_fb_token': user_found,
 
-            'products': product_uuids,
-            'product_uuid': product[0].uuid,  # deprecated
+            'products': quoted_join(product_uuids),
+            'product_uuid': products[0].uuid,  # deprecated
             'product_title': products[0].title or "",
             'product_images': product_images,
             'product_desc': productDesc,
@@ -619,7 +624,7 @@ class SIBTServeScript(URIHandler):
         user = None
         votes_count = 0
 
-        # in the proposed SIBT v10, page URL is the only required parameter
+        # in the proposed SIBT v10+, page URL is the only required parameter
         page_url = self.request.get('url', '').split('#')[0]
         if not page_url:
             # serve comment instead of status code (let customers see it)
@@ -720,7 +725,7 @@ class SIBTServeScript(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
         # have client, app, user
 
-        product = Product.get_by_url(page_url)
+        product = Product.get_or_fetch(page_url, client)
 
         # have client, app, user, and maybe product
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)

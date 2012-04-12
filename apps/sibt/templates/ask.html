@@ -23,11 +23,13 @@
         {% endif %}
         -->
         <div class="message" id="message">
-            <div id="products">
-                <img alt="product" src="{{ product_images.0 }}" />
-                <span class="or">OR</span>
-                <img alt="product" src="{{ product_images.1 }}" />
-            </div>
+            <img alt="either" src="/static/imgs/quote-up.png" class="normal quotes" />
+            <img alt="product" src="{{ product_images.0 }}" />
+            <img alt="or" src="/static/imgs/or-100.png" class="normal" />
+            <img alt="product" src="{{ product_images.1 }}" />
+            <img alt="?" src="/static/imgs/quote-down.png" class="normal quotes" />
+            <br />
+            <br />
             <textarea id='shareText'>I like this, but...</textarea>
             <div class="detailed">Hint: detailed questions get better answers</div>
         </div>

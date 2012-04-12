@@ -15,6 +15,7 @@
 
     var hash_index = -1;
     var padding_elem = null;
+    var PRODUCT_HISTORY_COUNT = 10; // keep track of this many products, max
     var topbar = null;
     var topbar_hide_button = null;
     var willt_code = null;
@@ -54,9 +55,6 @@
         'is_live': ('{{is_live}}' === 'True'),
         'show_votes': ('{{show_votes}}' === 'True')
     };
-    products = [
-        // list of products {'uuid': ..., 'title': ..., 'price': ..., ...}
-    ];
     user = {
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
         'is_asker': ('{{is_asker}}' === 'True') // did they ask?
@@ -207,7 +205,8 @@
             var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ? will be added for you.
                 // add more query properties with the "more" param.
-                return $.param($.extend ({}, // blank original
+                return $.param($.extend (
+                    {}, // blank original
                     {
                         'app_uuid': '{{ app.uuid }}',
                         'user_uuid': '{{ user.uuid }}',
@@ -216,6 +215,17 @@
                     },
                     more || {}
                 ));
+            };
+
+            var clean_array = function (actual) {
+                var i;
+                var new_array = [];
+                for(i = 0; i < actual.length; i++) {
+                    if (!!actual[i]) {
+                        new_array.push(actual[i]);
+                    }
+                }
+                return new_array;
             };
 
             var is_scrolled_into_view = function (elem) {
@@ -231,12 +241,12 @@
             var get_largest_image = function (within) {
                 // Returns <img>.src for the largest <img> in <elem>within
                 // source: http://stackoverflow.com/questions/3724738
-                within = within || d;
+                within = within || d; // defaults to document
                 var nMaxDim = 0;
                 var largest_image = '';
-                $(within).find('img').each (function () {
+                $(within).find('img').each(function () {
                     var $this = $(this);
-                    var nDim = parseFloat ($this.width()) * parseFloat ($this.height());
+                    var nDim = parseFloat($this.width()) * parseFloat($this.height());
                     if (nDim > nMaxDim) {
                         largest_image = $this.prop('src');
                         nMaxDim = nDim;
@@ -250,12 +260,8 @@
             };
 
             var get_product_uuids = function () {
-                var i, uuids;
-                uuids = [];
-                for (i = 0; i < products.length; i++) {
-                    uuids.push(products[i].uuid);
-                }
-                return uuids;
+                // currently, products are just their UUIDs (to save space)
+                return clean_array(products);
             }
 
             // Send action to server
@@ -290,10 +296,10 @@
                 }
                 if (user.is_asker || instance.show_votes) {
                     // we are no longer showing results with the topbar.
-                    show_results ();
+                    show_results();
                 } else {
                     store_analytics(message);
-                    show_ask ();
+                    show_ask();
                 }
             };
 
@@ -305,8 +311,8 @@
                     iframe: true,
                     initialWidth: 0,
                     initialHeight: 0,
-                    innerWidth: '600px',
-                    innerHeight: '400px',
+                    innerWidth: '620px',
+                    innerHeight: '460px',
                     fixed: true,
                     onClosed: function () {}
                 };
@@ -344,9 +350,9 @@
             var show_ask = function (message) {
                 // shows the ask your friends iframe
                 show_colorbox({
-                    href: "{{URL}}{% url AskDynamicLoader %}?user_uuid={{ user.uuid }}" +
-                                                           "&url=" + ('{{ PAGE }}' || w.location.href) +
-                                                           "&products=" + get_product_uuids()
+                    href: "{{URL}}{% url AskDynamicLoader %}" +
+                          "?products=" + get_product_uuids().join(',') +
+                          "&" + metadata()
                 });
             };
 
@@ -364,6 +370,28 @@
                     }
                 });
             }
+
+            var update_product_history = function () {
+                // save past products' images
+                // check if page is visited twice or more in a row
+                if (get_largest_image() !== $.cookie('product1_image') &&
+                    get_largest_image() !== $.cookie('product2_image')) {
+                    // image 1 is more recent; shift products
+                    $.cookie('product2_image', $.cookie('product1_image'));
+                    $.cookie('product1_image', get_largest_image());
+                }
+
+                // load product currently on page
+                var ptemp = $.cookie('products') || '';
+                products = ptemp.split(','); // load
+                if ($.inArray("{{product.uuid}}", products) === -1) { // unique
+                    products.push("{{product.uuid}}"); // insert as products[0]
+                    products.splice(PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
+                    products = clean_array(products); // remove empties
+                    $.cookie('products', products.join(',')); // save
+                }
+                return products;
+            };
 
             var save_product = function(data) {
                 // auto-create product objects using page info, using
@@ -405,37 +433,15 @@
                 {% include 'sibt_topbar_funcs.inc.js' %}
             {% endif %} ; // app.top_bar_enabled
 
-            // save past products' images
-            // check if page is visited twice or more in a row
-            if (get_largest_image() !== $.cookie('product1_image') &&
-                get_largest_image() !== $.cookie('product2_image')) {
-                // image 1 is more recent; shift products
-                $.cookie('product2_image', $.cookie('product1_image'));
-                $.cookie('product1_image', get_largest_image());
-            }
-            if (w._willet_product_json) {
-                // we can't store descriptions in under cookies' 4kB
-                products.push({
-                    'id': w._willet_product_json.id,
-                    'title': w._willet_product_json.title,
-                    // 'description': w._willet_product_json.description,
-                    'images': w._willet_product_json.images, // [...]
-                    'url': w.location.href
-                });
-            } else {
-                products.push({
-                    'id': 0,
-                    'title': get_page_title(),
-                    // 'description': '',
-                    'images': [get_largest_image(d)],
-                    'url': w.location.href
-                });
-            }
 
-            // SIBT Connection will be prioritised and show if both SIBT and SIBT Connection exist on page.
+            // Check page and load requested SIBT styles.
             var sibt_elem = $('#mini_sibt_button').eq(0); // SIBT for ShopConnection (SIBT Connection)
             var purchase_cta = $('#_willet_shouldIBuyThisButton').eq(0); // SIBT standalone (v2, v3)
             var sibtjs_elem = $('._willet_sibt').eq(0); // SIBT-JS
+
+            // combine current product with past products history from cookie
+            // products can be read from func return or just the var, products
+            update_product_history();
 
             // SIBT-JS
             if (sibtjs_elem.length > 0) { // is the div there?
@@ -573,9 +579,7 @@
                             })
                             .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                             .appendTo(button)
-                            .css({
-                                'display': 'inline-block'
-                            })
+                            .css('display', 'inline-block')
                             .click (show_results);
                         }
                         
@@ -588,19 +592,15 @@
                 {% endif %} // app.button_enabled
             } // if #_willet_shouldIBuyThisButton
 
-            {% if app.bottom_popup_enabled %} // add this topbar code only if necessary
+            {% if app.bottom_popup_enabled %}
                 var build_bottom_popup = function () {
                     var popup = $('<div />', {
                         'id': 'willet_sibt_popup',
-                        'css': {
-                            'display': 'none'
-                        }
+                        'css': {'display': 'none'}
                     });
                     popup
                         .append('<h2 class="title">Hey! Need help deciding?</h2>')
-                        .append($('<div />', {
-                            'id': 'product_selector'
-                            }))
+                        .append($('<div />', {'id': 'product_selector'}))
                         .append(
                             '<button class="cta">' + AB_CTA_text + '</button>' +
                             '<a id="anti_cta" href="#">No thanks</a>'
@@ -664,7 +664,7 @@
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
-            // Load jQuery colorbox
+            // Load jQuery colorbox last
             if (!$.willet_colorbox) {
                 $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
                     $.willet_colorbox.init(); // init colorbox last
@@ -683,7 +683,7 @@
                     if (instance.has_results && hash_index !== -1) {
                         // if vote has results and voter came from an email
                         console.log("has results?");
-                        show_results ();
+                        show_results();
                     }
                 });
             }

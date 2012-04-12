@@ -65,6 +65,11 @@ def default(*args):
             pass  # fail? do not return this one
 
 
+def quoted_join(lst):
+    """Returns "1","2","3"."""
+    return '"%s"' % '","'.join(lst)
+
+
 def to_dict(something, recursion=0):
     import datetime
     import time

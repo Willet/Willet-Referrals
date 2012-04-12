@@ -383,6 +383,7 @@ class SIBTShopifyServeScript(URIHandler):
             'store_domain': getattr (app.client, 'domain', ''),
             'store_id': self.request.get('store_id'),
 
+            'product': product,
             'product_uuid': product.uuid if product else "",
             'product_title': product.title if product else "",
             'product_images': product.images if product else "",

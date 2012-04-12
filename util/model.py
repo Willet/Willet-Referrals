@@ -165,6 +165,11 @@ class Model(db.Model):
         Each class must define a _get_from_datastore
         """
         obj = None
+
+        # required special case (empty string not legal as ID)
+        if identifier == '':
+            return None
+
         key = cls.build_key(identifier)
         method = 'magic' # huh? get() got an object without doing anything
 
