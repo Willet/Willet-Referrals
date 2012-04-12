@@ -5,11 +5,36 @@
         <script src="/static/js/jquery.colorbox-min.js" type="text/javascript" charset="utf-8"></script>
         <script>
             $(document).ready(function () {
-                $('a.learn').colorbox({ href:'/b/shopify/learn div#content',
-                                        innerWidth: '600px',
-                                        innerHeight: '441px',
-                                        fixed: true
-                                    });
+                $('a.learn').click(function(event) {
+                    event.stopPropagation();
+
+                    $.colorbox({
+                        inline: true,
+                        href: '.video-container',
+                        innerWidth: '600px',
+                        innerHeight: '441px',
+                        fixed: true
+                    });
+
+                    // Load video
+                    try {
+                        window.load_video();
+                        return false; // No problems, stop redirect
+                    } catch (e) {
+                        alert(e);
+                        return true;
+                    }
+                });
+
+                $('#install_smart').click(function () {
+                    // Track upgrade click for funnel reporting
+                    try {
+                        var pageTracker = _gat._getTracker("UA-23764505-9");
+                        pageTracker._trackPageview("/b/shopify/datum_smart");
+                    } catch (err) {
+                        // Report error?
+                    }
+                })
             });
         </script>
         <style>
@@ -171,7 +196,8 @@
             .video-container {
                 padding: 20px 20px 0 20px;
             }
-            .video-container iframe {
+            .video-container #videoDiv,
+            .video-container object {
                 display: block;
                 width: 560px;
                 height: 315px;
@@ -228,7 +254,7 @@
                                 <div class="call-to-action">
                                     <div class="wide">
                                         <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
-                                            <button class="blue">Start your free trial!</button>
+                                            <button id="install_smart" class="blue">Start your free trial!</button>
                                         </a>
                                     </div>
                                 </div>
@@ -247,13 +273,16 @@
                                 <div class="call-to-action">
                                     <div class="narrow">
                                         <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
-                                            <button class="blue">Choose</button>
+                                            <button id="install_basic" class="blue">Choose</button>
                                         </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div style="display:none">
+                    {% include 'video.html' %}
                 </div>
 {% endblock content %}
 

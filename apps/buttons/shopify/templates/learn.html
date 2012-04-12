@@ -8,7 +8,8 @@
 				background-image: none;
 				margin-bottom: 30px;
 			}
-			.video-container iframe {
+			.video-container #videoDiv,
+			.video-container object {
 				display: block;
 				width: 560px;
 				height: 315px;
@@ -63,14 +64,12 @@
 					<div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
 						<div class="box-design">
 							<!-- #content is imported into other windows as a colorbox popup -->
-							<div id="content" class="video-container">
-							    <iframe width="560" height="315" src="http://www.youtube.com/embed/DbON8NhVYJQ" frameborder="0" allowfullscreen></iframe>
-							    <p>
-							        Stop guessing which social networks your customers use. Personalize which buttons 
-							        appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
-							    </p>
-							</div>
+							{% include 'video.html' %}
 						</div>
 					</div>
 				</div>
+				<script>
+					// Load video
+					window.load_video && window.load_video();
+				</script>
 {% endblock content %}
