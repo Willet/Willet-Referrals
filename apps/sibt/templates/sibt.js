@@ -350,11 +350,21 @@
 
             var show_ask = function (message) {
                 // shows the ask your friends iframe
-                show_colorbox({
-                    href: "{{URL}}{% url AskDynamicLoader %}" +
-                          "?products=" + get_product_uuids().join(',') +
-                          "&" + metadata()
-                });
+                if (products.length <= 1) {
+                    // SIBT mode
+                    show_colorbox({
+                        href: "{{URL}}{% url AskDynamicLoader %}" +
+                            "?products=" + get_product_uuids().join(',') +
+                            "&" + metadata()
+                    });
+                } else {
+                    // WOSIB mode
+                    show_colorbox({
+                        href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
+                            "?products=" + get_product_uuids().join(',') +
+                            "&" + metadata()
+                    });
+                }
             };
 
             var add_scroll_shaking = function (elem) {
@@ -635,20 +645,26 @@
                     );
 
                     $(w).scroll(function () {
-                        var pageHeight, scrollPos, threshold;
+                        var pageHeight, scrollPos, threshold, windowHeight;
 
                         pageHeight = $(d).height();
                         scrollPos = $(w).scrollTop() + $(w).height();
                         threshold = pageHeight * app.bottom_popup_trigger;
+                        windowHeight = $(w).height();
 
-                        if (scrollPos >= threshold) {
-                            if (!popup.is(':visible') && !clickedOff) {
-                                show_popup();
+                        // popup will show only for pages sufficiently long.
+                        if (pageHeight > windowHeight * 2) {
+                            if (scrollPos >= threshold) {
+                                if (!popup.is(':visible') && !clickedOff) {
+                                    show_popup();
+                                }
+                            } else {
+                                if (popup.is(':visible')) {
+                                    hide_popup();
+                                }
                             }
                         } else {
-                            if (popup.is(':visible')) {
-                                hide_popup();
-                            }
+                            console.log("page too short");
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {

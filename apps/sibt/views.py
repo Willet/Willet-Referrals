@@ -622,6 +622,7 @@ class SIBTServeScript(URIHandler):
         unsure_mutli_view = False
         user = None
         votes_count = 0
+        willet_code = self.request.get('willt_code')
 
         # in the proposed SIBT v10+, page URL is the only required parameter
         page_url = self.request.get('url', '').split('#')[0]
@@ -728,7 +729,6 @@ class SIBTServeScript(URIHandler):
 
         # have client, app, user, and maybe product
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
-        willet_code = self.request.get('willt_code')
         if not instance and willet_code:
             link = Link.get_by_code(willet_code)
             if link:

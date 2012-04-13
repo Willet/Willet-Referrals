@@ -42,10 +42,82 @@ class WOSIB(App):
 
     store_name = db.StringProperty(indexed = True)
 
+    _memcache_fields = ['store_name', 'store_url']
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(WOSIB, self).__init__(*args, **kwargs)
     
+    @classmethod
+    def get_by_store_url(cls, url):
+        app = None
+        if not url:
+            return app
+
+        try:
+            ua = urlparse.urlsplit(url)
+            url = "%s://%s" % (ua.scheme, ua.netloc)
+        except:
+            pass # use original URL
+
+        app = cls.get(url)
+        if app:
+            return app
+
+        app = cls.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = cls.all().filter('extra_url =', url).get()
+        return app
+
+    @staticmethod
+    def create(client, token):
+        uuid = hashlib.md5('WOSIB' + client.url).hexdigest()
+        logging.debug("creating WOSIB v%s" % App.CURRENT_INSTALL_VERSION)
+        app = WOSIB(key_name=uuid,
+                    uuid=uuid,
+                    client=client,
+                    store_name=client.name,  # Store name
+                    store_url=client.url,
+                    version=App.CURRENT_INSTALL_VERSION)
+
+        try:
+            app.store_id = client.id  # Store id
+        except AttributeError:  # non-Shopify Shops need not Shop ID
+            logging.warn('Store created without store_id '
+                         '(ok if not installing WOSIB for Shopify)')
+            pass
+
+        app.put()
+        # app.do_install()  # this is JS-based; there is nothing to install
+        return app
+
+    @staticmethod
+    def get_or_create(client=None, domain=''):
+        """Creates a WOSIB app (used like a profile) for a specific domain."""
+        if client and not domain:
+            domain = client.url
+
+        if not domain:
+            raise AttributeError('A valid (client or domain) '
+                                 'must be supplied to create a WOSIB app')
+
+        if not client:
+            client = Client.get_or_create(url=domain,
+                                          email='')
+
+        app = WOSIB.get(domain)
+        if not app:
+            logging.debug("app not found; creating one.")
+            app = WOSIB.create(client, domain)
+
+        if not app.store_url:
+            app.store_url = domain
+            app.put()
+
+        logging.debug("WOSIB::get_or_create.app is now %s" % app)
+        return app
+
     def _validate_self(self):
         return True
 
@@ -67,22 +139,22 @@ class WOSIB(App):
         logging.info("MAKING A WOSIB INSTANCE")
         # Make the properties
         uuid = generate_uuid(16)
-        
+
         # Now, make the object
-        instance = WOSIBInstance(key_name = uuid,
-                                uuid = uuid,
-                                asker = user,
-                                app_ = self,
-                                link = link,
-                                products = products,
-                                url = link.target_url)
+        instance = WOSIBInstance(key_name=uuid,
+                                 uuid=uuid,
+                                 asker=user,
+                                 app_=self,
+                                 link=link,
+                                 products=products,
+                                 url=link.target_url)
         # set end if None
         if end == None:
             six_hours = timedelta(hours=6)
             end = instance.created + six_hours
         instance.end_datetime = end
         instance.put()
-            
+
         return instance
 
 
