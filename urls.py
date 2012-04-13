@@ -26,12 +26,16 @@ def main():
     import_error = False
     new_len = 0
     old_len = 0
-    reload_uris = memcache.get('reload_uris')
+
+    try:
+        reload_uris = memcache.get('reload_uris')
+    except AttributeError:
+        reload_uris = False
 
     try:
         combined_uris = memcache.get('combined_uris')
-    except:
-        reload_uris = True
+    except AttributeError:
+        reload_uris   = True
         combined_uris = False
 
     if reload_uris or not combined_uris:

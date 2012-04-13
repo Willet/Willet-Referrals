@@ -123,7 +123,9 @@ var _willet = (function(me) {
                 "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
             },
             "button": {
-                "script": PROTOCOL + '//assets.pinterest.com/js/pinit.js',
+                // Workaround until Pinterest has an API:
+                // http://stackoverflow.com/questions/9622503/pinterest-button-has-a-callback
+                "script": "", //PROTOCOL + '//assets.pinterest.com/js/pinit.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'pinterest',
@@ -139,8 +141,20 @@ var _willet = (function(me) {
                     link.className = "pin-it-button";
                     link.innerHTML = "Pin It";
 
+                    link.style.position = "absolute";
+                    link.style.background = "url('http://assets.pinterest.com/images/pinit6.png')";
+                    link.style.font = "11px Arial, sans-serif";
+                    link.style.textIndent = "-9999em"
+                    link.style.fontSize = ".01em";
+                    link.style.color = "#CD1F1F";
+                    link.style.height = "20px";
+                    link.style.width = "43px";
+                    link.style.backgroundPosition = "0 -7px";
+
                     link.onclick = function() {
                         itemShared("Pinterest");
+                        window.open(link.href, 'signin', 'height=300,width=665');
+                        return false;
                     };
 
                     link.setAttribute('count-layout', "horizontal");
@@ -200,7 +214,7 @@ var _willet = (function(me) {
                     if (!params.buttonCount) {
                         gPlus.setAttribute("annotation", "none");
                     }
-                    gPlus.setAttribute("callback", "_willet.gPlusShared");
+                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
@@ -208,8 +222,10 @@ var _willet = (function(me) {
 
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
-                    me.gPlusShared = function(response) {
-                        itemShared("GooglePlus");
+                    window._willet_GooglePlusShared = function(response) {
+                        if (response && response.state && response.state === "on") {
+                            itemShared("GooglePlus");
+                        }
                     };
                     
                     // Google is using the Open Graph spec
@@ -343,8 +359,12 @@ var _willet = (function(me) {
         var error = encodeURIComponent(network + ": Share detected!");
         var script = encodeURIComponent("smart-buttons.js");
         var st = encodeURIComponent("No errors");
+        var subject = error;
 
-        var params = "error=" + error + "&script=" + script + "&st=" + st;
+        var params = "subject=" + subject
+                   + "&error="  + error
+                   + "&script=" + script
+                   + "&st="     + st;
 
         var _willetImage = document.createElement("img");
         _willetImage.src = APP_URL + "/admin/ithinkiateacookie?" + params;
@@ -457,12 +477,28 @@ var _willet = (function(me) {
                     return b.value.accessed - a.value.accessed;
                 });
 
+                //append detected buttons
                 for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var network = networks[i];
                     if (xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
                         && network.value.status === true) {         //check that the network is enabled
                         requiredButtons.push(network.key);
                     }
+                }
+
+                //append user's buttons if there is space, and they have not
+                //already been added
+                var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+                for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                    var button = usersButtons[i];
+                    if (requiredButtons.indexOf(button) === NOT_FOUND) {
+                        requiredButtons.push(button);
+                    }
+                }
+                // Now remove all children of #_willet_buttons_app
+                var i = buttonsDiv.childNodes.length;
+                while (i--) {
+                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
                 }
 
                 //append default buttons to the end, if they have not already been added
@@ -474,6 +510,7 @@ var _willet = (function(me) {
                 }
             }
 
+            //create the required buttons
             for (var i = 0; i < requiredButtons.length; i++) {
                 var network = requiredButtons[i];
                 var button = SUPPORTED_NETWORKS[network]["button"];
@@ -486,12 +523,15 @@ var _willet = (function(me) {
                     "buttonPadding": buttonPadding
                 }));
 
-                var script = document.createElement("script");
-                script.type = "text/javascript";
-                script.src = button["script"];
-                script.onload = button["onLoad"];
+                if (button["script"] !== "") {
+                    var script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = button["script"];
+                    script.onload = button["onLoad"];
 
-                HEAD.appendChild(script);
+                    HEAD.appendChild(script);
+                }
+
                 _willet.debug.log('Buttons: '+ network +' attached');
             }
 
@@ -799,7 +839,6 @@ try {
     _willet.debug.set(false); //set to true if you want logging turned on
     _willet.init();
 } catch(e) {
-    //TODO: Fire an email
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
         var script = encodeURIComponent("smart-buttons.js");

@@ -40,7 +40,7 @@ class ShowBetaPage(URIHandler):
         logging.info(SHOPIFY_APPS)
         logging.info(SHOPIFY_APPS['SIBTShopify'])
         template_values = { 'SHOPIFY_API_KEY' : SHOPIFY_APPS['SIBTShopify']['api_key'] }
-        
+
         self.response.out.write(self.render_page('beta.html', template_values))
 
 class SIBTShopifyWelcome(URIHandler):
@@ -50,21 +50,21 @@ class SIBTShopifyWelcome(URIHandler):
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
-            
+
             token = self.request.get('t') # token
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
                 client.token = token
                 client.put()
-            
+
             if not client:
                 # client was just put, expected to be in memcache
                 logging.error('Memcache is lagging!')
-            
+
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
             app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
-            
+
             shop_owner = 'Shopify Merchant'
             shop_name = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
@@ -86,7 +86,7 @@ class SIBTShopifyWelcome(URIHandler):
                 new_order_code = 1
             else:
                 new_order_code = 0
-            
+
             template_values = {
                 'app': app,
                 'URL' : URL,
@@ -97,12 +97,12 @@ class SIBTShopifyWelcome(URIHandler):
                 'new_order_code' : new_order_code
             }
 
-            self.response.out.write(self.render_page('welcome.html', template_values)) 
+            self.response.out.write(self.render_page('welcome.html', template_values))
         except Exception, e:
             logging.error('SIbt install error, may require reinstall', exc_info=True)
             # Email DevTeam
             Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' % 
+                'SIBT install error, may require reinstall: %s, %s, %s, %s' %
                     (client_email, shop_owner, client.url, shop_name)
             )
             self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
@@ -115,7 +115,7 @@ class SIBTShopifyEditStyle(URIHandler):
         app = SIBTShopify.get(app_uuid)
         post_vars = self.request.arguments()
 
-        logging.info('Updating %s with styles: \n%s' % (app.store_url, 
+        logging.info('Updating %s with styles: \n%s' % (app.store_url,
                                                       [ '%s { %s }' % (var, self.request.get(var)) for var in post_vars ]))
 
         if self.request.get('set_to_default'):
@@ -145,7 +145,7 @@ class SIBTShopifyEditStyle(URIHandler):
             # Save updated CSS
             app.set_css(css_dict)
         self.get(app_uuid)
-    
+
     @admin_required
     def get(self, app_uuid):
         app = SIBTShopify.get(app_uuid)
@@ -163,15 +163,15 @@ class SIBTShopifyEditStyle(URIHandler):
 
         template_values = {
             'css': css_values,
-            'app': app,        
+            'app': app,
             'message': '',
             'ff_options': [
                 'Arial,Helvetica',
             ]
         }
         template_values.update(display_dict)
-        
-        self.response.out.write(self.render_page('edit_style.html', template_values)) 
+
+        self.response.out.write(self.render_page('edit_style.html', template_values))
 
 class ShowFinishedPage(URIHandler):
     def get(self):
@@ -181,7 +181,7 @@ class ShowFinishedPage(URIHandler):
             'two': 'old',
             'three': 'old',
             'four': 'current'
-        } 
+        }
         # Init the template values with a blank app
         template_values = {
             'pages': pages,
@@ -192,8 +192,8 @@ class ShowFinishedPage(URIHandler):
         if app == None:
             self.redirect('/s/edit')
             return
-            
-        template_values['has_app'] = True 
+
+        template_values['has_app'] = True
         template_values['app'] = app
         template_values['analytics'] = True if app.cached_clicks_count != 0 else False
         template_values['BASE_URL'] = URL
@@ -203,7 +203,7 @@ class ShowFinishedPage(URIHandler):
                 'finished.html',
                 template_values
             )
-        ) 
+        )
 
 
 class ShowEditPage(URIHandler):
@@ -219,21 +219,22 @@ class ShowCodePage(URIHandler):
 class SIBTShopifyServeScript(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-    
+
     def get(self):
         votes_count = 0
         is_live = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target = bar_or_tab = ''
-        willet_code = self.request.get('willt_code') 
-        shop_url = get_shopify_url(self.request.get('store_url'))
-        app = SIBTShopify.get_by_store_url(shop_url)
+        willet_code = self.request.get('willt_code')
+        store_url = get_shopify_url(self.request.get('store_url'))
+        app = SIBTShopify.get_by_store_url(store_url)
         event = 'SIBTShowingButton'
 
-        target = get_target_url(self.request.get('page_url'))
-        if not target: # in the case that page_url is not of the right format
-            target = get_target_url(self.request.headers.get('REFERER'))
-            logging.debug ("got target %s by referrer field" % target)
+        target = get_target_url(self.request.get('url') or \
+                                self.request.get('page_url') or \
+                                self.request.headers.get('REFERER', ''))
+        if target and not store_url:
+            store_url = target  # App 2.0: fill in missing store_url
 
         user = User.get_or_create_by_cookie(self, app)
 
@@ -244,7 +245,7 @@ class SIBTShopifyServeScript(URIHandler):
             if target and not hasattr(app, 'extra_url'):
                 """ check if target (almost always window.location.href) has the same domain as store url
                     example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
-                    
+
                     [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
                 """
                 try:
@@ -255,20 +256,20 @@ class SIBTShopifyServeScript(URIHandler):
                         app.put()
                 except:
                     pass # can't decode target as URL; oh well!
-            
+
             logging.debug('trying to get instance for url: %s' % target)
             instance = SIBTInstance.get_by_asker_for_url(user, target)
-            
+
             if instance:
                 event = 'SIBTShowingResults'
                 logging.debug('got instance by user/target: %s' % instance.uuid)
-            
+
             if not instance and willet_code:
                 link = Link.get_by_code(willet_code)
                 instance = link.sibt_instance.get()
                 event = 'SIBTShowingResults'
                 logging.debug('got instance by willet_code: %s' % instance.uuid)
-            
+
             if not instance:
                 instances = SIBTInstance.all(keys_only=True)\
                     .filter('url =', target)\
@@ -279,12 +280,12 @@ class SIBTShopifyServeScript(URIHandler):
                     instance = action.sibt_instance
                     logging.debug('got instance by action: %s' % instance.uuid)
                     event = 'SIBTShowingVote'
-            
+
             # new visitor?
             if not instance:
                 logging.debug('no instance available')
 
-        # If we have an instance, figure out if 
+        # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
         if instance:
@@ -306,15 +307,15 @@ class SIBTShopifyServeScript(URIHandler):
             is_asker = bool(instance.asker.key() == user.key())
             if not is_asker:
                 logging.debug('not asker, check for vote ...')
-                
+
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-                
+
                 logging.debug('got a vote action? %s' % vote_action)
-                
+
                 has_voted = bool(vote_action)
 
             try:
-                if link == None: 
+                if link == None:
                     link = instance.link
                 share_url = link.get_willt_url()
             except Exception,e:
@@ -329,7 +330,7 @@ class SIBTShopifyServeScript(URIHandler):
                 #if view_actions >= 1:# or user.is_admin():
                 # user has viewed page more than once
                 # show top-bar-ask
-                show_top_bar_ask = True 
+                show_top_bar_ask = True
             if len (tracked_urls) >= UNSURE_DETECTION['url_count_for_app_and_user']:
                 # part of the unsure detection: ^ or more URLs tracked for (app and user)
                 unsure_multi_view = True
@@ -343,7 +344,7 @@ class SIBTShopifyServeScript(URIHandler):
             app_css = app.get_css()
         else:
             app_css = SIBTShopify.get_default_css()
-        
+
         # determine whether to show the results button.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
@@ -375,10 +376,10 @@ class SIBTShopifyServeScript(URIHandler):
             'user': user,
             'has_voted': has_voted,
             'is_asker': is_asker,
-            'asker_name': asker_name, 
+            'asker_name': asker_name,
             'asker_pic': asker_pic,
 
-            'store_url': shop_url,
+            'store_url': store_url,
             'store_domain': getattr (app.client, 'domain', ''),
             'store_id': self.request.get('store_id'),
 
@@ -407,13 +408,13 @@ class SIBTShopifyServeAB (URIHandler):
     """ Serve AB values for SIBTShopifyServeScript in a different JSON request.
         Hopes are that it speeds up button rendering.
     """
-    
+
     def get(self):
         try:
             app = SIBTShopify.get_by_store_url(get_shopify_url(self.request.get('store_url')))
         except db.KindError:
             app = SIBT.get_by_store_url(get_shopify_url(self.request.get('store_url')))
-        
+
         jsonp = bool(self.request.get('jsonp', False)) # return json format if jsonp is not set
 
         if not app: # if we can't get the app, return a file anyway
@@ -430,8 +431,8 @@ class SIBTShopifyServeAB (URIHandler):
                                         "Save $5 by getting advice from friends!",
                                         "Not sure? Ask your friends.",
                                       ]
-                    cta_button_text = ab_test('sibt_incentive_text', 
-                                                ab_test_options, 
+                    cta_button_text = ab_test('sibt_incentive_text',
+                                                ab_test_options,
                                                 user = user,
                                                 app = app)
                 else:
@@ -442,8 +443,8 @@ class SIBTShopifyServeAB (URIHandler):
                                         "Unsure? Get advice from friends!",
                                         "Unsure? Get your friends to vote!",
                                         ]
-                    cta_button_text = ab_test('sibt_button_text6', 
-                                                ab_test_options, 
+                    cta_button_text = ab_test('sibt_button_text6',
+                                                ab_test_options,
                                                 user = user,
                                                 app = app)
             else:
@@ -465,7 +466,7 @@ class SIBTShopifyProductDetection(URIHandler):
         """Serves up some high quality javascript that detects if our special
         div is on this page, and if so, loads the real SIBT js"""
         store_url = self.request.get('store_url')
-        
+
         if store_url: # only render if there is a point of doing so
             app = SIBTShopify.get_by_store_url(store_url)
             user = User.get_or_create_by_cookie(self, app)
@@ -493,10 +494,10 @@ class SIBTShopifyProductDetection(URIHandler):
 
 class SIBTShopifyInstallError (URIHandler):
     def get (self):
-        """ Displays an error page for when the SIBT app fails to install. 
-            Error emails are not handled by this page. 
+        """ Displays an error page for when the SIBT app fails to install.
+            Error emails are not handled by this page.
         """
-        
+
         template_values = {
             'URL' : URL,
             'reason': self.request.get('reason', None),
@@ -507,7 +508,7 @@ class SIBTShopifyInstallError (URIHandler):
         self.response.out.write(template.render(path, template_values))
         return
 
-        
+
 class SIBTShopifyVersion2To3(URIHandler):
     """ TEMPORARY!!! """
     @admin_required

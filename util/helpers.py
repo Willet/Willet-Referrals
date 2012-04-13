@@ -108,17 +108,16 @@ def to_dict(something, recursion=0):
 
 def get_target_url(referrer):
     """ Clean up a URL to only contain protocol://domain.com/file.htm """
-    if referrer is not None:
-        target = None
+    target = ""
+    if referrer:
         try:
-            page_url = urlparse(referrer)
-            target = "%s://%s%s" % (page_url.scheme, page_url.netloc,
-                                    page_url.path)
-            return target
+            page_url = urlparse(referrer)  # urlparse does not raise errors
+            if page_url.scheme and page_url.netloc:
+                target = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         except Exception, e:
             logging.warn('error parsing referer %s: %s' % (referrer,e),
                          exc_info=True)
-    return ""
+    return target
 
 
 def generate_uuid(digits):

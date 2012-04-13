@@ -26,7 +26,7 @@ urlpatterns = [
     (r'/admin/analytics/generate',      GenerateOlderHourPeriods),
     (r'/admin/analytics/rpc',           AnalyticsRPC),
     (r'/admin/analytics/(.*)/rpc',      AppAnalyticsRPC),
-    (r'/admin/ithinkiateacookie',       TrackRemoteError),
+    (r'/admin/ithinkiateacookie',       ClientSideMessage),
     (r'/admin/sibt_reset/',             SIBTReset),
     (r'/admin/updateStore',             UpdateStore),
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
