@@ -39,11 +39,16 @@ class Email():
         Currently: SendGrid for single recipients, App Engine for multiple recipients
     """
     @staticmethod
-    def emailDevTeam(msg):
+    def emailDevTeam(msg, subject=None, monospaced=False):
         ''' If on a dev site, this function will only email its site owner (see DEV_APPS). '''
         to_addrs = []
-        subject = '[Willet]'
-        body    = '<p> %s </p>' % msg
+        if subject is None:
+            subject = '[Willet]'
+
+        if monospaced is True:
+            body = '<pre>%s</pre>' % msg
+        else:
+            body = '<p> %s </p>' % msg
         
         appname = get_application_id()
         to_addrs = [dev_member for dev_member in DEV_APPS if appname in DEV_APPS[dev_member]]
