@@ -118,10 +118,10 @@
 							// I give up... we can get analytics from everyone else.  I hate you IE, I hate you bad
 							$('#videoDiv').html('<iframe width="560" height="315" src="http://www.youtube.com/embed/7JF-583xVFk" frameborder="0" allowfullscreen></iframe>');
 						}
+
+						if ($.browser.msie) {
+							embed_ie();
+						} else {
+							embed_working_browsers();
+						}
 				    </script>
-				    <![if !IE]>
-				    <script type="text/javascript"> embed_working_browsers(); alert('Embed with analytics');</script>
-				    <![endif]>
-				    <!--[if IE]>
-				    <script type="text/javascript"> embed_ie(); alert('Fucked ie');</script>
-				    <![endif]-->
