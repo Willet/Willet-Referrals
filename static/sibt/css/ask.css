@@ -264,10 +264,10 @@ p {
 }
 .message {
     height: 77px;
-    margin: 40px 30px 0 30px;
-    text-align:center;
+    margin: 50px 30px 0 30px;
 }
 .message>img {
+    float: left;
     border: 1px solid #BBB;
     width: 100px;
     height:100px;
@@ -283,10 +283,9 @@ p {
     vertical-align:top;
 }
 .message>textarea {
-    width: 80%;
-    height: 68px;
-    display: block;
-    margin: auto;
+    float: right;
+    width: 70%;
+    height: 68px; /* textarea has 16px of outer stuff */
 }
 .message>.detailed {
     float: right;
@@ -299,7 +298,7 @@ p {
 .options {
     position: absolute;
     left: 0;
-    bottom: 0;
+    bottom: 30px;
     margin: 0;
     height: 100px;
     width: 100%;

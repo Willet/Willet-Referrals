@@ -42,7 +42,7 @@ class WOSIB(App):
 
     store_name = db.StringProperty(indexed = True)
 
-    _memcache_fields = ['store_name', 'store_url']
+    _memcache_fields = ['store_name']
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -62,6 +62,7 @@ class WOSIB(App):
 
         app = cls.get(url)
         if app:
+            logging.debug("got WOSIB via get(): %r" % app)
             return app
 
         app = cls.all().filter('store_url =', url).get()
@@ -188,7 +189,6 @@ class WOSIBInstance(Model):
 
     @classmethod 
     def _get_from_datastore(cls, uuid):
-        logging.debug("cls = %r, uuid = %s" % (cls, uuid))
         return cls.all().filter('uuid =', uuid).get()
 
     # Accessors ---------------------------------------------------------------

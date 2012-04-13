@@ -21,6 +21,7 @@ from apps.user.models import User
 from apps.user.models import User
 from apps.wosib.actions import *
 from apps.wosib.models import WOSIB, WOSIBInstance
+from apps.wosib.shopify.models import WOSIBShopify
 from apps.wosib.models import PartialWOSIBInstance
 
 from util.consts import *
@@ -285,11 +286,16 @@ class SendWOSIBFriendAsks(URIHandler):
         asker = json.loads(self.request.get('asker'))
         msg = self.request.get('msg')
         default_msg = self.request.get('default_msg')
-        app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
         link = Link.get_by_code(self.request.get('willt_code'))
         user = User.get(self.request.get('user_uuid'))
         fb_token = self.request.get('fb_access_token')
         fb_id = self.request.get('fb_id')
+
+        app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
+        if "wosib" not in app.__class__.__name__.lower():  # probably SIBT
+            logging.debug("non-WOSIB triggered %s" % app.__class__.__name__)
+            app = WOSIB.all().filter('store_url =', app.store_url).get()  # re-get app by the same store
+            logging.debug("WOSIB is now %r" % app)
 
         product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
         fb_friends = []

@@ -165,7 +165,7 @@
         storageInput.setAttribute('value', '{{user.uuid}}');
         storageInput.setAttribute('name', 'user_uuid');
 
-        holder.appendChild( storageIFrame );
+        holder.appendChild(storageIFrame);
         storageForm.appendChild( storageInput );
         holder.appendChild(storageForm);
         d.body.appendChild(holder);
@@ -206,7 +206,8 @@
             {% include '../../plugin/templates/js/jquery.imagedropdown.js' %}
 
             var metadata = function (more) {
-                // constructs the 'willet' query string - no prefixing ? will be added for you.
+                // constructs the 'willet' query string - no prefixing ? 
+                // will be added for you.
                 // add more query properties with the "more" param.
                 return $.param($.extend (
                     {}, // blank original
@@ -234,7 +235,7 @@
             var random_string = function () {
                 //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
                 return String((new Date()).getTime()).replace(/\D/gi,'');
-            }
+            };
 
             var is_scrolled_into_view = function (elem) {
                 // http://stackoverflow.com/questions/487073
@@ -244,7 +245,7 @@
                 var elemTop = $(elem).offset().top;
                 var elemBottom = elemTop + $(elem).height();
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
-            }
+            };
 
             var get_largest_image = function (within) {
                 // Returns <img>.src for the largest <img> in <elem>within
@@ -270,7 +271,7 @@
             var get_product_uuids = function () {
                 // currently, products are just their UUIDs (to save space)
                 return clean_array(products);
-            }
+            };
 
             // Send action to server
             var store_analytics = function (message) {
@@ -355,6 +356,8 @@
                 if (products.length <= 1) {
                     // SIBT mode
                     show_colorbox({
+                        innerWidth: '600px',
+                        innerHeight: '400px',
                         href: "{{URL}}{% url AskDynamicLoader %}" +
                             "?products=" + get_product_uuids().join(',') +
                             "&" + metadata()
@@ -362,6 +365,8 @@
                 } else {
                     // WOSIB mode
                     show_colorbox({
+                        innerWidth: '620px',
+                        innerHeight: '520px',
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
                             "?products=" + get_product_uuids().join(',') +
                             "&" + metadata()
