@@ -380,28 +380,27 @@ class AppAnalyticsRPC(URIHandler):
         self.response.out.write(json.dumps(response))
 
 
-class TrackRemoteError(URIHandler):
+class ClientSideMessage(URIHandler):
     def get(self):
-        referer = self.request.headers.get('referer')
-        ua = self.request.headers.get('user-agent')
-        remote_ip = self.request.remote_addr
-        error = self.request.get('error')
-        script = self.request.get('script')
-        stack_trace = self.request.get('st')
-        msg = """Client JS error:
-                Page:       %s
-                Script:     %s
-                User Agent: %s
-                Remote IP:  %s
-                Error Name: %s
-                Error Message:
-                %s""" % (
-                    referer,
-                    script,
-                    ua,
-                    remote_ip,
-                    error,
-                    stack_trace )
-        Email.emailDevTeam(msg)
+        referer    = self.request.headers.get('referer')
+        user_agent = self.request.headers.get('user-agent')
+        remote_ip  = self.request.remote_addr
+        name       = self.request.get('error')
+        script     = self.request.get('script')
+        cs_message = self.request.get('st')
+        subject    = self.request.get('subject') or None
+
+        msg_list = list()
+        msg_list.append("Name      : %s")
+        msg_list.append("Message   : \n%s\n")
+        msg_list.append("Script    : %s")
+        msg_list.append("Page      : %s")
+        msg_list.append("User Agent: %s")
+        msg_list.append("Remote IP : %s")
+
+        msg = "\n".join(msg_list)
+        msg = msg % (name, cs_message, script, referer, user_agent, remote_ip )
+
+        Email.emailDevTeam(msg, subject=subject, monospaced=True)
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
