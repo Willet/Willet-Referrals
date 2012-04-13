@@ -284,7 +284,9 @@ class SharePeriod(Model):
             item["total_shares"] = total_shares
 
             networks = list()
-            group_by_network_iter = groupby(product_shares,
+            sorted_product_shares = sorted(product_shares,
+                                           key=lambda v: v.network)
+            group_by_network_iter = groupby(sorted_product_shares,
                                             lambda v: v.network)
             for network_name, network in group_by_network_iter:
                 network_count = len(list(network))

@@ -2,50 +2,6 @@
 
 {% block title %}Your weekly SmartButtons report!{% endblock %}
 
-{% block head %}
-    <style type="text/css">
-    .share-stats {
-        line-height: 16px;
-        font-size: 75%;
-        margin-bottom: 15px;
-    }
-
-    .icon {
-        height: 16px;
-        width: 16px;
-        background: url('{{ willet_url }}/static/imgs/');
-    }
-
-    .icon .alt {
-        display: none;
-    }
-
-    .icon.Facebook {
-        background: url('{{ willet_url }}/static/imgs/sb-facebook.png');
-    }
-
-    .icon.Pinterest {
-        background: url('{{ willet_url }}/static/imgs/sb-pinterest.png');
-    }
-
-    .icon.Fancy {
-        background: url('{{ willet_url }}/static/imgs/sb-fancy.png');
-    }
-
-    .icon.Tumblr {
-        background: url('{{ willet_url }}/static/imgs/sb-tumblr.png');
-    }
-
-    .icon.Twitter {
-        background: url('{{ willet_url }}/static/imgs/sb-twitter.png');
-    }
-
-    .icon.GooglePlus {
-        background: url('{{ willet_url }}/static/imgs/sb-googleplus.png');
-    }
-    </style>
-{% endblock %}
-
 {% block content %}
 <table border="0" cellpadding="10" cellspacing="0" width="100%">
     <tr>
@@ -66,14 +22,13 @@
                             {{item.name}}
                             (Shared {{item.total_shares}} times)
                         </div>
-                        <div class="share-stats">
+                        <div style="line-height: 16px; font-size: 75%; margin-bottom: 15px;">
                             {% for network in item.networks%}
                             <span>
-                                <span class="{{ network.network }} icon">
-                                    <span class="alt">
-                                        {{ network.network }}
-                                    </span>
-                                </span> x
+                                <img src="{{ willet_url }}/static/imgs/sb-{{network.network|lower}}.png"
+                                     alt="{{network.network}} Icon"
+                                     style="height: 16px; width: 16px;
+                                     vertical-align: text-bottom;"> x
                                 {{network.shares}}
                                 ({{network.percent}}%){% if not forloop.last%},
                                 {% endif %}
@@ -86,19 +41,17 @@
                 <p>Top networks this week:</p>
                     {% for item in network_shares %}
                     <li>
-                        <span class="{{ item.network }} icon">
-                            <span class="alt">
-                                {{ item.network }}
-                            </span>
-                        </span>
+                        {{item.percent}}% &mdash;
+                        <img src="{{ willet_url }}/static/imgs/sb-{{item.network|lower}}.png"
+                             alt="{{network.network}} Icon"
+                             style="height: 16px; width: 16px;
+                             vertical-align: text-bottom;">
+                        {{item.network}}
                         (Shared {{item.shares}} times)
                     </li>
                     {% endfor %}
                 <ol>
                 </ol>
-            </div>
-            <div>
-                <p style="font-size: 10px; margin-bottom: 0px; margin-top: 40px;">Email sent from <a href="http://willetinc.com">Willet</a></p>
             </div>
         </td>
     </tr>
