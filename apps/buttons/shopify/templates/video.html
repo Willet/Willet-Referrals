@@ -1,14 +1,30 @@
-						<script src="http://www.google.com/jsapi" type="text/javascript"></script>
-						<script>
-							google.load('swfobject','2.1');
-						</script>   
-					    <script type="text/javascript">
+					<div class="video-container">
+						<style>
+					    	#videoDiv {
+					    		width: 560px;
+					    		height: 315px;
+					    		text-align: center;
+					    		line-height: 560px;
+					    	}
+					    </style>
+					    <div id="videoDiv">Loading...</div>
+					    <p>
+					        Stop guessing which social networks your customers use. Personalize which buttons 
+					        appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
+					    </p>
+					</div>
+					<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+					<script>
+						google.load('swfobject','2.2');
+					</script>   
+				    <script type="text/javascript">
+					    function embed_working_browsers () {
 					    	var intervalID = null,
 					    		max_ratio_reached = 0,
 					    		// Player State enum
 					    		UNSTARTED  = -1,
 					    		ENDED      = 0,
-					    		PLAYING    = 1,
+					    		PLAYING    = 1,	
 					    		PAUSED     = 2,
 					    		BUFFERING  = 3,
 					    		VIDEO_CUED = 5;
@@ -59,8 +75,23 @@
 								}
 							}
 
+							var print = function(o){
+							    var str='';
+
+							    for(var p in o){
+							        if(typeof o[p] == 'string'){
+							            str+= p + ': ' + o[p]+'; \n';
+							        }else{
+							            str+= p + ': { \n' + print(o[p]) + '}';
+							        }
+							    }
+
+							    return str;
+							}
+
 							// This function is automatically called by the player once it loads
 							function onYouTubePlayerReady(playerId) {
+								alert('Hey! Where am I?');
 								var ytplayer = document.getElementById("ytPlayer");
 								ytplayer.addEventListener("onStateChange", "onPlayerStateChange");
 							}
@@ -68,31 +99,29 @@
 							// The "main method" of this sample. Called when someone clicks "Run".
 							function loadPlayer() {
 								var videoID = "7JF-583xVFk",
-									params = { allowScriptAccess: "always",
-											   modestbranding: 1,
-											   rel: 0 },
+									params = { allowScriptAccess: "always" };
+											   //modestbranding: 1,
+											   //rel: 0 },
 									atts = { id: "ytPlayer" };
 
 								swfobject.embedSWF("http://www.youtube.com/v/" + videoID + 
-								                   "?version=3&enablejsapi=1&playerapiid=player1", 
-								                   "videoDiv", "560", "315", "9", null, null, params, atts);
+							                   "?version=3&enablejsapi=1&playerapiid=player1", 
+							                   "videoDiv", "560", "315", "9", null, null, params, atts);
 							}
 
 							// Get video loading
 							google.setOnLoadCallback(loadPlayer);
-					    </script>
-						<div class="video-container">
-							<style>
-						    	#videoDiv {
-						    		width: 560px;
-						    		height: 315px;
-						    		text-align: center;
-						    		line-height: 560px;
-						    	}
-						    </style>
-						    <div id="videoDiv">Loading...</div>
-						    <p>
-						        Stop guessing which social networks your customers use. Personalize which buttons 
-						        appear for <i>each and every</i> customer. You get more sharing without the clutter of more buttons.
-						    </p>
-						</div>
+						}
+
+						function embed_ie () {
+							// swfobject would not work on IE.  Reported success with opt callback, but no request to youtube would happen.
+							// I give up... we can get analytics from everyone else.  I hate you IE, I hate you bad
+							$('#videoDiv').html('<iframe width="560" height="315" src="http://www.youtube.com/embed/7JF-583xVFk" frameborder="0" allowfullscreen></iframe>');
+						}
+				    </script>
+				    <![if !IE]>
+				    <script type="text/javascript"> embed_working_browsers(); alert('Embed with analytics');</script>
+				    <![endif]>
+				    <!--[if IE]>
+				    <script type="text/javascript"> embed_ie(); alert('Fucked ie');</script>
+				    <![endif]-->
