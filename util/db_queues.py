@@ -3,8 +3,6 @@
 __author__ = "Sy Khader"
 __copyright__ = "Copyright 2011, The Willet Corportation"
 
-from google.appengine.dist import use_library
-use_library('django', '1.2')
 from google.appengine.api import urlfetch, memcache, users, taskqueue
 from google.appengine.ext.db import GqlQuery
 from google.appengine.ext import webapp, db
