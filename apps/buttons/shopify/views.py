@@ -70,6 +70,7 @@ def get_details(uri_handler=None, provided_client=None):
 
     return details
 
+
 class ButtonsShopifyBeta(URIHandler):
     """If an existing customer clicks through from Shopify."""
     def get(self):
@@ -79,6 +80,13 @@ class ButtonsShopifyBeta(URIHandler):
         }
         
         self.response.out.write(self.render_page('beta.html', template_values))
+
+
+class ButtonsShopifyLearn(URIHandler):
+    """ Video & blurb about premium ShopConnection """
+    def get(self):
+        self.response.out.write(self.render_page('learn.html', {}))
+
 
 class ButtonsShopifyWelcome(URIHandler):
     """After the installation process, provide an opportunity to upgrade."""
@@ -105,6 +113,7 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
+
 
 class ButtonsShopifyUpgrade(URIHandler):
     """Starts the upgrade process."""
@@ -142,6 +151,7 @@ class ButtonsShopifyUpgrade(URIHandler):
             # Can this even occur?
             raise ShopifyBillingError('No confirmation URL provided by '
                                       'Shopify API', {})
+
 
 class ButtonsShopifyBillingCallback(URIHandler):
     """When a customer confirms / denies billing, they are redirected here.
@@ -202,6 +212,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
 
             self.redirect(page)
 
+
 class ButtonsShopifyInstructions(URIHandler):
     """Actions for the instructions page."""
     @catch_error
@@ -234,6 +245,7 @@ class ButtonsShopifyInstructions(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html',
                                                  template_values))
+
 
 class ButtonsShopifyInstallError(URIHandler):
     """Actions for the error page."""

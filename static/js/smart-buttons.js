@@ -509,7 +509,7 @@ var _willet = (function(me) {
                 var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
                 for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var button = usersButtons[i];
-                    if (requiredButtons.indexOf(button) == NOT_FOUND) {
+                    if (requiredButtons.indexOf(button) === NOT_FOUND) {
                         requiredButtons.push(button);
                     }
                 }

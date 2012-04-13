@@ -47,7 +47,7 @@
         <div id="starburst"><div><div></div></div></div>
 
         <!-- CONTENT -->
-        <div id='header'>
+        <div id='header' class='{% block header-class %}{% endblock %}'>
             <div id="white"></div>
             <div id="cloud_bottom"></div>
             <div id="cloud_top"></div>
@@ -110,6 +110,9 @@
             </div>
         </div>
         <!-- END FOOTER -->
+
+        <!-- For anything you want fixed to the window -->
+        {% block body-addendum %}{% endblock %}
         
         <!-- Preload these images -->
         <div class='hidden'>

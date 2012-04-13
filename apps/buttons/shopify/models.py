@@ -62,20 +62,19 @@ class ButtonsShopify(Buttons, AppShopify):
         result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
         count = int(result["count"]) / 12 #average over the year
 
-        if 0 <= count < 10:
+        # PRICING CHART
+        if count < 10:
             price = 0.99 #non-profit
-        elif 10 <= count < 100:
+        elif count < 20:
             price = 2.99 #basic
-        elif 100 <= count < 1000:
+        elif count < 50:
             price = 5.99 #professional
-        elif 1000 <= count < 10000:
+        elif count < 100:
             price = 9.99 #business
-        elif 10000 <= count < 100000:
+        elif count < 200:
             price = 17.99 #unlimited
-        elif 100000 <= count:
-            price = 19.99 #enterprise
         else:
-            raise ShopifyBillingError("Shop orders count was outside of expected bounds", count)
+            price = 19.99 #enterprise
 
         self.recurring_billing_price = unicode(price)
         self.put()
