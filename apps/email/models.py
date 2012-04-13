@@ -135,6 +135,7 @@ class Email():
         body = template.render(
             Email.template_path('smart_buttons_report.html'),
             {
+                'willet_url'    : URL,
                 'shop_name'     : shop_name,
                 'client_name'   : client_name,
                 'item_shares'   : item_shares,
