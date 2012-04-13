@@ -123,11 +123,14 @@ class Client(Model, polymodel.PolyModel):
         resp = {}
         first_name, last_name = '',''
         name = self.merchant.get_full_name()
-        try:
-            first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
-        except IndexError:
-            first_name, last_name = name, ''
-
+        if name:
+            try:
+                first_name, last_name = name.split(' ')[0], (' ').join(name.split(' ')[1:])
+            except IndexError: # Only contains a first name
+                first_name, last_name = name, ''
+        else:
+            first_name, last_name = 'Store Owner', ''
+        
         if list_id:
             try:
                 resp = MailChimp(MAILCHIMP_API_KEY).listSubscribe(
