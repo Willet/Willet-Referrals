@@ -11,6 +11,7 @@ from util.urihandler                import URIHandler
 from apps.email.models              import Email
 from util.helpers                   import url as build_url
 
+#TODO: moves these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
@@ -52,6 +53,7 @@ def get_details(uri_handler=None, provided_client=None):
     details["shop_url"] = request.get("shop") or request.get("shop_url")
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
+    
     if client is not None and client.merchant is not None:
         details["client_email"] = client.email
         details["shop_owner"]   = client.merchant.get_full_name()
