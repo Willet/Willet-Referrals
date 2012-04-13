@@ -20,7 +20,7 @@ from apps.product.models import Product
 from apps.user.models import User
 from apps.user.models import User
 from apps.wosib.actions import *
-from apps.wosib.models import WOSIBInstance
+from apps.wosib.models import WOSIB, WOSIBInstance
 from apps.wosib.models import PartialWOSIBInstance
 
 from util.consts import *
@@ -285,7 +285,7 @@ class SendWOSIBFriendAsks(URIHandler):
         asker = json.loads(self.request.get('asker'))
         msg = self.request.get('msg')
         default_msg = self.request.get('default_msg')
-        app = App.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
+        app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
         link = Link.get_by_code(self.request.get('willt_code'))
         user = User.get(self.request.get('user_uuid'))
         fb_token = self.request.get('fb_access_token')
@@ -410,9 +410,9 @@ class SendWOSIBFriendAsks(URIHandler):
         if friend_share_counter > 0:
             # create the instance!
             instance = app.create_instance(user, 
-                                            None, 
-                                            link, 
-                                            product_uuids)
+                                           None,
+                                           link,
+                                           product_uuids)
             # change link to reflect to the vote page.
             link.target_url = urlunsplit([PROTOCOL,
                                           DOMAIN,

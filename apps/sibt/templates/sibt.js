@@ -16,6 +16,8 @@
     var hash_index = -1;
     var padding_elem = null;
     var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }}; // keep track of this many products, max
+    var SHAKE_DURATION = 600; // ms
+    var SHAKE_WAIT = 700; // ms
     var topbar = null;
     var topbar_hide_button = null;
     var willt_code = null;
@@ -313,7 +315,7 @@
                     initialWidth: 0,
                     initialHeight: 0,
                     innerWidth: '620px',
-                    innerHeight: '460px',
+                    innerHeight: '520px',
                     fixed: true,
                     onClosed: function () {}
                 };
@@ -324,8 +326,8 @@
                     console.log("opening window");
                     var width = parseInt(options.innerWidth);
                     var height = parseInt(options.innerHeight);
-                    var left = (screen.width - width) /2;
-                    var top = (screen.height - height) /2;
+                    var left = (screen.width - width) / 2;
+                    var top = (screen.height - height) / 2;
                     var new_window = window.open(
                         options.href, // url
                         '_blank', // name
@@ -376,8 +378,8 @@
                             setTimeout(function () {
                                 $elem.shaker.stop();
                                 $elem.data('shaken_yet', true);
-                            }, 600); // shake duration
-                        }, 700); // wait for ?ms until it shakes
+                            }, SHAKE_DURATION);
+                        }, SHAKE_WAIT); // wait for ?ms until it shakes
                     }
                 });
             }

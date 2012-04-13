@@ -23,7 +23,6 @@ def main():
     If the reload_uris flag is set to true, a new URL map will be regenerated
     using urls.py of all INSTALLED_APPS.
     """
-    combined_uris = memcache.get('combined_uris') or []
     import_error = False
     new_len = 0
     old_len = 0
@@ -32,7 +31,7 @@ def main():
     try:
         combined_uris = memcache.get('combined_uris')
     except:
-        reload_uris   = True
+        reload_uris = True
         combined_uris = False
 
     if reload_uris or not combined_uris:

@@ -72,7 +72,7 @@ class WOSIB(App):
 
     @staticmethod
     def create(client, token):
-        uuid = hashlib.md5('WOSIB' + client.url).hexdigest()
+        uuid = generate_uuid(16)
         logging.debug("creating WOSIB v%s" % App.CURRENT_INSTALL_VERSION)
         app = WOSIB(key_name=uuid,
                     uuid=uuid,
@@ -188,6 +188,7 @@ class WOSIBInstance(Model):
 
     @classmethod 
     def _get_from_datastore(cls, uuid):
+        logging.debug("cls = %r, uuid = %s" % (cls, uuid))
         return cls.all().filter('uuid =', uuid).get()
 
     # Accessors ---------------------------------------------------------------

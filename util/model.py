@@ -146,7 +146,7 @@ class Model(db.Model):
         return key
     
     @classmethod
-    def build_secondary_key (cls, field_value):
+    def build_secondary_key(cls, field_value):
         """ models memcached with _memcache_fields defined will have 
             secondary memcache keys in the form of class-md5(field_value).
         """
@@ -166,10 +166,6 @@ class Model(db.Model):
         """
         obj = None
 
-        # required special case (empty string not legal as ID)
-        if identifier == '':
-            return None
-
         key = cls.build_key(identifier)
         method = 'magic' # huh? get() got an object without doing anything
 
@@ -180,7 +176,7 @@ class Model(db.Model):
             secondary_key = cls.build_secondary_key(identifier)
             # check if we can get anything by using identifier as secondary key
             data = memcache.get(secondary_key)
-        
+
         # data can be either a string primary key or a protocol buffer or None
         if data:
             try:
@@ -190,7 +186,7 @@ class Model(db.Model):
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Primary key miss
-        
+
         if data and not obj:
             try:
                 data = memcache.get(data) # look deeper into memcache
@@ -200,7 +196,7 @@ class Model(db.Model):
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Secondary key miss
-        
+
         if not data:
             # object was not found in memcache; use identifier as DB key
             obj = cls._get_from_datastore(identifier)

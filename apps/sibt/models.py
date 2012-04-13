@@ -88,7 +88,7 @@ class SIBT(App):
     
     @staticmethod
     def create(client, token):
-        uuid = hashlib.md5('SIBT' + client.url).hexdigest()
+        uuid = generate_uuid(16)
         logging.debug("creating SIBT v%s" % App.CURRENT_INSTALL_VERSION)
         app = SIBT(key_name=uuid,
                    uuid=uuid,

@@ -15,9 +15,11 @@ from apps.client.shopify.models import *
 from apps.link.models import Link
 from apps.order.models import *
 from apps.product.models import Product
+from apps.sibt.models import SIBT
+from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 from apps.wosib.actions import *
-from apps.wosib.models import PartialWOSIBInstance, WOSIBInstance
+from apps.wosib.models import WOSIB, PartialWOSIBInstance, WOSIBInstance
 from apps.wosib.shopify.models import WOSIBShopify
 
 from util.consts import *
@@ -63,6 +65,7 @@ class WOSIBAskDynamicLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     def get(self):
+        app = None
         ids = []
         link = None
         products = []
@@ -71,24 +74,44 @@ class WOSIBAskDynamicLoader(URIHandler):
         user = None
 
         store_domain = self.request.get('store_url')
+        if not store_domain:  # if called from SIBT, page url is given instead
+            url_parts = urlparse(self.request.get('target_url'))
+            if url_parts.scheme and url_parts.netloc:
+                store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
         refer_url = self.request.get('refer_url')
-        logging.info ("refer_url = %s" % refer_url)
+        logging.info("refer_url = %s" % refer_url)
 
-        # get_or_create a WOSIB app.
-        app = WOSIBShopify.get_by_store_url(store_domain)
-        if not app:
+        def get_app():
+            """get or create a WOSIB app by means available."""
+            app = WOSIBShopify.get_by_store_url(store_domain)
+            if app:
+                return app
+            logging.debug("No WOSIBShopify app")
+
             app = WOSIB.get_by_store_url(store_domain)
-        if not app:
+            if app:
+                return app
+            logging.debug("No WOSIB app")
+
             sibt = SIBTShopify.get_by_store_url(store_domain)
             if sibt:
+                logging.debug("Got SIBTShopify app; piggybacking")
                 app = WOSIBShopify.get_or_create(sibt.client,
                                                  token=sibt.store_token,
                                                  email_client=False)
-            if not sibt:
-                sibt = SIBT.get_by_store_url(store_domain)
-                if sibt:  # if site contains 
-                    app = WOSIB.get_or_create(sibt.client,
-                                              domain=sibt.client.domain)
+                return app
+            logging.debug("No SIBTShopify app")
+
+            sibt = SIBT.get_by_store_url(store_domain)
+            if sibt:
+                logging.debug("Got SIBT app; piggybacking")
+                app = WOSIB.get_or_create(sibt.client,
+                                          domain=sibt.client.domain)
+                return app
+            logging.debug("No app at all")
+
+        app = get_app()
+        logging.debug("app = %r" % app)
         if not app:
             msg = "app not found."
             logging.warning(msg)
