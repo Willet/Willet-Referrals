@@ -60,18 +60,18 @@ h1, h2, h3 {
     font-smoothing: antialiased;
 }
 h1 {
-    font-size: 4.0em;
+    font-size: 2.8em;
     margin: 0 0 30px 0;
     text-shadow: 1px 1px 1px #FFF;
 }
 
 h2 {
-    font-size: 2.8em;
+    font-size: 2.0em;
     margin-bottom: 15px;
 }
 
 h3 {
-    font-size: 2.0em;
+    font-size: 1.6em;
 }
 h4 {
     font-size: 1.5em;
@@ -297,27 +297,27 @@ div#header {
     height: 0;
     width: 100%;
 }
-div#header>div#white {
+div#header>div {
     position: absolute;
-    top: 0px;
+    left: 0;
+    width: 100%;
+}
+div#header>div#white {
+    top: 0;
     height:20px;
     width:100%;
     z-index: 1;
     background:#FFFFFF;
 }
 div#header>div#cloud_bottom {
-    position: absolute;
     top: 20px;
-    width:100%;
     height:86px;
     background:transparent;
     background: url(/static/imgs/cloud_bottom.png) center top repeat-x;
 }
 
 div#header>div#cloud_top {
-    position: absolute;
     margin-top: 20px;
-    width:100%;
     height:77px;
     z-index: 1;
     background: transparent;
@@ -343,6 +343,15 @@ div#footer {
     min-width: 970px;
     width:100%;
 }
+div#footer>div#ocean,
+div#footer>div#surf,
+div#footer>div#beach {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+}
 div#footer>div#sailboat {
     position: absolute;
     top: 70px;
@@ -351,37 +360,28 @@ div#footer>div#sailboat {
     margin-right: 0;
 }
 div#footer>div#ocean {
-    position: absolute;
     top: 0;
-    margin: 0;
     min-width: 970px;
-    width:100%;
-    min-height: 0;
     height:60px;
     background-image: url("../imgs/wave_ocean.png");
     background-repeat: repeat-x;
 }
 div#footer>div#surf {
-    position: absolute;
     top: 20px;
-    margin: 0;
     min-width: 970px;
-    width:100%;
-    min-height: 0;
     height:36px;
     background-repeat: repeat-x;
     background-image: url("../imgs/wave_beach_sand.png");
 }
 div#footer>div#beach {
-    position: absolute;
     top: 56px;
-    margin: 0;
     min-width: 970px;
-    width:100%;
-    min-height: 0;
     height: 144px;
     background-image: url("../imgs/sand.png");
     background-color: #D9D7BF;
+}
+div#footer > div.container {
+    margin-top: 0; /* hack for ie */
 }
 
 div#footer button {
@@ -646,11 +646,13 @@ div.call_to_action div.subtitle {
     width: 60px;
     height: 60px;
     float: left;
+    behavior: ("../js/PIE.htc");
 }
 .shopconnection-header h3 {
     color: #0496AC;
     text-shadow: 1px 1px 1px #FFF;
     line-height: 30px;
+    font-family: "Helvetica Neue","Helvetica","Arial",sans-serif;
     font-size: 14px;
     padding-left: 90px;
     margin: 0;
@@ -660,6 +662,7 @@ div.call_to_action div.subtitle {
     -moz-box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
     box-shadow: 0 0 20px rgba(0,0,0,0.1), 0px 0px 0px rgba(0,0,0,0);
     position: relative;
+    behavior: ("../js/PIE.htc");
 }
 .content-container {
     margin-top: 50px;
@@ -691,6 +694,7 @@ div.call_to_action div.subtitle {
 div.installation-steps {
     position: fixed;
     z-index: 1000;
+    left: 0;
     bottom: 0;
     width: 100%;
     height: 35px;
@@ -700,7 +704,7 @@ div.installation-steps {
     -webkit-box-shadow: 0px -2px 5px rgba(0,0,0,0.25);
     -moz-box-shadow: 0px -2px 5px rgba(0,0,0,0.25);
     box-shadow: 0px -2px 5px rgba(0,0,0,0.25);
-    background-color: #D8EBF6;
+    background-color: #333;
     background-image: -moz-linear-gradient(top, #444 14%, #000);
     background-image: -webkit-linear-gradient(top, #444 14%, #000);
     background-image: -ms-linear-gradient(top, #444 14%, #000);
@@ -714,24 +718,23 @@ div.installation-steps ul {
     height: 100%;
     text-align: center;
     list-style: none;
+    padding: 5px 0;
 }
 div.installation-steps li {
     font-size: 14px;
-    line-height: 35px;
+    line-height: 25px;
     font-weight: bold;
     vertical-align: top;
+    display: inline;
     color: #999;
-    display: inline-block;
-    height: 100%;
-    padding-right: 30px;
-    margin-right: 40px;
+    padding: 0 30px 0 0;
+    margin: 0 40px 0 0;
 }
 div.installation-steps li::after {
     content: '\27E9';
     font-size: 25px;
     padding-left: 10px;
-    position: relative;
-    top: -2px;
+    vertical-align: top;
 }
 div.installation-steps li.on-this-step {
     color: #FFF;
@@ -930,14 +933,20 @@ button:visited {
     -webkit-box-shadow:0 1px 2px #999;
     -moz-box-shadow:0 1px 2px #999;
     box-shadow:0 1px 2px #999;
+    behavior: ("../js/PIE.htc");
     /*color:#fce8e3;*/
 }
 .button:hover,
 button:hover { 
-    background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
-    background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
-    background:-o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
+    background: -webkit-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -o-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    background: -ms-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FAA796', endColorstr='#943A28',GradientType=0 );
+    background: linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     color:#fff;
+    behavior: ("../js/PIE.htc");
 }
 button:active { }
 .button.blue,
@@ -945,19 +954,32 @@ button.blue {
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    color: #FCE8E3;  
+    color: #EBF9FF; 
     border-color: #1495CC #2B8AB3 #066D99;
+    background-color: #088EC8;
     background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
     background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#088EC8), color-stop(0.05, #6CB8D9));
+    background: -webkit-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+    background: -ms-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
     background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
-    color: #EBF9FF;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#AFE3FA', endColorstr='#088EC8',GradientType=0 );
+    background: linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+    -pie-background: linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
+    behavior: ("../js/PIE.htc");
 }
 .button.blue:hover,
 button.blue:hover {
+    color: white;
+    background-color: #077BAD;
     background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
     background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#077BAD), color-stop(0.05, #6CB8D9));
+    background: -webkit-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
     background: -o-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
-    color: white;
+    background: -ms-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#AFE3FA', endColorstr='#077BAD',GradientType=0 );
+    background: linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
+    -pie-background: linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
+    behavior: ("../js/PIE.htc");
 }
 button.grey,
 .button.grey {

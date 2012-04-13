@@ -26,7 +26,14 @@
                     } catch (err) {
                         // Report error?
                     }
-                })
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}";
+                });
+
+                $('#install_basic').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}";
+                });
             });
         </script>
         <style>
@@ -76,17 +83,21 @@
                 border-radius: 15px 0 0 5px;
                 border-right: 0;
                 z-index: 2;
+                behavior: ("../js/PIE.htc");
             }
             .pricing-col.smart .title {
                 border-radius: 15px 0 0 0;
+                behavior: ("../js/PIE.htc");
             }
             .pricing-col.basic {
                 width: 20%;
                 border-radius: 0 15px 5px 0;
                 z-index: 1;
+                behavior: ("../js/PIE.htc");
             }
             .pricing-col.basic .title {
                 border-radius: 0 15px 0 0;
+                behavior: ("../js/PIE.htc");
             }
             .pricing-col ul {
                 margin: 0;
@@ -142,10 +153,11 @@
                 width: 93px;
             }
             .pricing-col .wide {
-                width: 190px;
+                width: 170px;
             }
             .pricing-col button {
                 text-align: center;
+                width: 100%;
             }
 
             /*----------------------------  ONE-OFFS ---------------------*/
@@ -159,7 +171,6 @@
             .under-wave>img {
                 position: absolute;
                 bottom: -4px;
-                left: 0;
             }
             .coming-soon {
                 font-style: italic;
@@ -169,6 +180,7 @@
             /*---------------------------- COLORBOX INJECT --------------------*/
             .video-container {
                 padding: 20px 20px 0 20px;
+                overflow-y: hidden;
             }
             .video-container #videoDiv,
             .video-container object {
@@ -227,9 +239,7 @@
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="wide">
-                                        <a href="{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}">
-                                            <button id="install_smart" class="blue">Start your free trial!</button>
-                                        </a>
+                                        <button id="install_smart" class="blue">Start your free trial!</button>
                                     </div>
                                 </div>
                             </div>
@@ -246,16 +256,14 @@
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="narrow">
-                                        <a href="{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}">
-                                            <button id="install_basic" class="blue">Choose</button>
-                                        </a>
+                                        <button id="install_basic" class="blue">Choose</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div style="display:none">
+                <div style="display:none"> 
                     {% include 'video.html' %}
                 </div>
 {% endblock content %}
