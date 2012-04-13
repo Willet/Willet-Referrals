@@ -20,8 +20,8 @@
     var topbar_hide_button = null;
     var willt_code = null;
     // CSS rules (except colorbox_css, which includes its own 'quotes';)
-    var colorbox_css = '{% include "css/colorbox.css" %}';
-    var popup_css = '{% include "css/popup.css" %}';
+    var colorbox_css = '{% include "../../plugin/templates/css/colorbox.css" %}';
+    var popup_css = '{% include "../../plugin/templates/css/popup.css" %}';
     var app_css = '{{ app_css }}';
 
     // set up a list of scripts to load asynchronously.
@@ -198,10 +198,10 @@
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
             // jQuery cookie plugin (included to solve lagging requests)
-            {% include 'js/jquery.cookie.js' %}
+            {% include '../../plugin/templates/js/jquery.cookie.js' %}
             
             // jQuery image derpdown plugin (shows image dropdown box)
-            {% include 'js/jquery.imagedropdown.js' %}
+            {% include '../../plugin/templates/js/jquery.imagedropdown.js' %}
 
             var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ? will be added for you.
@@ -229,6 +229,11 @@
                 return new_array;
             };
 
+            var random_string = function () {
+                //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
+                return String((new Date()).getTime()).replace(/\D/gi,'');
+            }
+
             var is_scrolled_into_view = function (elem) {
                 // http://stackoverflow.com/questions/487073
                 // returns true if elem has dimensions within the viewport.
@@ -255,7 +260,7 @@
                 });
                 return largest_image;
             };
-            
+
             var get_page_title = function () {
                 return d.title || '';
             };
@@ -268,9 +273,8 @@
             // Send action to server
             var store_analytics = function (message) {
                 var message = message || '{{ evnt }}';
-                //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
-                var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
-                
+                var random_id = 'a' + random_string();
+
                 $('<iframe />', {
                     id: random_id,
                     name: random_id,
@@ -290,11 +294,7 @@
 
             var button_onclick = function(e, message) {
                 var message = message || 'SIBTUserClickedButtonAsk';
-                try {
-                    $('#_willet_padding').hide();
-                } catch (err) {
-                    console.log(err.message);
-                }
+                $('#_willet_padding').hide();
                 if (user.is_asker || instance.show_votes) {
                     // we are no longer showing results with the topbar.
                     show_results();
