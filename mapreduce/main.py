@@ -28,6 +28,9 @@ This module should be specified as a handler for mapreduce URLs in app.yaml:
 
 import wsgiref.handlers
 
+from google.appengine.dist import use_library
+use_library('django', '1.2')
+
 from google.appengine.ext import webapp
 from mapreduce import handlers
 from mapreduce import status
