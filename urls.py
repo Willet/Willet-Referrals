@@ -22,15 +22,18 @@ def main():
     If the reload_uris flag is set to true, a new URL map will be regenerated
     using urls.py of all INSTALLED_APPS.
     """
-    combined_uris = memcache.get('combined_uris') or []
     import_error = False
     new_len = 0
     old_len = 0
-    reload_uris = memcache.get('reload_uris')
+
+    try:
+        reload_uris = memcache.get('reload_uris')
+    except AttributeError:
+        reload_uris = False
 
     try:
         combined_uris = memcache.get('combined_uris')
-    except:
+    except AttributeError:
         reload_uris   = True
         combined_uris = False
 
