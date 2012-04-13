@@ -15,13 +15,13 @@
 
     var hash_index = -1;
     var padding_elem = null;
-    var PRODUCT_HISTORY_COUNT = 10; // keep track of this many products, max
+    var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }}; // keep track of this many products, max
     var topbar = null;
     var topbar_hide_button = null;
     var willt_code = null;
     // CSS rules (except colorbox_css, which includes its own 'quotes';)
-    var colorbox_css = {% include stylesheet %}
-    var popup_css = '{% include popup_stylesheet %}';
+    var colorbox_css = '{% include "css/colorbox.css" %}';
+    var popup_css = '{% include "css/popup.css" %}';
     var app_css = '{{ app_css }}';
 
     // set up a list of scripts to load asynchronously.
@@ -198,9 +198,10 @@
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
             // jQuery cookie plugin (included to solve lagging requests)
-            {% include '../../plugin/templates/js/jquery.cookie.js' %}
+            {% include 'js/jquery.cookie.js' %}
+            
             // jQuery image derpdown plugin (shows image dropdown box)
-            {% include '../../sibt/templates/js/jquery.imagedropdown.js' %}
+            {% include 'js/jquery.imagedropdown.js' %}
 
             var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ? will be added for you.

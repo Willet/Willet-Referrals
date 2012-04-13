@@ -292,9 +292,11 @@ class SIBTShopify(SIBT, AppShopify):
         
     def get_css_dict(self):
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
+            if not data:
+                raise Exception("No data")
         except Exception, e:
             #logging.error('could not decode: %s\n%s' % 
             #        (e, self.button_css), exc_info=True)
@@ -304,7 +306,8 @@ class SIBTShopify(SIBT, AppShopify):
     def set_css(self, css=None):
         """Expects a dict"""
         try:
-            assert(css != None)
+            if not css:
+                raise Exception("No CSS")
             self.button_css = json.dumps(css)
         except:
             #logging.info('setting to default')
@@ -316,10 +319,11 @@ class SIBTShopify(SIBT, AppShopify):
         class_defaults = SIBTShopify.get_default_dict()
         logging.info('class_defaults : %s' % class_defaults)
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
-            #logging.warn('updating with data:\n%s' % data)
+            if not data:
+                raise Exception("No data")
             class_defaults.update(data)
         except Exception, e:
             logging.warning (e, exc_info=True)

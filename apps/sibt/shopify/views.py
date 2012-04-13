@@ -363,7 +363,6 @@ class SIBTShopifyServeScript(URIHandler):
             'app': app,
             'sibt_version': app.version or 10,
             'app_css': app_css,
-            'stylesheet': '../../plugin/templates/css/colorbox.css',
             'detect_shopconnection': True,
 
             'instance': instance,

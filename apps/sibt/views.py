@@ -4,6 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
+import os
 import re
 
 from urlparse import urlparse, urlunsplit
@@ -432,10 +433,8 @@ class ShowResults(URIHandler):
 
         except ValueError:
             # well, we can't find the instance, so let's assume the vote is over
-            template_values = {
-                'output': 'Vote is over'        
-            }
-            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
+            self.response.out.write("The vote is over.")
+            return
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -787,8 +786,6 @@ class SIBTServeScript(URIHandler):
             # app info
             'app': app, # if missing, django omits these silently
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
-            'stylesheet': '../../plugin/templates/css/colorbox.css',
-            'popup_stylesheet': '../../plugin/templates/css/popup.css',
             'app_css': app_css, # SIBT-JS does not allow custom CSS.
             'detect_shopconnection': True,
 

@@ -111,6 +111,8 @@ MEMCACHE_TIMEOUT = 2591999
 # List of root template directories to import templates from
 TEMPLATE_DIRS = (
     'apps/homepage/templates',
+    'apps/plugin/templates',
+    'apps/sibt/templates',
 )
 
 # Admin whitelist
