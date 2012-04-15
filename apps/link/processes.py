@@ -70,21 +70,23 @@ class CleanBadLinks( webapp.RequestHandler ):
         links = Link.all().filter('user =', None)
 
         count = 0
-        str   = 'Cleaning the bad links'
-        if links:
+        result   = 'Cleaning the bad links'
+        try:
             for l in links:
                 clicks = l.count_clicks()
                 try:
                     if l.user == None and clicks != 0:
                         count += 1
-                        str   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
+                        result   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
                         l.delete()
                 except Exception,e:
                     l.delete()
                     logging.warn('probably unable to resolve property: %s' % e)
-        
-        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, str ) )
+        except TypeError:
+            logging.warn("Expected <google.appengine.datastore.Key> or <google.appengine.ext.db.Model>, got an item in %r" % links)
+
+        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, result ) )
 
 class IncrementCodeCounter(webapp.RequestHandler):
     """ This was getting called every time a willet code was being
