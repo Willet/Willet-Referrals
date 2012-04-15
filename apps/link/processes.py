@@ -20,7 +20,8 @@ from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set
 from util.consts import *
 from util.urihandler import URIHandler
 
-class TrackWilltURL( webapp.RequestHandler ):
+
+class TrackWilltURL(webapp.RequestHandler):
     """This handler tracks click-throughs on a given code. It tests
        for the presence of a cookie that it also sets in order to ensure
        incremental click-throughs are unique"""
@@ -49,7 +50,8 @@ class TrackWilltURL( webapp.RequestHandler ):
             set_clicked_cookie(self.response.headers, code)
 
         return
-            
+
+
 class InitCodes(webapp.RequestHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""
@@ -65,7 +67,8 @@ class InitCodes(webapp.RequestHandler):
             n += 1
         self.response.out.write(str(n) + " counters initialized")
 
-class CleanBadLinks( webapp.RequestHandler ):
+
+class CleanBadLinks(webapp.RequestHandler):
     def get(self):
         links = Link.all().filter('user =', None)
 
@@ -87,6 +90,7 @@ class CleanBadLinks( webapp.RequestHandler ):
             logging.warn("Expected <google.appengine.datastore.Key> or <google.appengine.ext.db.Model>, got an item in %r" % links)
 
         logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, result ) )
+
 
 class IncrementCodeCounter(webapp.RequestHandler):
     """ This was getting called every time a willet code was being
