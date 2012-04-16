@@ -359,7 +359,7 @@ var _willet = (function(me) {
         var img = "";
         if (imgNodeContainer) {
             var imgNode = imgNodeContainer.getElementsByTagName("img")[0];
-            img = (imgNode && imgNode.src) || ""
+            img = (imgNode && imgNode.src) || "";
         }
 
         return {

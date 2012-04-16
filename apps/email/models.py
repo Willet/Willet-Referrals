@@ -124,7 +124,7 @@ class Email():
                          to_name=name)
 
     @staticmethod
-    def reportSmartButtons(to_addr, item_shares, network_shares,
+    def report_smart_buttons(to_addr, item_shares, network_shares,
                            shop_name=None, client_name=None):
         if shop_name is None:
             shop_name = ""
