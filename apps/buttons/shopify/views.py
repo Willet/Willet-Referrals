@@ -47,6 +47,7 @@ def catch_error(fn):
                            (build_url ('ButtonsShopifyInstallError'), e))
     return wrapped
 
+
 def get_details(uri_handler=None, provided_client=None):
     """Given a URIHandler, returns a dictionary of details we expect."""
     if uri_handler is None and uri_handler.request is None:
@@ -266,7 +267,7 @@ class ButtonsShopifyInstallError(URIHandler):
                                                  template_values))
         return
 
-    
+
 class ButtonsShopifyItemShared(URIHandler):
     """Handles whenever a share takes place"""
     def get(self):
@@ -309,6 +310,7 @@ class ButtonsShopifyItemShared(URIHandler):
 
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
+
 class ButtonsShopifyEmailReports(URIHandler):
     """Queues the report emails"""
     def get(self):
@@ -324,6 +326,7 @@ class ButtonsShopifyEmailReports(URIHandler):
             url = build_url('ButtonsShopifyItemSharedReport')
             info("taskqueue URL: %s" % url)
             taskqueue.add(queue_name='buttonsEmail', url=url, params=params)
+
 
 class ButtonsShopifyItemSharedReport(URIHandler):
     """Sends individual emails"""

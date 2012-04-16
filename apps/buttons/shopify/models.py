@@ -9,8 +9,8 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
+from datetime import date, datetime, timedelta
 from time import time
-from datetime import datetime, timedelta, date
 from urllib import urlencode
 
 from django.utils import simplejson as json

@@ -39,6 +39,7 @@
                     {% endfor %}
                 </ol>
                 <p>Top networks this week:</p>
+                <ol>
                     {% for item in network_shares %}
                     <li>
                         {{item.percent}}% &mdash;
@@ -50,7 +51,6 @@
                         (Shared {{item.shares}} times)
                     </li>
                     {% endfor %}
-                <ol>
                 </ol>
             </div>
         </td>
