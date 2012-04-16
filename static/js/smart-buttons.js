@@ -28,7 +28,31 @@ text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function
 if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
 throw new SyntaxError('JSON.parse');};}}());
 
+var _willet = _willet || {};
+_willet.helpers = {
+    "dictToArray": function (dict) {
+        // Don't use this on DOM Elements, IE will fail
+        var result = [];
+        for (var key in dict) {
+            if (dict.hasOwnProperty(key)) {
+                result.push({ "key": key, "value": dict[key] });
+            }
+        }
+        return result;
+    },
+    "indexOf": function (arry, obj, start) {
+        // IE < 9 doesn't have Array.prototype.indexOf
+        for (var i = (start || 0), j = arry.length; i < j; i++) {
+            if (arry[i] === obj) { return i; }
+        }
+        return -1;
+    },
+    "xHasKeyY": function (dict, key) {
+        return dict[key] ? true : false;
+    }
+}
 var _willet = (function(me) {
+    var helpers = me.helpers;
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
@@ -56,7 +80,7 @@ var _willet = (function(me) {
                 "func": function() { return ""; }
             },
             "button": {
-                "script": PROTOCOL + '//platform.tumblr.com/v1/share.js',
+                "script": '//platform.tumblr.com/v1/share.js',
                 "create": function (params) {
                     var button = createBasicButton({
                         "id": 'tumblr',
@@ -73,7 +97,7 @@ var _willet = (function(me) {
                     link.style.textAlign = 'left';
                     link.style.width = '63px';
                     link.style.height = '20px';
-                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent"
+                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
                     link.style.styleFloat = 'left';
                     link.style.cssFloat = 'left';
                     link.style.marginRight = '5px';
@@ -100,7 +124,7 @@ var _willet = (function(me) {
                 }
             },
             "button": {
-                "script": PROTOCOL + '//connect.facebook.net/en_US/all.js#xfbml=1',
+                "script": '//connect.facebook.net/en_US/all.js#xfbml=1',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'facebook',
@@ -170,7 +194,7 @@ var _willet = (function(me) {
                 "func": function() { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
             },
             "button": {
-                "script": PROTOCOL + '//platform.twitter.com/widgets.js',
+                "script": '//platform.twitter.com/widgets.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'twitter',
@@ -201,7 +225,7 @@ var _willet = (function(me) {
                 "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
             },
             "button": {
-                "script": PROTOCOL + '//apis.google.com/js/plusone.js',
+                "script": '//apis.google.com/js/plusone.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'googleplus',
@@ -250,7 +274,7 @@ var _willet = (function(me) {
                 "func": function() { return ""; }
             },
             "button": {
-                "script": PROTOCOL + '//www.thefancy.com/fancyit.js',
+                "script": '//www.thefancy.com/fancyit.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'fancy',
@@ -281,19 +305,41 @@ var _willet = (function(me) {
                     return button;
                 }
             }
+        },
+        "Svpply": {
+            "detect": {
+                "method": "none",
+                "func": function() { return ""; }
+            },
+            "button": {
+                "script": '//svpply.com/api/all.js#xsvml=1',
+                "create": function (params) {
+                    var button = createBasicButton({
+                        "id": 'svpply',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    var sv = document.createElement("sv:product-button");
+                    sv.setAttribute("type", "boxed");
+                    sv.style.width = '70px';
+                    button.appendChild(sv);
+                    // Svpply assumes it has to wait for window.onload before running
+                    // But window.onload has already fired at this point
+                    // So set up polling for when Svpply is ready, then fire it off
+                    var interval = setInterval(function () {
+                        if (window.svpply_api && window.svpply_api.construct) {
+                            window.svpply_api.construct();
+                            button.onclick = function () { itemShared("Svpply"); };
+                            clearInterval(interval);
+                        }
+                    }, 100);
+                    return button;
+                }
+            }
         }
     };
     var loggedInNetworks = {};
 
     // Private functions
-    var xHasKeyY = function(dict, key) {
-        if (dict[key]) {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
     var createBasicButton = function (params) {
         var id = params.id || '';
         var buttonSpacing = params.buttonSpacing || "0";
@@ -335,7 +381,7 @@ var _willet = (function(me) {
                 var node = container.childNodes[i];
                 if (node.nodeType === ELEMENT_NODE) {
                     var network = node.innerHTML;
-                    if(xHasKeyY(SUPPORTED_NETWORKS, network)) {
+                    if(helpers.xHasKeyY(SUPPORTED_NETWORKS, network)) {
                         requiredButtons.push(network);
                     }
                 }
@@ -389,21 +435,6 @@ var _willet = (function(me) {
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
-    };
-
-    var dictToArray = function(dict) {
-        var result = [];
-
-        for (var key in dict) {
-            if (dict.hasOwnProperty(key)) {
-                result.push({
-                    "key": key,
-                    "value": dict[key]
-                });
-            }
-        }
-
-        return result;
     };
 
     // Public functions
@@ -462,7 +493,7 @@ var _willet = (function(me) {
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
             buttonsDiv.style.minWidth = "240px";
             buttonsDiv.style.height = "22px";
-            buttonsDiv.style.padding = "buttonPadding";
+            buttonsDiv.style.padding = buttonPadding;
             buttonsDiv.style.border = "none";
             buttonsDiv.style.margin = "0";
 
@@ -490,7 +521,7 @@ var _willet = (function(me) {
                     _willet.debug.log("Buttons: Unable to parse cookie")
                 }
 
-                networks = dictToArray(networks);
+                networks = helpers.dictToArray(networks);
                 networks = networks.sort(function(a,b) {
                     return b.value.accessed - a.value.accessed;
                 });
@@ -498,7 +529,7 @@ var _willet = (function(me) {
                 //append detected buttons
                 for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var network = networks[i];
-                    if (xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
+                    if (helpers.xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
                         && network.value.status === true) {         //check that the network is enabled
                         requiredButtons.push(network.key);
                     }
@@ -509,7 +540,7 @@ var _willet = (function(me) {
                 var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
                 for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var button = usersButtons[i];
-                    if (requiredButtons.indexOf(button) === NOT_FOUND) {
+                    if (helpers.indexOf(requiredButtons, button) === NOT_FOUND) {
                         requiredButtons.push(button);
                     }
                 }
@@ -522,7 +553,7 @@ var _willet = (function(me) {
                 //append default buttons to the end, if they have not already been added
                 for (var i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
                     var button = DEFAULT_BUTTONS[i];
-                    if (requiredButtons.indexOf(button) == NOT_FOUND) {
+                    if (helpers.indexOf(requiredButtons, button) == NOT_FOUND) {
                         requiredButtons.push(button);
                     }
                 }
@@ -622,9 +653,9 @@ var _willet = (function(me) {
     };
 
     return me;
-} (_willet || {}));
+}(_willet));
 
-_willet.debug = (function(){
+_willet.debug = (function (helpers) {
     var me = {};
     var isDebugging = false;
     var callbacks = [];
@@ -638,7 +669,7 @@ _willet.debug = (function(){
             if (log.apply) {
                 log.apply(window.console, arguments);
             } else {
-                log(arguments)
+                log(arguments);
             }
         };
         _error = function () {
@@ -646,7 +677,7 @@ _willet.debug = (function(){
             if (error.apply) {
                 error.apply(window.console, arguments);
             } else {
-                error(arguments)
+                error(arguments);
             }
         };
     }
@@ -656,8 +687,8 @@ _willet.debug = (function(){
     };
 
     me.set = function(debug) {
-        me.log = (debug) ? _log: function() {};
-        me.error = (debug) ? _error: function() {};
+        me.log = (debug) ? _log : function() {};
+        me.error = (debug) ? _error : function() {};
         isDebugging = debug;
 
         for(var i = 0; i < callbacks.length; i++) {
@@ -672,11 +703,10 @@ _willet.debug = (function(){
     me.set(false); //setup proper log functions
 
     return me;
-}());
+}(_willet.helpers));
 
-_willet.cookies = (function(){
+_willet.cookies = (function (helpers) {
     var me = {};
-
     // Source: http://www.quirksmode.org/js/cookies.html
     me.create = function (name, value, days) {
         if (days) {
@@ -695,7 +725,7 @@ _willet.cookies = (function(){
         for(var i=0;i < ca.length;i++) {
             var c = ca[i];
             while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            if (helpers.indexOf(c, nameEQ) == 0) return c.substring(nameEQ.length,c.length);
         }
         return null;
     };
@@ -706,11 +736,10 @@ _willet.cookies = (function(){
     };
 
     return me;
-}());
+}(_willet.helpers));
 
-_willet.messaging = (function(){
-    var me = {};
-
+_willet.messaging = (function (helpers) {
+    var me = {}
     me.ajax = function(config) {
         var AJAX_RESPONSE_AVAILABLE = 4;
         var HTTP_OK = 200;
@@ -851,7 +880,7 @@ _willet.messaging = (function(){
     }());
 
     return me;
-}());
+}(_willet.helpers));
 
 try {
     _willet.debug.set(true); //set to true if you want logging turned on

@@ -58,7 +58,7 @@ def get_details(uri_handler=None, provided_client=None):
     details["shop_url"] = request.get("shop") or request.get("shop_url")
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
-    
+
     if client is not None and client.merchant is not None:
         details["client_email"] = client.email
         details["shop_owner"]   = client.merchant.get_full_name()
@@ -98,20 +98,30 @@ class ButtonsShopifyWelcome(URIHandler):
         token = self.request.get( 't' )
         details = get_details(self)
 
-        # Fetch or create the app
-        app = ButtonsShopify.get_or_create_app(details["client"], token=token)
+        if details["client"]:
+            # Fetch or create the app
+            app = ButtonsShopify.get_or_create_app(details["client"], token=token)
 
-        # Find out what the app should cost
-        price = app.get_price()
+            # Find out what the app should cost
+            price = app.get_price()
 
-        template_values = {
-            'app'        : app,
-            'shop_owner' : details["shop_owner"],
-            'shop_name'  : details["shop_name"],
-            'price'      : price,
-            'shop_url'   : details["shop_url"],
-            'token'      : token,
-        }
+            template_values = {
+                'shop_owner' : details["shop_owner"],
+                'shop_name'  : details["shop_name"],
+                'price'      : price,
+                'shop_url'   : details["shop_url"],
+                'token'      : token,
+                'disabled'   : False,
+            }
+        else:
+            # Usually direct traffic to the url, show disabled version
+            template_values = {
+                'shop_owner' : 'Store Owner',
+                'shop_name'  : 'Store',
+                'price'      : '-.--',
+                'shop_url'   : 'www.example.com',
+                'disabled'   : True,
+            }
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
@@ -236,7 +246,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app    = ButtonsShopify.get_or_create_app(client, token=token)
+        app = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {
