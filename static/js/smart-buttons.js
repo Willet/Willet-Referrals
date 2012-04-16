@@ -50,44 +50,6 @@ var _willet = (function(me) {
     var MAX_BUTTONS = 3;
     var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
     var SUPPORTED_NETWORKS = {
-        "Tumblr": {
-            "detect": {
-                "method": "none",
-                "func": function() { return ""; }
-            },
-            "button": {
-                "script": PROTOCOL + '//platform.tumblr.com/v1/share.js',
-                "create": function (params) {
-                    var button = createBasicButton({
-                        "id": 'tumblr',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = '62px';
-
-                    var link = document.createElement("a");
-                    link.href = 'http://www.tumblr.com/share';
-                    link.title = "Share on Tumblr";
-                    link.innerHTML = "Share on Tumblr";
-                    link.style.display = 'inline-block';
-                    link.style.textIndent = '-9999px';
-                    link.style.textAlign = 'left';
-                    link.style.width = '63px';
-                    link.style.height = '20px';
-                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent"
-                    link.style.styleFloat = 'left';
-                    link.style.cssFloat = 'left';
-                    link.style.marginRight = '5px';
-                    link.style.marginTop = 0;
-
-                    link.onclick = function() {
-                        itemShared("Tumblr");
-                    };
-
-                    button.appendChild(link);
-                    return button;
-                }
-            }
-        },
         "Facebook": {
             "detect": {
                 "method": "api",
@@ -114,6 +76,94 @@ var _willet = (function(me) {
                     FB.Event.subscribe('edge.create', function(response) {
                         itemShared("Facebook");
                     });
+                }
+            }
+        },
+        "Fancy": {
+            "detect": {
+                "method": "none",
+                "func": function() { return ""; }
+            },
+            "button": {
+                "script": PROTOCOL + '//www.thefancy.com/fancyit.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'fancy',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = params.buttonCount ? '96px' : '57px';
+
+                    var u = "http://www.thefancy.com/fancyit?" +
+                            "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                            "&Title="  + encodeURIComponent( params.data.product.title ) +
+                            "&Category=Other";
+                    if ( params.photo.length > 0 ) {
+                        u += "&ImageURL=" + encodeURIComponent( params.photo );
+                    } else { // If no image on page, submit blank image.
+                        u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
+                    }
+
+                    var link = document.createElement("a");
+                    link.id = "FancyButton";
+                    link.href = u;
+
+                    link.onclick = function() {
+                        itemShared("Fancy");
+                    };
+                    
+                    link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
+        "GooglePlus": {
+            "detect": {
+                "method": "image",
+                "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
+            },
+            "button": {
+                "script": PROTOCOL + '//apis.google.com/js/plusone.js',
+                "create": function(params) {
+                    var button = createBasicButton({
+                        "id": 'googleplus',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.overflow = 'visible';
+                    button.style.width = params.buttonCount ? '90px' : '32px';
+
+                    var gPlus = document.createElement("g:plusone");
+                    gPlus.setAttribute("size", "medium");
+                    if (!params.buttonCount) {
+                        gPlus.setAttribute("annotation", "none");
+                    }
+                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
+
+                    button.appendChild(gPlus);
+
+                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
+
+                    // Google Plus will only execute a callback in the global namespace, so expose this one...
+                    // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
+                    window._willet_GooglePlusShared = function(response) {
+                        if (response && response.state && response.state === "on") {
+                            itemShared("GooglePlus");
+                        }
+                    };
+                    
+                    // Google is using the Open Graph spec
+                    var t, p, 
+                        m = [ { property: 'og:title', content: params.data.product.title },
+                              { property: 'og:image', content: params.photo },
+                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                    while (m.length) {
+                        p = m.pop();
+                        t = document.createElement('meta');
+                        t.setAttribute('property', p.property);
+                        t.setAttribute('content', p.content);
+                        HEAD.appendChild(t);
+                    }
+                    return button;
                 }
             }
         },
@@ -164,6 +214,44 @@ var _willet = (function(me) {
                 }
             }
         },
+        "Tumblr": {
+            "detect": {
+                "method": "none",
+                "func": function() { return ""; }
+            },
+            "button": {
+                "script": PROTOCOL + '//platform.tumblr.com/v1/share.js',
+                "create": function (params) {
+                    var button = createBasicButton({
+                        "id": 'tumblr',
+                        "buttonSpacing": params.buttonSpacing
+                    });
+                    button.style.width = '62px';
+
+                    var link = document.createElement("a");
+                    link.href = 'http://www.tumblr.com/share';
+                    link.title = "Share on Tumblr";
+                    link.innerHTML = "Share on Tumblr";
+                    link.style.display = 'inline-block';
+                    link.style.textIndent = '-9999px';
+                    link.style.textAlign = 'left';
+                    link.style.width = '63px';
+                    link.style.height = '20px';
+                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent"
+                    link.style.styleFloat = 'left';
+                    link.style.cssFloat = 'left';
+                    link.style.marginRight = '5px';
+                    link.style.marginTop = 0;
+
+                    link.onclick = function() {
+                        itemShared("Tumblr");
+                    };
+
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
         "Twitter": {
             "detect": {
                 "method": "image",
@@ -192,93 +280,6 @@ var _willet = (function(me) {
                     twttr.events.bind('tweet', function(event) {
                         itemShared("Twitter");
                     });
-                }
-            }
-        }, 
-        "GooglePlus": {
-            "detect": {
-                "method": "image",
-                "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
-            },
-            "button": {
-                "script": PROTOCOL + '//apis.google.com/js/plusone.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'googleplus',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '90px' : '32px';
-
-                    var gPlus = document.createElement("g:plusone");
-                    gPlus.setAttribute("size", "medium");
-                    if (!params.buttonCount) {
-                        gPlus.setAttribute("annotation", "none");
-                    }
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
-
-                    button.appendChild(gPlus);
-
-                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
-
-                    // Google Plus will only execute a callback in the global namespace, so expose this one...
-                    // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
-                    window._willet_GooglePlusShared = function(response) {
-                        if (response && response.state && response.state === "on") {
-                            itemShared("GooglePlus");
-                        }
-                    };
-                    
-                    // Google is using the Open Graph spec
-                    var t, p, 
-                        m = [ { property: 'og:title', content: params.data.product.title },
-                              { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
-                    while (m.length) {
-                        p = m.pop();
-                        t = document.createElement('meta');
-                        t.setAttribute('property', p.property);
-                        t.setAttribute('content', p.content);
-                        HEAD.appendChild(t);
-                    }
-                    return button;
-                }
-            }
-        },
-        "Fancy": {
-            "detect": {
-                "method": "none",
-                "func": function() { return ""; }
-            },
-            "button": {
-                "script": PROTOCOL + '//www.thefancy.com/fancyit.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'fancy',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '96px' : '57px';
-
-                    var u = "http://www.thefancy.com/fancyit?" +
-                            "ItemURL=" + encodeURIComponent( window.location.href ) + 
-                            "&Title="  + encodeURIComponent( params.data.product.title ) +
-                            "&Category=Other";
-                    if ( params.photo.length > 0 ) {
-                        u += "&ImageURL=" + encodeURIComponent( params.photo );
-                    } else { // If no image on page, submit blank image.
-                        u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
-                    }
-
-                    var link = document.createElement("a");
-                    link.id = "FancyButton";
-                    link.href = u;
-
-                    link.onclick = function() {
-                        itemShared("Fancy");
-                    };
-                    
-                    link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
-                    button.appendChild(link);
-                    return button;
                 }
             }
         }
