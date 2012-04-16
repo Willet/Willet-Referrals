@@ -1,5 +1,9 @@
 {% extends "../../plugin/templates/ask.html" %}
 
+{% block jquery_plugins %}
+    {% include "../../plugin/templates/js/jquery.imagedropdown.js" %}
+{% endblock jquery_plugins %}
+
 {% block styles %}
     <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
     <!--[if IE 7]>
