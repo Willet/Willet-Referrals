@@ -32,6 +32,14 @@ handlers:
   static_files: static/js/smart-buttons.js
   upload: static/js/smart-buttons.js
 
+- url: /b/shopify/start_report
+  script: urls.py
+  login: admin
+
+- url: /b/shopify/item_shared_report
+  script: urls.py
+  #login: admin
+
 - url: /static
   static_dir: static
 

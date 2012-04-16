@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 """ 'Get' functions for the ShopConnection application
 """
-
-from logging                        import error
-from apps.buttons.shopify.models    import ButtonsShopify 
+import logging
+from collections                    import defaultdict
+from datetime                       import date
+from google.appengine.api           import taskqueue
+from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
 from util.errors                    import ShopifyBillingError
 from util.urihandler                import URIHandler
 from apps.email.models              import Email
 from util.helpers                   import url as build_url
+from urlparse                       import urlparse
+from django.utils                   import simplejson as json
 
 #TODO: moves these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
@@ -29,7 +33,7 @@ def catch_error(fn):
 
             fn(self)
         except Exception, e:
-            error('Smart-buttons install error, may require reinstall',
+            logging.error('Smart-buttons install error, may require reinstall',
                   exc_info=True)
 
             # Email DevTeam
@@ -42,6 +46,7 @@ def catch_error(fn):
                            (build_url ('ButtonsShopifyInstallError'), e))
     return wrapped
 
+
 def get_details(uri_handler=None, provided_client=None):
     """Given a URIHandler, returns a dictionary of details we expect."""
     if uri_handler is None and uri_handler.request is None:
@@ -49,7 +54,7 @@ def get_details(uri_handler=None, provided_client=None):
 
     request = uri_handler.request
 
-    details = dict()
+    details = {}
     details["shop_url"] = request.get("shop") or request.get("shop_url")
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
@@ -131,7 +136,7 @@ class ButtonsShopifyUpgrade(URIHandler):
 
         existing_app = ButtonsShopify.get_by_url(details["shop_url"])
         if not existing_app:
-            error("error calling billing callback: "
+            logging.error("error calling billing callback: "
                           "'existing_app' not found. Install first?")
 
         if existing_app.recurring_billing_price:
@@ -180,7 +185,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
         details = get_details(self, provided_client=client)
 
         if not app:
-            error("error calling billing callback: 'app' not found")
+            logging.error("error calling billing callback: 'app' not found")
 
         charge_id = int(self.request.get('charge_id'))
 
@@ -271,3 +276,118 @@ class ButtonsShopifyInstallError(URIHandler):
                                                  template_values))
         return
 
+
+class ButtonsShopifyItemShared(URIHandler):
+    """Handles whenever a share takes place"""
+    def get(self):
+        """Handles a single share event.
+
+        We assume that we receive one argument 'message' which is JSON
+        of the following form:
+            "name"    : name of the product
+            "network" : network we are sharing on
+            "img"     : url for time product image (optional)
+        """
+        product_page = self.request.headers.get('referer')
+
+        # We only want the scheme and location to build the url
+        store_url    = "%s://%s" % urlparse(product_page)[:2]
+
+        message  = self.request.get('message')
+
+        details = dict()
+        try:
+            details = json.loads(message)
+        except:  # What Exception is thrown?
+            logging.info("No JSON found / Unable to parse JSON!")
+
+        app = ButtonsShopify.get_by_url(store_url)
+
+        if app is not None:
+            # Create a new share item
+            item = SharedItem(details.get("name"),
+                              details.get("network"),
+                              product_page,
+                              img_url=details.get("img"))
+
+            share_period = SharePeriod.get_or_create(app);
+            share_period.shares.append(item)
+            share_period.put()
+
+        else:
+            logging.info("No app found!")
+
+        self.redirect('%s/static/imgs/noimage.png' % URL)
+
+
+class ButtonsShopifyEmailReports(URIHandler):
+    """Queues the report emails"""
+    def get(self):
+        logging.info("Preparing reports...")
+
+        apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
+
+        for app in apps:
+            logging.info("Setting up taskqueue for %s" % app.client.name)
+            params = {
+                "store": app.store_url,
+            }
+            url = build_url('ButtonsShopifyItemSharedReport')
+            logging.info("taskqueue URL: %s" % url)
+            taskqueue.add(queue_name='buttonsEmail', url=url, params=params)
+
+
+class ButtonsShopifyItemSharedReport(URIHandler):
+    """Sends individual emails"""
+    def get(self):
+        self.post()
+
+    def post(self):
+        product_page = self.request.get('store')
+
+        # We only want the scheme and location to build the url
+        store_url    = "%s://%s" % urlparse(product_page)[:2]
+        app = ButtonsShopify.get_by_url(store_url)
+
+        logging.info("Preparing individual report for %s..." % store_url)
+
+        if app is None:
+            logging.info("App not found!")
+            return
+
+        share_period = SharePeriod.all()\
+                        .filter('app_uuid =', app.uuid)\
+                        .order('-end')\
+                        .get()
+
+        if share_period is None:
+            logging.info("No share period found matching criteria")
+            return
+
+        shares_by_name    = share_period.get_shares_grouped_by_product()
+        shares_by_network = share_period.get_shares_grouped_by_network()
+
+        logging.info(shares_by_name)
+        logging.info(shares_by_network)
+
+        top_items        = sorted(shares_by_name,
+                                  key=lambda v: v["total_shares"],
+                                  reverse=True)[:10]
+        top_shares       = sorted(shares_by_network,
+                                  key=lambda v: v['shares'],
+                                  reverse=True)
+
+        logging.info(top_items)
+        logging.info(top_shares)
+
+        client = ClientShopify.get_by_url(store_url)
+        if client is None or (client is not None and client.merchant is None):
+            logging.info("No client!")
+            return
+
+        email = client.email
+        shop  = client.name
+        name  = client.merchant.get_full_name()
+
+        Email.report_smart_buttons(email, top_items, top_shares,
+                                 shop_name=shop, client_name=name)

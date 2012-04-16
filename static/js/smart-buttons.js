@@ -397,23 +397,41 @@ var _willet = (function(me) {
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
     };
 
+    var getProductInfo = function() {
+        var nameNode = document.getElementById("product-title");
+        var name     = (nameNode && nameNode.innerHTML) || window.document.title || "";
+
+        var imgNodeContainer  = document.getElementById("active-wrapper");
+        var img = "";
+        if (imgNodeContainer) {
+            var imgNode = imgNodeContainer.getElementsByTagName("img")[0];
+            img = (imgNode && imgNode.src) || "";
+        }
+
+        return {
+            "name": name,
+            "img": img
+        }
+    };
+
     var itemShared = function(network) {
         //If someone shares, update the cookie
         updateLoggedInStatus(network, true);
 
-        //Also, send us an email!
-        var error = encodeURIComponent(network + ": Share detected!");
-        var script = encodeURIComponent("smart-buttons.js");
-        var st = encodeURIComponent("No errors");
-        var subject = error;
+        var productInfo = getProductInfo();
 
-        var params = "subject=" + subject
-                   + "&error="  + error
-                   + "&script=" + script
-                   + "&st="     + st;
+        var message = JSON.stringify({
+            "name"   : productInfo["name"],
+            "network": network,
+            "img"    : productInfo["img"]
+        });
+
+        //Need to append param to avoid caching...
+        var params = "message="    + encodeURIComponent(message)
+                     + "&nocache=" + Math.random();
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = APP_URL + "/admin/ithinkiateacookie?" + params;
+        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + params;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
