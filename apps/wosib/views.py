@@ -41,18 +41,18 @@ class WOSIBVoteDynamicLoader (URIHandler):
             # no sane man would compare more than 1000 products from his cart
             products = Product.all().filter('uuid IN', wosib_instance.products).fetch(1000)
             logging.info ("products = %r" % products)
-            
+
             try:
                 share_url = wosib_instance.link.get_willt_url()
             except AttributeError, e:
                 logging.warn ('Faulty link')
-                
-            
+
+
             template_values = { 'instance_uuid' : instance_uuid,
                                 'products'      : products,
                                 'share_url'     : share_url
                               }
-            
+
             path = os.path.join('apps/wosib/templates/', 'vote.html')
             self.response.headers.add_header('P3P', P3P_HEADER)
             self.response.out.write(template.render(path, template_values))
@@ -146,17 +146,26 @@ class WOSIBAskDynamicLoader(URIHandler):
         # get product UUIDs from the query string
         try:
             uuids = [str(x) for x in self.request.get('products').split(',')]
+            logging.debug('uuids = %r' % uuids)
             products = [Product.get(uuid) for uuid in uuids]
+            logging.debug('products2 = %r' % products)
         except NameError, ValueError:
             # if user throws in random crap in the query string, no biggie
             pass
 
-        if not uuids:  # get product (shopify) IDs from the query string
+        if not uuids[0]:
+            """Get product (shopify) IDs from the query string.
+
+            This is the default WOSIBShopify method.
+
+            """
             try:  # convert IDs back to UUIDs
                 ids = [str(x) for x in self.request.get('ids').split(',')]
+                logging.debug('ids = %r' % ids)
                 products = Product.all()\
                                   .filter ('shopify_id IN ', ids)\
-                                  .fetch(limit=10)
+                                  .fetch(limit=1000000)
+                logging.debug('products3 = %r' % products)
                 uuids = [p.uuid for p in products]
             except NameError, ValueError:
                 pass

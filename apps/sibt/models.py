@@ -24,6 +24,7 @@ from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.user.models import User
 from apps.vote.models import VoteCounter
+from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import generate_uuid
@@ -141,6 +142,14 @@ class SIBT(App):
     
     def _validate_self(self):
         return True
+
+    @property
+    def wosib_app(self):
+        """Returns this SIBT app's corresponding WOSIB app.
+
+        Returns None if it doesn't have one.
+        """
+        return WOSIB.all().filter('store_url = ', self.store_url).get()
 
     def handleLinkClick(self, urihandler, link):
         logging.info("SIBTAPP HANDLING LINK CLICK")

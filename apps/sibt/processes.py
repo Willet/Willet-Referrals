@@ -33,83 +33,81 @@ from util.urihandler import URIHandler
 
 
 class SIBTSignUp(URIHandler):
-    """ SIBT Signup is done in 3 stages:
-        - get_or_create user
-        - get_or_create client
-        - get_or_create app
-        
-        This is called by AJAX. Response is an empty page with appropriate code.
+    """Shows the signup page.
+
+    SIBT Signup is done in 3 stages:
+    - get_or_create user
+    - get_or_create client
+    - get_or_create app
+
+    This is called by AJAX. Response is an empty page with appropriate code.
     """
     def post(self):
-        fullname = self.request.get("fullname")
+        """POST request lets you sign up."""
         email = self.request.get("email")
+        fullname = self.request.get("fullname")
         shopname = self.request.get("shopname")
         shop_url = self.request.get("shop_url")
         # optional stuff
-        phone = self.request.get("phone", '')
         address1 = self.request.get("address1", '')
         address2 = self.request.get("address2", '')
-        
-        logging.debug ("SIBT Signup: %r" % [fullname, email, shopname, shop_url, phone, address1, address2])
-        
+        phone = self.request.get("phone", '')
+
+        logging.debug("SIBT Signup: %r" % [fullname, email, shopname, shop_url,
+                                           phone, address1, address2])
+
         if not (fullname and email and shopname and shop_url):
-            self.error (400) # missing info
+            self.error(400)  # missing info
             return
 
         try: # rebuild URL
             shop_url_parts = urlparse.urlsplit(shop_url)
-            shop_url = '%s://%s' % (shop_url_parts.scheme, shop_url_parts.netloc)
+            shop_url = '%s://%s' % (shop_url_parts.scheme,
+                                    shop_url_parts.netloc)
         except :
-            self.error (400) # malformed URL
+            self.error(400)  # malformed URL
             return
-        
-        user = User.get_or_create_by_email(
-            email=email,
-            request_handler=self,
-            app=None # for now
-        )
+
+        user = User.get_or_create_by_email(email=email,
+                                           request_handler=self,
+                                           app=None)  # for now
         if not user:
-            logging.error ('Could not get user for SIBT signup')
-            self.error (500) # did something wrong
+            logging.error('Could not get user for SIBT signup')
+            self.error(500)  # did something wrong
             return
-        
-        user.update(
-            full_name=fullname, # required update
-            email=email, # required update
-            phone=phone, # some users get this stuff
-            address1=address1,
-            address2=address2
-        )
-        
-        client = Client.get_or_create(
-            url=shop_url,
-            request_handler=self,
-            user=user
-        )
+
+        user.update(full_name=fullname,  # required update
+                    email=email,  # required update
+                    phone=phone,  # some users get this stuff
+                    address1=address1,
+                    address2=address2)
+
+        client = Client.get_or_create(url=shop_url,
+                                      request_handler=self,
+                                      user=user)
         if not client:
-            logging.error ('Could not create client for SIBT signup')
-            self.error (500) # did something wrong
+            logging.error('Could not create client for SIBT signup')
+            self.error(500) # did something wrong
             return
-        
-        app = SIBT.get_or_create(
-            client=client,
-            domain=shop_url
-        )
+
+        app = SIBT.get_or_create(client=client,
+                                 domain=shop_url)
         if not app:
-            logging.error ('Could not create client for SIBT signup')
-            self.error (500) # did something wrong
+            logging.error('Could not create client for SIBT signup')
+            self.error(500) # did something wrong
             return
-        
+
         # installation apparently succeeds
         response = {
             'app_uuid': app.uuid,
             'client_uuid': client.uuid,
         }
-        
+
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
         return
+
 
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):

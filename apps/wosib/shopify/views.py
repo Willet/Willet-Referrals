@@ -49,22 +49,23 @@ class WOSIBShopifyServeScript (URIHandler):
         is_asker = False
         link = None
         product = None
+        referrer = self.request.headers.get('REFERER')
         share_url = None
         show_top_bar_ask = False
         show_votes = False
         target = ''
         votes_count = 0
-
         willet_code = self.request.get('willt_code')
+
         shop_url = get_shopify_url(self.request.get('store_url'))
         if not shop_url: # backup (most probably hit)
-            shop_url = get_target_url(self.request.headers.get('REFERER')) # probably ok
+            shop_url = get_target_url(referrer) # probably ok
         logging.debug("shop_url = %s" % shop_url)
         app = WOSIBShopify.get_by_store_url(shop_url)
         app_sibt = SIBTShopify.get_by_store_url(shop_url) # use its CSS and stuff
         event = 'WOSIBShowingButton'
 
-        target = get_target_url(self.request.headers.get('REFERER'))
+        target = get_target_url(referrer)
 
         user = User.get_or_create_by_cookie(self, app)
 
@@ -87,12 +88,12 @@ class WOSIBShopifyServeScript (URIHandler):
         # b) Has this User voted?
         if instance:
             instance_uuid = instance.uuid
-            
+
             # number of votes, not the votes objects.
             # votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
             votes_count = instance.get_votes_count() or 0
             logging.info ("votes_count = %s" % votes_count)
-            
+
             asker_name = instance.asker.get_first_name()
             asker_pic = instance.asker.get_attr('pic')
             show_votes = True
@@ -107,11 +108,11 @@ class WOSIBShopifyServeScript (URIHandler):
             is_asker = (instance.asker.key() == user.key()) 
             if not is_asker:
                 logging.info('not asker, check for vote ...')
-                
+
                 vote_action = WOSIBVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-                
+
                 logging.info('got a vote action? %s' % vote_action)
-                
+
                 has_voted = (vote_action != None)
 
             try:
@@ -128,7 +129,7 @@ class WOSIBShopifyServeScript (URIHandler):
             cta_button_text = "Need advice? Ask your friends!"
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
-        
+
         # determine whether to show the button thingy.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
@@ -136,12 +137,12 @@ class WOSIBShopifyServeScript (URIHandler):
             time_diff = datetime.now() - instance.created
             if time_diff <= timedelta(days=1):
                 has_results = True
-        
+
         # Grab all template values
         template_values = {
             'URL': URL,
             'app': app,
-            'app_css': app_sibt.get_css(),
+            'app_css': app_sibt.get_css() if app_sibt else '',
             'instance': instance,
             'store_domain': getattr (app_sibt.client, 'domain', ''),
             'store_id': self.request.get('store_id'),
@@ -155,11 +156,11 @@ class WOSIBShopifyServeScript (URIHandler):
             'has_results': 'true' if has_results else 'false',
         }
 
-        path = os.path.join('apps/wosib/templates/', 'wosib_button.js')
+        path = os.path.join('apps/wosib/templates/', 'wosib.js')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'application/javascript'
         self.response.out.write(template.render(path, template_values))
-        
+
         return
     
     def post (self):
