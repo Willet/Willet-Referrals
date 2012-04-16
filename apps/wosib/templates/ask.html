@@ -265,15 +265,10 @@
     var get_selected_objects = function () {
         // returns a comma-separated string of product uuids "id,id,id"
         var uuids = [];
-        $('#cart_items_display input').each (function (i, e) {
-            var $e = $(e);
-            // if ($e.checked) {
-            if (e.checked) {
-                uuids.push ($e.data('uuid'));
-            }
-        });
+        uuids.push($('#cart_items_display_container>img').prop('alt'));
+        uuids.push($('#cart_items_display>img').prop('alt'));
         return uuids.join(',');
-    }
+    };
 
     // Connect with FB and fetch FB friends, on Choose Friends screen
     var runFBConnect = function () {
@@ -317,7 +312,7 @@
 
 
 {% block js_init %}
-    $(document).ready (function () {
+    $(document).ready(function () {
         /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 products;
             if there are 0 products, this script is not loaded at all.
         */
@@ -329,24 +324,30 @@
             },
         {% endfor %} {}];
         cart_products.pop(); // remove trailing element... IE7 trailing comma patch
-        console.log(cart_products);
 
         var $cart_items_display_container = $('#cart_items_display_container');
         var $cart_items_display = $('#cart_items_display');
-        $cart_items_display
-            .append($('<img />', { // 2nd image is a dropdown
-                'src': cart_products[1].image,
-                'alt': cart_products[1].uuid
-            }));
+        for (var i = 1; i < cart_products.length; i++) {
+            $cart_items_display
+                .append($('<img />', { // 2nd image onwards are in a dropdown
+                    'src': cart_products[i].image,
+                    'alt': cart_products[i].uuid
+                }));
+        }
         $cart_items_display_container
             .append($('<img />', { // 1st image is just a tag
                 'src': cart_products[0].image,
-                'alt': cart_products[0].uuid
-            }));
+                'alt': cart_products[0].uuid,
+            }))
+            .append($('<span />', {
+                'text': ' or ',
+                'class': 'wosib_or'
+            }))
+            .append($cart_items_display);
         $cart_items_display
             .imageDropdown();
 
-        $('#postWosibOnWall').click (postWosibOnWall);
+        $('#postWosibOnWall').click(postWosibOnWall);
     });
     showScreen('splash');
 {% endblock js_init %}

@@ -11,9 +11,9 @@
 
             INT_TIME_ANIM = 350; // animation speed in milliseconds
             DEFAULTS = { // add defaults to params
-                'width': '170',
-                'height': '150',
-                'padding': '5',
+                'width': '180',
+                'height': '150', // must be 'int'
+                'padding': '5px', // must be 'Npx'
                 'border': '1px #bbb solid',
                 'border-radius': '5px',
                 'background-color': '#fff',
@@ -74,7 +74,7 @@
                 open_dropdown = function () {
                     $this
                         .css({
-                            'border-bottom': '0',
+                            'border-bottom': '1px transparent solid',
                             'border-bottom-left-radius': '0',
                             'border-bottom-right-radius': '0',
                         });
@@ -83,7 +83,8 @@
                             'border-top': '0',
                             'border-top-left-radius': '0',
                             'border-top-right-radius': '0',
-                            'top': $this.position().top + $this.height(),
+                            'z-index': '999999',
+                            'top': $this.position().top + $this.outerHeight(),
                             'left': $this.position().left
                         })
                         .slideDown(INT_TIME_ANIM);
@@ -145,21 +146,26 @@
                 // add images to the dropdown
                 $images
                     .click(image_onclick)
-                    .live('mousemove', image_mousemove);
+                    .hover(image_mousemove);
 
                 // set up the dropdown container
                 $this
                     .click(box_onclick)
                     .append(dropdown_button)
                     .css(settings)
-                    .live('blur', close_dropdown);
+                    .blur(close_dropdown);
                 $expansion
                     .css(settings)
-                    .css('height', 'auto')
-                    .css('display', 'none')
+                    .css({
+                        'height': 'auto',
+                        'max-height': '200px',
+                        'overflow-y': 'scroll',
+                        'display': 'none'
+                    })
                     .append($images)
                     .insertAfter($this)
-                    .live('blur', close_dropdown);
+                    .blur(close_dropdown);
+                $expansion.find('img').eq(0).click();
             });
         };
     }

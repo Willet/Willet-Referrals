@@ -205,16 +205,18 @@ class WOSIBInstance(Model):
 
     # -------------------------------------------------------------------------
     def get_winning_products (self):
-        """ returns an array of products with the most votes in the instance.
-            array can be of one item. 
+        """Returns an array of products with the most votes in the instance.
+
+        Array can be of one item.
         """
-        
+
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
-        instance_product_votes = [Action.\
-                                    all().\
-                                    filter('wosib_instance =', self).\
-                                    filter('product_uuid =', product_uuid)\
-                                    .count() for product_uuid in self.products] # [votes,votes,votes]
+        # instance_product_votes = [votes,votes,votes]
+        instance_product_votes = [Action\
+                                  .all()\
+                                  .filter('wosib_instance =', self)\
+                                  .filter('product_uuid =', product_uuid)\
+                                  .count() for product_uuid in self.products]
         logging.debug ("instance_product_votes = %r" % instance_product_votes)
         
         instance_product_dict = dict (zip (self.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
@@ -263,9 +265,9 @@ class WOSIBInstance(Model):
 # end class
 
 
-# ------------------------------------------------------------------------------
-# PartialWOSIBInstance Class Definition -----------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# PartialWOSIBInstance Class Definition ---------------------------------------
+# -----------------------------------------------------------------------------
 class PartialWOSIBInstance(Model):
     """ Each User can have at most 1 PartialInstance:
         - created when facebook connect starts

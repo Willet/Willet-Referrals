@@ -174,8 +174,8 @@
                         iframe: true, 
                         initialWidth: 0, 
                         initialHeight: 0, 
-                        innerWidth: '790px',
-                        innerHeight: '550px', 
+                        innerWidth: '600px',
+                        innerHeight: '450px',
                         fixed: true,
                         onClosed: function () { }
                     });
@@ -194,7 +194,7 @@
                         iframe: true, 
                         initialWidth: 0, 
                         initialHeight: 0, 
-                        innerWidth: '790px',
+                        innerWidth: '600px',
                         innerHeight: '450px', 
                         fixed: true,
                         onClosed: function () { }
