@@ -101,11 +101,11 @@
                         d.id = 'mini_sibt_button';
                         d.style.cursor = 'pointer';
                         d.style.display = 'inline-block';
-                        d.style.background = "url('" + protocol + "//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"; // change to master domain after deploying
+                        d.style.background = "url('" + protocol + "//social-referral.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
                         d.style.width = '80px';
                         return d;
                     },
-                    script: protocol+'//brian-willet.appspot.com/s/sibt.js?url=' + window.location.href
+                    script: protocol+'//social-referral.appspot.com/s/sibt.js?url=' + window.location.href
                 },
                 Tumblr: {
                     create: function () {
