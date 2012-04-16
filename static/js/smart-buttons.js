@@ -231,6 +231,7 @@ var _willet = (function(me) {
                         "id": 'googleplus',
                         "buttonSpacing": params.buttonSpacing
                     });
+                    button.style.overflow = 'visible';
                     button.style.width = params.buttonCount ? '90px' : '32px';
 
                     var gPlus = document.createElement("g:plusone");

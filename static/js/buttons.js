@@ -154,6 +154,7 @@
                 GooglePlus: {
                     create: function () {
                         var d = createButton('googleplus');
+                        d.style.overflow = 'visible';
                         d.style.width = button_count ? '74px' : '32px';
                         d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
                         // Google is using the Open Graph spec
