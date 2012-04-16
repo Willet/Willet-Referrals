@@ -397,6 +397,8 @@ class AppShopify(Model):
             else:
                 raise ShopifyBillingError('Recurring billing activation denied', data)
             return True
+        elif recurring_billing_data["status"] == 'active':
+            return True  # Do not update the data, but succeed anyway
         elif recurring_billing_data["status"] == 'declined':
             return False
         else:
@@ -632,7 +634,7 @@ class AppShopify(Model):
                 rpc.callback = create_callback(handle_script_tag_result, rpc=rpc, script_tag=script_tag)
                 urlfetch.make_fetch_call(rpc=rpc, url=self._script_tags_url, payload=json.dumps(script_tag),
                                          method='POST', headers=headers)
-            rpcs.append(rpc)
+                rpcs.append(rpc)
 
         if hasattr(self, '_queued_assets') and hasattr(self, '_assets_url'):
             for asset in self._queued_assets:
@@ -640,6 +642,7 @@ class AppShopify(Model):
                 rpc.callback = create_callback(handle_asset_result, rpc=rpc, asset=asset)
                 urlfetch.make_fetch_call(rpc=rpc, url=self._assets_url, payload=json.dumps(asset),
                                          method='POST', headers=headers)
+                rpcs.append(rpc)
 
         # Finish all RPCs, and let callbacks process the results.
         for rpc in rpcs:
