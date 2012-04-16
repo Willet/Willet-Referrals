@@ -80,7 +80,7 @@ class ButtonsShopify(Buttons, AppShopify):
         self.put()
         return price
 
-    def do_install( self ):
+    def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
