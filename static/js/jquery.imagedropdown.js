@@ -84,7 +84,7 @@
                             'border-top-left-radius': '0',
                             'border-top-right-radius': '0',
                             'z-index': '999999',
-                            'top': $this.position().top + $this.outerHeight(),
+                            'top': $this.position().top, // + $this.outerHeight(),
                             'left': $this.position().left
                         })
                         .slideDown(INT_TIME_ANIM);
@@ -158,7 +158,7 @@
                     .css(settings)
                     .css({
                         'height': 'auto',
-                        'max-height': '200px',
+                        'max-height': '350px',
                         'overflow-y': 'scroll',
                         'display': 'none'
                     })
