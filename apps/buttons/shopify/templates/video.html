@@ -75,20 +75,6 @@
 								}
 							}
 
-							var print = function(o){
-							    var str='';
-
-							    for(var p in o){
-							        if(typeof o[p] == 'string'){
-							            str+= p + ': ' + o[p]+'; \n';
-							        }else{
-							            str+= p + ': { \n' + print(o[p]) + '}';
-							        }
-							    }
-
-							    return str;
-							}
-
 							// This function is automatically called by the player once it loads
 							function onYouTubePlayerReady(playerId) {
 								alert('Hey! Where am I?');
@@ -99,9 +85,9 @@
 							// The "main method" of this sample. Called when someone clicks "Run".
 							function loadPlayer() {
 								var videoID = "7JF-583xVFk",
-									params = { allowScriptAccess: "always" };
-											   //modestbranding: 1,
-											   //rel: 0 },
+									params = { allowScriptAccess: "always",
+											   modestbranding: 1,
+											   rel: 0 },
 									atts = { id: "ytPlayer" };
 
 								swfobject.embedSWF("http://www.youtube.com/v/" + videoID + 

@@ -73,7 +73,7 @@ var _willet = (function(me) {
                     link.style.textAlign = 'left';
                     link.style.width = '63px';
                     link.style.height = '20px';
-                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent"
+                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
                     link.style.styleFloat = 'left';
                     link.style.cssFloat = 'left';
                     link.style.marginRight = '5px';
@@ -281,7 +281,32 @@ var _willet = (function(me) {
                     return button;
                 }
             }
-        }
+        },
+        "Svpply": {
+            "detect": {
+                "method": "none",
+                "func": function() { return ""; }
+            },
+            "button": {
+                "script": '//svpply.com/api/all.js#xsvml=1',
+                "create": function () {
+                    var d = createButton('svpply');
+                    d.style.width = '70px';
+                    d.innerHTML = "<sv:product-button type='boxed'></sv:product-button>";
+                    // Svpply assumes it has to wait for window.onload before running
+                    // But window.onload has already fired at this point
+                    // So set up polling for when Svpply is ready, then fire it off
+                    var interval = setInterval(function () {
+                        if (window.svpply_api && window.svpply_api.construct) {
+                            window.svpply_api.construct();
+                            d.onclick = itemShared("Svpply");
+                            clearInterval(interval);
+                        }
+                    }, 100);
+                    return d;
+                }
+            }
+        },
     };
     var loggedInNetworks = {};
 
