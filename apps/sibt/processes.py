@@ -111,6 +111,7 @@ class SIBTSignUp(URIHandler):
         self.response.out.write(json.dumps(response))
         return
 
+
 class ShareSIBTInstanceOnFacebook(URIHandler):
     def post(self):
         logging.info("SHARE SIBT ON FACEBOOK")
@@ -304,7 +305,7 @@ class GetExpiredSIBTInstances(URIHandler):
             right_now = datetime.now() # let's assume datetime is the class
         except AttributeError:
             # App Engine sometimes imports datetime as a module...
-            # Has been reported to GOOG
+            # Has been reported to GOOG: http://code.google.com/p/googleappengine/issues/detail?id=7341
             right_now = datetime.datetime.now()
 
         expired_instances = SIBTInstance.all()\

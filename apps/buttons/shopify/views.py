@@ -241,7 +241,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app    = ButtonsShopify.get_or_create_app(client, token=token)
+        app = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {
