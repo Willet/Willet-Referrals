@@ -54,7 +54,7 @@ def get_details(uri_handler=None, provided_client=None):
 
     request = uri_handler.request
 
-    details = dict()
+    details = {}
     details["shop_url"] = request.get("shop") or request.get("shop_url")
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
