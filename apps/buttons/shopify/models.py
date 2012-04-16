@@ -255,7 +255,7 @@ class SharePeriod(Model):
         sorted_items   = sorted(items, key=lambda v: v.network)
         group_by_network_iter = groupby(sorted_items, lambda v: v.network)
 
-        items_by_network  = list()
+        items_by_network  = []
         for network_name, network in group_by_network_iter:
             network_count = len(list(network))
             percent = (100 * network_count) / len(self.shares)
@@ -273,15 +273,15 @@ class SharePeriod(Model):
         sorted_items   = sorted(items, key=lambda v: v.name)
         group_by_name_iter = groupby(sorted_items, lambda v: v.name)
 
-        items_by_name  = list()
+        items_by_name  = []
         for product_name, product in group_by_name_iter:
-            item = dict()
+            item = {}
             item["name"] = product_name
             product_shares = list(product) # evaluates the iterator
             total_shares = len(product_shares)
             item["total_shares"] = total_shares
 
-            networks = list()
+            networks = []
             sorted_product_shares = sorted(product_shares,
                                            key=lambda v: v.network)
             group_by_network_iter = groupby(sorted_product_shares,
