@@ -63,10 +63,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
         result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
         orders = int(result["count"])
-        if months > 0:
-            monthly_orders = orders / months
-        else:
-            monthly_orders = orders
+        monthly_orders = orders / months if months else orders
 
         # PRICING CHART
         if monthly_orders < 10:
