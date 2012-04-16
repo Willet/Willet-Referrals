@@ -3,6 +3,7 @@
 """
 
 from logging                        import error
+from google.appengine.ext.webapp    import template
 from apps.buttons.shopify.models    import ButtonsShopify 
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
@@ -11,7 +12,7 @@ from util.urihandler                import URIHandler
 from apps.email.models              import Email
 from util.helpers                   import url as build_url
 
-#TODO: moves these functions elsewhere.  More appropriate places would be...
+#TODO: move these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
@@ -82,6 +83,7 @@ class ButtonsShopifyBeta(URIHandler):
 class ButtonsShopifyLearn(URIHandler):
     """ Video & blurb about premium ShopConnection """
     def get(self):
+        """Display a page to learn more about smart buttons."""
         self.response.out.write(self.render_page('learn.html', {}))
 
 
@@ -261,3 +263,22 @@ class ButtonsShopifyInstallError(URIHandler):
                                                  template_values))
         return
 
+
+class ButtonsShopifyServeScript(URIHandler):
+    def get(self):
+        path = os.path.join('apps/buttons/shopify/templates/js/',
+                            'buttons.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'application/javascript'
+        self.response.out.write(template.render(path, {}))
+        return
+
+
+class ButtonsShopifyServeSmartScript(URIHandler):
+    def get(self):
+        path = os.path.join('apps/buttons/shopify/templates/js/',
+                            'smart-buttons.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'application/javascript'
+        self.response.out.write(template.render(path, {}))
+        return

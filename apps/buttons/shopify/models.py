@@ -83,7 +83,7 @@ class ButtonsShopify(Buttons, AppShopify):
         # Define our script tag 
         tags = [{
             "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/buttons.js?app_uuid=%s" % (
                     URL,
                     self.uuid
                 ),
@@ -126,7 +126,7 @@ class ButtonsShopify(Buttons, AppShopify):
         self.uninstall_script_tags();
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/smart-buttons.js?app_uuid=%s" % (
                     URL,
                     self.uuid
                 ),

@@ -13,5 +13,7 @@ urlpatterns = [
     (r'/b/shopify/billing_callback', 	ButtonsShopifyBillingCallback),
     (r'/b/shopify/instructions',     	ButtonsShopifyInstructions),
     (r'/b/shopify/error.html',     		ButtonsShopifyInstallError),
+    (r'/b/shopify/buttons.js',     		ButtonsShopifyServeScript),
+    (r'/b/shopify/smart-buttons.js',    ButtonsShopifyServeSmartScript),
 ]
 
