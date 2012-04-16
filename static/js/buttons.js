@@ -3,7 +3,7 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var here = window.location.href.split('#')[0] + '.json';
+    var product_json = window.location.href.split('#')[0] + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
@@ -54,7 +54,9 @@
                 domain = /:\/\/([^\/]+)/.exec(window.location.href)[1],
                 button_count = (button_div.getAttribute('button_count') === 'true'),
                 button_spacing = (button_div.getAttribute('button_spacing') ?  button_div.getAttribute('button_spacing') : '5') + 'px',
-                button_padding = (button_div.getAttribute('button_padding') ? button_div.getAttribute('button_padding') : '5') + 'px';
+                button_padding = (button_div.getAttribute('button_padding') ? button_div.getAttribute('button_padding') : '5') + 'px',
+                protocol = window.location.protocol, //'http:'; // For local testing
+                store_url = protocol + '//' + location.hostname; // http://example.com
 
             button_div.style.styleFloat = 'left'; // IE
             button_div.style.cssFloat = 'left'; // FF, Webkit
@@ -63,9 +65,6 @@
             button_div.style.padding = button_padding;
             button_div.style.border = 'none';
             button_div.style.margin = '0';
-
-            var protocol = window.location.protocol; //'http:'; // For local testing
-            var store_url = protocol + '//' + location.hostname; // http:|//example.com
 
             var createButton = function (id) {
                 id = id || '';
@@ -90,10 +89,10 @@
                 d.id = '_willet_'+id;
                 d.className = '_willet_social_button';
                 return d;
-            }
+            };
 
             // Supported buttons
-            var supported_buttons = ['AskFriends', 'Tumblr','Pinterest','Fancy','Facebook','Twitter','GooglePlus'];
+            var supported_buttons = ['AskFriends','Facebook','Fancy','GooglePlus','Pinterest','Svpply','Tumblr','Twitter'];
             var buttons = {
                 AskFriends: { // does not allow asking/voting unless SIBT-JS is also installed!
                     create: function () {
@@ -105,49 +104,28 @@
                         d.style.width = '80px';
                         return d;
                     },
-                    script: protocol+'//social-referral.appspot.com/s/sibt.js?url=' + window.location.href
+                    script: '//brian-willet.appspot.com/s/sibt.js?url=' + window.location.href
                 },
-                Tumblr: {
+                Facebook: {
                     create: function () {
-                        var d = createButton('tumblr');
-                        d.style.width = '62px';
-                        
-                        var a = document.createElement( 'a' );
-                        a.href = 'http://www.tumblr.com/share';
-                        a.title = "Share on Tumblr";
-                        a.style.display = 'inline-block';
-                        a.style.textIndent = '-9999px';
-                        a.style.textAlign = 'left';
-                        a.style.width = '63px';
-                        a.style.height = '20px';
-                        a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
-                        a.style.styleFloat = 'left'; // IE
-                        a.style.cssFloat = 'left'; // FF, Webkit
-                        a.style.marginRight = '5px';
-                        a.style.marginTop = '0';
-                        a.innerHTML = "Share on Tumblr";
-                        d.appendChild( a );
+                        var d = createButton('facebook');
+                        d.style.overflow = 'visible';
+                        d.style.width = button_count ? '90px' : '48px';
+                        d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                        var s = document.createElement('style');
+                        s.type = 'text/css';
+                        s.media = 'screen';
+                        var css = ".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
+                                 +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }";
+                        if (s.styleSheet) {
+                            s.styleSheet.cssText = css; // IE
+                        } else { 
+                            s.appendChild(document.createTextNode(css)); // Every other browser
+                        }
+                        d.appendChild(s);
                         return d;
                     },
-                    script: protocol+'//platform.tumblr.com/v1/share.js'
-                },
-                Pinterest: {
-                    create: function () {
-                        var d = createButton('pinterest');
-                        d.style.width = button_count ? '77px' : '43px';
-
-                        var a = document.createElement( 'a' );
-                        a.href = "http://pinterest.com/pin/create/button/?" +
-                                "url=" + encodeURIComponent( window.location.href ) + 
-                                "&media=" + encodeURIComponent( photo ) + 
-                                "&description=" + encodeURIComponent("I found this on " + domain);
-                        a.className = 'pin-it-button';
-                        a.setAttribute('count-layout', "horizontal");
-                        a.innerHTML = "Pin It";
-                        d.appendChild( a );
-                        return d;
-                    },
-                    script: protocol+'//assets.pinterest.com/js/pinit.js'
+                    script: '//connect.facebook.net/en_US/all.js#xfbml=1'
                 },
                 Fancy: {
                     create: function () {
@@ -171,43 +149,7 @@
                         d.appendChild( a );
                         return d;
                     },
-                    script: protocol+'//www.thefancy.com/fancyit.js'
-                },
-                Facebook: {
-                    create: function () {
-                        var d = createButton('facebook');
-                        d.style.overflow = 'visible';
-                        d.style.width = button_count ? '90px' : '48px';
-                        d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
-                        var s = document.createElement('style');
-                        s.type = 'text/css';
-                        s.media = 'screen';
-                        var css = ".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
-                                 +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }";
-                        if (s.styleSheet) {
-                            s.styleSheet.cssText = css; // IE
-                        } else { 
-                            s.appendChild(document.createTextNode(css)); // Every other browser
-                        }
-                        d.appendChild(s);
-                        return d;
-                    },
-                    script: protocol+'//connect.facebook.net/en_US/all.js#xfbml=1'
-                },
-                Twitter: {
-                    create: function () {
-                        var d = createButton('twitter');
-                        d.style.width = button_count ? '100px' : '58px';
-
-                        var a = document.createElement('a');
-                        a.href = 'https://twitter.com/share';
-                        a.className = 'twitter-share-button';
-                        a.setAttribute('data-lang','en');
-                        a.setAttribute('data-count', ( button_count ? 'horizontal' : 'none' ));
-                        d.appendChild(a);
-                        return d;
-                    },
-                    script: protocol+'//platform.twitter.com/widgets.js'
+                    script: '//www.thefancy.com/fancyit.js'
                 },
                 GooglePlus: {
                     create: function () {
@@ -228,7 +170,84 @@
                         }
                         return d;
                     },
-                    script: protocol+'//apis.google.com/js/plusone.js'
+                    script: '//apis.google.com/js/plusone.js'
+                },
+                Pinterest: {
+                    create: function () {
+                        var d = createButton('pinterest');
+                        d.style.width = button_count ? '77px' : '43px';
+
+                        var a = document.createElement( 'a' );
+                        a.href = "http://pinterest.com/pin/create/button/?" +
+                                "url=" + encodeURIComponent( window.location.href ) + 
+                                "&media=" + encodeURIComponent( photo ) + 
+                                "&description=" + encodeURIComponent("I found this on " + domain);
+                        a.className = 'pin-it-button';
+                        a.setAttribute('count-layout', "horizontal");
+                        a.innerHTML = "Pin It";
+                        d.appendChild(a);
+                        return d;
+                    },
+                    script: '//assets.pinterest.com/js/pinit.js'
+                },
+                Svpply: {
+                    create: function () {
+                        // Svpply assumes it has to wait for window.onload before running
+                        // But window.onload has already fired at this point
+                        // So set up polling for when Svpply is ready, then fire it off
+                        var interval = setInterval(function () {
+                            if (window.svpply_api && window.svpply_api.construct) {
+                                window.svpply_api.construct();
+                                clearInterval(interval);
+                            }
+                        }, 100);
+                        var d = createButton('svpply');
+                        var sv = document.createElement("sv:product-button");
+                        sv.setAttribute("type", "boxed");
+                        sv.style.width = '70px';
+                        d.appendChild(sv);
+                        return d;
+                    },
+                    script: '//svpply.com/api/all.js#xsvml=1'
+                },
+                Twitter: {
+                    create: function () {
+                        var d = createButton('twitter');
+                        d.style.width = button_count ? '100px' : '58px';
+
+                        var a = document.createElement('a');
+                        a.href = 'https://twitter.com/share';
+                        a.className = 'twitter-share-button';
+                        a.setAttribute('data-lang','en');
+                        a.setAttribute('data-count', ( button_count ? 'horizontal' : 'none' ));
+                        d.appendChild(a);
+                        return d;
+                    },
+                    script: '//platform.twitter.com/widgets.js'
+                },
+                Tumblr: {
+                    create: function () {
+                        var d = createButton('tumblr');
+                        d.style.width = '62px';
+                        
+                        var a = document.createElement( 'a' );
+                        a.href = 'http://www.tumblr.com/share';
+                        a.title = "Share on Tumblr";
+                        a.style.display = 'inline-block';
+                        a.style.textIndent = '-9999px';
+                        a.style.textAlign = 'left';
+                        a.style.width = '63px';
+                        a.style.height = '20px';
+                        a.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
+                        a.style.styleFloat = 'left'; // IE
+                        a.style.cssFloat = 'left'; // FF, Webkit
+                        a.style.marginRight = '5px';
+                        a.style.marginTop = '0';
+                        a.innerHTML = "Share on Tumblr";
+                        d.appendChild( a );
+                        return d;
+                    },
+                    script: '//platform.tumblr.com/v1/share.js'
                 }
             };
             
@@ -240,11 +259,10 @@
             
             // Get the buttons, should be children of #_willet_buttons_app
             //      ex: <div>Facebook</div>
-            var req_buttons = ['Tumblr','Fancy','Pinterest']; // default for backwards compatibilty
+            var req_buttons = [];
             if (button_div.childNodes.length > 0) {
                 // Search for supported buttons
                 i = button_div.childNodes.length;
-                req_buttons = [];
                 while (i--) {
                     if (button_div.childNodes[i].nodeType === 1) {
                         j = button_div.childNodes[i].innerHTML;
@@ -261,6 +279,9 @@
                 while (i--) {
                     button_div.removeChild( button_div.childNodes[i]);
                 }
+            } else {
+                // default for backwards compatibilty
+                var req_buttons = ['Tumblr','Fancy','Pinterest'];
             }
 
             var b, t, j = req_buttons.length;
@@ -268,13 +289,13 @@
             // Create buttons & add activating scripts!
             while (j--) {
                 b = req_buttons[j];
-                button_div.appendChild( buttons[b].create() );
-                console.log('Button: '+ buttons[b].create() +' attached');
-                t  = document.createElement( 'script' );
+                button_div.appendChild(buttons[b].create());
+                console.log('Buttons: '+ b +' tag attached');
+                t  = document.createElement('script');
                 t.type = 'text/javascript';
                 t.src = buttons[b].script;
                 head.appendChild(t);
-                console.log('Buttons: '+ b +' attached');
+                console.log('Buttons: '+ b +' script appended');
             }
 
             // If Facebook is already loaded,
@@ -298,11 +319,12 @@
         try {
             console.log("Buttons: initiating product.json request")
             var req = new XMLHttpRequest();
-            req.open('GET', here, true);
+            req.open('GET', product_json, true);
             req.onreadystatechange = function () {  
                 if (req.readyState === 4) {
                     // 4 means something has been returned by the request
                     if (req.status === 200) {
+                        // 200 -> HTTP Status OK
                         console.log("Buttons: recieved product.json request");
                         var data;
                         try {
