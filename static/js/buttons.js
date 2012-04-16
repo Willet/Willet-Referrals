@@ -202,8 +202,10 @@
                             }
                         }, 100);
                         var d = createButton('svpply');
-                        d.style.width = '70px';
-                        d.innerHTML = "<sv:product-button type='boxed'></sv:product-button>";
+                        var sv = document.createElement("sv:product-button");
+                        sv.setAttribute("type", "boxed");
+                        sv.style.width = '70px';
+                        d.appendChild(sv);
                         return d;
                     },
                     script: '//svpply.com/api/all.js#xsvml=1'
