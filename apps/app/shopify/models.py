@@ -397,6 +397,8 @@ class AppShopify(Model):
             else:
                 raise ShopifyBillingError('Recurring billing activation denied', data)
             return True
+        elif recurring_billing_data["status"] == 'active':
+            return True  # Do not update the data, but succeed anyway
         elif recurring_billing_data["status"] == 'declined':
             return False
         else:

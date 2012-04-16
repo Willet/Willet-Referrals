@@ -303,7 +303,8 @@ class GetExpiredSIBTInstances(URIHandler):
         try:
             right_now = datetime.now() # let's assume datetime is the class
         except AttributeError:
-            # App Engine sometimes imports datetime as a module... can't explain it.
+            # App Engine sometimes imports datetime as a module...
+            # Has been reported to GOOG
             right_now = datetime.datetime.now()
 
         expired_instances = SIBTInstance.all()\

@@ -8,7 +8,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 from urllib import urlencode
 
 from django.utils import simplejson as json
@@ -47,27 +47,34 @@ class ButtonsShopify(Buttons, AppShopify):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
 
     def get_price(self):
-        now = datetime.now()
+        result = self._call_Shopify_API("GET", "shop.json?fields=created_at")
+
+        now          = datetime.utcnow()
+        shop_created = self._Shopify_str_to_datetime(result["shop"]["created_at"])
+        start_date   = max(shop_created, now - timedelta(days=365))
+        months       = ((now - start_date).days) / 30.0
+
         query_params = {
-            "created_at_min": (now - timedelta(days=365)).strftime("%Y-%m-%d %H:%M"),
+            "created_at_min": start_date.strftime("%Y-%m-%d %H:%M"),
             "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
         }
 
         urlencoded_params = "?" + urlencode(query_params)
 
         result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
-        count = int(result["count"]) / 12 #average over the year
+        orders = int(result["count"])
+        monthly_orders = orders / months if months else orders
 
         # PRICING CHART
-        if count < 10:
+        if monthly_orders < 10:
             price = 0.99 #non-profit
-        elif count < 20:
+        elif monthly_orders < 20:
             price = 2.99 #basic
-        elif count < 50:
+        elif monthly_orders < 50:
             price = 5.99 #professional
-        elif count < 100:
+        elif monthly_orders < 100:
             price = 9.99 #business
-        elif count < 200:
+        elif monthly_orders < 200:
             price = 17.99 #unlimited
         else:
             price = 19.99 #enterprise
