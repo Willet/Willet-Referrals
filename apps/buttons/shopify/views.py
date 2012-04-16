@@ -266,6 +266,7 @@ class ButtonsShopifyInstallError(URIHandler):
                                                  template_values))
         return
 
+    
 class ButtonsShopifyItemShared(URIHandler):
     """Handles whenever a share takes place"""
     def get(self):
