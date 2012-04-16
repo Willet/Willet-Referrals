@@ -3,7 +3,6 @@
 # Buttons model
 # Extends from "App"
 from itertools import groupby
-from apps.app.models import App
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
