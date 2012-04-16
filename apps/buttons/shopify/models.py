@@ -8,7 +8,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 from urllib import urlencode
 
 from django.utils import simplejson as json
@@ -49,7 +49,7 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_price(self):
         result = self._call_Shopify_API("GET", "shop.json?fields=created_at")
 
-        now          = datetime.now()
+        now          = datetime.utcnow()
         shop_created = self._Shopify_str_to_datetime(result["shop"]["created_at"])
         start_date   = max(shop_created, now - timedelta(days=365))
         months       = ((now - start_date).days) / 30.0
@@ -62,7 +62,11 @@ class ButtonsShopify(Buttons, AppShopify):
         urlencoded_params = "?" + urlencode(query_params)
 
         result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
-        monthly_orders = int(result["count"]) / months
+        orders = int(result["count"])
+        if months > 0:
+            monthly_orders = orders / months
+        else:
+            monthly_orders = orders
 
         # PRICING CHART
         if monthly_orders < 10:
