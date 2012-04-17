@@ -127,6 +127,23 @@ class ButtonsShopifyWelcome(URIHandler):
             # Usually direct traffic to the url, show disabled version
             self.show_upsell_page()
 
+    @catch_error
+    def post(self):
+        logging.info(self.request)
+
+        button_count   = (self.request.get("button-count") == "True")
+        button_spacing = self.request.get("button-spacing")
+        button_padding = self.request.get("button-padding")
+
+        #redirect to Welcome
+        page = build_url("ButtonsShopifyWelcome", qs={
+            "t": self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app": "ButtonsShopify"
+        })
+
+        self.redirect(page)
+
     def show_upsell_page(self, shop_owner='Store Owner', shop_name='Store',
                          price='-.--', shop_url='www.example.com',
                          disabled=True):
@@ -142,7 +159,19 @@ class ButtonsShopifyWelcome(URIHandler):
                                                  template_values))
 
     def show_config_page(self, details):
-        self.response.out.write(self.render_page('config.html', {}))
+        # get values from datastore
+        page = build_url("ButtonsShopifyWelcome", qs={
+            "t": self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app": "ButtonsShopify"
+        })
+
+        template_values = {
+            'action': page
+        }
+
+        # prepopulate values
+        self.response.out.write(self.render_page('config.html', template_values))
 
 
 class ButtonsShopifyUpgrade(URIHandler):
