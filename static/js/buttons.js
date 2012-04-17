@@ -3,15 +3,18 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var product_json = window.location.href.split('#')[0] + '.json';
-    var console = { log: function () {}, error: function () {} };
-        //( typeof(window.console) === 'object' 
-        // && ( ( typeof(window.console.log) === 'function' 
-        //    && typeof(window.console.error) ==='function' )
-        // || (typeof(window.console.log) === 'object' // IE 
-        // && typeof(window.console.error) ==='object') ) )
-        // ? window.console 
-        //: { log: function () {}, error: function () {} }; // debugging
+    var DEBUG = true,
+        DEFAULT_COUNT = 'false',
+        DEFAULT_SPACING = '5',
+        DEFAULT_PADDING = '5',
+        DEFAULT_BUTTONS = ['Tumblr','Fancy','Pinterest'];
+    var product_json = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '.json';
+    var console = DEBUG && ( typeof(window.console) === 'object' 
+                           && ( ( typeof(window.console.log) === 'function' 
+                           && typeof(window.console.error) ==='function' )
+                        || (typeof(window.console.log) === 'object' // IE 
+                           && typeof(window.console.error) ==='object') ) )
+                ? window.console : { log: function () {}, error: function () {} } // debugging
 
     // If on /cart page, silently bail
     if (/\/cart\/?$/.test(window.location.pathname)) {
@@ -46,23 +49,45 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
+    var getElemValue = function (elem, key, deflt) {
+        // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
+        if (elem) {
+            return button_div.getAttribute('data-'+key) || button_div.getAttribute('button_'+key) || deflt || false;
+        } else {
+            return undefined;
+        }
+    }
+
+    var addButton = function (elem, bname, button) {
+        // Assumes button has method create and attribute script
+        // Appends generated button div to elem and script to head
+        elem.appendChild(button.create());
+        console.log('Buttons: '+ bname +' tag attached');
+        var script  = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = button.script;
+        document.getElementsByTagName('head')[0].appendChild(script);
+        console.log('Buttons: '+ bname +' script appended');
+    }
+
     var button_div = document.getElementById('_willet_buttons_app');
 
     var _init_buttons = function(data) {
         console.log("Buttons: finding buttons placeholder on page");
 
-        if (button_div && window._willet_iframe_loaded === undefined) {
+        if (button_div && !getElemValue(button_div, 'loaded', false) ) {
             console.log("Buttons: found placeholder, attaching iframe");
 
             // Get options from tag
-            var i, j,
+            var i, j, k, button_count, button_spacing, button_padding,
                 head = document.getElementsByTagName('head')[0],
-                domain = /:\/\/([^\/]+)/.exec(window.location.href)[1],
-                button_count = (button_div.getAttribute('button_count') === 'true'),
-                button_spacing = (button_div.getAttribute('button_spacing') ?  button_div.getAttribute('button_spacing') : '5') + 'px',
-                button_padding = (button_div.getAttribute('button_padding') ? button_div.getAttribute('button_padding') : '5') + 'px',
+                domain = document.domain,
                 protocol = window.location.protocol, //'http:'; // For local testing
-                store_url = protocol + '//' + location.hostname; // http://example.com
+                store_url = protocol + '//' + window.location.hostname; // http://example.com
+
+            button_count = (getElemValue(button_div, 'count', DEFAULT_COUNT) === 'true');
+            button_spacing = getElemValue(button_div, 'spacing', DEFAULT_SPACING)+'px';
+            button_padding = getElemValue(button_div, 'padding', DEFAULT_PADDING)+'px',
 
             button_div.style.styleFloat = 'left'; // IE
             button_div.style.cssFloat = 'left'; // FF, Webkit
@@ -98,10 +123,9 @@
             };
 
             // Supported buttons
-            var supported_buttons = ['AskFriends','Facebook','Fancy','GooglePlus','Pinterest','Svpply','Tumblr','Twitter'];
-            var buttons = {
-                AskFriends: { // does not allow asking/voting unless SIBT-JS is also installed!
-                    create: function () {
+            var supported_networks = {
+                "AskFriends": { // does not allow asking/voting unless SIBT-JS is also installed!
+                    "create": function () {
                         var d = createButton();
                         d.id = 'mini_sibt_button';
                         d.style.cursor = 'pointer';
@@ -110,14 +134,19 @@
                         d.style.width = '80px';
                         return d;
                     },
-                    script: '//brian-willet.appspot.com/s/sibt.js?url=' + window.location.href
+                    "script": '//brian-willet.appspot.com/s/sibt.js?url='+window.location.href
                 },
-                Facebook: {
-                    create: function () {
+                "Facebook": {
+                    "create": function () {
                         var d = createButton('facebook');
                         d.style.overflow = 'visible';
                         d.style.width = button_count ? '90px' : '48px';
-                        d.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                        var fb = document.createElement('fb:like');
+                        fb.setAttribute('send', 'false');
+                        fb.setAttribute('layout', 'button_count');
+                        fb.width = '450';
+                        fb.setAttribute('show_faces', 'false');
+                        d.appendChild(fb);
                         var s = document.createElement('style');
                         s.type = 'text/css';
                         s.media = 'screen';
@@ -131,10 +160,10 @@
                         d.appendChild(s);
                         return d;
                     },
-                    script: '//connect.facebook.net/en_US/all.js#xfbml=1'
+                    "script": '//connect.facebook.net/en_US/all.js#xfbml=1'
                 },
-                Fancy: {
-                    create: function () {
+                "Fancy": {
+                    "create": function () {
                         var d = createButton('fancy');
                         d.style.width = button_count ? '96px' : '57px';
 
@@ -155,14 +184,19 @@
                         d.appendChild( a );
                         return d;
                     },
-                    script: '//www.thefancy.com/fancyit.js'
+                    "script": '//www.thefancy.com/fancyit.js'
                 },
-                GooglePlus: {
-                    create: function () {
+                "GooglePlus": {
+                    "create": function () {
                         var d = createButton('googleplus');
                         d.style.overflow = 'visible';
                         d.style.width = button_count ? '74px' : '32px';
-                        d.innerHTML = "<g:plusone size='medium'"+ (button_count ? '' : " annotation='none'") +"></g:plusone>";
+                        var g = document.createElement("g:plusone");
+                        g.setAttribute("size", "medium");
+                        if (!button_count) {
+                            g.setAttribute("annotation", "none");
+                        }
+                        d.appendChild(g);
                         // Google is using the Open Graph spec
                         var t, p, 
                             m = [ { property: 'og:title', content: data.product.title },
@@ -177,10 +211,10 @@
                         }
                         return d;
                     },
-                    script: '//apis.google.com/js/plusone.js'
+                    "script": '//apis.google.com/js/plusone.js'
                 },
-                Pinterest: {
-                    create: function () {
+                "Pinterest": {
+                    "create": function () {
                         var d = createButton('pinterest');
                         d.style.width = button_count ? '77px' : '43px';
 
@@ -195,10 +229,10 @@
                         d.appendChild(a);
                         return d;
                     },
-                    script: '//assets.pinterest.com/js/pinit.js'
+                    "script": '//assets.pinterest.com/js/pinit.js'
                 },
-                Svpply: {
-                    create: function () {
+                "Svpply": {
+                    "create": function () {
                         // Svpply assumes it has to wait for window.onload before running
                         // But window.onload has already fired at this point
                         // So set up polling for when Svpply is ready, then fire it off
@@ -215,10 +249,10 @@
                         d.appendChild(sv);
                         return d;
                     },
-                    script: '//svpply.com/api/all.js#xsvml=1'
+                    "script": '//svpply.com/api/all.js#xsvml=1'
                 },
-                Twitter: {
-                    create: function () {
+                "Twitter": {
+                    "create": function () {
                         var d = createButton('twitter');
                         d.style.width = button_count ? '100px' : '58px';
 
@@ -230,10 +264,10 @@
                         d.appendChild(a);
                         return d;
                     },
-                    script: '//platform.twitter.com/widgets.js'
+                    "script": '//platform.twitter.com/widgets.js'
                 },
-                Tumblr: {
-                    create: function () {
+                "Tumblr": {
+                    "create": function () {
                         var d = createButton('tumblr');
                         d.style.width = '62px';
                         
@@ -254,7 +288,7 @@
                         d.appendChild( a );
                         return d;
                     },
-                    script: '//platform.tumblr.com/v1/share.js'
+                    "script": '//platform.tumblr.com/v1/share.js'
                 }
             };
             
@@ -271,48 +305,40 @@
                 // Search for supported buttons
                 i = button_div.childNodes.length;
                 while (i--) {
-                    if (button_div.childNodes[i].nodeType === 1) {
-                        j = button_div.childNodes[i].innerHTML;
-                        for (var k in supported_buttons) {
-                            if (supported_buttons[k] === j) {
-                                req_buttons.push(j);
-                                break;
-                            }
+                    j = button_div.childNodes[i];
+                    if (j.nodeType === 1) {
+                        k = j.innerHTML;
+                        if (supported_networks[k]) {
+                            req_buttons.push(k);
                         }
                     }
-                }
-                // Now remove all children of #_willet_buttons_app
-                i = button_div.childNodes.length;
-                while (i--) {
-                    button_div.removeChild( button_div.childNodes[i]);
+                    button_div.removeChild(button_div.childNodes[i]);
                 }
             } else {
                 // default for backwards compatibilty
-                var req_buttons = ['Tumblr','Fancy','Pinterest'];
+                var req_buttons = DEFAULT_BUTTONS;
             }
-
-            var b, t, j = req_buttons.length;
             
             // Create buttons & add activating scripts!
+            var j = req_buttons.length;
             while (j--) {
-                b = req_buttons[j];
-                button_div.appendChild(buttons[b].create());
-                console.log('Buttons: '+ b +' tag attached');
-                t  = document.createElement('script');
-                t.type = 'text/javascript';
-                t.src = buttons[b].script;
-                head.appendChild(t);
-                console.log('Buttons: '+ b +' script appended');
+                try {
+                    addButton(button_div, req_buttons[j], supported_networks[req_buttons[j]]);
+                } catch (e) {
+                    console.error('Buttons: '+b+' encountered error: '+e);
+                }
             }
+
+            // Make visible if hidden
+            button_div.style.display = 'block';
+            // Set to loaded
+            button_div.setAttribute('data-loaded', true);
 
             // If Facebook is already loaded,
             // trigger it to enable Like button
             try {
                 window.FB && window.FB.XFBML.parse(); 
             } catch(e) {}
-
-            // Make visible if hidden
-            button_div.style.display = 'block';
 
             console.log('Buttons: Done!');
         } else {
@@ -343,9 +369,6 @@
                         if (data) {
                             // Proceed!
                             _init_buttons(data);
-                            if (button_div) {
-                                button_div.dataset.loaded = true;
-                            }
                         } else {
                             console.log("No data");
                         }

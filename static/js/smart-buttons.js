@@ -131,7 +131,12 @@ var _willet = (function(me) {
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.width = params.buttonCount ? '90px' : '48px';
-                    button.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                    var fb = document.createElement('fb:like');
+                    fb.setAttribute('send', 'false');
+                    fb.setAttribute('layout', 'button_count');
+                    fb.width = '450';
+                    fb.setAttribute('show_faces', 'false');
+                    button.appendChild(fb);
                     return button;
                 },
                 "onLoad": function() {
@@ -884,7 +889,7 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    if (!/\/cart\/?$/.test(window.location.pathname) {
+    if (!/\/cart\/?$/.test(window.location.pathname)) {
         // on most pages, run
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
