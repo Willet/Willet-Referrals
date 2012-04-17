@@ -187,7 +187,12 @@ class WOSIBInstance(Model):
         self._memcache_key = kwargs['uuid'] 
         super(WOSIBInstance, self).__init__(*args, **kwargs)
 
-    @classmethod 
+    def _validate_self(self):
+        if not self.app_:
+            raise AttributeError("app_ is missing from WOSIBInstance")
+        return True
+
+    @classmethod
     def _get_from_datastore(cls, uuid):
         return cls.all().filter('uuid =', uuid).get()
 
@@ -294,6 +299,11 @@ class PartialWOSIBInstance(Model):
         """ Initialize this model """
         self._memcache_key = kwargs['uuid'] 
         super(PartialWOSIBInstance, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        if not self.app_:
+            raise AttributeError("app_ is missing from PartialWOSIBInstance")
+        return True
 
     @classmethod 
     def _get_from_datastore(cls, uuid):
