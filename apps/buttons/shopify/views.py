@@ -102,31 +102,47 @@ class ButtonsShopifyWelcome(URIHandler):
 
         if details["client"]:
             # Fetch or create the app
-            app = ButtonsShopify.get_or_create_app(details["client"], token=token)
+            app, created = ButtonsShopify.get_or_create_app(details["client"],
+                                                            token=token)
 
-            # Find out what the app should cost
-            price = app.get_price()
+            # If this is the first time we create the object,
+            # don't go to the config page
+            if created:
+                price = app.get_price()
 
-            template_values = {
-                'shop_owner' : details["shop_owner"],
-                'shop_name'  : details["shop_name"],
-                'price'      : price,
-                'shop_url'   : details["shop_url"],
-                'token'      : token,
-                'disabled'   : False,
-            }
+                template_values = {
+                    'shop_owner' : details["shop_owner"],
+                    'shop_name'  : details["shop_name"],
+                    'price'      : price,
+                    'shop_url'   : details["shop_url"],
+                    'token'      : token,
+                    'disabled'   : False,
+                }
+
+                self.show_upsell_page(**template_values)
+            else:
+                self.show_config_page(details)
+
         else:
             # Usually direct traffic to the url, show disabled version
-            template_values = {
-                'shop_owner' : 'Store Owner',
-                'shop_name'  : 'Store',
-                'price'      : '-.--',
-                'shop_url'   : 'www.example.com',
-                'disabled'   : True,
-            }
+            self.show_upsell_page()
+
+    def show_upsell_page(self, shop_owner='Store Owner', shop_name='Store',
+                         price='-.--', shop_url='www.example.com',
+                         disabled=True):
+        template_values = {
+            'shop_owner' : shop_owner,
+            'shop_name'  : shop_name,
+            'price'      : price,
+            'shop_url'   : shop_url,
+            'disabled'   : disabled,
+        }
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
+
+    def show_config_page(self, details):
+        self.response.out.write(self.render_page('config.html', {}))
 
 
 class ButtonsShopifyUpgrade(URIHandler):
@@ -248,7 +264,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app = ButtonsShopify.get_or_create_app(client, token=token)
+        app, _ = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {

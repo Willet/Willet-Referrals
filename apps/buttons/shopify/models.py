@@ -177,10 +177,12 @@ class ButtonsShopify(Buttons, AppShopify):
     @classmethod
     def get_or_create_app(cls, client, token):
         """ Try to retrieve the app.  If no app, create one """
+        created = False
         app = cls.get_by_url(client.url)
         
         if app is None:
             app = cls.create_app(client, token)
+            created = True
         
         elif token != None and token != '':
             if app.store_token != token:
@@ -201,7 +203,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     app.do_install()
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
-        return app
+        return app, created
 
 class SharedItem():
     """An object that contains information about a share"""
@@ -313,7 +315,7 @@ def create_shopify_buttons_app(client, app_token):
 
 def get_or_create_buttons_shopify_app(client, token):
     raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
-    ButtonShopify.get_or_create_app(client, token)
+    ButtonShopify.get_or_create_app(client, token)[0]
 
 def get_shopify_buttons_by_url(store_url):
     raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
