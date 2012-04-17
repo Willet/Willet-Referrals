@@ -129,14 +129,20 @@ class ButtonsShopifyWelcome(URIHandler):
 
     @catch_error
     def post(self):
-        logging.info(self.request)
+        details = get_details(self)
+        app = ButtonsShopify.get_by_url(details["shop_url"])
+        if not app:
+            logging.error("error updating preferences: "
+                          "'app' not found. Install first?")
+
 
         preferences = {
             "button_count"  : (self.request.get("button-count") == "True"),
             "button_spacing": self.request.get("button-spacing"),
             "button_padding": self.request.get("button-padding")
         }
-        self.update_prefs(preferences)
+
+        app.update_prefs(preferences)
 
         #redirect to Welcome
         page = build_url("ButtonsShopifyWelcome", qs={

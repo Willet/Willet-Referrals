@@ -206,11 +206,13 @@ class ButtonsShopify(Buttons, AppShopify):
 
             if result["asset"] and result["asset"]["value"]:
                 value           = result["asset"]["value"]
-                _, var_value, _ = value.split("/*--*/")
+                _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
-                prefs           = json.loads(json_str)
+                prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
             pass  # No asset found; probably doesn't exist yet
+        except ValueError:
+            pass  # TODO: Problem parsing the JSON
 
         logging.info(prefs)
         return prefs

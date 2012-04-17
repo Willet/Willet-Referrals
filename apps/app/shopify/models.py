@@ -157,8 +157,6 @@ class AppShopify(Model):
         header   = {'content-type':'application/json'}
         h        = httplib2.Http()
 
-        logging.info("%s:%s" % (username, password))
-
         # Auth the http lib
         h.add_credentials(username, password)
 
