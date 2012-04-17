@@ -232,7 +232,7 @@ class WOSIBAskDynamicLoader(URIHandler):
             'instance_uuid': self.request.get('instance_uuid'),
             'target_url': self.request.get('refer_url'),
             'evnt': self.request.get('evnt'),
-            'FACEBOOK_APP_ID': app.settings['facebook']['app_id'],
+            'FACEBOOK_APP_ID': SHOPIFY_APPS['WOSIBShopify']['facebook']['app_id'],
             'app': app,
             'willt_code': link.willt_url_code, # used to create full instances
             'products': template_products,

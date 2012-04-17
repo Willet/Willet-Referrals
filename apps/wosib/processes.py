@@ -292,7 +292,7 @@ class SendWOSIBFriendAsks(URIHandler):
         fb_id = self.request.get('fb_id')
 
         app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
-        if "wosib" not in app.__class__.__name__.lower():  # probably SIBT
+        if not isinstance(app, WOSIB):  # probably SIBT
             logging.debug("non-WOSIB triggered %s" % app.__class__.__name__)
             app = WOSIB.all().filter('store_url =', app.store_url).get()  # re-get app by the same store
             logging.debug("WOSIB is now %r" % app)

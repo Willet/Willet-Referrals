@@ -313,8 +313,8 @@
                     iframe: true,
                     initialWidth: 0,
                     initialHeight: 0,
-                    innerWidth: '620px',
-                    innerHeight: '520px',
+                    innerWidth: '600px',
+                    innerHeight: '420px',
                     fixed: true,
                     onClosed: function () {}
                 };
@@ -354,8 +354,6 @@
                 if (products.length <= 1) {
                     // SIBT mode
                     show_colorbox({
-                        innerWidth: '600px',
-                        innerHeight: '400px',
                         href: "{{URL}}{% url AskDynamicLoader %}" +
                             "?products=" + get_product_uuids().join(',') +
                             "&" + metadata()
@@ -363,8 +361,6 @@
                 } else {
                     // WOSIB mode
                     show_colorbox({
-                        innerWidth: '620px',
-                        innerHeight: '520px',
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
                             "?products=" + get_product_uuids().join(',') +
                             "&" + metadata()

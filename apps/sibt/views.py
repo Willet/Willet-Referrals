@@ -24,6 +24,7 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
+from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import *
@@ -144,7 +145,7 @@ class AskDynamicLoader(URIHandler):
             "I need some shopping advice. Should I buy this? Would you?",
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
-        
+
         if user_is_admin:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
         else:
@@ -670,32 +671,15 @@ class SIBTServeScript(URIHandler):
             if client:
                 # try to get existing SIBT/SIBTShopify from this client.
                 # if not found, create one.
-                apps = [a for a in client.apps if a.class_name() == 'SIBTShopify']
-                if apps:
-                    app = apps[0]
-
-                if not app:
-                    # if client exists and the app is not installed for it,
-                    # automatically install the app for the client
-                    logging.debug('no SIBTShopify for client')
-                    '''
-                    This does not work - ButtonsShopify token doesn't work
-                    with SIBTShopify api keys. Re-enable on one-auth.
-
-                    if client.class_name() == 'ClientShopify':
-                        logging.debug('creating SIBTShopify')
-                        # also installs webhooks and fetches products on create
-                        app = SIBTShopify.get_or_create(client,
-                                                        token=client.token,
-                                                        email_client=False)
-                    else:
-                    '''
-                    logging.debug('creating SIBT')
-                    app = SIBT.get_or_create(client=client, domain=domain)
+                app = SIBT.get_or_create(client=client, domain=domain)
             else:  # we have no business with you
                 self.response.out.write('/* no account for %s! '
                                         'Go to http://rf.rs to get an account. */' % domain)
                 return
+
+        # not used until multi-ask is initiated
+        app_wosib = WOSIB.get_or_create(client=app.client,domain=app.store_url)
+        logging.debug("app_wosib = %r" % app_wosib)
 
         # have client, app
         if not hasattr(app, 'extra_url'):

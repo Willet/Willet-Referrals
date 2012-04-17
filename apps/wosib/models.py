@@ -42,7 +42,9 @@ class WOSIB(App):
 
     store_name = db.StringProperty(indexed = True)
 
-    _memcache_fields = ['store_name']
+    # Apps cannot be memcached by secondary key, because they are all stored
+    # as App objects, and this may cause field collision.
+    _memcache_fields = []
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -107,7 +109,7 @@ class WOSIB(App):
             client = Client.get_or_create(url=domain,
                                           email='')
 
-        app = WOSIB.get(domain)
+        app = WOSIB.get_by_store_url(domain)
         if not app:
             logging.debug("app not found; creating one.")
             app = WOSIB.create(client, domain)

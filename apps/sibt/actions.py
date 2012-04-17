@@ -23,20 +23,23 @@ from apps.gae_bingo.gae_bingo import bingo
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
-## -----------------------------------------------------------------------------
-## SIBTClickAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
+## SIBTClickAction Subclass ---------------------------------------------------
+## ----------------------------------------------------------------------------
 class SIBTClickAction(ClickAction):
     """ Designates a 'click' action for a User on a SIBT instance. 
         Currently used for 'Referral' and 'SIBT' Apps """
 
-    sibt_instance = db.ReferenceProperty(db.Model, collection_name="click_actions")
+    sibt_instance = db.ReferenceProperty(db.Model,
+                                         collection_name="click_actions")
 
     # URL that was clicked on
     url = db.LinkProperty(indexed = True)
 
     def __str__(self):
-        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(),
+                                         self.user.uuid,
+                                         self.app_.uuid)
 
     ## Constructor 
     @staticmethod

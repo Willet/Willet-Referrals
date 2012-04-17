@@ -3,7 +3,8 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var here = window.location.href.split('#')[0] + '.json';
+    // var here = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '.json';
+    var here = window.location.href.split('?')[0].split('#')[0] + '.json';
     var console = { log: function () {}, error: function () {} };
         //( typeof(window.console) === 'object' 
         // && ( ( typeof(window.console.log) === 'function' 
