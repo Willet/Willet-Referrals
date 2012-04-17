@@ -14,7 +14,7 @@
         //: { log: function () {}, error: function () {} }; // debugging
 
     // If on /cart page, silently bail
-    if (/cart\/?$/.test(window.location.href)) {
+    if (/\/cart\/?$/.test(window.location.pathname)) {
         console.log("Buttons: on cart page, not running.");
         return;
     }

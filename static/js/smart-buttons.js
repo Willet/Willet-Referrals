@@ -884,7 +884,7 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    if (!/cart\/?$/.test(window.location.href)) {
+    if (!/\/cart\/?$/.test(window.location.pathname) {
         // on most pages, run
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
