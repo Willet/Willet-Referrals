@@ -180,8 +180,8 @@ class Model(db.Model):
         # data can be either a string primary key or a protocol buffer or None
         if data:
             try:
-                method = 'primary key %s' % data
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
+                method = 'primary key %s' % key
             except ProtocolBuffer.ProtocolBufferDecodeError, e:
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 

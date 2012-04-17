@@ -257,8 +257,9 @@ class SIBTShopifyServeScript(URIHandler):
                 except:
                     pass # can't decode target as URL; oh well!
 
-            logging.debug('trying to get instance for url: %s' % target)
-            instance = SIBTInstance.get_by_asker_for_url(user, target)
+            if target and user:
+                logging.debug('trying to get instance for url: %s' % target)
+                instance = SIBTInstance.get_by_asker_for_url(user, target)
 
             if instance:
                 event = 'SIBTShowingResults'
