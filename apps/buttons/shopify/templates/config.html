@@ -68,21 +68,25 @@
                 <div id="config-free">
                     <div class="config-option">
                         <input id="button-count" name="button-count"
-                               type="radio" value="True"/>
+                               type="radio"
+                               value="True"
+                               {% if button_count %}checked{% endif %}/>
                         <label for="button-count">Show button count</label>
                         <input id="no-button-count" name="button-count"
-                               type="radio" value="False"/>
+                               type="radio"
+                               value="False"
+                               {% if not button_count %}checked{% endif %}/>
                         <label for="no-button-count">Show button count</label>
                     </div>
                     <div class="config-option">
                         <label for="button-spacing">Button Spacing</label>
                         <input id="button-spacing" name="button-spacing"
-                               type="text"/>px
+                               type="text" value="{{ button_spacing }}"/>px
                     </div>
                     <div class="config-option">
                         <label for="button-padding">Button Padding</label>
                         <input id="button-padding" name="button-padding"
-                               type="text"/>px
+                               type="text" value="{{ button_padding }}"/>px
                     </div>
                 </div>
                 <input type="submit"/>

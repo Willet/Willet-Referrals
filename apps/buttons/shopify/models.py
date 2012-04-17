@@ -25,7 +25,7 @@ from util.model import Model, ObjectListProperty
 from util.consts import *
 from util.helpers import generate_uuid
 from util.shopify_helpers import get_shopify_url
-from util.errors          import ShopifyBillingError
+from util.errors          import ShopifyBillingError, ShopifyAPIError
 
 NUM_VOTE_SHARDS = 15
 
@@ -93,7 +93,7 @@ class ButtonsShopify(Buttons, AppShopify):
         # Define our script tag 
         tags = [{
             "script_tag": {
-                "src": "%s/b/shopify/buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
                     URL,
                     self.uuid
                 ),
@@ -136,7 +136,7 @@ class ButtonsShopify(Buttons, AppShopify):
         self.uninstall_script_tags();
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/b/shopify/smart-buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
                     URL,
                     self.uuid
                 ),
@@ -153,6 +153,67 @@ class ButtonsShopify(Buttons, AppShopify):
                 self.client.url
             )
         )
+
+    def update_prefs(self, preferences):
+        """Update preferences for the application."""
+        if self.billing_enabled:
+            json_preferences = json.dumps(preferences)
+
+            script = """
+                <script type="text/javascript">
+                    (function(){
+                        /*----*/
+                        window._willet_shopconnection_preferences = %s;
+                        /*----*/
+                    })
+                </script>
+            """ % json_preferences
+
+            self.queue_assets(assets=[{
+                'asset': {
+                    'key': 'snippets/willet-shopconnection.liquid',
+                    'value': script
+                }
+            }])
+            self.install_queued()
+
+    def get_prefs(self):
+        """Get preferences, provided that they exist."""
+        #need to get theme id first...
+        result = self._call_Shopify_API("GET", "themes.json")
+
+        theme_id = None
+        for theme in result['themes']:
+            if 'role' in theme and 'id' in theme:
+                if theme['role'] == 'main':
+                    theme_id = theme['id']
+                    break
+
+        query_params = urlencode({
+            "asset[key]": "snippets/willet-shopconnection.liquid",
+            "theme_id": theme_id
+        })
+
+        prefs = {
+            'button_count'  : False,
+            'button_spacing': -1,
+            'button_padding': -1
+        }
+        try:
+            result = self._call_Shopify_API("GET",
+                                   "themes/%s/assets.json?%s" %
+                                   (theme_id, query_params))
+
+            if result["asset"] and result["asset"]["value"]:
+                value           = result["asset"]["value"]
+                _, var_value, _ = value.split("/*--*/")
+                _, json_str     = var_value.split("=")
+                prefs           = json.loads(json_str)
+        except ShopifyAPIError:
+            pass  # No asset found; probably doesn't exist yet
+
+        logging.info(prefs)
+        return prefs
 
     # Constructors ------------------------------------------------------------------------------
     @classmethod
@@ -201,6 +262,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     app.put()
                     
                     app.do_install()
+                    created = True
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         return app, created

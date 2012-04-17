@@ -121,7 +121,7 @@ class ButtonsShopifyWelcome(URIHandler):
 
                 self.show_upsell_page(**template_values)
             else:
-                self.show_config_page(details)
+                self.show_config_page(app, details)
 
         else:
             # Usually direct traffic to the url, show disabled version
@@ -131,43 +131,53 @@ class ButtonsShopifyWelcome(URIHandler):
     def post(self):
         logging.info(self.request)
 
-        button_count   = (self.request.get("button-count") == "True")
-        button_spacing = self.request.get("button-spacing")
-        button_padding = self.request.get("button-padding")
+        preferences = {
+            "button_count"  : (self.request.get("button-count") == "True"),
+            "button_spacing": self.request.get("button-spacing"),
+            "button_padding": self.request.get("button-padding")
+        }
+        self.update_prefs(preferences)
 
         #redirect to Welcome
         page = build_url("ButtonsShopifyWelcome", qs={
-            "t": self.request.get("t"),
+            "t"   : self.request.get("t"),
             "shop": self.request.get("shop"),
-            "app": "ButtonsShopify"
+            "app" : "ButtonsShopify"
         })
 
         self.redirect(page)
 
     def show_upsell_page(self, shop_owner='Store Owner', shop_name='Store',
                          price='-.--', shop_url='www.example.com',
+                         token="",
                          disabled=True):
         template_values = {
             'shop_owner' : shop_owner,
             'shop_name'  : shop_name,
             'price'      : price,
             'shop_url'   : shop_url,
+            'token'      : token,
             'disabled'   : disabled,
         }
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
 
-    def show_config_page(self, details):
+    def show_config_page(self, app, details):
         # get values from datastore
         page = build_url("ButtonsShopifyWelcome", qs={
-            "t": self.request.get("t"),
+            "t"   : self.request.get("t"),
             "shop": self.request.get("shop"),
-            "app": "ButtonsShopify"
+            "app" : "ButtonsShopify"
         })
 
+        preferences = app.get_prefs()
+
         template_values = {
-            'action': page
+            'action'        : page,
+            'button_count'  : preferences["button_count"],
+            'button_spacing': preferences["button_spacing"],
+            'button_padding': preferences["button_padding"]
         }
 
         # prepopulate values
