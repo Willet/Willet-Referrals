@@ -185,7 +185,7 @@ ol {
 .tip {
     border: 1px solid #21847D;
     background: #006280;
-    color: white;
+    color: #FFF;
     padding: 5px;
 }
 .code {
@@ -509,7 +509,7 @@ div#right_header a:active {
     behavior: ("../js/PIE.htc");
 }
 .call_to_action.big {
-    color: white;
+    color: #FFF;
     font-family: helvetica, arial, tahoma, sans-serif;
     font-size: 3.0em;
     font-style: italic;
@@ -810,7 +810,7 @@ input[type="text"], textarea {
 }
 
 .default_label {
-    color: white;
+    color: #FFF;
     text-shadow: #474747 1px 1px 1px;
     font-size: 1.5em;
     margin-top: 30px;
@@ -926,7 +926,7 @@ button:visited {
     cursor:pointer;
     font-size: 15px;
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
-    border-color:#cb6652 #b74d39 #803121;
+    border-color: #cb6652 #b74d39 #803121;
     background:-moz-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
     background:-webkit-gradient(linear, left top, left bottom, from(#faa796), to(#ae432e), color-stop(0.05, #d06c57));
     background:-o-linear-gradient(top, #faa796, #d06c57 5%, #ae432e 100%);
@@ -969,7 +969,7 @@ button.blue {
 }
 .button.blue:hover,
 button.blue:hover {
-    color: white;
+    color: #FFF;
     background-color: #077BAD;
     background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
     background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#077BAD), color-stop(0.05, #6CB8D9));
@@ -986,7 +986,9 @@ button.grey,
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    background: rgb(220,220,220);
+    color: #FFF;
+    border-color: #AAA #999 #777;
+    background: #DCDCDC;
     background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(167,167,167,1)));
     background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
@@ -994,9 +996,6 @@ button.grey,
     background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 );
     background: linear-gradient(top, rgba(220,220,220,1) 0%,rgba(167,167,167,1) 100%);
-    color: white;
-    border: 1px solid;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.5);
 }
 .button.grey:hover,
 button.grey:hover {

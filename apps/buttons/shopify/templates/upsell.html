@@ -17,7 +17,17 @@
                         fixed: true
                     });
                 });
+                {% if disabled %}
+                $('#install_smart').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyBeta %}";
+                });
 
+                $('#install_basic').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyBeta %}";
+                });
+                {% else %}
                 $('#install_smart').click(function () {
                     // Track upgrade click for funnel reporting
                     try {
@@ -34,6 +44,7 @@
                     // Redirect
                     window.location = "{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}";
                 });
+                {% endif %}
             });
         </script>
         <style>
@@ -203,8 +214,9 @@
                 <div class="span-24 last
                             shopconnection-header">
                     <img src="/static/imgs/ShopConnection_icon_60x60.png" />
-                    <h3>{{ shop_owner }}, thanks for installing ShopConnection.<br />
-                                              Please choose which version is right for your store:
+                    <h3>
+                        {{ shop_owner }}, thanks for installing ShopConnection.<br />
+                        Please choose which version is right for your store:
                     </h3>
                 </div>
 
@@ -239,7 +251,7 @@
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="wide">
-                                        <button id="install_smart" class="blue">Start your free trial!</button>
+                                        <button id="install_smart" class="{% if disabled %}grey{% else %}blue{% endif %}">Start your free trial!</button>
                                     </div>
                                 </div>
                             </div>
@@ -256,7 +268,7 @@
                                 </ul>
                                 <div class="call-to-action">
                                     <div class="narrow">
-                                        <button id="install_basic" class="blue">Choose</button>
+                                        <button id="install_basic" class="{% if disabled %}grey{% else %}blue{% endif %}">Choose</button>
                                     </div>
                                 </div>
                             </div>

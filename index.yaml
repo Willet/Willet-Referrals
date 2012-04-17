@@ -132,3 +132,9 @@ indexes:
   - name: app_
   - name: created
     direction: desc
+
+- kind: SharePeriod
+  properties:
+  - name: app_uuid
+  - name: end
+    direction: desc

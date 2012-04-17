@@ -2,13 +2,15 @@
 
 # Buttons model
 # Extends from "App"
+from itertools import groupby
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from time import time
 from urllib import urlencode
 
 from django.utils import simplejson as json
@@ -19,6 +21,7 @@ from apps.buttons.models import Buttons
 from apps.email.models import Email
 from apps.link.models import Link
 
+from util.model import Model, ObjectListProperty
 from util.consts import *
 from util.helpers import generate_uuid
 from util.shopify_helpers import get_shopify_url
@@ -33,7 +36,7 @@ NUM_VOTE_SHARDS = 15
 
 
 class ButtonsShopify(Buttons, AppShopify):
-    billing_enabled = db.BooleanProperty(indexed= False, default= False)
+    billing_enabled = db.BooleanProperty(indexed=True, default= False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
@@ -47,27 +50,34 @@ class ButtonsShopify(Buttons, AppShopify):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
 
     def get_price(self):
-        now = datetime.now()
+        result = self._call_Shopify_API("GET", "shop.json?fields=created_at")
+
+        now          = datetime.utcnow()
+        shop_created = self._Shopify_str_to_datetime(result["shop"]["created_at"])
+        start_date   = max(shop_created, now - timedelta(days=365))
+        months       = ((now - start_date).days) / 30.0
+
         query_params = {
-            "created_at_min": (now - timedelta(days=365)).strftime("%Y-%m-%d %H:%M"),
+            "created_at_min": start_date.strftime("%Y-%m-%d %H:%M"),
             "updated_at_max": now.strftime("%Y-%m-%d %H:%M")
         }
 
         urlencoded_params = "?" + urlencode(query_params)
 
         result = self._call_Shopify_API("GET", "orders/count.json%s" % urlencoded_params)
-        count = int(result["count"]) / 12 #average over the year
+        orders = int(result["count"])
+        monthly_orders = orders / months if months else orders
 
         # PRICING CHART
-        if count < 10:
+        if monthly_orders < 10:
             price = 0.99 #non-profit
-        elif count < 20:
+        elif monthly_orders < 20:
             price = 2.99 #basic
-        elif count < 50:
+        elif monthly_orders < 50:
             price = 5.99 #professional
-        elif count < 100:
+        elif monthly_orders < 100:
             price = 9.99 #business
-        elif count < 200:
+        elif monthly_orders < 200:
             price = 17.99 #unlimited
         else:
             price = 19.99 #enterprise
@@ -76,7 +86,7 @@ class ButtonsShopify(Buttons, AppShopify):
         self.put()
         return price
 
-    def do_install( self ):
+    def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
 
@@ -192,6 +202,110 @@ class ButtonsShopify(Buttons, AppShopify):
                 except:
                     logging.error('encountered error with reinstall', exc_info=True)
         return app
+
+class SharedItem():
+    """An object that contains information about a share"""
+    def __init__(self, name, network, url, img_url=None, created=None):
+        """Constructor for SharedItems
+
+            name   : Name of the item
+            network: Network that the item was shared on
+            url    : URL where item is located, if available
+            img_url: URL of image for item, if available
+        """
+        # Should we also include a unique item ID? Can we obtain one?
+        self.name    = name
+        self.network = network
+        self.url     = url
+        self.img_url = img_url
+        self.created = created if created else time()
+
+class SharePeriod(Model):
+    """Model that manages shares for an application over some period"""
+    app_uuid = db.StringProperty(indexed=True)
+    start    = db.DateProperty(indexed=True)
+    end      = db.DateProperty(indexed=True)
+    shares   = ObjectListProperty(SharedItem, indexed=False)
+
+    def __init__(self, *args, **kwargs):
+        """Initialize this model """
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+        super(SharePeriod, self).__init__(*args, **kwargs)
+
+    def _validate_self(self):
+        """Ensure that this object is in a valid state"""
+        return (self.start < self.end)
+
+    @classmethod
+    def get_or_create(cls, app):
+        """Gets or creates a new SharePeriod instance"""
+        now = date.today()
+
+        # Get the latest period for this app
+        instance = cls.all()\
+                    .filter('app_uuid =', app.uuid)\
+                    .order('-end')\
+                    .get()
+
+        if instance is None or now > instance.end:
+            # Go back to Monday
+            # http://stackoverflow.com/questions/1622038/find-mondays-date-with-python
+            start = now - timedelta(days=now.weekday())
+            end   = start + timedelta(weeks=1)
+
+            instance = cls(app_uuid=app.uuid, start=start, end=end)
+
+        return instance
+
+    def get_shares_grouped_by_network(self):
+        items = self.shares
+        sorted_items   = sorted(items, key=lambda v: v.network)
+        group_by_network_iter = groupby(sorted_items, lambda v: v.network)
+
+        items_by_network  = []
+        for network_name, network in group_by_network_iter:
+            network_count = len(list(network))
+            percent = (100 * network_count) / len(self.shares)
+            items_by_network.append({
+                "network": network_name,
+                "shares": network_count,
+                "percent": percent
+            })
+
+        return items_by_network
+
+    #Maybe Refactor to use sort_shares_by_network? common functionality?
+    def get_shares_grouped_by_product(self):
+        items = self.shares
+        sorted_items   = sorted(items, key=lambda v: v.name)
+        group_by_name_iter = groupby(sorted_items, lambda v: v.name)
+
+        items_by_name  = []
+        for product_name, product in group_by_name_iter:
+            item = {}
+            item["name"] = product_name
+            product_shares = list(product) # evaluates the iterator
+            total_shares = len(product_shares)
+            item["total_shares"] = total_shares
+
+            networks = []
+            sorted_product_shares = sorted(product_shares,
+                                           key=lambda v: v.network)
+            group_by_network_iter = groupby(sorted_product_shares,
+                                            lambda v: v.network)
+            for network_name, network in group_by_network_iter:
+                network_count = len(list(network))
+                percent = (100 * network_count) / total_shares
+                networks.append({
+                    "network": network_name,
+                    "shares": network_count,
+                    "percent": percent
+                })
+            item["networks"] = sorted(networks, key=lambda v: v["shares"],
+                                      reverse=True)
+            items_by_name.append(item)
+        return items_by_name
+
 
 # TODO delete these deprecated functions after April 18, 2012 (1 month warning)
 def create_shopify_buttons_app(client, app_token):
