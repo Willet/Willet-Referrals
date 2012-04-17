@@ -185,7 +185,7 @@ ol {
 .tip {
     border: 1px solid #21847D;
     background: #006280;
-    color: white;
+    color: #FFF;
     padding: 5px;
 }
 .code {
@@ -509,7 +509,7 @@ div#right_header a:active {
     behavior: ("../js/PIE.htc");
 }
 .call_to_action.big {
-    color: white;
+    color: #FFF;
     font-family: helvetica, arial, tahoma, sans-serif;
     font-size: 3.0em;
     font-style: italic;
@@ -810,7 +810,7 @@ input[type="text"], textarea {
 }
 
 .default_label {
-    color: white;
+    color: #FFF;
     text-shadow: #474747 1px 1px 1px;
     font-size: 1.5em;
     margin-top: 30px;
@@ -969,7 +969,7 @@ button.blue {
 }
 .button.blue:hover,
 button.blue:hover {
-    color: white;
+    color: #FFF;
     background-color: #077BAD;
     background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #077BAD 100%);
     background: -webkit-gradient(linear, left top, left bottom, from(#AFE3FA), to(#077BAD), color-stop(0.05, #6CB8D9));
@@ -986,7 +986,7 @@ button.grey,
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    color: white;
+    color: #FFF;
     border-color: #AAA #999 #777;
     background: #DCDCDC;
     background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(167,167,167,1) 100%);

@@ -15,5 +15,8 @@ urlpatterns = [
     (r'/b/shopify/error.html',     		ButtonsShopifyInstallError),
     (r'/b/shopify/buttons.js',     		ButtonsShopifyServeScript),
     (r'/b/shopify/smart-buttons.js',    ButtonsShopifyServeSmartScript),
+    (r'/b/shopify/item_shared',         ButtonsShopifyItemShared),
+    (r'/b/shopify/start_report',        ButtonsShopifyEmailReports),
+    (r'/b/shopify/item_shared_report',  ButtonsShopifyItemSharedReport),
 ]
 
