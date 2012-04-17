@@ -884,8 +884,13 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    _willet.debug.set(true); //set to true if you want logging turned on
-    _willet.init();
+    // If on /cart page, silently bail
+    if (/cart\/?$/.test(window.location.href)) {
+        return;
+    } else {
+        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.init();
+    }
 } catch(e) {
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");

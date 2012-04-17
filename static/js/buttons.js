@@ -12,6 +12,12 @@
         // && typeof(window.console.error) ==='object') ) )
         // ? window.console 
         //: { log: function () {}, error: function () {} }; // debugging
+
+    // If on /cart page, silently bail
+    if (/cart\/?$/.test(window.location.href)) {
+        console.log("Buttons: on cart page, not running.");
+        return;
+    }
     
     var JSON;if(!JSON){JSON={};}
     /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
