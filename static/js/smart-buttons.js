@@ -884,10 +884,12 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    // If on /cart page, silently bail
     if (!/cart\/?$/.test(window.location.href)) {
+        // on most pages, run
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
+    } else {
+        // on cart page, bail
     }
 } catch(e) {
     (function() {
