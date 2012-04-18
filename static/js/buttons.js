@@ -14,7 +14,7 @@
                            && typeof(window.console.error) ==='function' )
                         || (typeof(window.console.log) === 'object' // IE 
                            && typeof(window.console.error) ==='object') ) )
-                ? window.console : { log: function () {}, error: function () {} } // debugging
+                ? window.console : { log: function () {}, error: function () {} }; // debugging
 
     // If on /cart page, silently bail
     if (/\/cart\/?$/.test(window.location.pathname)) {
