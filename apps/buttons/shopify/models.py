@@ -161,12 +161,13 @@ class ButtonsShopify(Buttons, AppShopify):
 
             script = """
                 <script type="text/javascript">
-                    (function(){
+                    (function(w){
                         /*----*/
-                        window._willet_shopconnection_preferences = %s;
+                        w._willet_shopconnection_config = %s;
                         /*----*/
-                    })
+                    }(window))
                 </script>
+                <div id="_willet_buttons_app"></div>
             """ % json_preferences
 
             self.queue_assets(assets=[{
@@ -196,8 +197,8 @@ class ButtonsShopify(Buttons, AppShopify):
 
         prefs = {
             'button_count'  : False,
-            'button_spacing': -1,
-            'button_padding': -1
+            'button_spacing': 5,
+            'button_padding': 5
         }
         try:
             result = self._call_Shopify_API("GET",

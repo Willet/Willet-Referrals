@@ -51,13 +51,13 @@ _willet.helpers = {
         return dict[key] ? true : false;
     }
 }
-var _willet = (function(me) {
+var _willet = (function(me, config) {
     var helpers = me.helpers;
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
+    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -483,12 +483,13 @@ var _willet = (function(me) {
 
     me.createButtons = function(productData) {
         _willet.debug.log("Buttons: finding buttons placeholder on page");
+
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = (buttonsDiv.getAttribute('button_count') === 'true');
-            var buttonSpacing = (buttonsDiv.getAttribute('button_spacing') ?  buttonsDiv.getAttribute('button_spacing') : '5') + 'px';
-            var buttonPadding = (buttonsDiv.getAttribute('button_padding') ? buttonsDiv.getAttribute('button_padding') : '5') + 'px';
+            var buttonCount = config.button_count;
+            var buttonSpacing = config.button_spacing + "px";
+            var buttonPadding = config.button_padding + "px";
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
@@ -654,7 +655,7 @@ var _willet = (function(me) {
     };
 
     return me;
-}(_willet));
+}(_willet, _willet_shopconnection_config));
 
 _willet.debug = (function (helpers) {
     var me = {};
