@@ -157,11 +157,16 @@ var _willet = (function(me, config) {
                     });
                     button.style.width = params.buttonCount ? '77px' : '43px';
 
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     var link = document.createElement("a");
                     link.href = "http://pinterest.com/pin/create/button/?" +
                         "url=" + encodeURIComponent( window.location.href ) + 
                         "&media=" + encodeURIComponent( params.photo ) + 
-                        "&description=" + encodeURIComponent("I found this on " + params.domain);
+                        "&description=" + encodeURIComponent(sharingMessage);
                     link.className = "pin-it-button";
                     link.innerHTML = "Pin It";
 
@@ -209,6 +214,10 @@ var _willet = (function(me, config) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
+                    if (config && config.sharing_message) {
+                        link.setAttribute('data-text',config.sharing_message);
+                    }
+
                     button.appendChild(link);
                     return button;
                 },
@@ -243,8 +252,6 @@ var _willet = (function(me, config) {
 
                     button.appendChild(gPlus);
 
-                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
-
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
                     window._willet_GooglePlusShared = function(response) {
@@ -252,12 +259,17 @@ var _willet = (function(me, config) {
                             itemShared("GooglePlus");
                         }
                     };
-                    
+
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     // Google is using the Open Graph spec
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                              { property: 'og:description', content: sharingMessage } ]
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -487,9 +499,9 @@ var _willet = (function(me, config) {
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = config.button_count;
-            var buttonSpacing = config.button_spacing + "px";
-            var buttonPadding = config.button_padding + "px";
+            var buttonCount   = (config && config.button_count) || false;
+            var buttonSpacing = (config && config.button_spacing || 5) + "px";
+            var buttonPadding = (config && config.button_padding || 5) + "px";
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit

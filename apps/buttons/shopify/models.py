@@ -193,11 +193,7 @@ class ButtonsShopify(Buttons, AppShopify):
             "theme_id": theme_id
         })
 
-        prefs = {
-            'button_count'  : False,
-            'button_spacing': 5,
-            'button_padding': 5
-        }
+        prefs = {}
         try:
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %

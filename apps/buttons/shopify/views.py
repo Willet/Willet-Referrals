@@ -135,10 +135,13 @@ class ButtonsShopifyWelcome(URIHandler):
 
 
         preferences = {
-            "button_count"  : (self.request.get("button-count") == "True"),
-            "button_spacing": self.request.get("button-spacing"),
-            "button_padding": self.request.get("button-padding")
+            "button_count"    : (self.request.get("button-count") == "True"),
+            "button_spacing"  : self.request.get("button-spacing"),
+            "button_padding"  : self.request.get("button-padding"),
+            "sharing_message" : self.request.get("sharing-message")
         }
+
+        # TODO: Verify that user submitted values are legitimate
 
         app.update_prefs(preferences)
 
@@ -178,12 +181,14 @@ class ButtonsShopifyWelcome(URIHandler):
 
         preferences = app.get_prefs()
 
+        # Use .get in case properties don't exist yet
         template_values = {
-            'action'        : page,
-            'button_count'  : preferences["button_count"],
-            'button_spacing': preferences["button_spacing"],
-            'button_padding': preferences["button_padding"],
-            'message'       : self.request.get("message") or "Welcome back!"
+            'action'         : page,
+            'button_count'   : preferences.get("button_count", False),
+            'button_spacing' : preferences.get("button_spacing", 5),
+            'button_padding' : preferences.get("button_padding", 5),
+            'sharing_message': preferences.get("sharing_message", ""),
+            'message'        : self.request.get("message", "Welcome Back!")
         }
 
         # prepopulate values
