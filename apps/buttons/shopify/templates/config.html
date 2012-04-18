@@ -55,7 +55,7 @@
 {% block content %}
 <div class="span-24 last shopconnection-header">
     <img src="/static/imgs/ShopConnection_icon_60x60.png" />
-    <h3>Welcome back!</h3>
+    <h3>{{ message }}</h3>
 </div>
 
 <div class="prepend-top span-24 last
@@ -76,7 +76,7 @@
                                type="radio"
                                value="False"
                                {% if not button_count %}checked{% endif %}/>
-                        <label for="no-button-count">Show button count</label>
+                        <label for="no-button-count">Hide button count</label>
                     </div>
                     <div class="config-option">
                         <label for="button-spacing">Button Spacing</label>

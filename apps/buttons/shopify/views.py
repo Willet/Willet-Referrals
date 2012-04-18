@@ -146,7 +146,8 @@ class ButtonsShopifyWelcome(URIHandler):
         page = build_url("ButtonsShopifyWelcome", qs={
             "t"   : self.request.get("t"),
             "shop": self.request.get("shop"),
-            "app" : "ButtonsShopify"
+            "app" : "ButtonsShopify",
+            "message": "Your configuration was saved successfully!"
         })
 
         self.redirect(page)
@@ -181,7 +182,8 @@ class ButtonsShopifyWelcome(URIHandler):
             'action'        : page,
             'button_count'  : preferences["button_count"],
             'button_spacing': preferences["button_spacing"],
-            'button_padding': preferences["button_padding"]
+            'button_padding': preferences["button_padding"],
+            'message'       : self.request.get("message") or "Welcome back!"
         }
 
         # prepopulate values
