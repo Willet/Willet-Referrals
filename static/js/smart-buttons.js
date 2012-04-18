@@ -135,9 +135,20 @@ var _willet = (function(me) {
                     fb.className = 'fb-like';
                     fb.setAttribute('data-send', 'false');
                     fb.setAttribute('data-layout', 'button_count');
-                    fb.setAttribute('data-width','90');
+                    fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
                     button.appendChild(fb);
+                    var s = document.createElement('style');
+                    s.type = 'text/css';
+                    s.media = 'screen';
+                    var css = ".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
+                             +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }";
+                    if (s.styleSheet) {
+                        s.styleSheet.cssText = css; // IE
+                    } else { 
+                        s.appendChild(document.createTextNode(css)); // Every other browser
+                    }
+                    button.appendChild(s);
                     return button;
                 },
                 "onLoad": function() {
@@ -238,7 +249,7 @@ var _willet = (function(me) {
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.overflow = 'visible';
-                    button.style.width = params.buttonCount ? '90px' : '32px';
+                    button.style.width = params.buttonCount ? '74px' : '32px';
 
                     var gPlus = document.createElement("div");
                     gplus.className = 'g-plusone';

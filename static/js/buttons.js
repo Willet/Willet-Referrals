@@ -52,7 +52,7 @@
     var getElemValue = function (elem, key, deflt) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
         if (elem) {
-            return button_div.getAttribute('data-'+key) || button_div.getAttribute('button_'+key) || deflt || false;
+            return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || deflt || false;
         } else {
             return undefined;
         }
@@ -249,7 +249,7 @@
                         d.appendChild(sv);
                         return d;
                     },
-                    "script": '' //svpply.com/api/all.js#xsvml=1'
+                    "script": '//svpply.com/api/all.js#xsvml=1'
                 },
                 "Twitter": {
                     "create": function () {
