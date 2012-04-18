@@ -105,9 +105,7 @@ class ButtonsShopifyWelcome(URIHandler):
             app, created = ButtonsShopify.get_or_create_app(details["client"],
                                                             token=token)
 
-            # If this is the first time we create the object,
-            # don't go to the config page
-            if created:
+            if created or not app.billing_enabled:
                 price = app.get_price()
 
                 template_values = {

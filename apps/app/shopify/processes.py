@@ -36,6 +36,7 @@ class DoUninstalledApp(URIHandler):
                 # (None client means "not installed")
                 app.old_client = client
                 app.client = None
+                app.billing_enabled = False
                 app.put_later()
                 uninstalled_apps_count += 1
         
