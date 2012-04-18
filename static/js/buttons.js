@@ -3,7 +3,7 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var DEBUG = true,
+    var DEBUG = false,
         DEFAULT_COUNT = 'false',
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
@@ -141,11 +141,12 @@
                         var d = createButton('facebook');
                         d.style.overflow = 'visible';
                         d.style.width = button_count ? '90px' : '48px';
-                        var fb = document.createElement('fb:like');
-                        fb.setAttribute('send', 'false');
-                        fb.setAttribute('layout', 'button_count');
-                        fb.width = '450';
-                        fb.setAttribute('show_faces', 'false');
+                        var fb = document.createElement('div');
+                        fb.className = 'fb-like';
+                        fb.setAttribute('data-send', 'false');
+                        fb.setAttribute('data-layout', 'button_count');
+                        fb.setAttribute('data-width', (button_count ? '90' : '48') );
+                        fb.setAttribute('data-show-faces', 'false');
                         d.appendChild(fb);
                         var s = document.createElement('style');
                         s.type = 'text/css';
@@ -191,11 +192,10 @@
                         var d = createButton('googleplus');
                         d.style.overflow = 'visible';
                         d.style.width = button_count ? '74px' : '32px';
-                        var g = document.createElement("g:plusone");
-                        g.setAttribute("size", "medium");
-                        if (!button_count) {
-                            g.setAttribute("annotation", "none");
-                        }
+                        var g = document.createElement("div");
+                        g.className = 'g-plusone';
+                        g.setAttribute("data-size", "medium");
+                        g.setAttribute("data-annotation", (button_count ? "bubble" : "none"));
                         d.appendChild(g);
                         // Google is using the Open Graph spec
                         var t, p, 
@@ -249,18 +249,19 @@
                         d.appendChild(sv);
                         return d;
                     },
-                    "script": '//svpply.com/api/all.js#xsvml=1'
+                    "script": '' //svpply.com/api/all.js#xsvml=1'
                 },
                 "Twitter": {
                     "create": function () {
                         var d = createButton('twitter');
-                        d.style.width = button_count ? '100px' : '58px';
-
+                        d.style.width = button_count ? '100px' : '56px';
                         var a = document.createElement('a');
                         a.href = 'https://twitter.com/share';
                         a.className = 'twitter-share-button';
                         a.setAttribute('data-lang','en');
-                        a.setAttribute('data-count', ( button_count ? 'horizontal' : 'none' ));
+                        if (!button_count) {
+                            a.setAttribute('data-count', 'none');
+                        }
                         d.appendChild(a);
                         return d;
                     },

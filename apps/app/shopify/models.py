@@ -573,8 +573,8 @@ class AppShopify(Model):
                     resp.status_code,
                     script_tag['script_tag']['src'],
                     self.store_url,
-                    resp,
-                    content
+                    resp.headers,
+                    resp.content
                 )
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
@@ -587,12 +587,12 @@ class AppShopify(Model):
                 # HTTP status 200's == success
                 logging.info('Installed asset, %s: %s' % (resp.status_code, asset['asset']['key']))
             else:
-                error_msg = 'Script tag install failed, %s: %s\n%s\n%s\n%s' % (
+                error_msg = 'Asset install failed, %s: %s\n%s\n%s\n%s' % (
                     resp.status_code,
                     asset['asset']['key'],
                     self.store_url,
-                    resp,
-                    content
+                    resp.headers,
+                    resp.content
                 )
                 logging.error(error_msg)
                 Email.emailDevTeam(error_msg)
@@ -641,7 +641,7 @@ class AppShopify(Model):
                 rpc = urlfetch.create_rpc()
                 rpc.callback = create_callback(handle_asset_result, rpc=rpc, asset=asset)
                 urlfetch.make_fetch_call(rpc=rpc, url=self._assets_url, payload=json.dumps(asset),
-                                         method='POST', headers=headers)
+                                         method='PUT', headers=headers)
                 rpcs.append(rpc)
 
         # Finish all RPCs, and let callbacks process the results.

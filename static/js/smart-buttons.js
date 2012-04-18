@@ -131,11 +131,12 @@ var _willet = (function(me) {
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.width = params.buttonCount ? '90px' : '48px';
-                    var fb = document.createElement('fb:like');
-                    fb.setAttribute('send', 'false');
-                    fb.setAttribute('layout', 'button_count');
-                    fb.width = '450';
-                    fb.setAttribute('show_faces', 'false');
+                    var fb = document.createElement('div');
+                    fb.className = 'fb-like';
+                    fb.setAttribute('data-send', 'false');
+                    fb.setAttribute('data-layout', 'button_count');
+                    fb.setAttribute('data-width','90');
+                    fb.setAttribute('data-show-faces', 'false');
                     button.appendChild(fb);
                     return button;
                 },
@@ -239,16 +240,13 @@ var _willet = (function(me) {
                     button.style.overflow = 'visible';
                     button.style.width = params.buttonCount ? '90px' : '32px';
 
-                    var gPlus = document.createElement("g:plusone");
-                    gPlus.setAttribute("size", "medium");
-                    if (!params.buttonCount) {
-                        gPlus.setAttribute("annotation", "none");
-                    }
+                    var gPlus = document.createElement("div");
+                    gplus.className = 'g-plusone';
+                    gPlus.setAttribute("data-size", "medium");
+                    gPlus.setAttribute("data-annotation", (button_count ? "bubble" : "none"));
                     gPlus.setAttribute("callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
-
-                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
 
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
@@ -617,6 +615,12 @@ var _willet = (function(me) {
             me.detectNetworks();
         }
 
+        // If on /cart page, silently bail
+        if (/\/cart\/?$/.test(window.location.pathname)) {
+            _willet.debug.log("Buttons: on cart page, not running.");
+            return;
+        }
+
         if(!isDebugging) {
             try {
                 _willet.debug.log("Buttons: initiating product.json request")
@@ -731,7 +735,7 @@ _willet.cookies = (function (helpers) {
         for(var i=0;i < ca.length;i++) {
             var c = ca[i];
             while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (helpers.indexOf(c, nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
         }
         return null;
     };
@@ -889,13 +893,8 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    if (!/\/cart\/?$/.test(window.location.pathname)) {
-        // on most pages, run
-        _willet.debug.set(true); //set to true if you want logging turned on
-        _willet.init();
-    } else {
-        // on cart page, bail
-    }
+    _willet.debug.set(false); //set to true if you want logging turned on
+    _willet.init();
 } catch(e) {
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
