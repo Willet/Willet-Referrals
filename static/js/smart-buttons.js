@@ -175,7 +175,7 @@ var _willet = (function(me) {
                     button.style.width = params.buttonCount ? '77px' : '43px';
 
                     var link = document.createElement("a");
-                    link.href = "http://pinterest.com/pin/create/button/?" +
+                    link.href = "//pinterest.com/pin/create/button/?" +
                         "url=" + encodeURIComponent( window.location.href ) + 
                         "&media=" + encodeURIComponent( params.photo ) + 
                         "&description=" + encodeURIComponent("I found this on " + params.domain);

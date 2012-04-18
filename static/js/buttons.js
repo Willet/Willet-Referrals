@@ -224,7 +224,7 @@
                                 "&media=" + encodeURIComponent( photo ) + 
                                 "&description=" + encodeURIComponent("I found this on " + domain);
                         a.className = 'pin-it-button';
-                        a.setAttribute('count-layout', "horizontal");
+                        a.setAttribute('count-layout', button_count ? "horizontal" : "none");
                         a.innerHTML = "Pin It";
                         d.appendChild(a);
                         return d;
