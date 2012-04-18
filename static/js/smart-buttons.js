@@ -726,7 +726,7 @@ _willet.cookies = (function (helpers) {
         for(var i=0;i < ca.length;i++) {
             var c = ca[i];
             while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (helpers.indexOf(c, nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
         }
         return null;
     };
@@ -884,7 +884,7 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    _willet.debug.set(true); //set to true if you want logging turned on
+    _willet.debug.set(false); //set to true if you want logging turned on
     _willet.init();
 } catch(e) {
     (function() {
