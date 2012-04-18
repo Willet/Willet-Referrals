@@ -81,8 +81,8 @@ class ClientShopify(Client):
                               token=token,
                               id=unicode(data['id']),
                               merchant=merchant)
-        
-        store.put () # critical install-time process; it cannot wait
+
+        store.put()
 
         # Update the merchant with data from Shopify
         merchant.update(full_name=data['shop_owner'],
@@ -94,23 +94,16 @@ class ClientShopify(Client):
                         postal_code= data['zip'],
                         phone=data['phone'],
                         client=store)
-        
-        logging.info({
-            'client_uuid': uuid,
-            'app_type'   : app_type
-        })
-        
+
+        logging.info("created store %r" % store)
+
         # Query the Shopify API to dl all Products
-        taskqueue.add(
-                url=build_url('FetchShopifyProducts'),
-                params={
-                    'client_uuid': uuid,
-                    'app_type'   : app_type
-                }
-            )
+        taskqueue.add(url=build_url('FetchShopifyProducts'),
+                      params={'client_uuid': uuid,
+                              'app_type': app_type})
 
         return store
-    
+
     @staticmethod
     def get_by_url(store_url):
         store_url = get_shopify_url(store_url)

@@ -14,14 +14,18 @@
     var app, instance, products, sys, topbar, user;
 
     var hash_index = -1;
-    var padding_elem = null;
-    var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }}; // keep track of this many products, max
+
+    // keep track of this many products, max
+    var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }};
     var SHAKE_DURATION = 600; // ms
     var SHAKE_WAIT = 700; // ms
+
+    var padding_elem = null;
     var topbar = null;
     var topbar_hide_button = null;
     var willt_code = null;
-    // CSS rules (except colorbox_css, which includes its own 'quotes';)
+
+    // CSS rules
     var colorbox_css = '{% include "../../plugin/templates/css/colorbox.css" %}';
     var popup_css = '{% include "../../plugin/templates/css/popup.css" %}';
     var app_css = '{{ app_css }}';
@@ -82,7 +86,7 @@
         };
     }
 
-    var manage_script_loading = function (scripts, ready_callback) {
+    var manageScriptLoading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when all are finished loading
         var i, scripts_not_ready;
         i = scripts_not_ready = scripts.length;
@@ -180,9 +184,9 @@
         var styles = colorbox_css + popup_css + app_css;
         var willet_style = d.createElement('style');
         var head_elem = d.getElementsByTagName('head')[0];
-            willet_style.type = 'text/css';
-            willet_style.setAttribute('charset','utf-8');
-            willet_style.setAttribute('media','all');
+        willet_style.type = 'text/css';
+        willet_style.setAttribute('charset','utf-8');
+        willet_style.setAttribute('media','all');
         if (willet_style.styleSheet) {
             willet_style.styleSheet.cssText = styles;
         } else {
@@ -219,23 +223,23 @@
                 ));
             };
 
-            var clean_array = function (actual) {
+            var cleanArray = function (actual) {
                 var i;
                 var new_array = [];
                 for(i = 0; i < actual.length; i++) {
-                    if (!!actual[i]) {
+                    if (Boolean(actual[i]) === true) {
                         new_array.push(actual[i]);
                     }
                 }
                 return new_array;
             };
 
-            var random_string = function () {
+            var randomString = function () {
                 //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
                 return String((new Date()).getTime()).replace(/\D/gi,'');
             };
 
-            var is_scrolled_into_view = function (elem) {
+            var isScrolledIntoView = function (elem) {
                 // http://stackoverflow.com/questions/487073
                 // returns true if elem has dimensions within the viewport.
                 var docViewTop = $(w).scrollTop();
@@ -245,7 +249,7 @@
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
             };
 
-            var get_largest_image = function (within) {
+            var getLargestImage = function (within) {
                 // Returns <img>.src for the largest <img> in <elem>within
                 // source: http://stackoverflow.com/questions/3724738
                 within = within || d; // defaults to document
@@ -262,19 +266,19 @@
                 return largest_image;
             };
 
-            var get_page_title = function () {
+            var getPageTitle = function () {
                 return d.title || '';
             };
 
-            var get_product_uuids = function () {
+            var getProductUUIDs = function () {
                 // currently, products are just their UUIDs (to save space)
-                return clean_array(products);
+                return cleanArray(products);
             };
 
             // Send action to server
-            var store_analytics = function (message) {
+            var storeAnalytics = function (message) {
                 var message = message || '{{ evnt }}';
-                var random_id = 'a' + random_string();
+                var random_id = 'a' + randomString();
 
                 $('<iframe />', {
                     id: random_id,
@@ -298,14 +302,14 @@
                 $('#_willet_padding').hide();
                 if (user.is_asker || instance.show_votes) {
                     // we are no longer showing results with the topbar.
-                    show_results();
+                    showResults();
                 } else {
-                    store_analytics(message);
-                    show_ask();
+                    storeAnalytics(message);
+                    showAsk();
                 }
             };
 
-            var show_colorbox = function (options) {
+            var showColorbox = function (options) {
                 var defaults = {
                     transition: 'fade',
                     close: '',
@@ -340,38 +344,38 @@
                 }
             }
 
-            var show_results = function () {
+            var showResults = function () {
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
-                show_colorbox({
+                showColorbox({
                     href: "{{URL}}/s/results.html?" + 
                            metadata({'refer_url': w.location.href})
                 });
             };
 
-            var show_ask = function (message) {
+            var showAsk = function (message) {
                 // shows the ask your friends iframe
                 if (products.length <= 1) {
                     // SIBT mode
-                    show_colorbox({
+                    showColorbox({
                         href: "{{URL}}{% url AskDynamicLoader %}" +
-                            "?products=" + get_product_uuids().join(',') +
+                            "?products=" + getProductUUIDs().join(',') +
                             "&" + metadata()
                     });
                 } else {
                     // WOSIB mode
-                    show_colorbox({
+                    showColorbox({
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
-                            "?products=" + get_product_uuids().join(',') +
+                            "?products=" + getProductUUIDs().join(',') +
                             "&" + metadata()
                     });
                 }
             };
 
-            var add_scroll_shaking = function (elem) {
+            var addScrollShaking = function (elem) {
                 var $elem = $(elem);
                 $(w).scroll(function () {
-                    if (is_scrolled_into_view($elem) && !$elem.data('shaken_yet')) {
+                    if (isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
                         setTimeout(function () {
                             $elem.shaker();
                             setTimeout(function () {
@@ -383,14 +387,14 @@
                 });
             }
 
-            var update_product_history = function () {
+            var updateProductHistory = function () {
                 // save past products' images
                 // check if page is visited twice or more in a row
-                if (get_largest_image() !== $.cookie('product1_image') &&
-                    get_largest_image() !== $.cookie('product2_image')) {
+                if (getLargestImage() !== $.cookie('product1_image') &&
+                    getLargestImage() !== $.cookie('product2_image')) {
                     // image 1 is more recent; shift products
                     $.cookie('product2_image', $.cookie('product1_image'));
-                    $.cookie('product1_image', get_largest_image());
+                    $.cookie('product1_image', getLargestImage());
                 }
 
                 // load product currently on page
@@ -399,13 +403,13 @@
                 if ($.inArray("{{product.uuid}}", products) === -1) { // unique
                     products.push("{{product.uuid}}"); // insert as products[0]
                     products.splice(PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
-                    products = clean_array(products); // remove empties
+                    products = cleanArray(products); // remove empties
                     $.cookie('products', products.join(',')); // save
                 }
                 return products;
             };
 
-            var save_product = function(data) {
+            var saveProduct = function(data) {
                 // auto-create product objects using page info, using
                 // (<div class='_willet_...' data-....>) or otherwise
                 // server decides if the input supplied is good to save.
@@ -415,10 +419,10 @@
                     var data = {
                         'client_uuid': data.client_uuid || '{{ client.uuid }}', // REQUIRED
                         'sibtversion': data.sibtversion || app.version,
-                        'title': data.title || '{{ product.title }}' || get_page_title(),
+                        'title': data.title || '{{ product.title }}' || getPageTitle(),
                         'description': data.description || '{{ product.description }}',
                         'images': data.images || '',
-                        'image': data.image || get_largest_image(d),
+                        'image': data.image || getLargestImage(d),
                         'price': data.price || '0.0',
                         'tags': data.tags || '',
                         'type': data.type || '',
@@ -453,12 +457,12 @@
 
             // combine current product with past products history from cookie
             // products can be read from func return or just the var, products
-            update_product_history();
+            updateProductHistory();
 
             // SIBT-JS
             if (sibtjs_elem.length > 0) { // is the div there?
                 console.log('at least one ._willet_sibt exists');
-                store_analytics();
+                storeAnalytics();
 
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
@@ -472,14 +476,14 @@
                 });
 
                 // shake ONLY the SIBT button when scrolled into view
-                add_scroll_shaking(sibtjs_elem);
-                save_product(sibtjs_elem.data());
+                addScrollShaking(sibtjs_elem);
+                saveProduct(sibtjs_elem.data());
             }
 
             // SIBT Connection
             if (sibt_elem.length > 0) { // is the div there?
                 console.log('#mini_sibt_button exists');
-                store_analytics();
+                storeAnalytics();
 
                 sibt_elem.click(button_onclick);
 
@@ -491,15 +495,15 @@
                     });
                 }
                 // shake ONLY the SIBT button when scrolled into view
-                add_scroll_shaking(sibt_elem);
-                save_product(sibt_elem.data());
+                addScrollShaking(sibt_elem);
+                saveProduct(sibt_elem.data());
             }
 
             // SIBT standalone
             if (!(app.detect_shopconnection && sibt_elem.length) && // if SIBT can show, and
                 purchase_cta.length > 0) {                      // if SIBT *should* show
                 console.log('#_willet_shouldIBuyThisButton exists');
-                store_analytics();
+                storeAnalytics();
 
                 // run our scripts
                 var hash = w.location.hash;
@@ -532,7 +536,7 @@
                             // user has hidden the top bar
                             topbar_hide_button.slideDown('fast');
                         } else {
-                            store_analytics('SIBTShowingTopBarAsk');
+                            storeAnalytics('SIBTShowingTopBarAsk');
                             show_topbar_ask();
                         }
                     }
@@ -592,20 +596,20 @@
                             .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
                             .appendTo(button)
                             .css('display', 'inline-block')
-                            .click (show_results);
+                            .click (showResults);
                         }
                         
                         var $wbtn = $('#_willet_button_v3 .button');
                         if ($wbtn.length > 0) {
                             $wbtn = $($wbtn[0]);
                         }
-                        add_scroll_shaking($wbtn);
+                        addScrollShaking($wbtn);
                     }
                 {% endif %} // app.button_enabled
             } // if #_willet_shouldIBuyThisButton
 
             {% if app.bottom_popup_enabled %}
-                var build_bottom_popup = function () {
+                var buildBottomPopup = function () {
                     var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     var popup = $('<div />', {
                         'id': 'willet_sibt_popup',
@@ -626,7 +630,7 @@
                     console.log('bottom popup enabled');
                     var clickedOff = false;
 
-                    var popup = build_bottom_popup();
+                    var popup = buildBottomPopup();
                     var show_popup = function () { popup.fadeIn('slow'); };
                     var hide_popup = function () { popup.fadeOut('slow'); };
 
@@ -670,7 +674,7 @@
                     });
                     $('#willet_sibt_popup .cta').click(function () {
                         console.log('did something');
-                        show_ask();
+                        showAsk();
                         hide_popup();
                     });
                     $('#willet_sibt_popup #anti_cta').click(function (e) {
@@ -702,7 +706,7 @@
                     if (instance.has_results && hash_index !== -1) {
                         // if vote has results and voter came from an email
                         console.log("has results?");
-                        show_results();
+                        showResults();
                     }
                 });
             }
@@ -717,5 +721,5 @@
     };
 
     // Go time! Load script dependencies
-    manage_script_loading(scripts_to_load, init);
+    manageScriptLoading(scripts_to_load, init);
 })(window, document);
