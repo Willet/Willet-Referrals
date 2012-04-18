@@ -37,28 +37,30 @@ class WOSIBDoVote(URIHandler):
             product per vote anyway)
         """
         instance_uuid = self.request.get('instance_uuid')
-        logging.info ("instance_uuid = %s" % instance_uuid)
+        logging.info("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get('product_uuid')
         
         instance = WOSIBInstance.get(instance_uuid)
-        app = instance.app_
-        user = User.get_or_create_by_cookie(self, app)
+        if not instance:
+            logging.error("no instance found")
+            return
 
         # Make a Vote action for this User
+        app = instance.app_
+        user = User.get_or_create_by_cookie(self, app)
         action = WOSIBVoteAction.create(user, instance, product_uuid)
         instance.increment_votes() # increase instance vote counter
         instance.put()
 
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
-        if email != "":
-            Email.WOSIBVoteNotification(
-                to_addr=email, 
-                name=instance.asker.get_full_name(), 
-                cart_url="%s#open_wosib=1" % instance.link.origin_domain, # cart url
-                client_name=app.client.name,
-                client_domain=app.client.domain
-        )
+        if email:
+            logging.debug("Sending email to asker!")
+            Email.WOSIBVoteNotification(to_addr=email,
+                                        name=instance.asker.get_full_name(), 
+                                        cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
+                                        client_name=app.client.name,
+                                        client_domain=app.client.domain)
 
         # client just cares if it was HTTP 200 or 500.
         self.response.out.write('ok')
