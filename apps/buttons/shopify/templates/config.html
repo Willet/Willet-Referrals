@@ -67,12 +67,12 @@
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
                     <div class="config-option">
-                        <input id="button-count" name="button-count"
+                        <input id="button-count" name="button_count"
                                type="radio"
                                value="True"
                                {% if button_count %}checked{% endif %}/>
                         <label for="button-count">Show button count</label>
-                        <input id="no-button-count" name="button-count"
+                        <input id="no-button-count" name="button_count"
                                type="radio"
                                value="False"
                                {% if not button_count %}checked{% endif %}/>
@@ -80,17 +80,17 @@
                     </div>
                     <div class="config-option">
                         <label for="button-spacing">Button Spacing</label>
-                        <input id="button-spacing" name="button-spacing"
+                        <input id="button-spacing" name="button_spacing"
                                type="text" value="{{ button_spacing }}"/>px
                     </div>
                     <div class="config-option">
                         <label for="button-padding">Button Padding</label>
-                        <input id="button-padding" name="button-padding"
+                        <input id="button-padding" name="button_padding"
                                type="text" value="{{ button_padding }}"/>px
                     </div>
                     <div class="config-option">
                         <label for="sharing-message">Sharing Message</label>
-                        <input id="sharing-message" name="sharing-message"
+                        <input id="sharing-message" name="sharing_message"
                                type="text" value="{{ sharing_message }}"/>
                         (for Twitter and Pinterest)
                     </div>

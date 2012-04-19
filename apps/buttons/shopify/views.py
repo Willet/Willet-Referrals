@@ -15,6 +15,7 @@ from apps.email.models              import Email
 from util.helpers                   import url as build_url
 from urlparse                       import urlparse
 from django.utils                   import simplejson as json
+from django.utils.html              import strip_tags
 
 #TODO: move these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
@@ -127,23 +128,28 @@ class ButtonsShopifyWelcome(URIHandler):
 
     @catch_error
     def post(self):
+        r = self.request
         details = get_details(self)
         app = ButtonsShopify.get_by_url(details["shop_url"])
         if not app:
             logging.error("error updating preferences: "
                           "'app' not found. Install first?")
 
+        # TODO: Find a generic way to validate arguments
+        def tryParse(func, val, default_value=0):
+            try:
+                return func(val)
+            except:
+                return default_value
 
-        preferences = {
-            "button_count"    : (self.request.get("button-count") == "True"),
-            "button_spacing"  : self.request.get("button-spacing"),
-            "button_padding"  : self.request.get("button-padding"),
-            "sharing_message" : self.request.get("sharing-message")
-        }
+        prefs = {}
+        prefs["button_count"]    = (r.get("button_count") == "True")
+        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
+        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
+        prefs["sharing_message"] = tryParse(strip_tags,
+                                            r.get("sharing_message"), "")
 
-        # TODO: Verify that user submitted values are legitimate
-
-        app.update_prefs(preferences)
+        app.update_prefs(prefs)
 
         #redirect to Welcome
         page = build_url("ButtonsShopifyWelcome", qs={
