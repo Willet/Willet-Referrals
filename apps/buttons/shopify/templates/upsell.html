@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block head %}
+        <link rel="stylesheet" href="/static/css/colorbox.css" type="text/css" />
+        <script src="/static/js/jquery.colorbox-min.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            $(document).ready(function () {
+                $('a.learn').click(function(event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    $.colorbox({
+                        inline: true,
+                        href: '.video-container',
+                        innerWidth: '600px',
+                        innerHeight: '441px',
+                        fixed: true
+                    });
+                });
+                {% if disabled %}
+                $('#install_smart').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyBeta %}";
+                });
+
+                $('#install_basic').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyBeta %}";
+                });
+                {% else %}
+                $('#install_smart').click(function () {
+                    // Track upgrade click for funnel reporting
+                    try {
+                        var pageTracker = _gat._getTracker("UA-23764505-9");
+                        pageTracker._trackPageview("/b/shopify/datum_smart");
+                    } catch (err) {
+                        // Report error?
+                    }
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyUpgrade %}?shop_url={{shop_url}}";
+                });
+
+                $('#install_basic').click(function () {
+                    // Redirect
+                    window.location = "{% url ButtonsShopifyInstructions %}?shop={{shop_url}}&t={{token}}";
+                });
+                {% endif %}
+            });
+        </script>
+        <style>
+            /*------------------------  PAGE STYLES ---------------------*/
+            .pricing-table {
+                background-color: white;
+                padding: 30px 0;
+                margin: 0 0 30px 0;
+            }
+            .pricing-table li {
+                padding: 9px 0 4px 0;
+                margin: 0;
+                height: 25px;
+                border-bottom: 1px dotted #999;
+            }
+            .pricing-table li.premium {
+                background-color: #FFEBEB;
+                padding-top: 15px;
+                padding-bottom: 7px;
+            }
+            .pricing-table>div {
+                float: left;
+            }
+            .description {
+                width: 40%;
+                margin-left: 5%;
+            }
+            .description ul {
+                margin: 107px 0 0 0;
+                padding: 0;
+            }
+            .description li {
+                color: #444;
+                padding-left: 15px;
+            }
+            .pricing-col {
+                border: 1px solid #E0E0E0;
+                margin: 0;
+                position: relative;
+                color: #444;
+                text-shadow: rgba(210, 210, 210, 0.296875) 1px 1px 0px;
+                background-color: #EDFFFF;
+                overflow: hidden;
+            }
+            .pricing-col.smart {
+                width: 30%;
+                border-radius: 15px 0 0 5px;
+                border-right: 0;
+                z-index: 2;
+                behavior: ("../js/PIE.htc");
+            }
+            .pricing-col.smart .title {
+                border-radius: 15px 0 0 0;
+                behavior: ("../js/PIE.htc");
+            }
+            .pricing-col.basic {
+                width: 20%;
+                border-radius: 0 15px 5px 0;
+                z-index: 1;
+                behavior: ("../js/PIE.htc");
+            }
+            .pricing-col.basic .title {
+                border-radius: 0 15px 0 0;
+                behavior: ("../js/PIE.htc");
+            }
+            .pricing-col ul {
+                margin: 0;
+                padding: 0;
+                list-style-type: none;
+            }
+            .pricing-col .title, .pricing-col .price {
+                border: 0;
+                text-align: center;
+                margin: 0;
+            }
+            .pricing-col .title {
+                letter-spacing: 0.05em;
+                font-size: 2.0em;
+                font-weight: bold;
+                color: #FFF;
+                background-color: #333;
+                padding: 10px 0 16px 0;
+            }
+            .pricing-col .price {
+                font-size: 2.0em;
+                padding: 10px 0 10px 0;
+            }
+            .pricing-col span.dollar {
+                font-size: 0.6em;
+                vertical-align: text-top;
+            }
+            .pricing-col span.per-month {
+                font-size: 0.6em;
+                vertical-align: text-bottom;
+            }
+            .pricing-col .features li {
+                text-align: center;
+                position: relative;
+                color: green;
+            }
+            .pricing-col .features li.not-included {
+                color: #B8B8B8;
+            }
+            .pricing-col .features a {
+                font-size: 0.9em;
+                border-bottom: 1px dotted #056380;
+            }
+            .pricing-col .call-to-action {
+                position: relative;
+                width: 100%;
+                padding: 15px 0;
+            }
+            .pricing-col .call-to-action>div {
+                margin: 0 auto;
+            }
+            .pricing-col .narrow {
+                width: 93px;
+            }
+            .pricing-col .wide {
+                width: 180px;
+            }
+            .pricing-col button {
+                text-align: center;
+                width: 100%;
+            }
+
+            /*----------------------------  ONE-OFFS ---------------------*/
+            
+            .learn {
+                border-bottom: 1px dotted #056380;
+            }
+            .under-wave {
+                position: relative;
+            }
+            .under-wave>img {
+                position: absolute;
+                bottom: -4px;
+            }
+            .coming-soon {
+                font-style: italic;
+                color: #777;
+            }
+
+            /*---------------------------- COLORBOX INJECT --------------------*/
+            .video-container {
+                padding: 20px 20px 0 20px;
+                overflow-y: hidden;
+            }
+            .video-container #videoDiv,
+            .video-container object {
+                display: block;
+                width: 560px;
+                height: 315px;
+                margin: 0 auto;
+                border: 0;
+            }
+            .video-container p {
+                margin: 20px 10%;
+                text-align: justify;
+            }
+        </style>
+{% endblock head %}
+
+{% block header-class %}tall{% endblock %}
+
+{% block content %}
+                <div class="span-24 last
+                            shopconnection-header">
+                    <img src="/static/imgs/ShopConnection_icon_60x60.png" />
+                    <h3>
+                        {{ shop_owner }}, thanks for installing ShopConnection.<br />
+                        Please choose which version is right for your store:
+                    </h3>
+                </div>
+
+                <div class="prepend-top span-24 last
+                            box-design content-container" >
+                    <h1>Grow Your Business By Increasing Your Stores Sharing</h1>
+                    <h3>For a limited time, Smart ShopConnection is free for 15 days. Upgrade, downgrade, or cancel anytime.</h3>
+
+                    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
+                		<div class="span-18
+                                    box-design pricing-table">
+                            <div class="description">
+                                <ul>
+                                    <li>Social buttons - <i>Pinterest, etc</i></li>
+                                    <li>Simple installation with support</li>
+                                    <li class="premium">Smart buttons &nbsp;&nbsp;<a href="/b/shopify/learn" class="learn">Learn more</a></li>
+                                    <li>Weekly sharing report</li>
+                                    <li>Customization control panel</li>
+                                    <li>15 day no-risk trial</li>
+                                </ul>
+                            </div>
+                            <div class="pricing-col box-design smart">
+                                <div class="title"><span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span></div>
+                                <div class="price"><span class="dollar">$</span>{{ price }}<span class="per-month">/ month</span></div>
+                                <ul class="features">
+                                    <li>&#x2713;</li>
+                                    <li>&#x2713;</li>
+                                    <li class="premium">&#x2713;</li>
+                                    <li class="coming-soon">coming soon</li>
+                                    <li class="coming-soon">coming soon</li>
+                                    <li>&#x2713;</li>
+                                </ul>
+                                <div class="call-to-action">
+                                    <div class="wide">
+                                        <button id="install_smart" class="{% if disabled %}grey{% else %}blue{% endif %}">Start your free trial!</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pricing-col box-design basic">
+                                <div class="title">Basic</div>
+                                <div class="price">Free</div>
+                                <ul class="features">
+                                    <li>&#x2713;</li>
+                                    <li>&#x2713;</li>
+                                    <li class="not-included premium">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
+                                    <li class="not-included">&#x2717;</li>
+                                </ul>
+                                <div class="call-to-action">
+                                    <div class="narrow">
+                                        <button id="install_basic" class="{% if disabled %}grey{% else %}blue{% endif %}">Choose</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:none"> 
+                    {% include 'video.html' %}
+                </div>
+{% endblock content %}
+
+{% block body-addendum %}
+        <div class="installation-steps">
+            <ul>
+                <li>1. Register Store</li>
+                <li class="on-this-step">2. Pick Version</li>
+                <li>3. Setup ShopConnection</li>
+            </ul>
+        </div>
+{% endblock body-addendum %}

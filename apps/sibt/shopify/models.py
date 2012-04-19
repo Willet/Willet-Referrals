@@ -3,29 +3,24 @@
 # SIBTShopify model
 # Extends from "Referral", which extends from "App"
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import datetime
 import hashlib
 import inspect
 import logging
 
-from django.utils                   import simplejson as json
-from google.appengine.api           import memcache
-from google.appengine.datastore     import entity_pb
-from google.appengine.ext           import db
-from google.appengine.ext.webapp    import template
+from django.utils import simplejson as json
+from google.appengine.api import memcache
+from google.appengine.ext import db
+from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
-from apps.client.models      import Client
-from apps.email.models       import Email
-from apps.sibt.models        import SIBT 
-from apps.user.models        import User
-from util                    import httplib2
-from util.consts             import *
-from util.helpers            import generate_uuid
-from util.helpers            import url as reverse_url
+from apps.email.models import Email
+from apps.sibt.models import SIBT
+from util.consts import *
+from util.helpers import generate_uuid
+from util.helpers import url as reverse_url
 
 # ------------------------------------------------------------------------------
 # SIBTShopify Class Definition -------------------------------------------------
@@ -33,20 +28,10 @@ from util.helpers            import url as reverse_url
 class SIBTShopify(SIBT, AppShopify):
     # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
+    
+    def _validate_self(self):
+        return True
 
-    # Version number of the app
-    # Version 1 = [Beginning, Nov. 22, 2011]
-    # Version 2 = [Nov. 23, 2011, Present]
-    # Differences between versions: version 1 uses script_tags API to install scripts
-    # version 2 uses asset api to include liquid
-    # version 3: "sweet buttons upgrade"
-    version    = db.StringProperty(default='3', indexed=False)
-    
-    # STRING property of any integer
-    # change on upgrade; new installs get this as version.
-    CURRENT_INSTALL_VERSION = '3'
-    
-    
     defaults = {
         'willet_button': {
             'color': '333333',
@@ -118,12 +103,12 @@ class SIBTShopify(SIBT, AppShopify):
             'button_background_color': '#C1F0F5',
             'button_text_align': 'center',
             'button_border_radius': '4',
-            'button_background_image': '''  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
+            'button_background_image': """  background-image: linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -o-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -moz-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -webkit-linear-gradient(top, #c9f7fa, #a1eff5);
                                             background-image: -ms-linear-gradient(top, #c9f7fa, #a1eff5);
-                                       ''',
+                                       """,
             'button_box_shadow': '0 1px 0 #BBB',
             'button_shadow_hover': '#BBB',
             'button_others': '', # place whatever extra CSS in here
@@ -137,42 +122,10 @@ class SIBTShopify(SIBT, AppShopify):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
-    def _memcache_by_store_url(self):
-        success1 = memcache.set(
-                self.store_url,
-                db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-        if hasattr (self, 'extra_url'):
-            # if you have an extra URL, you need to memcache the app by extra URL as well.
-            success2 = memcache.set(
-                    self.extra_url,
-                    db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-            return success1 and success2
-        return success1
-
-    def put(self):
-        """ Memcache by the store_url as well"""
-        super(SIBTShopify, self).put()
-        self._memcache_by_store_url()
-    
     # Retreivers --------------------------------------------------------------------
     @classmethod
     def get_by_uuid(uuid):
         return cls.get(uuid)
-
-    @staticmethod
-    def get_by_store_url(url):
-        data = memcache.get(url)
-        if data:
-            return db.model_from_protobuf(entity_pb.EntityProto(data))
-
-        app = SIBTShopify.all().filter('store_url =', url).get()
-        if not app:
-            # no app in DB by store_url; try again with extra_url
-            app = SIBTShopify.all().filter('extra_url =', url).get()
-        
-        if app:
-            app._memcache_by_store_url()
-        return app
 
     @staticmethod
     def get_by_store_id(store_id):
@@ -185,27 +138,28 @@ class SIBTShopify(SIBT, AppShopify):
     
     # Constructors -----------------------------------------------------------------------------
     @staticmethod
-    def create(client, token):
-        uuid = generate_uuid( 16 )
+    def create(client, token, email_client=True):
+        uuid = generate_uuid(16)
         logging.debug("Creating SIBTShopify version '%s'" % SIBTShopify.CURRENT_INSTALL_VERSION)
         app = SIBTShopify(
-                        key_name = uuid,
-                        uuid = uuid,
-                        client = client,
-                        store_name = client.name, # Store name
-                        store_url = client.url, # Store url
-                        store_id = client.id, # Store id
-                        store_token = token,
-                        version = SIBTShopify.CURRENT_INSTALL_VERSION )
+            key_name=uuid,
+            uuid=uuid,
+            client=client,
+            store_name=client.name, # Store name
+            store_url=client.url, # Store url
+            store_id=client.id, # Store id
+            store_token=token,
+            version=SIBTShopify.CURRENT_INSTALL_VERSION
+        )
         app.put()
         
-        app.do_install()
+        app.do_install(email_client)
        
         return app
 
     # 'Retreive or Construct'ers -------------------------------------------------------------
     @classmethod
-    def get_or_create(cls, client, token=None):
+    def get_or_create(cls, client, token=None, email_client=True):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
         app = cls.get_by_store_url(client.url)
         if app is None:
@@ -216,12 +170,12 @@ class SIBTShopify(SIBT, AppShopify):
                 logging.warn("Reinstalling app.")
                 try:
                     app.store_token = token
-                    app.client      = app.old_client if app.old_client else client
-                    app.old_client  = None
+                    app.client = app.old_client if app.old_client else client
+                    app.old_client = None
                     app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
                     app.put()
 
-                    app.do_install()
+                    app.do_install(email_client)
                 except:
                     logging.error('Encountered error with reinstall:', exc_info=True)
         else:
@@ -230,7 +184,7 @@ class SIBTShopify(SIBT, AppShopify):
         return app
 
     # Shopify API calls -------------------------------------------------------------
-    def do_install(self):
+    def do_install(self, email_client=True):
         """Installs this instance"""
         if self.version == '3': # sweet buttons has different on-page snippet.
             script_src = """<!-- START willet sibt for Shopify -->
@@ -288,8 +242,10 @@ class SIBTShopify(SIBT, AppShopify):
             }
         }]
         # Install yourself in the Shopify store
-        self.install_webhooks(product_hooks_too=True)
-        self.install_assets(assets=liquid_assets)
+        self.queue_webhooks(product_hooks_too=True)
+        self.queue_assets(assets=liquid_assets)
+
+        self.install_queued()
 
         # Email DevTeam
         Email.emailDevTeam(
@@ -301,10 +257,11 @@ class SIBTShopify(SIBT, AppShopify):
         )
 
         # Fire off "personal" email from Fraser
-        Email.welcomeClient( "Should I Buy This", 
-                             self.client.merchant.get_attr('email'), 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name )
+        if email_client:
+            Email.welcomeClient("Should I Buy This", 
+                                 self.client.merchant.get_attr('email'), 
+                                 self.client.merchant.get_full_name(), 
+                                 self.client.name)
 
     # CSS Methods -------------------------------------------------------------
     def reset_css(self):
@@ -334,7 +291,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     def generate_css(self):
         class_defaults = SIBTShopify.get_default_dict()
-        logging.info('class_defaults : %s' % class_defaults )
+        logging.info('class_defaults : %s' % class_defaults)
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
@@ -378,4 +335,5 @@ class SIBTShopify(SIBT, AppShopify):
         logging.error('Deprecated method get_default_button_css should be\
                        replaced by %s.get_default_css: %s' % (cls,  inspect.stack()[0][3]))
         return cls.get_default_css()
+
 # end class

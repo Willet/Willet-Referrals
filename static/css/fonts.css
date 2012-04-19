@@ -33,3 +33,17 @@
     font-style: normal;
 
 }
+
+@font-face {
+    font-family: 'Merriweather';
+    src: url('/static/fonts/Merriweather-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Overlock';
+    src: url('/static/fonts/Overlock-Regular-OTF.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}

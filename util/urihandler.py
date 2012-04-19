@@ -1,19 +1,21 @@
 #!/usr/bin/python
 
-__author__      = "Willet Inc."
-__copyright__   = "Copyright 2012, Willet Inc."
+__author__ = "Willet Inc."
+__copyright__ = "Copyright 2012, Willet Inc."
 
 import logging, os
 import inspect
 
-from google.appengine.ext        import webapp
+from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import Request
 
 from apps.client.models import Client
-from util.consts        import *
-from util.gaesessions   import get_current_session
-from util.templates     import render 
+from apps.user.models import User
+from util.consts import *
+from util.cookies import LilCookies
+from util.gaesessions import get_current_session
+from util.templates import render 
 
 
 class SuperRequest(Request):
@@ -80,7 +82,7 @@ class URIHandler(webapp.RequestHandler):
 
         session = get_current_session()
         session.regenerate_id()
-        email   = session.get('email', '')
+        email = session.get('email', '')
         if email:
             self.db_client = Client.get_by_email(email)
         else:
@@ -90,6 +92,21 @@ class URIHandler(webapp.RequestHandler):
 
         return self.db_client
     
+    def get_browser(self):
+        if 'user-agent' in self.request.headers:
+                return self.request.headers['user-agent'].lower()
+        return '' # default is str(nothing)
+    
+    def get_user(self):
+        """ Reads a cookie, returns user. Does not auto-create. """
+        user_cookie = read_user_cookie(self)
+        if user_cookie:
+            user = User.get(user_cookie)
+            if user:
+                ip = self.request.remote_addr
+                user.add_ip(ip)
+                return user
+
     def render_page(self, template_file_name, content_template_values, template_path=None):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
@@ -115,7 +132,7 @@ class URIHandler(webapp.RequestHandler):
         elif app_path != None:
             path = os.path.join(app_path, path)
 
-        logging.info("Rendering %s" % path )
+        logging.info("Rendering %s" % path)
         self.response.headers.add_header('P3P', P3P_HEADER)
         return render(path, merged_values)
         #return template.render(path, merged_values)
@@ -131,4 +148,20 @@ class URIHandler(webapp.RequestHandler):
                 app_path = '/'.join(parts[:-1])
 
         return app_path
+
+    def set_cookie(field, value):
+        """Sets a cookie on the browser"""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        cookie.set_secure_cookie(
+            name=field,
+            value=value,
+            expires_days=365*10,
+            domain='.%s' % APP_DOMAIN
+        )
+        
+    def get_cookie(field):
+        """Retrieves a cookie value from the browser; None if N/A."""
+        cookie = LilCookies(self, COOKIE_SECRET)
+        return cookie.get_secure_cookie(name=field)
+
 # end class

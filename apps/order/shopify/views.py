@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-__author__      = "Willet, Inc."
-__copyright__   = "Copyright 2011, Willet, Inc"
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2011, Willet, Inc"
 
 import os, re, urllib
 
@@ -15,11 +15,12 @@ from time import time
 from urlparse import urlparse
 
 from apps.client.shopify.models import ClientShopify
-from apps.user.models   import User
+from apps.user.models import User
 
 from util.consts import SECURE_URL
+from util.urihandler import URIHandler
 
-class OrderJSLoader(webapp.RequestHandler):
+class OrderJSLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
     
@@ -32,7 +33,7 @@ class OrderJSLoader(webapp.RequestHandler):
             shop_url = 'http://%s' % shop_url 
 
         # Grab Shopify Store
-        client = ClientShopify.get_by_url( shop_url )
+        client = ClientShopify.get_by_url(shop_url)
 
         # Grab all template values
         template_values = {

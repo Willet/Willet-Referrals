@@ -3,7 +3,7 @@
 import random
 import logging
 
-from google.appengine.ext    import db
+from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import deferred
@@ -18,7 +18,7 @@ class MemcacheBucketConfig(Model):
     count = db.IntegerProperty(default = 20)
     _memcache_key_name = 'name'
     
-    _memcache_fields = ['id', 'name']
+    memcache_fields = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs[self._memcache_key_name] if self._memcache_key_name in kwargs else None 
@@ -95,8 +95,14 @@ class MemcacheBucketConfig(Model):
         return cls.all().filter('%s =' % cls._memcache_key_name, name).get()
 
 def batch_put(mbc_name, bucket_key, list_keys, decrementing=False):
-    # TODO - make classmethod of MemcacheBucketConfig
-    from apps.user.models import *
+    """ Deferred task to put buckets in datastore
+
+    Deferred is going to pickle this, so to remain usable:
+      - must be a function so the pickled size is reasonable
+      - must import all module dependencies so that the unpickled code knows
+        where to find them
+    """
+    from apps.user.models import MemcacheBucketConfig, batch_put
 
     logging.info("Batch putting %s to memcache: %s" % (mbc_name, list_keys))
     mbc = MemcacheBucketConfig.get_or_create(mbc_name)

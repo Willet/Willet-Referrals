@@ -13,17 +13,21 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 # models
 from apps.link.models import CodeCounter
 from apps.link.models import Link
-from apps.app.models import App
+from apps.app.models import get_app_by_id, App
 
 # helpers
 from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
 from util.consts import *
 from util.urihandler import URIHandler
 
-class TrackWilltURL( webapp.RequestHandler ):
-    """This handler tracks click-throughs on a given code. It tests
-       for the presence of a cookie that it also sets in order to ensure
-       incremental click-throughs are unique"""
+
+class TrackWilltURL(URIHandler):
+    """ Tracks click-throughs on a given code.
+
+    It tests for the presence of a cookie that it also sets in order to ensure
+    incremental click-throughs are unique.
+
+    """
 
     def get( self, code ):
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -49,8 +53,9 @@ class TrackWilltURL( webapp.RequestHandler ):
             set_clicked_cookie(self.response.headers, code)
 
         return
-            
-class InitCodes(webapp.RequestHandler):
+
+
+class InitCodes(URIHandler):
     """Run this script to initialize the counters for the willt
        url code generators"""
     def get(self):
@@ -65,27 +70,33 @@ class InitCodes(webapp.RequestHandler):
             n += 1
         self.response.out.write("%s counters initialized" % n)
 
-class CleanBadLinks( webapp.RequestHandler ):
+
+class CleanBadLinks(URIHandler):
+    """ Looks for links that are missing a user """
     def get(self):
         links = Link.all().filter('user =', None)
 
         count = 0
-        msg = 'Cleaning the bad links'
-        for l in links:
-            clicks = l.count_clicks()
-            try:
-                if l.user == None and clicks != 0:
-                    count += 1
-                    msg += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
+        result   = 'Cleaning the bad links'
+        try:
+            for l in links:
+                clicks = l.count_clicks()
+                try:
+                    if l.user == None and clicks != 0:
+                        count += 1
+                        result   += "<p> URL: %s Clicks: %d Code: %s Campaign: %s Time: %s</p>" % (l.target_url, clicks, l.willt_url_code, l.campaign.title, l.creation_time)
 
+                        l.delete()
+                except Exception,e:
                     l.delete()
-            except Exception,e:
-                l.delete()
-                logging.warn('probably unable to resolve property: %s' % e)
+                    logging.warn('probably unable to resolve property: %s' % e)
+        except TypeError:
+            logging.warn("Expected <google.appengine.datastore.Key> or <google.appengine.ext.db.Model>, got an item in %r" % links)
 
-        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % (count, msg))
+        logging.info("CleanBadLinks Report: Deleted %d Links. (%s)" % ( count, result ) )
 
-class IncrementCodeCounter(webapp.RequestHandler):
+
+class IncrementCodeCounter(URIHandler):
     """ This was getting called every time a willet code was being
         created, usually taking ~100ms. Moved to a task to speed up
         page load times"""

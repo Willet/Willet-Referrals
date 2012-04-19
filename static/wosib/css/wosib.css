@@ -31,6 +31,7 @@
     border-radius:5px;
     background-color:#def;
     box-shadow: inset 0 0 3px 3px #bcf;
+    overflow:hidden;
 }
 #cart_items_display img, #cart_items_display input, #cart_items_display label {
     clear: both;
@@ -41,6 +42,7 @@
     display: none;
 }
 #cart_items_display img {
+    max-width: 150px;
     max-height: 150px;
     margin-bottom: 12px;
 }

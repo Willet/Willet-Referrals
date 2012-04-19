@@ -61,55 +61,60 @@
 {% endblock head %}
 
 {% block content %}
-    <div class="lower-15 span-24 last right_col">
-        <div id="right_header" class="span-24 last">
-            <p><a target="_blank" href="/s/shopify/beta">Check Out Our Other Shopify App!</a></p>
-        </div>
-    </div>
+                    <div class="lower-50 span-24 last
+                                center">
+                        <img width="400px" src="/static/imgs/shopconnection_text.png">
+                    </div>
 
-    <div class="span-24 last lower-15 center">
-        <img width="400px" src="/static/imgs/shopconnection_text.png">
-    </div>
+                    <div class="prepend-4 span-6">
+                        <img src="/static/imgs/ShopConnectionLogo.png" width="250" />
+                    </div>
+                    <div class="prepend-1 span-11 last">
+                        <p class="span-11 last">Drive social traffic to your store by using social buttons specifically optmized for online stores!
 
-    <div class="prepend-4 span-6">
-        <img src="/static/imgs/ShopConnectionLogo.png" width="250px" />
-    </div>
-    <div class="prepend-1 span-11 last">
-        <p class="span-11 last">Drive social traffic to your store by using social buttons specifically optmized for online stores!
+                            <div id="_willet_buttons_app" style="background-color: white; border-radius: 10px; margin-left: 90px; padding: 5px;height:24px; width: 178px;"> 
+                                <div style="float: left; margin-top: 2px; margin-right: 5px; width: 43px !important;">
+                                    <a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2Fmonahan-braun4718.myshopify.com%2Fproducts%2Fposter&media=http%3A%2F%2Fstatic.shopify.com%2Fs%2Ffiles%2F1%2F0104%2F0742%2Fproducts%2Fpixel_poster_halloween_full_large.jpg%3F85&description=A%20really%20swanky%20poster!" class="pin-it-button" count-layout="horizontal">Pin It</a>
+                                    <script type="text/javascript" src="http://assets.pinterest.com/js/pinit.js"></script>
+                                </div>
+                                <div style="float: left; margin-top: 2px; margin-right: 5px; width: 57px !important;">
+                                    <a id="FancyButton" href="http://www.thefancy.com/fancyit?  ItemURL=http://site.com/products/shirt &Title=A%20nice%20Blue%20Shirt &Category=Mens&ImageURL=http://site.com/images/shirt-blue.jpeg">Fancy</a>
+                                    <script src="http://www.thefancy.com/fancyit.js" type="text/javascript"></script>
+                                </div>
+                                <div style="float: left; margin-top: 1px; margin-right: 5px; width: 61px !important;">
+                                    <a href="http://www.tumblr.com/share" title="Share on Tumblr" style="display:inline-block; text-indent:-9999px; overflow:hidden; width:62px; height:20px; background:url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent;">Share on Tumblr</a>
+                                </div>
+                            </div>
+                        </p>
+                        <p class="span-11 append-bottom last">
+                            These buttons can be placed anywhere on your product pages. 
+                            <br /><br />
+                            Installation takes no more than 10 minutes and we're here to support you at every step!
+                        </p>
+                    </div>
 
-            <div id="_willet_buttons_app" style="background-color: white; border-radius: 10px; margin-left: 90px; padding: 5px;height:28px; width: 216px;"> 
-                <div style="float: left; margin-top: 2px; margin-right: 5px; width: 61px !important;">
-                    <a href="http://www.tumblr.com/share" title="Share on Tumblr" style="display:inline-block; text-indent:-9999px; overflow:hidden; width:61px; height:20px; background:url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent;">Share on Tumblr</a>
-                </div>
-                <div style="float: left; margin-right: 5px; width: 50px !important;">
-                    <a href="http://pinterest.com/pin/create/button/?url=http%3A%2F%2Fmonahan-braun4718.myshopify.com%2Fproducts%2Fposter&media=http%3A%2F%2Fstatic.shopify.com%2Fs%2Ffiles%2F1%2F0104%2F0742%2Fproducts%2Fpixel_poster_halloween_full_large.jpg%3F85&description=A%20really%20swanky%20poster!" class="pin-it-button" count-layout="horizontal">Pin It</a>
-                    <script type="text/javascript" src="http://assets.pinterest.com/js/pinit.js"></script>
-                </div>
-                <div style="float: left; margin-top: 2px; margin-right: 5px; width: 90px !important;">
-                    <a id="FancyButton" href="http://www.thefancy.com/fancyit?  ItemURL=http://site.com/products/shirt &Title=A%20nice%20Blue%20Shirt &Category=Mens&ImageURL=http://site.com/images/shirt-blue.jpeg">Fancy</a>
-                    <script src="http://www.thefancy.com/fancyit.js" type="text/javascript"></script>
-                </div>
-            </div>
-        </p>
-        <p class="span-11 append-bottom last">
-            These buttons can be placed anywhere on your product pages. 
-            <br /><br />
-            Installation takes no more than 10 minutes and we're here to support you at every step!
-        </p>
-    </div>
-
-    <div class="about prepend-top append-bottom span-24 last center">
-        <div>
-            <input type="hidden" id="input_default" value="your store name" />
-            Enter <input type="text" id="site_input" value="Your store name" />.myshopify.com
-            <button id="do_install">Install Now</button>
-        </div>
-    </div>
-    
-    <div class="about prepend-top append-bottom span-24 last center">
-        or copy your install url manually:<br />
-        <div id="install_url">
-            <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SHOPIFY_API_KEY}}</a>
-        </div>
-    </div>
+                    <div class="about prepend-top append-bottom span-24 last center">
+                        <div>
+                            <input type="hidden" id="input_default" value="your store name" />
+                            Enter <input type="text" id="site_input" value="Your store name" />.myshopify.com
+                            <button id="do_install">Install Now</button>
+                        </div>
+                    </div>
+                    
+                    <div class="about prepend-top append-bottom span-24 last center">
+                        or copy your install url manually:<br />
+                        <div id="install_url">
+                            <a id="install_link" href="">https://<span id="site">your site</span>.myshopify.com/admin/api/auth?api_key={{SHOPIFY_API_KEY}}</a>
+                        </div>
+                    </div>
 {% endblock content %}
+
+{% block body-addendum %}
+        <div class="installation-steps">
+            <ul>
+                <li class="on-this-step">1. Register Store </li>
+                <li>2. Pick Version </li>
+                <li>3. Setup ShopConnection </li>
+            </ul>
+        </div>
+{% endblock %}

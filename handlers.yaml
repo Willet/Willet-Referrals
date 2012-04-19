@@ -24,9 +24,21 @@ handlers:
 - url: /w3c
   static_dir: w3c/
 
-- url: /b/shopify/load(/.*)?
+- url: /b/shopify/load/buttons.js
   static_files: static/js/buttons.js
   upload: static/js/buttons.js
+
+- url: /b/shopify/load/smart-buttons.js
+  static_files: static/js/smart-buttons.js
+  upload: static/js/smart-buttons.js
+
+- url: /b/shopify/start_report
+  script: urls.py
+  login: admin
+
+- url: /b/shopify/item_shared_report
+  script: urls.py
+  #login: admin
 
 - url: /static
   static_dir: static

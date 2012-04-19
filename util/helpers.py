@@ -7,7 +7,7 @@ from urlparse import urlparse
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 
-from util.consts  import *
+from util.consts import *
 from util.cookies import LilCookies
 
 def to_unicode(something):
@@ -92,20 +92,17 @@ def to_dict(something, recursion=0):
     return output
 
 def get_target_url(referrer):
-    if referrer is not None:
-        target = None
+    """ Clean up a URL to only contain protocol://domain.com/file.htm """
+    target = ""
+    if referrer:
         try:
-            page_url = urlparse( referrer )
-            target   = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
-            return target
+            page_url = urlparse(referrer)  # urlparse does not raise errors
+            if page_url.scheme and page_url.netloc:
+                target = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
         except Exception, e:
-            logging.warn('error parsing referer %s: %s' % (
-                    referrer,
-                    e
-                ),
-                exc_info=True
-            )
-    return ""
+            logging.warn('error parsing referer %s: %s' % (referrer,e),
+                         exc_info=True)
+    return target
 
 def isGoodURL(url):
     if len(url) < 11:
@@ -117,7 +114,7 @@ def isGoodURL(url):
 
     return True
             
-def generate_uuid( digits ):
+def generate_uuid(digits):
     """Generate a 'digits'-character hex endcoded string as
     a random identifier, with collision detection"""
     while True:    
@@ -151,6 +148,7 @@ def get_request_variables(targets, rh):
     return rd
 
 # Cookie Stuff
+
 def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""
     logging.info("Setting a user cookie: %s" % user_uuid)
@@ -165,7 +163,7 @@ def set_user_cookie(request_handler, user_uuid):
             expires_days= 365*10,
             domain = '.%s' % APP_DOMAIN)
 
-def read_user_cookie( request_handler ):
+def read_user_cookie(request_handler):
     """Sets a cookie to identify a user"""
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
     user_uuid = cookieutil.get_secure_cookie(name = 'willet_user_uuid')
@@ -211,7 +209,7 @@ def set_visited_cookie(headers):
     headers['Set-Cookie'] = appCookie.output()
 
 # Decorators
-def admin_required( fn ):
+def admin_required(fn):
     def check(self, param=None):
         from apps.user.models import User
         user_cookie = read_user_cookie(self)
@@ -220,13 +218,13 @@ def admin_required( fn ):
         try:
             if not user or not user.is_admin():
                 logging.error('@admin_required: Non-admin is attempting to access protected pages')
-                self.redirect ( '/' )
+                self.redirect ('/')
                 return
             else:   
-                fn( self, param )
+                fn(self, param)
         except Exception, e:
             logging.error('@admin_required - Error occured, redirecting to homepage: %s' % e, exc_info=True)
-            self.redirect ( '/' )
+            self.redirect ('/')
             return
     return check
 
@@ -252,7 +250,7 @@ user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, h
     'Java/1.6.0_16', 'Java/1.6.0_26', 'Ruby', 'Twitturly / v0.6' 
     'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2) Gecko/20100115 Firefox/3.6 (FlipboardProxy/1.1; +http://flipboard.com/browserproxy)' ]
 
-def is_blacklisted( header ):
+def is_blacklisted(header):
     if 'bot' in header or 'Bot' in header or 'BOT' in header or len(header) == 0:
         return True
     else:

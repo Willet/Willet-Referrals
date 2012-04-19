@@ -36,10 +36,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-__author__    = 'John-Kim Murphy'
+__author__ = 'John-Kim Murphy'
 __copyright__ = 'Copyright 2010, John-Kim Murphy'
-__credits__   = ['John-Kim Murphy',]
-__version__   = '1.3.0.0'
+__credits__ = ['John-Kim Murphy',]
+__version__ = '1.3.0.0'
 
 import urllib2
 import simplejson as json

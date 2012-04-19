@@ -25,7 +25,7 @@ from util.helpers import *
 from util.urihandler import URIHandler
 
 
-class FetchFacebookData(webapp.RequestHandler):
+class FetchFacebookData(URIHandler):
     """Fetch facebook information about the given user"""
     def post(self):
         def txn(user):
@@ -74,12 +74,12 @@ class FetchFacebookData(webapp.RequestHandler):
         # HACK to fix email. 
         # We cannot run queries in this transaction on EmailModel class.
         # If we want to setup the email correctly, we have to fix it here.
-        if hasattr( result_user, 'fb_email' ):
+        if hasattr(result_user, 'fb_email'):
             logging.info("DOING EMAIL STUFF: %s" % result_user.get_attr('fb_email'))
             email = result_user.fb_email
             EmailModel.create(result_user, email)
 
-            delattr( result_user, 'fb_email' )
+            delattr(result_user, 'fb_email')
             result_user.put_later()
         elif result_user is None:
             logging.debug ("result_user is None!")
@@ -87,7 +87,7 @@ class FetchFacebookData(webapp.RequestHandler):
         logging.info("done updating")
 
 
-class FetchFacebookFriends(webapp.RequestHandler):
+class FetchFacebookFriends(URIHandler):
     """Fetch and save the facebook friends of a given user"""
     def get(self):
         def txn(user):
@@ -110,21 +110,21 @@ class FetchFacebookFriends(webapp.RequestHandler):
         logging.info(fb_response)
 
 
-class QueryGoogleSocialGraphAPI( URIHandler ):
-    def get( self ):
-        id   = self.request.get( 'id' )
-        uuid = self.request.get( 'uuid' )
-        user = User.get( uuid )
+class QueryGoogleSocialGraphAPI(URIHandler):
+    def get(self):
+        id = self.request.get('id')
+        uuid = self.request.get('uuid')
+        user = User.get(uuid)
 
         if user == None:
             return # Bad data, just exit
 
-        result = urlfetch.fetch( "%sq=%s" % (GOOGLE_SOCIAL_GRAPH_API_URL, id) )
+        result = urlfetch.fetch("%sq=%s" % (GOOGLE_SOCIAL_GRAPH_API_URL, id))
 
         if result.status_code != 200:
             logging.info("Social Graph API for %s failed" % id)
         else:
-            loaded_json = json.loads( result.content )
+            loaded_json = json.loads(result.content)
             
             logging.info("Social Graph back: %r" % loaded_json)
 
@@ -136,7 +136,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
                 elif 'facebook' in i:
                     user.fb_identity = i
                 elif 'twitter' in i:
-                    tmp = i.split( '/' )
+                    tmp = i.split('/')
                     user.twitter_handle = tmp[ len(tmp) - 1 ]
                 elif 'linkedin' in i:
                     user.linkedin_url = i
@@ -186,7 +186,7 @@ class QueryGoogleSocialGraphAPI( URIHandler ):
                 else:
                     user.other_data.append(i)
 
-                unpacker( value['attributes'], user ) 
+                unpacker(value['attributes'], user) 
 
             user.put_later()
 
@@ -206,7 +206,7 @@ def unpacker(obj, user):
             l = len(tmp)
             if l >= 2:
                 user.first_name = tmp[0]
-                user.last_name  = tmp[l-1]
+                user.last_name = tmp[l-1]
         elif 'photo' in k:
             user.photo = v
 
@@ -221,16 +221,16 @@ def unpacker(obj, user):
     return r
 
 
-class UpdateEmailAddress(webapp.RequestHandler):
-    def post( self ):
+class UpdateEmailAddress(URIHandler):
+    def post(self):
         user = User.get_by_cookie(self)
 
-        user.update( email=self.request.get('email') )
+        user.update(email=self.request.get('email'))
 
 
-class UpdateFBAccessToken( URIHandler ):
+class UpdateFBAccessToken(URIHandler):
     """ Store FB access token and FB id in User """
-    def post( self ):
-        user = User.get( self.request.get( 'user_uuid' ) )
-        user.update( fb_access_token = self.request.get( 'accessToken' ),
-                     fb_identity     = self.request.get( 'fbUserId' ) ) 
+    def post(self):
+        user = User.get(self.request.get('user_uuid'))
+        user.update(fb_access_token = self.request.get('accessToken'),
+                     fb_identity = self.request.get('fbUserId')) 

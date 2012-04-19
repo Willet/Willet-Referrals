@@ -1,8 +1,7 @@
 #!/usr/bin/python
 
-__author__      = "Sy Khader"
-__copyright__   = "Copyright 2011, The Willet Corportation"
-
+__author__ = "Sy Khader"
+__copyright__ = "Copyright 2011, The Willet Corportation"
 
 from google.appengine.api import urlfetch, memcache, users, taskqueue
 from google.appengine.ext.db import GqlQuery
@@ -16,7 +15,7 @@ from models.link import *
 from util.helpers import *
 from util.consts import *
 
-class StartReferenceCheck( webapp.RequestHandler):
+class StartReferenceCheck(webapp.RequestHandler):
     """The handler that will be invokved by the cron job that will
        initiate the db.model user reference check"""
 
@@ -30,7 +29,7 @@ class StartReferenceCheck( webapp.RequestHandler):
                 taskqueue.add(url='/CheckRef', params={'key': mm.key()})
 
 
-class CheckReferences( webapp.RequestHandler ):
+class CheckReferences(webapp.RequestHandler):
     """This handler is passed an entity and checks it to ensure
         that the user atached to it still exist.
 
