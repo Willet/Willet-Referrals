@@ -261,10 +261,13 @@
                 // extra google analytics component
                 if (_gaq) {
                     try {
-                        _gaq.push(['_trackEvent',
-                                  'TrackSIBTAction',
-                                  encodeURIComponent(message) + "&" + willet_metadata()]);
-                        console.log("success. we have secured the intelligence");
+                        _gaq.push([
+                            '_trackEvent',
+                            'TrackSIBTAction',
+                            encodeURIComponent(message) + ";" +
+                                encodeURIComponent(willet_metadata())
+                        ]);
+                        console.log("Success! We have secured the enemy intelligence.");
                     } catch (e) {
                         console.log(e); // log() is {} on live.
                     }
