@@ -2,9 +2,34 @@
     <head>
         <title></title>
         <style></style>
+        <script src="js/custom_analytics.js"></script>
     </head>
     <body>
         <a id="derp">Hello</a>
-        <script src="js/custom_analytics.js"></script>
+        <script>
+            var ANALYTICS_ID = 'UA-31001469-1';
+            window._willet = window._willet || {};
+            window._willet.storeAnalytics = function (event, action, value) {
+                // function signature is the same as the default storeAnalytics.
+                // event (required)[, everything after it] (optional)
+                // value must be an integer.
+                var CATEGORY_DEFAULT = 'Action',
+                    EVENT_DEFAULT = 'SIBTShowingButton';
+
+                baby = [
+                    '_trackEvent',
+                    action || CATEGORY_DEFAULT, // category
+                    event || EVENT_DEFAULT, // action
+                    'user_uuid', // opt_label
+                    value || 1 // opt_value
+                ];
+                _gaq.push(baby);
+                console.log(baby);
+            };
+
+            document.getElementById('derp').onclick = function () {
+                _willet.storeAnalytics('lol');
+            }
+        </script>
     </body>
 </html>
