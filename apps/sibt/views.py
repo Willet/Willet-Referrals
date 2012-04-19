@@ -60,10 +60,18 @@ class AskDynamicLoader(URIHandler):
 
         # store registration url (with backup options if it's missing)
         store_url = self.request.get('store_url') or page_url
+
+        if not self.request.get('store_url'):
+            logging.error("store_url not found in ask.html query string!")
+
         product = product_shopify = None
         try:
             url_parts = urlparse(store_url)
-            store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
+            # all db entries are currently http; makes sure https browsers
+            # can also get app.
+            store_domain = "http://%s" % url_parts.netloc
+            # store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
+
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
             logging.error('error parsing referer %s' % e, exc_info = True)
