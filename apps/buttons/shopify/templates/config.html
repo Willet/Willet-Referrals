@@ -26,6 +26,7 @@
     .box-design form {
         padding-top: 20px;
         padding-bottom: 20px;
+        font-size: 1.5em;
     }
 
     #config-free {
@@ -56,7 +57,7 @@
 
     .buttons label {
         position: relative;
-        top: -11px;
+        top: -9px;
     }
 
     .buttons label.disabled {
@@ -72,13 +73,12 @@
         margin: 0;
         display: inline-block;
         height: 20px;
-        padding: 3px;
+        padding: 2px 2px 4px 2px;
         min-width: 100px;
         border: 1px dashed #aaa;
     }
 
     #default-buttons li, #unused-buttons li {
-        width: 60px;
         display: inline-block;
     }
 
@@ -87,39 +87,46 @@
     }
 
     .icon {
-        width: 80px;
         height: 20px;
         background-repeat: no-repeat;
         background-position-x: center;
         background-position-y: center;
+        padding: 1px;
     }
 
     .icon.Facebook {
         background-image: url('/static/imgs/sb-config-facebook.png');
+        width: 48px;
     }
 
     .icon.Twitter {
         background-image: url('/static/imgs/sb-config-twitter.png');
+        width: 56px;
     }
 
     .icon.GooglePlus {
         background-image: url('/static/imgs/sb-config-googleplus.png');
+        width: 32px;
     }
 
     .icon.Svpply {
         background-image: url('/static/imgs/sb-config-svpply.png');
+        width: 70px;
     }
 
     .icon.Fancy {
         background-image: url('/static/imgs/sb-config-fancy.png');
+        width: 56px;
     }
 
     .icon.Pinterest {
         background-image: url('/static/imgs/sb-config-pinterest.png');
+        width: 43px;
     }
 
     .icon.Tumblr {
         background-image: url('/static/imgs/sb-config-tumblr.png');
+        width: 62px;
     }
 
 </style>
@@ -156,44 +163,6 @@
         <div class="box-design">
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
-                    <div class="config-option" style="height: 40px;">
-                        <label for="button-count"
-                               class="left-column">
-                            Show Button Count:
-                        </label>
-                        <input id="button-count" name="button_count"
-                               type="radio"
-                               value="True"
-                               {% if button_count %}checked{% endif %}/>
-                        <label for="button-count">Show</label>
-                        <input id="no-button-count" name="button_count"
-                               type="radio"
-                               value="False"
-                               {% if not button_count %}checked{% endif %}/>
-                        <label for="no-button-count">Hide</label>
-                    </div>
-                    <div class="config-option">
-                        <label for="button-spacing" class="left-column">
-                            Button Spacing:
-                        </label>
-                        <input id="button-spacing" name="button_spacing"
-                               type="text" value="{{ button_spacing }}"/>px
-                    </div>
-                    <div class="config-option">
-                        <label for="button-padding" class="left-column">
-                            Button Padding:
-                        </label>
-                        <input id="button-padding" name="button_padding"
-                               type="text" value="{{ button_padding }}"/>px
-                    </div>
-                    <div class="config-option">
-                        <label for="sharing-message" class="left-column">
-                            Sharing Message:
-                        </label>
-                        <input id="sharing-message" name="sharing_message"
-                               type="text" value="{{ sharing_message }}"/>
-                        (for Twitter and Pinterest)
-                    </div>
                     <div class="config-option buttons">
                         <label for="default-buttons" class="left-column">
                             Default Buttons:
@@ -219,11 +188,51 @@
                             {% endfor %}
                         </ul>
                     </div>
+                    <div class="config-option" style="height: 40px;">
+                        <label for="button-count"
+                               class="left-column">
+                            Show Button Count:
+                        </label>
+                        <input id="button-count" name="button_count"
+                               type="radio"
+                               value="True"
+                               {% if button_count %}checked{% endif %}/>
+                        <label for="button-count">Show</label>
+                        <input id="no-button-count" name="button_count"
+                               type="radio"
+                               value="False"
+                               {% if not button_count %}checked{% endif %}/>
+                        <label for="no-button-count">Hide</label>
+                    </div>
+                    <div class="config-option">
+                        <label for="button-spacing" class="left-column">
+                            Button Spacing:
+                        </label>
+                        <input id="button-spacing" name="button_spacing"
+                               type="text" value="{{ button_spacing }}"
+                               style="width: 50px;"/>px
+                    </div>
+                    <div class="config-option">
+                        <label for="button-padding" class="left-column">
+                            Button Padding:
+                        </label>
+                        <input id="button-padding" name="button_padding"
+                               type="text" value="{{ button_padding }}"
+                               style="width: 50px;"/>px
+                    </div>
+                    <div class="config-option">
+                        <label for="sharing-message" class="left-column">
+                            Sharing Message:
+                        </label>
+                        <input id="sharing-message" name="sharing_message"
+                               type="text" value="{{ sharing_message }}"/>
+                        (for Twitter and Pinterest)
+                    </div>
                 </div>
                 <div class="submit">
                     <input type="hidden" name="button_order"
                            value='{{ button_order|join:"," }}' />
-                    <input type="submit"/>
+                    <button class="blue">Save</button>
                 </div>
             </form>
         </div>
