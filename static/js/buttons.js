@@ -70,6 +70,44 @@
         console.log('Buttons: '+ bname +' script appended');
     }
 
+    var createStyle = function (rules) {
+        // Returns stylesheet element
+        var s = document.createElement('style');
+        s.type = 'text/css';
+        s.media = 'screen';
+        if (s.styleSheet) {
+            s.styleSheet.cssText = rules; // IE
+        } else { 
+            s.appendChild(document.createTextNode(rules)); // Every other browser
+        }
+        return s;
+    };
+
+    var createButton = function (id) {
+        id = id || '';
+        var d = document.createElement('div');
+        d.style.styleFloat = 'left'; // IE
+        d.style.cssFloat = 'left'; // FF, Webkit
+        d.style.marginTop = '0';
+        d.style.marginLeft = '0';
+        d.style.marginBottom = '0';
+        d.style.marginRight = button_spacing;
+        d.style.paddingTop = '0';
+        d.style.paddingBottom = '0';
+        d.style.paddingLeft = '0';
+        d.style.paddingRight = '0';
+        d.style.border = 'none';
+        d.style.display = 'block';
+        d.style.visibility = 'visible';
+        d.style.height = '21px';
+        d.style.position = 'relative'; // Need this child positioning
+        d.style.overflow = 'hidden';
+        d.name = 'button';
+        d.id = '_willet_'+id;
+        d.className = '_willet_social_button';
+        return d;
+    };
+
     var button_div = document.getElementById('_willet_buttons_app');
 
     var _init_buttons = function(data) {
@@ -97,31 +135,6 @@
             button_div.style.border = 'none';
             button_div.style.margin = '0';
 
-            var createButton = function (id) {
-                id = id || '';
-                var d = document.createElement('div');
-                d.style.styleFloat = 'left'; // IE
-                d.style.cssFloat = 'left'; // FF, Webkit
-                d.style.marginTop = '0';
-                d.style.marginLeft = '0';
-                d.style.marginBottom = '0';
-                d.style.marginRight = button_spacing;
-                d.style.paddingTop = '0';
-                d.style.paddingBottom = '0';
-                d.style.paddingLeft = '0';
-                d.style.paddingRight = '0';
-                d.style.border = 'none';
-                d.style.display = 'block';
-                d.style.visibility = 'visible';
-                d.style.height = '21px';
-                d.style.position = 'relative';
-                d.style.overflow = 'hidden';
-                d.name = 'button';
-                d.id = '_willet_'+id;
-                d.className = '_willet_social_button';
-                return d;
-            };
-
             // Supported buttons
             var supported_networks = {
                 "AskFriends": { // does not allow asking/voting unless SIBT-JS is also installed!
@@ -148,16 +161,8 @@
                         fb.setAttribute('data-width', (button_count ? '90' : '48') );
                         fb.setAttribute('data-show-faces', 'false');
                         d.appendChild(fb);
-                        var s = document.createElement('style');
-                        s.type = 'text/css';
-                        s.media = 'screen';
-                        var css = ".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
-                                 +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }";
-                        if (s.styleSheet) {
-                            s.styleSheet.cssText = css; // IE
-                        } else { 
-                            s.appendChild(document.createTextNode(css)); // Every other browser
-                        }
+                        var s = createStyle(".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
+                                      +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                         d.appendChild(s);
                         return d;
                     },
