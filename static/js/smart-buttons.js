@@ -72,7 +72,8 @@ var _willet = (function(me, config) {
     var NOT_FOUND = -1;
 
     var MAX_BUTTONS = 3;
-    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
+    var DEFAULT_BUTTONS = (config && config.button_order) ||
+                          ['Pinterest','Tumblr', 'Fancy'];
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
             "detect": {

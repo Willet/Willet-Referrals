@@ -149,6 +149,9 @@ class ButtonsShopifyWelcome(URIHandler):
         prefs["sharing_message"] = tryParse(strip_tags,
                                             r.get("sharing_message"), "")
 
+        # What validation should be done here?
+        prefs["button_order"]    = r.get("button_order").split(",")
+
         app.update_prefs(prefs)
 
         #redirect to Welcome
@@ -187,6 +190,14 @@ class ButtonsShopifyWelcome(URIHandler):
 
         preferences = app.get_prefs()
 
+        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
+                           'Svpply', 'Tumblr', 'Twitter'])
+        button_order    = preferences.get("button_order",
+                                          ["Pinterest","Tumblr","Fancy"])
+
+        # That's right! TAKE THAT MATH-HATERS!
+        unused_buttons  = buttons.difference(button_order)
+
         # Use .get in case properties don't exist yet
         template_values = {
             'action'         : page,
@@ -194,7 +205,9 @@ class ButtonsShopifyWelcome(URIHandler):
             'button_spacing' : preferences.get("button_spacing", 5),
             'button_padding' : preferences.get("button_padding", 5),
             'sharing_message': preferences.get("sharing_message", ""),
-            'message'        : self.request.get("message", "Welcome Back!")
+            'message'        : self.request.get("message", "Welcome Back!"),
+            'button_order'   : button_order,
+            'unused_buttons' : unused_buttons
         }
 
         # prepopulate values

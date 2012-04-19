@@ -33,6 +33,10 @@
         display: block;
     }
 
+    .config-option, .submit {
+        clear: both;
+    }
+
     .config-option {
         display: block;
     }
@@ -46,8 +50,41 @@
         display: inline;
     }
 
+    #unused-buttons, #default-buttons {
+        list-style-type: none;
+        margin: 0;
+        padding: 0 0 2.5em;
+        float: left;
+        margin-right: 10px;
+        height: 225px;
+        width: 150px;
+        border: 1px dotted;
+    }
+
+    #default-buttons li, #unused-buttons li {
+        margin: 0 5px 5px 5px;
+        padding: 5px;
+        font-size: 1.2em;
+        width: 120px;
+    }
 
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"
+        type="text/javascript"></script>
+<script>
+    $(document).ready(function(){
+        $("#default-buttons, #unused-buttons").sortable({
+            connectWith: ".connectedSortable",
+            update: function(event, ui) {
+                var networks = [];
+                $("#default-buttons > li").each(function(index, item){
+                    networks.push($(item).text());
+                });
+                $("input[name='button_order']").val(networks.join(","));
+            }
+        }).disableSelection();
+    });
+</script>
 {% endblock %}
 
 {% block header-class %}tall{% endblock %}
@@ -58,8 +95,7 @@
     <h3>{{ message }}</h3>
 </div>
 
-<div class="prepend-top span-24 last
-		                    box-design content-container" >
+<div class="prepend-top span-24 last box-design content-container">
     <h1>ShopConnection Configuration</h1>
 
     <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
@@ -94,8 +130,25 @@
                                type="text" value="{{ sharing_message }}"/>
                         (for Twitter and Pinterest)
                     </div>
+                    <div class="config-option">
+                        <ul id="default-buttons" class="connectedSortable">
+                            {% for button in button_order %}
+                            <li>{{ button }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        <ul id="unused-buttons" class="connectedSortable">
+                            {% for button in unused_buttons %}
+                            <li>{{ button }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-                <input type="submit"/>
+                <div class="submit">
+                    <input type="hidden" name="button_order"
+                           value='{{ button_order|join:"," }}' />
+                    <input type="submit"/>
+                </div>
             </form>
         </div>
     </div>
