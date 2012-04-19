@@ -55,7 +55,7 @@
         height: 40px;
     }
 
-    .buttons label {
+    .buttons label, .buttons span {
         position: relative;
         top: -9px;
     }
@@ -134,14 +134,25 @@
         type="text/javascript"></script>
 <script>
     $(document).ready(function(){
-        $("#default-buttons, #unused-buttons").sortable({
-            connectWith: ".connectedSortable",
-            update: function(event, ui) {
+        var MAX_BUTTONS = 3,
+            update_networks = function() {
                 var networks = [];
                 $("#default-buttons > li").each(function(index, item){
                     networks.push($(item).text().trim());
                 });
                 $("input[name='button_order']").val(networks.join(","));
+            };
+
+        $("#default-buttons, #unused-buttons").sortable({
+            connectWith: ".connectedSortable",
+            update: function(event, ui) {
+                update_networks();
+            },
+            over: function (event, ui) {
+                if ($("#default-buttons > li").length > MAX_BUTTONS) {
+                    $(ui.sender).sortable('cancel');
+                    update_networks();
+                }
             }
         }).disableSelection();
     });
@@ -174,6 +185,7 @@
                             </li>
                             {% endfor %}
                         </ul>
+                        <span>(Max: 3)</span>
                     </div>
                     <div class="config-option buttons">
                         <label for="unused-buttons"
