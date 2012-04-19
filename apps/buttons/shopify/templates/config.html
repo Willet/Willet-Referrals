@@ -24,9 +24,8 @@
         background-color: #fff;
     }
     .box-design form {
-        padding: 30px;
-        margin: 0px 50px auto;
-        text-align: center;
+        padding-top: 20px;
+        padding-bottom: 20px;
     }
 
     #config-free {
@@ -41,31 +40,46 @@
         display: block;
     }
 
-    label {
-        display: inline;
+    .config-option .left-column {
+        display   : inline-block;
         text-align: right;
+        width     : 200px;
     }
 
     input {
         display: inline;
     }
 
+    .buttons {
+        height: 40px;
+    }
+
+    .buttons label {
+        position: relative;
+        top: -11px;
+    }
+
+    .buttons label.disabled {
+        color: #aaa;
+    }
+
+    .submit {
+        text-align: center;
+    }
+
     #unused-buttons, #default-buttons {
         list-style-type: none;
         margin: 0;
-        padding: 0 0 2.5em;
-        float: left;
-        margin-right: 10px;
-        height: 225px;
-        width: 150px;
-        border: 1px dotted;
+        display: inline-block;
+        height: 20px;
+        padding: 3px;
+        min-width: 100px;
+        border: 1px dashed #aaa;
     }
 
     #default-buttons li, #unused-buttons li {
-        margin: 0 5px 5px 5px;
-        padding: 5px;
-        font-size: 1.2em;
-        width: 120px;
+        width: 60px;
+        display: inline-block;
     }
 
     .icon span {
@@ -142,35 +156,48 @@
         <div class="box-design">
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
-                    <div class="config-option">
+                    <div class="config-option" style="height: 40px;">
+                        <label for="button-count"
+                               class="left-column">
+                            Show Button Count:
+                        </label>
                         <input id="button-count" name="button_count"
                                type="radio"
                                value="True"
                                {% if button_count %}checked{% endif %}/>
-                        <label for="button-count">Show button count</label>
+                        <label for="button-count">Show</label>
                         <input id="no-button-count" name="button_count"
                                type="radio"
                                value="False"
                                {% if not button_count %}checked{% endif %}/>
-                        <label for="no-button-count">Hide button count</label>
+                        <label for="no-button-count">Hide</label>
                     </div>
                     <div class="config-option">
-                        <label for="button-spacing">Button Spacing</label>
+                        <label for="button-spacing" class="left-column">
+                            Button Spacing:
+                        </label>
                         <input id="button-spacing" name="button_spacing"
                                type="text" value="{{ button_spacing }}"/>px
                     </div>
                     <div class="config-option">
-                        <label for="button-padding">Button Padding</label>
+                        <label for="button-padding" class="left-column">
+                            Button Padding:
+                        </label>
                         <input id="button-padding" name="button_padding"
                                type="text" value="{{ button_padding }}"/>px
                     </div>
                     <div class="config-option">
-                        <label for="sharing-message">Sharing Message</label>
+                        <label for="sharing-message" class="left-column">
+                            Sharing Message:
+                        </label>
                         <input id="sharing-message" name="sharing_message"
                                type="text" value="{{ sharing_message }}"/>
                         (for Twitter and Pinterest)
                     </div>
-                    <div class="config-option">
+                    <div class="config-option buttons">
+                        <label for="default-buttons" class="left-column">
+                            Default Buttons:
+                        </label>
                         <ul id="default-buttons" class="connectedSortable">
                             {% for button in button_order %}
                             <li class="icon {{ button }}">
@@ -178,7 +205,12 @@
                             </li>
                             {% endfor %}
                         </ul>
-
+                    </div>
+                    <div class="config-option buttons">
+                        <label for="unused-buttons"
+                               class="left-column disabled">
+                            Available Buttons:
+                        </label>
                         <ul id="unused-buttons" class="connectedSortable">
                             {% for button in unused_buttons %}
                             <li class="icon {{ button }}">
