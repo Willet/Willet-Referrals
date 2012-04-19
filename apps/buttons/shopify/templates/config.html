@@ -68,6 +68,46 @@
         width: 120px;
     }
 
+    .icon span {
+        display: none;
+    }
+
+    .icon {
+        width: 80px;
+        height: 20px;
+        background-repeat: no-repeat;
+        background-position-x: center;
+        background-position-y: center;
+    }
+
+    .icon.Facebook {
+        background-image: url('/static/imgs/sb-config-facebook.png');
+    }
+
+    .icon.Twitter {
+        background-image: url('/static/imgs/sb-config-twitter.png');
+    }
+
+    .icon.GooglePlus {
+        background-image: url('/static/imgs/sb-config-googleplus.png');
+    }
+
+    .icon.Svpply {
+        background-image: url('/static/imgs/sb-config-svpply.png');
+    }
+
+    .icon.Fancy {
+        background-image: url('/static/imgs/sb-config-fancy.png');
+    }
+
+    .icon.Pinterest {
+        background-image: url('/static/imgs/sb-config-pinterest.png');
+    }
+
+    .icon.Tumblr {
+        background-image: url('/static/imgs/sb-config-tumblr.png');
+    }
+
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"
         type="text/javascript"></script>
@@ -78,7 +118,7 @@
             update: function(event, ui) {
                 var networks = [];
                 $("#default-buttons > li").each(function(index, item){
-                    networks.push($(item).text());
+                    networks.push($(item).text().trim());
                 });
                 $("input[name='button_order']").val(networks.join(","));
             }
@@ -133,13 +173,17 @@
                     <div class="config-option">
                         <ul id="default-buttons" class="connectedSortable">
                             {% for button in button_order %}
-                            <li>{{ button }}</li>
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
                             {% endfor %}
                         </ul>
 
                         <ul id="unused-buttons" class="connectedSortable">
                             {% for button in unused_buttons %}
-                            <li>{{ button }}</li>
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
