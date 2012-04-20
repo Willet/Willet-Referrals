@@ -49,6 +49,29 @@ _willet.helpers = {
     },
     "xHasKeyY": function (dict, key) {
         return dict[key] ? true : false;
+    },
+    "createStyle": function (rules) {
+        // Returns stylesheet element
+        var s = document.createElement('style');
+        s.type = 'text/css';
+        s.media = 'screen';
+        if (s.styleSheet) {
+            s.styleSheet.cssText = rules; // IE
+        } else { 
+            s.appendChild(document.createTextNode(rules)); // Every other browser
+        }
+        return s;
+    },
+    "addListener": function (elem, event, callback) {
+        if (elem && elem.addEventListener) {
+            elem.addEventListener(event, callback);
+        } else if (elem && elem.addEvent) {
+            elem.addEvent('on'+event, callback);
+        }
+    },
+    "getElemValue": function (elem, key, default_val) {
+        // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
+        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
     }
 }
 var _willet = (function(me, config) {
@@ -132,7 +155,16 @@ var _willet = (function(me, config) {
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.width = params.buttonCount ? '90px' : '48px';
-                    button.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
+                    var fb = document.createElement('div');
+                    fb.className = 'fb-like';
+                    fb.setAttribute('data-send', 'false');
+                    fb.setAttribute('data-layout', 'button_count');
+                    fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
+                    fb.setAttribute('data-show-faces', 'false');
+                    var style = helpers.createStyle(".fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
+                             +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
+                    button.appendChild(fb);
+                    button.appendChild(style);
                     return button;
                 },
                 "onLoad": function() {
@@ -150,7 +182,7 @@ var _willet = (function(me, config) {
             "button": {
                 // Workaround until Pinterest has an API:
                 // http://stackoverflow.com/questions/9622503/pinterest-button-has-a-callback
-                "script": "", //PROTOCOL + '//assets.pinterest.com/js/pinit.js',
+                "script": '//assets.pinterest.com/js/pinit.js',
                 "create": function(params) {
                     var button = createBasicButton({
                         "id": 'pinterest',
@@ -164,32 +196,56 @@ var _willet = (function(me, config) {
                     }
 
                     var link = document.createElement("a");
-                    link.href = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + encodeURIComponent( window.location.href ) + 
-                        "&media=" + encodeURIComponent( params.photo ) + 
-                        "&description=" + encodeURIComponent(sharingMessage);
-                    link.className = "pin-it-button";
+                    link.className = "willet-pinterest-button";
                     link.innerHTML = "Pin It";
-
-                    link.style.position = "absolute";
-                    link.style.background = "url('http://assets.pinterest.com/images/pinit6.png')";
+                    link.style.position = 'absolute';
+                    link.style.top = '0';
+                    link.style.left = '0';
                     link.style.font = "11px Arial, sans-serif";
                     link.style.textIndent = "-9999em"
                     link.style.fontSize = ".01em";
                     link.style.color = "#CD1F1F";
                     link.style.height = "20px";
                     link.style.width = "43px";
-                    link.style.backgroundPosition = "0 -7px";
-
+                    link.style.zIndex = "100";
                     link.onclick = function() {
                         itemShared("Pinterest");
-                        window.open(link.href, 'signin', 'height=300,width=665');
+                        window.open("//pinterest.com/pin/create/button/?" +
+                            "url=" + encodeURIComponent( window.location.href ) + 
+                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "&description=" + encodeURIComponent("I found this on " + params.domain),
+                            'signin',
+                            'height=300,width=665');
+                        link.className = 'willet-pinterest-button clicked';
                         return false;
                     };
-
-                    link.setAttribute('count-layout', "horizontal");
-
+                    var style = helpers.createStyle("a.willet-pinterest-button { "
+                                                  + "   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
+                                                  + "   background-position: 0 -7px; "
+                                                  + "} "
+                                                  + "a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: hand; } "
+                                                  + "a.willet-pinterest-button:active { background-position: 0 -49px; cursor: hand; } "
+                                                  + "a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }");
                     button.appendChild(link);
+                    button.appendChild(style);
+
+                    if (params.buttonCount) {
+                        // Hidden under link is a Pinterest button with the count visible
+                        var count = document.createElement('div');
+                        count.style.position = 'relative';
+                        count.style.zIndex = "0";
+                        count.style.height = "20px";
+                        count.style.width = '77px';
+                        var countLink = document.createElement("a");
+                        countLink.href = "//pinterest.com/pin/create/button/?" +
+                            "url=" + encodeURIComponent( window.location.href ) + 
+                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "&description=" + encodeURIComponent("I found this on " + params.domain);
+                        countLink.className = 'pin-it-button';
+                        countLink.setAttribute('count-layout', 'horizontal');
+                        count.appendChild(countLink);
+                        button.appendChild(count);
+                    }
                     return button;
                 }
             }
@@ -242,13 +298,12 @@ var _willet = (function(me, config) {
                         "buttonSpacing": params.buttonSpacing
                     });
                     button.style.overflow = 'visible';
-                    button.style.width = params.buttonCount ? '90px' : '32px';
+                    button.style.width = params.buttonCount ? '74px' : '32px';
 
-                    var gPlus = document.createElement("g:plusone");
-                    gPlus.setAttribute("size", "medium");
-                    if (!params.buttonCount) {
-                        gPlus.setAttribute("annotation", "none");
-                    }
+                    var gPlus = document.createElement("div");
+                    gPlus.className = 'g-plusone';
+                    gPlus.setAttribute("data-size", "medium");
+                    gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
                     gPlus.setAttribute("callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
@@ -374,7 +429,7 @@ var _willet = (function(me, config) {
         d.style.display = "block";
         d.style.visibility = "visible";
         d.style.height = "21px";
-        d.style.position = "relative";
+        d.style.position = "relative"; // Need this child positioning
         d.style.overflow = "hidden";
 
         d.name = "button";
@@ -500,9 +555,12 @@ var _willet = (function(me, config) {
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount   = (config && config.button_count) || false;
-            var buttonSpacing = (config && config.button_spacing || 5) + "px";
-            var buttonPadding = (config && config.button_padding || 5) + "px";
+            var buttonCount   = (config && config.button_count)
+                || (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
+            var buttonSpacing = (config && config.button_spacing
+                || helpers.getElemValue(buttonsDiv, 'spacing', '5')) + "px";
+            var buttonPadding = (config && config.button_padding
+                || helpers.getElemValue(buttonsDiv, 'padding', '5')) + "px";
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
@@ -624,6 +682,12 @@ var _willet = (function(me, config) {
 
         if (!_willet.cookies.read(COOKIE_NAME)) {
             me.detectNetworks();
+        }
+
+        // If on /cart page, silently bail
+        if (/\/cart\/?$/.test(window.location.pathname)) {
+            _willet.debug.log("Buttons: on cart page, not running.");
+            return;
         }
 
         if(!isDebugging) {

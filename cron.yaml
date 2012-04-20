@@ -55,5 +55,5 @@ cron:
 # Smart-buttons
 - description: send smart button reports
   url: /b/shopify/start_report
-  schedule: every sunday 23:00
+  schedule: every wednesday 23:00
   timezone: America/Toronto

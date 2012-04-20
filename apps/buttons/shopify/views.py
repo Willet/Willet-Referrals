@@ -493,7 +493,8 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             logging.info("No client!")
             return
 
-        email = client.email
+        #email = client.email
+        email = 'info@getwillet.com'
         shop  = client.name
         name  = client.merchant.get_full_name()
 
