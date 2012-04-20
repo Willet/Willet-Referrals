@@ -54,7 +54,7 @@
         if (elem) {
             return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || deflt || false;
         } else {
-            return undefined;
+            return null;
         }
     }
 
