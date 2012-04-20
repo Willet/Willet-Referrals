@@ -53,8 +53,6 @@
 #selection_box_container img {
     max-width: 150px;
     max-height: 150px;
-    margin-top: -152px;
-    vertical-align: middle;
 }
 #selection_box_container .wosib_or {
     font-size:40px;
@@ -64,11 +62,12 @@
     vertical-align: middle;
 }
 #selection_box {
-    display: block;
-    margin: 0 auto;
+    margin-bottom: -5px;
     padding: 5px;
-    text-align: center;
-    list-style-type: none;
+    /* text-align: center; */
+    display: inline-block;
+    zoom: 1; /* IE fix */
+    *display: inline;
 }
 #selection_box .expansion {
     padding: 5px;
@@ -125,4 +124,5 @@
 }
 .step {
     text-align:left;
+    margin-left: 10px;
 }

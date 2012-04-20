@@ -17,7 +17,7 @@
                 'border-radius': '5px',
                 'background-color': '#fff',
                 'overflow': 'hidden',
-                'display': 'inline-block',
+                // 'display': 'inline-block',
                 'cursor': 'pointer'
             };
 
@@ -46,7 +46,6 @@
                         'width': '25px',
                         'height': '26px',
                         'float': 'right',
-                        'margin-right': '4px',
                         'margin-top': parseInt(settings.height) / 2 - 15
                     }
                 });
@@ -126,11 +125,17 @@
                      .append(dropdown_button)
                      .css(settings)
                      .blur(closeDropdown);
+                if ($.browser.msie) {
+                    $this.css({
+                        '*display': 'inline',
+                        'zoom': '1'
+                    });
+                }
                 $expansion.css(settings)
                           .css({
                               'height': 'auto',
                               'max-height': '333px',
-                              'overflow-y': 'scroll',
+                              'overflow-y': 'auto',
                               'display': 'none'
                           })
                           .append($images)

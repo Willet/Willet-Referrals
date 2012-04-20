@@ -26,7 +26,7 @@
             <div>Not sure which one you should buy?</div>
         </div>
         <form method="POST" action="" style="margin-top:10px">
-            <!-- div class="step" style="margin-left:100px">1. Select items to ask.</div -->
+            <!-- div class="step">Select items to ask.</div -->
             <div id="selection_box_container">
                 <div id="selection_box"><!-- JS --></div>
             </div>
@@ -339,9 +339,8 @@
                 'src': cart_products[0].image,
                 'alt': cart_products[0].uuid
             }))
-            .append($('<span />', {
-                'text': ' or ',
-                'class': 'wosib_or'
+            .append($('<img />', {
+                'src': '/static/imgs/or-150.png'
             }))
             .append($selection_box);
         $selection_box
