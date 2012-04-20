@@ -51,13 +51,13 @@ _willet.helpers = {
         return dict[key] ? true : false;
     }
 }
-var _willet = (function(me) {
+var _willet = (function(me, config) {
     var helpers = me.helpers;
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
+    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -72,7 +72,8 @@ var _willet = (function(me) {
     var NOT_FOUND = -1;
 
     var MAX_BUTTONS = 3;
-    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
+    var DEFAULT_BUTTONS = (config && config.button_order) ||
+                          ['Pinterest','Tumblr', 'Fancy'];
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
             "detect": {
@@ -157,11 +158,16 @@ var _willet = (function(me) {
                     });
                     button.style.width = params.buttonCount ? '77px' : '43px';
 
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     var link = document.createElement("a");
                     link.href = "http://pinterest.com/pin/create/button/?" +
                         "url=" + encodeURIComponent( window.location.href ) + 
                         "&media=" + encodeURIComponent( params.photo ) + 
-                        "&description=" + encodeURIComponent("I found this on " + params.domain);
+                        "&description=" + encodeURIComponent(sharingMessage);
                     link.className = "pin-it-button";
                     link.innerHTML = "Pin It";
 
@@ -209,6 +215,10 @@ var _willet = (function(me) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
+                    if (config && config.sharing_message) {
+                        link.setAttribute('data-text',config.sharing_message);
+                    }
+
                     button.appendChild(link);
                     return button;
                 },
@@ -243,8 +253,6 @@ var _willet = (function(me) {
 
                     button.appendChild(gPlus);
 
-                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
-
                     // Google Plus will only execute a callback in the global namespace, so expose this one...
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
                     window._willet_GooglePlusShared = function(response) {
@@ -252,12 +260,17 @@ var _willet = (function(me) {
                             itemShared("GooglePlus");
                         }
                     };
-                    
+
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     // Google is using the Open Graph spec
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                              { property: 'og:description', content: sharingMessage } ]
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -483,12 +496,13 @@ var _willet = (function(me) {
 
     me.createButtons = function(productData) {
         _willet.debug.log("Buttons: finding buttons placeholder on page");
+
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = (buttonsDiv.getAttribute('button_count') === 'true');
-            var buttonSpacing = (buttonsDiv.getAttribute('button_spacing') ?  buttonsDiv.getAttribute('button_spacing') : '5') + 'px';
-            var buttonPadding = (buttonsDiv.getAttribute('button_padding') ? buttonsDiv.getAttribute('button_padding') : '5') + 'px';
+            var buttonCount   = (config && config.button_count) || false;
+            var buttonSpacing = (config && config.button_spacing || 5) + "px";
+            var buttonPadding = (config && config.button_padding || 5) + "px";
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
@@ -654,7 +668,7 @@ var _willet = (function(me) {
     };
 
     return me;
-}(_willet));
+}(_willet, _willet_shopconnection_config));
 
 _willet.debug = (function (helpers) {
     var me = {};
