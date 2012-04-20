@@ -51,7 +51,7 @@
 
     var getElemValue = function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
-        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || false;
+        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
     }
 
     var addButton = function (elem, bname, button) {
