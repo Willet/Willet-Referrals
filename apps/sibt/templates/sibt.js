@@ -199,7 +199,8 @@
                         'app_uuid': '{{ app.uuid }}',
                         'user_uuid': '{{ user.uuid }}',
                         'instance_uuid': '{{ instance.uuid }}',
-                        'target_url': '{{ PAGE }}' || w.location.href
+                        'store_url': '{{ store_url }}', // registration url
+                        'target_url': '{{ page_url }}' || w.location.href // window.location
                     },
                     more || {}
                 ));
@@ -348,7 +349,7 @@
                 // shows the ask your friends iframe
                 show_colorbox({
                     href: "{{URL}}/s/ask.html?user_uuid={{ user.uuid }}" +
-                                             "&url=" + ('{{ PAGE }}' || w.location.href),
+                                             "&url=" + ('{{ page_url }}' || w.location.href),
                     onClosed: ask_callback
                 });
             };
@@ -370,7 +371,7 @@
                         'price': data.price || '0.0',
                         'tags': data.tags || '',
                         'type': data.type || '',
-                        'resource_url': '{{ PAGE }}' || w.location.href
+                        'resource_url': '{{ page_url }}' || w.location.href
                     };
                     if (data.client_uuid) {
                         $.ajax({

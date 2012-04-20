@@ -3,7 +3,7 @@
     <head>
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/ padding-top: 3px;imgs/favicon.ico' />
-        
+
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
         <title>{% block title %}Should I Buy This?{% endblock title %}</title>
@@ -95,11 +95,11 @@
                             <p>Your friends have been asked to help by <b>voting</b> on this product.</p>
                             <label for="email-field">PayPal Email:</label>
                             <input class="fb_textinput" id="email-field" type="text" value="{{ email }}"> </input>
-                            
+
                             <p>We\'ll send you $5 via PayPal immediately after you complete a purchase!</p>
 
                         {% else %}
-                        
+
                             <p>Your friends have been asked to help by <b>voting</b> on whether you should buy this product or not.</p>
                             <p>You will receive an email when one of your trusted friends gives advice!</p>
                         {% endif %}
@@ -133,7 +133,7 @@
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
     <script type="text/javascript">
-        // In case the Goog goes down   
+        // In case the Goog goes down
         if (typeof jQuery == 'undefined'){
             document.write(unescape("%3Cscript src='/static/js/jquery.min.js' type='text/javascript' charset='utf-8' %3E%3C/script%3E"));
         }
@@ -182,19 +182,22 @@
         /*
          * jQuery postMessage - v0.5 - 9/11/2009
          * http://benalman.com/projects/jquery-postmessage-plugin/
-         * 
+         *
          * Copyright (c) 2009 "Cowboy" Ben Alman
          * Dual licensed under the MIT and GPL licenses.
          * http://benalman.com/about/license/
          */
         ;(function($){var g,d,j=1,a,b=window,f=!1,h="postMessage",e="addEventListener",c,i=b[h]&&!$.browser.opera;$[h]=function(k,l,m){if(!l){return}k=typeof k==="string"?k:$.param(k);m=m||parent;if(i){m[h](k,l.replace(/([^:]+:\/\/[^\/]+).*/,"$1"))}else{if(l){m.location=l.replace(/#.*$/,"")+"#"+(+new Date)+(j++)+"&"+k}}};$.receiveMessage=c=function(l,m,k){if(i){if(l){a&&c();a=function(n){if((typeof m==="string"&&n.origin!==m)||($.isFunction(m)&&m(n.origin)===f)){return f}l(n)}}if(b[e]){b[l?e:"removeEventListener"]("message",a,f)}else{b[l?"attachEvent":"detachEvent"]("onmessage",a)}}else{g&&clearInterval(g);g=null;if(l){k=typeof m==="number"?m:typeof k==="number"?k:100;g=setInterval(function(){var o=document.location.hash,n=/^#?\d+&/;if(o!==d&&n.test(o)){d=o;l({data:o.replace(n,"")})}},k)}}}})(jQuery);
+
+        // jQuery cookie
+        jQuery.cookie=function(a,b,c){if(arguments.length>1&&String(b)!=="[object Object]"){c=jQuery.extend({},c);if(b===null||b===undefined){c.expires=-1}if(typeof c.expires==="number"){var d=c.expires,e=c.expires=new Date;e.setDate(e.getDate()+d)}b=String(b);return document.cookie=[encodeURIComponent(a),"=",c.raw?b:encodeURIComponent(b),c.expires?"; expires="+c.expires.toUTCString():"",c.path?"; path="+c.path:"",c.domain?"; domain="+c.domain:"",c.secure?"; secure":""].join("")}c=b||{};var f,g=c.raw?function(a){return a}:decodeURIComponent;return(f=(new RegExp("(?:^|; )"+encodeURIComponent(a)+"=([^;]*)")).exec(document.cookie))?g(f[1]):null};
     </script>
 
     {% block scripts %}{% endblock scripts %}
 
     <script type="text/javascript">
         "use strict";
-        
+
         var friends        = []; // List of Friend instances in Choose Friend screen
         var fb_friends     = []; // List of { id, name } from FB
         var friendNames    = []; // List of names to use in autocomplete (sorted)
@@ -230,11 +233,11 @@
                 else {
                     this.elem.style.display = 'none';
                 }
-            } 
+            }
         };
 
         // A Friend entry in Choose Friends
-        // Friend elements are complicated beasts, with much 
+        // Friend elements are complicated beasts, with much
         // functionality & states. For ease, we contain it in
         // this class
         //
@@ -251,7 +254,7 @@
         //
         // Inputs:
         //      name (opt) - <string> name & id of containing elem
-        //      update_callback (opt) - <function> callback when Friend 
+        //      update_callback (opt) - <function> callback when Friend
         //                              updates stored info
         //
         var Friend = function (name, update_callback) {
@@ -259,7 +262,7 @@
             this.selected = 'none';
             // When friend is updated, fire this callback
             this.update_callback = update_callback || function () {};
-            
+
             var that = this,
                 $elem = $(this.elem);
 
@@ -297,7 +300,7 @@
                     that._chooseEmailFriendSelect();
                 }
             });
-            
+
             // Handle two Facebook cases: logged in & not logged in
             var $fb_option = $elem.find('.fb_option');
             if (fbAccessToken !== "" && fbIdentity !== "") {
@@ -393,7 +396,7 @@
             var $elem = $(this.elem),
                 that = this,
                 error = false;
-            
+
             // Validate each input and set sad face if any are in error
             $elem.find('input').each(function () {
                 if (that._validateFriendInput(this)) {
@@ -422,13 +425,13 @@
             var $elem = $(this.elem),
                 $input = $elem.find('input'),
                 name, i, fb_id;
-            
+
             if (this._validateFriendFB($input[0])) {
                 // No error
                 name = $input.val();
                 i = $.inArray(name, sorted_friend_names);
                 fb_id = fbFriends[i].id;
-                
+
                 $elem.find('input').css('color','black').siblings('.error').hide();
                 $elem.find('.portrait>img')
                     .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
@@ -449,7 +452,7 @@
             var name = ui.item.value,
                 i = $.inArray(name, sorted_friend_names),
                 fb_id = fbFriends[i].id;
-            
+
             $(this).parents('.friend').find('.portrait>img')
                 .attr( 'src', 'http://graph.facebook.com/'+ fb_id +'/picture' )
                 .attr( 'title', name )
@@ -458,7 +461,7 @@
         Friend.prototype._chooseEmailFriendSelect = function () {
             // ### STATE CHANGE ###
             // 1 || 2 -> 3
-            // When someone has used the email input, change friend 
+            // When someone has used the email input, change friend
             // select to Email specific in Choose Friend's screen
             // Returns: n/a
             var that = this,
@@ -515,7 +518,7 @@
         Friend.prototype._chooseFBFriendSelect = function () {
             // ### STATE CHANGE ###
             // 2 -> 4
-            // When someone has used the email input, change friend 
+            // When someone has used the email input, change friend
             // select to FB specific in Choose Friend's screen
             // Returns: n/a
             var that = this,
@@ -566,7 +569,7 @@
             if (selected === 'fb') {
                 return this._validateFriendFB($elem.find('input')[0]);
             } else if (selected === 'email') {
-                return this._validateFriendName($elem.find('input.name')[0]) 
+                return this._validateFriendName($elem.find('input.name')[0])
                     && this._validateFriendEmail($elem.find('input.email')[0]);
             } else {
                 // Empty friend
@@ -588,7 +591,7 @@
         };
         Friend.prototype.getFriendInfo = function () {
             // Gets the stored friend info if valid
-            // Returns: 
+            // Returns:
             //      - valid: [ <string> 'email', <string> name, <string> email address ] | [ <string> 'fb', <string> name, <string> fb id ]
             //      - empty: []
             //      - invalid: null
@@ -599,7 +602,7 @@
                     // return name & fb_id
                     name = $elem.find('.fb_friend input').val();
                     return [ 'fb',
-                             name, 
+                             name,
                              fbFriends[ $.inArray(name, sorted_friend_names) ].id ];
                 } else if (this.selected === 'email') {
                     // return name & email
@@ -640,23 +643,23 @@
                 }
             });
         };
-        
+
 
         // Asker gets & stores required information from the user
         //
         // Inputs:
         //      name (opt) - <string> name & id of containing elem
-        //      update_callback (opt) - <function> callback when Friend 
+        //      update_callback (opt) - <function> callback when Friend
         //                              updates stored info
         //
         var Asker = function (name, update_callback) {
             Widget.call(this, 'li', name);
             // When asker is updated, fire this callback
             this.update_callback = update_callback || function () {};
-            
+
             var that = this,
                 $elem = $(this.elem);
-            
+
             this.name  = ''; // Name of asker
             this.pic   = ''; // Picture of asker
             this.email = ''; // Email of asker
@@ -670,12 +673,12 @@
                     <div class='email_asker'> \
                         <div> \
                             <label>Your name:</label> \
-                            <input class='name' name='name' type='text' value='' /> \
+                            <input class='name' name='name' type='text' value='" + this.name + "' /> \
                             <div class='error'>Try to stick with the alphabet</div> \
                         </div> \
                         <div> \
                             <label>Your email:</label> \
-                            <input class='email' name='email' type='text' value='' /> \
+                            <input class='email' name='email' type='text' value='" + this.email + "' /> \
                             <div class='error'>This email doesn't look right</div> \
                         </div> \
                     </div> \
@@ -714,7 +717,7 @@
             // Validate data asker contains
             // Returns: <boolean> true = valid, false = invalid
             var $elem = $(this.elem);
-            return this._validateName($elem.find('input.name')[0]) 
+            return this._validateName($elem.find('input.name')[0])
                 && this._validateEmail($elem.find('input.email')[0]);
         };
         // Review functions will change the element to indicate
@@ -726,7 +729,7 @@
                 that = this,
                 error = false,
                 good_face = (this.pic !== '') ? this.pic : '/static/plugin/imgs/happy_face.png';
-            
+
             // Validate each input and set sad face if any are in error
             $elem.find('input').each(function () {
                 var i = that._validateInput(this);
@@ -759,13 +762,13 @@
         };
         Asker.prototype.getAskerInfo = function () {
             // Gets the stored asker info if valid
-            // Returns: 
+            // Returns:
             //      - valid: [ <string> name, <string> email address, [<string> picture url] ]
             //      - invalid: null
             var info,
                 $elem = $(this.elem);
             if (this.reviewAsker()) {
-                info = [ 
+                info = [
                     $elem.find('input.name').val(),
                     $elem.find('input.email').val() ];
                 if (this.pic !== '') {
@@ -812,21 +815,21 @@
 
         // Any global variables you want
         {% block js_globals %}{% endblock js_globals %}
-        
+
         // ------------------------------   AJAX methods  ----------------------
-        
+
         // Useful logging function
-        var console = ( typeof(window.console) === 'object' 
-                 && typeof(window.console.log) === 'function' 
-                 && typeof(window.console.error) ==='function' ) 
+        var console = ( typeof(window.console) === 'object'
+                 && typeof(window.console.log) === 'function'
+                 && typeof(window.console.error) ==='function' )
                     ? window.console : { log: function () {}, error: function () {} };
 
         // Store FB data on server
         var updateServerUser = function( accessToken, userId ) {
-            var payload = { 
+            var payload = {
                 user_uuid   : "{{user_uuid}}",
                 accessToken : accessToken,
-                fbUserId    : userId 
+                fbUserId    : userId
             };
 
             $.ajax({
@@ -845,7 +848,7 @@
 
         var updateEmailAddress = function() {
             var addr = asker.email;
-            
+
             if (asker.email !== '') {
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
@@ -858,7 +861,7 @@
                 });
             }
         };
-        
+
         // Add AJAX methods here.
         {% block ajax_methods %}
         // Your app should replace function stubs
@@ -876,14 +879,14 @@
             // Stub function!
             throw new Error("Attemp to use stub function 'startPartialInstance'");
         };
-        
+
         // Sends information to server to ask friends & handles response
         var sendMessages = function() {
             // Stub function!
             throw new Error("Attemp to use stub function 'sendMessages'");
         };
         {% endblock ajax_methods %}
-        
+
 
         // ------------------------------ PAGE methods ---------------------------------
 
@@ -929,12 +932,12 @@
                     caption: '{{store_domain}}',
                     description: "{{ product_desc|striptags|escape }}",
                     redirect_uri: '{{fb_redirect}}' });
-            
+
             closeIframe( 'SIBTNoConnectFBDialog' );
         };
 
         // Add blank friend entry to Choose Friend's screen
-        var addFriend = function () { 
+        var addFriend = function () {
             var friend = new Friend('', updateChooseFriendsView);
             friends.push(friend);
             $('#friends').append(friend.getElement())
@@ -951,9 +954,9 @@
                 if (!authResp) {
                     // We weren't given permission, do nothing
                     return;
-                } else { 
+                } else {
                     storeAnalytics('SIBTFBConnected');
-                    
+
                     // Store FB data in the server
                     updateServerUser(authResp.accessToken, authResp.userID);
 
@@ -973,7 +976,7 @@
                 }
             }, {scope: 'publish_stream, offline_access, user_about_me, email'});
         };
-        
+
         // Query FB api to grab logged-in user's friends
         var fetchFBFriends = function () {
             FB.api( '/me/friends', function (response) {
@@ -981,7 +984,7 @@
                 fbFriends.sort();
 
                 $.each( response.data, function (i) {
-                    sorted_friend_names.push(fbFriends[i].name); 
+                    sorted_friend_names.push(fbFriends[i].name);
                 });
 
                 // Code here changes all FB Connect options into FB Friend Select options
@@ -1016,7 +1019,7 @@
                     continue; // Don't add []
                 }
             }
-            
+
             return error ? null : friend_info;
         };
 
@@ -1024,7 +1027,7 @@
         var updateChooseFriendsView = function () {
             var i = getFriendsInfo(),
                 $chosenButton = $('#chosenButton');
-            
+
             if (i && i.length !== 0) {
                 $chosenButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
             } else {
@@ -1035,7 +1038,7 @@
         // Toggles next button from active / inactive for Asker Info screen
         var updateAskerInfoView = function () {
             var $askButton = $('#askButton');
-            
+
             if (asker.validateAsker()) {
                 $askButton.removeClass('inactive').children('img').attr('src','/static/plugin/imgs/blue_outline_logo_40x40.png');
             } else {
@@ -1063,6 +1066,8 @@
             console.log("reviewAsker asker: "+JSON.stringify(i));
             if (i) {
                 // Good to go!
+                $.cookie('asker_name', asker.name);
+                $.cookie('asker_email', asker.email);
                 sendMessages();
             } else {
                 // TODO: Add feedback why button didn't work
@@ -1071,14 +1076,20 @@
 
         // Add global js functions here
         {% block js_functions %}{% endblock js_functions %}
-           
+
         $(document).ready(function() {
             asker = new Asker('ask_user', updateAskerInfoView);
 
-            {% if user_name %}asker.name = "{{user_name|escape}}";{% endif %}
+            asker.name = $.cookie('asker_name');
+            asker.email = $.cookie('asker_email');
+
+            // this line will be "None" if user_name is None on the server!
+            {% if user_name %}asker.name = "{{user_name|escape}}"{% endif %}
             {% if user_pic %}asker.pic = "{{user_pic|escape}}";{% endif %}
             {% if user_email %}asker.email = "{{user_email|escape}}";{% endif %}
-            {% if user_name or user_pic or user_email %}asker.updateView();{% endif %}
+            if (asker.name || asker.pic || asker.email) {
+                asker.updateView();
+            }
 
             /**********************  ATTACH EVENTS TO DOM HERE  **************************/
 

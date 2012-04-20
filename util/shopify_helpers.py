@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-import cgi, hashlib, re, os, logging, urllib, urllib2, uuid, Cookie
-import sys
-
-from util.consts import *
+"""Supposed to contain Shopify-specific helpers."""
 
 def get_shopify_url(shopify_url):
-    if shopify_url[:7] != 'http://':
-        shopify_url = 'http://%s' % shopify_url 
+    """Formats a Shopify URL.
+
+    Works for generic URLs as well.
+    PyLint: Your code has been rated at -41.00/10
+    """
+    if shopify_url[:4] != 'http':
+        shopify_url = 'http://%s' % shopify_url  # assume no HTTPS
 
     if shopify_url.endswith('/'):
-        l = len(shopify_url)
-        shopify_url = shopify_url[ l - 1 ]
+        shopify_url = shopify_url[:-1]
 
     return shopify_url
