@@ -39,8 +39,12 @@
                 $images = $this.find('img');
                 settings = $.extend({}, DEFAULTS, params);
                 dropdown_button = $('<div />', {
-                    'text': "\u2335", // unicode countersink
+                    // 'text': "\u2335", // unicode countersink doesn't work in IE
                     'css': {
+                        'background-image': "url('/static/imgs/dropdown_icon.png')",
+                        'display': 'inline-block',
+                        'width': '25px',
+                        'height': '26px',
                         'float': 'right',
                         'margin-right': '4px',
                         'margin-top': parseInt(settings.height) / 2 - 15
@@ -74,7 +78,7 @@
                         'top': $this.position().top,
                         'left': $this.position().left
                     })
-                    .slideDown(INT_TIME_ANIM);
+                    .fadeIn(INT_TIME_ANIM);
                     return true;
                 };
 
@@ -125,7 +129,7 @@
                 $expansion.css(settings)
                           .css({
                               'height': 'auto',
-                              'max-height': '350px',
+                              'max-height': '333px',
                               'overflow-y': 'scroll',
                               'display': 'none'
                           })

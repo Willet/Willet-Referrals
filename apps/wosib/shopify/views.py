@@ -94,14 +94,14 @@ class WOSIBShopifyServeScript(URIHandler):
             except:
                 logging.warn('error splitting the asker name')
 
-            is_asker = bool(instance.asker.key() == user.key()) 
+            is_asker = bool(instance.asker.key() == user.key())
             if not is_asker:
                 vote_action = WOSIBVoteAction.get_by_app_and_instance_and_user(app, instance, user)
                 has_voted = bool(vote_action != None)
                 logging.info('not asker; has_voted = %r' % has_voted)
 
             try:
-                if not link: 
+                if not link:
                     link = instance.link
                 share_url = link.get_willt_url()
             except Exception, e:

@@ -10,10 +10,10 @@ html, body {
 }
 textarea {
     display: block;
-    background: #fff url("/static/inputshadow.gif") repeat-x top; 
+    background: #fff url("/static/inputshadow.gif") repeat-x top;
     border-style: none solid solid;
-    border: 1px solid #aaa; 
-    padding: 8px; 
+    border: 1px solid #aaa;
+    padding: 8px;
     color: black;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     overflow-x: hidden;
@@ -93,10 +93,10 @@ p {
     background-image: -webkit-linear-gradient(top, #E3E3E3, #D1D1D1);
     background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
     -pie-background: linear-gradient(top, #E3E3E3, #D1D1D1);
-    background-image: linear-gradient(top, #E3E3E3, #D1D1D1); 
+    background-image: linear-gradient(top, #E3E3E3, #D1D1D1);
     -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;    
+    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     behavior: url(/static/js/PIE.htc)
 }
 .grey_bar:hover {
@@ -214,7 +214,7 @@ p {
 
 /* ---------------------   PAGES   ----------------------- */
 
-/* ---------------------   Splash  ----------------------- */ 
+/* ---------------------   Splash  ----------------------- */
 
 #questionOptions {
     margin-top: 12px;
@@ -317,6 +317,7 @@ p {
 }
 .options .or {
     width: 72px;
+    *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {
     width: 45px;
@@ -347,7 +348,7 @@ p {
     min-width: 150px;
 }
 
-/* ---------------------   Choose Friends  ----------------------- */ 
+/* ---------------------   Choose Friends  ----------------------- */
 
 ul.friends, ul.askers {
     list-style-type: none;

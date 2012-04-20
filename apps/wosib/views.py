@@ -258,7 +258,7 @@ class WOSIBShowResults(URIHandler):
         wosib_instance = WOSIBInstance.get(instance_uuid)
         if not wosib_instance:
             raise Exception ('instance not found')
-            
+
         winning_products = wosib_instance.get_winning_products()
         if len(winning_products) > 1:
             # that is, if multiple items have the same score
@@ -273,7 +273,7 @@ class WOSIBShowResults(URIHandler):
                 product_image = winning_products[0].images[0]
             except:
                 product_image = '/static/imgs/noimage-willet.png' # no image default
-            
+
             try:
                 product_link = winning_products[0].link
             except:
@@ -303,13 +303,13 @@ class WOSIBShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
         partial = PartialWOSIBInstance.get_by_user(user)
-        
+
         if post_id != "":
             user_cancelled = False
 
             # Grab stuff from PartialWOSIBInstance
             app = partial.app_
-            link = partial.link 
+            link = partial.link
             products = partial.products # is ["id","id","id"], not object!
 
             # Make the Instance!
@@ -319,11 +319,11 @@ class WOSIBShowFBThanks(URIHandler):
                 product = Product.get(products[0])
                 product_image = product.images[0]
             except:
-                # either no products, no images in products, or... 
+                # either no products, no images in products, or...
                 product_image = '%s/static/imgs/blank.png' % URL # blank
             instance = app.create_instance(user, None, link, products)
             #                              user, end,  link, products
-            
+
             # partial's link is actually bogus (points to vote.html without an instance_uuid)
             # this adds the full WOSIB instance_uuid to the URL, so that the vote page can
             # be served.
@@ -338,12 +338,12 @@ class WOSIBShowFBThanks(URIHandler):
             link.add_user(user)
             link.put()
             link.memcache_by_code() # doubly memcached
-            
+
             logging.info('incremented link and added user')
-        
+
         elif partial != None:
             # Create cancelled action
-            #WOSIBNoConnectFBCancelled.create(user, 
+            #WOSIBNoConnectFBCancelled.create(user,
             #                                  url=partial.link.target_url,
             #                                  app=partial.app_)
             pass # TODO: WOSIB Analytics
@@ -356,7 +356,7 @@ class WOSIBShowFBThanks(URIHandler):
             'email': user.get_attr('email'),
             'user_cancelled': user_cancelled
         }
-        
+
         path = os.path.join('apps/wosib/templates/', 'fb_thanks.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -369,7 +369,7 @@ class ShowWOSIBColorboxCSS (URIHandler):
             'URL': URL,
             'app_uuid': self.request.get('app_uuid')
         }
-       
+
         path = os.path.join('apps/plugin/templates/css/', 'colorbox.css')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -385,7 +385,7 @@ class WOSIBColorboxJSServer(URIHandler):
             'instance_uuid': self.request.get('instance_uuid'),
             'refer_url': self.request.get('refer_url')
         }
-       
+
         path = os.path.join('apps/wosib/templates/js/', 'jquery.colorbox.js')
         self.response.headers['Content-Type'] = 'application/javascript'
         self.response.headers.add_header('P3P', P3P_HEADER)

@@ -69,9 +69,9 @@
     try { // debug if available
         if (sys.debug) {
             if (!(typeof(w.console) === 'object' &&
-                (typeof(w.console.log) === 'function' || 
+                (typeof(w.console.log) === 'function' ||
                  typeof(w.console.log) === 'object') &&
-                (typeof(w.console.error) ==='function' || 
+                (typeof(w.console.error) ==='function' ||
                  typeof(w.console.error) === 'object'))) {
                 throw new Error("Invalid console object");
             }
@@ -208,7 +208,7 @@
 
 
             var metadata = function (more) {
-                // constructs the 'willet' query string - no prefixing ? 
+                // constructs the 'willet' query string - no prefixing ?
                 // will be added for you.
                 // add more query properties with the "more" param.
                 return $.param($.extend (
@@ -334,9 +334,9 @@
                     var new_window = window.open(
                         options.href, // url
                         '_blank', // name
-                        'width=' + width + ',' + 
-                        'height=' + height + ',' + 
-                        'left=' + left + ',' + 
+                        'width=' + width + ',' +
+                        'height=' + height + ',' +
+                        'left=' + left + ',' +
                         'top=' + top,
                         true //.preserve history
                     );
@@ -348,7 +348,7 @@
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 showColorbox({
-                    href: "{{URL}}/s/results.html?" + 
+                    href: "{{URL}}/s/results.html?" +
                            metadata({'refer_url': w.location.href})
                 });
             };
@@ -399,12 +399,16 @@
 
                 // load product currently on page
                 var ptemp = $.cookie('products') || '';
+                console.log("read product cookie, got " + ptemp);
                 products = ptemp.split(','); // load
                 if ($.inArray("{{product.uuid}}", products) === -1) { // unique
-                    products.push("{{product.uuid}}"); // insert as products[0]
-                    products.splice(PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
+                    products.unshift("{{product.uuid}}"); // insert as products[0]
+                    products = products.splice(0, PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
                     products = cleanArray(products); // remove empties
                     $.cookie('products', products.join(',')); // save
+                    console.log("saving product cookie " + products.join(','));
+                } else {
+                    console.log("product already in cookie");
                 }
                 return products;
             };
@@ -520,7 +524,7 @@
                     topbar_hide_button.attr('id', '_willet_topbar_hide_button')
                         .css('display', 'none')
                         .click(unhide_topbar);
-                    
+
                     if (app.show_top_bar_ask) {
                         topbar_hide_button.html('Get advice!');
                     } else if(user.is_asker) {
@@ -547,7 +551,7 @@
                         console.log('v2 button is enabled');
                         var button = d.createElement('a');
                         var button_html = '';
-                        // only add button if it's enabled in the app 
+                        // only add button if it's enabled in the app
                         if (user.is_asker) {
                             button_html = 'See what your friends said!';
                         } else if (instance.show_votes) {
@@ -598,7 +602,7 @@
                             .css('display', 'inline-block')
                             .click (showResults);
                         }
-                        
+
                         var $wbtn = $('#_willet_button_v3 .button');
                         if ($wbtn.length > 0) {
                             $wbtn = $($wbtn[0]);
