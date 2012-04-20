@@ -3,7 +3,7 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var DEBUG = false,
+    var DEBUG = true,
         DEFAULT_COUNT = 'false',
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
@@ -77,31 +77,6 @@
             s.appendChild(document.createTextNode(rules)); // Every other browser
         }
         return s;
-    };
-
-    var createButton = function (id) {
-        id = id || '';
-        var d = document.createElement('div');
-        d.style.styleFloat = 'left'; // IE
-        d.style.cssFloat = 'left'; // FF, Webkit
-        d.style.marginTop = '0';
-        d.style.marginLeft = '0';
-        d.style.marginBottom = '0';
-        d.style.marginRight = button_spacing;
-        d.style.paddingTop = '0';
-        d.style.paddingBottom = '0';
-        d.style.paddingLeft = '0';
-        d.style.paddingRight = '0';
-        d.style.border = 'none';
-        d.style.display = 'block';
-        d.style.visibility = 'visible';
-        d.style.height = '21px';
-        d.style.position = 'relative'; // Need this child positioning
-        d.style.overflow = 'hidden';
-        d.name = 'button';
-        d.id = '_willet_'+id;
-        d.className = '_willet_social_button';
-        return d;
     };
 
     var button_div = document.getElementById('_willet_buttons_app');
@@ -294,6 +269,31 @@
                 }
             };
             
+            var createButton = function (id) {
+                id = id || '';
+                var d = document.createElement('div');
+                d.style.styleFloat = 'left'; // IE
+                d.style.cssFloat = 'left'; // FF, Webkit
+                d.style.marginTop = '0';
+                d.style.marginLeft = '0';
+                d.style.marginBottom = '0';
+                d.style.marginRight = button_spacing;
+                d.style.paddingTop = '0';
+                d.style.paddingBottom = '0';
+                d.style.paddingLeft = '0';
+                d.style.paddingRight = '0';
+                d.style.border = 'none';
+                d.style.display = 'block';
+                d.style.visibility = 'visible';
+                d.style.height = '21px';
+                d.style.position = 'relative'; // Need this child positioning
+                d.style.overflow = 'hidden';
+                d.name = 'button';
+                d.id = '_willet_'+id;
+                d.className = '_willet_social_button';
+                return d;
+            };
+
             // Grab the photo
             var photo = '';
             if ( data.product.images[0] != null ) {
@@ -327,7 +327,7 @@
                 try {
                     addButton(button_div, req_buttons[j], supported_networks[req_buttons[j]]);
                 } catch (e) {
-                    console.error('Buttons: '+b+' encountered error: '+e);
+                    console.error('Buttons: '+req_buttons[j]+' encountered error: '+e);
                 }
             }
 
