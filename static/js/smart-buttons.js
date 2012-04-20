@@ -205,7 +205,6 @@ var _willet = (function(me) {
                     link.style.color = "#CD1F1F";
                     link.style.height = "20px";
                     link.style.width = "43px";
-                    //link.style.backgroundPosition = "0 -7px";
                     link.style.zIndex = "100";
                     link.onclick = function() {
                         itemShared("Pinterest");
