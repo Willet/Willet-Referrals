@@ -76,8 +76,7 @@
 							}
 
 							// This function is automatically called by the player once it loads
-							function onYouTubePlayerReady(playerId) {
-								alert('Hey! Where am I?');
+							window.onYouTubePlayerReady = function (playerId) {
 								var ytplayer = document.getElementById("ytPlayer");
 								ytplayer.addEventListener("onStateChange", "onPlayerStateChange");
 							}
