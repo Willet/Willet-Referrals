@@ -72,6 +72,15 @@ _willet.helpers = {
     "getElemValue": function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
         return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
+    },
+    "getCanonicalUrl": function (default_url) {
+        var links = document.getElementsByTagName('link');
+        var i = links.length;
+        while (i--) {
+            if (links[i].rel === 'canonical') {
+                return links[i].href || default_url;
+            }
+        }
     }
 }
 var _willet = (function(me) {
@@ -80,7 +89,7 @@ var _willet = (function(me) {
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
+    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -160,6 +169,7 @@ var _willet = (function(me) {
                     fb.setAttribute('data-layout', 'button_count');
                     fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
                     fb.setAttribute('data-show-faces', 'false');
+                    fb.setAttribute('data-href', params.canonicalUrl);
                     var style = helpers.createStyle(".fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
                              +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
@@ -205,7 +215,7 @@ var _willet = (function(me) {
                     link.onclick = function() {
                         itemShared("Pinterest");
                         window.open("//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( window.location.href ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
                             "&description=" + encodeURIComponent("I found this on " + params.domain),
                             'signin',
@@ -232,7 +242,7 @@ var _willet = (function(me) {
                         count.style.width = '77px';
                         var countLink = document.createElement("a");
                         countLink.href = "//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( window.location.href ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
                             "&description=" + encodeURIComponent("I found this on " + params.domain);
                         countLink.className = 'pin-it-button';
@@ -261,7 +271,7 @@ var _willet = (function(me) {
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";
                     link.className = "twitter-share-button";
-
+                    link.setAttribute('data-url', params.canonicalUrl);
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
@@ -294,6 +304,7 @@ var _willet = (function(me) {
                     gPlus.className = 'g-plusone';
                     gPlus.setAttribute("data-size", "medium");
                     gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
+                    gPlus.setAttribute('data-href', params.canonicalUrl);
                     gPlus.setAttribute("callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
@@ -337,7 +348,7 @@ var _willet = (function(me) {
                     button.style.width = params.buttonCount ? '96px' : '57px';
 
                     var u = "http://www.thefancy.com/fancyit?" +
-                            "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                            "ItemURL=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&Title="  + encodeURIComponent( params.data.product.title ) +
                             "&Category=Other";
                     if ( params.photo.length > 0 ) {
@@ -542,6 +553,11 @@ var _willet = (function(me) {
             var buttonCount = (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
             var buttonSpacing = helpers.getElemValue(buttonsDiv, 'spacing', '5')+'px';
             var buttonPadding = helpers.getElemValue(buttonsDiv, 'padding', '5')+'px';
+            var canonicalUrl = helpers.getCanonicalUrl(window.location.protocol
+                                                        +'//'
+                                                        +window.location.hostname
+                                                        +'/products/'
+                                                        +window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') );
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
@@ -623,7 +639,8 @@ var _willet = (function(me) {
                     "data": productData,
                     "buttonCount": buttonCount,
                     "buttonSpacing": buttonSpacing,
-                    "buttonPadding": buttonPadding
+                    "buttonPadding": buttonPadding,
+                    "canonicalUrl": canonicalUrl
                 }));
 
                 if (button["script"] !== "") {
