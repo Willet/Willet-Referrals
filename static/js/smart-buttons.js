@@ -69,13 +69,9 @@ _willet.helpers = {
             elem.addEvent('on'+event, callback);
         }
     },
-    "getElemValue": function (elem, key, deflt) {
+    "getElemValue": function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
-        if (elem) {
-            return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || deflt || false;
-        } else {
-            return null;
-        }
+        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || false;
     }
 }
 var _willet = (function(me) {

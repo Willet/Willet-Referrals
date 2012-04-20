@@ -49,13 +49,9 @@
     if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
     throw new SyntaxError('JSON.parse');};}}());
 
-    var getElemValue = function (elem, key, deflt) {
+    var getElemValue = function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
-        if (elem) {
-            return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || deflt || false;
-        } else {
-            return null;
-        }
+        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || false;
     }
 
     var addButton = function (elem, bname, button) {
