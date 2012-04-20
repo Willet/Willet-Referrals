@@ -45,26 +45,29 @@ class AskDynamicLoader(URIHandler):
 
     for sharing information about a purchase just made by one of our clients
     """
-    
+
     def get(self):
-        """ 
+        """
             SIBT Ask page
             params:
                 url (required): the product URL; typically window.location.href
-                
+
                 user_uuid (optional)
                 product_uuid (optional)
                 product_shopify_id (optional)
         """
         page_url = self.request.get('url', self.request.headers.get('referer'))
+
+        # store registration url (with backup options if it's missing)
+        store_url = self.request.get('store_url') or page_url
         product = product_shopify = None
         try:
-            url_parts = urlparse(page_url)
+            url_parts = urlparse(store_url)
             store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
             logging.error('error parsing referer %s' % e, exc_info = True)
-        
+
         app = SIBT.get_by_store_url(store_domain)
         if not app:
             logging.error("could not find SIBT app for %s" % store_domain)
@@ -74,7 +77,7 @@ class AskDynamicLoader(URIHandler):
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
-        
+
         product_uuid = self.request.get('product_uuid', None) # optional
         product_shopify_id = self.request.get('product_shopify_id', None) # optional
         logging.debug("%r" % [product_uuid, product_shopify_id])
@@ -94,7 +97,7 @@ class AskDynamicLoader(URIHandler):
             # if we used a Shopify method, reget this product by its uuid so we get the non-shopify object
             if product_shopify:
                 product = Product.get(product_shopify.uuid)
-            
+
             if not product:
                 # we failed to find a single product!
                 raise LookupError
@@ -109,7 +112,7 @@ class AskDynamicLoader(URIHandler):
 
         # Store 'Show' action
         SIBTShowingAskIframe.create(user, url=page_url, app=app)
-        
+
         # Fix the product description
         try:
             ex = '[!\.\?]+'
@@ -128,18 +131,18 @@ class AskDynamicLoader(URIHandler):
         # Make a new Link
         origin_domain = os.environ['HTTP_REFERER'] if\
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-        
+
         # we will be replacing this target url with the vote page url once we get an instance.
         link = Link.create(page_url, app, origin_domain, user)
-        
+
         # Which share message should we use?
-        ab_share_options = [ 
+        ab_share_options = [
             "I'm not sure if I should buy this. What do you think?",
             "Would you buy this? I need help making a decision!",
             "I need some shopping advice. Should I buy this? Would you?",
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
-        
+
         if not user_is_admin:
             ab_opt = ab_test('sibt_share_text3',
                               ab_share_options,
@@ -185,7 +188,7 @@ class AskDynamicLoader(URIHandler):
 
 class VoteDynamicLoader(URIHandler):
     """ Serves a plugin where people can vote on a purchase
-    
+
     On v10 and up (standalone vote page), "voter is never asker"
     """
     def get(self):
@@ -201,7 +204,7 @@ class VoteDynamicLoader(URIHandler):
         try:
             # stage 1: get instance by instance_uuid
             instance = SIBTInstance.get_by_uuid(instance_uuid)
-            
+
             # stage 2: get instance by willet code in URL
             if not instance and willt_code:
                 logging.info('trying to get instance for code: %s' % willt_code)
@@ -229,7 +232,7 @@ class VoteDynamicLoader(URIHandler):
             # start looking for instance info
             if not app:
                 app = instance.app_
-            
+
             if not user and app:
                 user = User.get_or_create_by_cookie (self, app)
 
@@ -245,12 +248,12 @@ class VoteDynamicLoader(URIHandler):
 
             # In the case of a Shopify product, it will fetch from a .json URL.
             product = Product.get_or_fetch(instance.url, app.client)
-            
+
             try:
                 product_img = product.images[0]
             except:
                 product_img = ''
-            
+
             yesses = instance.get_yesses_count()
             nos = instance.get_nos_count()
             try:
@@ -264,7 +267,7 @@ class VoteDynamicLoader(URIHandler):
                     'product_img': product_img,
                     'app' : app,
                     'URL': URL,
-                    
+
                     'user': user,
                     'asker_name' : name if name else "your friend",
                     'asker_pic' : instance.asker.get_attr('pic'),
@@ -308,7 +311,7 @@ class ShowResults(URIHandler):
         try:
             # stage 1: get instance by instance_uuid
             instance = SIBTInstance.get_by_uuid(self.request.get('instance_uuid'))
-            
+
             # stage 2: get instance by willet code in URL
             if not instance and self.request.get('willt_code'):
                 logging.info('trying to get instance for code: %s' % \
@@ -337,23 +340,23 @@ class ShowResults(URIHandler):
             # start looking for instance info
             if not app:
                 app = instance.app_
-            
+
             if not user and app:
                 user = User.get_or_create_by_cookie (self, app)
 
             name = instance.asker.get_full_name()
-            
+
             # we get these values before we submit the results
             # because we cannot be sure how quickly the taskqueue will finish
             yesses = instance.get_yesses_count()
             noes = instance.get_nos_count()
-            
+
             name = instance.asker.get_full_name()
             is_asker = (instance.asker.key() == user.key())
 
             if not is_asker:
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-                
+
                 logging.info('got vote action: %s' % vote_action)
                 has_voted = bool(vote_action != None)
                 if not has_voted:
@@ -388,10 +391,10 @@ class ShowResults(URIHandler):
             else:
                 SIBTShowingVote.create(user=user, instance=instance)
 
-            if link == None: 
+            if link == None:
                 link = instance.link
             share_url = link.get_willt_url()
-            
+
             # calculate vote percentage
             total = yesses + noes
             if total == 0:
@@ -411,7 +414,7 @@ class ShowResults(URIHandler):
                 'asker_pic' : instance.asker.get_attr('pic'),
                 'target_url' : target,
                 'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
-                
+
 
                 'share_url': share_url,
                 'is_asker' : is_asker,
@@ -428,7 +431,7 @@ class ShowResults(URIHandler):
         except ValueError:
             # well, we can't find the instance, so let's assume the vote is over
             template_values = {
-                'output': 'Vote is over'        
+                'output': 'Vote is over'
             }
             path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
 
@@ -452,14 +455,14 @@ class ShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
         partial = PartialSIBTInstance.get_by_user(user)
-        
+
         if post_id != "":
             user_cancelled = False
 
             # GAY BINGO
             if not user.is_admin():
                 bingo('sibt_fb_no_connect_dialog')
-            
+
             # Grab stuff from PartialSIBTInstance
             try:
                 app = partial.app_
@@ -496,7 +499,7 @@ class ShowFBThanks(URIHandler):
             logging.info('incremented link and added user')
         elif partial != None:
             # Create cancelled action
-            SIBTNoConnectFBCancelled.create(user, 
+            SIBTNoConnectFBCancelled.create(user,
                                              url=partial.link.target_url,
                                              app=partial.app_)
 
@@ -535,9 +538,9 @@ class ColorboxJSServer(URIHandler):
 
 class ShowOnUnloadHook(URIHandler):
     """ Creates a local-domain iframe that allows SJAX requests to be served
-        when the window unloads. (Typically, webkit browsers do not complete 
-        onunload functions unless a synchronous AJAX is sent onbeforeunload, 
-        and in order to send synced requests, the request must be sent to the 
+        when the window unloads. (Typically, webkit browsers do not complete
+        onunload functions unless a synchronous AJAX is sent onbeforeunload,
+        and in order to send synced requests, the request must be sent to the
         same domain.)
     """
     def get(self):
@@ -549,7 +552,7 @@ class ShowOnUnloadHook(URIHandler):
             'target_url': self.request.get('target_url'),
             'evnt': self.request.get('evnt')
         }
-        
+
         path = os.path.join('apps/sibt/templates/', 'onunloadhook.html')
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -691,14 +694,14 @@ class SIBTServeScript(URIHandler):
 
         # have client, app
         if not hasattr(app, 'extra_url'):
-            """Check if target (almost always window.location.href) has the 
+            """Check if target (almost always window.location.href) has the
                same domain as store URL.
 
             Example: http://social-referral.appspot.com/s/shopify/real-s...
             ibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&...
             page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
 
-            Note: if a site has multiple extra URLs, only the last used 
+            Note: if a site has multiple extra URLs, only the last used
             extra URL will be available to our system.
             """
             try:
@@ -731,7 +734,7 @@ class SIBTServeScript(URIHandler):
             event = 'SIBTShowingResults'
             asker_name = instance.asker.get_first_name() or "your friend"
             asker_pic = instance.asker.get_attr('pic') or ''
-            votes_count = bool(instance.get_yesses_count() + 
+            votes_count = bool(instance.get_yesses_count() +
                                instance.get_nos_count()) or 0
             is_asker = bool(instance.asker.key() == user.key())
 

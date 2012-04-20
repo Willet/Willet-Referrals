@@ -11,7 +11,7 @@ from django.utils import simplejson as json
 from google.appengine.api import taskqueue
 from google.appengine.api import memcache
 from google.appengine.ext import webapp
-from google.appengine.ext import db 
+from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from time import time
@@ -82,17 +82,17 @@ class WOSIBShopifyServeScript (URIHandler):
         except:
             logging.info('no app')
 
-        # If we have an instance, figure out if 
+        # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
         if instance:
             instance_uuid = instance.uuid
-            
+
             # number of votes, not the votes objects.
             # votes_count = WOSIBVoteAction.all().filter('wosib_instance =', instance).count()
             votes_count = instance.get_votes_count() or 0
             logging.info ("votes_count = %s" % votes_count)
-            
+
             asker_name = instance.asker.get_first_name()
             asker_pic = instance.asker.get_attr('pic')
             show_votes = True
@@ -104,18 +104,18 @@ class WOSIBShopifyServeScript (URIHandler):
             except:
                 logging.warn('error splitting the asker name')
 
-            is_asker = (instance.asker.key() == user.key()) 
+            is_asker = (instance.asker.key() == user.key())
             if not is_asker:
                 logging.info('not asker, check for vote ...')
-                
+
                 vote_action = WOSIBVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-                
+
                 logging.info('got a vote action? %s' % vote_action)
-                
+
                 has_voted = (vote_action != None)
 
             try:
-                if link == None: 
+                if link == None:
                     link = instance.link
                 share_url = link.get_willt_url()
             except Exception,e:
@@ -128,7 +128,7 @@ class WOSIBShopifyServeScript (URIHandler):
             cta_button_text = "Need advice? Ask your friends!"
         else:
             cta_button_text = "ADMIN: Unsure? Ask your friends!"
-        
+
         # determine whether to show the button thingy.
         # code below makes button show only if vote was started less than 1 day ago.
         has_results = False
@@ -136,7 +136,7 @@ class WOSIBShopifyServeScript (URIHandler):
             time_diff = datetime.now() - instance.created
             if time_diff <= timedelta(days=1):
                 has_results = True
-        
+
         # Grab all template values
         template_values = {
             'URL': URL,
@@ -159,8 +159,8 @@ class WOSIBShopifyServeScript (URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'application/javascript'
         self.response.out.write(template.render(path, template_values))
-        
+
         return
-    
+
     def post (self):
         self.get() # because money.
