@@ -52,7 +52,7 @@
     var getElemValue = function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
         return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
-    }
+    };
 
     var addButton = function (elem, bname, button) {
         // Assumes button has method create and attribute script
@@ -64,7 +64,7 @@
         script.src = button.script;
         document.getElementsByTagName('head')[0].appendChild(script);
         console.log('Buttons: '+ bname +' script appended');
-    }
+    };
 
     var createStyle = function (rules) {
         // Returns stylesheet element
@@ -77,6 +77,18 @@
             s.appendChild(document.createTextNode(rules)); // Every other browser
         }
         return s;
+    };
+
+    var getCanonicalUrl = function (default_url) {
+        var url,
+            links = document.getElementsByTagName('link'),
+            i = links.length;
+        while (i--) {
+            if (links[i].rel === 'canonical' && links[i].href) {
+                url = links[i].href;
+            }
+        }
+        return url || default_url;
     };
 
     var button_div = document.getElementById('_willet_buttons_app');
@@ -92,7 +104,13 @@
                 head = document.getElementsByTagName('head')[0],
                 domain = document.domain,
                 protocol = window.location.protocol, //'http:'; // For local testing
-                store_url = protocol + '//' + window.location.hostname; // http://example.com
+                canonical_url = getCanonicalUrl(window.location.protocol
+                                                +'//'
+                                                +window.location.hostname
+                                                +'/products/'
+                                                +window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') );
+                // How this regex works: replaces .../products/ or a trailing / with empty spring 
+                // So /collections/this-collection/products/this-product -> this-product
 
             button_count = (getElemValue(button_div, 'count', DEFAULT_COUNT) === 'true');
             button_spacing = getElemValue(button_div, 'spacing', DEFAULT_SPACING)+'px';
@@ -118,7 +136,7 @@
                         d.style.width = '80px';
                         return d;
                     },
-                    "script": '//brian-willet.appspot.com/s/sibt.js?url='+window.location.href
+                    "script": '//social-referral.appspot.com/s/sibt.js?url='+canonical_url
                 },
                 "Facebook": {
                     "create": function () {
@@ -131,6 +149,7 @@
                         fb.setAttribute('data-layout', 'button_count');
                         fb.setAttribute('data-width', (button_count ? '90' : '48') );
                         fb.setAttribute('data-show-faces', 'false');
+                        fb.setAttribute('data-href',canonical_url);
                         d.appendChild(fb);
                         var s = createStyle(".fb_edge_widget_with_comment iframe { width:"+d.style.width+" !important; } "
                                       +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
@@ -146,7 +165,7 @@
 
                         var a = document.createElement( 'a' );
                         var u = "http://www.thefancy.com/fancyit?" +
-                                "ItemURL=" + encodeURIComponent( window.location.href ) + 
+                                "ItemURL=" + encodeURIComponent( canonical_url ) + 
                                 "&Title="  + encodeURIComponent( data.product.title ) +
                                 "&Category=Other";
                         if ( photo.length > 0 ) {
@@ -172,6 +191,7 @@
                         g.className = 'g-plusone';
                         g.setAttribute("data-size", "medium");
                         g.setAttribute("data-annotation", (button_count ? "bubble" : "none"));
+                        g.setAttribute('data-href', canonical_url);
                         d.appendChild(g);
                         // Google is using the Open Graph spec
                         var t, p, 
@@ -196,7 +216,7 @@
 
                         var a = document.createElement( 'a' );
                         a.href = "http://pinterest.com/pin/create/button/?" +
-                                "url=" + encodeURIComponent( window.location.href ) + 
+                                "url=" + encodeURIComponent( canonical_url ) + 
                                 "&media=" + encodeURIComponent( photo ) + 
                                 "&description=" + encodeURIComponent("I found this on " + domain);
                         a.className = 'pin-it-button';
@@ -235,6 +255,7 @@
                         a.href = 'https://twitter.com/share';
                         a.className = 'twitter-share-button';
                         a.setAttribute('data-lang','en');
+                        a.setAttribute('data-url', canonical_url);
                         if (!button_count) {
                             a.setAttribute('data-count', 'none');
                         }
