@@ -108,7 +108,8 @@
                                                 +window.location.hostname
                                                 +'/products/'
                                                 +window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') );
-                // How this regex works: .../products/ or a trailing / with empty spring 
+                // How this regex works: replaces .../products/ or a trailing / with empty spring 
+                // So /collections/this-collection/products/this-product -> this-product
 
             button_count = (getElemValue(button_div, 'count', DEFAULT_COUNT) === 'true');
             button_spacing = getElemValue(button_div, 'spacing', DEFAULT_SPACING)+'px';

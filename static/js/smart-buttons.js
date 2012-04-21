@@ -558,6 +558,8 @@ var _willet = (function(me) {
                                                         +window.location.hostname
                                                         +'/products/'
                                                         +window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') );
+            // How this regex works: replaces .../products/ or a trailing / with empty spring 
+            // So /collections/this-collection/products/this-product -> this-product
 
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
