@@ -135,7 +135,7 @@
                         d.style.width = '80px';
                         return d;
                     },
-                    "script": '//brian-willet.appspot.com/s/sibt.js?url='+canonical_url
+                    "script": '//social-referral.appspot.com/s/sibt.js?url='+canonical_url
                 },
                 "Facebook": {
                     "create": function () {
