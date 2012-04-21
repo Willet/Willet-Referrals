@@ -74,8 +74,9 @@ _willet.helpers = {
         return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
     },
     "getCanonicalUrl": function (default_url) {
-        var links = document.getElementsByTagName('link');
-        var i = links.length;
+        var url,
+            links = document.getElementsByTagName('link'),
+            i = links.length;
         while (i--) {
             if (links[i].rel === 'canonical' && links[i].href) {
                 url = links[i].href;
