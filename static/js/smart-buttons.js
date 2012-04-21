@@ -77,10 +77,11 @@ _willet.helpers = {
         var links = document.getElementsByTagName('link');
         var i = links.length;
         while (i--) {
-            if (links[i].rel === 'canonical') {
-                return links[i].href || default_url;
+            if (links[i].rel === 'canonical' && links[i].href) {
+                url = links[i].href;
             }
         }
+        return url || default_url;
     }
 }
 var _willet = (function(me) {

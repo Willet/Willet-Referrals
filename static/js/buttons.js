@@ -81,12 +81,13 @@
 
     var getCanonicalUrl = function (default_url) {
         var links = document.getElementsByTagName('link');
-        var i = links.length;
+        var i = links.length, url;
         while (i--) {
-            if (links[i].rel === 'canonical') {
-                return links[i].href || default_url;
+            if (links[i].rel === 'canonical' && links[i].href) {
+                url = links[i].href;
             }
         }
+        return url || default_url;
     };
 
     var button_div = document.getElementById('_willet_buttons_app');
@@ -102,7 +103,6 @@
                 head = document.getElementsByTagName('head')[0],
                 domain = document.domain,
                 protocol = window.location.protocol, //'http:'; // For local testing
-                store_url = protocol + '//' + window.location.hostname, // http://example.com
                 canonical_url = getCanonicalUrl(window.location.protocol
                                                 +'//'
                                                 +window.location.hostname
