@@ -714,7 +714,7 @@ _willet = (function (me) {
         PRODUCT_JSON = window.location.protocol
                      + '//'
                      + window.location.hostname
-                     + window.location.pathname.replace(/\/$/, '')
+                     + window.location.pathname.replace(/\/$/, '') // remove trailing slash
                      + '.json',
         COOKIE_EXPIRY_IN_DAYS = 30,
 

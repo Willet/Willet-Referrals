@@ -700,6 +700,7 @@ _willet = (function (me) {
     // ***
     // Basic & Smart buttons difference should only exist within this function
     // ***
+    // Linking
     var cookies = me.cookies,
         debug = me.debug,
         messaging = me.messaging
@@ -713,7 +714,7 @@ _willet = (function (me) {
         PRODUCT_JSON = window.location.protocol
                      + '//'
                      + window.location.hostname
-                     + window.location.pathname.replace(/\/$/, '')
+                     + window.location.pathname.replace(/\/$/, '') // remove trailing slash
                      + '.json',
         COOKIE_EXPIRY_IN_DAYS = 30,
 
