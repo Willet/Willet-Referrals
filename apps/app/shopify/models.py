@@ -58,6 +58,8 @@ class AppShopify(Model):
     store_id = db.StringProperty(indexed=True) # Shopify's ID for the store
     store_token = db.StringProperty(indexed=True) # Shopify token for the store
 
+    billing_enabled = db.BooleanProperty(indexed=True, default=False)
+
     # Recurring billing information
     recurring_billing_status     = db.StringProperty(indexed = False) # none, test, pending, accepted, denied
     recurring_billing_id         = db.IntegerProperty(indexed = False)

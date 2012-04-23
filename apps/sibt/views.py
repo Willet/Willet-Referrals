@@ -70,9 +70,17 @@ class AskDynamicLoader(URIHandler):
         product_uuids = self.request.get('products', '').split(',')
         store_url = self.request.get('store_url') or page_url
 
+        if not store_url:
+            logging.error("store_url not found in ask.html query string!")
+
+        product = product_shopify = None
         try:
             url_parts = urlparse(store_url)
-            store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
+            # all db entries are currently http; makes sure https browsers
+            # can also get app.
+            store_domain = "http://%s" % url_parts.netloc
+            # store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
+
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
             logging.error('error parsing referer %s' % e, exc_info=True)
@@ -377,25 +385,6 @@ class ShowResults(URIHandler):
 
                 logging.info('got vote action: %s' % vote_action)
                 has_voted = bool(vote_action != None)
-                if not has_voted:
-                    if doing_vote:
-                        # the user wanted to vote too
-                        if vote_result:
-                            vote_result = 'yes'
-                            yesses += 1
-                        else:
-                            vote_result = 'no'
-                            noes += 1
-
-                        taskqueue.add(
-                            url = url('DoVote'),
-                            params = {
-                                'which': vote_result,
-                                'user_uuid': user.uuid,
-                                'instance_uuid': instance.uuid
-                            }
-                        )
-                        has_voted = True
 
             if not instance.is_live:
                 has_voted = True
@@ -614,7 +603,12 @@ class SIBTServeScript(URIHandler):
         <div id="_willet_buttons_app"></div> (Buttons app, as SIBT Connection)
         <div class="_willet_sibt" (...)><script src='(above)'> (SIBT-JS)
 
-        Required params: url (the page URL)
+        A None client is NORMAL.
+        None Clients indicate an uninstalled App. Do not serve script.
+
+        Required params: url/page_url (the page URL)
+                         store_url (the store's registration url)
+                         client_uuid (the client UUID)
         Optional params: willt_code (helps find instance)
         """
         # declare vars.
@@ -622,50 +616,52 @@ class SIBTServeScript(URIHandler):
         app_css = ''
         asker_name = ''
         asker_pic = ''
-        domain = ''
         event = 'SIBTShowingButton'
         instance = None
         is_asker = False
         is_live = False
         is_safari = False
         link = None
+        page_url = self.request.get('url', self.request.get('page_url', ''))
         parts = {}
-        path = ''
         product = None
         show_top_bar_ask = False
+        store_url = self.request.get('store_url')
         template_values = {}
         unsure_mutli_view = False
         user = None
         votes_count = 0
         willet_code = self.request.get('willt_code')
 
-        # in the proposed SIBT v10+, page URL is the only required parameter
-        page_url = self.request.get('url', '').split('#')[0]
+        page_url = page_url.split('#')[0]  # clean up window.location
         if not page_url:
             # serve comment instead of status code (let customers see it)
             self.response.out.write('/* missing URL */')
             return
 
-        try:
+        if not store_url:
+            # try to get store_url from page_url
+            logging.warn("store is requsting scripting with its page URL "
+                         "(does not work for extra_urls)")
             parts = urlparse(page_url)
-            domain = '%s://%s' % (parts.scheme, parts.netloc)
-            path = parts.path
-        except:
-            self.response.out.write('/* malformed URL */')
-            return
+            if parts.scheme and parts.netloc:
+                store_url = '%s://%s' % (parts.scheme, parts.netloc)
+            else:
+                self.response.out.write('/* malformed URL */')
+                return
 
         try:  # raises KindError both when decode fails and when app is absent
             # check if site is Shopify; get the Shopify app if possible
-            app = SIBTShopify.get_by_store_url(domain)
+            app = SIBTShopify.get_by_store_url(store_url)
             if not app:
                 raise db.KindError("don't have SIBTShopify for site")
         except db.KindError:
             logging.debug('This domain does not have a SIBTShopify app. '
                           'Trying to get SIBT app.')
             # if site is not Shopify, use the SIBT app
-            app = SIBT.get_by_store_url(domain)
+            app = SIBT.get_by_store_url(store_url)
 
-        if app:
+        if app:  # got_by_store_url
             client = app.client
             if not client:
                 return  # this app is not installed.
@@ -676,19 +672,21 @@ class SIBTServeScript(URIHandler):
 
             try:
                 # first try get the Shopify client if one exists
-                client = ClientShopify.get_by_url(domain)
+                client = ClientShopify.get_by_url(store_url)
                 if not client:
                     raise db.KindError("don't have ClientShopify for site")
             except db.KindError:
-                client = Client.get_by_url(domain)
+                client = Client.get_by_url(store_url)
 
             if client:
                 # try to get existing SIBT/SIBTShopify from this client.
                 # if not found, create one.
-                app = SIBT.get_or_create(client=client, domain=domain)
+                # we can create one here because this implies the client had
+                # never uninstsalled our app.
+                app = SIBT.get_or_create(client=client, domain=store_url)
             else:  # we have no business with you
                 self.response.out.write('/* no account for %s! '
-                                        'Go to http://rf.rs to get an account. */' % domain)
+                                        'Go to http://rf.rs to get an account. */' % store_url)
                 return
 
         # not used until multi-ask is initiated
@@ -710,9 +708,9 @@ class SIBTServeScript(URIHandler):
             try:
                 # is "abc.myshopify.com" part of the store URL, i.e.
                 # "http://abc.myshopify.com"?
-                if domain not in app.store_url:
+                if store_url not in app.store_url:
                     # save the alternative URL so it can be called back later.
-                    app.extra_url = domain
+                    app.extra_url = store_url
                     logging.info ("[SIBT] associating a new URL, %s, "
                                   "with the original, %s" % (app.extra_url,
                                                              app.store_url))
@@ -763,36 +761,30 @@ class SIBTServeScript(URIHandler):
         except AttributeError:
             app_css = ''  # it was not a SIBTShopify
 
-        is_safari = 'safari' in self.get_browser() and not \
-                    'chrome' in self.get_browser()
-
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
             'debug': APP_LIVE_DEBUG,
             'URL': URL,
-            'PAGE': page_url,
-            'DOMAIN': domain,
-            'is_safari': is_safari,
 
             # store info
-            'store_domain': domain, # legacy alias for DOMAIN?
-            'store_url': page_url, # legacy alias for PAGE?
-            'store_id': getattr(app, 'store_id', ''),
             'client': client,
+            'page_url': page_url,  # current page
+            'store_url': store_url,  # registration url
+          # 'store_id': getattr(app, 'store_id', ''),
 
             # app info
             'app': app, # if missing, django omits these silently
-            'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
             'app_css': app_css, # SIBT-JS does not allow custom CSS.
             'detect_shopconnection': True,
+            'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
 
             # instance info
             'instance': instance,
             'evnt': event,
             'has_results': bool(votes_count > 0),
-            'show_top_bar_ask': show_top_bar_ask and app.top_bar_enabled,
             'is_live': is_live,
+            'show_top_bar_ask': show_top_bar_ask and app.top_bar_enabled,
             'show_votes': False, # this is annoying if True
 
             # product info

@@ -12,27 +12,15 @@
 
     // declare vars
     var app, instance, products, sys, topbar, user;
+    var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
-    // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
-    var ask_success = false;
-    var debug = ('{{ debug }}' === 'True');
-    var is_asker = ('{{ is_asker }}' === 'True'); // did they ask?
-    var is_live = ('{{ is_live }}' === 'True');
-    var show_votes = ('{{ show_votes }}' === 'True');
-    var has_voted = ('{{ has_voted }}' === 'True');
-    var button_enabled = ('{{ app.button_enabled }}' === 'True');
-    var topbar_enabled = ('{{ app.top_bar_enabled }}' === 'True');
-    var sibt_version = {{sibt_version|default:"3"}};
-    var has_results = ('{{ has_results }}' === 'True');
-    var show_top_bar_ask = ('{{ show_top_bar_ask }}' === 'True');
-
-    // true when visitor on page more than (4 times)
-    var unsure_multi_view = ('{{ unsure_multi_view }}' === 'True');
-
-    // true when SIBT needs to be disabled on the same page as Buttons
-    var detect_shopconnection = ('{{ detect_shopconnection }}' === 'True');
-    var padding_elem = topbar = topbar_hide_button = willt_code = null;
-    var hash_index = -1;
+    // google analytics
+    var ANALYTICS_ID = 'UA-31001469-1';
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', ANALYTICS_ID]);
+    // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
+    _gaq.push(['_setDomainName', window.location.host]);
+    _gaq.push(['_setAllowLinker', true]);
 
     // keep track of this many products, max
     var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }};
@@ -42,16 +30,13 @@
     var padding_elem = null;
     var topbar = null;
     var topbar_hide_button = null;
-    var willt_code = null;
 
     // CSS rules
     var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 
-    var attach_css = function () {
-        // ie7 doesn't refresh inline styles? http://code.google.com/p/ie7-js/source/browse/version/2.0%28beta3%29/src/ie7-recalc.js?r=26
-        // ie7 doesn't allow createTextNode? http://www.phpied.com/dynamic-script-and-style-elements-in-ie/
+    var attachCSS = function () {
         var styles = [app_css, colorbox_css, popup_css];
         var head_elem = d.getElementsByTagName('head')[0];
         for (var i = 0; i < styles.length; i++) {
@@ -61,24 +46,17 @@
             willet_style.setAttribute('type','text/css');
             willet_style.setAttribute('charset','utf-8');
             willet_style.setAttribute('media','all');
-            try { // try inserting CSS all ways
+            try { // try inserting CSS all ways (IE)
                 willet_style.styleSheet.cssText = style;
             } catch (e) { }
-            try { // try inserting CSS all ways
+            try { // try inserting CSS all ways (DOM)
                 willet_style.appendChild(d.createTextNode(style));
             } catch (e) { }
             head_elem.appendChild(willet_style);
         }
     }
-    // load CSS for colorbox as soon as possible!!
-    attach_css();
 
-    // set up a list of scripts to load asynchronously.
-    var scripts_to_load = ['{{URL}}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
-    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") { // str comparison is OK
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
-    }
+    attachCSS(); // load CSS for colorbox as soon as possible!!
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     sys = {
@@ -151,7 +129,9 @@
             script.setAttribute('src', url);
             script.onload = script.onreadystatechange = function() {
                 var rs = this.readyState;
-                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) return;
+                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) {
+                    return;
+                }
                 loaded = true;
                 d.body.removeChild(script); // Clean up DOM
                 // console.log('loaded ' + url);
@@ -181,12 +161,10 @@
         }
     };
 
-    attach_css();
-
     // "Fixes" Safari's problems with XD-storage.
     if (navigator.userAgent.indexOf('Safari') !== -1) {
         var holder = d.createElement('div');
-        var storageIFrameLoaded = false;
+        var storageIframeLoaded = false;
         var storageIFrame = d.createElement('iframe');
         storageIFrame.setAttribute('src', "{{URL}}{% url UserCookieSafariHack %}");
         storageIFrame.setAttribute('id', "sessionFrame");
@@ -195,7 +173,7 @@
         storageIFrame.onload = storageIFrame.onreadystatechange = function() {
             var rs = this.readyState;
             if(rs && rs !== 'complete' && rs !== 'loaded') return;
-            if(storageIFrameLoaded) return;
+            if(storageIframeLoaded) return;
             storageIframeLoaded = true;
             doSafariCookieStorage();
         };
@@ -222,6 +200,16 @@
         setCookieStorageFlag();
     }
 
+    // set up a list of scripts to load asynchronously.
+    var scripts_to_load = [
+        '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
+        ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+    ];
+    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
+        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
+    }
+
     // Once all dependencies are loading, fire this function
     var init = function () {
 
@@ -234,10 +222,9 @@
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
+            
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
-
-            attach_css();
 
             var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ?
@@ -317,8 +304,8 @@
                     id: random_id,
                     name: random_id,
                     css: {'display': 'none'},
-                    src: "{{URL}}{% url TrackSIBTShowAction %}?evnt=" +
-                          encodeURIComponent(message) + "&" + metadata(),
+                    src: "{{URL}}{% url TrackSIBTShowAction %}?" +
+                          metadata({"evnt": encodeURIComponent(message)}),
                     load: function () {
                         try {
                             var iframe_handle = d.getElementById(random_id);
@@ -328,12 +315,29 @@
                         }
                     }
                 }).appendTo("body");
+
+                // extra google analytics component
+                if (_gaq) {
+                    try {
+                        _gaq.push([
+                            '_trackEvent',
+                            'TrackSIBTAction',
+                            encodeURIComponent(message) + ";" +
+                                encodeURIComponent(metadata())
+                        ]);
+                        console.log("Success! We have secured the enemy intelligence.");
+                    } catch (e) {
+                        console.log(e); // log() is {} on live.
+                    }
+                } else {
+                    console.log("no _gaq");
+                }
             };
 
             // Called when ask iframe is closed
             var ask_callback = function( fb_response ) {
                 if (ask_success) {
-                    is_asker = true;
+                    user.is_asker = true;
                     $('#_willet_button').html('Refresh the page to see your results!');
                 }
             };
@@ -553,8 +557,8 @@
                 // run our scripts
                 var hash = w.location.hash;
                 var hash_search = '#code=';
-                hash_index = hash.indexOf(hash_search);
-                willt_code = hash.substring(hash_index + hash_search.length , hash.length);
+                var hash_index = hash.indexOf(hash_search);
+                var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
 
                 {% if app.top_bar_enabled %} // add this topbar code only if necessary
                     console.log('topbar enabled');
@@ -617,7 +621,7 @@
                                 'id': '_willet_button_v3'
                             });
                             button
-                                .html ("<p>Should you buy this? Can\'t decide?</p>" +
+                                .html ("<p>Should you buy this? Can't decide?</p>" +
                                         "<div class='button' " +
                                             "title='Ask your friends if you should buy this!'>" +
                                             "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
@@ -732,8 +736,6 @@
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
-            attach_css();
-
             // Load jQuery colorbox last
             if (!$.willet_colorbox) {
                 $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
@@ -749,7 +751,7 @@
                     // auto-show results on hash
                     var hash = w.location.hash;
                     var hash_search = '#open_sibt=';
-                    hash_index = hash.indexOf(hash_search);
+                    var hash_index = hash.indexOf(hash_search);
                     if (instance.has_results && hash_index !== -1) {
                         // if vote has results and voter came from an email
                         console.log("has results?");

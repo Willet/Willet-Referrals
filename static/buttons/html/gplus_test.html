@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Page title</title>
+    <link rel="canonical" href="http://willet-nterwoord.appspot.com/static/buttons/html/gplus_test.html" />
+    <meta name="title"
+          content="I see you driving round town with the girl I love and I'm like" />
+    <meta name="description" content="Forget you" />
+</head>
+<body>
+<script type="text/javascript">
+    (function() {
+        var gPlus = document.createElement("g:plusone");
+        gPlus.setAttribute("size", "medium");
+        gPlus.setAttribute("annotation", "none");
+        document.body.appendChild(gPlus);
+
+        var t, p,
+                m = [ { property: 'og:title', content: "I guess the change in my pocket just wasn't enough" },
+                    { property: 'og:image', content: "" },
+                    { property: 'og:description', content: "F*** you" } ]
+        while (m.length) {
+            p = m.pop();
+            t = document.createElement('meta');
+            t.setAttribute('property', p.property);
+            t.setAttribute('content', p.content);
+            document.getElementsByTagName("head")[0].appendChild(t);
+        }
+
+        var po = document.createElement('script');
+        po.type = 'text/javascript';
+        //po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+
+        document.getElementsByTagName('head')[0].appendChild(po);
+    })();
+</script>
+</body>
+</html>
