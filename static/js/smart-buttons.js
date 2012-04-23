@@ -84,14 +84,18 @@ _willet.helpers = {
         }
         return url || default_url;
     }
-}
+};
 var _willet = (function(me) {
     var helpers = me.helpers;
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname.replace(/\/$/, '') + '.json';
+    var PRODUCT_JSON = window.location.protocol
+                     + '//'
+                     + window.location.hostname
+                     + window.location.pathname.replace(/\/$/, '')
+                     + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -409,12 +413,12 @@ var _willet = (function(me) {
     // Private functions
     var createBasicButton = function (params) {
         var id = params.id || '';
+        var align = params.align || "left";
         var buttonSpacing = params.buttonSpacing || "0";
 
         var d = document.createElement("div");
-
-        d.style.styleFloat = "left"; //IE
-        d.style.cssFloat = "left"; //FF, Webkit
+        d.style.styleFloat = align; //IE
+        d.style.cssFloat = align; //FF, Webkit
         d.style.marginTop = "0";
         d.style.marginLeft = "0";
         d.style.marginBottom = "0";
@@ -458,7 +462,7 @@ var _willet = (function(me) {
     };
 
     var updateLoggedInStatus = function(network, status) {
-        _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
+        _willet.debug.log("Buttons: "+(status ? "" : "Not ")+ network +" user");
         var now = new Date();
         loggedInNetworks[network] = { "status": status, "accessed": now.getTime()};
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
@@ -964,7 +968,7 @@ _willet.messaging = (function (helpers) {
 }(_willet.helpers));
 
 try {
-    _willet.debug.set(false); //set to true if you want logging turned on
+    _willet.debug.set(true); //set to true if you want logging turned on
     _willet.init();
 } catch(e) {
     (function() {

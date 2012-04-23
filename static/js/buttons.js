@@ -8,7 +8,11 @@
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
         DEFAULT_BUTTONS = ['Tumblr','Fancy','Pinterest'];
-    var product_json = window.location.protocol + '//' + window.location.hostname + window.location.pathname.replace(/\/$/, '') + '.json';
+    var product_json = window.location.protocol
+                     + '//'
+                     + window.location.hostname
+                     + window.location.pathname.replace(/\/$/, '')
+                     + '.json';
     var console = DEBUG && ( typeof(window.console) === 'object' 
                            && ( ( typeof(window.console.log) === 'function' 
                            && typeof(window.console.error) ==='function' )
