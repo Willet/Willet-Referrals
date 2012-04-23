@@ -9,6 +9,13 @@
      * w and d are aliases of window and document.
      */
 
+    // analytics
+    var ANALYTICS_ID = 'UA-31001469-1';
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', ANALYTICS_ID]);
+    _gaq.push(['_setDomainName', 'none']); // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
+    _gaq.push(['_setAllowLinker', true]);
+
     var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
@@ -144,7 +151,10 @@
     }
 
     // set up a list of scripts to load asynchronously.
-    var scripts_to_load = ['{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
+    var scripts_to_load = [
+        '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
+        ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // analytics
+    ];
     // turns out we need at least 1.4 for the $(<tag>,{props}) notation
     if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
         scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
@@ -248,6 +258,23 @@
                         }
                     }
                 }).appendTo("body");
+
+                // extra google analytics component
+                if (_gaq) {
+                    try {
+                        _gaq.push([
+                            '_trackEvent',
+                            'TrackSIBTAction',
+                            encodeURIComponent(message) + ";" +
+                                encodeURIComponent(willet_metadata())
+                        ]);
+                        console.log("Success! We have secured the enemy intelligence.");
+                    } catch (e) {
+                        console.log(e); // log() is {} on live.
+                    }
+                } else {
+                    console.log("no _gaq");
+                }
             };
 
             // Called when ask iframe is closed

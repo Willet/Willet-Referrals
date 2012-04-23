@@ -85,13 +85,17 @@ _willet.helpers = {
         return url || default_url;
     }
 }
-var _willet = (function(me) {
+var _willet = (function(me, config) {
     var helpers = me.helpers;
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname.replace(/\/$/, '') + '.json';
+    var PRODUCT_JSON = window.location.protocol
+                        + '//'
+                        + window.location.hostname
+                        + window.location.pathname.replace(/\/$/, '')
+                        + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -103,12 +107,14 @@ var _willet = (function(me) {
     var PROTOCOL = window.location.protocol;
 
     var ELEMENT_NODE = 1;
-    var NOT_FOUND = -1;
+    var NOT_FOUND    = -1;
 
     var MAX_BUTTONS = 3;
-    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
+    var DEFAULT_BUTTONS = (config && config.button_order) ||
+                          ['Pinterest','Tumblr', 'Fancy'];
     var SUPPORTED_NETWORKS = {
         "Tumblr": {
+            "priority": 7,
             "detect": {
                 "method": "none",
                 "func": function() { return ""; }
@@ -147,6 +153,7 @@ var _willet = (function(me) {
             }
         },
         "Facebook": {
+            "priority": 2,
             "detect": {
                 "method": "api",
                 "func": function() {
@@ -186,6 +193,7 @@ var _willet = (function(me) {
             }
         },
         "Pinterest": {
+            "priority": 1,
             "detect": {
                 "method": "image",
                 "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
@@ -201,8 +209,13 @@ var _willet = (function(me) {
                     });
                     button.style.width = params.buttonCount ? '77px' : '43px';
 
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     var link = document.createElement("a");
-                    link.className = 'willet-pinterest-button';
+                    link.className = "willet-pinterest-button";
                     link.innerHTML = "Pin It";
                     link.style.position = 'absolute';
                     link.style.top = '0';
@@ -257,6 +270,7 @@ var _willet = (function(me) {
             }
         },
         "Twitter": {
+            "priority": 3,
             "detect": {
                 "method": "image",
                 "func": function() { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
@@ -277,6 +291,10 @@ var _willet = (function(me) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
+                    if (config && config.sharing_message) {
+                        link.setAttribute('data-text',config.sharing_message);
+                    }
+
                     button.appendChild(link);
                     return button;
                 },
@@ -288,6 +306,7 @@ var _willet = (function(me) {
             }
         }, 
         "GooglePlus": {
+            "priority": 4,
             "detect": {
                 "method": "image",
                 "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
@@ -307,7 +326,7 @@ var _willet = (function(me) {
                     gPlus.setAttribute("data-size", "medium");
                     gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
                     gPlus.setAttribute('data-href', params.canonicalUrl);
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
+                    gPlus.setAttribute("data-callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
@@ -318,12 +337,17 @@ var _willet = (function(me) {
                             itemShared("GooglePlus");
                         }
                     };
-                    
+
+                    var sharingMessage = "I found this on " + params.domain;
+                    if (config && config.sharing_message) {
+                        sharingMessage = config.sharing_message;
+                    }
+
                     // Google is using the Open Graph spec
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                              { property: 'og:description', content: sharingMessage } ]
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -336,6 +360,7 @@ var _willet = (function(me) {
             }
         },
         "Fancy": {
+            "priority": 6,
             "detect": {
                 "method": "none",
                 "func": function() { return ""; }
@@ -374,6 +399,7 @@ var _willet = (function(me) {
             }
         },
         "Svpply": {
+            "priority": 5,
             "detect": {
                 "method": "none",
                 "func": function() { return ""; }
@@ -457,10 +483,13 @@ var _willet = (function(me) {
         return (requiredButtons.length) ? requiredButtons : DEFAULT_BUTTONS; // default for backwards compatibilty;
     };
 
-    var updateLoggedInStatus = function(network, status) {
+    var updateLoggedInStatus = function(network, status, includeTime) {
         _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
         var now = new Date();
-        loggedInNetworks[network] = { "status": status, "accessed": now.getTime()};
+        loggedInNetworks[network] = { "status": status };
+        if (includeTime === true) {
+            loggedInNetworks[network]["accessed"] = now.getTime();
+        }
         _willet.cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
     };
 
@@ -483,7 +512,7 @@ var _willet = (function(me) {
 
     var itemShared = function(network) {
         //If someone shares, update the cookie
-        updateLoggedInStatus(network, true);
+        updateLoggedInStatus(network, true, true);
 
         var productInfo = getProductInfo();
 
@@ -502,6 +531,54 @@ var _willet = (function(me) {
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
+    };
+
+    // Sorting comparators are hard to remember. For more details on sorting:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Description
+    var sortComparator = function(a, b, descending) {
+        var order = 1,
+            result;
+
+        if (descending) {
+            order = -1;
+        }
+
+        if (a && b) {
+            if (a > b) {
+                result = 1;
+            } else if (a < b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        } else {
+            if (a) {
+                result = 1;
+            } else if (b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        }
+
+        return result * order;
+    };
+
+    // Returns networks sorted by accessed (most recent first), then priority
+    var networkPrioritizedSort = function(a, b) {
+        var dateA = a.value.accessed,
+            dateB = b.value.accessed,
+            priorityA = SUPPORTED_NETWORKS[a.key]["priority"] || 100,
+            priorityB = SUPPORTED_NETWORKS[b.key]["priority"] || 100,
+            result;
+
+        if (dateA || dateB) {
+            result = sortComparator(dateA, dateB, true);
+        } else {
+            result = sortComparator(priorityA, priorityB)
+        }
+
+        return result;
     };
 
     // Public functions
@@ -549,12 +626,16 @@ var _willet = (function(me) {
 
     me.createButtons = function(productData) {
         _willet.debug.log("Buttons: finding buttons placeholder on page");
+
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
-            var buttonSpacing = helpers.getElemValue(buttonsDiv, 'spacing', '5')+'px';
-            var buttonPadding = helpers.getElemValue(buttonsDiv, 'padding', '5')+'px';
+            var buttonCount   = (config && config.button_count)
+                || (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
+            var buttonSpacing = (config && config.button_spacing
+                || helpers.getElemValue(buttonsDiv, 'spacing', '5')) + "px";
+            var buttonPadding = (config && config.button_padding
+                || helpers.getElemValue(buttonsDiv, 'padding', '5')) + "px";
             var canonicalUrl = helpers.getCanonicalUrl(window.location.protocol
                                                         +'//'
                                                         +window.location.hostname
@@ -596,9 +677,7 @@ var _willet = (function(me) {
                 }
 
                 networks = helpers.dictToArray(networks);
-                networks = networks.sort(function(a,b) {
-                    return b.value.accessed - a.value.accessed;
-                });
+                networks = networks.sort(networkPrioritizedSort);
 
                 //append detected buttons
                 for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
@@ -734,7 +813,7 @@ var _willet = (function(me) {
     };
 
     return me;
-}(_willet));
+}(_willet, window._willet_shopconnection_config || {}));
 
 _willet.debug = (function (helpers) {
     var me = {};
