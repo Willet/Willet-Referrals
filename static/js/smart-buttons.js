@@ -745,7 +745,7 @@ _willet = (function (me) {
         COOKIE_NAME = "_willet_smart_buttons";
 
     // Private variables
-    var loggedInNetworks = function () {
+    var loggedInNetworks = (function () {
         // Load loggedInNetworks with saved array of known networks
         var networks = [],
             unsorted_networks = {},
@@ -759,7 +759,7 @@ _willet = (function (me) {
             }
         }
         return networks;
-    };
+    }());
 
     // Private functions
     var getRequiredButtonsFromElement = function(container) {
