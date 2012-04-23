@@ -111,6 +111,7 @@ _willet.util = {
     },
     "indexOf": function (arry, obj, start) {
         // IE < 9 doesn't have Array.prototype.indexOf
+        // Don't use on strings, all browsers have String.prototype.indexOf
         for (var i = (start || 0), j = arry.length; i < j; i++) {
             if (arry[i] === obj) { return i; }
         }
@@ -118,7 +119,6 @@ _willet.util = {
     },
     "removeChildren": function(elem) {
         // Removes all children elements from DOM element
-        // Don't use on strings, all browsers have String.prototype.indexOf
         var i = elem.childNodes.length;
         while (i--) {
             elem.removeChild(elem.childNodes[i]);
