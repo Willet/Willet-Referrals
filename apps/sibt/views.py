@@ -58,7 +58,7 @@ class AskDynamicLoader(URIHandler):
         """
         page_url = self.request.get('url', self.request.headers.get('referer'))
 
-        # store registration url (with backup options if it's missing)
+        # Store registration url (with backup options if it's missing)
         store_url = self.request.get('store_url') or page_url
         product = product_shopify = None
         try:
@@ -80,6 +80,7 @@ class AskDynamicLoader(URIHandler):
         else:
             logging.info("Found SIBT app %r" % app)
 
+        # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
@@ -100,7 +101,7 @@ class AskDynamicLoader(URIHandler):
                 product_shopify = ProductShopify.get_or_fetch(url=page_url,
                                                               client=app.client)
 
-            # if we used a Shopify method, reget this product by its uuid so we get the non-shopify object
+            # if we used a Shopify method, re-get this product by its uuid so we get the non-shopify object
             if product_shopify:
                 product = Product.get(product_shopify.uuid)
 
@@ -117,7 +118,8 @@ class AskDynamicLoader(URIHandler):
             page_url = product.resource_url
 
         # Store 'Show' action
-        SIBTShowingAskIframe.create(user, url=page_url, app=app)
+        if user_found:
+            SIBTShowingAskIframe.create(user, url=page_url, app=app) # Requires user
 
         # Fix the product description
         try:
