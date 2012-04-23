@@ -71,7 +71,7 @@ class AskDynamicLoader(URIHandler):
         app = SIBT.get_by_store_url(store_domain)
         if not app:
             logging.error("Could not find SIBT app for %s" % store_domain)
-            self.response.out.write("Please register at ttp://rf.rs/s/shopify/beta to use this product.")
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
             logging.error("SIBT app has no client.  Probably uninstall.")
