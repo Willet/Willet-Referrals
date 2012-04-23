@@ -26,9 +26,33 @@
     var willt_code = null;
 
     // CSS rules
-    var colorbox_css = '{% include "../../plugin/templates/css/colorbox.css" %}';
-    var popup_css = '{% include "../../plugin/templates/css/popup.css" %}';
-    var app_css = '{{ app_css }}';
+    var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
+    var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
+    var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
+
+    var attach_css = function () {
+        // ie7 doesn't refresh inline styles? http://code.google.com/p/ie7-js/source/browse/version/2.0%28beta3%29/src/ie7-recalc.js?r=26
+        // ie7 doesn't allow createTextNode? http://www.phpied.com/dynamic-script-and-style-elements-in-ie/
+        var styles = [app_css, colorbox_css, popup_css];
+        var head_elem = d.getElementsByTagName('head')[0];
+        for (var i = 0; i < styles.length; i++) {
+            var style = styles[i];
+            var willet_style = d.createElement('style');
+            willet_style.type = 'text/css';
+            willet_style.setAttribute('type','text/css');
+            willet_style.setAttribute('charset','utf-8');
+            willet_style.setAttribute('media','all');
+            try { // try inserting CSS all ways
+                willet_style.styleSheet.cssText = style;
+            } catch (e) { }
+            try { // try inserting CSS all ways
+                willet_style.appendChild(d.createTextNode(style));
+            } catch (e) { }
+            head_elem.appendChild(willet_style);
+        }
+    }
+    // load CSS for colorbox as soon as possible!!
+    attach_css();
 
     // set up a list of scripts to load asynchronously.
     var scripts_to_load = ['{{URL}}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}'];
@@ -138,6 +162,8 @@
         }
     };
 
+    attach_css();
+
     // "Fixes" Safari's problems with XD-storage.
     if (navigator.userAgent.indexOf('Safari') !== -1) {
         var holder = d.createElement('div');
@@ -177,20 +203,6 @@
         setCookieStorageFlag();
     }
 
-    // load CSS for colorbox as soon as possible!!
-    var styles = colorbox_css + popup_css + app_css;
-    var willet_style = d.createElement('style');
-    var head_elem = d.getElementsByTagName('head')[0];
-    willet_style.type = 'text/css';
-    willet_style.setAttribute('charset','utf-8');
-    willet_style.setAttribute('media','all');
-    if (willet_style.styleSheet) {
-        willet_style.styleSheet.cssText = styles;
-    } else {
-        willet_style.appendChild(d.createTextNode(styles));
-    }
-    head_elem.appendChild(willet_style);
-
     // Once all dependencies are loading, fire this function
     var init = function () {
 
@@ -206,6 +218,7 @@
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
+            attach_css();
 
             var metadata = function (more) {
                 // constructs the 'willet' query string - no prefixing ?
@@ -690,6 +703,8 @@
                     console.log('cookies not populated yet');
                 }
             {% endif %} ; // app.bottom_popup_enabled
+
+            attach_css();
 
             // Load jQuery colorbox last
             if (!$.willet_colorbox) {
