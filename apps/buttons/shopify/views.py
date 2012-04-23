@@ -61,6 +61,7 @@ def get_details(uri_handler=None, provided_client=None):
 
     merchant = None
     try:
+        # Merchant is a referenced model, so this implicitly does a memcache and/or db get
         merchant = client.merchant
     except TypeError:
         # Client has no merchant
