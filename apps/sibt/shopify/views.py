@@ -226,6 +226,11 @@ class SIBTShopifyServeScript(URIHandler):
         instance = share_url = link = asker_name = asker_pic = product = None
         target = bar_or_tab = ''
         willet_code = self.request.get('willt_code')
+
+        # window.location
+        page_url = get_shopify_url(self.request.get('page_url'))
+
+        # the domain name with which the shopify store registered
         store_url = get_shopify_url(self.request.get('store_url'))
         app = SIBTShopify.get_by_store_url(store_url)
         event = 'SIBTShowingButton'
@@ -380,7 +385,8 @@ class SIBTShopifyServeScript(URIHandler):
             'asker_name': asker_name,
             'asker_pic': asker_pic,
 
-            'store_url': store_url,
+            'page_url': page_url,  # window.location
+            'store_url': store_url,  # shopify url
             'store_domain': getattr (app.client, 'domain', ''),
             'store_id': self.request.get('store_id'),
 

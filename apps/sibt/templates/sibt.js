@@ -13,6 +13,25 @@
     // declare vars
     var app, instance, products, sys, topbar, user;
 
+    // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
+    var ask_success = false;
+    var debug = ('{{ debug }}' === 'True');
+    var is_asker = ('{{ is_asker }}' === 'True'); // did they ask?
+    var is_live = ('{{ is_live }}' === 'True');
+    var show_votes = ('{{ show_votes }}' === 'True');
+    var has_voted = ('{{ has_voted }}' === 'True');
+    var button_enabled = ('{{ app.button_enabled }}' === 'True');
+    var topbar_enabled = ('{{ app.top_bar_enabled }}' === 'True');
+    var sibt_version = {{sibt_version|default:"3"}};
+    var has_results = ('{{ has_results }}' === 'True');
+    var show_top_bar_ask = ('{{ show_top_bar_ask }}' === 'True');
+
+    // true when visitor on page more than (4 times)
+    var unsure_multi_view = ('{{ unsure_multi_view }}' === 'True');
+
+    // true when SIBT needs to be disabled on the same page as Buttons
+    var detect_shopconnection = ('{{ detect_shopconnection }}' === 'True');
+    var padding_elem = topbar = topbar_hide_button = willt_code = null;
     var hash_index = -1;
 
     // keep track of this many products, max
@@ -230,7 +249,8 @@
                         'app_uuid': '{{ app.uuid }}',
                         'user_uuid': '{{ user.uuid }}',
                         'instance_uuid': '{{ instance.uuid }}',
-                        'target_url': '{{ PAGE }}' || w.location.href
+                        'store_url': '{{ store_url }}', // registration url
+                        'target_url': '{{ page_url }}' || w.location.href // window.location
                     },
                     more || {}
                 ));
@@ -308,6 +328,14 @@
                         }
                     }
                 }).appendTo("body");
+            };
+
+            // Called when ask iframe is closed
+            var ask_callback = function( fb_response ) {
+                if (ask_success) {
+                    is_asker = true;
+                    $('#_willet_button').html('Refresh the page to see your results!');
+                }
             };
 
             var button_onclick = function(e, message) {
@@ -443,7 +471,7 @@
                         'price': data.price || '0.0',
                         'tags': data.tags || '',
                         'type': data.type || '',
-                        'resource_url': '{{ PAGE }}' || w.location.href
+                        'resource_url': '{{ page_url }}' || w.location.href
                     };
                     if (data.client_uuid) {
                         $.ajax({

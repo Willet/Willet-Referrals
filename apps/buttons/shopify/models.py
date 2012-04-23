@@ -72,13 +72,13 @@ class ButtonsShopify(Buttons, AppShopify):
         if monthly_orders < 10:
             price = 0.99 #non-profit
         elif monthly_orders < 20:
-            price = 2.99 #basic
+            price = 1.99 #basic
         elif monthly_orders < 50:
-            price = 5.99 #professional
+            price = 4.99 #professional
         elif monthly_orders < 100:
             price = 9.99 #business
         elif monthly_orders < 200:
-            price = 17.99 #unlimited
+            price = 14.99 #unlimited
         else:
             price = 19.99 #enterprise
 

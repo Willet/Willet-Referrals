@@ -69,7 +69,7 @@ class AskDynamicLoader(URIHandler):
         product_uuids = self.request.get('products', '').split(',')
 
         try:
-            url_parts = urlparse(page_url)
+            url_parts = urlparse(store_url)
             store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
@@ -85,6 +85,10 @@ class AskDynamicLoader(URIHandler):
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
+
+        product_uuid = self.request.get('product_uuid', None) # optional
+        product_shopify_id = self.request.get('product_shopify_id', None) # optional
+        logging.debug("%r" % [product_uuid, product_shopify_id])
 
         # successive steps to obtain the product using any way possible
         try:
