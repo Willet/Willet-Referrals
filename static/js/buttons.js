@@ -906,8 +906,10 @@ _willet = (function (me) {
 }(_willet));
 
 try {
-    _willet.debug.set(true); //set to true if you want logging turned on
-    _willet.init();
+    if (_willet && !_willet.buttonsLoaded) {
+        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.init();
+    }
 } catch(e) {
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
