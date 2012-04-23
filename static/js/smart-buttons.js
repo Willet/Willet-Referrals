@@ -326,7 +326,7 @@ var _willet = (function(me, config) {
                     gPlus.setAttribute("data-size", "medium");
                     gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
                     gPlus.setAttribute('data-href', params.canonicalUrl);
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
+                    gPlus.setAttribute("data-callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
