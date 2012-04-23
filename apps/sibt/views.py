@@ -70,9 +70,15 @@ class AskDynamicLoader(URIHandler):
 
         app = SIBT.get_by_store_url(store_domain)
         if not app:
-            logging.error("could not find SIBT app for %s" % store_domain)
-            self.response.out.write("Please register at http://rf.rs to use this product.")
+            logging.error("Could not find SIBT app for %s" % store_domain)
+            self.response.out.write("Please register at ttp://rf.rs/s/shopify/beta to use this product.")
             return
+        elif not hasattr(app, 'client'):
+            logging.error("SIBT app has no client.  Probably uninstall.")
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        else:
+            logging.info("Found SIBT app %r" % app)
 
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
@@ -80,14 +86,14 @@ class AskDynamicLoader(URIHandler):
 
         product_uuid = self.request.get('product_uuid', None) # optional
         product_shopify_id = self.request.get('product_shopify_id', None) # optional
-        logging.debug("%r" % [product_uuid, product_shopify_id])
+        logging.debug("Product information: %r" % [product_uuid, product_shopify_id])
 
         # successive steps to obtain the product using any way possible
         try:
-            logging.info("getting by url")
-            product = Product.get_or_fetch (page_url, app.client) # by URL
+            logging.info("Getting product information by url")
+            product = Product.get_or_fetch(page_url, app.client) # by URL
             if not product and product_uuid: # fast (cached)
-                product = Product.get (product_uuid)
+                product = Product.get(product_uuid)
             if not product and product_shopify_id: # slow, deprecated
                 product_shopify = ProductShopify.get_by_shopify_id (product_shopify_id)
             if not product: # last resort: assume site is Shopify, and hit (product url).json
@@ -129,7 +135,7 @@ class AskDynamicLoader(URIHandler):
             logging.warn('Probably no product description: %s' % e, exc_info=True)
 
         # Make a new Link
-        origin_domain = os.environ['HTTP_REFERER'] if\
+        origin_domain = os.environ['HTTP_REFERER'] if \
             os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
 
         # we will be replacing this target url with the vote page url once we get an instance.
