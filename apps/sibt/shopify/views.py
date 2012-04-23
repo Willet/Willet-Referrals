@@ -263,7 +263,7 @@ class SIBTShopifyServeScript(URIHandler):
                 except:
                     pass # can't decode target as URL; oh well!
 
-            if target:
+            if target and user:
                 logging.debug('trying to get instance for url: %s' % target)
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
 
@@ -371,7 +371,6 @@ class SIBTShopifyServeScript(URIHandler):
             'app': app,
             'sibt_version': app.version or 10,
             'app_css': app_css,
-            'stylesheet': '../../plugin/templates/css/colorbox.css',
             'detect_shopconnection': True,
 
             'instance': instance,
@@ -392,6 +391,7 @@ class SIBTShopifyServeScript(URIHandler):
             'store_domain': getattr (app.client, 'domain', ''),
             'store_id': self.request.get('store_id'),
 
+            'product': product,
             'product_uuid': product.uuid if product else "",
             'product_title': product.title if product else "",
             'product_images': product.images if product else "",

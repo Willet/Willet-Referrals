@@ -26,7 +26,7 @@ from util.helpers import url as reverse_url
 # SIBTShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
 class SIBTShopify(SIBT, AppShopify):
-    # CSS to style the button.
+    # CSS to style the button (deprecated for SIBTShopify v11+)
     button_css = db.TextProperty(default=None,required=False)
 
     def _validate_self(self):
@@ -183,10 +183,33 @@ class SIBTShopify(SIBT, AppShopify):
             pass
         return app
 
-    # Shopify API calls -------------------------------------------------------------
+    # Shopify API calls -------------------------------------------------------
     def do_install(self, email_client=True):
-        """Installs this instance"""
-        if self.version == '3': # sweet buttons has different on-page snippet.
+        """Installs this app."""
+
+        # SIBT2 (multiple products)
+        if self.version == '10' or self.version == '11':
+            willet_snippet = """<!-- START willet sibt for Shopify -->
+                <div id="_willet_shouldIBuyThisButton"></div>
+                <script type="text/javascript">
+                (function(w, d) {
+                    var hash = w.location.hash;
+                    var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
+                    var product_json = {{ product | json }};
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+w.location;
+                    w._willet_product_json = product_json;
+                    if (product_json) {
+                        params += '&product_id=' + product_json.id;
+                    }
+                    var src = "http://%s%s?" + params;
+                    var script = d.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    d.getElementsByTagName("head")[0].appendChild(script);
+                }(window, document));
+                </script>
+                <!-- END Willet SIBT for Shopify -->""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+        elif self.version == '3': # sweet buttons has different on-page snippet.
             script_src = """<!-- START willet sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {
@@ -269,9 +292,11 @@ class SIBTShopify(SIBT, AppShopify):
 
     def get_css_dict(self):
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
+            if not data:
+                raise Exception("No data")
         except Exception, e:
             #logging.error('could not decode: %s\n%s' %
             #        (e, self.button_css), exc_info=True)
@@ -281,7 +306,8 @@ class SIBTShopify(SIBT, AppShopify):
     def set_css(self, css=None):
         """Expects a dict"""
         try:
-            assert(css != None)
+            if not css:
+                raise Exception("No CSS")
             self.button_css = json.dumps(css)
         except:
             #logging.info('setting to default')
@@ -293,10 +319,11 @@ class SIBTShopify(SIBT, AppShopify):
         class_defaults = SIBTShopify.get_default_dict()
         logging.info('class_defaults : %s' % class_defaults)
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
-            #logging.warn('updating with data:\n%s' % data)
+            if not data:
+                raise Exception("No data")
             class_defaults.update(data)
         except Exception, e:
             logging.warning (e, exc_info=True)

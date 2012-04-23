@@ -4,6 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
+import os
 import re
 
 from urlparse import urlparse, urlunsplit
@@ -23,6 +24,7 @@ from apps.sibt.actions import *
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
+from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import *
@@ -47,31 +49,37 @@ class AskDynamicLoader(URIHandler):
     """
 
     def get(self):
-        """
-            SIBT Ask page
-            params:
-                url (required): the product URL; typically window.location.href
+        """Shows the SIBT Ask page. Also used by SIBTShopify.
 
-                user_uuid (optional)
-                product_uuid (optional)
-                product_shopify_id (optional)
-        """
-        page_url = self.request.get('url', self.request.headers.get('referer'))
+        params:
+            url (required): the product URL; typically window.location.href
+            products (required): UUIDs of all products to be included
+                                 (first UUID will be primary product)
 
-        # store registration url (with backup options if it's missing)
-        store_url = self.request.get('store_url') or page_url
-        product = product_shopify = None
+            user_uuid (optional)
+        """
+        fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
+        page_url = self.request.get('target_url') or \
+                   self.request.headers.get('referer')
+        product = None
+        product_images = []
+
+        # because of how Model.get() works, products _might_ also work if you
+        # supply a product's Shopify ID (if applicable).
+        product_uuids = self.request.get('products', '').split(',')
+
         try:
             url_parts = urlparse(store_url)
             store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
             # warning: parsing an empty string will give you :// without error
         except Exception, e:
-            logging.error('error parsing referer %s' % e, exc_info = True)
+            logging.error('error parsing referer %s' % e, exc_info=True)
 
         app = SIBT.get_by_store_url(store_domain)
         if not app:
-            logging.error("could not find SIBT app for %s" % store_domain)
-            self.response.out.write("Please register at http://rf.rs to use this product.")
+            msg = "could not find SIBT app for %s" % store_domain
+            logging.error(msg)
+            self.response.out.write(msg)
             return
 
         user = User.get(self.request.get('user_uuid'))
@@ -84,28 +92,35 @@ class AskDynamicLoader(URIHandler):
 
         # successive steps to obtain the product using any way possible
         try:
+            # get this page's product
             logging.info("getting by url")
-            product = Product.get_or_fetch (page_url, app.client) # by URL
-            if not product and product_uuid: # fast (cached)
-                product = Product.get (product_uuid)
-            if not product and product_shopify_id: # slow, deprecated
-                product_shopify = ProductShopify.get_by_shopify_id (product_shopify_id)
-            if not product: # last resort: assume site is Shopify, and hit (product url).json
-                product_shopify = ProductShopify.get_or_fetch(url=page_url,
-                                                              client=app.client)
+            product = Product.get_or_fetch(page_url, app.client)
+            logging.debug("product.get_or_fetch from URL, got %r" % product)
 
-            # if we used a Shopify method, reget this product by its uuid so we get the non-shopify object
-            if product_shopify:
-                product = Product.get(product_shopify.uuid)
+            products = [Product.get(uuid) for uuid in product_uuids]
+            logging.debug("getting products by UUID, got %r" % product)
 
-            if not product:
+            if not products[0]:
+                # maybe if product UUIDs are missing
+                # (happens if cookies are disabled)
+                products = [product]
+
+            if not products[0]:
                 # we failed to find a single product!
                 raise LookupError
         except LookupError:
             # adandon the rest of the script, because we NEED a product!
-            self.response.out.write("Product on this page is not in our database yet. <br /> \
-                Please specify a product on your page with a div class=_willet_sibt element.")
+            logging.error("Could not find products %r" % product_uuids)
+            self.response.out.write("Products requested are not in our database yet.")
             return
+
+        # compile list of product images (one image from each product)
+        try:
+            product_images = [getattr(prod, 'images')[0] for prod in products]
+            logging.debug("product images: %r" % product_images)
+        except IndexError:
+            logging.debug("product has no images")
+            product_images = ['']
 
         if not page_url: # if somehow it's still missing, fix the missing url
             page_url = product.resource_url
@@ -126,13 +141,13 @@ class AskDynamicLoader(URIHandler):
                 productDesc += '.'
         except Exception, e:
             productDesc = ''
-            logging.warn('Probably no product description: %s' % e, exc_info=True)
+            logging.warn('Probably no product description: %s' % e,
+                         exc_info=True)
 
-        # Make a new Link
-        origin_domain = os.environ['HTTP_REFERER'] if\
-            os.environ.has_key('HTTP_REFERER') else 'UNKNOWN'
-
-        # we will be replacing this target url with the vote page url once we get an instance.
+        # Make a new Link.
+        # we will be replacing this target url with the vote page url once
+        # we get an instance.
+        origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
         link = Link.create(page_url, app, origin_domain, user)
 
         # Which share message should we use?
@@ -143,19 +158,19 @@ class AskDynamicLoader(URIHandler):
             "Desperately in need of some shopping advice! Should I buy this? Would you? Vote here.",
         ]
 
-        if not user_is_admin:
-            ab_opt = ab_test('sibt_share_text3',
-                              ab_share_options,
-                              user = user,
-                              app = app)
-        else:
+        if user_is_admin:
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
+        else:
+            ab_opt = ab_test('sibt_share_text3',
+                             ab_share_options,
+                             user=user,
+                             app=app)
 
         template_values = {
             'URL': URL,
 
             'app_uuid': app.uuid,
-            'user_uuid': self.request.get('user_uuid'),
+            'user_uuid': self.request.get('user_uuid', ''),
             'target_url': page_url,
             'store_domain': store_domain,
 
@@ -163,13 +178,14 @@ class AskDynamicLoader(URIHandler):
             'user_name': user.get_full_name() if user_found else None,
             'user_pic': user.get_attr('pic') if user_found else None,
 
-            'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'], # doesn't actually involve Shopify
+            'FACEBOOK_APP_ID': fb_app_id,
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
             'user_has_fb_token': user_found,
 
-            'product_uuid': product.uuid,
-            'product_title': product.title if product else "",
-            'product_images': product.images if product and len(product.images) > 0 else [],
+            'products': quoted_join(product_uuids),
+            'product_uuid': products[0].uuid,  # deprecated
+            'product_title': products[0].title or "",
+            'product_images': product_images,
             'product_desc': productDesc,
 
             'share_url': link.get_willt_url(),
@@ -430,10 +446,8 @@ class ShowResults(URIHandler):
 
         except ValueError:
             # well, we can't find the instance, so let's assume the vote is over
-            template_values = {
-                'output': 'Vote is over'
-            }
-            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
+            self.response.out.write("The vote is over.")
+            return
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -603,6 +617,7 @@ class SIBTServeScript(URIHandler):
         """
         # declare vars.
         app = None
+        app_css = ''
         asker_name = ''
         asker_pic = ''
         domain = ''
@@ -620,8 +635,9 @@ class SIBTServeScript(URIHandler):
         unsure_mutli_view = False
         user = None
         votes_count = 0
+        willet_code = self.request.get('willt_code')
 
-        # in the proposed SIBT v10, page URL is the only required parameter
+        # in the proposed SIBT v10+, page URL is the only required parameter
         page_url = self.request.get('url', '').split('#')[0]
         if not page_url:
             # serve comment instead of status code (let customers see it)
@@ -637,13 +653,15 @@ class SIBTServeScript(URIHandler):
             return
 
         try:  # raises KindError both when decode fails and when app is absent
-            app = SIBTShopify.get_by_store_url(domain)  # check if site is Shopify
+            # check if site is Shopify; get the Shopify app if possible
+            app = SIBTShopify.get_by_store_url(domain)
             if not app:
                 raise db.KindError("don't have SIBTShopify for site")
         except db.KindError:
             logging.debug('This domain does not have a SIBTShopify app. '
                           'Trying to get SIBT app.')
-            app = SIBT.get_by_store_url(domain)  # if site is not Shopify, use the SIBT app
+            # if site is not Shopify, use the SIBT app
+            app = SIBT.get_by_store_url(domain)
 
         if app:
             client = app.client
@@ -665,32 +683,15 @@ class SIBTServeScript(URIHandler):
             if client:
                 # try to get existing SIBT/SIBTShopify from this client.
                 # if not found, create one.
-                apps = [a for a in client.apps if a.class_name() == 'SIBTShopify']
-                if apps:
-                    app = apps[0]
-
-                if not app:
-                    # if client exists and the app is not installed for it,
-                    # automatically install the app for the client
-                    logging.debug('no SIBTShopify for client')
-                    '''
-                    This does not work - ButtonsShopify token doesn't work
-                    with SIBTShopify api keys. Re-enable on one-auth.
-
-                    if client.class_name() == 'ClientShopify':
-                        logging.debug('creating SIBTShopify')
-                        # also installs webhooks and fetches products on create
-                        app = SIBTShopify.get_or_create(client,
-                                                        token=client.token,
-                                                        email_client=False)
-                    else:
-                    '''
-                    logging.debug('creating SIBT')
-                    app = SIBT.get_or_create(client=client, domain=domain)
+                app = SIBT.get_or_create(client=client, domain=domain)
             else:  # we have no business with you
                 self.response.out.write('/* no account for %s! '
                                         'Go to http://rf.rs to get an account. */' % domain)
                 return
+
+        # not used until multi-ask is initiated
+        app_wosib = WOSIB.get_or_create(client=app.client,domain=app.store_url)
+        logging.debug("app_wosib = %r" % app_wosib)
 
         # have client, app
         if not hasattr(app, 'extra_url'):
@@ -720,11 +721,10 @@ class SIBTServeScript(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
         # have client, app, user
 
-        product = Product.get_by_url(page_url)
+        product = Product.get_or_fetch(page_url, client)
 
         # have client, app, user, and maybe product
         instance = SIBTInstance.get_by_asker_for_url(user, page_url)
-        willet_code = self.request.get('willt_code')
         if not instance and willet_code:
             link = Link.get_by_code(willet_code)
             if link:
@@ -756,6 +756,11 @@ class SIBTServeScript(URIHandler):
         # have client, app, user, and maybe instance
         logging.debug('%r' % [user, page_url, instance])
 
+        try:
+            app_css = app.get_css()  # only Shopify apps have CSS
+        except AttributeError:
+            app_css = ''  # it was not a SIBTShopify
+
         is_safari = 'safari' in self.get_browser() and not \
                     'chrome' in self.get_browser()
 
@@ -777,7 +782,7 @@ class SIBTServeScript(URIHandler):
             # app info
             'app': app, # if missing, django omits these silently
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
-            'stylesheet': '../../plugin/templates/css/colorbox.css',
+            'app_css': app_css, # SIBT-JS does not allow custom CSS.
             'detect_shopconnection': True,
 
             # instance info
@@ -797,10 +802,6 @@ class SIBTServeScript(URIHandler):
             'asker_pic': asker_pic,
             'is_asker': is_asker,
             'unsure_mutli_view': unsure_mutli_view,
-
-            ''' these properties cannot be used automatically on SIBT-JS.
-            'app_css': app_css, # SIBT-JS does not allow custom CSS.
-            '''
 
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],

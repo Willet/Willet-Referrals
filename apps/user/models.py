@@ -1101,6 +1101,5 @@ class UserIPs(Model):
 
     @classmethod
     def _get_from_datastore(cls, user_uuid):
-        logging.info('getting by user_uuid: %s' % user_uuid)
         return cls.all().filter('user =', user_uuid).get()
 # end class

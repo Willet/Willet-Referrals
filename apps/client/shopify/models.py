@@ -71,46 +71,39 @@ class ClientShopify(Client):
         if domain == '':
             domain = url_
 
-        store = ClientShopify(key_name = uuid,
-                               uuid = uuid,
-                               email = data['email'],
-                               passphrase = '',
-                               name = data['name'],
-                               url = url_,
-                               domain = domain,
-                               token = token,
-                               id = str(data['id']),
-                               merchant = merchant )
-        
-        store.put () # critical install-time process; it cannot wait
+        store = ClientShopify(key_name=uuid,
+                              uuid=uuid,
+                              email=data['email'],
+                              passphrase='',
+                              name=data['name'],
+                              url=url_,
+                              domain=domain,
+                              token=token,
+                              id=unicode(data['id']),
+                              merchant=merchant)
+
+        store.put()
 
         # Update the merchant with data from Shopify
-        merchant.update(full_name = data['shop_owner'], 
-                         address1 = data['address1'],
-                         address2 = data['address2'] if hasattr(data, 'address2') else '',
-                         city = data['city'],
-                         province = data['province'],
-                         country = data['country'],
-                         postal_code= data['zip'],
-                         phone = data['phone'],
-                         client = store)
-        
-        logging.info({
-            'client_uuid': uuid,
-            'app_type'   : app_type
-        })
-        
+        merchant.update(full_name=data['shop_owner'],
+                        address1=data['address1'],
+                        address2=getattr(data, 'address2', ''),
+                        city=data['city'],
+                        province=data['province'],
+                        country=data['country'],
+                        postal_code= data['zip'],
+                        phone=data['phone'],
+                        client=store)
+
+        logging.info("created store %r" % store)
+
         # Query the Shopify API to dl all Products
-        taskqueue.add(
-                url = build_url('FetchShopifyProducts'),
-                params = {
-                    'client_uuid': uuid,
-                    'app_type'   : app_type
-                }
-            )
+        taskqueue.add(url=build_url('FetchShopifyProducts'),
+                      params={'client_uuid': uuid,
+                              'app_type': app_type})
 
         return store
-    
+
     @staticmethod
     def get_by_url(store_url):
         store_url = get_shopify_url(store_url)
@@ -164,7 +157,7 @@ class ClientShopify(Client):
         h.add_credentials(username, password)
         
         logging.info("Querying %s" % url)
-        resp, content = h.request(url, "GET", headers = header)
+        resp, content = h.request(url, "GET", headers=header)
         
         details = json.loads(content)
         products = None
@@ -187,7 +180,7 @@ def get_store_info(store_url, store_token, app_type):
         app_type = 'SIBTShopify'
     elif app_type == "buttons": 
         app_type = 'ButtonsShopify'
-    
+
     # Grab Shopify API settings
     settings = SHOPIFY_APPS[app_type]
 
@@ -197,10 +190,10 @@ def get_store_info(store_url, store_token, app_type):
     password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
     header = {'content-type':'application/json'}
     h = httplib2.Http()
-    
+
     # Auth the http lib
     h.add_credentials(username, password)
-    
+
     logging.info("Querying %s" % url)
     resp, content = h.request(url, "GET", headers = header)
     
@@ -208,6 +201,6 @@ def get_store_info(store_url, store_token, app_type):
     logging.info(details)
     shop = details['shop']
     logging.info('shop: %s' % (shop))
-    
+
     return shop
 

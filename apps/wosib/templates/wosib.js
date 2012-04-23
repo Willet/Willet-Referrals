@@ -1,14 +1,15 @@
-/** 
-  * Willet's "Which One[s] Should I Buy?" Shopify App
-  * Copyright 2012, Willet, Inc.
- **/
-
 ;(function () {
+    /*
+     * Willet's "Which One[s] Should I Buy?" Shopify App
+     * Copyright 2012, Willet, Inc.
+     */
+    "use strict";
     var manage_script_loading = function (scripts, ready_callback) {
         // Loads scripts in parallel, and executes ready_callback when
         // all are finished loading
-        var i = scripts_not_ready = scripts.length,
-            ready_callback = ready_callback || function () {};
+        var i = scripts.length;
+        var scripts_not_ready = scripts.length;
+        var ready_callback = ready_callback || function () {};
 
         var script_loaded = function (index) {
             // Checks if the scripts are all loaded
@@ -43,9 +44,9 @@
     };
 
     // Once all dependencies are loading, fire this function
-    var _init_wosib = function () {
+    var init = function () {
         // load CSS for colorbox as soon as possible!!
-        var _willet_css = {% include stylesheet %}
+        var _willet_css = '{% include stylesheet %}';
         var _willet_app_css = '{{ app_css }}';
         var _willet_style = document.createElement('style');
         var _willet_head  = document.getElementsByTagName('head')[0];
@@ -78,8 +79,6 @@
                     'store_url': '{{shop_url}}',
                     'has_results': {{has_results|default:"false"}} // true || false
                 };
-                var _willet_css = {% include stylesheet %} // pre-quoted
-                var _willet_app_css = '{{ app_css }}';
 
                 // detect just safari: http://api.jquery.com/jQuery.browser/
                 $.browser.safari = ( $.browser.safari && 
@@ -102,11 +101,20 @@
                 }
                 
                 // The usual things. Does NOT include first amperssand.
-                var _willet_metadata = function () {
-                    return "app_uuid=" + srv_data.app_uuid + 
-                          "&user_uuid=" + srv_data.user_uuid + 
-                          "&instance_uuid=" + srv_data.instance_uuid + 
-                          "&refer_url=" + window.location.href;
+                var metadata = function (more) {
+                    // constructs the 'willet' query string - no prefixing ?
+                    // will be added for you.
+                    // add more query properties with the "more" param.
+                    return $.param($.extend (
+                        {}, // blank original
+                        {
+                            'app_uuid': '{{ app.uuid }}',
+                            'user_uuid': '{{ user.uuid }}',
+                            'instance_uuid': '{{ instance.uuid }}',
+                            'refer_url': '{{ PAGE }}' || window.location.href
+                        },
+                        more || {}
+                    ));
                 };
 
                 // Add scripts to DOM
@@ -131,7 +139,7 @@
                 }
 
                 // Send action to server.
-                var _willet_store_analytics = function (message) {
+                var store_analytics = function (message) {
                     var message = message || '{{ evnt }}';
                     //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
                     var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
@@ -139,7 +147,7 @@
                         'style': 'display:none',
                         'src': "{{ URL }}{% url TrackWOSIBShowAction %}?" + 
                                "evnt=" + message + 
-                               "&" + _willet_metadata(),
+                               "&" + metadata(),
                         'id': random_id
                     }));
                     $('#' + random_id).load(function () {
@@ -150,14 +158,14 @@
                     });
                 };
                 
-                var _willet_show_ask = function () {
+                var show_ask = function () {
                     var url = "{{URL}}/w/ask.html?store_url=" + encodeURIComponent(srv_data.store_url) + 
                               "&ids=" +
                               _willet_cart_items.map(function (x) {
                                   // func collects all product IDs for the cart items.
                                   return x.id;
                               }).join(',') +
-                              "&" + _willet_metadata();
+                              "&" + metadata();
                     $.willet_colorbox({
                         href: url,
                         transition: 'fade',
@@ -166,8 +174,8 @@
                         iframe: true, 
                         initialWidth: 0, 
                         initialHeight: 0, 
-                        innerWidth: '790px',
-                        innerHeight: '550px', 
+                        innerWidth: '600px',
+                        innerHeight: '450px',
                         fixed: true,
                         onClosed: function () { }
                     });
@@ -177,7 +185,7 @@
                     // show results if results are done.
                     // this can be detected if a srv_data.finished flag is raised.
                     var url = "{{URL}}/w/results.html" + 
-                              "?" + _willet_metadata();
+                              "?" + metadata();
                     $.willet_colorbox({
                         href: url,
                         transition: 'fade',
@@ -186,7 +194,7 @@
                         iframe: true, 
                         initialWidth: 0, 
                         initialHeight: 0, 
-                        innerWidth: '790px',
+                        innerWidth: '600px',
                         innerHeight: '450px', 
                         fixed: true,
                         onClosed: function () { }
@@ -209,11 +217,11 @@
     		                     
                 button.appendTo (purchase_cta).css('display', 'inline-block');
                 $('#_willet_button').click (function () {
-                    _willet_store_analytics ("WOSIBShowingAskIframe"); // log show iframe
+                    store_analytics ("WOSIBShowingAskIframe"); // log show iframe
                     // iframe for asker to set up voting page
-                    _willet_show_ask ();
+                    show_ask();
                 });
-                _willet_store_analytics ("WOSIBShowingButton"); // log show button
+                store_analytics ("WOSIBShowingButton"); // log show button
                 
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
@@ -276,5 +284,5 @@
 
     // Go time! Load script dependencies
     manage_script_loading(['https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'],
-        _init_wosib );
+        init );
 })();
