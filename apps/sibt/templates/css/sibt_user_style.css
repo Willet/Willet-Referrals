@@ -1,10 +1,8 @@
 /* willet_sibt_popup: SIBT+WOSIB bottom right popup window CSS */
 #willet_sibt_popup {
     display: none;
-
-    /* do not use Overclock unless client already has it = fast */
     background-color:#f9f9f6;
-    font-family: Overclock, PT Sans, Arial, sans-serif;
+    font-family: Overclock, "PT Sans", Arial, sans-serif;
     font-size: 13px;
     text-align: center;
     width: 320px;
@@ -74,30 +72,29 @@
 }
 #willet_sibt_popup>#anti_cta {
     color: #333;
-        text-decoration: none;
-        border-bottom: 1px dashed #333;
-    }
+    text-decoration: none;
+    border-bottom: 1px dashed #333;
 }
 
 #_willet_button_v3 {
-	width: {{ willet_button_v3.width }}px;
-	height: {{ willet_button_v3.height }}px;
-	border: {{ willet_button_v3.border }};
-	border-radius: {{ willet_button_v3.border_radius }}px;
-	font: {{ willet_button_v3.font }};
-	color: {{ willet_button_v3.color }};
-	background: {{ willet_button_v3.background }};
-	padding: {{ willet_button_v3.padding }};
-	margin: {{ willet_button_v3.margin }};
-	{{ willet_button_v3.others }}
+    width: {{ willet_button_v3.width }}px;
+    height: {{ willet_button_v3.height }}px;
+    border: {{ willet_button_v3.border }};
+    border-radius: {{ willet_button_v3.border_radius }}px;
+    font: {{ willet_button_v3.font }};
+    color: {{ willet_button_v3.color }};
+    background: {{ willet_button_v3.background }};
+    padding: {{ willet_button_v3.padding }};
+    margin: {{ willet_button_v3.margin }};
+    {{ willet_button_v3.others }}
 }
 #_willet_button_v3 p {
-	text-align: {{ willet_button_v3.p_text_align }};
-	margin: {{ willet_button_v3.p_margin }};
-	padding: {{ willet_button_v3.p_padding }};
-	font-size: {{ willet_button_v3.p_font_size }};
-	line-height: {{ willet_button_v3.p_line_height }}px;
-	{{ willet_button_v3.p_others }}
+    text-align: {{ willet_button_v3.p_text_align }};
+    margin: {{ willet_button_v3.p_margin }};
+    padding: {{ willet_button_v3.p_padding }};
+    font-size: {{ willet_button_v3.p_font_size }};
+    line-height: {{ willet_button_v3.p_line_height }}px;
+    {{ willet_button_v3.p_others }}
 }
 #_willet_button_v3>.button {
     float: left;
@@ -108,10 +105,10 @@
     background-color: {{ willet_button_v3.button_background_color }};
     text-align: {{ willet_button_v3.button_text_align }};
     border-radius: {{ willet_button_v3.button_border_radius }}px;
-    
+
     /* button_background_image contains its own property name */
     {{ willet_button_v3.button_background_image }};
-    
+
     box-shadow: {{ willet_button_v3.button_box_shadow }};
     behavior: url(/static/js/PIE.htc);
     {{ willet_button_v3.button_others }}
@@ -134,46 +131,46 @@
     {{ willet_button_v3.button_img_others }}
 }
 #_willet_button_v3>.button>.title {
-	margin-left: 30px;
-	padding: 1px 0 0 0;
-	font-size: 16px;
-	line-height: 24px;
-	text-shadow: 1px 1px 1px #EEE;
+    margin-left: 30px;
+    padding: 1px 0 0 0;
+    font-size: 16px;
+    line-height: 24px;
+    text-shadow: 1px 1px 1px #EEE;
     {{ willet_button_v3.button_title_others }}
 }
 
 ._willet_button {
-    min-width: 202px !important; 
-    max-width: {{ willet_button.width }}px !important; 
-    height: {{ willet_button.height}}px !important; 
-    margin: {{ willet_button.margin_top }}px {{ willet_button.margin_right }}px {{ willet_button.margin_bottom }}px {{ willet_button.margin_left }}px !important; 
-    padding: {{ willet_button.padding_top }}px {{ willet_button.padding_right }}px {{ willet_button.padding_bottom }}px {{ willet_button.padding_left }}px !important; 
-    clear: both !important; 
-    display: none; 
-    cursor: pointer !important; 
-    font: bold {{ willet_button.text_size }}px {{ willet_button.font_family }} !important; 
-    text-decoration: none !important; 
-    text-indent: 0px !important; 
-    text-align: center !important; 
-    text-shadow: 0 1px 0 rgba(255,255,255,.8) !important; 
-    line-height: {{ willet_button.line_height }}px !important; 
-    color: #{{ willet_button.color }} !important; 
-    background-color: #{{ willet_button.background_gradient_end }} !important; 
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#{{ willet_button.background_gradient_start }}), to(#{{ willet_button.background_gradient_end }})); 
-    background-image: -webkit-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
-    background-image: -moz-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
-    background-image: -ms-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
-    background-image: -o-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
-    background-image: linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }}); 
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#{{ willet_button.background_gradient_start }}", EndColorStr="#{{ willet_button.background_gradient_end }}"); 
-    border: {{ willet_button.border_width }}px solid #{{ willet_button.border_color }} !important; 
-    -moz-border-radius: {{ willet_button.border_radius }}em; 
-    -webkit-border-radius: {{ willet_button.border_radius }}em; 
-    border-radius: {{ willet_button.border_radius }}em; 
-    box-shadow: 0 0 1px 1px {{ willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
-    -moz-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
-    -webkit-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}}; 
-    vertical-align: baseline; 
+    min-width: 202px !important;
+    max-width: {{ willet_button.width }}px !important;
+    height: {{ willet_button.height}}px !important;
+    margin: {{ willet_button.margin_top }}px {{ willet_button.margin_right }}px {{ willet_button.margin_bottom }}px {{ willet_button.margin_left }}px !important;
+    padding: {{ willet_button.padding_top }}px {{ willet_button.padding_right }}px {{ willet_button.padding_bottom }}px {{ willet_button.padding_left }}px !important;
+    clear: both !important;
+    display: none;
+    cursor: pointer !important;
+    font: bold {{ willet_button.text_size }}px {{ willet_button.font_family }} !important;
+    text-decoration: none !important;
+    text-indent: 0px !important;
+    text-align: center !important;
+    text-shadow: 0 1px 0 rgba(255,255,255,.8) !important;
+    line-height: {{ willet_button.line_height }}px !important;
+    color: #{{ willet_button.color }} !important;
+    background-color: #{{ willet_button.background_gradient_end }} !important;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#{{ willet_button.background_gradient_start }}), to(#{{ willet_button.background_gradient_end }}));
+    background-image: -webkit-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }});
+    background-image: -moz-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }});
+    background-image: -ms-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }});
+    background-image: -o-linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }});
+    background-image: linear-gradient(top, #{{ willet_button.background_gradient_start }}, #{{ willet_button.background_gradient_end }});
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#{{ willet_button.background_gradient_start }}", EndColorStr="#{{ willet_button.background_gradient_end }}");
+    border: {{ willet_button.border_width }}px solid #{{ willet_button.border_color }} !important;
+    -moz-border-radius: {{ willet_button.border_radius }}em;
+    -webkit-border-radius: {{ willet_button.border_radius }}em;
+    border-radius: {{ willet_button.border_radius }}em;
+    box-shadow: 0 0 1px 1px {{ willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}};
+    -moz-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}};
+    -webkit-box-shadow: 0 0 1px 1px {{willet_button.box_shadow_inset}} inset, 0 1px 0 {{willet_button.box_shadow_outset}};
+    vertical-align: baseline;
     white-space: nowrap !important;
 }
 ._willet_button:hover {
@@ -185,19 +182,19 @@
     background-image: -o-linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
     background-image: linear-gradient(top, #{{ willet_button__hover.background_gradient_start }},#{{ willet_button__hover.background_gradient_end }});
     filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#{{ willet_button__hover.background_gradient_start }}", EndColorStr="#{{ willet_button__hover.background_gradient_end }}");
-    border: {{ willet_button__hover.border_width }}px solid #{{ willet_button__hover.border_color }} !important; 
+    border: {{ willet_button__hover.border_width }}px solid #{{ willet_button__hover.border_color }} !important;
     color: #{{ willet_button__hover.color }} !important;
 }
 ._willet_button:focus {
     outline: 0;
     background: #fafafa;
 }
-._willet_button:active {        
+._willet_button:active {
     -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
     -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
     box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
     position: relative;
-    top: 1px;    
+    top: 1px;
 }
 /*
  TOP BAR CSS
@@ -217,7 +214,7 @@
     text-shadow: 0px 0px 0px rgba(255,255,255,0.5);
     font-family: Helvetica, Arial, sans-serif;
     font-weight: bold;
-	font-size: 14px;
+    font-size: 14px;
     position: fixed;
     z-index:50000000;
     -moz-border-radius-topleft: 0px;
@@ -247,7 +244,7 @@
     text-shadow: 0px 0px 0px rgba(255,255,255,0.5);
     font-family: Helvetica, Arial, sans-serif;
     font-weight: bold;
-	font-size: 14px;
+    font-size: 14px;
     position: fixed;
     z-index:50000000;
     top:0;
@@ -268,14 +265,14 @@
     color: white;
     text-shadow: 0px 0px 0px rgba(255,255,255,0.5);
     font-family: Helvetica, Arial, sans-serif;
-	font-size: 15em;
+    font-size: 15em;
 
     position: fixed;
     z-index:50000000;
     top:0;
     left:0;
 }
-    #_willet_sibt_bar ._willet_wrapper, 
+    #_willet_sibt_bar ._willet_wrapper,
     #_willet_sibt_ask_bar ._willet_wrapper {
         margin-top: 4px;
         margin-bottom: 5px;
@@ -283,23 +280,23 @@
         margin-left: auto;
         display: block;
         float: none;
-        text-align: center; 
+        text-align: center;
         width: 75%;
     }
-    #_willet_sibt_bar div.last, 
+    #_willet_sibt_bar div.last,
     #_willet_sibt_ask_bar div.last {
         margin-right: 0px;
     }
-    #_willet_sibt_bar div, 
+    #_willet_sibt_bar div,
     #_willet_sibt_ask_bar div{
         display: inline-block;
         float: left;
     }
 
-    #_willet_sibt_bar div._button, 
+    #_willet_sibt_bar div._button,
     #_willet_sibt_ask_bar div._button {
         line-height: 40px;
-        
+
         cursor: pointer;
         padding-left: 5px;
         padding-right: 12px;
@@ -325,26 +322,26 @@
         background-image: -o-linear-gradient(top, #eee, #ccc);
         background-image: linear-gradient(top, #eee, #ccc);
         filter: progid:DXImageTransform.Microsoft.gradient(startColorStr="#eeeeee", EndColorStr="#cccccc");
-        
+
         border: 1px solid #777;
         -moz-border-radius: .2em;
         -webkit-border-radius: .2em;
         border-radius: .2em;
-        
+
         box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
         -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
         -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
     }
-    #_willet_sibt_bar div._button:hover, 
+    #_willet_sibt_bar div._button:hover,
     #_willet_sibt_ask_bar div._button:hover {
         background-color: #4B67A1;
     }
-        #_willet_sibt_bar div._willet_button span, 
+        #_willet_sibt_bar div._willet_button span,
         #_willet_sibt_ask_bar div._willet_button span {
-            line-height: inherit; 
+            line-height: inherit;
             font-size: 15px;
         }
-            #_willet_sibt_bar div._willet_button span img, 
+            #_willet_sibt_bar div._willet_button span img,
             #_willet_sibt_ask_bar div._willet_button span img {
                 position: relative;
                 top: 2px;
@@ -355,11 +352,11 @@
         font-weight: bold;
         float: left;
         color: #D8DFEA;
-    } 
+    }
         #_willet_sibt_bar div.asker div.pic {
             display: inline-block;
             float: left;
-            margin-right: 5px; 
+            margin-right: 5px;
         }
             #_willet_sibt_bar div.asker div.pic img {
                 display: inline-block;
@@ -381,7 +378,7 @@
             line-height: 17px;
             font-size: 12px;
         }
-    #_willet_sibt_bar div.message, 
+    #_willet_sibt_bar div.message,
     #_willet_sibt_ask_bar div.message {
         display: inline-block;
         float: left;
@@ -397,7 +394,7 @@
         padding-right: 5px;
         float:right;
     }
-        #_willet_sibt_bar button, 
+        #_willet_sibt_bar button,
         #_willet_sibt_bar button:disabled {
             display: inline-block;
             white-space: nowrap;
@@ -446,7 +443,7 @@
         #_willet_sibt_bar button:focus {
             outline: 0;
             background: #fafafa;
-        }    
+        }
 
         #_willet_sibt_bar button:before {
             background: #ccc;
@@ -492,7 +489,7 @@
         }
     #askBtn {
         font-size: 16px !important;
-        margin-left: 20px; 
+        margin-left: 20px;
     }
 
 #_willet_bottom_tab {

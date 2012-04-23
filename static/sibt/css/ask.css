@@ -1,7 +1,7 @@
 /* ---------------------   DEFAULTS   ------------------------------- */
 
 html, body {
-    background-color: white;
+    /*background-color: white;*/
     color: #383f41;
     overflow: hidden;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -303,10 +303,12 @@ p {
     height: 100px;
     width: 100%;
     text-align: center;
-    z-index: 1; /* PIE shows in IE8 */
+    z-index: 100; /* PIE shows in IE8 */
 }
 .option {
     margin: 0 15px;
+    z-index:101;
+    position:relative;
 }
 .or {
     float: left;

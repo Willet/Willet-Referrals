@@ -177,22 +177,22 @@
         setCookieStorageFlag();
     }
 
+    // load CSS for colorbox as soon as possible!!
+    var styles = colorbox_css + popup_css + app_css;
+    var willet_style = d.createElement('style');
+    var head_elem = d.getElementsByTagName('head')[0];
+    willet_style.type = 'text/css';
+    willet_style.setAttribute('charset','utf-8');
+    willet_style.setAttribute('media','all');
+    if (willet_style.styleSheet) {
+        willet_style.styleSheet.cssText = styles;
+    } else {
+        willet_style.appendChild(d.createTextNode(styles));
+    }
+    head_elem.appendChild(willet_style);
+
     // Once all dependencies are loading, fire this function
     var init = function () {
-
-        // load CSS for colorbox as soon as possible!!
-        var styles = colorbox_css + popup_css + app_css;
-        var willet_style = d.createElement('style');
-        var head_elem = d.getElementsByTagName('head')[0];
-        willet_style.type = 'text/css';
-        willet_style.setAttribute('charset','utf-8');
-        willet_style.setAttribute('media','all');
-        if (willet_style.styleSheet) {
-            willet_style.styleSheet.cssText = styles;
-        } else {
-            willet_style.appendChild(d.createTextNode(styles));
-        }
-        head_elem.appendChild(willet_style);
 
         if (sys.$_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
