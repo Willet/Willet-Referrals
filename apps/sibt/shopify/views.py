@@ -228,7 +228,8 @@ class SIBTShopifyServeScript(URIHandler):
         willet_code = self.request.get('willt_code')
 
         # window.location
-        page_url = get_shopify_url(self.request.get('page_url'))
+        page_url = get_shopify_url(self.request.get('page_url') or \ # v2+
+                                   self.request.get('store_url'))  # v1
 
         # the domain name with which the shopify store registered
         store_url = get_shopify_url(self.request.get('store_url'))
