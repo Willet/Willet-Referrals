@@ -748,7 +748,6 @@ _willet = (function (me) {
     var loggedInNetworks = (function () {
         // Load loggedInNetworks with saved array of known networks
         var networks = [],
-            unsorted_networks = {},
             networksJSON = cookies.read(COOKIE_NAME);
 
         if (networksJSON) {
