@@ -91,7 +91,11 @@ var _willet = (function(me, config) {
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
     var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.protocol + '//' + window.location.hostname + window.location.pathname.replace(/\/$/, '') + '.json';
+    var PRODUCT_JSON = window.location.protocol
+                        + '//'
+                        + window.location.hostname
+                        + window.location.pathname.replace(/\/$/, '')
+                        + '.json';
     var COOKIE_NAME = "_willet_smart_buttons";
     var COOKIE_EXPIRY_IN_DAYS = 30;
 
@@ -809,7 +813,7 @@ var _willet = (function(me, config) {
     };
 
     return me;
-}(_willet, _willet_shopconnection_config));
+}(_willet, window._willet_shopconnection_config || {}));
 
 _willet.debug = (function (helpers) {
     var me = {};
