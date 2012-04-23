@@ -8,6 +8,10 @@ def get_shopify_url(shopify_url):
     Works for generic URLs as well.
     PyLint: Your code has been rated at -41.00/10
     """
+
+    if not shopify_url:
+        return ''
+
     if shopify_url[:4] != 'http':
         shopify_url = 'http://%s' % shopify_url  # assume no HTTPS
 

@@ -507,7 +507,7 @@ _willet.networks = (function (willet) {
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
+                              { property: 'og:description', content: params.sharingMessage } ]
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -554,7 +554,7 @@ _willet.networks = (function (willet) {
                         window.open("//pinterest.com/pin/create/button/?" +
                             "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
-                            "&description=" + encodeURIComponent("I found this on " + params.domain),
+                            "&description=" + encodeURIComponent(params.sharingMessage),
                             'signin',
                             'height=300,width=665');
                         link.className = 'willet-pinterest-button clicked';
@@ -581,7 +581,7 @@ _willet.networks = (function (willet) {
                         countLink.href = "//pinterest.com/pin/create/button/?" +
                             "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
-                            "&description=" + encodeURIComponent("I found this on " + params.domain);
+                            "&description=" + encodeURIComponent(params.sharingMessage);
                         countLink.className = 'pin-it-button';
                         countLink.setAttribute('count-layout', 'horizontal');
                         count.appendChild(countLink);
@@ -683,6 +683,10 @@ _willet.networks = (function (willet) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
+                    if (params.sharing_message) {
+                        link.setAttribute('data-text', params.sharing_message);
+                    }
+
                     button.appendChild(link);
                     return button;
                 },
@@ -696,7 +700,7 @@ _willet.networks = (function (willet) {
     };
 }(_willet));
 
-_willet = (function (me) {
+_willet = (function (me, config) {
     // ***
     // Basic & Smart buttons difference should only exist within this function
     // ***
@@ -729,7 +733,8 @@ _willet = (function (me) {
         NOT_FOUND = -1,
 
         MAX_BUTTONS = 3,
-        DEFAULT_BUTTONS = ['Pinterest', 'Tumblr', 'Fancy'],
+        DEFAULT_BUTTONS = (config && config.button_order) ||
+                          ['Pinterest', 'Tumblr', 'Fancy'],
         DEFAULT_COUNT = 'false',
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
@@ -921,15 +926,25 @@ _willet = (function (me) {
         if (buttonsDiv) {
 
             // Generate button parameters
+            var buttonCount = (config && config.button_count) ||
+                (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true');
+            var buttonSpacing = ((config && config.button_spacing) ||
+                util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING))+'px';
+            var buttonPadding = ((config && config.button_padding) ||
+                util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING))+'px';
+            var sharingMessage = (config && config.sharing_message) ||
+                ("I found this on " + DOMAIN);
+
             var params = {
                 "domain":       DOMAIN,
                 "photo":        productData.product.images[0] ? productData.product.images[0].src : '',
                 "data":         productData,
                 "buttonAlignment":  util.getElemValue(buttonsDiv, 'align', DEFAULT_ALIGNMENT),
-                "buttonCount":  (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true'),
-                "buttonSpacing": util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING)+'px',
-                "buttonPadding": util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING)+'px',
-                "canonicalUrl":  util.getCanonicalUrl(DEFAULT_CANONICAL_URL)
+                "buttonCount":  buttonCount,
+                "buttonSpacing": buttonSpacing,
+                "buttonPadding": buttonPadding,
+                "canonicalUrl":  util.getCanonicalUrl(DEFAULT_CANONICAL_URL),
+                "sharingMessage": sharingMessage
             };
 
             // Style container
@@ -1035,7 +1050,7 @@ _willet = (function (me) {
     };
 
     return me;
-}(_willet));
+}(_willet, window._willet_shopconnection_config || {}));
 
 try {
     if (_willet && !_willet.buttonsLoaded) {
