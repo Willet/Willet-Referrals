@@ -59,7 +59,15 @@ def get_details(uri_handler=None, provided_client=None):
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
 
-    if client is not None and client.merchant is not None:
+    merchant = None
+    try:
+        # Merchant is a referenced model, so this implicitly does a memcache and/or db get
+        merchant = client.merchant
+    except TypeError:
+        # Client has no merchant
+        logging.error("Client %r has no merchant.  Using fake values" % (client,))
+
+    if client is not None and merchant is not None:
         details["client_email"] = client.email
         details["shop_owner"]   = client.merchant.get_full_name()
         details["shop_name"]    = client.name
@@ -228,7 +236,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
 class ButtonsShopifyInstructions(URIHandler):
     """Actions for the instructions page."""
     @catch_error
-    def get( self ):
+    def get(self):
         """Displays post-installation instructions."""
         details = get_details(self)
         token  = self.request.get( 't' )
