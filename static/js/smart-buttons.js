@@ -30,6 +30,7 @@ if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').
 throw new SyntaxError('JSON.parse');};}}());
 
 var _willet = window._willet || {};
+_willet.buttonsLoaded = _willet.buttonsLoaded || false;
 
 _willet.util = {
     "addListener": function (elem, event, callback) {
@@ -40,6 +41,7 @@ _willet.util = {
         }
     },
     "createBasicButton": function (params) {
+        // Returns a DOM element
         var id = params.id || '';
         var buttonAlignment = params.buttonAlignment || "left";
         var buttonSpacing = params.buttonSpacing || "0";
@@ -115,6 +117,8 @@ _willet.util = {
         return -1;
     },
     "removeChildren": function(elem) {
+        // Removes all children elements from DOM element
+        // Don't use on strings, all browsers have String.prototype.indexOf
         var i = elem.childNodes.length;
         while (i--) {
             elem.removeChild(elem.childNodes[i]);
@@ -126,6 +130,7 @@ _willet.util = {
 };
 
 _willet.cookies = {
+    // Generic cookie library
     // Source: http://www.quirksmode.org/js/cookies.html
     "create": function (name, value, days) {
         if (days) {
@@ -168,7 +173,7 @@ _willet.debug = (function (willet) {
             } else {
                 log(arguments);
             }
-            log_array.push(arguments)
+            log_array.push(arguments); // Add to logs
         };
         _error = function () {
             var error = window.console.error;
@@ -177,15 +182,17 @@ _willet.debug = (function (willet) {
             } else {
                 error(arguments);
             }
-            log_array.push(arguments)
+            log_array.push(arguments); // Add to logs
         };
     }
 
     me.register = function(callback) {
+        // Register a callback to fire when debug.set is called
         callbacks.push(callback);
     };
 
     me.set = function(debug) {
+        // Set debugging on (true) / off (false)
         me.log = (debug) ? _log : function() { log_array.push(arguments) };
         me.error = (debug) ? _error : function() { log_array.push(arguments) };
         isDebugging = debug;
@@ -196,10 +203,12 @@ _willet.debug = (function (willet) {
     }
 
     me.isDebugging = function() {
-        return isDebugging ? true : false;
+        // True = printing to console & logs, False = only logs
+        return isDebugging;
     };
 
     me.logs = function () {
+        // Returns as list of all log & error items
         return log_array;
     }
 
@@ -356,15 +365,13 @@ _willet.messaging = (function (willet) {
 }(_willet));
 
 _willet.networks = (function (willet) {
-    var debug     = willet.debug,
-        messaging = willet.messaging,
-        util      = willet.util;
-
+    // List of supported networks with required functions to initialize their buttons
+    //
     // Format for social network:
     // name: {
     //      detect: {
     //          method: <string> "api" | "image" | "none"
-    //          func: <function> for method api, will call button api
+    //          func: <function> for method api, will call button api, takes methods
     //                           for method image, will return an image url
     //                           for method none, empty function
     //                           takes inputs methods
@@ -372,9 +379,12 @@ _willet.networks = (function (willet) {
     //      button: {
     //          script: <string> url for script that will load the button
     //          create: <function> function which creates the button, takes inputs methods & params
-    //          onLoad: <function> (optional) function which fires when the script is loaded
+    //          onLoad: <function> (optional) function which fires when the script is loaded, takes params
     //      }
     // }
+    var debug     = willet.debug,
+        messaging = willet.messaging,
+        util      = willet.util;
     return {
         "Facebook": {
             "detect": {
@@ -409,10 +419,15 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onLoad": function() {
+                "onload": function(params) {
                     FB.Event.subscribe('edge.create', function(response) {
-                        methods.itemShared("Facebook");
+                        methods.itemShared("Facebook", params);
                     });
+                    // If Facebook is already loaded,
+                    // trigger it to enable Like button
+                    try {
+                        window.FB && window.FB.XFBML.parse(); 
+                    } catch(e) {}
                 }
             }
         },
@@ -446,7 +461,7 @@ _willet.networks = (function (willet) {
                     link.href = u;
 
                     link.onclick = function() {
-                        methods.itemShared("Fancy");
+                        methods.itemShared("Fancy", params);
                     };
                     
                     link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
@@ -484,7 +499,7 @@ _willet.networks = (function (willet) {
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
                     window._willet_GooglePlusShared = function(response) {
                         if (response && response.state && response.state === "on") {
-                            methods.itemShared("GooglePlus");
+                            methods.itemShared("GooglePlus", params);
                         }
                     };
                     
@@ -535,7 +550,7 @@ _willet.networks = (function (willet) {
                     link.style.width = "43px";
                     link.style.zIndex = "100";
                     link.onclick = function() {
-                        methods.itemShared("Pinterest");
+                        methods.itemShared("Pinterest", params);
                         window.open("//pinterest.com/pin/create/button/?" +
                             "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
@@ -599,7 +614,7 @@ _willet.networks = (function (willet) {
                     var interval = setInterval(function () {
                         if (window.svpply_api && window.svpply_api.construct) {
                             window.svpply_api.construct();
-                            button.onclick = function () { methods.itemShared("Svpply"); };
+                            button.onclick = function () { methods.itemShared("Svpply", params); };
                             clearInterval(interval);
                         }
                     }, 100);
@@ -638,7 +653,7 @@ _willet.networks = (function (willet) {
                     link.style.marginTop = 0;
 
                     link.onclick = function() {
-                        methods.itemShared("Tumblr");
+                        methods.itemShared("Tumblr", params);
                     };
 
                     button.appendChild(link);
@@ -671,9 +686,9 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onLoad": function() {
+                "onload": function(params) {
                     twttr.events.bind('tweet', function(event) {
-                        methods.itemShared("Twitter");
+                        methods.itemShared("Twitter", params);
                     });
                 }
             }
@@ -685,13 +700,14 @@ _willet = (function (me) {
     // ***
     // Basic & Smart buttons difference should only exist within this function
     // ***
+    // Linking
     var cookies = me.cookies,
         debug = me.debug,
         messaging = me.messaging
         supportedNetworks = me.networks,
         util = me.util;
 
-    // Private variables
+    // Constants
     var MY_APP_URL = "http://willet-nterwoord.appspot.com",
         WILLET_APP_URL = "http://social-referral.appspot.com",
         APP_URL = WILLET_APP_URL,
@@ -728,6 +744,23 @@ _willet = (function (me) {
 
         COOKIE_NAME = "_willet_smart_buttons";
 
+    // Private variables
+    var loggedInNetworks = function () {
+        // Load loggedInNetworks with saved array of known networks
+        var networks = [],
+            unsorted_networks = {},
+            networksJSON = cookies.read(COOKIE_NAME);
+
+        if (networksJSON) {
+            try {
+                networks = JSON.parse(networksJSON);
+            } catch(e) {
+                debug.log("Buttons: Unable to parse cookie")
+            }
+        }
+        return networks;
+    };
+
     // Private functions
     var getRequiredButtonsFromElement = function(container) {
         // Get the buttons, should be children of #_willet_buttons_app
@@ -746,7 +779,7 @@ _willet = (function (me) {
                 }
             }
         }
-        return (requiredButtons.length) ? requiredButtons : DEFAULT_BUTTONS; // default for backwards compatibilty;
+        return requiredButtons;
     };
 
     var updateLoggedInStatus = function(network, status) {
@@ -756,34 +789,14 @@ _willet = (function (me) {
         cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
     };
 
-    var getProductInfo = function() {
-        // Why don't we use product.json info?
-        var nameNode = document.getElementById("product-title");
-        var name     = (nameNode && nameNode.innerHTML) || window.document.title || "";
-
-        var imgNodeContainer  = document.getElementById("active-wrapper");
-        var img = "";
-        if (imgNodeContainer) {
-            var imgNode = imgNodeContainer.getElementsByTagName("img")[0];
-            img = (imgNode && imgNode.src) || "";
-        }
-
-        return {
-            "name": name,
-            "img": img
-        }
-    };
-
-    var itemShared = function(network) {
+    var itemShared = function(network, params) {
         //If someone shares, update the cookie
         updateLoggedInStatus(network, true);
 
-        var productInfo = getProductInfo();
-
         var message = JSON.stringify({
-            "name"   : productInfo["name"],
+            "name"   :  params.data.title,
             "network": network,
-            "img"    : productInfo["img"]
+            "img"    : params.photo
         });
 
         //Need to append param to avoid caching...
@@ -799,48 +812,40 @@ _willet = (function (me) {
 
     var determineButtons = function(buttonsDiv) {
         var i,
-            requiredButtons = [],
-            networksJSON = me.cookies.read(COOKIE_NAME) || "";
+            networks = [],
+            requiredButtons = [];
 
-        if (networksJSON === "") {
-            requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
-        } else {
-            var networks = {};
-            try {
-                networks = JSON.parse(networksJSON);
-            } catch(e) {
-                debug.log("Buttons: Unable to parse cookie")
-            }
-
-            networks = util.dictToArray(networks);
+        // Queue detected networks first, if the cookie exists
+        if (loggedInNetworks) {
+            networks = util.dictToArray(loggedInNetworks);
             networks = networks.sort(function(a,b) {
                 return b.value.accessed - a.value.accessed;
             });
 
             // Queue detected buttons
-            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var network = networks[i];
+            for (i = 0; i < loggedInNetworks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var network = loggedInNetworks[i];
                 if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
                     && network.value.status === true) {         //check that the network is enabled
                     requiredButtons.push(network.key);
                 }
             }
+        }
 
-            // Queue user's buttons if there is space, and they have not already been added
-            var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
-            for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var button = usersButtons[i];
-                if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
-                    requiredButtons.push(button);
-                }
+        // Queue user's buttons if there is space, and they have not already been added
+        var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+        for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = usersButtons[i];
+            if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
+                requiredButtons.push(button);
             }
+        }
 
-            // Queue default buttons to the end, if they have not already been added
-            for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var button = DEFAULT_BUTTONS[i];
-                if (util.indexOf(requiredButtons, button) == NOT_FOUND) {
-                    requiredButtons.push(button);
-                }
+        // Queue default buttons to the end, if they have not already been added
+        for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = DEFAULT_BUTTONS[i];
+            if (util.indexOf(requiredButtons, button) == NOT_FOUND) {
+                requiredButtons.push(button);
             }
         }
 
@@ -854,7 +859,9 @@ _willet = (function (me) {
             var script = document.createElement("script");
             script.type = "text/javascript";
             script.src = button["script"];
-            script.onload = button["onLoad"];
+            script.onload = function () { 
+                button["onload"] && button["onload"](params);
+            };
             HEAD.appendChild(script);
         }
         debug.log('Buttons: '+ network +' attached');
@@ -862,6 +869,9 @@ _willet = (function (me) {
 
     // Public functions
     me.detectNetworks = function () {
+        // Determines which social networks are in use
+        // The detection is asynchronous & saved to a cookie
+        // for lookup later
         debug.log("Buttons: Determining networks...")
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
@@ -903,14 +913,13 @@ _willet = (function (me) {
                 }
             }
         }
-        return cookies.read(COOKIE_NAME);
     };
 
     me.createButtons = function(productData) {
         debug.log("Buttons: finding buttons placeholder on page");
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
-        if (buttonsDiv && window._willet_iframe_loaded == undefined) {
+        if (buttonsDiv) {
 
             // Generate button parameters
             var params = {
@@ -955,12 +964,6 @@ _willet = (function (me) {
                 }
             }
 
-            // If Facebook is already loaded,
-            // trigger it to enable Like button
-            try {
-                window.FB && window.FB.XFBML.parse(); 
-            } catch(e) {}
-
             // Make visible if hidden
             buttonsDiv.style.display = 'block';
 
@@ -977,6 +980,7 @@ _willet = (function (me) {
             return;
         }
 
+        // Initialize debugging
         var isDebugging = debug.isDebugging();
         debug.register(function(debug) {
             APP_URL = (debug) ? MY_APP_URL : WILLET_APP_URL;
@@ -984,7 +988,7 @@ _willet = (function (me) {
         });
         debug.set(isDebugging);
 
-        if (!cookies.read(COOKIE_NAME)) {
+        if (!loggedInNetworks) {
             me.detectNetworks();
         }
 
@@ -1021,6 +1025,7 @@ _willet = (function (me) {
                         if (data) {
                             // Proceed!
                             me.createButtons(data);
+                            me.buttonsLoaded = true;
                         }
                     }
                 });   
@@ -1033,23 +1038,25 @@ _willet = (function (me) {
     return me;
 }(_willet));
 
-//try {
-    _willet.debug.set(true); //set to true if you want logging turned on
-    _willet.init();
-//} catch(e) {
-//    (function() {
-//        var error = encodeURIComponent("Error initializing smart-buttons");
-//        var script = encodeURIComponent("smart-buttons.js");
-//
+try {
+    if (_willet && !_willet.buttonsLoaded) {
+        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.init();
+    };
+} catch(e) {
+    (function() {
+        var error = encodeURIComponent("Error initializing smart-buttons");
+        var script = encodeURIComponent("smart-buttons.js");
+
         //TODO: include line number
-//        var st = encodeURIComponent(e.toString());
-//
-//        var params = "error=" + error + "&script=" + script + "&st=" + st;
-//
-//        var _willetImage = document.createElement("img");
-//        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
-//        _willetImage.style.display = "none";
-//
-//        document.body.appendChild(_willetImage)
-//    }()); 
-//}
+        var st = encodeURIComponent(e.toString());
+
+        var params = "error=" + error + "&script=" + script + "&st=" + st;
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
+    }()); 
+}

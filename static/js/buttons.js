@@ -30,7 +30,7 @@ if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').
 throw new SyntaxError('JSON.parse');};}}());
 
 var _willet = window._willet || {};
-_willet.buttons_loaded = _willet.buttons_loaded || false;
+_willet.buttonsLoaded = _willet.buttonsLoaded || false;
 
 _willet.util = {
     "addListener": function (elem, event, callback) {
@@ -41,6 +41,7 @@ _willet.util = {
         }
     },
     "createBasicButton": function (params) {
+        // Returns a DOM element
         var id = params.id || '';
         var buttonAlignment = params.buttonAlignment || "left";
         var buttonSpacing = params.buttonSpacing || "0";
@@ -116,6 +117,8 @@ _willet.util = {
         return -1;
     },
     "removeChildren": function(elem) {
+        // Removes all children elements from DOM element
+        // Don't use on strings, all browsers have String.prototype.indexOf
         var i = elem.childNodes.length;
         while (i--) {
             elem.removeChild(elem.childNodes[i]);
@@ -127,6 +130,7 @@ _willet.util = {
 };
 
 _willet.cookies = {
+    // Generic cookie library
     // Source: http://www.quirksmode.org/js/cookies.html
     "create": function (name, value, days) {
         if (days) {
@@ -169,7 +173,7 @@ _willet.debug = (function (willet) {
             } else {
                 log(arguments);
             }
-            log_array.push(arguments)
+            log_array.push(arguments); // Add to logs
         };
         _error = function () {
             var error = window.console.error;
@@ -178,15 +182,17 @@ _willet.debug = (function (willet) {
             } else {
                 error(arguments);
             }
-            log_array.push(arguments)
+            log_array.push(arguments); // Add to logs
         };
     }
 
     me.register = function(callback) {
+        // Register a callback to fire when debug.set is called
         callbacks.push(callback);
     };
 
     me.set = function(debug) {
+        // Set debugging on (true) / off (false)
         me.log = (debug) ? _log : function() { log_array.push(arguments) };
         me.error = (debug) ? _error : function() { log_array.push(arguments) };
         isDebugging = debug;
@@ -197,10 +203,12 @@ _willet.debug = (function (willet) {
     }
 
     me.isDebugging = function() {
-        return isDebugging ? true : false;
+        // True = printing to console & logs, False = only logs
+        return isDebugging;
     };
 
     me.logs = function () {
+        // Returns as list of all log & error items
         return log_array;
     }
 
@@ -357,10 +365,8 @@ _willet.messaging = (function (willet) {
 }(_willet));
 
 _willet.networks = (function (willet) {
-    var debug     = willet.debug,
-        messaging = willet.messaging,
-        util      = willet.util;
-
+    // List of supported networks with required functions to initialize their buttons
+    //
     // Format for social network:
     // name: {
     //      detect: {
@@ -376,6 +382,9 @@ _willet.networks = (function (willet) {
     //          onLoad: <function> (optional) function which fires when the script is loaded
     //      }
     // }
+    var debug     = willet.debug,
+        messaging = willet.messaging,
+        util      = willet.util;
     return {
         "Facebook": {
             "detect": {
@@ -414,6 +423,11 @@ _willet.networks = (function (willet) {
                     FB.Event.subscribe('edge.create', function(response) {
                         methods.itemShared("Facebook");
                     });
+                    // If Facebook is already loaded,
+                    // trigger it to enable Like button
+                    try {
+                        window.FB && window.FB.XFBML.parse(); 
+                    } catch(e) {}
                 }
             }
         },
@@ -802,6 +816,7 @@ _willet = (function (me) {
             // Create the required buttons
             var network, button,
                 methods = {
+                    // Not used in basic buttons, but networks still expect it
                     "updateLoggedInStatus": function () {},
                     "itemShared":           function () {}
                 };
@@ -817,16 +832,9 @@ _willet = (function (me) {
                 }
             }
 
-            // If Facebook is already loaded,
-            // trigger it to enable Like button
-            try {
-                window.FB && window.FB.XFBML.parse(); 
-            } catch(e) {}
-
             // Make visible if hidden
             buttonsDiv.style.display = 'block';
 
-            me.buttons_loaded = true;
             debug.log('Buttons: Done!');
         } else {
             debug.log('Buttons: could not find buttons placeholder on page');
@@ -884,6 +892,7 @@ _willet = (function (me) {
                         if (data) {
                             // Proceed!
                             me.createButtons(data);
+                            me.buttonsLoaded = true;
                         }
                     }
                 });   
