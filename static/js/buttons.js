@@ -3,7 +3,7 @@
      * Buttons JS. Copyright Willet Inc, 2012
      */
     "use strict";
-    var DEBUG = true,
+    var DEBUG = false,
         DEFAULT_COUNT = 'false',
         DEFAULT_SPACING = '5',
         DEFAULT_PADDING = '5',
