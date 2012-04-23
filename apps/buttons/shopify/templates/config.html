@@ -90,47 +90,91 @@
         display: none;
     }
 
+    li.icon {
+        padding: 1px;
+    }
+
+    span.icon {
+        display: inline-block;
+    }
+
     .icon {
         height: 20px;
         background-repeat: no-repeat;
-        background-position-x: center;
+        background-position-x: left;
         background-position-y: center;
-        padding: 1px;
+        border: 0 none !important;
     }
 
     .icon.Facebook {
         background-image: url('/static/imgs/sb-config-facebook.png');
         width: 48px;
     }
+    .icon.Facebook.buttonCount {
+        background-image: url('/static/imgs/sb-config-facebook-count.png');
+        width: 90px;
+    }
 
     .icon.Twitter {
         background-image: url('/static/imgs/sb-config-twitter.png');
         width: 56px;
+    }
+    .icon.Twitter.buttonCount {
+        background-image: url('/static/imgs/sb-config-twitter-count.png');
+        width: 98px;
     }
 
     .icon.GooglePlus {
         background-image: url('/static/imgs/sb-config-googleplus.png');
         width: 32px;
     }
+    .icon.GooglePlus.buttonCount {
+        background-image: url('/static/imgs/sb-config-googleplus-count.png');
+        width: 74px;
+    }
 
     .icon.Svpply {
         background-image: url('/static/imgs/sb-config-svpply.png');
         width: 70px;
+    }
+    .icon.Svpply.buttonCount {
+        background-image: url('/static/imgs/sb-config-svpply.png');
     }
 
     .icon.Fancy {
         background-image: url('/static/imgs/sb-config-fancy.png');
         width: 56px;
     }
+    .icon.Fancy.buttonCount {
+        background-image: url('/static/imgs/sb-config-fancy.png');
+        width: 96px;
+    }
 
     .icon.Pinterest {
         background-image: url('/static/imgs/sb-config-pinterest.png');
         width: 43px;
     }
+    .icon.Pinterest.buttonCount {
+        background-image: url('/static/imgs/sb-config-pinterest.png');
+        width: 77px;
+    }
 
     .icon.Tumblr {
         background-image: url('/static/imgs/sb-config-tumblr.png');
         width: 62px;
+    }
+    .icon.Tumblr.buttonCount {
+        background-image: url('/static/imgs/sb-config-tumblr.png');
+    }
+
+    .preview {
+        display: block;
+        background-color: #ffa;
+        text-align: center;
+    }
+
+    .buttons-preview {
+        display: block;
     }
 </style>
 <!--[if IE 7]>
@@ -156,6 +200,12 @@
     .config-option .textbox {
         position: relative;
         top: 20px;
+    }
+
+    span.icon {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
     }
 </style>
 <script>
@@ -190,12 +240,39 @@
                     networks.push(network);
                 });
                 $("input[name='button_order']").val(networks.join(","));
+            },
+            update_preview = function(event) {
+                var buttonsDiv = $('.buttons-preview'),
+                    buttonsDivPadding = $("#button-padding").val() || 0;
+                buttonsDiv.empty();
+
+                $(buttonsDiv).css("padding", buttonsDivPadding + "px");
+
+                $("#default-buttons > .icon").each(function(index, elem) {
+                    var buttonClass = $(elem).attr("class"),
+                        buttonCount = $("[name=button_count]:checked").val(),
+                        buttonPadding = $("#button-spacing").val() || 0,
+                        newImg;
+
+                    newImg = $("<span/>", {
+                        "class": buttonClass,
+                        "border": 0
+                    });
+                    if (buttonCount === "True") {
+                        $(newImg).addClass("buttonCount");
+                    }
+
+                    $(newImg).css("padding", buttonPadding + "px");
+
+                    buttonsDiv.append(newImg);
+                })
             };
 
         $("#default-buttons, #unused-buttons").sortable({
             connectWith: ".connectedSortable",
             update: function(event, ui) {
                 update_networks();
+                update_preview();
             },
             receive: function (event, ui) {
                 if ($("#default-buttons > li").length > MAX_BUTTONS) {
@@ -210,7 +287,14 @@
                 text: false
             },
             style: 'cream'
-        })
+        });
+
+        $("#button-padding").keyup(update_preview);
+        $("#button-spacing").keyup(update_preview);
+
+        $("[name=button_count]").change(update_preview);
+
+        update_preview();
     });
 </script>
 {% endblock %}
@@ -228,6 +312,12 @@
 
     <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
         <div class="box-design">
+            <div class="preview">
+                <h4>Preview</h4>
+                <div class="buttons-preview">
+
+                </div>
+            </div>
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
                     <div class="config-option buttons">
@@ -338,7 +428,7 @@
                     </div>
                 </div>
                 <div class="submit">
-                    <input type="hidden" name="button_order"
+                    <input id="button-order" type="hidden" name="button_order"
                            value='{{ button_order|join:"," }}' />
                     <button class="blue">Save</button>
                 </div>
