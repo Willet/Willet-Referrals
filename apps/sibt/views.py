@@ -59,7 +59,8 @@ class AskDynamicLoader(URIHandler):
             user_uuid (optional)
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
-        page_url = self.request.get('target_url') or \
+        page_url = self.request.get('url') or \
+                   self.request.get('target_url') or \
                    self.request.headers.get('referer')
         product = None
         product_images = []
@@ -67,6 +68,7 @@ class AskDynamicLoader(URIHandler):
         # because of how Model.get() works, products _might_ also work if you
         # supply a product's Shopify ID (if applicable).
         product_uuids = self.request.get('products', '').split(',')
+        store_url = self.request.get('store_url') or page_url
 
         try:
             url_parts = urlparse(store_url)
