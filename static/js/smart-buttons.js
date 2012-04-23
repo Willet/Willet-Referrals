@@ -555,7 +555,7 @@ var _willet = (function(me) {
         _willet.debug.log("Buttons: finding buttons placeholder on page");
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
-        if (buttonsDiv && window._willet_iframe_loaded == undefined) {
+        if (buttonsDiv && window._willet_iframe_loaded === undefined) {
             var buttonCount = (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
             var buttonSpacing = helpers.getElemValue(buttonsDiv, 'spacing', '5')+'px';
             var buttonPadding = helpers.getElemValue(buttonsDiv, 'padding', '5')+'px';
@@ -696,7 +696,22 @@ var _willet = (function(me) {
             return;
         }
 
-        if(!isDebugging) {
+        if (DOMAIN === 'localhost') {
+            // Shopify won't respond on localhost, so use example data
+            me.createButtons({
+                product: {
+                    images: [
+                        { created_at: "2012-02-03T11:42:17+09:00",
+                        id: 166600132,
+                        position: 1,
+                        product_id: 81809292,
+                        updated_at: "2012-02-03T11:42:17+09:00",
+                        src:'/static/imgs/beer_200.png' }
+                    ]
+                },
+                title: "Glass of beer"
+            });
+        } else {
             try {
                 _willet.debug.log("Buttons: initiating product.json request")
                 _willet.messaging.ajax({
@@ -720,20 +735,6 @@ var _willet = (function(me) {
             } catch(e) {
                 _willet.debug.log("Buttons: request for product.json failed");
             }
-        } else {
-            me.createButtons({
-                product: {
-                    images: [
-                        { created_at: "2012-02-03T11:42:17+09:00",
-                        id: 166600132,
-                        position: 1,
-                        product_id: 81809292,
-                        updated_at: "2012-02-03T11:42:17+09:00",
-                        src:'/static/imgs/beer_200.png' }
-                    ]
-                },
-                title: "Glass of beer"
-            });
         }
     };
 

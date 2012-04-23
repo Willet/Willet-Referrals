@@ -114,6 +114,12 @@ _willet.util = {
         }
         return -1;
     },
+    "removeChildren": function(elem) {
+        var i = elem.childNodes.length;
+        while (i--) {
+            elem.removeChild(elem.childNodes[i]);
+        }
+    },
     "xHasKeyY": function (dict, key) {
         return dict[key] ? true : false;
     }
@@ -150,6 +156,7 @@ _willet.debug = (function (willet) {
         me = {},
         isDebugging = false,
         callbacks = [],
+        log_array = [],
         _log = function() {},
         _error = function() {};
 
@@ -161,6 +168,7 @@ _willet.debug = (function (willet) {
             } else {
                 log(arguments);
             }
+            log_array.append(arguments)
         };
         _error = function () {
             var error = window.console.error;
@@ -169,6 +177,7 @@ _willet.debug = (function (willet) {
             } else {
                 error(arguments);
             }
+            log_array.append(arguments)
         };
     }
 
@@ -177,8 +186,8 @@ _willet.debug = (function (willet) {
     };
 
     me.set = function(debug) {
-        me.log = (debug) ? _log : function() {};
-        me.error = (debug) ? _error : function() {};
+        me.log = (debug) ? _log : function() { log_array.append(arguments) };
+        me.error = (debug) ? _error : function() { log_array.append(arguments) };
         isDebugging = debug;
 
         for(var i = 0; i < callbacks.length; i++) {
@@ -187,8 +196,12 @@ _willet.debug = (function (willet) {
     }
 
     me.isDebugging = function() {
-        return isDebugging;
+        return isDebugging ? true : false;
     };
+
+    me.logs = function () {
+        return log_array;
+    }
 
     me.set(false); //setup proper log functions
 
@@ -662,8 +675,12 @@ _willet.networks = (function (willet) {
 }(_willet));
 
 _willet = function (me) {
-    var helpers = me.helpers,
+    // ***
+    // Basic & Smart buttons difference should only exist within this function
+    // ***
+    var util = me.util,
         supportedNetworks = me.networks;
+
     // Private variables
     var MY_APP_URL = "http://willet-nterwoord.appspot.com";
     var WILLET_APP_URL = "http://social-referral.appspot.com";
@@ -686,10 +703,11 @@ _willet = function (me) {
     var NOT_FOUND = -1;
 
     var MAX_BUTTONS = 3;
-    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
+    var DEFAULT_BUTTONS = ['Pinterest', 'Tumblr', 'Fancy'];
 
     var COOKIE_NAME = "_willet_smart_buttons";
 
+    // Private functions
     var getRequiredButtonsFromElement = function(container) {
         // Get the buttons, should be children of #_willet_buttons_app
         //      ex: <div>Facebook</div>
@@ -701,7 +719,7 @@ _willet = function (me) {
                 var node = container.childNodes[i];
                 if (node.nodeType === ELEMENT_NODE) {
                     var network = node.innerHTML;
-                    if(helpers.xHasKeyY(supportedNetworks, network)) {
+                    if(util.xHasKeyY(supportedNetworks, network)) {
                         requiredButtons.push(network);
                     }
                 }
@@ -718,6 +736,7 @@ _willet = function (me) {
     };
 
     var getProductInfo = function() {
+        // Why don't we use product.json info?
         var nameNode = document.getElementById("product-title");
         var name     = (nameNode && nameNode.innerHTML) || window.document.title || "";
 
@@ -757,9 +776,59 @@ _willet = function (me) {
         document.body.appendChild(_willetImage)
     };
 
+    determineButtons = function(buttonsDiv) {
+        var i,
+            requiredButtons = [],
+            networksJSON = me.cookies.read(COOKIE_NAME) || "";
+
+        if (networksJSON === "") {
+            requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
+        } else {
+            var networks = {};
+            try {
+                networks = JSON.parse(networksJSON);
+            } catch(e) {
+                _willet.debug.log("Buttons: Unable to parse cookie")
+            }
+
+            networks = util.dictToArray(networks);
+            networks = networks.sort(function(a,b) {
+                return b.value.accessed - a.value.accessed;
+            });
+
+            // Queue detected buttons
+            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var network = networks[i];
+                if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
+                    && network.value.status === true) {         //check that the network is enabled
+                    requiredButtons.push(network.key);
+                }
+            }
+
+            // Queue user's buttons if there is space, and they have not already been added
+            var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+            for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var button = usersButtons[i];
+                if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
+                    requiredButtons.push(button);
+                }
+            }
+
+            // Queue default buttons to the end, if they have not already been added
+            for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var button = DEFAULT_BUTTONS[i];
+                if (util.indexOf(requiredButtons, button) == NOT_FOUND) {
+                    requiredButtons.push(button);
+                }
+            }
+        }
+
+        return requiredButtons;
+    };
+
     // Public functions
     me.detectNetworks = function () {
-        _willet.debug.log("Buttons: Detecting networks...")
+        _willet.debug.log("Buttons: Determining networks...")
         var createHiddenImage = function(network, source) {
             var image = document.createElement("img");
             image.onload = function () {
@@ -808,17 +877,8 @@ _willet = function (me) {
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
         if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = (helpers.getElemValue(buttonsDiv, 'count', 'false') === 'true');
-            var buttonSpacing = helpers.getElemValue(buttonsDiv, 'spacing', '5')+'px';
-            var buttonPadding = helpers.getElemValue(buttonsDiv, 'padding', '5')+'px';
-            var canonicalUrl = helpers.getCanonicalUrl(window.location.protocol
-                                                        +'//'
-                                                        +window.location.hostname
-                                                        +'/products/'
-                                                        +window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') );
-            // How this regex works: replaces .../products/ or a trailing / with empty spring 
-            // So /collections/this-collection/products/this-product -> this-product
 
+            // Style container
             buttonsDiv.style.styleFloat = "left"; //IE
             buttonsDiv.style.cssFloat = "left"; //FF, Webkit
             buttonsDiv.style.minWidth = "240px";
@@ -827,90 +887,41 @@ _willet = function (me) {
             buttonsDiv.style.border = "none";
             buttonsDiv.style.margin = "0";
 
-            // Grab the photo
-            var photo = '';
-            if ( productData.product.images[0] != null ) {
-                photo = productData.product.images[0].src;
-            }
+            // Generate button parameters
+            var params = {
+                "domain":       DOMAIN,
+                "photo":        productData.product.images[0] ? productData.product.images[0].src : '',
+                "data":         productData,
+                "buttonCount":  (util.getElemValue(buttonsDiv, 'count', 'false') === 'true'),
+                "buttonSpacing": util.getElemValue(buttonsDiv, 'spacing', '5')+'px',
+                "buttonPadding": util.getElemValue(buttonsDiv, 'padding', '5')+'px',
+                "canonicalUrl":  util.getCanonicalUrl(window.location.protocol
+                                                    + '//'
+                                                    + window.location.hostname
+                                                    + '/products/'
+                                                    + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, '') ),
+                    // How this regex works: replaces .../products/ or a trailing / with empty spring 
+                    // So /collections/this-collection/products/this-product -> this-product
+            };
 
-            var requiredButtons = [];
-            var networksJSON = _willet.cookies.read(COOKIE_NAME) || "";
-            if (networksJSON === "") {
-                requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
+            // Determine buttons & clean container
+            var requiredButtons = determineButtons(buttonsDiv);
+            util.removeChildren(buttonsDiv);
 
-                // Now remove all children of #_willet_buttons_app
-                var i = buttonsDiv.childNodes.length;
-                while (i--) {
-                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
-                }
-            } else {
-                var networks = {};
-                try {
-                    networks = JSON.parse(networksJSON);
-                } catch(e) {
-                    _willet.debug.log("Buttons: Unable to parse cookie")
-                }
+            // Create the required buttons
+            var network, button, script,
+                methods = {
+                    "updateLoggedInStatus": updateLoggedInStatus,
+                    "itemShared":           itemShared
+                };
 
-                networks = helpers.dictToArray(networks);
-                networks = networks.sort(function(a,b) {
-                    return b.value.accessed - a.value.accessed;
-                });
-
-                //append detected buttons
-                for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var network = networks[i];
-                    if (helpers.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
-                        && network.value.status === true) {         //check that the network is enabled
-                        requiredButtons.push(network.key);
-                    }
-                }
-
-                //append user's buttons if there is space, and they have not
-                //already been added
-                var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
-                for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var button = usersButtons[i];
-                    if (helpers.indexOf(requiredButtons, button) === NOT_FOUND) {
-                        requiredButtons.push(button);
-                    }
-                }
-                // Now remove all children of #_willet_buttons_app
-                var i = buttonsDiv.childNodes.length;
-                while (i--) {
-                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
-                }
-
-                //append default buttons to the end, if they have not already been added
-                for (var i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var button = DEFAULT_BUTTONS[i];
-                    if (helpers.indexOf(requiredButtons, button) == NOT_FOUND) {
-                        requiredButtons.push(button);
-                    }
-                }
-            }
-
-            //create the required buttons
-            for (var i = 0; i < requiredButtons.length; i++) {
-                var network = requiredButtons[i];
-                var button = supportedNetworks[network]["button"];
-                buttonsDiv.appendChild(button.create(
-                    {
-                        "updateLoggedInStatus": updateLoggedInStatus,
-                        "itemShared":           itemShared
-                    },
-                    {
-                        "domain":               DOMAIN,
-                        "photo":                photo,
-                        "data":                 productData,
-                        "buttonCount":          buttonCount,
-                        "buttonSpacing":        buttonSpacing,
-                        "buttonPadding":        buttonPadding,
-                        "canonicalUrl":         canonicalUrl
-                    }
-                ));
+            for (i = 0; i < requiredButtons.length; i++) {
+                network = requiredButtons[i];
+                button = supportedNetworks[network]["button"];
+                buttonsDiv.appendChild(button.create(methods, params));
 
                 if (button["script"] !== "") {
-                    var script = document.createElement("script");
+                    script = document.createElement("script");
                     script.type = "text/javascript";
                     script.src = button["script"];
                     script.onload = button["onLoad"];
@@ -954,7 +965,22 @@ _willet = function (me) {
             me.detectNetworks();
         }
 
-        if (!isDebugging) {
+        if (DOMAIN === 'localhost') {
+            // Shopify won't respond on localhost, so use example data
+            me.createButtons({
+                product: {
+                    images: [{ 
+                        created_at: "2012-02-03T11:42:17+09:00",
+                        id: 166600132,
+                        position: 1,
+                        product_id: 81809292,
+                        updated_at: "2012-02-03T11:42:17+09:00",
+                        src:'/static/imgs/beer_200.png'
+                    }]
+                },
+                title: "Glass of beer"
+            });
+        } else {
             try {
                 _willet.debug.log("Buttons: initiating product.json request")
                 _willet.messaging.ajax({
@@ -978,20 +1004,6 @@ _willet = function (me) {
             } catch(e) {
                 _willet.debug.log("Buttons: request for product.json failed");
             }
-        } else {
-            me.createButtons({
-                product: {
-                    images: [{ 
-                        created_at: "2012-02-03T11:42:17+09:00",
-                        id: 166600132,
-                        position: 1,
-                        product_id: 81809292,
-                        updated_at: "2012-02-03T11:42:17+09:00",
-                        src:'/static/imgs/beer_200.png'
-                    }]
-                },
-                title: "Glass of beer"
-            });
         }
     };
 }(_willet));
