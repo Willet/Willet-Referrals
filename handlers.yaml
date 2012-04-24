@@ -38,7 +38,7 @@ handlers:
 
 - url: /b/shopify/item_shared_report
   script: urls.py
-  #login: admin
+  login: admin
 
 - url: /static
   static_dir: static

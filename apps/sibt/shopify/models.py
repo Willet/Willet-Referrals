@@ -9,6 +9,7 @@ __copyright__ = "Copyright 2012, Willet, Inc"
 import hashlib
 import inspect
 import logging
+from datetime import datetime
 
 from django.utils import simplejson as json
 from google.appengine.api import memcache
@@ -28,7 +29,7 @@ from util.helpers import url as reverse_url
 class SIBTShopify(SIBT, AppShopify):
     # CSS to style the button.
     button_css = db.TextProperty(default=None,required=False)
-    
+
     def _validate_self(self):
         return True
 
@@ -135,7 +136,7 @@ class SIBTShopify(SIBT, AppShopify):
         return SIBTShopify.all()\
                 .filter('store_id =', store_id)\
                 .get()
-    
+
     # Constructors -----------------------------------------------------------------------------
     @staticmethod
     def create(client, token, email_client=True):
@@ -152,9 +153,9 @@ class SIBTShopify(SIBT, AppShopify):
             version=SIBTShopify.CURRENT_INSTALL_VERSION
         )
         app.put()
-        
+
         app.do_install(email_client)
-       
+
         return app
 
     # 'Retreive or Construct'ers -------------------------------------------------------------
@@ -173,6 +174,7 @@ class SIBTShopify(SIBT, AppShopify):
                     app.client = app.old_client if app.old_client else client
                     app.old_client = None
                     app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
+                    app.created = datetime.utcnow()
                     app.put()
 
                     app.do_install(email_client)
@@ -210,7 +212,7 @@ class SIBTShopify(SIBT, AppShopify):
                     data-price="{{ product.price | money }}" data-page_source="product"
                     data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"
                     style="width: 278px;height: 88px;">
-                
+
                 </div>
                 <!-- END Willet SIBT for Shopify -->"""
         else:
@@ -234,7 +236,7 @@ class SIBTShopify(SIBT, AppShopify):
                     data-price="{{ product.price | money }}" data-page_source="product"
                     data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%3F' | replace: '&','%26'}}"></div>
                 <!-- END Willet SIBT for Shopify -->"""
-        
+
         liquid_assets = [{
             'asset': {
                 'value': willet_snippet,
@@ -250,30 +252,30 @@ class SIBTShopify(SIBT, AppShopify):
         # Email DevTeam
         Email.emailDevTeam(
             'SIBT Install: %s %s %s' % (
-                self.uuid, 
-                self.client.name, 
-                self.store_url 
+                self.uuid,
+                self.client.name,
+                self.store_url
             )
         )
 
         # Fire off "personal" email from Fraser
         if email_client:
-            Email.welcomeClient("Should I Buy This", 
-                                 self.client.merchant.get_attr('email'), 
-                                 self.client.merchant.get_full_name(), 
+            Email.welcomeClient("Should I Buy This",
+                                 self.client.merchant.get_attr('email'),
+                                 self.client.merchant.get_full_name(),
                                  self.client.name)
 
     # CSS Methods -------------------------------------------------------------
     def reset_css(self):
         self.set_css()
-        
+
     def get_css_dict(self):
         try:
             assert(self.button_css != None)
             data = json.loads(self.button_css)
             assert(data != None)
         except Exception, e:
-            #logging.error('could not decode: %s\n%s' % 
+            #logging.error('could not decode: %s\n%s' %
             #        (e, self.button_css), exc_info=True)
             data = SIBTShopify.get_default_dict()
         return data
@@ -285,7 +287,7 @@ class SIBTShopify(SIBT, AppShopify):
             self.button_css = json.dumps(css)
         except:
             #logging.info('setting to default')
-            self.button_css = json.dumps(SIBTShopify.get_default_dict()) 
+            self.button_css = json.dumps(SIBTShopify.get_default_dict())
         self.generate_css()
         self.put()
 
@@ -302,11 +304,11 @@ class SIBTShopify(SIBT, AppShopify):
             logging.warning (e, exc_info=True)
             pass
         css = SIBTShopify.generate_default_css(class_defaults)
-        memcache.set('app-%s-sibt-css' % self.uuid, css) 
-        return css 
+        memcache.set('app-%s-sibt-css' % self.uuid, css)
+        return css
 
     def get_css(self):
-        data = memcache.get('app-%s-sibt-css' % self.uuid) 
+        data = memcache.get('app-%s-sibt-css' % self.uuid)
         if data:
             return data
         else:
@@ -318,7 +320,7 @@ class SIBTShopify(SIBT, AppShopify):
 
     @classmethod
     def get_default_css(cls):
-        return cls.generate_default_css() 
+        return cls.generate_default_css()
 
     @classmethod
     def generate_default_css(cls, values=None):

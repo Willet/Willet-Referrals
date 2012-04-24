@@ -1,5 +1,6 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
+ * 
  */
 ;// Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
 var JSON;if(!window.JSON){window.JSON={};}
@@ -28,327 +29,26 @@ text=String(text);cx.lastIndex=0;if(cx.test(text)){text=text.replace(cx,function
 if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,'@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']').replace(/(?:^|:|,)(?:\s*\[)+/g,''))){j=eval('('+text+')');return typeof reviver==='function'?walk({'':j},''):j;}
 throw new SyntaxError('JSON.parse');};}}());
 
-var _willet = _willet || {};
-_willet.helpers = {
-    "dictToArray": function (dict) {
-        // Don't use this on DOM Elements, IE will fail
-        var result = [];
-        for (var key in dict) {
-            if (dict.hasOwnProperty(key)) {
-                result.push({ "key": key, "value": dict[key] });
-            }
+var _willet = window._willet || {};
+_willet.buttonsLoaded = _willet.buttonsLoaded || false;
+
+_willet.util = {
+    "addListener": function (elem, event, callback) {
+        if (elem && elem.addEventListener) {
+            elem.addEventListener(event, callback);
+        } else if (elem && elem.addEvent) {
+            elem.addEvent('on'+event, callback);
         }
-        return result;
     },
-    "indexOf": function (arry, obj, start) {
-        // IE < 9 doesn't have Array.prototype.indexOf
-        for (var i = (start || 0), j = arry.length; i < j; i++) {
-            if (arry[i] === obj) { return i; }
-        }
-        return -1;
-    },
-    "xHasKeyY": function (dict, key) {
-        return dict[key] ? true : false;
-    }
-}
-var _willet = (function(me) {
-    var helpers = me.helpers;
-    // Private variables
-    var MY_APP_URL = "http://willet-nterwoord.appspot.com";
-    var WILLET_APP_URL = "http://social-referral.appspot.com";
-    var APP_URL = WILLET_APP_URL;
-    var PRODUCT_JSON = window.location.href.split("#")[0] + '.json';
-    var COOKIE_NAME = "_willet_smart_buttons";
-    var COOKIE_EXPIRY_IN_DAYS = 30;
-
-    var HEAD = document.getElementsByTagName('head')[0];
-    var BUTTONS_DIV_ID = '_willet_buttons_app';
-    var DETECT_NETWORKS_DIV_ID = '_willet_buttons_detect_networks';
-
-    var DOMAIN = /:\/\/([^\/]+)/.exec(window.location.href)[1];
-    var PROTOCOL = window.location.protocol;
-
-    var ELEMENT_NODE = 1;
-    var NOT_FOUND = -1;
-
-    var MAX_BUTTONS = 3;
-    var DEFAULT_BUTTONS = ['Pinterest','Tumblr', 'Fancy'];
-    var SUPPORTED_NETWORKS = {
-        "Tumblr": {
-            "detect": {
-                "method": "none",
-                "func": function() { return ""; }
-            },
-            "button": {
-                "script": '//platform.tumblr.com/v1/share.js',
-                "create": function (params) {
-                    var button = createBasicButton({
-                        "id": 'tumblr',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = '62px';
-
-                    var link = document.createElement("a");
-                    link.href = 'http://www.tumblr.com/share';
-                    link.title = "Share on Tumblr";
-                    link.innerHTML = "Share on Tumblr";
-                    link.style.display = 'inline-block';
-                    link.style.textIndent = '-9999px';
-                    link.style.textAlign = 'left';
-                    link.style.width = '63px';
-                    link.style.height = '20px';
-                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
-                    link.style.styleFloat = 'left';
-                    link.style.cssFloat = 'left';
-                    link.style.marginRight = '5px';
-                    link.style.marginTop = 0;
-
-                    link.onclick = function() {
-                        itemShared("Tumblr");
-                    };
-
-                    button.appendChild(link);
-                    return button;
-                }
-            }
-        },
-        "Facebook": {
-            "detect": {
-                "method": "api",
-                "func": function() {
-                    _willet.messaging.xd.createMessageHandler(function(data) {
-                        var message = data && data.message || {};
-                        var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
-                        updateLoggedInStatus("Facebook", status);
-                    }, APP_URL + "/static/plugin/html/detectFB.html");
-                }
-            },
-            "button": {
-                "script": '//connect.facebook.net/en_US/all.js#xfbml=1',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'facebook',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '90px' : '48px';
-                    button.innerHTML = "<fb:like send='false' layout='button_count' width='450' show_faces='false'></fb:like>";
-                    return button;
-                },
-                "onLoad": function() {
-                    FB.Event.subscribe('edge.create', function(response) {
-                        itemShared("Facebook");
-                    });
-                }
-            }
-        },
-        "Pinterest": {
-            "detect": {
-                "method": "image",
-                "func": function() { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
-            },
-            "button": {
-                // Workaround until Pinterest has an API:
-                // http://stackoverflow.com/questions/9622503/pinterest-button-has-a-callback
-                "script": "", //PROTOCOL + '//assets.pinterest.com/js/pinit.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'pinterest',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '77px' : '43px';
-
-                    var link = document.createElement("a");
-                    link.href = "http://pinterest.com/pin/create/button/?" +
-                        "url=" + encodeURIComponent( window.location.href ) + 
-                        "&media=" + encodeURIComponent( params.photo ) + 
-                        "&description=" + encodeURIComponent("I found this on " + params.domain);
-                    link.className = "pin-it-button";
-                    link.innerHTML = "Pin It";
-
-                    link.style.position = "absolute";
-                    link.style.background = "url('http://assets.pinterest.com/images/pinit6.png')";
-                    link.style.font = "11px Arial, sans-serif";
-                    link.style.textIndent = "-9999em"
-                    link.style.fontSize = ".01em";
-                    link.style.color = "#CD1F1F";
-                    link.style.height = "20px";
-                    link.style.width = "43px";
-                    link.style.backgroundPosition = "0 -7px";
-
-                    link.onclick = function() {
-                        itemShared("Pinterest");
-                        window.open(link.href, 'signin', 'height=300,width=665');
-                        return false;
-                    };
-
-                    link.setAttribute('count-layout', "horizontal");
-
-                    button.appendChild(link);
-                    return button;
-                }
-            }
-        },
-        "Twitter": {
-            "detect": {
-                "method": "image",
-                "func": function() { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
-            },
-            "button": {
-                "script": '//platform.twitter.com/widgets.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'twitter',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '98px' : '56px';
-
-                    var link = document.createElement("a");
-                    link.href = "https://twitter.com/share";
-                    link.className = "twitter-share-button";
-
-                    link.setAttribute('data-lang','en');
-                    link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
-
-                    button.appendChild(link);
-                    return button;
-                },
-                "onLoad": function() {
-                    twttr.events.bind('tweet', function(event) {
-                        itemShared("Twitter");
-                    });
-                }
-            }
-        }, 
-        "GooglePlus": {
-            "detect": {
-                "method": "image",
-                "func": function() { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
-            },
-            "button": {
-                "script": '//apis.google.com/js/plusone.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'googleplus',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.overflow = 'visible';
-                    button.style.width = params.buttonCount ? '90px' : '32px';
-
-                    var gPlus = document.createElement("g:plusone");
-                    gPlus.setAttribute("size", "medium");
-                    if (!params.buttonCount) {
-                        gPlus.setAttribute("annotation", "none");
-                    }
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
-
-                    button.appendChild(gPlus);
-
-                    //button.innerHTML = "<g:plusone size='medium'"+ (params.buttonCount ? '' : " annotation='none'") +" callback='_willet.gPlusShared'></g:plusone>";
-
-                    // Google Plus will only execute a callback in the global namespace, so expose this one...
-                    // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
-                    window._willet_GooglePlusShared = function(response) {
-                        if (response && response.state && response.state === "on") {
-                            itemShared("GooglePlus");
-                        }
-                    };
-                    
-                    // Google is using the Open Graph spec
-                    var t, p, 
-                        m = [ { property: 'og:title', content: params.data.product.title },
-                              { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: 'I found this on '+ params.domain } ]
-                    while (m.length) {
-                        p = m.pop();
-                        t = document.createElement('meta');
-                        t.setAttribute('property', p.property);
-                        t.setAttribute('content', p.content);
-                        HEAD.appendChild(t);
-                    }
-                    return button;
-                }
-            }
-        },
-        "Fancy": {
-            "detect": {
-                "method": "none",
-                "func": function() { return ""; }
-            },
-            "button": {
-                "script": '//www.thefancy.com/fancyit.js',
-                "create": function(params) {
-                    var button = createBasicButton({
-                        "id": 'fancy',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    button.style.width = params.buttonCount ? '96px' : '57px';
-
-                    var u = "http://www.thefancy.com/fancyit?" +
-                            "ItemURL=" + encodeURIComponent( window.location.href ) + 
-                            "&Title="  + encodeURIComponent( params.data.product.title ) +
-                            "&Category=Other";
-                    if ( params.photo.length > 0 ) {
-                        u += "&ImageURL=" + encodeURIComponent( params.photo );
-                    } else { // If no image on page, submit blank image.
-                        u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
-                    }
-
-                    var link = document.createElement("a");
-                    link.id = "FancyButton";
-                    link.href = u;
-
-                    link.onclick = function() {
-                        itemShared("Fancy");
-                    };
-                    
-                    link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
-                    button.appendChild(link);
-                    return button;
-                }
-            }
-        },
-        "Svpply": {
-            "detect": {
-                "method": "none",
-                "func": function() { return ""; }
-            },
-            "button": {
-                "script": '//svpply.com/api/all.js#xsvml=1',
-                "create": function (params) {
-                    var button = createBasicButton({
-                        "id": 'svpply',
-                        "buttonSpacing": params.buttonSpacing
-                    });
-                    var sv = document.createElement("sv:product-button");
-                    sv.setAttribute("type", "boxed");
-                    sv.style.width = '70px';
-                    button.appendChild(sv);
-                    // Svpply assumes it has to wait for window.onload before running
-                    // But window.onload has already fired at this point
-                    // So set up polling for when Svpply is ready, then fire it off
-                    var interval = setInterval(function () {
-                        if (window.svpply_api && window.svpply_api.construct) {
-                            window.svpply_api.construct();
-                            button.onclick = function () { itemShared("Svpply"); };
-                            clearInterval(interval);
-                        }
-                    }, 100);
-                    return button;
-                }
-            }
-        }
-    };
-    var loggedInNetworks = {};
-
-    // Private functions
-    var createBasicButton = function (params) {
+    "createBasicButton": function (params) {
+        // Returns a DOM element
         var id = params.id || '';
+        var buttonAlignment = params.buttonAlignment || "left";
         var buttonSpacing = params.buttonSpacing || "0";
 
         var d = document.createElement("div");
-
-        d.style.styleFloat = "left"; //IE
-        d.style.cssFloat = "left"; //FF, Webkit
+        d.style.styleFloat = buttonAlignment; //IE
+        d.style.cssFloat = buttonAlignment; //FF, Webkit
         d.style.marginTop = "0";
         d.style.marginLeft = "0";
         d.style.marginBottom = "0";
@@ -361,7 +61,7 @@ var _willet = (function(me) {
         d.style.display = "block";
         d.style.visibility = "visible";
         d.style.height = "21px";
-        d.style.position = "relative";
+        d.style.position = "relative"; // Need this child positioning
         d.style.overflow = "hidden";
 
         d.name = "button";
@@ -369,300 +69,110 @@ var _willet = (function(me) {
         d.className = "_willet_social_button";
 
         return d;
-    };
-
-    var getRequiredButtonsFromElement = function(container) {
-        // Get the buttons, should be children of #_willet_buttons_app
-        //      ex: <div>Facebook</div>
-        var requiredButtons = [];
-        if (container.childNodes.length > 0) {
-            // Search for supported buttons
-            var containerLength = container.childNodes.length;
-            for(var i = 0; i < containerLength; i++) {
-                var node = container.childNodes[i];
-                if (node.nodeType === ELEMENT_NODE) {
-                    var network = node.innerHTML;
-                    if(helpers.xHasKeyY(SUPPORTED_NETWORKS, network)) {
-                        requiredButtons.push(network);
-                    }
-                }
+    },
+    "createStyle": function (rules) {
+        // Returns stylesheet element
+        var s = document.createElement('style');
+        s.type = 'text/css';
+        s.media = 'screen';
+        if (s.styleSheet) {
+            s.styleSheet.cssText = rules; // IE
+        } else { 
+            s.appendChild(document.createTextNode(rules)); // Every other browser
+        }
+        return s;
+    },
+    "dictToArray": function (dict) {
+        // Don't use this on DOM Elements, IE will fail
+        var result = [];
+        for (var key in dict) {
+            if (dict.hasOwnProperty(key)) {
+                result.push({ "key": key, "value": dict[key] });
             }
         }
-        return (requiredButtons.length) ? requiredButtons : DEFAULT_BUTTONS; // default for backwards compatibilty;
-    };
-
-    var updateLoggedInStatus = function(network, status) {
-        _willet.debug.log("Buttons: User is " + (status ? "" : "not ") + "logged in to " + network);
-        var now = new Date();
-        loggedInNetworks[network] = { "status": status, "accessed": now.getTime()};
-        _willet.cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
-    };
-
-    var getProductInfo = function() {
-        var nameNode = document.getElementById("product-title");
-        var name     = (nameNode && nameNode.innerHTML) || window.document.title || "";
-
-        var imgNodeContainer  = document.getElementById("active-wrapper");
-        var img = "";
-        if (imgNodeContainer) {
-            var imgNode = imgNodeContainer.getElementsByTagName("img")[0];
-            img = (imgNode && imgNode.src) || "";
-        }
-
-        return {
-            "name": name,
-            "img": img
-        }
-    };
-
-    var itemShared = function(network) {
-        //If someone shares, update the cookie
-        updateLoggedInStatus(network, true);
-
-        var productInfo = getProductInfo();
-
-        var message = JSON.stringify({
-            "name"   : productInfo["name"],
-            "network": network,
-            "img"    : productInfo["img"]
-        });
-
-        //Need to append param to avoid caching...
-        var params = "message="    + encodeURIComponent(message)
-                     + "&nocache=" + Math.random();
-
-        var _willetImage = document.createElement("img");
-        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + params;
-        _willetImage.style.display = "none";
-
-        document.body.appendChild(_willetImage)
-    };
-
-    // Public functions
-    me.detectNetworks = function () {
-        _willet.debug.log("Buttons: Detecting networks...")
-        var createHiddenImage = function(network, source) {
-            var image = document.createElement("img");
-            image.onload = function () {
-                updateLoggedInStatus(network, true);
-            };
-            image.onerror = function() {
-                updateLoggedInStatus(network, false);
-            };
-            image.src = source;
-            image.style.display = "none";
-            return image;
-        };
-
-        var detectNetworksDiv = document.createElement("div");
-        detectNetworksDiv.id = DETECT_NETWORKS_DIV_ID;
-
-        document.body.appendChild(detectNetworksDiv);
-
-        for (network in SUPPORTED_NETWORKS) {
-            if (SUPPORTED_NETWORKS.hasOwnProperty(network)) {
-                var detectNetwork = SUPPORTED_NETWORKS[network]["detect"];
-                _willet.debug.log("Buttons: Attempting to detect " + network);
-                switch (detectNetwork["method"]) {
-                    case "image":
-                        var image = createHiddenImage(network, detectNetwork.func());
-                        detectNetworksDiv.appendChild(image);
-                    break;
-
-                    case "api":
-                        detectNetwork.func();
-                    break;
-
-                    default:
-                        //Nothing to do
-                }
+        return result;
+    },
+    "getCanonicalUrl": function (default_url) {
+        // Tries to retrieve a canonical link from the header
+        // Otherwise, returns default_url
+        var url,
+            links = document.getElementsByTagName('link'),
+            i = links.length;
+        while (i--) {
+            if (links[i].rel === 'canonical' && links[i].href) {
+                url = links[i].href;
             }
         }
-        return _willet.cookies.read(COOKIE_NAME);
-    };
-
-    me.createButtons = function(productData) {
-        _willet.debug.log("Buttons: finding buttons placeholder on page");
-        var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
-
-        if (buttonsDiv && window._willet_iframe_loaded == undefined) {
-            var buttonCount = (buttonsDiv.getAttribute('button_count') === 'true');
-            var buttonSpacing = (buttonsDiv.getAttribute('button_spacing') ?  buttonsDiv.getAttribute('button_spacing') : '5') + 'px';
-            var buttonPadding = (buttonsDiv.getAttribute('button_padding') ? buttonsDiv.getAttribute('button_padding') : '5') + 'px';
-
-            buttonsDiv.style.styleFloat = "left"; //IE
-            buttonsDiv.style.cssFloat = "left"; //FF, Webkit
-            buttonsDiv.style.minWidth = "240px";
-            buttonsDiv.style.height = "22px";
-            buttonsDiv.style.padding = buttonPadding;
-            buttonsDiv.style.border = "none";
-            buttonsDiv.style.margin = "0";
-
-            // Grab the photo
-            var photo = '';
-            if ( productData.product.images[0] != null ) {
-                photo = productData.product.images[0].src;
-            }
-
-            var requiredButtons = [];
-            var networksJSON = _willet.cookies.read(COOKIE_NAME) || "";
-            if (networksJSON === "") {
-                requiredButtons = getRequiredButtonsFromElement(buttonsDiv);
-
-                // Now remove all children of #_willet_buttons_app
-                var i = buttonsDiv.childNodes.length;
-                while (i--) {
-                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
-                }
-            } else {
-                var networks = {};
-                try {
-                    networks = JSON.parse(networksJSON);
-                } catch(e) {
-                    _willet.debug.log("Buttons: Unable to parse cookie")
-                }
-
-                networks = helpers.dictToArray(networks);
-                networks = networks.sort(function(a,b) {
-                    return b.value.accessed - a.value.accessed;
-                });
-
-                //append detected buttons
-                for (var i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var network = networks[i];
-                    if (helpers.xHasKeyY(SUPPORTED_NETWORKS, network.key)   //check that this is a network we support
-                        && network.value.status === true) {         //check that the network is enabled
-                        requiredButtons.push(network.key);
-                    }
-                }
-
-                //append user's buttons if there is space, and they have not
-                //already been added
-                var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
-                for (var i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var button = usersButtons[i];
-                    if (helpers.indexOf(requiredButtons, button) === NOT_FOUND) {
-                        requiredButtons.push(button);
-                    }
-                }
-                // Now remove all children of #_willet_buttons_app
-                var i = buttonsDiv.childNodes.length;
-                while (i--) {
-                    buttonsDiv.removeChild(buttonsDiv.childNodes[i]);
-                }
-
-                //append default buttons to the end, if they have not already been added
-                for (var i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                    var button = DEFAULT_BUTTONS[i];
-                    if (helpers.indexOf(requiredButtons, button) == NOT_FOUND) {
-                        requiredButtons.push(button);
-                    }
-                }
-            }
-
-            //create the required buttons
-            for (var i = 0; i < requiredButtons.length; i++) {
-                var network = requiredButtons[i];
-                var button = SUPPORTED_NETWORKS[network]["button"];
-                buttonsDiv.appendChild(button.create({
-                    "domain": DOMAIN,
-                    "photo": photo,
-                    "data": productData,
-                    "buttonCount": buttonCount,
-                    "buttonSpacing": buttonSpacing,
-                    "buttonPadding": buttonPadding
-                }));
-
-                if (button["script"] !== "") {
-                    var script = document.createElement("script");
-                    script.type = "text/javascript";
-                    script.src = button["script"];
-                    script.onload = button["onLoad"];
-
-                    HEAD.appendChild(script);
-                }
-
-                _willet.debug.log('Buttons: '+ network +' attached');
-            }
-
-            // If Facebook is already loaded,
-            // trigger it to enable Like button
-            try {
-                window.FB && window.FB.XFBML.parse(); 
-            } catch(e) {}
-
-            // Make visible if hidden
-            buttonsDiv.style.display = 'block';
-
-            _willet.debug.log('Buttons: Done!');
-        } else {
-            _willet.debug.log('Buttons: could not find buttons placeholder on page');
+        return url || default_url;
+    },
+    "getElemValue": function (elem, key, default_val) {
+        // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
+        return elem.getAttribute('data-'+key) || elem.getAttribute('button_'+key) || default_val || null;
+    },
+    "indexOf": function (arry, obj, start) {
+        // IE < 9 doesn't have Array.prototype.indexOf
+        // Don't use on strings, all browsers have String.prototype.indexOf
+        for (var i = (start || 0), j = arry.length; i < j; i++) {
+            if (arry[i] === obj) { return i; }
         }
-    };
-
-    me.init = function() {
-        var isDebugging = _willet.debug.isDebugging();
-        _willet.debug.register(function(debug) {
-            APP_URL = (debug) ? MY_APP_URL : WILLET_APP_URL;
-            PROTOCOL = (debug) ? "http:" : window.location.protocol;
-        });
-        _willet.debug.set(isDebugging);
-
-        if (!_willet.cookies.read(COOKIE_NAME)) {
-            me.detectNetworks();
+        return -1;
+    },
+    "removeChildren": function(elem) {
+        // Removes all children elements from DOM element
+        var i = elem.childNodes.length;
+        while (i--) {
+            elem.removeChild(elem.childNodes[i]);
         }
-
-        if(!isDebugging) {
-            try {
-                _willet.debug.log("Buttons: initiating product.json request")
-                _willet.messaging.ajax({
-                    url: PRODUCT_JSON,
-                    method: "GET",
-                    success: function(request) {
-                        _willet.debug.log("Buttons: recieved product.json request");
-                        var data;
-                        try {
-                            data = JSON.parse(request.responseText);
-                        } catch (e) {
-                            _willet.debug.log("Buttons: could not parse product info, stopping.");
-                            return;
-                        }
-                        if (data) {
-                            // Proceed!
-                            me.createButtons(data);
-                        }
-                    }
-                });   
-            } catch(e) {
-                _willet.debug.log("Buttons: request for product.json failed");
+    },
+    "xHasKeyY": function (dict, key) {
+        return dict[key] ? true : false;
+    },
+    "isDictEmpty": function(dict) {
+        var prop;
+        for (prop in dict) {
+            if (dict.hasOwnProperty(prop)) {
+                return true;
             }
-        } else {
-            me.createButtons({
-                product: {
-                    images: [
-                        { created_at: "2012-02-03T11:42:17+09:00",
-                        id: 166600132,
-                        position: 1,
-                        product_id: 81809292,
-                        updated_at: "2012-02-03T11:42:17+09:00",
-                        src:'/static/imgs/beer_200.png' }
-                    ]
-                },
-                title: "Glass of beer"
-            });
         }
-    };
+        return false;
+    }
+};
 
-    return me;
-}(_willet));
+_willet.cookies = {
+    // Generic cookie library
+    // Source: http://www.quirksmode.org/js/cookies.html
+    "create": function (name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime()+(days*24*60*60*1000));
+            var expires = "; expires="+date.toGMTString();
+        }
+        else var expires = "";
+        document.cookie = name+"="+value+expires+"; path=/";
+    },
+    "read": function (name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    },
+    "erase": function (name) {
+        me.create(name,"",-1);
+    }
+};
 
-_willet.debug = (function (helpers) {
-    var me = {};
-    var isDebugging = false;
-    var callbacks = [];
-
-    var _log = function() {};
-    var _error = function() {};
+_willet.debug = (function (willet) {
+    var util = willet.util,
+        me = {},
+        isDebugging = false,
+        callbacks = [],
+        log_array = [],
+        _log = function() {},
+        _error = function() {};
 
     if (window.console) {
         _log = function () {
@@ -672,6 +182,7 @@ _willet.debug = (function (helpers) {
             } else {
                 log(arguments);
             }
+            log_array.push(arguments); // Add to logs
         };
         _error = function () {
             var error = window.console.error;
@@ -680,16 +191,19 @@ _willet.debug = (function (helpers) {
             } else {
                 error(arguments);
             }
+            log_array.push(arguments); // Add to logs
         };
     }
 
     me.register = function(callback) {
+        // Register a callback to fire when debug.set is called
         callbacks.push(callback);
     };
 
     me.set = function(debug) {
-        me.log = (debug) ? _log : function() {};
-        me.error = (debug) ? _error : function() {};
+        // Set debugging on (true) / off (false)
+        me.log = (debug) ? _log : function() { log_array.push(arguments) };
+        me.error = (debug) ? _error : function() { log_array.push(arguments) };
         isDebugging = debug;
 
         for(var i = 0; i < callbacks.length; i++) {
@@ -698,49 +212,25 @@ _willet.debug = (function (helpers) {
     }
 
     me.isDebugging = function() {
+        // True = printing to console & logs, False = only logs
         return isDebugging;
     };
+
+    me.logs = function () {
+        // Returns as list of all log & error items
+        return log_array;
+    }
 
     me.set(false); //setup proper log functions
 
     return me;
-}(_willet.helpers));
+}(_willet));
 
-_willet.cookies = (function (helpers) {
-    var me = {};
-    // Source: http://www.quirksmode.org/js/cookies.html
-    me.create = function (name, value, days) {
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime()+(days*24*60*60*1000));
-            var expires = "; expires="+date.toGMTString();
-        }
-        else var expires = "";
-        document.cookie = name+"="+value+expires+"; path=/";
-    };
+_willet.messaging = (function (willet) {
+    var debug = willet.debug,
+        util = willet.util,
+        me = {};
 
-    // Source: http://www.quirksmode.org/js/cookies.html
-    me.read = function (name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(';');
-        for(var i=0;i < ca.length;i++) {
-            var c = ca[i];
-            while (c.charAt(0)==' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-        }
-        return null;
-    };
-
-    // Source: http://www.quirksmode.org/js/cookies.html
-    me.erase = function (name) {
-        me.create(name,"",-1);
-    };
-
-    return me;
-}(_willet.helpers));
-
-_willet.messaging = (function (helpers) {
-    var me = {}
     me.ajax = function(config) {
         var AJAX_RESPONSE_AVAILABLE = 4;
         var HTTP_OK = 200;
@@ -752,7 +242,7 @@ _willet.messaging = (function (helpers) {
         var async = config.async || true;
 
         if (url === "") {
-            _willet.debug.error("Messaging: No URL provided");
+            debug.error("Messaging: No URL provided");
             error();
         }
 
@@ -812,13 +302,13 @@ _willet.messaging = (function (helpers) {
             var target = targetOrigin || "*";
             var payload = "#" + PAYLOAD_IDENTIFIER + "?";
             if (!message) {
-                _willet.debug.log("Messaging.XD: No message provided");
+                debug.log("Messaging.XD: No message provided");
                 return;
             }
 
             payload += MESSAGE_TOKEN + "=" + JSON.stringify(message);
             
-            _willet.debug.log("Messaging.XD: Sending payload..." + payload);
+            debug.log("Messaging.XD: Sending payload..." + payload);
             if (window.parent.postMessage) {
                 // Try HTML5 postMessage
                 window.parent.postMessage(payload, target);
@@ -871,7 +361,7 @@ _willet.messaging = (function (helpers) {
             //create the iframe
             var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
             var iframe = document.createElement("iframe");
-            iframe.src = url + "?origin=" + originDomain + (_willet.debug.isDebugging()? "#debug" : "");
+            iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
             iframe.style.display = "none";
 
             document.body.appendChild(iframe);
@@ -881,11 +371,757 @@ _willet.messaging = (function (helpers) {
     }());
 
     return me;
-}(_willet.helpers));
+}(_willet));
+
+_willet.networks = (function (willet) {
+    // List of supported networks with required functions to initialize their buttons
+    //
+    // Format for social network:
+    // name: {
+    //      detect: {
+    //          method: <string> "api" | "image" | "none"
+    //          func: <function> for method api, will call button api, takes methods
+    //                           for method image, will return an image url
+    //                           for method none, empty function
+    //                           takes inputs methods
+    //      }
+    //      button: {
+    //          script: <string> url for script that will load the button
+    //          create: <function> function which creates the button, takes inputs methods & params
+    //          onLoad: <function> (optional) function which fires when the script is loaded, takes params
+    //      }
+    // }
+    var debug     = willet.debug,
+        messaging = willet.messaging,
+        util      = willet.util;
+    return {
+        "Facebook": {
+            "priority": 2,
+            "detect": {
+                "method": "api",
+                "func": function(methods) {
+                    messaging.xd.createMessageHandler(function(data) {
+                        var message = data && data.message || {};
+                        var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
+                        methods.updateLoggedInStatus("Facebook", status);
+                    }, willet.APP_URL + "/static/plugin/html/detectFB.html");
+                }
+            },
+            "button": {
+                "script": '//connect.facebook.net/en_US/all.js#xfbml=1',
+                "create": function(methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'facebook',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.width = params.buttonCount ? '90px' : '48px';
+                    var fb = document.createElement('div');
+                    fb.className = 'fb-like';
+                    fb.setAttribute('data-send', 'false');
+                    fb.setAttribute('data-layout', 'button_count');
+                    fb.setAttribute('data-width', (params.buttonCount ? '90' : '48'));
+                    fb.setAttribute('data-show-faces', 'false');
+                    fb.setAttribute('data-href', params.canonicalUrl);
+                    var style = util.createStyle(".fb_edge_widget_with_comment iframe { width:"+button.style.width+" !important; } "
+                             +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
+                    button.appendChild(fb);
+                    button.appendChild(style);
+                    return button;
+                },
+                "onload": function(params) {
+                    FB.Event.subscribe('edge.create', function(response) {
+                        methods.itemShared("Facebook", params);
+                    });
+                    // If Facebook is already loaded,
+                    // trigger it to enable Like button
+                    try {
+                        window.FB && window.FB.XFBML.parse(); 
+                    } catch(e) {}
+                }
+            }
+        },
+        "Fancy": {
+            "priority": 6,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//www.thefancy.com/fancyit.js',
+                "create": function(methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'fancy',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.width = params.buttonCount ? '96px' : '57px';
+
+                    var u = "http://www.thefancy.com/fancyit?"
+                          + "ItemURL=" + encodeURIComponent( params.canonicalUrl )
+                          + "&Title="  + encodeURIComponent( params.data.product.title )
+                          + "&Category=Other";
+                    if ( params.photo.length > 0 ) {
+                        u += "&ImageURL=" + encodeURIComponent( params.photo );
+                    } else { // If no image on page, submit blank image.
+                        u += "&ImageURL=" + encodeURIComponent( 'http://social-referral.appspot.com/static/imgs/noimage.png' );
+                    }
+
+                    var link = document.createElement("a");
+                    link.id = "FancyButton";
+                    link.href = u;
+
+                    link.onclick = function() {
+                        methods.itemShared("Fancy", params);
+                    };
+                    
+                    link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
+        "GooglePlus": {
+            "priority": 4,
+            "detect": {
+                "method": "image",
+                "func": function(methods) { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
+            },
+            "button": {
+                "script": '//apis.google.com/js/plusone.js',
+                "create": function(methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'googleplus',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.overflow = 'visible';
+                    button.style.width = params.buttonCount ? '74px' : '32px';
+
+                    var gPlus = document.createElement("div");
+                    gPlus.className = 'g-plusone';
+                    gPlus.setAttribute("data-size", "medium");
+                    gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
+                    gPlus.setAttribute('data-href', params.canonicalUrl);
+                    gPlus.setAttribute("data-callback", "_willet_GooglePlusShared");
+
+                    button.appendChild(gPlus);
+
+                    // Google Plus will only execute a callback in the global namespace, so expose this one...
+                    // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
+                    window._willet_GooglePlusShared = function(response) {
+                        if (response && response.state && response.state === "on") {
+                            methods.itemShared("GooglePlus", params);
+                        }
+                    };
+                    
+                    // Google is using the Open Graph spec
+                    var t, p, 
+                        m = [ { property: 'og:title', content: params.data.product.title },
+                              { property: 'og:image', content: params.photo },
+                              { property: 'og:description', content: params.sharingMessage } ]
+                    while (m.length) {
+                        p = m.pop();
+                        t = document.createElement('meta');
+                        t.setAttribute('property', p.property);
+                        t.setAttribute('content', p.content);
+                        document.getElementsByTagName('head')[0].appendChild(t);
+                    }
+                    return button;
+                }
+            }
+        },
+        "Pinterest": {
+            "priority": 1,
+            "detect": {
+                "method": "image",
+                "func": function(methods) { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
+            },
+            "button": {
+                // Workaround until Pinterest has an API:
+                // http://stackoverflow.com/questions/9622503/pinterest-button-has-a-callback
+                "script": '//assets.pinterest.com/js/pinit.js',
+                "create": function(methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'pinterest',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.width = params.buttonCount ? '77px' : '43px';
+
+                    var link = document.createElement("a");
+                    link.className = 'willet-pinterest-button';
+                    link.innerHTML = "Pin It";
+                    link.style.position = 'absolute';
+                    link.style.top = '0';
+                    link.style.left = '0';
+                    link.style.font = "11px Arial, sans-serif";
+                    link.style.textIndent = "-9999em"
+                    link.style.fontSize = ".01em";
+                    link.style.color = "#CD1F1F";
+                    link.style.height = "20px";
+                    link.style.width = "43px";
+                    link.style.zIndex = "100";
+                    link.onclick = function() {
+                        methods.itemShared("Pinterest", params);
+                        window.open("//pinterest.com/pin/create/button/?" +
+                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
+                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "&description=" + encodeURIComponent(params.sharingMessage),
+                            'signin',
+                            'height=300,width=665');
+                        link.className = 'willet-pinterest-button clicked';
+                        return false;
+                    };
+                    var style = util.createStyle("a.willet-pinterest-button { "
+                                                +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
+                                                +"   background-position: 0 -7px; "
+                                                +"} "
+                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: hand; } "
+                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: hand; } "
+                                                +"a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }");
+                    button.appendChild(link);
+                    button.appendChild(style);
+
+                    if (params.buttonCount) {
+                        // Hidden under link is a Pinterest button with the count visible
+                        var count = document.createElement('div');
+                        count.style.position = 'relative';
+                        count.style.zIndex = "0";
+                        count.style.height = "20px";
+                        count.style.width = '77px';
+                        var countLink = document.createElement("a");
+                        countLink.href = "//pinterest.com/pin/create/button/?" +
+                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
+                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "&description=" + encodeURIComponent(params.sharingMessage);
+                        countLink.className = 'pin-it-button';
+                        countLink.setAttribute('count-layout', 'horizontal');
+                        count.appendChild(countLink);
+                        button.appendChild(count);
+                    }
+                    return button;
+                }
+            }
+        },
+        "Svpply": {
+            "priority": 5,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//svpply.com/api/all.js#xsvml=1',
+                "create": function (methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'svpply',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    var sv = document.createElement("sv:product-button");
+                    sv.setAttribute("type", "boxed");
+                    sv.style.width = '70px';
+                    button.appendChild(sv);
+                    // Svpply assumes it has to wait for window.onload before running
+                    // But window.onload has already fired at this point
+                    // So set up polling for when Svpply is ready, then fire it off
+                    var interval = setInterval(function () {
+                        if (window.svpply_api && window.svpply_api.construct) {
+                            window.svpply_api.construct();
+                            button.onclick = function () { methods.itemShared("Svpply", params); };
+                            clearInterval(interval);
+                        }
+                    }, 100);
+                    return button;
+                }
+            }
+        },
+        "Tumblr": {
+            "priority": 7,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//platform.tumblr.com/v1/share.js',
+                "create": function (methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'tumblr',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.width = '62px';
+
+                    var link = document.createElement("a");
+                    link.href = 'http://www.tumblr.com/share';
+                    link.title = "Share on Tumblr";
+                    link.innerHTML = "Share on Tumblr";
+                    link.style.display = 'inline-block';
+                    link.style.textIndent = '-9999px';
+                    link.style.textAlign = 'left';
+                    link.style.width = '63px';
+                    link.style.height = '20px';
+                    link.style.background = "url('http://platform.tumblr.com/v1/share_2.png') top left no-repeat transparent";
+                    link.style.styleFloat = 'left';
+                    link.style.cssFloat = 'left';
+                    link.style.marginRight = '5px';
+                    link.style.marginTop = 0;
+
+                    link.onclick = function() {
+                        methods.itemShared("Tumblr", params);
+                    };
+
+                    button.appendChild(link);
+                    return button;
+                }
+            }
+        },
+        "Twitter": {
+            "priority": 3,
+            "detect": {
+                "method": "image",
+                "func": function(methods) { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
+            },
+            "button": {
+                "script": '//platform.twitter.com/widgets.js',
+                "create": function(methods, params) {
+                    var button = util.createBasicButton({
+                        "id": 'twitter',
+                        "buttonSpacing": params.buttonSpacing,
+                        "buttonAlignment": params.buttonAlignment
+                    });
+                    button.style.width = params.buttonCount ? '98px' : '56px';
+
+                    var link = document.createElement("a");
+                    link.href = "https://twitter.com/share";
+                    link.className = "twitter-share-button";
+                    link.setAttribute('data-url', params.canonicalUrl);
+                    link.setAttribute('data-lang','en');
+                    link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
+
+                    if (params.sharing_message) {
+                        link.setAttribute('data-text', params.sharing_message);
+                    }
+
+                    button.appendChild(link);
+                    return button;
+                },
+                "onload": function(params) {
+                    twttr.events.bind('tweet', function(event) {
+                        methods.itemShared("Twitter", params);
+                    });
+                }
+            }
+        }
+    };
+}(_willet));
+
+_willet = (function (me, config) {
+    // ***
+    // Basic & Smart buttons difference should only exist within this function
+    // ***
+    // Linking
+    var cookies = me.cookies,
+        debug = me.debug,
+        messaging = me.messaging
+        supportedNetworks = me.networks,
+        util = me.util;
+
+    // Constants
+    var MY_APP_URL = "http://willet-nterwoord.appspot.com",
+        WILLET_APP_URL = "http://social-referral.appspot.com",
+        APP_URL = WILLET_APP_URL,
+        PRODUCT_JSON = window.location.protocol
+                     + '//'
+                     + window.location.hostname
+                     + window.location.pathname.replace(/\/$/, '') // remove trailing slash
+                     + '.json',
+        COOKIE_EXPIRY_IN_DAYS = 30,
+
+        HEAD = document.getElementsByTagName('head')[0],
+        BUTTONS_DIV_ID = '_willet_buttons_app',
+        DETECT_NETWORKS_DIV_ID = '_willet_buttons_detect_networks',
+
+        DOMAIN = document.domain,
+        PROTOCOL = window.location.protocol,
+
+        ELEMENT_NODE = 1,
+        NOT_FOUND = -1,
+
+        MAX_BUTTONS = 3,
+        DEFAULT_BUTTONS = (config && config.button_order) ||
+                          ['Pinterest', 'Tumblr', 'Fancy'],
+        DEFAULT_COUNT = 'false',
+        DEFAULT_SPACING = '5',
+        DEFAULT_PADDING = '5',
+        DEFAULT_ALIGNMENT = 'left',
+        DEFAULT_CANONICAL_URL = window.location.protocol
+                              + '//'
+                              + window.location.hostname
+                              + '/products/'
+                              + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
+            // How this regex works: replaces .../products/ or a trailing / with empty spring 
+            // So /collections/this-collection/products/this-product -> this-product
+
+        COOKIE_NAME = "_willet_smart_buttons";
+
+    _willet.APP_URL = APP_URL;
+
+    // Private variables
+    var loggedInNetworks = (function () {
+        // Load loggedInNetworks with saved array of known networks
+        var networks = {},
+            networksJSON = cookies.read(COOKIE_NAME);
+
+        if (networksJSON) {
+            try {
+                networks = JSON.parse(networksJSON);
+            } catch(e) {
+                debug.log("Buttons: Unable to parse cookie")
+            }
+        }
+        return networks;
+    }());
+
+    // Private functions
+    var getRequiredButtonsFromElement = function(container) {
+        // Get the buttons, should be children of #_willet_buttons_app
+        //      ex: <div>Facebook</div>
+        var requiredButtons = [];
+        if (container.childNodes.length > 0) {
+            // Search for supported buttons
+            var containerLength = container.childNodes.length;
+            for(var i = 0; i < containerLength; i++) {
+                var node = container.childNodes[i];
+                if (node.nodeType === ELEMENT_NODE) {
+                    var network = node.innerHTML;
+                    if(util.xHasKeyY(supportedNetworks, network)) {
+                        requiredButtons.push(network);
+                    }
+                }
+            }
+        }
+        return requiredButtons;
+    };
+
+    var updateLoggedInStatus = function(network, status, includeTime) {
+        debug.log("Buttons: "+(status ? "" : "Not ")+ network +" user");
+        if (status === true) {
+            var now = new Date();
+            loggedInNetworks[network] = { "status": status };
+            if (includeTime === true) {
+                loggedInNetworks[network]["accessed"] = now.getTime();
+            }
+            cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+        }
+    };
+
+    var itemShared = function(network, params) {
+        //If someone shares, update the cookie
+        updateLoggedInStatus(network, true, true);
+
+        var message = JSON.stringify({
+            "name"   :  params.data.title,
+            "network": network,
+            "img"    : params.photo
+        });
+
+        //Need to append param to avoid caching...
+        var params = "message="    + encodeURIComponent(message)
+                     + "&nocache=" + Math.random();
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
+    };
+
+    // Sorting comparators are hard to remember. For more details on sorting:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Description
+    var sortComparator = function(a, b, descending) {
+        var order = descending ? -1 : 1,
+            result;
+
+        if (a && b) {
+            if (a > b) {
+                result = 1;
+            } else if (a < b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        } else {
+            if (a) {
+                result = 1;
+            } else if (b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        }
+
+        return result * order;
+    };
+
+    // Returns networks sorted by accessed (most recent first), then priority
+    var networkPrioritizedSort = function(a, b) {
+        var dateA = a.value.accessed,
+            dateB = b.value.accessed,
+            priorityA = supportedNetworks[a.key]["priority"] || 100,
+            priorityB = supportedNetworks[b.key]["priority"] || 100,
+            result;
+
+        if (dateA || dateB) {
+            result = sortComparator(dateA, dateB, true);
+        } else {
+            result = sortComparator(priorityA, priorityB)
+        }
+
+        return result;
+    };
+
+    var determineButtons = function(buttonsDiv) {
+        var i,
+            networks = [],
+            requiredButtons = [];
+
+        // Queue detected networks first, if the cookie exists
+        if (loggedInNetworks) {
+            networks = util.dictToArray(loggedInNetworks);
+            networks = networks.sort(networkPrioritizedSort);
+
+            // Queue detected buttons
+            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var network = networks[i];
+                if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
+                    && network.value.status === true) {         //check that the network is enabled
+                    requiredButtons.push(network.key);
+                }
+            }
+        }
+
+        // Queue user's buttons if there is space, and they have not already been added
+        var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+        for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = usersButtons[i];
+            if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
+                requiredButtons.push(button);
+            }
+        }
+
+        // Queue default buttons to the end, if they have not already been added
+        for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = DEFAULT_BUTTONS[i];
+            if (util.indexOf(requiredButtons, button) == NOT_FOUND) {
+                requiredButtons.push(button);
+            }
+        }
+
+        return requiredButtons;
+    };
+
+    var addButton = function(elem, network, button, methods, params) {
+        elem.appendChild(button.create(methods, params));
+
+        if (button["script"] !== "") {
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = button["script"];
+            script.onload = function () { 
+                button["onload"] && button["onload"](params);
+            };
+            HEAD.appendChild(script);
+        }
+        debug.log('Buttons: '+ network +' attached');
+    };
+
+    // Public functions
+    me.detectNetworks = function () {
+        // Determines which social networks are in use
+        // The detection is asynchronous & saved to a cookie
+        // for lookup later
+        debug.log("Buttons: Determining networks...")
+        var createHiddenImage = function(network, source) {
+            var image = document.createElement("img");
+            image.onload = function () {
+                updateLoggedInStatus(network, true);
+            };
+            image.onerror = function() {
+                updateLoggedInStatus(network, false);
+            };
+            image.src = source;
+            image.style.display = "none";
+            return image;
+        };
+
+        var detectNetworksDiv = document.createElement("div");
+        detectNetworksDiv.id = DETECT_NETWORKS_DIV_ID;
+
+        document.body.appendChild(detectNetworksDiv);
+
+        for (network in supportedNetworks) {
+            if (supportedNetworks.hasOwnProperty(network)) {
+                var detectNetwork = supportedNetworks[network]["detect"];
+                debug.log("Buttons: Attempting to detect " + network);
+                switch (detectNetwork["method"]) {
+                    case "image":
+                        var image = createHiddenImage(network, detectNetwork.func());
+                        detectNetworksDiv.appendChild(image);
+                    break;
+
+                    case "api":
+                        detectNetwork.func({
+                            "updateLoggedInStatus": updateLoggedInStatus,
+                            "itemShared":           itemShared
+                        });
+                    break;
+
+                    default:
+                        //Nothing to do
+                }
+            }
+        }
+    };
+
+    me.createButtons = function(productData) {
+        debug.log("Buttons: finding buttons placeholder on page");
+        var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
+
+        if (buttonsDiv) {
+
+            // Generate button parameters
+            var buttonCount = (config && config.button_count) ||
+                (util.getElemValue(buttonsDiv, 'count', DEFAULT_COUNT) === 'true');
+            var buttonSpacing = ((config && config.button_spacing) ||
+                util.getElemValue(buttonsDiv, 'spacing', DEFAULT_SPACING))+'px';
+            var buttonPadding = ((config && config.button_padding) ||
+                util.getElemValue(buttonsDiv, 'padding', DEFAULT_PADDING))+'px';
+            var sharingMessage = (config && config.sharing_message) ||
+                ("I found this on " + DOMAIN);
+
+            var params = {
+                "domain":       DOMAIN,
+                "photo":        productData.product.images[0] ? productData.product.images[0].src : '',
+                "data":         productData,
+                "buttonAlignment":  util.getElemValue(buttonsDiv, 'align', DEFAULT_ALIGNMENT),
+                "buttonCount":  buttonCount,
+                "buttonSpacing": buttonSpacing,
+                "buttonPadding": buttonPadding,
+                "canonicalUrl":  util.getCanonicalUrl(DEFAULT_CANONICAL_URL),
+                "sharingMessage": sharingMessage
+            };
+
+            // Style container
+            buttonsDiv.style.styleFloat = params.buttonAlignment; //IE
+            buttonsDiv.style.cssFloat = params.buttonAlignment; //FF, Webkit
+            buttonsDiv.style.minWidth = "240px";
+            buttonsDiv.style.height = "22px";
+            buttonsDiv.style.padding = params.buttonPadding;
+            buttonsDiv.style.border = "none";
+            buttonsDiv.style.margin = "0";
+
+            // Determine buttons & clean container
+            var requiredButtons = determineButtons(buttonsDiv);
+            util.removeChildren(buttonsDiv);
+
+            // Create the required buttons
+            var network, button, script,
+                methods = {
+                    "updateLoggedInStatus": updateLoggedInStatus,
+                    "itemShared":           itemShared
+                };
+
+            for (i = 0; i < requiredButtons.length; i++) {
+                network = requiredButtons[i];
+                button = supportedNetworks[network]["button"];
+
+                try {
+                    addButton(buttonsDiv, network, button, methods, params);
+                } catch (e) {
+                    debug.error('Buttons: '+network+' encountered error: '+e);
+                }
+            }
+
+            // Make visible if hidden
+            buttonsDiv.style.display = 'block';
+
+            debug.log('Buttons: Done!');
+        } else {
+            debug.log('Buttons: could not find buttons placeholder on page');
+        }
+    };
+
+    me.init = function() {
+        // If on /cart page, silently bail
+        if (/\/cart\/?$/.test(window.location.pathname)) {
+            debug.log("Buttons: on cart page, not running.");
+            return;
+        }
+
+        // Initialize debugging
+        var isDebugging = debug.isDebugging();
+        debug.register(function(debug) {
+            APP_URL = (debug) ? MY_APP_URL : WILLET_APP_URL;
+            PROTOCOL = (debug) ? "http:" : window.location.protocol;
+        });
+        debug.set(isDebugging);
+
+        if (!util.isDictEmpty(loggedInNetworks)) {
+            me.detectNetworks();
+        }
+
+        if (DOMAIN === 'localhost') {
+            // Shopify won't respond on localhost, so use example data
+            me.createButtons({
+                product: {
+                    images: [{ 
+                        created_at: "2012-02-03T11:42:17+09:00",
+                        id: 166600132,
+                        position: 1,
+                        product_id: 81809292,
+                        updated_at: "2012-02-03T11:42:17+09:00",
+                        src:'/static/imgs/beer_200.png'
+                    }]
+                },
+                title: "Glass of beer"
+            });
+        } else {
+            try {
+                debug.log("Buttons: initiating product.json request")
+                messaging.ajax({
+                    url: PRODUCT_JSON,
+                    method: "GET",
+                    success: function(request) {
+                        debug.log("Buttons: recieved product.json request");
+                        var data;
+                        try {
+                            data = JSON.parse(request.responseText);
+                        } catch (e) {
+                            debug.log("Buttons: could not parse product info, stopping.");
+                            return;
+                        }
+                        if (data) {
+                            // Proceed!
+                            me.createButtons(data);
+                            me.buttonsLoaded = true;
+                        }
+                    }
+                });   
+            } catch(e) {
+                debug.log("Buttons: request for product.json failed");
+            }
+        }
+    };
+
+    return me;
+}(_willet, window._willet_shopconnection_config || {}));
 
 try {
-    _willet.debug.set(false); //set to true if you want logging turned on
-    _willet.init();
+    if (_willet && !_willet.buttonsLoaded) {
+        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.init();
+    }
 } catch(e) {
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
