@@ -58,7 +58,7 @@ class BatchRequest(URIHandler):
         if len(apps) == batch_size:
             p = {
                 'batch_size': batch_size,
-                'offset': offset + batch,
+                'offset': offset + batch_size,
                 'app_cls': app_cls,
                 'target_version': target_version,
                 'method': method,
