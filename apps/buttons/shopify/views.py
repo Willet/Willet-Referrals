@@ -5,6 +5,7 @@ import logging
 from collections                    import defaultdict
 from datetime                       import date
 from google.appengine.api           import taskqueue
+from google.appengine.ext.webapp    import template
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
 from util.consts                    import *
@@ -14,8 +15,9 @@ from apps.email.models              import Email
 from util.helpers                   import url as build_url
 from urlparse                       import urlparse
 from django.utils                   import simplejson as json
+from django.utils.html              import strip_tags
 
-#TODO: moves these functions elsewhere.  More appropriate places would be...
+#TODO: move these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
@@ -95,6 +97,7 @@ class ButtonsShopifyBeta(URIHandler):
 class ButtonsShopifyLearn(URIHandler):
     """ Video & blurb about premium ShopConnection """
     def get(self):
+        """Display a page to learn more about smart buttons."""
         self.response.out.write(self.render_page('learn.html', {}))
 
 
@@ -108,31 +111,115 @@ class ButtonsShopifyWelcome(URIHandler):
 
         if details["client"]:
             # Fetch or create the app
-            app = ButtonsShopify.get_or_create_app(details["client"], token=token)
+            app, created = ButtonsShopify.get_or_create_app(details["client"],
+                                                            token=token)
 
-            # Find out what the app should cost
-            price = app.get_price()
+            if created or not app.billing_enabled:
+                price = app.get_price()
 
-            template_values = {
-                'shop_owner' : details["shop_owner"],
-                'shop_name'  : details["shop_name"],
-                'price'      : price,
-                'shop_url'   : details["shop_url"],
-                'token'      : token,
-                'disabled'   : False,
-            }
+                template_values = {
+                    'shop_owner' : details["shop_owner"],
+                    'shop_name'  : details["shop_name"],
+                    'price'      : price,
+                    'shop_url'   : details["shop_url"],
+                    'token'      : token,
+                    'disabled'   : False,
+                }
+
+                self.show_upsell_page(**template_values)
+            else:
+                self.show_config_page(app, details)
+
         else:
             # Usually direct traffic to the url, show disabled version
-            template_values = {
-                'shop_owner' : 'Store Owner',
-                'shop_name'  : 'Store',
-                'price'      : '-.--',
-                'shop_url'   : 'www.example.com',
-                'disabled'   : True,
-            }
+            self.show_upsell_page()
+
+    @catch_error
+    def post(self):
+        r = self.request
+        details = get_details(self)
+        app = ButtonsShopify.get_by_url(details["shop_url"])
+        if not app:
+            logging.error("error updating preferences: "
+                          "'app' not found. Install first?")
+
+        # TODO: Find a generic way to validate arguments
+        def tryParse(func, val, default_value=0):
+            try:
+                return func(val)
+            except:
+                return default_value
+
+        prefs = {}
+        prefs["button_count"]    = (r.get("button_count") == "True")
+        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
+        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
+        prefs["sharing_message"] = tryParse(strip_tags,
+                                            r.get("sharing_message"), "")
+
+        # What validation should be done here?
+        prefs["button_order"]    = r.get("button_order").split(",")
+
+        app.update_prefs(prefs)
+
+        #redirect to Welcome
+        page = build_url("ButtonsShopifyWelcome", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify",
+            "message": "Your configuration was saved successfully!"
+        })
+
+        self.redirect(page)
+
+    def show_upsell_page(self, shop_owner='Store Owner', shop_name='Store',
+                         price='-.--', shop_url='www.example.com',
+                         token="",
+                         disabled=True):
+        template_values = {
+            'shop_owner' : shop_owner,
+            'shop_name'  : shop_name,
+            'price'      : price,
+            'shop_url'   : shop_url,
+            'token'      : token,
+            'disabled'   : disabled,
+        }
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
+
+    def show_config_page(self, app, details):
+        # get values from datastore
+        page = build_url("ButtonsShopifyWelcome", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify"
+        })
+
+        preferences = app.get_prefs()
+
+        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
+                           'Svpply', 'Tumblr', 'Twitter'])
+        button_order    = preferences.get("button_order",
+                                          ["Pinterest","Tumblr","Fancy"])
+
+        # That's right! TAKE THAT MATH-HATERS!
+        unused_buttons  = buttons.difference(button_order)
+
+        # Use .get in case properties don't exist yet
+        template_values = {
+            'action'         : page,
+            'button_count'   : preferences.get("button_count", False),
+            'button_spacing' : preferences.get("button_spacing", 5),
+            'button_padding' : preferences.get("button_padding", 5),
+            'sharing_message': preferences.get("sharing_message", ""),
+            'message'        : self.request.get("message", "Welcome Back!"),
+            'button_order'   : button_order,
+            'unused_buttons' : unused_buttons
+        }
+
+        # prepopulate values
+        self.response.out.write(self.render_page('config.html', template_values))
 
 
 class ButtonsShopifyUpgrade(URIHandler):
@@ -254,7 +341,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app = ButtonsShopify.get_or_create_app(client, token=token)
+        app, _ = ButtonsShopify.get_or_create_app(client, token=token)
 
         # Render the page
         template_values = {
@@ -282,6 +369,26 @@ class ButtonsShopifyInstallError(URIHandler):
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(self.render_page('install_error.html',
                                                  template_values))
+        return
+
+
+class ButtonsShopifyServeScript(URIHandler):
+    def get(self):
+        path = os.path.join('apps/buttons/shopify/templates/js/',
+                            'buttons.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'application/javascript'
+        self.response.out.write(template.render(path, {}))
+        return
+
+
+class ButtonsShopifyServeSmartScript(URIHandler):
+    def get(self):
+        path = os.path.join('apps/buttons/shopify/templates/js/',
+                            'smart-buttons.js')
+        self.response.headers.add_header('P3P', P3P_HEADER)
+        self.response.headers['Content-Type'] = 'application/javascript'
+        self.response.out.write(template.render(path, {}))
         return
 
 

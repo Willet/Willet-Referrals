@@ -1,7 +1,7 @@
 #!/usr/bin/env/python
 
 # Actions for SIBT
-# SIBTClickAction, 
+# SIBTClickAction,
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
@@ -23,22 +23,25 @@ from apps.gae_bingo.gae_bingo import bingo
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
-## -----------------------------------------------------------------------------
-## SIBTClickAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+## ----------------------------------------------------------------------------
+## SIBTClickAction Subclass ---------------------------------------------------
+## ----------------------------------------------------------------------------
 class SIBTClickAction(ClickAction):
-    """ Designates a 'click' action for a User on a SIBT instance. 
+    """ Designates a 'click' action for a User on a SIBT instance.
         Currently used for 'Referral' and 'SIBT' Apps """
 
-    sibt_instance = db.ReferenceProperty(db.Model, collection_name="click_actions")
+    sibt_instance = db.ReferenceProperty(db.Model,
+                                         collection_name="click_actions")
 
     # URL that was clicked on
     url = db.LinkProperty(indexed = True)
 
     def __str__(self):
-        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(),
+                                         self.user.uuid,
+                                         self.app_.uuid)
 
-    ## Constructor 
+    ## Constructor
     @staticmethod
     def create(user, app, link):
         # Make the action
@@ -59,24 +62,24 @@ class SIBTClickAction(ClickAction):
         tracking_keys = memcache.get(action.get_tracking_key()) or []
         tracking_keys.append(action.get_key())
         memcache.set(action.get_tracking_key(), tracking_keys, time=MEMCACHE_TIMEOUT)
-        
-        return action 
 
-    ## Accessors 
+        return action
+
+    ## Accessors
     @staticmethod
     def get_for_instance(app, user, url, key_list):
         logging.debug('getting action for:\napp: %s\nuser: %s\nurl: %s\nkeys: %s' % (
-            app, user, url, key_list    
+            app, user, url, key_list
         ))
         model = None
         try:
             tracking = SIBTClickAction.get_tracking_by_user_and_app(user, app)
             actions = memcache.get_multi(tracking)
-            
+
             for key in tracking:
                 model = db.model_from_protobuf(entity_pb.EntityProto(actions.get(key)))
                 logging.info('got tracking key: %s and model %s %s' % (
-                    key, 
+                    key,
                     model,
                     model.sibt_instance.key().id_or_name()
                 ))
@@ -105,7 +108,7 @@ class SIBTClickAction(ClickAction):
             user.uuid
         )
         return memcache.get(tracking_key) or []
-    
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (
             self.__class__.__name__,
@@ -117,7 +120,7 @@ class SIBTClickAction(ClickAction):
 ## SIBTVoteAction Subclass ----------------------------------------------------
 ## -----------------------------------------------------------------------------
 class SIBTVoteAction(VoteAction):
-    """ Designates a 'vote' action for a User on a SIBT instance. 
+    """ Designates a 'vote' action for a User on a SIBT instance.
         Currently used for 'SIBT' App """
 
     sibt_instance = db.ReferenceProperty(db.Model, collection_name="vote_actions")
@@ -140,13 +143,13 @@ class SIBTVoteAction(VoteAction):
                                 vote = vote)
         #super(SIBTVoteAction, act).create()
         action.put()
-        
+
         # we memcache by classname-instance_uuid-user_uuid
         # so we can look it up really easily later on
         memcache.set(action.get_tracking_key(), action.get_key(), time=MEMCACHE_TIMEOUT)
 
         return action
-    
+
     def __str__(self):
         return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
@@ -157,8 +160,8 @@ class SIBTVoteAction(VoteAction):
             sibt_instance.uuid,
             user.uuid
         )
-        return memcache.get(tracking_key) or None 
-    
+        return memcache.get(tracking_key) or None
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (
             self.__class__.__name__,
@@ -166,7 +169,7 @@ class SIBTVoteAction(VoteAction):
             self.user.uuid
         )
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return SIBTVoteAction.all().filter('sibt_instance =', instance)
@@ -201,28 +204,37 @@ class SIBTShowAction(ShowAction):
     def create(user, instance, what):
         # Make the action
         uuid = generate_uuid(16)
-        act = SIBTShowAction( key_name = uuid,
-                                uuid = uuid,
-                                user = user,
-                                app_ = instance.app_,
-                                link = instance.link,
-                                url = instance.link.target_url,
-                                what = what,
-                                sibt_instance = instance)
+        try:
+            app_ = instance.app_
+            link = instance.link
+            url = instance.link.target_url
+        except AttributeError:
+            app_ = None
+            link = None
+            url = ''
+
+        act = SIBTShowAction(key_name=uuid,
+                             uuid=uuid,
+                             user=user,
+                             app_=instance.app_,
+                             link=instance.link,
+                             url=instance.link.target_url,
+                             what=what,
+                             sibt_instance=instance)
         #super(SIBTShowAction, act).create()
         act.put()
         return act
-    
+
     def __str__(self):
         return 'Showing %s to %s(%s) for sibt instance %s on site %s' % (
                 self.what,
-                self.user.get_full_name(), 
+                self.user.get_full_name(),
                 self.user.uuid,
                 self.sibt_instance.uuid,
                 self.sibt_instance.app_.client.domain
         )
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return SIBTShowAction.all().filter('sibt_instance =', instance)
@@ -276,7 +288,7 @@ class SIBTShowingButton(ShowAction):
             user.uuid
         )
         return memcache.get(tracking_key) or []
-    
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (
             self.__class__.__name__,
@@ -350,7 +362,7 @@ class SIBTShowingVote(SIBTShowAction):
             instance = kwargs['instance']
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
-        
+
         action = SIBTShowingVote(
                 key_name = uuid,
                 uuid = uuid,
@@ -387,10 +399,10 @@ class SIBTInstanceAction(UserAction):
         action.put()
 
         return action
-    
+
     def __str__(self):
         return 'SIBTInstanceAction: User %s did %s on %s' % (
-                self.user.get_full_name(), 
+                self.user.get_full_name(),
                 self.what,
                 self.app_.client.domain
         )
@@ -433,7 +445,7 @@ class SIBTInstanceCreated(SIBTInstanceAction):
     def create(user, **kwargs):
         what = 'SIBTInstanceCreated'
         medium = ""
-    
+
         # make sure we get an instance
         instance = None
         try:
@@ -441,7 +453,7 @@ class SIBTInstanceCreated(SIBTInstanceAction):
             medium = kwargs['medium']
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
-        
+
         uuid = generate_uuid(16)
         action = SIBTInstanceCreated(
                 key_name = uuid,
@@ -475,7 +487,7 @@ class SIBTShowingAskIframe(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = SIBTShowingAskIframe(
                 key_name = uuid,
                 uuid = uuid,
@@ -504,7 +516,7 @@ class SIBTAskIframeCancelled(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = SIBTAskIframeCancelled(
                 key_name = uuid,
                 uuid = uuid,
@@ -532,7 +544,7 @@ class SIBTOverlayCancelled(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = SIBTOverlayCancelled(
                 key_name = uuid,
                 uuid = uuid,
@@ -558,7 +570,7 @@ class SIBTShowingTopBarAsk(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = SIBTShowingTopBarAsk(
                 key_name = uuid,
                 uuid = uuid,
@@ -570,7 +582,7 @@ class SIBTShowingTopBarAsk(ShowAction):
         #super(SIBTShowingAskIframe, action).create()
         action.put()
         return action
-        
+
 class SIBTShowingAskTopBarIframe(ShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -585,7 +597,7 @@ class SIBTShowingAskTopBarIframe(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = SIBTShowingAskTopBarIframe(
                 key_name = uuid,
                 uuid = uuid,
@@ -624,7 +636,7 @@ class SIBTUserClickedTopBarAsk(UserAction):
 
         # Score bingo for bar or button
         bingo('sibt_bar_or_tab')
-        
+
         return action
 
 class SIBTUserClickedButtonAsk(UserAction):
@@ -679,8 +691,8 @@ class SIBTUserClickedOverlayAsk(UserAction):
 
         # Score bingo for bar or button
         bingo('sibt_overlay_style')
-        
-        return action 
+
+        return action
 
 class SIBTUserClickedTabAsk(UserAction):
     @staticmethod
@@ -705,11 +717,11 @@ class SIBTUserClickedTabAsk(UserAction):
                 what = what
         )
         action.put()
-        
+
         # Score bingo for bar or button
         bingo('sibt_bar_or_tab')
 
-        return action 
+        return action
 
 class SIBTUserClosedTopBar(UserAction):
     @staticmethod
@@ -980,17 +992,17 @@ class SIBTUserAction(UserAction):
         #super(SIBTShowAction, act).create()
         act.put()
         return act
-    
+
     def __str__(self):
         return '%s(%s) did %s to %s(%s) for sibt instance %s on site %s' % (
-                self.user.get_full_name(), 
+                self.user.get_full_name(),
                 self.user.uuid,
                 self.what,
                 self.sibt_instance.uuid,
                 self.sibt_instance.app_.client.domain
         )
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return SIBTUserAction.all().filter('sibt_instance =', instance)

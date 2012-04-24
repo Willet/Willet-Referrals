@@ -17,7 +17,7 @@ class ProductShopify(Product):
     shopify_id = db.StringProperty(indexed = True)
     json_response = db.TextProperty(indexed = False) # add more product fields to json as necessary
 
-    memcache_fields = ['resource_url', 'shopify_id']
+    _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)

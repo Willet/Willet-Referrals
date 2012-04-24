@@ -146,7 +146,7 @@ class Model(db.Model):
         return key
     
     @classmethod
-    def build_secondary_key (cls, field_value):
+    def build_secondary_key(cls, field_value):
         """ models memcached with _memcache_fields defined will have 
             secondary memcache keys in the form of class-md5(field_value).
         """
@@ -165,6 +165,7 @@ class Model(db.Model):
         Each class must define a _get_from_datastore
         """
         obj = None
+
         key = cls.build_key(identifier)
         method = 'magic' # huh? get() got an object without doing anything
 
@@ -175,35 +176,41 @@ class Model(db.Model):
             secondary_key = cls.build_secondary_key(identifier)
             # check if we can get anything by using identifier as secondary key
             data = memcache.get(secondary_key)
-        
+
         # data can be either a string primary key or a protocol buffer or None
         if data:
             try:
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-                method = 'primary key'
+                method = 'primary key %s' % key
             except ProtocolBuffer.ProtocolBufferDecodeError, e:
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Primary key miss
-        
+
         if data and not obj:
             try:
+                method = 'secondary key %s' % data
                 data = memcache.get(data) # look deeper into memcache
                 obj = db.model_from_protobuf(entity_pb.EntityProto(data))
-                method = 'secondary key'
             except ProtocolBuffer.ProtocolBufferDecodeError, e:
                 # if data is not unserializable,
                 # fails with ProtocolBuffer.ProtocolBufferDecodeError 
                 pass # Secondary key miss
-        
+
         if not data:
             # object was not found in memcache; use identifier as DB key
+            method = '_get_from_datastore(%s)' % identifier
             obj = cls._get_from_datastore(identifier)
+
+        if not data and not obj:
+            # doubly retry with a low-level fetch
+            method = '.filter(uuid=%s)' % identifier
+            obj = cls.all().filter('uuid =', identifier).get()
 
         # Save in the memcache when you pull it - it may never be saved
         if obj:
-            method = 'datastore'
-            logging.debug('model.get via %s => %r' % (method, obj))
+            # method = 'datastore'
+            logging.debug('%s.get via %s --> %r' % (cls.__name__, method, obj))
             obj._memcache() # update memcache
         else:
             logging.warn('model.get DB miss for %s' % identifier)
