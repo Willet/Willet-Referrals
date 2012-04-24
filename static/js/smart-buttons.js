@@ -840,12 +840,8 @@ _willet = (function (me, config) {
     // Sorting comparators are hard to remember. For more details on sorting:
     // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Description
     var sortComparator = function(a, b, descending) {
-        var order = 1,
+        var order = descending ? -1 : 1,
             result;
-
-        if (descending) {
-            order = -1;
-        }
 
         if (a && b) {
             if (a > b) {

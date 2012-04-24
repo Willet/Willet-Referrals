@@ -132,7 +132,7 @@ _willet.util = {
         for (prop in dict) {
             if (dict.hasOwnProperty(prop)) {
                 return true;
-    }
+            }
         }
         return false;
     }
@@ -764,6 +764,8 @@ _willet = (function (me, config) {
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
+
+    _willet.APP_URL = APP_URL;
 
     // Private functions
     var getRequiredButtonsFromElement = function(container) {
