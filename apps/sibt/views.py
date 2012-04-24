@@ -58,8 +58,9 @@ class AskDynamicLoader(URIHandler):
         """
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         page_url = self.request.get('url') or \
+                   self.request.get('page_url') or \
                    self.request.get('target_url') or \
-                   self.request.headers.get('referer')
+                   self.request.headers.get('referer')  # NOT page url!
         product = None
         product_images = []
 
@@ -628,7 +629,7 @@ class SIBTServeScript(URIHandler):
         is_asker = False
         is_live = False
         link = None
-        page_url = self.request.get('url', self.request.get('page_url', ''))
+        page_url = ''
         parts = {}
         product = None
         show_top_bar_ask = False
@@ -639,61 +640,44 @@ class SIBTServeScript(URIHandler):
         votes_count = 0
         willet_code = self.request.get('willt_code')
 
+        page_url = self.request.get('url') or \
+                   self.request.get('page_url') or \
+                   self.request.headers.get('referer', '')
         page_url = page_url.split('#')[0]  # clean up window.location
         if not page_url:
             # serve comment instead of status code (let customers see it)
             self.response.out.write('/* missing URL */')
             return
 
+        # have page_url
         if not store_url:
             # try to get store_url from page_url
-            logging.warn("store is requsting scripting with its page URL "
-                         "(does not work for extra_urls)")
+            logging.warn("no store_url; attempting to get from page_url")
             parts = urlparse(page_url)
             if parts.scheme and parts.netloc:
                 store_url = '%s://%s' % (parts.scheme, parts.netloc)
-            else:
-                self.response.out.write('/* malformed URL */')
-                return
 
-        try:  # raises KindError both when decode fails and when app is absent
-            # check if site is Shopify; get the Shopify app if possible
-            app = SIBTShopify.get_by_store_url(store_url)
-            if not app:
-                raise db.KindError("don't have SIBTShopify for site")
-        except db.KindError:
-            logging.debug('This domain does not have a SIBTShopify app. '
-                          'Trying to get SIBT app.')
-            # if site is not Shopify, use the SIBT app
-            app = SIBT.get_by_store_url(store_url)
+        if not store_url:
+            logging.error("no store_url; quitting")
+            self.response.out.write('/* no store_url. specify it! */')
+            return
 
-        if app:  # got_by_store_url
-            client = app.client
-            if not client:
-                return  # this app is not installed.
-            logging.info('using %r and %r as app and client.' % (app, client))
-        else:
-            logging.debug('This domain does not have a SIBT app, either.'
-                          'Getting client to check what apps it has installed')
+        # have page_url, store_url
+        app = SIBT.get_by_store_url(store_url)
+        client = Client.get_by_url(store_url)
 
-            try:
-                # first try get the Shopify client if one exists
-                client = ClientShopify.get_by_url(store_url)
-                if not client:
-                    raise db.KindError("don't have ClientShopify for site")
-            except db.KindError:
-                client = Client.get_by_url(store_url)
+        logging.info('using %r and %r as app and client.' % (app, client))
 
-            if client:
-                # try to get existing SIBT/SIBTShopify from this client.
-                # if not found, create one.
-                # we can create one here because this implies the client had
-                # never uninstsalled our app.
-                app = SIBT.get_or_create(client=client, domain=store_url)
-            else:  # we have no business with you
-                self.response.out.write('/* no account for %s! '
-                                        'Go to http://rf.rs to get an account. */' % store_url)
-                return
+        if client:
+            # try to get existing SIBT/SIBTShopify from this client.
+            # if not found, create one.
+            # we can create one here because this implies the client had
+            # never uninstsalled our app.
+            app = SIBT.get_or_create(client=client, domain=store_url)
+        else:  # we have no business with you
+            self.response.out.write('/* no account for %s! '
+                                    'Go to http://rf.rs to get an account. */' % store_url)
+            return
 
         # not used until multi-ask is initiated
         app_wosib = WOSIB.get_or_create(client=app.client,
