@@ -153,6 +153,20 @@ class ButtonsShopify(Buttons, AppShopify):
             )
         )
 
+    def correct(self):
+        """Corrects any potentially wrong data with this object"""
+        logging.info("Correcting object...")
+
+        if not self.client:
+            self.billing_enabled = False
+
+        # Ensure that the billing_enabled field exists
+        if not self.billing_enabled:
+            self.billing_enabled = False
+
+        # Correct the object, and re-index any properties
+        self.put()
+
     def update_prefs(self, preferences):
         """Update preferences for the application."""
         if self.billing_enabled:
