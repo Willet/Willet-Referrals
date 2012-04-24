@@ -32,7 +32,7 @@ class BatchRequest(URIHandler):
         batch_size = int(self.request.get('batch_size'))
         offset = int(self.request.get('offset'))
         app_cls = self.request.get('app_cls')
-        target_version = self.request.get('target_version') or -1
+        target_version = self.request.get('target_version')
         method = self.request.get('method')
         # TODO: params is not actually used, but it should be
         params = json.loads(self.request.get('params'))
@@ -70,7 +70,7 @@ class BatchRequest(URIHandler):
         for app in apps:
             try:
                 # Check version
-                if target_version >= 0 and app.version != target_version:
+                if target_version != None and app.version != target_version:
                     # Wrong version, skip this one
                     continue
                 getattr(app, method)()
