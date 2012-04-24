@@ -53,19 +53,19 @@ def get_details(uri_handler=None, provided_client=None):
         raise RuntimeError("No URI Handler provided!")
 
     request = uri_handler.request
-
+    client = merchant = None
     details = {}
     details["shop_url"] = request.get("shop") or request.get("shop_url")
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
 
-    merchant = None
-    try:
-        # Merchant is a referenced model, so this implicitly does a memcache and/or db get
-        merchant = client.merchant
-    except TypeError:
-        # Client has no merchant
-        logging.error("Client %r has no merchant.  Using fake values" % (client,))
+    if client:
+        try:
+            # Merchant is a referenced model, so this implicitly does a memcache and/or db get
+            merchant = client.merchant
+        except TypeError:
+            # Client has no merchant
+            logging.error("Client %r has no merchant.  Using fake values" % (client,))
 
     if client is not None and merchant is not None:
         details["client_email"] = client.email
