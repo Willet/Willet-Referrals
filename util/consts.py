@@ -111,6 +111,8 @@ MEMCACHE_TIMEOUT = 2591999
 # List of root template directories to import templates from
 TEMPLATE_DIRS = (
     'apps/homepage/templates',
+    'apps/plugin/templates',
+    'apps/sibt/templates',
 )
 
 # Admin whitelist
@@ -166,5 +168,5 @@ if appname != APP_LIVE:
         logging.info ("appname = %s; loading local_consts" % appname)
         from local_consts import LOCAL_CONSTS
         globals().update(LOCAL_CONSTS)
-    except Exception, e:
-        logging.error('Could not import LOCAL_CONSTS: %r' % e, exc_info=True)
+    except Exception, err:
+        logging.error('Could not import LOCAL_CONSTS: %r' % err, exc_info=True)

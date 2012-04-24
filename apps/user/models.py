@@ -7,13 +7,9 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
-import sys
-import inspect
 
 from django.utils import simplejson
 
-from calendar import monthrange
-from datetime import datetime, timedelta, time as datetime_time
 from decimal import *
 from time import time
 from hmac import new as hmac
@@ -1101,6 +1097,5 @@ class UserIPs(Model):
 
     @classmethod
     def _get_from_datastore(cls, user_uuid):
-        logging.info('getting by user_uuid: %s' % user_uuid)
         return cls.all().filter('user =', user_uuid).get()
 # end class
