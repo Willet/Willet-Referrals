@@ -222,7 +222,9 @@ class SIBTShopifyServeScript(URIHandler):
 
     def get(self):
         votes_count = 0
-        is_live = is_asker = show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
+        is_live = False
+        is_asker = False
+        show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
         instance = share_url = link = asker_name = asker_pic = product = None
         target = bar_or_tab = ''
         willet_code = self.request.get('willt_code')
