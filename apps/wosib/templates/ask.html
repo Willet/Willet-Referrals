@@ -1,10 +1,13 @@
 {% extends "../../plugin/templates/ask.html" %}
 
+{% block jquery_plugins %}
+{% endblock jquery_plugins %}
+
 {% block styles %}
     <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
     <!--[if IE 7]>
     <style>
-        #cart_items_display li {
+        #selection_box li {
             zoom: 1;
             display: inline;
         }
@@ -22,18 +25,15 @@
             <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
             <div>Not sure which one you should buy?</div>
         </div>
-        <form method="POST" action="" style="margin-top:10px">
-            <div class="step" style="margin-left:100px">1. Select items to ask.</div>
-            <div id="cart_items_display_container">
-                <ul id="cart_items_display">
-                    <!-- JS -->
-                </ul>
+        <div style="margin-top:10px">
+            <!-- div class="step">Select items to ask.</div -->
+            <div id="selection_box_container">
+                <div id="selection_box"><!-- JS --></div>
             </div>
-        </form>
+        </div>
         <div class="options">
             <div class="restrictedWidth">
-                <div class="step">2. Add a message:</div>
-                <!-- textarea id="fbComment" name="fbComment">{{ product_desc|striptags }}</textarea -->
+                <!-- div class="step">2. Add a message:</div -->
                 <textarea id="fbComment" name="fbComment">Hello! Which one should I buy?</textarea>
                 <br />
                 <div class="option left">
@@ -81,11 +81,11 @@
             }
         });
     };
-    
+
     var updateServerUser = function( accessToken, userId ) {
         var payload = { user_uuid   : "{{user_uuid}}",
                     accessToken : accessToken,
-                    fbUserId    : userId 
+                    fbUserId    : userId
                   };
         $.ajax({
             url      : "{{ URL }}{% url UpdateFBAccessToken %}",
@@ -123,7 +123,7 @@
     };
 
     var startFullInstance = function() {
-        if (get_selected_objects ()) {        
+        if (get_selected_objects ()) {
             var payload = { app_uuid     : "{{app_uuid}}",
                             user_uuid    : "{{user_uuid}}",
                             product_uuids : get_selected_objects (),
@@ -191,7 +191,7 @@
                             $('.error_message').innerHTML("400 "+resp.data.message);
                         }
                         showScreen('failure');
-                        
+
                     },
                     401: function (resp, status) {
                         // Unauthorized
@@ -199,7 +199,7 @@
                             $('.error_message').innerHTML("401 "+resp.data.message);
                         }
                         showScreen('failure');
-                        
+
                     },
                     500: function () {
                         // Internal server error
@@ -212,7 +212,6 @@
 
     var updateEmailAddress = function() {
         var addr = document.getElementById( 'email-field' ).value;
-            
         $.ajax({
             url: "/updateEmailAddress",
             type: 'post',
@@ -231,9 +230,7 @@
     // Open up the FB dialog. Does not do a FB connect with us.
     var postWosibOnWall = function () {
         try { // detect adblock
-            if (!startPartialInstance ()) {
-                
-            } else {
+            if (startPartialInstance ()) {
                 FB.ui({ method:  "feed",
                         display: "popup",
                         link:    "{{share_url}}",
@@ -262,21 +259,16 @@
                 $img.height(150);
                 $img.width((logoWidth / logoHeight)*150);
             }
-        } 
+        }
     };
 
     var get_selected_objects = function () {
         // returns a comma-separated string of product uuids "id,id,id"
         var uuids = [];
-        $('#cart_items_display input').each (function (i, e) {
-            var $e = $(e);
-            // if ($e.checked) {
-            if (e.checked) {
-                uuids.push ($e.data('uuid'));
-            }
-        });
+        uuids.push($('#selection_box_container>img').prop('alt'));
+        uuids.push($('#selection_box>img').prop('alt'));
         return uuids.join(',');
-    }
+    };
 
     // Connect with FB and fetch FB friends, on Choose Friends screen
     var runFBConnect = function () {
@@ -288,7 +280,7 @@
             if (!authResp) {
                 // We weren't given permission, do nothing
                 return;
-            } else { 
+            } else {
                 storeAnalytics('WOSIBFBConnected');
 
                 // Store FB data in the server.
@@ -297,20 +289,20 @@
             }
         }, {scope: 'publish_stream,offline_access,user_about_me,email'});
     };
-    
+
     // Query FB api to grab logged-in user's friends
     var fetchFBFriends = function () {
-        FB.api( '/me/friends', function (response) {
+        FB.api('/me/friends', function (response) {
             fb_friends = response.data;
             fb_friends.sort();
 
             $.each( response.data, function (i) {
-                friendNames.push(fb_friends[i].name); 
+                friendNames.push(fb_friends[i].name);
             });
 
             // Code here changes all FB Connect options into FB Friend Select options
             var i = friends.length;
-            while ( i-- ) {
+            while (i--) {
                 friends[i].FBLoggedIn();
             }
        });
@@ -320,63 +312,41 @@
 
 
 {% block js_init %}
-    $(document).ready (function () {
+    $(document).ready(function () {
         /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 products;
             if there are 0 products, this script is not loaded at all.
         */
-        var _willet_cart_products = [ {% for product in products %}
+        var cart_products = [ {% for product in products %}
             {   "id": "{{product.id}}",
                 "title": "{{product.title}}",
-                "image": "{{product.image}}", // deprecated... try /cart.js.
-                "product_uuid": "{{product.product_uuid}}"
+                "image": "{{product.image}}",
+                "uuid": "{{product.product_uuid}}"
             },
         {% endfor %} {}];
-        _willet_cart_products.pop(); // remove trailing element... IE7 trailing comma patch
-        
-        var $cart_items_display = $('#cart_items_display'),
-            cart_length = _willet_cart_products.length,
-            x = 0;
-        while ( cart_length > x) {
-            // add products onto page
-            $cart_items_display.append(
-                '<li>' + 
-                    '<img class="product_image" src="' + _willet_cart_products[x].image+ '" />'+
-                    '<label>' +
-                        '<input name="item' + _willet_cart_products[x].id + '" ' + 
-                               'data-uuid="' + _willet_cart_products[x].product_uuid + '" ' + 
-                               'id="item' + _willet_cart_products[x].id + '" ' + 
-                               'class="product_select" type="checkbox" checked="checked" />' +
-                        _willet_cart_products[x].title + 
-                    '</label>' + 
-                '</li>'
-            )
-            .find('img')
-            // Resize product images to fit
-            .css('visibility', 'hidden')
-            .bind('load', function () {
-                resizeProductImage(this);
-                $(this).css('visibility', 'visible');
-            });
-            
-            x++;
+        cart_products.pop(); // remove trailing element... IE7 trailing comma patch
+
+        var $selection_box_container = $('#selection_box_container');
+        var $selection_box = $('#selection_box');
+        for (var i = 1; i < cart_products.length; i++) {
+            $selection_box
+                .append($('<img />', { // 2nd image onwards are in a dropdown
+                    'src': cart_products[i].image,
+                    'alt': cart_products[i].uuid
+                }));
         }
-        
-        // adjust box width; 182px is the empirically "nice" width for the items
-        $('#cart_items_display').width(182 * _willet_cart_products.length);
-        
-        // add product selection events onto checkbox.
-        $('#cart_items_display li').each (function () {
-            $(this).bind('click', function () {
-                var checkbox = $(this).find('input')[0];
-                checkbox.checked = !checkbox.checked;
-                // $(this).fadeTo(200, checkbox.checked ? 1.0 : 0.2);
-                $(this).css('background-color', checkbox.checked ? '#def' : 'transparent')
-                       .css('border', checkbox.checked ? '1px #6ae solid' : '1px transparent solid')
-                       .css('box-shadow', checkbox.checked ? 'inset 0 0 3px 3px #bcf' : 'none');
-            });
-        });
-        
-        $('#postWosibOnWall').click (postWosibOnWall);
+        $selection_box_container
+            .append($('<img />', { // 1st image is just a tag
+                'src': cart_products[0].image,
+                'alt': cart_products[0].uuid
+            }))
+            .append($('<img />', {
+                'src': '/static/imgs/or-150.png'
+            }))
+            .append($selection_box);
+        $selection_box
+            .imageDropdown();
+
+        $('#postWosibOnWall').click(postWosibOnWall);
     });
     showScreen('splash');
 {% endblock js_init %}

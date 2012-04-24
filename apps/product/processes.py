@@ -12,6 +12,11 @@ from util.urihandler import URIHandler
 class CreateProduct(URIHandler):
     """ Just a controller used to create a new product."""
 
+    def get(self):
+        """Allow <img src=???> requests to create products."""
+        self.response.headers['Content-Type'] = 'image/gif'
+        self.post()  # cross-domain compatibility
+
     def post(self):
         """ Required parameters:
             - client_uuid
@@ -28,7 +33,7 @@ class CreateProduct(URIHandler):
         # initialize vars
         client = Client.get(self.request.get("client_uuid"))
         description = self.request.get("description", "")
-        images = self.request.get("images", "").split(',') # if empty string, -> [''] (True)
+        images = self.request.get("images", "").split(',')  # if empty string, -> [''] (True)
         price = float(self.request.get("price", "0.0"))
         resource_url = self.request.get("resource_url")
         tags = self.request.get("tags", "").split(',')
@@ -51,7 +56,7 @@ class CreateProduct(URIHandler):
                 type=type_,
                 tags=tags
             )
-            self.response.out.write("OK") # only care about headers
+            self.response.out.write("") # only care about headers
         else:
             logging.warn("Auto-create product failed: some required fields are missing")
-            self.error(400)
+            self.error(302)  # should be 400, but let browsers handle it
