@@ -115,7 +115,7 @@ class Email():
         elif 'WOSIB' in app_name:
             return
 
-        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
+        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s".  <i>Can you tell us why you uninstalled?</i></p> <p>Thanks,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
         
         Email.send_email(from_address=FRASER,
                          to_address=to_addr,

@@ -4,6 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
 import logging
+import datetime
 
 from apps.app.models import *
 from apps.client.shopify.models import ClientShopify
@@ -21,6 +22,7 @@ class DoUninstalledApp(URIHandler):
         store_url = self.request.headers['X-Shopify-Shop-Domain']
         logging.info("Uninstalling %s for store: %s " % (app_name, store_url))
         app_class_name = app_name
+        sample_app = None
 
         client = ClientShopify.get_by_url(store_url)
         if not client:
@@ -37,6 +39,7 @@ class DoUninstalledApp(URIHandler):
                 app.old_client = client
                 app.client = None
                 app.put_later()
+                sample_app = app
                 uninstalled_apps_count += 1
         
         if uninstalled_apps_count:
@@ -46,14 +49,25 @@ class DoUninstalledApp(URIHandler):
                     list_name=app_name,
                     list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
                 )
-            
+
+            duration = price = None
             try:
-                Email.emailDevTeam("Uninstall app: %s\n%r %s" % (
-                        app_class_name,
-                        self.request, 
-                        self.request.headers
-                    )
-                )
+                duration = (datetime.datetime.now() - sample_app.created).days
+            except:
+                logging.error("Could create install duration", exc_info=True)
+                duration = 'unknown'
+                pass
+
+            price = sample_app.recurring_billing_price if hasattr(sample_app, 'recurring_billing_price') else 'n/a'
+
+            try:
+                Email.emailDevTeam("Uninstall app: %s\n \
+                                    Store: %s\n\
+                                    Installed for %s days\n\
+                                    Paying: %s" % ( app_class_name,
+                                                    store_url,
+                                                    duration,
+                                                    price ) )
 
                 # Say goodbye from Fraser
                 Email.goodbyeFromFraser(client.merchant.get_attr('email'),
