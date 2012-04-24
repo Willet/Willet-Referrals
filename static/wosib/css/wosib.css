@@ -46,6 +46,32 @@
     max-height: 150px;
     margin-bottom: 12px;
 }
+#selection_box_container {
+    width:100%;
+    text-align: center;
+}
+#selection_box_container img {
+    max-width: 150px;
+    max-height: 150px;
+}
+#selection_box_container .wosib_or {
+    font-size:40px;
+    display: inline-block;
+    height: 167px;
+    width: 144px;
+    vertical-align: middle;
+}
+#selection_box {
+    margin-bottom: -5px;
+    padding: 5px;
+    /* text-align: center; */
+    display: inline-block;
+    zoom: 1; /* IE fix */
+    *display: inline;
+}
+#selection_box .expansion {
+    padding: 5px;
+}
 #product_image_result {
     padding: 0;
     text-align: center;
@@ -78,7 +104,7 @@
     float: right;
     text-align: left;
     font-size: small;
-    max-width: 535px;
+    max-width: 355px;
     padding-top: 25px;
 }
 #fbComment {
@@ -90,7 +116,7 @@
     padding: 10px;
 }
 .options {
-    bottom: 95px;
+    bottom: 66px;
 }
 .options div.restrictedWidth {
     width: 600px;
@@ -98,4 +124,5 @@
 }
 .step {
     text-align:left;
+    margin-left: 10px;
 }
