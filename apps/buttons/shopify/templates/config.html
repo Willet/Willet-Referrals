@@ -23,7 +23,7 @@
     .box-design {
         background-color: #fff;
     }
-    .box-design form {
+    .box-design form, .box-design .preview {
         padding-top: 20px;
         padding-bottom: 20px;
         font-size: 1.5em;
@@ -41,15 +41,10 @@
         display: block;
     }
 
-    .config-option .left-column {
+    .left-column {
         display   : inline-block;
         text-align: right;
         width     : 200px;
-    }
-
-    .config-option .right-column {
-        float: right;
-        margin-right: 100px;
     }
 
     input {
@@ -170,11 +165,13 @@
     .preview {
         display: block;
         background-color: #ffa;
-        text-align: center;
     }
 
-    .buttons-preview {
-        display: block;
+    #buttons-preview {
+        display: inline-block;
+        border: 1px dotted #000;
+        margin-left: 200px;
+        margin-right: 20px;
     }
 </style>
 <!--[if IE 7]>
@@ -203,6 +200,12 @@
     }
 
     span.icon {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    #buttons-preview {
         display: inline-block;
         *display  : inline;
         zoom: 1;
@@ -242,7 +245,7 @@
                 $("input[name='button_order']").val(networks.join(","));
             },
             update_preview = function(event) {
-                var buttonsDiv = $('.buttons-preview'),
+                var buttonsDiv = $('#buttons-preview'),
                     buttonsDivPadding = $("#button-padding").val() || 0;
                 buttonsDiv.empty();
 
@@ -262,7 +265,7 @@
                         $(newImg).addClass("buttonCount");
                     }
 
-                    $(newImg).css("padding", buttonPadding + "px");
+                    $(newImg).css("margin-right", buttonPadding + "px");
 
                     buttonsDiv.append(newImg);
                 })
@@ -313,10 +316,16 @@
     <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
         <div class="box-design">
             <div class="preview">
-                <h4>Preview</h4>
-                <div class="buttons-preview">
+                <span class="left-column">
+                    <label for="buttons-preview">Preview:</label>
+                </span>
+                <span style="margin-right: 20px;">
+                    See how your ShopConnection buttons
+                    will appear in your store.
+                </span>
 
-                </div>
+                <span id="buttons-preview">
+                </span>
             </div>
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
