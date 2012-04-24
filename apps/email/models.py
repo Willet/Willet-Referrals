@@ -26,7 +26,7 @@ FROM_ADDR = INFO
 DEV_APPS = {
     # see above for key names
     INFO: [],
-    FRASER: ['fraser-willet'],
+    FRASER: ['fraser-willet','fraser-willet2'],
     BRIAN: ['brian-willet', 'brian-willet2', 'brian-willet3', 'brian-willet4'],
     NICK: ['willet-nterwoord'],
     
@@ -48,7 +48,7 @@ class Email():
         if monospaced is True:
             body = '<pre>%s</pre>' % msg
         else:
-            body = '<p> %s </p>' % msg
+            body = '<p>%s</p>' % msg
         
         appname = get_application_id()
         to_addrs = [dev_member for dev_member in DEV_APPS if appname in DEV_APPS[dev_member]]
@@ -101,7 +101,7 @@ class Email():
     def goodbyeFromFraser(to_addr, name, app_name):
         to_addr = to_addr
         subject = 'We are sad to see you go :('
-    
+        
         # Grab first name only
         try:
             name = name.split(' ')[0]
@@ -115,7 +115,12 @@ class Email():
         elif 'WOSIB' in app_name:
             return
 
-        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with "%s", but I appreciate you giving it a try.</p> <p>If you have any suggestions, comments or concerns about the app, please let me know.</p> <p>Best,</p> <p>Fraser</p> <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
+        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with %s.
+                  <i>Can you tell us why you uninstalled?</i></p>
+                  <p>Thanks,</p>
+                  <p>Fraser</p>
+                  <p>Founder, Willet<br />
+                  www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
         
         Email.send_email(from_address=FRASER,
                          to_address=to_addr,
