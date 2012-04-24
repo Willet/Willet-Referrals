@@ -12,7 +12,6 @@ urlpatterns = [
     (r'/s/fb_thanks.html',          ShowFBThanks),
     (r'/s/track/unload',            ShowOnUnloadHook),
     (r'/s/sibt.js',                 SIBTServeScript),
-  # (r'/s',                         SIBTWelcome), # not used
     (r'/s/beta',                    ShowBetaPage),
     (r'/s/beta/signup',             SIBTSignUp),
 

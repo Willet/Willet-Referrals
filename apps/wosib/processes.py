@@ -20,7 +20,8 @@ from apps.product.models import Product
 from apps.user.models import User
 from apps.user.models import User
 from apps.wosib.actions import *
-from apps.wosib.models import WOSIBInstance
+from apps.wosib.models import WOSIB, WOSIBInstance
+from apps.wosib.shopify.models import WOSIBShopify
 from apps.wosib.models import PartialWOSIBInstance
 
 from util.consts import *
@@ -36,28 +37,30 @@ class WOSIBDoVote(URIHandler):
             product per vote anyway)
         """
         instance_uuid = self.request.get('instance_uuid')
-        logging.info ("instance_uuid = %s" % instance_uuid)
+        logging.info("instance_uuid = %s" % instance_uuid)
         product_uuid = self.request.get('product_uuid')
         
         instance = WOSIBInstance.get(instance_uuid)
-        app = instance.app_
-        user = User.get_or_create_by_cookie(self, app)
+        if not instance:
+            logging.error("no instance found")
+            return
 
         # Make a Vote action for this User
+        app = instance.app_
+        user = User.get_or_create_by_cookie(self, app)
         action = WOSIBVoteAction.create(user, instance, product_uuid)
         instance.increment_votes() # increase instance vote counter
         instance.put()
 
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
-        if email != "":
-            Email.WOSIBVoteNotification(
-                to_addr=email, 
-                name=instance.asker.get_full_name(), 
-                cart_url="%s#open_wosib=1" % instance.link.origin_domain, # cart url
-                client_name=app.client.name,
-                client_domain=app.client.domain
-        )
+        if email:
+            logging.debug("Sending email to asker!")
+            Email.WOSIBVoteNotification(to_addr=email,
+                                        name=instance.asker.get_full_name(), 
+                                        cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
+                                        client_name=app.client.name,
+                                        client_domain=app.client.domain)
 
         # client just cares if it was HTTP 200 or 500.
         self.response.out.write('ok')
@@ -285,11 +288,16 @@ class SendWOSIBFriendAsks(URIHandler):
         asker = json.loads(self.request.get('asker'))
         msg = self.request.get('msg')
         default_msg = self.request.get('default_msg')
-        app = App.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
         link = Link.get_by_code(self.request.get('willt_code'))
         user = User.get(self.request.get('user_uuid'))
         fb_token = self.request.get('fb_access_token')
         fb_id = self.request.get('fb_id')
+
+        app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
+        if not isinstance(app, WOSIB):  # probably SIBT
+            logging.debug("non-WOSIB triggered %s" % app.__class__.__name__)
+            app = WOSIB.all().filter('store_url =', app.store_url).get()  # re-get app by the same store
+            logging.debug("WOSIB is now %r" % app)
 
         product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
         fb_friends = []
@@ -410,9 +418,9 @@ class SendWOSIBFriendAsks(URIHandler):
         if friend_share_counter > 0:
             # create the instance!
             instance = app.create_instance(user, 
-                                            None, 
-                                            link, 
-                                            product_uuids)
+                                           None,
+                                           link,
+                                           product_uuids)
             # change link to reflect to the vote page.
             link.target_url = urlunsplit([PROTOCOL,
                                           DOMAIN,
