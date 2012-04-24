@@ -8,7 +8,6 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 import hashlib, logging, urllib, urllib2
 
-from datetime import datetime
 from decimal import *
 from django.utils import simplejson as json
 from google.appengine.api import memcache

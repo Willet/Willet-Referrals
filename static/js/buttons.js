@@ -126,6 +126,15 @@ _willet.util = {
     },
     "xHasKeyY": function (dict, key) {
         return dict[key] ? true : false;
+    },
+    "isDictEmpty": function(dict) {
+        var prop;
+        for (prop in dict) {
+            if (dict.hasOwnProperty(prop)) {
+                return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -387,6 +396,7 @@ _willet.networks = (function (willet) {
         util      = willet.util;
     return {
         "Facebook": {
+            "priority": 2,
             "detect": {
                 "method": "api",
                 "func": function(methods) {
@@ -394,7 +404,7 @@ _willet.networks = (function (willet) {
                         var message = data && data.message || {};
                         var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
                         methods.updateLoggedInStatus("Facebook", status);
-                    }, APP_URL + "/static/plugin/html/detectFB.html");
+                    }, willet.APP_URL + "/static/plugin/html/detectFB.html");
                 }
             },
             "button": {
@@ -432,6 +442,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Fancy": {
+            "priority": 6,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -471,6 +482,7 @@ _willet.networks = (function (willet) {
             }
         },
         "GooglePlus": {
+            "priority": 4,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
@@ -491,7 +503,7 @@ _willet.networks = (function (willet) {
                     gPlus.setAttribute("data-size", "medium");
                     gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
                     gPlus.setAttribute('data-href', params.canonicalUrl);
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
+                    gPlus.setAttribute("data-callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
@@ -520,6 +532,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Pinterest": {
+            "priority": 1,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
@@ -592,6 +605,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Svpply": {
+            "priority": 5,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -623,6 +637,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Tumblr": {
+            "priority": 7,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -662,6 +677,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Twitter": {
+            "priority": 3,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
@@ -683,8 +699,8 @@ _willet.networks = (function (willet) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
-                    if (config && config.sharing_message) {
-                        link.setAttribute('data-text',config.sharing_message);
+                    if (params.sharing_message) {
+                        link.setAttribute('data-text', params.sharing_message);
                     }
 
                     button.appendChild(link);
@@ -748,6 +764,8 @@ _willet = (function (me, config) {
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
+
+    _willet.APP_URL = APP_URL;
 
     // Private functions
     var getRequiredButtonsFromElement = function(container) {
