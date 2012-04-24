@@ -22,16 +22,14 @@ class DoUninstalledApp(URIHandler):
         store_url = self.request.headers['X-Shopify-Shop-Domain']
         logging.info("Uninstalling %s for store: %s " % (app_name, store_url))
         app_class_name = app_name
-        sample_app = None
+        duration = 'unknown'
+        price = 'n/a'
 
         client = ClientShopify.get_by_url(store_url)
         if not client:
             logging.error('Cannot uninstall %s: client for store %s is gone from DB' % \
                            (app_class_name, store_url))
             return
-
-        duration = 'unknown'
-        price = 'n/a'
 
         # "Delete" the App
         apps = client.apps
@@ -40,13 +38,15 @@ class DoUninstalledApp(URIHandler):
                 # put client aside to keep record
                 # (None client means "not installed")
                 try:
-                    duration = (datetime.datetime.now() - app.created).days
+                    duration = (datetime.datetime.utcnow() - app.created).days
                 except:
-                    logging.error("Could create install duration", exc_info=True)
+                    logging.error("Could not create install duration", exc_info=True)
                     pass
 
                 if hasattr(app, 'recurring_billing_status'):
                     app.recurring_billing_status = 'none'
+                if hasattr(app, 'recurring_billing_enabled'):
+                    app.recurring_billing_enabled = False
                 if hasattr(app, 'recurring_billing_id'):
                     app.recurring_billing_id = 0
                 if hasattr(app, 'recurring_billing_price'):
