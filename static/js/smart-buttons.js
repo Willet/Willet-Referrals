@@ -126,6 +126,15 @@ _willet.util = {
     },
     "xHasKeyY": function (dict, key) {
         return dict[key] ? true : false;
+    },
+    "isDictEmpty": function(dict) {
+        var prop;
+        for (prop in dict) {
+            if (dict.hasOwnProperty(prop)) {
+                return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -387,6 +396,7 @@ _willet.networks = (function (willet) {
         util      = willet.util;
     return {
         "Facebook": {
+            "priority": 2,
             "detect": {
                 "method": "api",
                 "func": function(methods) {
@@ -394,7 +404,7 @@ _willet.networks = (function (willet) {
                         var message = data && data.message || {};
                         var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
                         methods.updateLoggedInStatus("Facebook", status);
-                    }, APP_URL + "/static/plugin/html/detectFB.html");
+                    }, willet.APP_URL + "/static/plugin/html/detectFB.html");
                 }
             },
             "button": {
@@ -432,6 +442,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Fancy": {
+            "priority": 6,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -471,6 +482,7 @@ _willet.networks = (function (willet) {
             }
         },
         "GooglePlus": {
+            "priority": 4,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://plus.google.com/up/?continue=https://www.google.com/intl/en/images/logos/accounts_logo.png&type=st&gpsrc=ogpy0"; }
@@ -491,7 +503,7 @@ _willet.networks = (function (willet) {
                     gPlus.setAttribute("data-size", "medium");
                     gPlus.setAttribute("data-annotation", (params.buttonCount ? "bubble" : "none"));
                     gPlus.setAttribute('data-href', params.canonicalUrl);
-                    gPlus.setAttribute("callback", "_willet_GooglePlusShared");
+                    gPlus.setAttribute("data-callback", "_willet_GooglePlusShared");
 
                     button.appendChild(gPlus);
 
@@ -520,6 +532,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Pinterest": {
+            "priority": 1,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://pinterest.com/login/?next=http://assets.pinterest.com/images/error_404_icon.png"; }
@@ -592,6 +605,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Svpply": {
+            "priority": 5,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -623,6 +637,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Tumblr": {
+            "priority": 7,
             "detect": {
                 "method": "none",
                 "func": function(methods) { return ""; }
@@ -662,6 +677,7 @@ _willet.networks = (function (willet) {
             }
         },
         "Twitter": {
+            "priority": 3,
             "detect": {
                 "method": "image",
                 "func": function(methods) { return "https://twitter.com/login?redirect_after_login=%2Fimages%2Fspinner.gif"; }
@@ -749,10 +765,12 @@ _willet = (function (me, config) {
 
         COOKIE_NAME = "_willet_smart_buttons";
 
+    _willet.APP_URL = APP_URL;
+
     // Private variables
     var loggedInNetworks = (function () {
         // Load loggedInNetworks with saved array of known networks
-        var networks = [],
+        var networks = {},
             networksJSON = cookies.read(COOKIE_NAME);
 
         if (networksJSON) {
@@ -786,16 +804,21 @@ _willet = (function (me, config) {
         return requiredButtons;
     };
 
-    var updateLoggedInStatus = function(network, status) {
+    var updateLoggedInStatus = function(network, status, includeTime) {
         debug.log("Buttons: "+(status ? "" : "Not ")+ network +" user");
-        var now = new Date();
-        loggedInNetworks[network] = { "status": status, "accessed": now.getTime()};
-        cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+        if (status === true) {
+            var now = new Date();
+            loggedInNetworks[network] = { "status": status };
+            if (includeTime === true) {
+                loggedInNetworks[network]["accessed"] = now.getTime();
+            }
+            cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+        }
     };
 
     var itemShared = function(network, params) {
         //If someone shares, update the cookie
-        updateLoggedInStatus(network, true);
+        updateLoggedInStatus(network, true, true);
 
         var message = JSON.stringify({
             "name"   :  params.data.title,
@@ -814,6 +837,50 @@ _willet = (function (me, config) {
         document.body.appendChild(_willetImage)
     };
 
+    // Sorting comparators are hard to remember. For more details on sorting:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Description
+    var sortComparator = function(a, b, descending) {
+        var order = descending ? -1 : 1,
+            result;
+
+        if (a && b) {
+            if (a > b) {
+                result = 1;
+            } else if (a < b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        } else {
+            if (a) {
+                result = 1;
+            } else if (b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        }
+
+        return result * order;
+    };
+
+    // Returns networks sorted by accessed (most recent first), then priority
+    var networkPrioritizedSort = function(a, b) {
+        var dateA = a.value.accessed,
+            dateB = b.value.accessed,
+            priorityA = supportedNetworks[a.key]["priority"] || 100,
+            priorityB = supportedNetworks[b.key]["priority"] || 100,
+            result;
+
+        if (dateA || dateB) {
+            result = sortComparator(dateA, dateB, true);
+        } else {
+            result = sortComparator(priorityA, priorityB)
+        }
+
+        return result;
+    };
+
     var determineButtons = function(buttonsDiv) {
         var i,
             networks = [],
@@ -822,13 +889,11 @@ _willet = (function (me, config) {
         // Queue detected networks first, if the cookie exists
         if (loggedInNetworks) {
             networks = util.dictToArray(loggedInNetworks);
-            networks = networks.sort(function(a,b) {
-                return b.value.accessed - a.value.accessed;
-            });
+            networks = networks.sort(networkPrioritizedSort);
 
             // Queue detected buttons
-            for (i = 0; i < loggedInNetworks.length && requiredButtons.length < MAX_BUTTONS; i++) {
-                var network = loggedInNetworks[i];
+            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var network = networks[i];
                 if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
                     && network.value.status === true) {         //check that the network is enabled
                     requiredButtons.push(network.key);
@@ -1002,7 +1067,7 @@ _willet = (function (me, config) {
         });
         debug.set(isDebugging);
 
-        if (!loggedInNetworks) {
+        if (!util.isDictEmpty(loggedInNetworks)) {
             me.detectNetworks();
         }
 
