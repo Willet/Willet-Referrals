@@ -10,7 +10,6 @@ import re
 from urlparse import urlparse, urlunsplit
 
 from google.appengine.api import memcache
-from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import template
 
 from apps.app.models import App
@@ -19,7 +18,6 @@ from apps.client.shopify.models import ClientShopify
 from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
-from apps.product.shopify.models import ProductShopify
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
@@ -620,7 +618,6 @@ class SIBTServeScript(URIHandler):
         instance = None
         is_asker = False
         is_live = False
-        is_safari = False
         link = None
         page_url = self.request.get('url', self.request.get('page_url', ''))
         parts = {}
@@ -690,7 +687,8 @@ class SIBTServeScript(URIHandler):
                 return
 
         # not used until multi-ask is initiated
-        app_wosib = WOSIB.get_or_create(client=app.client,domain=app.store_url)
+        app_wosib = WOSIB.get_or_create(client=app.client,
+                                        domain=app.store_url)
         logging.debug("app_wosib = %r" % app_wosib)
 
         # have client, app

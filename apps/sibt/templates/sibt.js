@@ -478,14 +478,11 @@
                         'resource_url': '{{ page_url }}' || w.location.href
                     };
                     if (data.client_uuid) {
-                        $.ajax({
-                            url: '{{URL}}{% url CreateProduct %}',
-                            type: "POST",
-                            data: data,
-                            dataType: 'json',
-                            success: function () {}, // good job; I don't care
-                            error: function () {}
-                        });
+                        // Chrome Access-Control-Allow-Origin: must use GET here.
+                        $('<img />', {
+                            src: '{{URL}}{% url CreateProduct %}?' + metadata(data),
+                            css: {'display':'none'}
+                        }).appendTo(d);
                         console.log('sent product request');
                     }
                 } catch (e) {
