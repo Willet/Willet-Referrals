@@ -34,6 +34,7 @@ class BatchRequest(URIHandler):
         app_cls = self.request.get('app_cls')
         target_version = self.request.get('target_version') or -1
         method = self.request.get('method')
+        # TODO: params is not actually used, but it should be
         params = json.loads(self.request.get('params'))
 
         if not batch_size or not (offset >= 0) or not app_cls:
