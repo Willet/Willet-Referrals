@@ -30,16 +30,33 @@ class DoUninstalledApp(URIHandler):
                            (app_class_name, store_url))
             return
 
+        duration = 'unknown'
+        price = 'n/a'
+
         # "Delete" the App
         apps = client.apps
         for app in apps:
             if app.class_name() == app_class_name:
                 # put client aside to keep record
                 # (None client means "not installed")
+                try:
+                    duration = (datetime.datetime.now() - app.created).days
+                except:
+                    logging.error("Could create install duration", exc_info=True)
+                    pass
+
+                if hasattr(app, 'recurring_billing_status'):
+                    app.recurring_billing_status = 'none'
+                if hasattr(app, 'recurring_billing_id'):
+                    app.recurring_billing_id = 0
+                if hasattr(app, 'recurring_billing_price'):
+                    price = app.recurring_billing_price or 'n/a'
+                    app.recurring_billing_price = ''
+
                 app.old_client = client
                 app.client = None
                 app.put_later()
-                sample_app = app
+
                 uninstalled_apps_count += 1
         
         if uninstalled_apps_count:
@@ -50,24 +67,14 @@ class DoUninstalledApp(URIHandler):
                     list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
                 )
 
-            duration = price = None
             try:
-                duration = (datetime.datetime.now() - sample_app.created).days
-            except:
-                logging.error("Could create install duration", exc_info=True)
-                duration = 'unknown'
-                pass
-
-            price = sample_app.recurring_billing_price if hasattr(sample_app, 'recurring_billing_price') else 'n/a'
-
-            try:
-                Email.emailDevTeam("Uninstall app: %s\n \
-                                    Store: %s\n\
-                                    Installed for %s days\n\
-                                    Paying: %s" % ( app_class_name,
-                                                    store_url,
-                                                    duration,
-                                                    price ) )
+                Email.emailDevTeam("""<p>%s Uninstall</p>
+                                      <p>Store: %s</p>
+                                      <p>Installed for %s days</p>
+                                      <p>Paying: %s</p>""" % ( app_class_name,
+                                                               store_url,
+                                                               duration,
+                                                               price ) )
 
                 # Say goodbye from Fraser
                 Email.goodbyeFromFraser(client.merchant.get_attr('email'),

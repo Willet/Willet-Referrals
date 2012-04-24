@@ -2,14 +2,15 @@
 
 # Buttons model
 # Extends from "App"
-from itertools import groupby
-
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
+
 import hashlib
 import logging
+
 from datetime import date, datetime, timedelta
+from itertools import groupby
 from time import time
 from urllib import urlencode
 
@@ -196,6 +197,7 @@ class ButtonsShopify(Buttons, AppShopify):
                     app.store_token = token
                     app.client = client
                     app.old_client = None
+                    app.created = datetime.utcnow()
                     app.put()
                     
                     app.do_install()
