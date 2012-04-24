@@ -39,9 +39,10 @@ def main():
         # if we have no uris, or if we are rewriting
         logging.info('reloading uris %r' % (reload_uris))
         combined_uris = []
-        for app in INSTALLED_APPS: # INSTALLED_APPS came from consts.py
+        for app in INSTALLED_APPS:
+            # INSTALLED_APPS came from consts.py
             try:
-                import_str = 'apps.%s.urls' % app
+                import_str = 'apps.%s.urls' % (app,)
                 __import__(import_str, globals(), locals(), [], -1)
                 app_urls = sys.modules[import_str]
                 combined_uris.extend(app_urls.urlpatterns)

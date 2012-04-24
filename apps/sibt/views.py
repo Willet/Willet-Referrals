@@ -66,6 +66,8 @@ class AskDynamicLoader(URIHandler):
         # because of how Model.get() works, products _might_ also work if you
         # supply a product's Shopify ID (if applicable).
         product_uuids = self.request.get('products', '').split(',')
+
+        # Store registration url (with backup options if it's missing)
         store_url = self.request.get('store_url') or page_url
 
         if not store_url:
@@ -85,23 +87,29 @@ class AskDynamicLoader(URIHandler):
 
         app = SIBT.get_by_store_url(store_domain)
         if not app:
-            msg = "could not find SIBT app for %s" % store_domain
-            logging.error(msg)
-            self.response.out.write(msg)
+            logging.error("Could not find SIBT app for %s" % store_domain)
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
+        elif not hasattr(app, 'client'):
+            logging.error("SIBT app has no client.  Probably uninstall.")
+            self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
+            return
+        else:
+            logging.info("Found SIBT app %r" % app)
 
+        # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(self.request.get('user_uuid'))
         user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
 
         product_uuid = self.request.get('product_uuid', None) # optional
         product_shopify_id = self.request.get('product_shopify_id', None) # optional
-        logging.debug("%r" % [product_uuid, product_shopify_id])
+        logging.debug("Product information: %r" % [product_uuid, product_shopify_id])
 
         # successive steps to obtain the product using any way possible
         try:
             # get this page's product
-            logging.info("getting by url")
+            logging.info("Getting product information by url")
             product = Product.get_or_fetch(page_url, app.client)
             logging.debug("product.get_or_fetch from URL, got %r" % product)
 
@@ -134,7 +142,8 @@ class AskDynamicLoader(URIHandler):
             page_url = product.resource_url
 
         # Store 'Show' action
-        SIBTShowingAskIframe.create(user, url=page_url, app=app)
+        if user_found:
+            SIBTShowingAskIframe.create(user, url=page_url, app=app) # Requires user
 
         # Fix the product description
         try:
