@@ -9,6 +9,7 @@ __copyright__ = "Copyright 2012, Willet, Inc"
 import hashlib
 import inspect
 import logging
+from datetime import datetime
 
 from django.utils import simplejson as json
 from google.appengine.api import memcache
@@ -173,6 +174,7 @@ class SIBTShopify(SIBT, AppShopify):
                     app.client = app.old_client if app.old_client else client
                     app.old_client = None
                     app.version = cls.CURRENT_INSTALL_VERSION # reinstall? update version
+                    app.created = datetime.utcnow()
                     app.put()
 
                     app.do_install(email_client)
