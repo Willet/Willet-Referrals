@@ -24,6 +24,10 @@ handlers:
 - url: /w3c
   static_dir: w3c/
 
+- url: /a/batchRequest
+  script: urls.py
+  login: admin
+
 - url: /b/shopify/load/buttons.js
   static_files: static/js/buttons.js
   upload: static/js/buttons.js
@@ -51,4 +55,3 @@ handlers:
 
 - url: /
   script: urls.py
-

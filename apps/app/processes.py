@@ -5,6 +5,7 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 
 from google.appengine.api import memcache, taskqueue, urlfetch
 from google.appengine.ext import webapp
+import django.utils.simplejson as json
 
 from apps.app.models import App, ShareCounter
 from apps.user.models import * 
@@ -14,8 +15,8 @@ from util.urihandler import URIHandler
 
 
 class BatchRequest(URIHandler):
-    """ EXPERIMENTAL: Start a batch request of a class method, which will run
-    for every app of app_cls in the db """
+    """ LESS EXPERIMENTAL: Start a batch request of a class method,
+    which will run for every app of app_cls in the db """
     def get(self):
         self.post()
 
@@ -28,10 +29,10 @@ class BatchRequest(URIHandler):
             - method: method to call on app_cls
             - params: JSON-encoded parameters to send to method
         """
-        batch_size = self.request.get('batch_size')
-        offset = self.request.get('offset')
+        batch_size = int(self.request.get('batch_size'))
+        offset = int(self.request.get('offset'))
         app_cls = self.request.get('app_cls')
-        target_version = self.request.get('target_version')
+        target_version = self.request.get('target_version') or -1
         method = self.request.get('method')
         params = json.loads(self.request.get('params'))
 
@@ -64,13 +65,14 @@ class BatchRequest(URIHandler):
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
-        # For each app, try to create an email & send it
-        for app in all_apps:
+        for app in apps:
             try:
                 # Check version
-                if target_version >= 0 and app.version != target_version:
+                if target_version >= 0 and app.version !=  target_version:
+                    logging.info("%s %s" % (target_version, app.version))
                     # Wrong version, skip this one
                     continue
+
                 getattr(app, method)()
             except Exception, e:
                 logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__,

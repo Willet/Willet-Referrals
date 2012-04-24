@@ -184,6 +184,19 @@ class ButtonsShopify(Buttons, AppShopify):
             }])
             self.install_queued()
 
+    def correct(self):
+        """Corrects any potentially wrong data with this object"""
+        logging.info("Correcting object...")
+        if not self.client:
+            self.billing_enabled = False
+
+        # Ensure that the billing_enabled field exists
+        if not self.billing_enabled:
+            self.billing_enabled = False
+
+        # Correct the object, and re-index any properties
+        self.put()
+
     def get_prefs(self):
         """Get preferences, provided that they exist."""
         #need to get theme id first...
