@@ -44,9 +44,7 @@ class BatchRequest(URIHandler):
         # Convert JSON keys from unicode to strings
         # Python 2.5 doesn't like this, but it will work in 2.7
         # We do this because we will be using the keys as kwargs
-        converted_params = {}
-        for key, value in params.iteritems():
-            converted_params[key.encode('utf-8')] = value
+        converted_params = dict( (key.encode('utf-8'), value) for key, value in params.iteritems() )
 
         filter_obj = db.Query(App).filter('class = ', app_cls)
         for ukey, value in criteria.iteritems():
