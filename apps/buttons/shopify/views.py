@@ -215,7 +215,8 @@ class ButtonsShopifyWelcome(URIHandler):
             'sharing_message': preferences.get("sharing_message", ""),
             'message'        : self.request.get("message", "Welcome Back!"),
             'button_order'   : button_order,
-            'unused_buttons' : unused_buttons
+            'unused_buttons' : unused_buttons,
+            'shop_url'       : self.request.get("shop")
         }
 
         # prepopulate values
