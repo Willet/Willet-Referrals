@@ -69,31 +69,32 @@ class WOSIBAskDynamicLoader(URIHandler):
         ids = []
         link = None
         products = []
+        refer_url = self.request.get('refer_url')
+        store_url = self.request.get('store_url')
         template_products = []
         uuids = []
         user = None
 
-        store_domain = self.request.get('store_url')
-        if not store_domain:  # if called from SIBT, page url is given instead
+        logging.info("refer_url = %s" % refer_url)
+
+        if not store_url:  # if called from SIBT, page url is given instead
             url_parts = urlparse(self.request.get('target_url'))
             if url_parts.scheme and url_parts.netloc:
-                store_domain = "%s://%s" % (url_parts.scheme, url_parts.netloc)
-        refer_url = self.request.get('refer_url')
-        logging.info("refer_url = %s" % refer_url)
+                store_url = "%s://%s" % (url_parts.scheme, url_parts.netloc)
 
         def get_app():
             """get or create a WOSIB app by means available."""
-            app = WOSIBShopify.get_by_store_url(store_domain)
+            app = WOSIBShopify.get_by_store_url(store_url)
             if app:
                 return app
             logging.debug("No WOSIBShopify app")
 
-            app = WOSIB.get_by_store_url(store_domain)
+            app = WOSIB.get_by_store_url(store_url)
             if app:
                 return app
             logging.debug("No WOSIB app")
 
-            sibt = SIBTShopify.get_by_store_url(store_domain)
+            sibt = SIBTShopify.get_by_store_url(store_url)
             if sibt:
                 logging.debug("Got SIBTShopify app; piggybacking")
                 app = WOSIBShopify.get_or_create(sibt.client,
@@ -102,7 +103,7 @@ class WOSIBAskDynamicLoader(URIHandler):
                 return app
             logging.debug("No SIBTShopify app")
 
-            sibt = SIBT.get_by_store_url(store_domain)
+            sibt = SIBT.get_by_store_url(store_url)
             if sibt:
                 logging.debug("Got SIBT app; piggybacking")
                 app = WOSIB.get_or_create(sibt.client,
@@ -123,7 +124,7 @@ class WOSIBAskDynamicLoader(URIHandler):
         user_is_admin = user.is_admin() if isinstance(user , User) else False
 
         # if both are present and extra_url needs to be filled...
-        if store_domain and refer_url and not hasattr(app, 'extra_url'):
+        if store_url and refer_url and not hasattr(app, 'extra_url'):
             """Checks if refer_url (almost always window.location.href)
             has the same domain as store url
 
@@ -135,7 +136,7 @@ class WOSIBAskDynamicLoader(URIHandler):
                 url_parts = urlparse(refer_url)
 
                 # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
-                if url_parts.netloc not in urllib2.unquote(store_domain):
+                if url_parts.netloc not in urllib2.unquote(store_url):
                     # save the alternative URL so it can be called back later.
                     app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc)
                     logging.info("[WOSIB] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
@@ -237,7 +238,7 @@ class WOSIBAskDynamicLoader(URIHandler):
             'willt_code': link.willt_url_code, # used to create full instances
             'products': template_products,
             'fb_redirect': "%s%s" % (URL, url('WOSIBShowFBThanks')),
-            'store_domain': self.request.get('store_url'),
+            'store_domain': store_url,
             'title' : "Which one should I buy?",
             'product_desc': random_product['product_desc'],
             'image': random_image,

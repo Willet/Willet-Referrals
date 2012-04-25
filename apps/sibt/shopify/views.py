@@ -22,7 +22,7 @@ from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import ab_test
 from apps.link.models import Link
 from apps.order.models import *
-from apps.product.shopify.models import ProductShopify
+from apps.product.models import Product
 from apps.sibt.actions import SIBTClickAction, SIBTShowingButton, SIBTVoteAction
 from apps.sibt.models import SIBT, SIBTInstance
 from apps.sibt.shopify.models import SIBTShopify
@@ -218,95 +218,147 @@ class ShowCodePage(URIHandler):
 
 class SIBTShopifyServeScript(URIHandler):
     """When requested serves a plugin that will contain various functionality
-       for sharing information about a purchase just made by one of our clients"""
-
+    for sharing information about a purchase just made by one of our clients.
+    """
     def get(self):
-        votes_count = 0
-        is_live = False
+        """Shows the SIBTShopify real-sibt.js.
+
+        This view is in use, but SIBTServeScript is sometimes preferred over
+        it. This will eventually be replaced by SIBTServeScript.
+        """
+        # declare vars.
+        app = None
+        app_css = ''
+        asker_name = ''
+        asker_pic = ''
+        event = 'SIBTShowingButton'
+        has_results = False
+        has_voted = False
+        instance = None
         is_asker = False
-        show_votes = has_voted = show_top_bar_ask = unsure_multi_view = False
-        instance = share_url = link = asker_name = asker_pic = product = None
-        target = bar_or_tab = ''
+        is_live = False
+        link = None
+        page_url = ''
+        parts = {}
+        product = None
+        show_votes = False
+        show_top_bar_ask = False
+        store_url = get_shopify_url(self.request.get('store_url'))
+        template_values = {}
+        unsure_multi_view = False
+        user = None
+        votes_count = 0
         willet_code = self.request.get('willt_code')
 
-        # window.location
-        # page_url = v2; store_url = v1
-        page_url = get_shopify_url(self.request.get('page_url')) or \
-                   get_shopify_url(self.request.get('store_url'))
+        page_url = get_shopify_url(self.request.get('url')) or \
+                   get_shopify_url(self.request.get('page_url')) or \
+                   get_shopify_url(self.request.headers.get('referer', ''))
+        page_url = page_url.split('#')[0]  # clean up window.location
+        if not page_url:
+            # serve comment instead of status code (let customers see it)
+            self.response.out.write('/* missing URL */')
+            return
 
-        # the domain name with which the shopify store registered
-        store_url = get_shopify_url(self.request.get('store_url'))
+        # have page_url
+        # store_url: the domain name with which the shopify store registered
+        if not store_url:
+            # try to get store_url from page_url
+            logging.warn("no store_url; attempting to get from page_url")
+            parts = urlparse(page_url)
+            if parts.scheme and parts.netloc:
+                store_url = '%s://%s' % (parts.scheme, parts.netloc)
+
+        if not store_url:
+            logging.error("no store_url; quitting")
+            self.response.out.write('/* no store_url. specify it! */')
+            return
+
+        # have page_url, store_url
         app = SIBTShopify.get_by_store_url(store_url)
-        event = 'SIBTShowingButton'
+        client = Client.get_by_url(store_url)
 
-        target = get_target_url(self.request.get('url') or \
-                                self.request.get('page_url') or \
-                                self.request.headers.get('REFERER', ''))
-        if target and not store_url:
-            store_url = target  # App 2.0: fill in missing store_url
+        # resolve app/client if either of them is not present
+        if app and not client:
+            client = app.client
+        elif client and not app:
+            # try to get existing SIBT/SIBTShopify from this client.
+            # if not found, create one.
+            # we can create one here because this implies the client had
+            # never uninstsalled our app.
+            app = SIBT.get_or_create(client=client, domain=store_url)
+
+        if not app and not client:
+            # neither app not client: we have no business with you
+            self.response.out.write('/* no account for %s! '
+                                    'Go to http://rf.rs to get an account. */' % store_url)
+            return
+        logging.info('using %r and %r as app and client.' % (app, client))
+
+        # have page_url, store_url, client, app
+        if not hasattr(app, 'extra_url'):
+            """Check if page_url (almost always window.location.href) has the
+               same domain as store URL.
+
+            Example: http://social-referral.appspot.com/s/shopify/real-s...
+            ibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&...
+            page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
+
+            Note: if a site has multiple extra URLs, only the last used
+            extra URL will be available to our system.
+            """
+            try:
+                # is "abc.myshopify.com" part of the store URL, i.e.
+                # "http://abc.myshopify.com"?
+                if store_url not in app.store_url:
+                    # save the alternative URL so it can be called back later.
+                    app.extra_url = store_url
+                    logging.info ("[SIBT] associating a new URL, %s, "
+                                  "with the original, %s" % (app.extra_url,
+                                                             app.store_url))
+                    app.put()
+            except:
+                pass  # can't decode page_url as URL; oh well!
 
         user = User.get_or_create_by_cookie(self, app)
+        product = Product.get_or_fetch(page_url, client)
 
-        # Try to find an instance for this { url, user }
-        if not app:
-            logging.debug('no app')
-        else:
-            if target and not hasattr(app, 'extra_url'):
-                """ check if target (almost always window.location.href) has the same domain as store url
-                    example: http://social-referral.appspot.com/s/shopify/real-sibt.js?store_url=thegoodhousewife.myshopify.com&willt_code=&page_url=http://thegoodhousewife.co.nz/products/snuggle-blanket
-
-                    [!] if a site has multiple extra URLs, only the last used extra URL will be available to our system.
-                """
-                try:
-                    url_parts = urlparse (target)
-                    if url_parts.netloc not in app.store_url: # is "abc.myshopify.com" part of the store URL, "http://abc.myshopify.com"?
-                        app.extra_url = "%s://%s" % (url_parts.scheme, url_parts.netloc) # save the alternative URL so it can be called back later.
-                        logging.info ("[SIBT] associating a new URL, %s, with the original, %s" % (app.extra_url, app.store_url))
-                        app.put()
-                except:
-                    pass # can't decode target as URL; oh well!
-
-            if target and user:
-                logging.debug('trying to get instance for url: %s' % target)
-                instance = SIBTInstance.get_by_asker_for_url(user, target)
-
-            if instance:
-                event = 'SIBTShowingResults'
-                logging.debug('got instance by user/target: %s' % instance.uuid)
-
-            if not instance and willet_code:
-                link = Link.get_by_code(willet_code)
+        # have page_url, store_url, client, app, user, and maybe product
+        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+        if instance:
+            event = 'SIBTShowingResults'
+            logging.debug('got instance by user/page_url: %s' % instance.uuid)
+        elif willet_code:
+            link = Link.get_by_code(willet_code)
+            if link:
                 instance = link.sibt_instance.get()
-                event = 'SIBTShowingResults'
-                logging.debug('got instance by willet_code: %s' % instance.uuid)
 
-            if not instance:
-                instances = SIBTInstance.all(keys_only=True)\
-                    .filter('url =', target)\
-                    .fetch(100)
-                key_list = [key.id_or_name() for key in instances]
-                action = SIBTClickAction.get_for_instance(app, user, target, key_list)
-                if action:
-                    instance = action.sibt_instance
-                    logging.debug('got instance by action: %s' % instance.uuid)
-                    event = 'SIBTShowingVote'
+        if instance:
+            event = 'SIBTShowingResults'
+            logging.debug('got instance by willet_code: %s' % instance.uuid)
+        elif user:
+            instances = SIBTInstance.all(keys_only=True)\
+                                    .filter('url =', page_url)\
+                                    .fetch(100)
+            key_list = [key.id_or_name() for key in instances]
+            action = SIBTClickAction.get_for_instance(app, user, page_url, key_list)
+            if action:
+                instance = action.sibt_instance
 
-            # new visitor?
-            if not instance:
-                logging.debug('no instance available')
+        if instance:
+            logging.debug('got instance by action: %s' % instance.uuid)
+            event = 'SIBTShowingVote'
+        else:
+            logging.debug('no instance available')
 
         # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
-        if instance:
+        if instance and user:
             is_live = instance.is_live
-            asker_name = instance.asker.get_first_name()
-            asker_pic = instance.asker.get_attr('pic')
-            show_votes = True
+            event = 'SIBTShowingResults'
 
-            # number of votes.
-            votes_count = instance.get_yesses_count() + instance.get_nos_count() or 0
-
+            # get the asker's first name.
+            asker_name = instance.asker.get_first_name() or "Your friend"
             try:
                 asker_name = asker_name.split(' ')[0]
             except:
@@ -314,57 +366,44 @@ class SIBTShopifyServeScript(URIHandler):
             if not asker_name:
                 asker_name = 'I' # "should asker_name buy this?"
 
+            asker_pic = instance.asker.get_attr('pic') or ''
+            votes_count = bool(instance.get_yesses_count() +
+                               instance.get_nos_count()) or 0
             is_asker = bool(instance.asker.key() == user.key())
             if not is_asker:
                 logging.debug('not asker, check for vote ...')
-
                 vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
-
-                logging.debug('got a vote action? %s' % vote_action)
-
                 has_voted = bool(vote_action)
 
-            try:
-                if link == None:
-                    link = instance.link
-                share_url = link.get_willt_url()
-            except Exception,e:
-                logging.error("could not get share_url: %s" % e, exc_info=True)
+            # determine whether to show the results button.
+            # code below makes button show only if vote was started less than 1 day ago.
+            if votes_count:
+                time_diff = datetime.now() - instance.created
+                logging.debug ("time_diff = %s" % time_diff)
+                if time_diff <= timedelta(days=1):
+                    has_results = True
+            logging.debug ("has_results = %s" % has_results)
 
-        elif app:
-            logging.info('could not get an instance, check page views')
-
+        # unsure detection
+        if app and user and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
-            logging.info('got tracked urls: %r' % tracked_urls)
-            if tracked_urls.count(target) >= app.num_shows_before_tb:
-                #if view_actions >= 1:# or user.is_admin():
-                # user has viewed page more than once
-                # show top-bar-ask
+            logging.info('got tracked_urls: %r' % tracked_urls)
+            if tracked_urls.count(page_url) >= app.num_shows_before_tb:
+                # user has viewed page more than once show top-bar-ask
                 show_top_bar_ask = True
-            if len (tracked_urls) >= UNSURE_DETECTION['url_count_for_app_and_user']:
-                # part of the unsure detection: ^ or more URLs tracked for (app and user)
-                unsure_multi_view = True
-            product = ProductShopify.get_or_fetch(target, app.client)
-        else:
-            logging.warn("no app and no instance!")
 
-        # a whole bunch of css bullshit!
-        if app:
-            logging.info("got app button css")
-            app_css = app.get_css()
-        else:
-            app_css = SIBTShopify.get_default_css()
+                # this number or more URLs tracked for (app and user)
+                threshold = UNSURE_DETECTION['url_count_for_app_and_user']
 
-        # determine whether to show the results button.
-        # code below makes button show only if vote was started less than 1 day ago.
-        has_results = False
-        # logging.debug ("votes_count = %s" % votes_count)
-        if votes_count:
-            time_diff = datetime.now() - instance.created
-            logging.debug ("time_diff = %s" % time_diff)
-            if time_diff <= timedelta(days=1):
-                has_results = True
-        logging.debug ("has_results = %s" % has_results)
+                if len(tracked_urls) >= threshold:
+                    # activate unsure_mutli_view (currently does nothing)
+                    unsure_mutli_view = True
+
+        # have client, app, user, and maybe instance
+        try:
+            app_css = app.get_css()  # only Shopify apps have CSS
+        except AttributeError:
+            app_css = ''  # it was not a SIBTShopify
 
         # Grab all template values
         template_values = {
@@ -395,10 +434,6 @@ class SIBTShopifyServeScript(URIHandler):
             'store_id': self.request.get('store_id'),
 
             'product': product,
-            'product_uuid': product.uuid if product else "",
-            'product_title': product.title if product else "",
-            'product_images': product.images if product else "",
-            'product_desc': product.description if product else "",
 
             'evnt': event,
 

@@ -26,6 +26,7 @@ from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import *
+from util.shopify_helpers import get_shopify_url
 from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
@@ -625,6 +626,8 @@ class SIBTServeScript(URIHandler):
         asker_name = ''
         asker_pic = ''
         event = 'SIBTShowingButton'
+        has_results = False
+        has_voted = False
         instance = None
         is_asker = False
         is_live = False
@@ -632,17 +635,51 @@ class SIBTServeScript(URIHandler):
         page_url = ''
         parts = {}
         product = None
+        show_votes = False
         show_top_bar_ask = False
-        store_url = self.request.get('store_url')
+        store_url = get_shopify_url(self.request.get('store_url'))
         template_values = {}
-        unsure_mutli_view = False
+        unsure_multi_view = False
         user = None
         votes_count = 0
         willet_code = self.request.get('willt_code')
 
-        page_url = self.request.get('url') or \
-                   self.request.get('page_url') or \
-                   self.request.headers.get('referer', '')
+        def get_instance_event():
+            """Returns an (instance, event) tuple for this pageload,
+
+            if there is an instance.
+
+            """
+            instance = SIBTInstance.get_by_asker_for_url(user, page_url)
+            if instance:
+                return (instance, 'SIBTShowingResults')
+
+            if willet_code:
+                link = Link.get_by_code(willet_code)
+                if link:
+                    instance = link.sibt_instance.get()
+                if instance:
+                    return (instance, 'SIBTShowingResults')
+
+            if user:
+                instances = SIBTInstance.all(keys_only=True)\
+                                        .filter('url =', page_url)\
+                                        .fetch(100)
+                key_list = [key.id_or_name() for key in instances]
+                action = SIBTClickAction.get_for_instance(app, user, page_url,
+                                                          key_list)
+                if action:
+                    instance = action.sibt_instance
+
+                if instance:
+                    return (instance, 'SIBTShowingVote')
+
+            return (None, '')
+
+
+        page_url = get_shopify_url(self.request.get('url')) or \
+                   get_shopify_url(self.request.get('page_url')) or \
+                   get_shopify_url(self.request.headers.get('referer', ''))
         page_url = page_url.split('#')[0]  # clean up window.location
         if not page_url:
             # serve comment instead of status code (let customers see it)
@@ -650,6 +687,7 @@ class SIBTServeScript(URIHandler):
             return
 
         # have page_url
+        # store_url: the domain name with which the shopify store registered
         if not store_url:
             # try to get store_url from page_url
             logging.warn("no store_url; attempting to get from page_url")
@@ -666,25 +704,24 @@ class SIBTServeScript(URIHandler):
         app = SIBT.get_by_store_url(store_url)
         client = Client.get_by_url(store_url)
 
-        logging.info('using %r and %r as app and client.' % (app, client))
-
-        if client:
+        # resolve app/client if either of them is not present
+        if app and not client:
+            client = app.client
+        elif client and not app:
             # try to get existing SIBT/SIBTShopify from this client.
             # if not found, create one.
             # we can create one here because this implies the client had
             # never uninstsalled our app.
             app = SIBT.get_or_create(client=client, domain=store_url)
-        else:  # we have no business with you
+
+        if not app and not client:
+            # neither app not client: we have no business with you
             self.response.out.write('/* no account for %s! '
                                     'Go to http://rf.rs to get an account. */' % store_url)
             return
+        logging.info('using %r and %r as app and client.' % (app, client))
 
-        # not used until multi-ask is initiated
-        app_wosib = WOSIB.get_or_create(client=app.client,
-                                        domain=app.store_url)
-        logging.debug("app_wosib = %r" % app_wosib)
-
-        # have client, app
+        # have page_url, store_url, client, app
         if not hasattr(app, 'extra_url'):
             """Check if target (almost always window.location.href) has the
                same domain as store URL.
@@ -710,27 +747,47 @@ class SIBTServeScript(URIHandler):
                 pass  # can't decode target as URL; oh well!
 
         user = User.get_or_create_by_cookie(self, app)
-        # have client, app, user
-
         product = Product.get_or_fetch(page_url, client)
+        # let it pass - sibt.js will create attempt to create product
 
-        # have client, app, user, and maybe product
-        instance = SIBTInstance.get_by_asker_for_url(user, page_url)
-        if not instance and willet_code:
-            link = Link.get_by_code(willet_code)
-            if link:
-                instance = link.sibt_instance.get()
+        instance, event = get_instance_event()
 
-        if instance:
+        # If we have an instance, figure out if
+        # a) Is User asker?
+        # b) Has this User voted?
+        if instance and user:
+            is_live = instance.is_live
             event = 'SIBTShowingResults'
-            asker_name = instance.asker.get_first_name() or "your friend"
+
+            # get the asker's first name.
+            asker_name = instance.asker.get_first_name() or "Your friend"
+            try:
+                asker_name = asker_name.split(' ')[0]
+            except:
+                pass
+            if not asker_name:
+                asker_name = 'I' # "should asker_name buy this?"
+
             asker_pic = instance.asker.get_attr('pic') or ''
             votes_count = bool(instance.get_yesses_count() +
                                instance.get_nos_count()) or 0
             is_asker = bool(instance.asker.key() == user.key())
+            if not is_asker:
+                logging.debug('not asker, check for vote ...')
+                vote_action = SIBTVoteAction.get_by_app_and_instance_and_user(app, instance, user)
+                has_voted = bool(vote_action)
+
+            # determine whether to show the results button.
+            # code below makes button show only if vote was started less than 1 day ago.
+            if votes_count:
+                time_diff = datetime.now() - instance.created
+                logging.debug ("time_diff = %s" % time_diff)
+                if time_diff <= timedelta(days=1):
+                    has_results = True
+            logging.debug ("has_results = %s" % has_results)
 
         # unsure detection
-        if not instance and app:
+        if app and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
             logging.info('got tracked_urls: %r' % tracked_urls)
             if tracked_urls.count(page_url) >= app.num_shows_before_tb:
@@ -745,8 +802,6 @@ class SIBTServeScript(URIHandler):
                     unsure_mutli_view = True
 
         # have client, app, user, and maybe instance
-        logging.debug('%r' % [user, page_url, instance])
-
         try:
             app_css = app.get_css()  # only Shopify apps have CSS
         except AttributeError:
@@ -773,7 +828,7 @@ class SIBTServeScript(URIHandler):
             # instance info
             'instance': instance,
             'evnt': event,
-            'has_results': bool(votes_count > 0),
+            'has_results': has_results,
             'is_live': is_live,
             'show_top_bar_ask': show_top_bar_ask and app.top_bar_enabled,
             'show_votes': False, # this is annoying if True
@@ -786,7 +841,7 @@ class SIBTServeScript(URIHandler):
             'asker_name': asker_name,
             'asker_pic': asker_pic,
             'is_asker': is_asker,
-            'unsure_mutli_view': unsure_mutli_view,
+            'unsure_multi_view': unsure_multi_view,
 
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
