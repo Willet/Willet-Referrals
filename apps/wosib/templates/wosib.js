@@ -71,7 +71,7 @@
             // if cart is empty, do nothing
             if (_willet_cart_items && _willet_cart_items.length > 0) {
                 var purchase_cta = $('#_willet_WOSIB_Button');
-                
+
                 var srv_data = {
                     'app_uuid': '{{app.uuid}}',
                     'user_uuid': '{{user.uuid}}',
@@ -81,25 +81,25 @@
                 };
 
                 // detect just safari: http://api.jquery.com/jQuery.browser/
-                $.browser.safari = ( $.browser.safari && 
+                $.browser.safari = ( $.browser.safari &&
                     /chrome/.test(navigator.userAgent.toLowerCase()) ) ? false : true;
 
                 // array.map()
                 if (!Array.prototype.map) {
                     Array.prototype.map = function(fcn /*, thisp*/) {
-    	                var len = this.length;
-    	                if (typeof fcn != "function")
-    	                    throw new TypeError();
+                        var len = this.length;
+                        if (typeof fcn != "function")
+                            throw new TypeError();
 
-    	                var res = new Array(len);
-    	                var thisp = arguments[1];
-    	                for (var i = 0; i < len; i++) {
-    	                    if (i in this) res[i] = fcn.call(thisp, this[i], i, this);
-    	                }
-    	                return res;
-    	            };
+                        var res = new Array(len);
+                        var thisp = arguments[1];
+                        for (var i = 0; i < len; i++) {
+                            if (i in this) res[i] = fcn.call(thisp, this[i], i, this);
+                        }
+                        return res;
+                    };
                 }
-                
+
                 // The usual things. Does NOT include first amperssand.
                 var metadata = function (more) {
                     // constructs the 'willet' query string - no prefixing ?
@@ -119,22 +119,22 @@
 
                 // Add scripts to DOM
                 var _willet_load_script = function (script) {
-                    var dom_el = document.createElement('script'); 
-                    dom_el.type = 'text/javascript'; 
+                    var dom_el = document.createElement('script');
+                    dom_el.type = 'text/javascript';
                     dom_el.src = script;
                     return _willet_insert_head_element (dom_el);
                 };
 
                 var _willet_load_css = function (script) {
-                    var dom_el = document.createElement('link'); 
-                    dom_el.type = 'text/css'; 
+                    var dom_el = document.createElement('link');
+                    dom_el.type = 'text/css';
                     dom_el.rel = 'stylesheet';
                     dom_el.href = script;
                     return _willet_insert_head_element (dom_el);
                 };
 
                 var _willet_insert_head_element = function (element) {
-                    document.getElementsByTagName('head')[0].appendChild(element); 
+                    document.getElementsByTagName('head')[0].appendChild(element);
                     return element;
                 }
 
@@ -145,8 +145,8 @@
                     var random_id = 'a' + String((new Date()).getTime()).replace(/\D/gi,'');
                     $("body").append($('<iframe />',{
                         'style': 'display:none',
-                        'src': "{{ URL }}{% url TrackWOSIBShowAction %}?" + 
-                               "evnt=" + message + 
+                        'src': "{{ URL }}{% url TrackWOSIBShowAction %}?" +
+                               "evnt=" + message +
                                "&" + metadata(),
                         'id': random_id
                     }));
@@ -157,9 +157,9 @@
                         } catch (e) {} // do nothing
                     });
                 };
-                
+
                 var show_ask = function () {
-                    var url = "{{URL}}/w/ask.html?store_url=" + encodeURIComponent(srv_data.store_url) + 
+                    var url = "{{URL}}/w/ask.html?store_url=" + encodeURIComponent(srv_data.store_url) +
                               "&ids=" +
                               _willet_cart_items.map(function (x) {
                                   // func collects all product IDs for the cart items.
@@ -171,9 +171,9 @@
                         transition: 'fade',
                         close: '',
                         scrolling: false,
-                        iframe: true, 
-                        initialWidth: 0, 
-                        initialHeight: 0, 
+                        iframe: true,
+                        initialWidth: 0,
+                        initialHeight: 0,
                         innerWidth: '600px',
                         innerHeight: '450px',
                         fixed: true,
@@ -184,18 +184,18 @@
                 var _willet_show_results = function () {
                     // show results if results are done.
                     // this can be detected if a srv_data.finished flag is raised.
-                    var url = "{{URL}}/w/results.html" + 
+                    var url = "{{URL}}/w/results.html" +
                               "?" + metadata();
                     $.willet_colorbox({
                         href: url,
                         transition: 'fade',
                         close: '',
                         scrolling: false,
-                        iframe: true, 
-                        initialWidth: 0, 
-                        initialHeight: 0, 
+                        iframe: true,
+                        initialWidth: 0,
+                        initialHeight: 0,
                         innerWidth: '600px',
-                        innerHeight: '450px', 
+                        innerHeight: '450px',
                         fixed: true,
                         onClosed: function () { }
                     });
@@ -206,15 +206,15 @@
                         'id': '_willet_button_v3'
                     });
                     button.html ("<p>Which ones should you buy?</p>" +
-    		                     "<div id='_willet_button' class='button' " +
-    		                         "title='Ask your friends if you should buy this!'>" +
-    			                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-    			                     "<div class='title'>Ask Trusted Friends</div>" +
-    		                     "</div>")
+                                 "<div id='_willet_button' class='button' " +
+                                     "title='Ask your friends if you should buy this!'>" +
+                                     "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                     "<div class='title'>Ask Trusted Friends</div>" +
+                                 "</div>")
                     .css({
                         'clear': 'both'
                     });
-    		                     
+
                 button.appendTo (purchase_cta).css('display', 'inline-block');
                 $('#_willet_button').click (function () {
                     store_analytics ("WOSIBShowingAskIframe"); // log show iframe
@@ -222,7 +222,7 @@
                     show_ask();
                 });
                 store_analytics ("WOSIBShowingButton"); // log show button
-                
+
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
                 if (srv_data.has_results) {
@@ -251,13 +251,13 @@
                         $.willet_colorbox.close();
                     }
                 });
-                
+
                 // init colorbox.
                 manage_script_loading([
-                    '{{ URL }}/s/js/jquery.colorbox.js?' + 
-                    'app_uuid={{app.uuid}}&' + 
-                    'user_uuid={{user.uuid}}&' + 
-                    'instance_uuid={{instance.uuid}}&' + 
+                    '{{ URL }}/s/js/jquery.colorbox.js?' +
+                    'app_uuid={{app.uuid}}&' +
+                    'user_uuid={{user.uuid}}&' +
+                    'instance_uuid={{instance.uuid}}&' +
                     'target_url=' + window.location.href ],
                     function () {
                         // init colorbox last
@@ -267,7 +267,7 @@
                             $.willet_colorbox = window.jQuery.willet_colorbox;
                             $.willet_colorbox.init ();
                             window.jQuery.willet_colorbox.init ();
-                            
+
                             // when colorbox is ready to bounce out, check if results screen needs to open...
                             var hash        = window.location.hash;
                             var hash_search = '#open_wosib=';

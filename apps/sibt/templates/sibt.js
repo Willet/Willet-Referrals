@@ -406,23 +406,32 @@
 
             var showAsk = function (message) {
                 // shows the ask your friends iframe
-                if (products.length < 1) { // no products, do nothing
-                    // derp
-                } else if (products.length == 1) { // SIBT mode
-                    showColorbox({
+                var shopify_ids = [];
+                if (_willet_cart_items) {
+                    // WOSIB exists on page; send extra data
+                    for (var i = 0; i < _willet_cart_items.length; i++) {
+                        shopify_ids.push(_willet_cart_items[i].id);
+                    }
+                }
+
+                if (shopify_ids.length > 1 || products.length > 1) { // WOSIB mode
+                    return showColorbox({
+                        href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
+                            // do not merge with metadata(): it escapes commas
+                            "?products=" + getProductUUIDs().join(',') +
+                            "&ids=" + shopify_ids.join(',') +
+                            "&" + metadata()
+                    });
+                }
+
+                if (products.length == 1) { // SIBT mode
+                    return showColorbox({
                         href: "{{URL}}{% url AskDynamicLoader %}" +
                             // do not merge with metadata(): it escapes commas
                             "?products=" + getProductUUIDs().join(',') +
                             "&" + metadata()
                     });
-                } else { // WOSIB mode
-                    showColorbox({
-                        href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
-                            // do not merge with metadata(): it escapes commas
-                            "?products=" + getProductUUIDs().join(',') +
-                            "&" + metadata()
-                    });
-                }
+                } // else if no products: do nothing
             };
 
             var addScrollShaking = function (elem) {
@@ -508,6 +517,7 @@
             var sibt_elem = $('#mini_sibt_button').eq(0); // SIBT for ShopConnection (SIBT Connection)
             var purchase_cta = $('#_willet_shouldIBuyThisButton').eq(0); // SIBT standalone (v2, v3)
             var sibtjs_elem = $('._willet_sibt').eq(0); // SIBT-JS
+            var wosib_elem = $('#_willet_WOSIB_Button'); // WOSIB mode
 
             // combine current product with past products history from cookie
             // products can be read from func return or just the var, products
@@ -551,6 +561,46 @@
                 // shake ONLY the SIBT button when scrolled into view
                 addScrollShaking(sibt_elem);
                 saveProduct(sibt_elem.data());
+            }
+
+            // WOSIB
+            // requires _willet_cart_items to be present in global scope
+            // (a sign that the WOSIB snippet ran on this page)
+            if (wosib_elem.length > 0 && _willet_cart_items) {
+                // add the button onto the page right now
+                var button = $("<div />", {
+                        'id': '_willet_button_v3'
+                    });
+                    button.html("<p>Which ones should you buy?</p>\
+                                 <div id='_willet_button' class='button' \
+                                      title='Ask your friends if you should buy this!'>\
+                                   <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
+                                   <div class='title'>Ask Trusted Friends</div>\
+                                 </div>")
+                    .css({
+                        'clear': 'both',
+                        'display': 'inline-block'
+                    })
+                    .appendTo(wosib_elem);
+
+                $('#_willet_button').click(showAsk);
+                storeAnalytics("WOSIBShowingButton"); // log show button
+
+                // if server sends a flag that indicates "results available"
+                // (not necessarily "finished") then show finished button
+                if (instance.has_results) {
+                    $('#_willet_button').hide();
+                    $('<div />', {
+                        'id': "_willet_WOSIB_results",
+                        'class': "button"
+                    })
+                    .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                    .appendTo(button)
+                    .css({
+                        'display': 'inline-block'
+                    })
+                    .click(showResults);
+                }
             }
 
             // SIBT standalone
