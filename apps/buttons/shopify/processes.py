@@ -73,7 +73,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
         shares_by_network = share_period.get_shares_grouped_by_network()
 
         top_items  = sorted(shares_by_name, key=lambda v: v["total_shares"],
-                            reverse=True)[:10]
+                            reverse=True)[:3]
         top_shares = sorted(shares_by_network, key=lambda v: v['shares'],
                             reverse=True)
 

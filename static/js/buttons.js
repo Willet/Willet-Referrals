@@ -161,7 +161,7 @@ _willet.cookies = {
         return null;
     },
     "erase": function (name) {
-        me.create(name,"",-1);
+        _willet.cookies.create(name,"",-1);
     }
 };
 
@@ -429,7 +429,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     FB.Event.subscribe('edge.create', function(response) {
                         methods.itemShared("Facebook", params);
                     });
@@ -708,7 +708,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     twttr.events.bind('tweet', function(event) {
                         methods.itemShared("Twitter", params);
                     });
@@ -801,7 +801,6 @@ _willet = (function (me, config) {
             var script = document.createElement("script");
             script.type = "text/javascript";
             script.src = button["script"];
-            script.onload = button["onLoad"];
             HEAD.appendChild(script);
         }
         debug.log('Buttons: '+ network +' attached');
@@ -812,7 +811,7 @@ _willet = (function (me, config) {
         debug.log("Buttons: finding buttons placeholder on page");
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
 
-        if (buttonsDiv && !me.buttons_loaded) {
+        if (buttonsDiv) {
 
             // Generate button parameters
             var buttonCount = (config && config.button_count) ||
@@ -884,16 +883,13 @@ _willet = (function (me, config) {
             return;
         }
 
+        // Initialize debugging
         var isDebugging = debug.isDebugging();
         debug.register(function(debug) {
             APP_URL = (debug) ? MY_APP_URL : WILLET_APP_URL;
             PROTOCOL = (debug) ? "http:" : window.location.protocol;
         });
         debug.set(isDebugging);
-
-        if (!cookies.read(COOKIE_NAME)) {
-            me.detectNetworks();
-        }
 
         if (DOMAIN === 'localhost') {
             // Shopify won't respond on localhost, so use example data
