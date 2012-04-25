@@ -6,12 +6,12 @@
 <table border="0" cellpadding="10" cellspacing="0" width="100%">
     <tr>
         <td valign="top">
-            <div style="font-size:120%; line-height: 66px;
-             margin-bottom: 20px;">
+            <div style="font-size:150%; font-weight: bold;
+            line-height: 66px; margin-bottom: 20px;">
                 <img alt="ShopConnection logo"
                      src="{{ willet_url }}/static/imgs/ShopConnection_icon_60x60.png"
                      style="height: 60px; width: 60px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />
-                Your weekly SmartButtons report!
+                Your weekly ShopConnection report!
             </div>
             <div style="font-size:110%; margin-left: 70px;">
                 {% if item_shares and network_shares %}
@@ -62,6 +62,26 @@
                 {% comment %}
                 What do we do if they've received no shares?
                 {% endcomment %}
+                <p>We haven't detected any sharing this week.</p>
+                <p>Here are some other apps that may help you increase the
+                    number of visitors to your shop:</p>
+                <ul>
+                    <li>
+                        <a href="http://apps.shopify.com/lexity-search-engine-marketing">
+                            Lexity Search Engine Marketing
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://apps.shopify.com/olark-chat-cartsaver">
+                            Olark Chat + CartSaver
+                        </a>
+                    </li>
+                    <li>
+                        <a href="http://apps.shopify.com/amazon-product-ads">
+                            Amazon Product Ads
+                        </a>
+                    </li>
+                </ul>
                 {% endif %}
             </div>
         </td>
