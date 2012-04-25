@@ -129,8 +129,8 @@ class Email():
                          to_name=name)
 
     @staticmethod
-    def report_smart_buttons(to_addr, item_shares, network_shares,
-                           shop_name=None, client_name=None):
+    def report_smart_buttons(email="info@getwillet.com", items={},
+                             networks={}, shop_name=None, client_name=None):
         if shop_name is None:
             shop_name = ""
 
@@ -143,15 +143,15 @@ class Email():
                 'willet_url'    : URL,
                 'shop_name'     : shop_name,
                 'client_name'   : client_name,
-                'item_shares'   : item_shares,
-                'network_shares': network_shares
+                'item_shares'   : items,
+                'network_shares': networks
             }
         )
 
         subject = "Weekly Smart Buttons Report"
 
         Email.send_email(from_address=FROM_ADDR,
-                         to_address=to_addr,
+                         to_address=email,
                          to_name=client_name.title(),
                          subject=subject,
                          body=body)
