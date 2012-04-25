@@ -15,38 +15,49 @@ from util.urihandler import URIHandler
 
 
 class BatchRequest(URIHandler):
-    """ LESS EXPERIMENTAL: Start a batch request of a class method,
-    which will run for every app of app_cls in the db """
+    """ I-CAN'T-BELIEVE-IT'S-EXPERIMENTAL: Start a batch request of a class
+        method, which will run for every app of app_cls in the db """
     def get(self):
         self.post()
 
     def post(self):
         """ Expected inputs:
-            - batch_size: (int) 0 - 1000, 100 is good in general
-            - offset: (int) database offset
-            - app_cls: App class
-            - target_version: (Optional)
-            - method: method to call on app_cls
-            - params: JSON-encoded parameters to send to method
+            - app_cls    : App class
+            - method     : method to call on app_cls
+            - batch_size*: 0 - 1000, 100 is good in general
+            - offset    *: database offset
+            - params    *: JSON-encoded parameters to send to method
+            - criteria  *: JSON-encoded matching criteria
+                           to filter (equality only)
+
+            *Optional
         """
-        batch_size = int(self.request.get('batch_size'))
-        offset = int(self.request.get('offset'))
-        app_cls = self.request.get('app_cls')
-        target_version = self.request.get('target_version')
-        method = self.request.get('method')
-        # TODO: params is not actually used, but it should be
-        params = json.loads(self.request.get('params'))
+        app_cls        = self.request.get('app_cls')
+        method         = self.request.get('method')
 
-        if not batch_size or not (offset >= 0) or not app_cls:
-            self.error(400) # Bad Request
-            return
+        batch_size     = int(self.request.get('batch_size', 100))
+        offset         = int(self.request.get('offset', 0))
+        params         = json.loads(self.request.get('params', "{}"))
+        criteria       = json.loads(self.request.get('criteria', "{}"))
 
-        apps = db.Query(App).filter('class = ', app_cls).fetch(limit=batch_size, offset=offset)
+        # Convert JSON keys from unicode to strings
+        # Python 2.5 doesn't like this, but it will work in 2.7
+        # We do this because we will be using the keys as kwargs
+        converted_params = dict()
+        for key, value in params.iteritems():
+            converted_params[key.encode('utf-8')] = value
+
+        filter_obj = db.Query(App).filter('class = ', app_cls)
+        for ukey, value in criteria.iteritems():
+            key = " %s =" % ukey.encode('utf-8')
+            filter_obj.filter(key, value)
+
+        apps = filter_obj.fetch(limit=batch_size, offset=offset)
 
         # Check that method is safe and callable
         if method:
             if method[0] == '_':
-                self.error(403) # Access Denied
+                self.error(403) # Access Denied, Private method
                 return
             try:
                 if not hasattr(getattr(app_cls, method), '__call__'):
@@ -55,25 +66,22 @@ class BatchRequest(URIHandler):
                 self.error(400) # Bad Request
 
         # If reached batch size, start another batch at the next offset
+        logging.info("How many apps? %s" % len(apps))
         if len(apps) == batch_size:
             p = {
                 'batch_size': batch_size,
-                'offset': offset + batch_size,
-                'app_cls': app_cls,
-                'target_version': target_version,
-                'method': method,
-                'params': self.request.get('params')
+                'offset'    : offset + batch_size,
+                'app_cls'   : app_cls,
+                'method'    : method,
+                'params'    : self.request.get('params'),
+                'criteria'  : self.request.get('criteria')
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
         # For each app, try to create an email & send it
         for app in apps:
             try:
-                # Check version
-                if target_version != None and app.version != target_version:
-                    # Wrong version, skip this one
-                    continue
-                getattr(app, method)()
+                getattr(app, method)(**converted_params)
             except Exception, e:
                 logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__,
                                                                app.__class__.__name__,
