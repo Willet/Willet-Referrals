@@ -4,9 +4,6 @@
      * Willet's "Should I Buy This"
      * Copyright Willet Inc, 2012
      *
-     * This script serves SIBTShopify, SIBT Connection (SIBT in ShopConnection),
-     * and SIBT-JS (for outside Shopify).
-     *
      * w and d are aliases of window and document.
      */
 
@@ -15,7 +12,7 @@
     var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
     // google analytics
-    var ANALYTICS_ID = 'UA-31001469-1';
+    var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', ANALYTICS_ID]);
     // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
@@ -30,6 +27,7 @@
     var padding_elem = null;
     var topbar = null;
     var topbar_hide_button = null;
+    var pageTracker = null; // google analytics tracker object
 
     // CSS rules
     var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
@@ -75,7 +73,7 @@
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
         // true when visitor on page more than (4 times)
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
-        'version': {{sibt_version|default:"11"}}
+        'version': '{{sibt_version|default:"10"}}'
     };
     instance = {
         'has_results': ('{{has_results}}' === 'True'),
@@ -317,20 +315,28 @@
                 }).appendTo("body");
 
                 // extra google analytics component
-                if (_gaq) {
-                    try {
+                try {
+                    if (_gaq) {  // async
                         _gaq.push([
                             '_trackEvent',
                             'TrackSIBTAction',
-                            encodeURIComponent(message) + ";" +
-                                encodeURIComponent(metadata())
+                            encodeURIComponent(message),
+                            encodeURIComponent(metadata())
                         ]);
-                        console.log("Success! We have secured the enemy intelligence.");
-                    } catch (e) { // log() is {} on live.
-                        console.log("We have dropped the enemy intelligence: " + e);
+                    } else {
+                        if (_gat && !pageTracker) {
+                            // synchronous tracking
+                            pageTracker = _gat._getTracker(ANALYTICS_ID);
+                        }
+                        pageTracker._trackEvent(
+                            'TrackSIBTAction',
+                            encodeURIComponent(message),
+                            encodeURIComponent(metadata())
+                        );
                     }
-                } else {
-                    console.log("no _gaq");
+                    console.log("Success! We have secured the enemy intelligence.");
+                } catch (e) { // log() is {} on live.
+                    console.log("We have dropped the enemy intelligence: " + e);
                 }
             };
 
@@ -591,7 +597,7 @@
                 {% endif %} ; // app.top_bar_enabled
 
                 {% if app.button_enabled %} // add this button code only if necessary
-                    if (app.version <= 2) {
+                    if (parseInt(app.version) <= 2) {
                         console.log('v2 button is enabled');
                         var button = d.createElement('a');
                         var button_html = '';
@@ -613,7 +619,7 @@
                             .attr('class','_willet_button willet_reset')
                             .click(button_onclick);
                         $(purchase_cta).append(button);
-                    } else if (app.version >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
+                    } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                         console.log('v3+ button is enabled');
                         if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                             var button = $("<div />", {
@@ -706,7 +712,7 @@
                         windowHeight = $(w).height();
 
                         // popup will show only for pages sufficiently long.
-                        if (pageHeight > windowHeight * 2) {
+                        if (pageHeight > windowHeight * 1.5) {
                             if (scrollPos >= threshold) {
                                 if (!popup.is(':visible') && !clickedOff) {
                                     show_popup();
@@ -721,7 +727,6 @@
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {
-                        console.log('did something');
                         showAsk();
                         hide_popup();
                     });
@@ -752,7 +757,7 @@
 
                     // auto-show results on hash
                     var hash = w.location.hash;
-                    var hash_search = '#open_sibt=';
+                    var hash_search = '#open';
                     var hash_index = hash.indexOf(hash_search);
                     if (instance.has_results && hash_index !== -1) {
                         // if vote has results and voter came from an email
