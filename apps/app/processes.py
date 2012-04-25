@@ -29,6 +29,7 @@ class BatchRequest(URIHandler):
             - params    *: JSON-encoded parameters to send to method
             - criteria  *: JSON-encoded matching criteria
                            to filter (equality only)
+                           NOTE: the criteria need to be indexed!
 
             *Optional
         """
@@ -43,7 +44,7 @@ class BatchRequest(URIHandler):
         # Convert JSON keys from unicode to strings
         # Python 2.5 doesn't like this, but it will work in 2.7
         # We do this because we will be using the keys as kwargs
-        converted_params = dict()
+        converted_params = {}
         for key, value in params.iteritems():
             converted_params[key.encode('utf-8')] = value
 
