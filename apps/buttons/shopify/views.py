@@ -82,7 +82,7 @@ def get_details(uri_handler=None, provided_client=None):
 
 class ButtonsShopifyBeta(URIHandler):
     """If an existing customer clicks through from Shopify."""
-    def get(self):
+    def get(self, _beta):
         """Display the default 'welcome' page."""
         template_values = {
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']

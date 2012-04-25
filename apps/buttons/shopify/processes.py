@@ -64,7 +64,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         if share_period is None or (share_period.end < datetime.date.today()):
             logging.info("No shares have ever occured this period (or ever?)")
-            Email.report_smart_buttons(email, {}, {},
+            Email.report_smart_buttons(email=email, items={}, networks={},
                                        shop_name=shop,
                                        client_name=name)
             return
@@ -79,5 +79,6 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
 
 
-        Email.report_smart_buttons(email, top_items, top_shares,
+        Email.report_smart_buttons(email=email, items=top_items,
+                                   networks=top_shares,
                                    shop_name=shop, client_name=name)
