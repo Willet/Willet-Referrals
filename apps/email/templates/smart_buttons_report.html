@@ -21,31 +21,40 @@
                     or share an item on no network?
                 {% endcomment %}
                 <p>Top shares this week:</p>
-                <ul style="list-style-type: none">
+                <ul style="list-style-type: none; padding-left: 0px;">
                     {% for item in item_shares %}
-                    <li>
-                        <img src="{{ willet_url }}/static/imgs/sb-{{item.network|lower}}.png"
-                             alt="{{network.network}} Icon"
-                             style="height: 16px; width: 16px;
-                             vertical-align: text-bottom;">
+                    <li style="line-height: 51px; margin-bottom: 10px;">
+                        {% if item.image %}
+                        <img src="{{ item.image }}"
+                             alt="{{ item.name }}"
+                             style="height: 45px; width: 45px; padding: 2px;
+                             border: 1px solid #777; margin-right: 10px; float: left;">
+                        {% else %}
+                        <img src="{{ willet_url }}/static/imgs/noimage-willet.png"
+                             alt="No image available"
+                             style="height: 45px; width: 45px; padding: 2px;
+                             border: 1px solid #777; margin-right: 10px; float: left;">
+                        {% endif %}
                         {{item.name}}
-                        shared {{item.total_shares}} times
+                        shared {{item.total_shares}}
+                        time{{item.total_shares|pluralize}}
                     </li>
                     {% endfor %}
                 </ul>
                 <p>Top networks:</p>
-                <ol style="list-style-type: none">
+                <ul style="list-style-type: none; padding-left: 0px;">
                     {% for item in network_shares %}
-                    <li style="margin-bottom: 5px;">
+                    <li style="margin-bottom: 5px; margin-left: 60px;">
                         <img src="{{ willet_url }}/static/imgs/sb-{{item.network|lower}}.png"
                              alt="{{network.network}} Icon"
                              style="height: 16px; width: 16px;
                              vertical-align: text-bottom;">
-                        {{item.shares}} shares this week ({{item.percent}}%
+                        {{item.shares}} share{{item.shares|pluralize}} this
+                        week ({{item.percent}}%
                         of all shares)
                     </li>
                     {% endfor %}
-                </ol>
+                </ul>
                 {% else %}
                 {% comment %}
                 What do we do if they've received no shares?

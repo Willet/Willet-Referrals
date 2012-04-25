@@ -376,6 +376,10 @@ class SharePeriod(Model):
             total_shares = len(product_shares)
             item["total_shares"] = total_shares
 
+            # All product shares should use the same url,
+            # so use the first...
+            item["image"] = product_shares[0].img_url
+
             networks = []
             sorted_product_shares = sorted(product_shares,
                                            key=lambda v: v.network)
