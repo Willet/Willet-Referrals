@@ -72,7 +72,7 @@
                         target_url    : '{{ target_url }}'
                       };
         $.ajax({
-            url      : "{{ URL }}{% url TrackWOSIBUserAction %}",
+            url      : "{{ URL }}{% url TrackSIBTUserAction %}",
             dataType : 'json',
             data     : payload,
             type     : 'post',
