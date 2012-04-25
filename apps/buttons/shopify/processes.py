@@ -49,13 +49,23 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             return
 
         client = ClientShopify.get_by_url(store_url)
-        if client is None or (client is not None and client.merchant is None):
+        if client is None:
             logging.info("No client!")
             return
 
+        merchant = None
+        try:
+            merchant = client.merchant
+        except TypeError:
+            # Client has no merchant
+            logging.error("Client %r has no merchant.  Using fake values" % (client,))
+
         email = client.email
         shop  = client.name
-        name  = client.merchant.get_full_name()
+        if merchant is not None:
+            name  = client.merchant.get_full_name()
+        else:
+            name  = "Shopify Merchant"
 
         share_period = SharePeriod.all()\
                         .filter('app_uuid =', app.uuid)\
