@@ -17,6 +17,7 @@ class ButtonsShopifyEmailReports(URIHandler):
     def get(self):
         logging.info("Preparing reports...")
 
+        # Do we want also want to filter by non-null clients too?
         apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
 
         for app in apps:
@@ -52,12 +53,8 @@ class ButtonsShopifyItemSharedReport(URIHandler):
                         .order('-end')\
                         .get()
 
-        if share_period is None:
-            logging.info("No shares have ever occured")
-            return
-
-        if share_period.end < datetime.date.today():
-            logging.info("No recent period exists -> No shares this period")
+        if share_period is None or (share_period.end < datetime.date.today()):
+            logging.info("No shares have ever occured this period (or ever?)")
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
