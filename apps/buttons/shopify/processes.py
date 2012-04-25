@@ -48,6 +48,15 @@ class ButtonsShopifyItemSharedReport(URIHandler):
             logging.info("App not found!")
             return
 
+        client = ClientShopify.get_by_url(store_url)
+        if client is None or (client is not None and client.merchant is None):
+            logging.info("No client!")
+            return
+
+        email = client.email
+        shop  = client.name
+        name  = client.merchant.get_full_name()
+
         share_period = SharePeriod.all()\
                         .filter('app_uuid =', app.uuid)\
                         .order('-end')\
@@ -55,6 +64,9 @@ class ButtonsShopifyItemSharedReport(URIHandler):
 
         if share_period is None or (share_period.end < datetime.date.today()):
             logging.info("No shares have ever occured this period (or ever?)")
+            Email.report_smart_buttons(email, {}, {},
+                                       shop_name=shop,
+                                       client_name=name)
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
@@ -65,14 +77,7 @@ class ButtonsShopifyItemSharedReport(URIHandler):
         top_shares = sorted(shares_by_network, key=lambda v: v['shares'],
                             reverse=True)
 
-        client = ClientShopify.get_by_url(store_url)
-        if client is None or (client is not None and client.merchant is None):
-            logging.info("No client!")
-            return
 
-        email = client.email
-        shop  = client.name
-        name  = client.merchant.get_full_name()
 
         Email.report_smart_buttons(email, top_items, top_shares,
-                                 shop_name=shop, client_name=name)
+                                   shop_name=shop, client_name=name)

@@ -14,6 +14,12 @@
                 Your weekly SmartButtons report!
             </div>
             <div style="font-size:110%; margin-left: 70px;">
+                {% if item_shares and network_shares %}
+                {% comment %}
+                    We should always have these two values or neither of them.
+                    After all, how can someone share no item on a network,
+                    or share an item on no network?
+                {% endcomment %}
                 <p>Top 10 shared items this week:</p>
                 <ol>
                     {% for item in item_shares %}
@@ -52,6 +58,11 @@
                     </li>
                     {% endfor %}
                 </ol>
+                {% else %}
+                {% comment %}
+                What do we do if they've received no shares?
+                {% endcomment %}
+                {% endif %}
             </div>
         </td>
     </tr>
