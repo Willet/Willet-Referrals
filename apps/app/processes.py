@@ -66,7 +66,6 @@ class BatchRequest(URIHandler):
                 self.error(400) # Bad Request
 
         # If reached batch size, start another batch at the next offset
-        logging.info("How many apps? %s" % len(apps))
         if len(apps) == batch_size:
             p = {
                 'batch_size': batch_size,
