@@ -32,6 +32,7 @@
 					    	// This function is called when video is playing
 					    	// Track video progression by quarters
 					    	function onPlayingUpdate() {
+					    		alert('I work!');
 					    		var ratio = 0,
 					    			ytplayer = document.getElementById("ytPlayer");
 							    try {
@@ -50,10 +51,9 @@
 							}
 
 							// This function is called when the player changes state
-							function onPlayerStateChange(newState) {
+							window.onPlayerStateChange = function (newState) {
 								var ytplayer = document.getElementById("ytPlayer"),
 									pageTracker = _gat._getTracker("UA-23764505-9");
-
 								switch (newState) {
 
 									case PLAYING:
@@ -66,14 +66,14 @@
 										onPlayingUpdate();
 										break;
 
-									case FINISHED:
+									case ENDED:
 								    	intervalID && window.clearInterval(intervalID);
 								    	break;
 
 								    default:
 								    	break;
 								}
-							}
+							};
 
 							// This function is automatically called by the player once it loads
 							window.onYouTubePlayerReady = function (playerId) {
