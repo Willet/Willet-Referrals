@@ -10,7 +10,6 @@ urlpatterns = [
     (r'/s/shopify/(.*)/edit',       SIBTShopifyEditStyle),
     (r'/s/shopify/finished',        ShowFinishedPage),
     (r'/s/shopify/sibt.js',         SIBTShopifyProductDetection),
-    (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),
     (r'/s/shopify/sibt-ab.js',      SIBTShopifyServeAB),
     (r'/s/shopify/error.html',      SIBTShopifyInstallError),
     (r'/s/shopify/v2to3',           SIBTShopifyVersion2To3)

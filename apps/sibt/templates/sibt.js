@@ -326,8 +326,8 @@
                                 encodeURIComponent(metadata())
                         ]);
                         console.log("Success! We have secured the enemy intelligence.");
-                    } catch (e) {
-                        console.log(e); // log() is {} on live.
+                    } catch (e) { // log() is {} on live.
+                        console.log("We have dropped the enemy intelligence: " + e);
                     }
                 } else {
                     console.log("no _gaq");
@@ -400,17 +400,19 @@
 
             var showAsk = function (message) {
                 // shows the ask your friends iframe
-                if (products.length <= 1) {
-                    // SIBT mode
+                if (products.length < 1) { // no products, do nothing
+                    // derp
+                } else if (products.length == 1) { // SIBT mode
                     showColorbox({
                         href: "{{URL}}{% url AskDynamicLoader %}" +
+                            // do not merge with metadata(): it escapes commas
                             "?products=" + getProductUUIDs().join(',') +
                             "&" + metadata()
                     });
-                } else {
-                    // WOSIB mode
+                } else { // WOSIB mode
                     showColorbox({
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
+                            // do not merge with metadata(): it escapes commas
                             "?products=" + getProductUUIDs().join(',') +
                             "&" + metadata()
                     });
@@ -733,10 +735,13 @@
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
-            // Load jQuery colorbox last
-            if (!$.willet_colorbox) {
+            // Load jQuery colorbox last. It cannot be loaded twice!
+            if (!($.willet_colorbox || jQuery.willet_colorbox)) {
                 $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
-                    $.willet_colorbox.init(); // init colorbox last
+                    if (jQuery.willet_colorbox) {
+                        $.willet_colorbox = jQuery.willet_colorbox;
+                    }
+                    $.willet_colorbox.init();
 
                     // watch for message; Create IE + others compatible event handler
                     $(w).bind('onmessage message', function(e) {

@@ -3,6 +3,7 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
+import datetime
 import logging
 import os
 import re
@@ -14,15 +15,12 @@ from google.appengine.ext.webapp import template
 
 from apps.app.models import App
 from apps.client.models import Client
-from apps.client.shopify.models import ClientShopify
 from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
-from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
-from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import *
@@ -646,9 +644,7 @@ class SIBTServeScript(URIHandler):
 
         def get_instance_event():
             """Returns an (instance, event) tuple for this pageload,
-
             if there is an instance.
-
             """
             instance = SIBTInstance.get_by_asker_for_url(user, page_url)
             if instance:
@@ -701,7 +697,7 @@ class SIBTServeScript(URIHandler):
             return
 
         # have page_url, store_url
-        app = SIBT.get_by_store_url(store_url)
+        app = SIBT.get_by_store_url(store_url)  # could come as SIBTShopify
         client = Client.get_by_url(store_url)
 
         # resolve app/client if either of them is not present
@@ -780,9 +776,9 @@ class SIBTServeScript(URIHandler):
             # determine whether to show the results button.
             # code below makes button show only if vote was started less than 1 day ago.
             if votes_count:
-                time_diff = datetime.now() - instance.created
+                time_diff = datetime.datetime.now() - instance.created
                 logging.debug ("time_diff = %s" % time_diff)
-                if time_diff <= timedelta(days=1):
+                if time_diff <= datetime.timedelta(days=1):
                     has_results = True
             logging.debug ("has_results = %s" % has_results)
 
@@ -798,8 +794,8 @@ class SIBTServeScript(URIHandler):
                 threshold = UNSURE_DETECTION['url_count_for_app_and_user']
 
                 if len(tracked_urls) >= threshold:
-                    # activate unsure_mutli_view (currently does nothing)
-                    unsure_mutli_view = True
+                    # activate unsure_multi_view (currently does nothing)
+                    unsure_multi_view = True
 
         # have client, app, user, and maybe instance
         try:
