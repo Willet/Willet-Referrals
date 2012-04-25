@@ -945,7 +945,7 @@ try {
 } catch(e) {
     (function() {
         var error = encodeURIComponent("Error initializing smart-buttons");
-        var script = encodeURIComponent("smart-buttons.js");
+        var script = encodeURIComponent("buttons.js");
 
         //TODO: include line number
         var st = encodeURIComponent(e.toString());
