@@ -2,8 +2,7 @@
 """ 'Get' functions for the ShopConnection application
 """
 import logging
-from collections                    import defaultdict
-from datetime                       import date
+import datetime
 from google.appengine.api           import taskqueue
 from google.appengine.ext.webapp    import template
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
@@ -477,14 +476,15 @@ class ButtonsShopifyItemSharedReport(URIHandler):
                         .get()
 
         if share_period is None:
-            logging.info("No share period found matching criteria")
+            logging.info("No shares have ever occured")
+            return
+
+        if share_period.end < datetime.date.today():
+            logging.info("No recent period exists -> No shares this period")
             return
 
         shares_by_name    = share_period.get_shares_grouped_by_product()
         shares_by_network = share_period.get_shares_grouped_by_network()
-
-        logging.info(shares_by_name)
-        logging.info(shares_by_network)
 
         top_items        = sorted(shares_by_name,
                                   key=lambda v: v["total_shares"],
@@ -493,16 +493,12 @@ class ButtonsShopifyItemSharedReport(URIHandler):
                                   key=lambda v: v['shares'],
                                   reverse=True)
 
-        logging.info(top_items)
-        logging.info(top_shares)
-
         client = ClientShopify.get_by_url(store_url)
         if client is None or (client is not None and client.merchant is None):
             logging.info("No client!")
             return
 
-        #email = client.email
-        email = 'info@getwillet.com'
+        email = client.email
         shop  = client.name
         name  = client.merchant.get_full_name()
 
