@@ -429,7 +429,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     FB.Event.subscribe('edge.create', function(response) {
                         methods.itemShared("Facebook", params);
                     });
@@ -708,7 +708,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     twttr.events.bind('tweet', function(event) {
                         methods.itemShared("Twitter", params);
                     });
@@ -823,17 +823,17 @@ _willet = (function (me, config) {
         updateLoggedInStatus(network, true, true);
 
         var message = JSON.stringify({
-            "name"   :  params.data.title,
+            "name"   : params.data.product.title,
             "network": network,
             "img"    : params.photo
         });
 
         //Need to append param to avoid caching...
-        var params = "message="    + encodeURIComponent(message)
+        var queryString = "message="    + encodeURIComponent(message)
                      + "&nocache=" + Math.random();
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + params;
+        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + queryString;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
@@ -931,7 +931,7 @@ _willet = (function (me, config) {
             script.type = "text/javascript";
             script.src = button["script"];
             script.onload = function () { 
-                button["onload"] && button["onload"](params);
+                button["onload"] && button["onload"](methods, params);
             };
             HEAD.appendChild(script);
         }
