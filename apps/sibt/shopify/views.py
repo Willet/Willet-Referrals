@@ -69,7 +69,7 @@ class SIBTShopifyWelcome(URIHandler):
             shop_name = 'Your Shopify Store'
             if client is not None and client.merchant is not None:
                 client_email = client.email
-                shop_owner = client.merchant.get_attr('full_name')
+                shop_owner = client.merchant.get_attr('full_name') or 'Merchant'
                 shop_name = client.name
 
                 # Query the Shopify API to update all Products
