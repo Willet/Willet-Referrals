@@ -45,8 +45,6 @@ class DoUninstalledApp(URIHandler):
 
                 if hasattr(app, 'recurring_billing_status'):
                     app.recurring_billing_status = 'none'
-                if hasattr(app, 'recurring_billing_enabled'):
-                    app.recurring_billing_enabled = False
                 if hasattr(app, 'recurring_billing_id'):
                     app.recurring_billing_id = 0
                 if hasattr(app, 'recurring_billing_price'):

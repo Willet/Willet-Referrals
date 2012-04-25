@@ -380,7 +380,7 @@ _willet.networks = (function (willet) {
     // name: {
     //      detect: {
     //          method: <string> "api" | "image" | "none"
-    //          func: <function> for method api, will call button api, takes methods
+    //          func: <function> for method api, will call button api
     //                           for method image, will return an image url
     //                           for method none, empty function
     //                           takes inputs methods
@@ -388,7 +388,7 @@ _willet.networks = (function (willet) {
     //      button: {
     //          script: <string> url for script that will load the button
     //          create: <function> function which creates the button, takes inputs methods & params
-    //          onLoad: <function> (optional) function which fires when the script is loaded, takes params
+    //          onLoad: <function> (optional) function which fires when the script is loaded
     //      }
     // }
     var debug     = willet.debug,
@@ -429,7 +429,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onload": function(params) {
+                "onload": function(methods) {
                     FB.Event.subscribe('edge.create', function(response) {
                         methods.itemShared("Facebook", params);
                     });
@@ -455,7 +455,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '96px' : '57px';
+                    button.style.width = params.buttonCount ? '90px' : '57px';
 
                     var u = "http://www.thefancy.com/fancyit?"
                           + "ItemURL=" + encodeURIComponent( params.canonicalUrl )
@@ -496,7 +496,7 @@ _willet.networks = (function (willet) {
                         "buttonAlignment": params.buttonAlignment
                     });
                     button.style.overflow = 'visible';
-                    button.style.width = params.buttonCount ? '74px' : '32px';
+                    button.style.width = params.buttonCount ? '90px' : '32px';
 
                     var gPlus = document.createElement("div");
                     gPlus.className = 'g-plusone';
@@ -547,7 +547,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '77px' : '43px';
+                    button.style.width = params.buttonCount ? '90px' : '43px';
 
                     var link = document.createElement("a");
                     link.className = 'willet-pinterest-button';
@@ -618,9 +618,11 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
+                    button.style.width = params.buttonCount ? '90px' : '70px';
+
                     var sv = document.createElement("sv:product-button");
                     sv.setAttribute("type", "boxed");
-                    sv.style.width = '70px';
+
                     button.appendChild(sv);
                     // Svpply assumes it has to wait for window.onload before running
                     // But window.onload has already fired at this point
@@ -650,7 +652,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = '62px';
+                    button.style.width = params.buttonCount ? '90px' : '62px';
 
                     var link = document.createElement("a");
                     link.href = 'http://www.tumblr.com/share';
@@ -690,7 +692,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '98px' : '56px';
+                    button.style.width = params.buttonCount ? '90px' : '56px';
 
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";
@@ -706,7 +708,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onload": function(params) {
+                "onload": function(methods) {
                     twttr.events.bind('tweet', function(event) {
                         methods.itemShared("Twitter", params);
                     });

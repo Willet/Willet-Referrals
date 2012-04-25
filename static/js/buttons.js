@@ -429,9 +429,9 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onLoad": function() {
+                "onload": function(methods) {
                     FB.Event.subscribe('edge.create', function(response) {
-                        methods.itemShared("Facebook");
+                        methods.itemShared("Facebook", params);
                     });
                     // If Facebook is already loaded,
                     // trigger it to enable Like button
@@ -455,7 +455,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '96px' : '57px';
+                    button.style.width = params.buttonCount ? '90px' : '57px';
 
                     var u = "http://www.thefancy.com/fancyit?"
                           + "ItemURL=" + encodeURIComponent( params.canonicalUrl )
@@ -472,7 +472,7 @@ _willet.networks = (function (willet) {
                     link.href = u;
 
                     link.onclick = function() {
-                        methods.itemShared("Fancy");
+                        methods.itemShared("Fancy", params);
                     };
                     
                     link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
@@ -496,7 +496,7 @@ _willet.networks = (function (willet) {
                         "buttonAlignment": params.buttonAlignment
                     });
                     button.style.overflow = 'visible';
-                    button.style.width = params.buttonCount ? '74px' : '32px';
+                    button.style.width = params.buttonCount ? '90px' : '32px';
 
                     var gPlus = document.createElement("div");
                     gPlus.className = 'g-plusone';
@@ -511,7 +511,7 @@ _willet.networks = (function (willet) {
                     // https://developers.google.com/+/plugins/+1button/#plusonetag-parameters
                     window._willet_GooglePlusShared = function(response) {
                         if (response && response.state && response.state === "on") {
-                            methods.itemShared("GooglePlus");
+                            methods.itemShared("GooglePlus", params);
                         }
                     };
                     
@@ -547,7 +547,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '77px' : '43px';
+                    button.style.width = params.buttonCount ? '90px' : '43px';
 
                     var link = document.createElement("a");
                     link.className = 'willet-pinterest-button';
@@ -563,7 +563,7 @@ _willet.networks = (function (willet) {
                     link.style.width = "43px";
                     link.style.zIndex = "100";
                     link.onclick = function() {
-                        methods.itemShared("Pinterest");
+                        methods.itemShared("Pinterest", params);
                         window.open("//pinterest.com/pin/create/button/?" +
                             "url=" + encodeURIComponent( params.canonicalUrl ) + 
                             "&media=" + encodeURIComponent( params.photo ) + 
@@ -618,9 +618,11 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
+                    button.style.width = params.buttonCount ? '90px' : '70px';
+
                     var sv = document.createElement("sv:product-button");
                     sv.setAttribute("type", "boxed");
-                    sv.style.width = '70px';
+
                     button.appendChild(sv);
                     // Svpply assumes it has to wait for window.onload before running
                     // But window.onload has already fired at this point
@@ -628,7 +630,7 @@ _willet.networks = (function (willet) {
                     var interval = setInterval(function () {
                         if (window.svpply_api && window.svpply_api.construct) {
                             window.svpply_api.construct();
-                            button.onclick = function () { methods.itemShared("Svpply"); };
+                            button.onclick = function () { methods.itemShared("Svpply", params); };
                             clearInterval(interval);
                         }
                     }, 100);
@@ -650,7 +652,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = '62px';
+                    button.style.width = params.buttonCount ? '90px' : '62px';
 
                     var link = document.createElement("a");
                     link.href = 'http://www.tumblr.com/share';
@@ -668,7 +670,7 @@ _willet.networks = (function (willet) {
                     link.style.marginTop = 0;
 
                     link.onclick = function() {
-                        methods.itemShared("Tumblr");
+                        methods.itemShared("Tumblr", params);
                     };
 
                     button.appendChild(link);
@@ -690,7 +692,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
-                    button.style.width = params.buttonCount ? '98px' : '56px';
+                    button.style.width = params.buttonCount ? '90px' : '56px';
 
                     var link = document.createElement("a");
                     link.href = "https://twitter.com/share";
@@ -706,9 +708,9 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onLoad": function() {
+                "onload": function(methods) {
                     twttr.events.bind('tweet', function(event) {
-                        methods.itemShared("Twitter");
+                        methods.itemShared("Twitter", params);
                     });
                 }
             }
