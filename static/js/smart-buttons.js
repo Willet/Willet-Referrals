@@ -161,7 +161,7 @@ _willet.cookies = {
         return null;
     },
     "erase": function (name) {
-        me.create(name,"",-1);
+        _willet.cookies.create(name,"",-1);
     }
 };
 
