@@ -321,10 +321,8 @@ class VoteDynamicLoader(URIHandler):
 
         except ValueError:
             # We can't find the instance, so let's assume the vote is over
-            template_values = {
-                'output': 'Vote is over'
-            }
-            path = os.path.join('apps/sibt/templates/', 'close_iframe.html')
+            self.response.out.write("This vote is now over.")
+            return
 
         # Finally, render the HTML!
         self.response.headers.add_header('P3P', P3P_HEADER)
@@ -849,4 +847,14 @@ class SIBTServeScript(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.headers['Content-Type'] = 'text/javascript; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
+        return
+
+
+class SIBTShopifyServeScript(URIHandler):
+    """Does everything SIBTServeScript does."""
+    def get(self):
+        self.redirect("%s%s?%s" % (URL,
+                                   url('SIBTServeScript'),
+                                   self.request.query_string),
+                      permanent=True)
         return

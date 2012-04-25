@@ -1,4 +1,4 @@
-{% extends "../shopify/templates/base.html" %}
+{% extends "base.html" %}
 
 {% block head %}
     <style>
@@ -26,7 +26,7 @@
             white-space: pre;
             line-height: 13px;
         }
-        #sibt_reg_form table td, #sibt_reg_form input, 
+        #sibt_reg_form table td, #sibt_reg_form input,
         #prod_form table td, #prod_form input, #prod_form p {
             font-size: 1.1em;
         }
@@ -97,7 +97,7 @@
 {% block content %}
 
     <h1 class="span-24 last lower-100 center">Should I Buy This?</h1>
-    
+
     <div class="span-8 append-1">
         <p class="span-8 lower-50">
             Lowering cart abandonment <strong>and</strong> gaining you <strong>new</strong>, <strong>better</strong> customers!
@@ -139,7 +139,7 @@
                     </tr>
                 </table>
             </fieldset>
-            
+
             <fieldset>
                 <legend>Site information</legend>
                 <table>
@@ -157,7 +157,7 @@
                     </tr>
                 </table>
             </fieldset>
-            
+
             <input class="button" type="submit" value="Done" />
             <div id='error_bar'></div>
         </form>

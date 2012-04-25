@@ -24,6 +24,7 @@ from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
 from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models import User
+from apps.wosib.actions import *
 
 from util.consts import *
 from util.helpers import url

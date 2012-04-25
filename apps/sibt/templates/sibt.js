@@ -34,6 +34,9 @@
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 
+    // WOSIB: get this thing inside the closure
+    var _willet_cart_items = _willet_cart_items || w._willet_cart_items || [];
+
     var attachCSS = function () {
         var styles = [app_css, colorbox_css, popup_css];
         var head_elem = d.getElementsByTagName('head')[0];
@@ -414,6 +417,9 @@
                     }
                 }
 
+                console.log(shopify_ids);
+                console.log(products);
+
                 if (shopify_ids.length > 1 || products.length > 1) { // WOSIB mode
                     return showColorbox({
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
@@ -424,14 +430,18 @@
                     });
                 }
 
-                if (products.length == 1) { // SIBT mode
+                if (shopify_ids.length == 1 || products.length == 1) { // SIBT mode
                     return showColorbox({
                         href: "{{URL}}{% url AskDynamicLoader %}" +
                             // do not merge with metadata(): it escapes commas
                             "?products=" + getProductUUIDs().join(',') +
+                            "&ids=" + shopify_ids.join(',') +
                             "&" + metadata()
                     });
-                } // else if no products: do nothing
+                }
+
+                // else if no products: do nothing
+                console.log("no products! cancelling dialogue.");
             };
 
             var addScrollShaking = function (elem) {
