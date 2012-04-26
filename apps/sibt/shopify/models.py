@@ -189,9 +189,34 @@ class SIBTShopify(SIBT, AppShopify):
     def do_install(self, email_client=True):
         """Installs this app."""
 
+        # SIBT2 (cart page snippet)
+        wosib_script_src = """<!-- START Willet Cart snippet -->
+            <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
+            <script type="text/javascript">
+                var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
+                var _willet_cart_items = [
+                    {%% for item in cart.items %%}
+                        { "image" : "{{ item.image }}", // url
+                          "title" : "{{ item.title }}", // or "name"
+                          "id" : "{{ item.product.id }}",
+                          "product_url" : "{{ item.product.url }}"
+                        },
+                    {%% endfor %%}
+                {}];
+
+                // remove trailing element... IE7 trailing comma patch
+                _willet_cart_items.pop();
+
+                (function (s) {
+                    s.type = 'text/javascript';
+                    s.src = _willet_wosib_script;
+                    document.getElementsByTagName("head")[0].appendChild(s);
+                }(document.createElement('script')));
+            </script>""" % (DOMAIN, reverse_url('SIBTServeScript'))
+
         # SIBT2 (multiple products)
         if self.version == '10':
-            willet_snippet = """<!-- START willet sibt for Shopify -->
+            willet_snippet = """<!-- START Willet Product page snippet -->
                 <div id="_willet_shouldIBuyThisButton"></div>
                 <script type="text/javascript">
                 (function(w, d) {
@@ -264,6 +289,11 @@ class SIBTShopify(SIBT, AppShopify):
             'asset': {
                 'value': willet_snippet,
                 'key': 'snippets/willet_sibt.liquid'
+            }
+        },{
+            'asset': {
+                'value': wosib_script_src,
+                'key': 'snippets/willet_wosib.liquid'
             }
         }]
         # Install yourself in the Shopify store
