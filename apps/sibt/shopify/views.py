@@ -63,7 +63,7 @@ class SIBTShopifyWelcome(URIHandler):
                 logging.error('Memcache is lagging!')
 
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
-            app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
+            # app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
 
             shop_owner = 'Shopify Merchant'
             shop_name = 'Your Shopify Store'
