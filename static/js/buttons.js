@@ -395,6 +395,30 @@ _willet.networks = (function (willet) {
         messaging = willet.messaging,
         util      = willet.util;
     return {
+        "AskFriends": {
+            "priority": 1,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//brian-willet.appspot.com/s/sibt.js?page_url=' + window.location,
+                "create": function () {
+                    var button = util.createBasicButton({
+                        "id": '_mini_sibt_button'
+                    });
+
+                    var d = document.createElement("a");
+                    d.id = 'mini_sibt_button';
+                    d.style.cursor = 'pointer';
+                    d.style.display = 'inline-block';
+                    d.style.background = "url('//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                    d.style.width = '80px';
+                    button.appendChild(d);
+                    return button;
+                }
+            }
+        },
         "Facebook": {
             "priority": 2,
             "detect": {
@@ -712,30 +736,6 @@ _willet.networks = (function (willet) {
                     twttr.events.bind('tweet', function(event) {
                         methods.itemShared("Twitter", params);
                     });
-                }
-            }
-        },
-        "AskFriends": {
-            "priority": 1,
-            "detect": {
-                "method": "none",
-                "func": function(methods) { return ""; }
-            },
-            "button": {
-                "script": '//brian-willet.appspot.com/s/sibt.js?page_url=' + window.location,
-                "create": function () {
-                    var button = util.createBasicButton({
-                        "id": '_mini_sibt_button'
-                    });
-
-                    var d = document.createElement("a");
-                    d.id = 'mini_sibt_button';
-                    d.style.cursor = 'pointer';
-                    d.style.display = 'inline-block';
-                    d.style.background = "url('//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
-                    d.style.width = '80px';
-                    button.appendChild(d);
-                    return button;
                 }
             }
         }
