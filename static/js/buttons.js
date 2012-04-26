@@ -135,6 +135,20 @@ _willet.util = {
             }
         }
         return false;
+    },
+    "getInternetExplorerVersion": function() {
+        // Returns the version of Internet Explorer or a -1
+        // (indicating the use of another browser).
+
+        // http://msdn.microsoft.com/en-us/library/ms537509.aspx
+        var rv = -1; // Return value assumes failure.
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            var ua = navigator.userAgent;
+            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null)
+                rv = parseFloat( RegExp.$1 );
+        }
+        return rv;
     }
 };
 
@@ -939,7 +953,7 @@ _willet = (function (me, config) {
 }(_willet));
 
 try {
-    if (_willet && !_willet.buttonsLoaded) {
+    if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() != 7)) {
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
     }
