@@ -168,7 +168,7 @@ class SIBT(App):
             try:
                 product_img = products[0].images[0]
             except:
-                pass
+                product_img = ''
 
         # Now, make the object
         instance = SIBTInstance(key_name=uuid,
@@ -282,7 +282,7 @@ class SIBTInstance(Model):
         """Returns this instance's products as objects."""
         return [Product.get(product_uuid) for product_uuid in self.products]
 
-    def get_winning_products (self):
+    def get_winning_products(self):
         """Returns an array of products with the most votes in the instance.
 
         Array returned can be of one item.
@@ -378,7 +378,7 @@ class SIBTInstance(Model):
             shard_name = self.uuid + str(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = VoteCounter(key_name      =shard_name,
+                counter = VoteCounter(key_name=shard_name,
                                       instance_uuid=self.uuid)
             counter.yesses += 1
             counter.put()

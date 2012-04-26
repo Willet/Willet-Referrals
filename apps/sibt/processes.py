@@ -675,11 +675,12 @@ class SendFriendAsks(URIHandler):
             msg: %s \n\
             link: %s' % (asker, friends, msg, link))
 
+        # supposedly: [Product, Product, Product]
         products = [Product.get(uuid) for uuid in product_uuids]
-        if not products[0]:  # supposedly: [Product, Product, Product]
+        if not products[0] and product:
             products = [product]
-            if not product:  # have wosib mode supersede product_uuid
-                product = random.choice(products)
+        elif not product:  # back-fill the product variable
+            product = random.choice(products)
 
         if not user:
             logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))

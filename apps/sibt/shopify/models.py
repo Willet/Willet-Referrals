@@ -190,7 +190,7 @@ class SIBTShopify(SIBT, AppShopify):
         """Installs this app."""
 
         # SIBT2 (multiple products)
-        if self.version == '10' or self.version == '11':
+        if self.version == '10':
             willet_snippet = """<!-- START willet sibt for Shopify -->
                 <div id="_willet_shouldIBuyThisButton"></div>
                 <script type="text/javascript">
@@ -199,8 +199,8 @@ class SIBTShopify(SIBT, AppShopify):
                     var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
                     var product_json = {{ product | json }};
                     var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+w.location;
-                    w._willet_product_json = product_json;
                     if (product_json) {
+                        w._willet_product_json = product_json;
                         params += '&product_id=' + product_json.id;
                     }
                     var src = "http://%s%s?" + params;

@@ -101,7 +101,7 @@ class AskDynamicLoader(URIHandler):
                 logging.debug("get products by UUIDs, got %r" % products)
                 return products
 
-            products = [ProductShopify.get_by_shopify_id(uuid) \
+            products = [ProductShopify.get_by_shopify_id(id) \
                         for id in product_ids]
             if products[0]:
                 logging.debug("get products by Shopify IDs, got %r" % products)
@@ -182,7 +182,7 @@ class AskDynamicLoader(URIHandler):
         # successive steps to obtain the product(s) using any way possible
         products = get_products(app=app)
         if not products[0]:  # we failed to find a single product!
-            logging.error("Could not find products %r" % product_uuids)
+            logging.error("Could not find products; quitting")
             self.response.out.write("Products requested are not in our database yet.")
             return
 
@@ -503,9 +503,9 @@ class ShowResults(URIHandler):
                 product_image = '/static/imgs/noimage-willet.png' # no image default
 
             try:
-                product_link = winning_products[0].link
+                product_link = winning_products[0].resource_url
             except:
-                product_link = '' # no image default
+                product_link = '' # no link default
 
             template_values = {
                 'product': winning_products[0],
