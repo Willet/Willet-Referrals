@@ -906,7 +906,8 @@ _willet = (function (me, config) {
                 },
                 title: "Glass of beer"
             });
-        } else {
+        } else if (window.location.pathname.match(/^(.*)?\/products\//)) {
+            // only attempt to load smart-buttons if we are on a product page
             try {
                 debug.log("Buttons: initiating product.json request")
                 messaging.ajax({
