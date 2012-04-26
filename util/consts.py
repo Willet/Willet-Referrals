@@ -17,14 +17,14 @@ NAME = 'Willet'
 
 # Domain Stuff
 USING_DEV_SERVER = False # Never change - use local_consts.py
-PROTOCOL = 'http' 
+PROTOCOL = 'http'
 SECURE_PROTOCOL = 'https'
 APP_DOMAIN = 'social-referral.appspot.com'
 APP_LIVE = 'social-referral'
 APP_LIVE_DEBUG = bool(get_application_id() != APP_LIVE) # False on live
-DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
+DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
-SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
+SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
 KEYS = os.environ['HTTP_HOST']
 
 # Our BS P3P Header
@@ -41,7 +41,7 @@ FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
 # MailChimp Stuff
 MAILCHIMP_API_KEY = 'b58ce277cd799842ed2bdf03b06d603b-us4'
-    
+
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
 MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
@@ -56,14 +56,14 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 
 SHOPIFY_APPS = {
     'AppShopify': {
-        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
-        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
-        'class_name': 'SIBTShopify',
-        'facebook': {
-            'app_id': '132803916820614',
-            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f',  # buttons
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586',  # buttons
+        'class_name': 'SIBTShopify',  # SIBT
+        'facebook': {  # SIBT
+            'app_id': '132803916820614',  # SIBT
+            'app_secret': '59a1dbe26a27e72ea32395f2e2d434e0'  # SIBT
         },
-        'email_list_id': None,
+        'mailchimp_list_id': None,
     }, 'SIBTShopify': {
         'api_key': 'b153f0ccc9298a8636f92247e0bc53dd',
         'api_secret': '735be9bc6b3e39b352aa5c287f4eead5',
@@ -83,8 +83,8 @@ SHOPIFY_APPS = {
         },
         'mailchimp_list_id': None,
     }, 'ButtonsShopify': {
-        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
-        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f',
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586',
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
     }
@@ -92,7 +92,7 @@ SHOPIFY_APPS = {
 
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 4, 
+    'url_count_for_app_and_user': 5,
 }
 
 # controls the number of memcache buckets
@@ -161,7 +161,7 @@ INSTALLED_APPS = [
 # > ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 # > LOCAL_CONSTS = dict((name, value) for (name, value) in globals().items()
 # >                                   if name[:1] in ascii_uppercase)
-# > 
+# >
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:

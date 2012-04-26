@@ -73,7 +73,7 @@
             'topbar': ('{{app.top_bar_enabled}}' === 'True')
         },
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
-        // true when visitor on page more than (4 times)
+        // true when visitor on page more than (5) times
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
         'version': '{{sibt_version|default:"10"}}'
     };
@@ -739,7 +739,9 @@
                 }
 
                 // if user visited at least two different product pages
-                if ($.cookie('product1_image') && $.cookie('product2_image')) {
+                if ($.cookie('product1_image') &&
+                    $.cookie('product2_image') &&
+                    unsure_multi_view) {
                     console.log('bottom popup enabled');
                     var clickedOff = false;
 
@@ -795,7 +797,7 @@
                         hide_popup();
                     });
                 } else {
-                    console.log('cookies not populated yet');
+                    console.log('cookies not populated / not unsure yet');
                 }
             {% endif %} ; // app.bottom_popup_enabled
 

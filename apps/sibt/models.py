@@ -41,7 +41,8 @@ class SIBT(App):
     top_bar_enabled = db.BooleanProperty(default=False)
 
     # if the bottom popup is enabled for this app
-    bottom_popup_enabled = db.BooleanProperty(default=False)
+    # "default behaviour: show every 5 product pages"
+    bottom_popup_enabled = db.BooleanProperty(default=True)
 
     # if incentivized asks is enabled
     incentive_enabled = db.BooleanProperty(default=False)

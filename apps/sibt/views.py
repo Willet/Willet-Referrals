@@ -220,7 +220,7 @@ class AskDynamicLoader(URIHandler):
 
 
 class VoteDynamicLoader(URIHandler):
-    """ Serves a plugin where people can vote on a purchase
+    """ Serves a plugin where people can vote on one or more products.
 
     On v10 and up (standalone vote page), "voter is never asker"
     """
@@ -230,101 +230,101 @@ class VoteDynamicLoader(URIHandler):
         link = None
         target = get_target_url(self.request.get('url'))
         template_values = {}
-        user = User.get(self.request.get('user_uuid'))
+        user = None
         willt_code = self.request.get('willt_code')
 
-        # successive stages to get instance
-        try:
+        def get_instance():
+            """successive stages to get instance."""
             # stage 1: get instance by instance_uuid
-            instance = SIBTInstance.get_by_uuid(instance_uuid)
+            instance = SIBTInstance.get(instance_uuid)
+            if instance:
+                return instance
 
             # stage 2: get instance by willet code in URL
-            if not instance and willt_code:
+            # using willet code (fast) or raw DB lookup (slower)
+            if willt_code:
                 logging.info('trying to get instance for code: %s' % willt_code)
                 link = Link.get_by_code(willt_code)
-                if not link:
-                    # no willt code, asker probably came back to page with
-                    # no hash code
-                    link = Link.all()\
-                            .filter('user =', user)\
-                            .filter('target_url =', target)\
-                            .filter('app_ =', app)\
-                            .get()
-                    logging.info('got link by page_url %s: %s' % (target, link))
-                if link:
-                    instance = link.sibt_instance.get()
+            link = link or Link.all()\
+                               .filter('user =', user)\
+                               .filter('target_url =', target)\
+                               .filter('app_ =', app)\
+                               .get()
+            if link:
+                instance = link.sibt_instance.get()
+            if instance:
+                return instance
 
             # stage 3: get instance by user and URL
-            if not instance and user and target:
+            if user and target:
                 instance = SIBTInstance.get_by_asker_for_url(user, target)
+            return instance  # could be none
 
-            # still no instance? fail
-            if not instance:
-                raise ValueError("No SIBT instance could be found!")
-
-            # start looking for instance info
-            if not app:
-                app = instance.app_
-
-            if not user and app:
-                user = User.get_or_create_by_cookie (self, app)
-
-            name = instance.asker.get_full_name()
-
-            if not link:
-                link = instance.link
-            share_url = link.get_willt_url()
-
-            # record that the vote page was once opened.
-            SIBTShowingVote.create(user = user, instance = instance)
-            event = 'SIBTShowingVote'
-
-            # In the case of a Shopify product, it will fetch from a .json URL.
-            product = Product.get_or_fetch(instance.url, app.client)
-
-            try:
-                product_img = product.images[0]
-            except:
-                product_img = ''
-
-            yesses = instance.get_yesses_count()
-            nos = instance.get_nos_count()
-            try:
-                percentage = yesses / float (yesses + nos)
-            except ZeroDivisionError:
-                percentage = 0.0 # "it's true that 0% said buy it"
-
-            template_values = {
-                    'evnt' : event,
-                    'product': product,
-                    'product_img': product_img,
-                    'app' : app,
-                    'URL': URL,
-
-                    'user': user,
-                    'asker_name' : name if name else "your friend",
-                    'asker_pic' : instance.asker.get_attr('pic'),
-                    'target_url' : target,
-                    'fb_comments_url' : '%s' % (link.get_willt_url()),
-                    'percentage': percentage,
-                    'share_url': share_url,
-                    'product_url': product.resource_url,
-                    'store_url': app.store_url,
-                    'store_name': app.store_name,
-                    'instance' : instance,
-                    'votes': yesses + nos,
-                    'yesses': instance.get_yesses_count(),
-                    'noes': instance.get_nos_count()
-            }
-
-            path = os.path.join('apps/sibt/templates/', 'vote.html')
-
-        except ValueError:
+        instance = get_instance()
+        if not instance:
             # We can't find the instance, so let's assume the vote is over
             self.response.out.write("This vote is now over.")
             return
 
-        # Finally, render the HTML!
+        app = instance.app_
+        if not app:
+            # We can't find the app?!
+            self.response.out.write("Drat! This vote was not created properly.")
+            return
+
+        user = User.get(self.request.get('user_uuid')) or \
+               User.get_or_create_by_cookie(self, app)
+
+        name = instance.asker.get_full_name()
+
+        if not link:
+            link = instance.link
+        share_url = link.get_willt_url()
+
+        # record that the vote page was once opened.
+        SIBTShowingVote.create(user=user, instance=instance)
+        event = 'SIBTShowingVote'
+
+        # In the case of a Shopify product, it will fetch from a .json URL.
+        product = Product.get_or_fetch(instance.url, app.client)
+
+        try:
+            product_img = product.images[0]
+        except:
+            product_img = ''
+
+        yesses = instance.get_yesses_count()
+        nos = instance.get_nos_count()
+        try:
+            percentage = yesses / float(yesses + nos)
+        except ZeroDivisionError:
+            percentage = 0.0 # "it's true that 0% said buy it"
+
+        template_values = {
+                'evnt' : event,
+                'product': product,
+                'product_img': product_img,
+                'app' : app,
+                'URL': URL,
+
+                'user': user,
+                'asker_name' : name if name else "your friend",
+                'asker_pic' : instance.asker.get_attr('pic'),
+                'target_url' : target,
+                'fb_comments_url' : '%s' % (link.get_willt_url()),
+                'percentage': percentage,
+                'share_url': share_url,
+                'product_url': product.resource_url,
+                'store_url': app.store_url,
+                'store_name': app.store_name,
+                'instance' : instance,
+                'votes': yesses + nos,
+                'yesses': instance.get_yesses_count(),
+                'noes': instance.get_nos_count()
+        }
+
+        path = os.path.join('apps/sibt/templates/', 'vote.html')
+
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
@@ -792,7 +792,7 @@ class SIBTServeScript(URIHandler):
                 threshold = UNSURE_DETECTION['url_count_for_app_and_user']
 
                 if len(tracked_urls) >= threshold:
-                    # activate unsure_multi_view (currently does nothing)
+                    # activate unsure_multi_view (bottom popup)
                     unsure_multi_view = True
 
         # have client, app, user, and maybe instance
