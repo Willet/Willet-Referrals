@@ -76,7 +76,7 @@ class AskDynamicLoader(URIHandler):
 
         # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(self.request.get('user_uuid'))
-        user_found = 1 if hasattr(user, 'fb_access_token') else 0
+        user_found = hasattr(user, 'fb_access_token')
         user_is_admin = user.is_admin() if isinstance(user , User) else False
 
         def get_products(app=None):
@@ -256,7 +256,7 @@ class AskDynamicLoader(URIHandler):
             'incentive_enabled': incentive_enabled,
 
             'user_email': user.get_attr('email') if user_found else None,
-            'user_has_fb_token': user_found,
+            'user_has_fb_token': 1 if user_found else 0,
             'user_name': user.get_full_name() if user_found else None,
             'user_pic': user.get_attr('pic') if user_found else None,
             'user_uuid': self.request.get('user_uuid'),

@@ -120,7 +120,6 @@ class WOSIBAskDynamicLoader(URIHandler):
             return
 
         user = User.get(self.request.get('user_uuid'))
-        user_found = 1 if hasattr(user, 'fb_access_token') else 0
         user_is_admin = user.is_admin() if isinstance(user , User) else False
 
         # if both are present and extra_url needs to be filled...

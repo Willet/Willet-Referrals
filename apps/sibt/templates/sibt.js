@@ -567,7 +567,9 @@
                 console.log('#mini_sibt_button exists');
                 storeAnalytics();
 
-                sibt_elem.click(button_onclick);
+                sibt_elem
+                    .css('height', '20px')
+                    .click(button_onclick);
 
                 if (instance.has_results) {
                     sibt_elem.css ({
