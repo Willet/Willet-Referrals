@@ -1,24 +1,15 @@
 {% extends "../../plugin/templates/ask.html" %}
 
-{% block jquery_plugins %}
-{% endblock jquery_plugins %}
+{% block jquery_plugins %}{% endblock jquery_plugins %}
 
 {% block styles %}
     <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
-    <!--[if IE 7]>
-    <style>
-        #selection_box li {
-            zoom: 1;
-            display: inline;
-        }
-    </style>
-    <![endif]-->
 {% endblock styles %}
 
 
 
 {% block screens %}
-<!---------------------------- Splash Screen ------------------------------>
+    <!---------------------------- Splash Screen ------------------------------>
 
     <div id="splash">
         <div class="title_bar">
@@ -108,12 +99,12 @@
                             product_uuids : get_selected_objects (),
                             willt_code   : "{{willt_code}}" };
             $.ajax({
-                url      : "{{ URL }}{% url StartPartialWOSIBInstance %}",
+                url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
                 success  : function (tr) {
-                    window._willet_wosib_partial_instance_uuid = tr;
+                    window._willet_sibt_partial_instance_uuid = tr;
                 }
             });
             return true;
@@ -129,12 +120,12 @@
                             product_uuids : get_selected_objects (),
                             willt_code   : "{{willt_code}}" };
             $.ajax({
-                url      : "{{ URL }}{% url StartWOSIBInstance %}",
+                url      : "{{ URL }}{% url StartSIBTInstance %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
                 success  : function (tr) {
-                    window._willet_wosib_partial_instance_uuid = tr;
+                    window._willet_sibt_partial_instance_uuid = tr;
                 }
             });
             return true;
@@ -176,7 +167,7 @@
             };
 
             $.ajax({
-                url      : "{{ URL }}{% url SendWOSIBFriendAsks %}",
+                url      : "{{ URL }}{% url SendFriendAsks %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
@@ -228,7 +219,7 @@
 
 {% block js_functions %}
     // Open up the FB dialog. Does not do a FB connect with us.
-    var postWosibOnWall = function () {
+    var postOnWall = function () {
         try { // detect adblock
             if (startPartialInstance ()) {
                 FB.ui({ method:  "feed",
@@ -243,7 +234,7 @@
         } catch (e) {
             alert ('Oops... AdBlock is probably blocking facebook!');
         }
-        closeIframe( 'WOSIBNoConnectFBDialog' );
+        closeIframe( 'SIBTNoConnectFBDialog' );
     };
 
     var resizeProductImage = function (img) {
@@ -272,7 +263,7 @@
 
     // Connect with FB and fetch FB friends, on Choose Friends screen
     var runFBConnect = function () {
-        storeAnalytics('WOSIBConnectFBDialog');
+        storeAnalytics('SIBTConnectFBDialog');
 
         FB.login( function(response) {
             var authResp = response.authResponse;
@@ -281,7 +272,7 @@
                 // We weren't given permission, do nothing
                 return;
             } else {
-                storeAnalytics('WOSIBFBConnected');
+                storeAnalytics('SIBTFBConnected');
 
                 // Store FB data in the server.
                 updateServerUser(authResp.accessToken, authResp.userID);
@@ -313,7 +304,7 @@
 
 {% block js_init %}
     $(document).ready(function () {
-        /*  server (WOSIBAskDynamicLoader) guarantees there to be > 0 products;
+        /*  server (AskDynamicLoader) guarantees there to be > 0 products;
             if there are 0 products, this script is not loaded at all.
         */
         var cart_products = [ {% for product in products %}
@@ -346,7 +337,7 @@
         $selection_box
             .imageDropdown();
 
-        $('#postWosibOnWall').click(postWosibOnWall);
+        $('#postOnWall').click(postOnWall);
     });
     showScreen('splash');
 {% endblock js_init %}

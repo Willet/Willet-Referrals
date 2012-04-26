@@ -15,9 +15,11 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 
+from apps.action.models import Action
 from apps.app.models import App
 from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import bingo
+from apps.product.models import Product
 from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
 from apps.user.models import User
 from apps.vote.models import VoteCounter
@@ -137,15 +139,6 @@ class SIBT(App):
     def _validate_self(self):
         return True
 
-    @property
-    def wosib_app(self):
-        """Returns this SIBT app's corresponding WOSIB app.
-
-        Gets by WOSIB, not App (the memcache class)
-        Returns None if it doesn't have one.
-        """
-        return WOSIB.all().filter('store_url = ', self.store_url).get()
-
     def handleLinkClick(self, urihandler, link):
         logging.info("SIBTAPP HANDLING LINK CLICK")
 
@@ -165,10 +158,17 @@ class SIBT(App):
                                             link.willt_url_code))
 
     def create_instance(self, user, end, link, img="",
-                        motivation=None, dialog=""):
+                        motivation=None, dialog="", products=None):
+        """SIBT2: products supersedes img."""
         logging.info("Making a SIBT instance (dialog = %s)" % dialog)
         # Make the properties
         uuid = generate_uuid(16)
+
+        if products:
+            try:
+                product_img = products[0].images[0]
+            except:
+                pass
 
         # Now, make the object
         instance = SIBTInstance(key_name=uuid,
@@ -176,7 +176,8 @@ class SIBT(App):
                                 asker=user,
                                 app_=self,
                                 link=link,
-                                product_img=img,
+                                product_img=img or product_img,
+                                products=products,
                                 motivation=motivation,
                                 url=link.target_url)
         # set end if None

@@ -4,6 +4,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 from datetime import datetime
+import random
 import re
 import hashlib
 import urlparse
@@ -258,6 +259,10 @@ class DoVote(URIHandler):
         user = None
         instance_uuid = self.request.get('instance_uuid')
         instance = SIBTInstance.get(instance_uuid)
+        if not instance:
+            logging.error("no instance found")
+            return
+
         app = instance.app_
         user_uuid = self.request.get('user_uuid')
         if user_uuid:
@@ -266,29 +271,36 @@ class DoVote(URIHandler):
         if not user:
             user = User.get_or_create_by_cookie (self, app)
 
-        which = self.request.get('which', 'yes')
+        # which = response, in either the product uuid or yes/no
+        which = self.request.get('product_uuid') or \
+                self.request.get('which', 'yes')
 
         # Make a Vote action for this User
         action = SIBTVoteAction.create(user, instance, which)
 
         # Count the vote.
-        if which.lower() == "yes":
-            instance.increment_yesses()
-        else:
+        if which.lower() == "no":
             instance.increment_nos()
+        else:
+            instance.increment_yesses()
 
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
-        if email != "":
-            Email.SIBTVoteNotification(
-                to_addr=email,
-                name=instance.asker.get_full_name(),
-                vote_type=which,
-                product_url="%s#open_sibt=1" % instance.url, # full product link
-                product_img=instance.product_img,
-                client_name=app.client.name,
-                client_domain=app.client.domain
-            )
+        if email:
+            if which.lower() == "yes" or which.lower() == "no":  # SIBT
+                Email.SIBTVoteNotification(to_addr=email,
+                                           name=instance.asker.get_full_name(),
+                                           vote_type=which,
+                                           product_url="%s#open_sibt=1" % instance.url, # full product link
+                                           product_img=instance.product_img,
+                                           client_name=app.client.name,
+                                           client_domain=app.client.domain)
+            else:
+                Email.WOSIBVoteNotification(to_addr=email,
+                                            name=instance.asker.get_full_name(),
+                                            cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
+                                            client_name=app.client.name,
+                                            client_domain=app.client.domain)
 
         self.response.out.write('ok')
 
@@ -615,7 +627,8 @@ class SendFriendAsks(URIHandler):
         msg: <string> message
         default_msg: <string> message before user edited it
         app_uuid: <string> a SIBT app uuid
-        product_uuid: <string> a <App> uuid
+        product_uuid: <string> a <Product> uuid
+        products: <string> a CSV of <Product> uuids
         willt_code: <string> willt_code corresponding to a parital SIBT instance
         user_uuid: <string> a <User> uuid
         fb_access_token: <string> a Facebook API access token for this user
@@ -644,6 +657,8 @@ class SendFriendAsks(URIHandler):
         link = Link.get_by_code(self.request.get('willt_code'))
         msg = self.request.get('msg')
         product = Product.get(self.request.get('product_uuid'))
+        products = []
+        product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
         user = User.get(self.request.get('user_uuid'))
 
         # Default response
@@ -659,6 +674,12 @@ class SendFriendAsks(URIHandler):
             friends: %r \n\
             msg: %s \n\
             link: %s' % (asker, friends, msg, link))
+
+        products = [Product.get(uuid) for uuid in product_uuids]
+        if not products[0]:  # supposedly: [Product, Product, Product]
+            products = [product]
+            if not product:  # have wosib mode supersede product_uuid
+                product = random.choice(products)
 
         if not user:
             logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
@@ -757,13 +778,13 @@ class SendFriendAsks(URIHandler):
                     names.append(fname)
                 try:
                     fb_share_ids = user.fb_post_to_friends(ids,
-                                                            names,
-                                                            msg,
-                                                            product_image,
-                                                            product.title,
-                                                            product_desc,
-                                                            app.client.domain,
-                                                            link)
+                                                           names,
+                                                           msg,
+                                                           product_image,
+                                                           product.title,
+                                                           product_desc,
+                                                           app.client.domain,
+                                                           link)
                     fb_share_counter += len(fb_share_ids)
                     logging.info('shared on facebook, got share id %s' % fb_share_ids)
 
@@ -777,17 +798,28 @@ class SendFriendAsks(URIHandler):
             if email_friends: # [] is falsy
                 for (_, fname, femail) in email_friends:
                     try:
-                        Email.SIBTAsk(from_name=a['name'],
-                                      from_addr=a['email'],
-                                      to_name=fname,
-                                      to_addr=femail,
-                                      message=msg,
-                                      vote_url=link.get_willt_url(),
-                                      product_img=product_image,
-                                      asker_img=a['pic'],
-                                      product_title=product.title,
-                                      client_name=app.client.name,
-                                      client_domain=app.client.domain)
+                        if len(products) > 1:
+                            Email.WOSIBAsk(from_name=a['name'],
+                                           from_addr=a['email'],
+                                           to_name=fname,
+                                           to_addr=femail,
+                                           message=msg,
+                                           vote_url=link.get_willt_url(),
+                                           asker_img=a['pic'],
+                                           client_name=app.client.name,
+                                           client_domain=app.client.domain)
+                        else:
+                            Email.SIBTAsk(from_name=a['name'],
+                                          from_addr=a['email'],
+                                          to_name=fname,
+                                          to_addr=femail,
+                                          message=msg,
+                                          vote_url=link.get_willt_url(),
+                                          product_img=product_image,
+                                          asker_img=a['pic'],
+                                          product_title=product.title,
+                                          client_name=app.client.name,
+                                          client_domain=app.client.domain)
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)
@@ -799,11 +831,12 @@ class SendFriendAsks(URIHandler):
             if friend_share_counter > 0:
                 # create the instance!
                 instance = app.create_instance(user,
-                                                None,
-                                                link,
-                                                product_image,
-                                                motivation="",
-                                                dialog="ConnectFB")
+                                               None,
+                                               link,
+                                               product_image,
+                                               motivation="",
+                                               dialog="ConnectFB",
+                                               products=product_uuids)
 
                 # change link to reflect to the vote page.
                 link.target_url = urlparse.urlunsplit([PROTOCOL,
@@ -855,4 +888,3 @@ class SendFriendAsks(URIHandler):
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
-

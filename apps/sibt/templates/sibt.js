@@ -419,6 +419,15 @@
                 console.log(shopify_ids);
                 console.log(products);
 
+                return showColorbox({
+                    href: "{{URL}}{% url AskDynamicLoader %}" +
+                        // do not merge with metadata(): it escapes commas
+                        "?products=" + getProductUUIDs().join(',') +
+                        "&ids=" + shopify_ids.join(',') +
+                        "&" + metadata()
+                });
+
+                /* WOSIB deprecation
                 if (shopify_ids.length > 1 || products.length > 1) { // WOSIB mode
                     return showColorbox({
                         href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
@@ -437,7 +446,7 @@
                             "&ids=" + shopify_ids.join(',') +
                             "&" + metadata()
                     });
-                }
+                } */
 
                 // else if no products: do nothing
                 console.log("no products! cancelling dialogue.");
@@ -741,7 +750,7 @@
                 // if user visited at least two different product pages
                 if ($.cookie('product1_image') &&
                     $.cookie('product2_image') &&
-                    unsure_multi_view) {
+                    app.unsure_multi_view) {
                     console.log('bottom popup enabled');
                     var clickedOff = false;
 
