@@ -135,6 +135,20 @@ _willet.util = {
             }
         }
         return false;
+    },
+    "getInternetExplorerVersion": function() {
+        // Returns the version of Internet Explorer or a -1
+        // (indicating the use of another browser).
+
+        // http://msdn.microsoft.com/en-us/library/ms537509.aspx
+        var rv = 999; // Return value assumes failure.
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            var ua = navigator.userAgent;
+            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null)
+                rv = parseFloat( RegExp.$1 );
+        }
+        return rv;
     }
 };
 
@@ -209,7 +223,7 @@ _willet.debug = (function (willet) {
         for(var i = 0; i < callbacks.length; i++) {
             callbacks[i](debug);
         }
-    }
+    };
 
     me.isDebugging = function() {
         // True = printing to console & logs, False = only logs
@@ -219,7 +233,7 @@ _willet.debug = (function (willet) {
     me.logs = function () {
         // Returns as list of all log & error items
         return log_array;
-    }
+    };
 
     me.set(false); //setup proper log functions
 
@@ -519,7 +533,7 @@ _willet.networks = (function (willet) {
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: params.sharingMessage } ]
+                              { property: 'og:description', content: params.sharingMessage } ];
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -556,7 +570,7 @@ _willet.networks = (function (willet) {
                     link.style.top = '0';
                     link.style.left = '0';
                     link.style.font = "11px Arial, sans-serif";
-                    link.style.textIndent = "-9999em"
+                    link.style.textIndent = "-9999em";
                     link.style.fontSize = ".01em";
                     link.style.color = "#CD1F1F";
                     link.style.height = "20px";
@@ -725,7 +739,7 @@ _willet = (function (me, config) {
     // Linking
     var cookies = me.cookies,
         debug = me.debug,
-        messaging = me.messaging
+        messaging = me.messaging,
         supportedNetworks = me.networks,
         util = me.util;
 
@@ -856,7 +870,7 @@ _willet = (function (me, config) {
                     "itemShared":           function () {}
                 };
 
-            for (i = 0; i < requiredButtons.length; i++) {
+            for (var i = 0; i < requiredButtons.length; i++) {
                 network = requiredButtons[i];
                 button = supportedNetworks[network]["button"];
 
@@ -909,7 +923,7 @@ _willet = (function (me, config) {
         } else if (window.location.pathname.match(/^(.*)?\/products\//)) {
             // only attempt to load smart-buttons if we are on a product page
             try {
-                debug.log("Buttons: initiating product.json request")
+                debug.log("Buttons: initiating product.json request");
                 messaging.ajax({
                     url: PRODUCT_JSON,
                     method: "GET",
@@ -939,7 +953,7 @@ _willet = (function (me, config) {
 }(_willet));
 
 try {
-    if (_willet && !_willet.buttonsLoaded) {
+    if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
     }
