@@ -9,7 +9,6 @@
 
     // declare vars
     var app, instance, products, sys, topbar, user;
-    var $_conflict = !(w.$ && w.$.fn && w.$.fn.jquery);
 
     // google analytics
     var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
