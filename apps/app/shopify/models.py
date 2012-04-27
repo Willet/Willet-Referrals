@@ -198,7 +198,7 @@ class AppShopify(Model):
                 '%s APPLICATION API REQUEST FAILED<br />Request: %s %s<br />Status: %s %s<br />Store: %s<br />Response: %s' % (
                     self.class_name(),
                     verb,
-                    url,
+                    call,
                     resp.status,
                     resp.reason,
                     self.store_url,
