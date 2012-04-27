@@ -145,8 +145,13 @@
                                 <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly'
                                        value='<div id="_willet_buttons_app"></div>'/>
                                 {% else %}
-                                <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly'
-                                       value='&#0123;% include &apos;willet-shopconnection&apos; %&#0125;'/>
+                                <textarea style='font-size:13px;
+                                    max-width:275px; width: 245px;
+                                    vertical-align: middle; margin-bottom:0px;
+                                    height:40px'
+                                    type='text'
+                                    readonly='readonly'>&#0123;% include &apos;willet-shopconnection&apos; %&#0125;
+<div id="_willet_buttons_app"></div></textarea>
                                 {% endif %}
                             </p>
                         </div>
