@@ -954,7 +954,7 @@ _willet = (function (me, config) {
 
 try {
     if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
-        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.debug.set(false); //set to true if you want logging turned on
         _willet.init();
     }
 } catch(e) {
