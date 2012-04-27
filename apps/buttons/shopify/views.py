@@ -298,21 +298,20 @@ class ButtonsShopifyBillingCallback(URIHandler):
             app.put()
             app.do_upgrade()
 
-            template_values = {
-                'app'        : app,
-                'shop_owner' : details["shop_owner"],
-                'shop_name'  : details["shop_name"]
-            }
-
             # Render the page
-            self.response.out.write(self.render_page('welcome.html',
-                                                     template_values))
+            page = build_url("ButtonsShopifyInstructions", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+            self.redirect(page)
+
         else:
             #The user declined to pay, redirect to upsell page
             page = build_url("ButtonsShopifyWelcome", qs={
-                "t": app.store_token,
+                "t"   : app.store_token,
                 "shop": app.store_url,
-                "app": "ButtonsShopify"
+                "app" : "ButtonsShopify"
             })
 
             self.redirect(page)
@@ -341,11 +340,20 @@ class ButtonsShopifyInstructions(URIHandler):
         # Fetch or create the app
         app, _ = ButtonsShopify.get_or_create_app(client, token=token)
 
+        config_enabled = app.billing_enabled
+        config_url     = build_url("ButtonsShopifyWelcome", qs={
+            "t": app.store_token,
+            "shop": app.store_url,
+            "app": "ButtonsShopify"
+        })
+
         # Render the page
         template_values = {
-            'app'          : app,
-            'shop_owner'   : details["shop_owner"],
-            'shop_name'    : details["shop_name"]
+            'app'           : app,
+            'shop_owner'    : details["shop_owner"],
+            'shop_name'     : details["shop_name"],
+            'config_enabled': config_enabled,
+            'config_url'    : config_url
         }
 
         self.response.out.write(self.render_page('welcome.html',
@@ -367,26 +375,6 @@ class ButtonsShopifyInstallError(URIHandler):
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(self.render_page('install_error.html',
                                                  template_values))
-        return
-
-
-class ButtonsShopifyServeScript(URIHandler):
-    def get(self):
-        path = os.path.join('apps/buttons/shopify/templates/js/',
-                            'buttons.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'application/javascript'
-        self.response.out.write(template.render(path, {}))
-        return
-
-
-class ButtonsShopifyServeSmartScript(URIHandler):
-    def get(self):
-        path = os.path.join('apps/buttons/shopify/templates/js/',
-                            'smart-buttons.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'application/javascript'
-        self.response.out.write(template.render(path, {}))
         return
 
 

@@ -187,7 +187,6 @@ class ButtonsShopify(Buttons, AppShopify):
                         /*----*/
                     }(window));
                 </script>
-                <div id="_willet_buttons_app"></div>
             """ % json_preferences
 
             self.queue_assets(assets=[{
