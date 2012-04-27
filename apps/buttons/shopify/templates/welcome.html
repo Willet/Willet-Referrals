@@ -5,7 +5,9 @@
             $(document).ready(function() {
                 $('#go_to_shopify').click(function() {
                     window.location = "{{app.store_url}}/admin";
-
+                });
+                $('#next_page').click(function(){
+                    window.location = "{{config_url}}";
                 });
                 SnapABug.setUserEmail('{{ client_email }}');
                 SnapABug.startChat('Hi - if you run into any problems, i\'m here to help :-)');
@@ -139,7 +141,13 @@
                             <div class="step-num">4.</div>
                             <p>
                                 <strong>Once </strong>you've picked a spot, add this code:
-                                <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly' value='<div id="_willet_buttons_app"></div>' />           
+                                {% if not config_enabled %}
+                                <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly'
+                                       value='<div id="_willet_buttons_app"></div>'/>
+                                {% else %}
+                                <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly'
+                                       value='&#0123;% include &apos;willet-shopconnection&apos; %&#0125;'/>
+                                {% endif %}
                             </p>
                         </div>
                     </div>
@@ -169,7 +177,18 @@
                                     box-design instruction-step">
                             <div class="step-warn">!</div>
                             <p><b>Are</b> the buttons not displaying as expected?  Check out our <a target="_blank" href="http://willetshopconnection.blogspot.com/2012/03/troubleshooting-guide-for.html">Troubleshooting Guide for ShopConnection</a>.</p>
+                            {% if not config_enabled %}
                             <p><b>Want</b> to customize the look or location of the buttons?  Check out our <a target="_blank" href="http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html">Customization Guide for ShopConnection</a>.</p>
+                            {% else %}
+                            <div class="center">
+                                <button class='blue' id='next_page'>
+                                    <img src="/static/imgs/shopify-bag-36.png" />
+                                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                                        Configure your buttons
+                                    </span>
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -181,7 +200,7 @@
                             <button class='blue' id='go_to_shopify'>
                                 <img src="/static/imgs/shopify-bag-36.png" />
                                 <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                                    Return to your Store 
+                                    Return to your Store
                                 </span>
                             </button>
                         </div>
