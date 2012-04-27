@@ -187,7 +187,6 @@ class ButtonsShopify(Buttons, AppShopify):
                         /*----*/
                     }(window));
                 </script>
-                <div id="_willet_buttons_app"></div>
             """ % json_preferences
 
             self.queue_assets(assets=[{
@@ -375,6 +374,10 @@ class SharePeriod(Model):
             product_shares = list(product) # evaluates the iterator
             total_shares = len(product_shares)
             item["total_shares"] = total_shares
+
+            # All product shares should use the same url,
+            # so use the first...
+            item["image"] = product_shares[0].img_url
 
             networks = []
             sorted_product_shares = sorted(product_shares,

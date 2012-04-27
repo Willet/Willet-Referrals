@@ -135,6 +135,20 @@ _willet.util = {
             }
         }
         return false;
+    },
+    "getInternetExplorerVersion": function() {
+        // Returns the version of Internet Explorer or a -1
+        // (indicating the use of another browser).
+
+        // http://msdn.microsoft.com/en-us/library/ms537509.aspx
+        var rv = 999; // Return value assumes failure.
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            var ua = navigator.userAgent;
+            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+            if (re.exec(ua) != null)
+                rv = parseFloat( RegExp.$1 );
+        }
+        return rv;
     }
 };
 
@@ -209,7 +223,7 @@ _willet.debug = (function (willet) {
         for(var i = 0; i < callbacks.length; i++) {
             callbacks[i](debug);
         }
-    }
+    };
 
     me.isDebugging = function() {
         // True = printing to console & logs, False = only logs
@@ -219,7 +233,7 @@ _willet.debug = (function (willet) {
     me.logs = function () {
         // Returns as list of all log & error items
         return log_array;
-    }
+    };
 
     me.set(false); //setup proper log functions
 
@@ -429,7 +443,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(style);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     FB.Event.subscribe('edge.create', function(response) {
                         methods.itemShared("Facebook", params);
                     });
@@ -519,7 +533,7 @@ _willet.networks = (function (willet) {
                     var t, p, 
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
-                              { property: 'og:description', content: params.sharingMessage } ]
+                              { property: 'og:description', content: params.sharingMessage } ];
                     while (m.length) {
                         p = m.pop();
                         t = document.createElement('meta');
@@ -556,7 +570,7 @@ _willet.networks = (function (willet) {
                     link.style.top = '0';
                     link.style.left = '0';
                     link.style.font = "11px Arial, sans-serif";
-                    link.style.textIndent = "-9999em"
+                    link.style.textIndent = "-9999em";
                     link.style.fontSize = ".01em";
                     link.style.color = "#CD1F1F";
                     link.style.height = "20px";
@@ -708,7 +722,7 @@ _willet.networks = (function (willet) {
                     button.appendChild(link);
                     return button;
                 },
-                "onload": function(methods) {
+                "onload": function(methods, params) {
                     twttr.events.bind('tweet', function(event) {
                         methods.itemShared("Twitter", params);
                     });
@@ -725,7 +739,7 @@ _willet = (function (me, config) {
     // Linking
     var cookies = me.cookies,
         debug = me.debug,
-        messaging = me.messaging
+        messaging = me.messaging,
         supportedNetworks = me.networks,
         util = me.util;
 
@@ -762,7 +776,7 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring 
+            // How this regex works: replaces .../products/ or a trailing / with empty string
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
@@ -823,17 +837,17 @@ _willet = (function (me, config) {
         updateLoggedInStatus(network, true, true);
 
         var message = JSON.stringify({
-            "name"   :  params.data.title,
+            "name"   : params.data.product.title,
             "network": network,
             "img"    : params.photo
         });
 
         //Need to append param to avoid caching...
-        var params = "message="    + encodeURIComponent(message)
+        var queryString = "message="    + encodeURIComponent(message)
                      + "&nocache=" + Math.random();
 
         var _willetImage = document.createElement("img");
-        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + params;
+        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + queryString;
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
@@ -931,7 +945,7 @@ _willet = (function (me, config) {
             script.type = "text/javascript";
             script.src = button["script"];
             script.onload = function () { 
-                button["onload"] && button["onload"](params);
+                button["onload"] && button["onload"](methods, params);
             };
             HEAD.appendChild(script);
         }
@@ -1088,9 +1102,10 @@ _willet = (function (me, config) {
                 },
                 title: "Glass of beer"
             });
-        } else {
+        } else if (window.location.pathname.match(/^(.*)?\/products\//)) {
+            // only attempt to load smart-buttons if we are on a product page
             try {
-                debug.log("Buttons: initiating product.json request")
+                debug.log("Buttons: initiating product.json request");
                 messaging.ajax({
                     url: PRODUCT_JSON,
                     method: "GET",
@@ -1120,7 +1135,7 @@ _willet = (function (me, config) {
 }(_willet, window._willet_shopconnection_config || {}));
 
 try {
-    if (_willet && !_willet.buttonsLoaded) {
+    if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
         _willet.debug.set(true); //set to true if you want logging turned on
         _willet.init();
     }

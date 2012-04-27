@@ -20,7 +20,7 @@ div#main {
     padding-top: 0;
     padding-bottom: 75px; /* must be same height as the footer + gap */
     z-index: 100; /* above clouds */
-    
+
 }
 div#header {
     /*position: absolute;*/
@@ -274,22 +274,12 @@ div#starburst {
     top: 0;
     left: 0;
     width: 100%;
-    overflow: hidden;
-}
-div#starburst>div {
-    position: relative;
-    top: 0;
-    width: 960px;
+    height:1012px;
     margin: 0 auto;
-}
-div#starburst>div>div {
-    width: 1994px;
-    height: 975px;
     margin-top: -170px;
-    margin-left: -840px;
-    background-image: url("/static/imgs/starburst.png");
+    overflow: hidden;
+    background: url("/static/imgs/starburst.png") no-repeat center top;;
 }
-
 
 /* -------------------------------- BASE -------------------------------------*/
 
@@ -382,6 +372,7 @@ div#footer>div#beach {
 }
 div#footer > div.container {
     margin-top: 0; /* hack for ie */
+    padding-top: 77px;
 }
 
 div#footer button {
@@ -425,7 +416,7 @@ div#footer button {
     text-shadow: 1px 1px 0px rgba(255, 255, 255, 1);
 }
 .left_col ol {
-        
+
 }
 .left_col ol h4 {
     margin: 0;
@@ -442,13 +433,13 @@ div#footer button {
     font-weight: bolder;
 }
 .left_col ol li.next {
-    color: #D1D1D1 !important; 
+    color: #D1D1D1 !important;
 }
 .left_col ol li.next * {
-    color: #D1D1D1 !important; 
+    color: #D1D1D1 !important;
 }
 .left_col ol li.old * {
-    color: black; 
+    color: black;
 }*/
 div#right_header a,
 div#right_header a:link,
@@ -613,7 +604,7 @@ div.call_to_action div.subtitle {
     font-weight:bold;
     cursor:pointer;
     width: 230px;
-    
+
     -webkit-box-shadow: rgb(153, 153, 153) 0px 1px 2px 0px;
 
     border-color:#cb6652 #b74d39 #803121;
@@ -844,7 +835,7 @@ td.title {
     width: 500px;
     height: 700px;
     border-radius: 10px;
-}   
+}
 
 #twitter_foo textarea {
     max-width: 500px;
@@ -899,7 +890,7 @@ td.title {
 
 .button,
 .button:visited,
-button, 
+button,
 button:visited {
     display:inline-block;
     font-family: helvetica, arial, tahoma, sans-serif;
@@ -937,7 +928,7 @@ button:visited {
     /*color:#fce8e3;*/
 }
 .button:hover,
-button:hover { 
+button:hover {
     background: -moz-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
     background: -webkit-gradient(linear, left top, left bottom, from(#faa796), to(#943a28), color-stop(0.05, #d06c57));
     background: -webkit-linear-gradient(top, #faa796, #d06c57 5%, #943a28 100%);
@@ -954,7 +945,7 @@ button.blue {
     -webkit-box-shadow: 0 1px 2px #999;
     -moz-box-shadow: 0 1px 2px #999;
     box-shadow: 0 1px 2px #999;
-    color: #EBF9FF; 
+    color: #EBF9FF;
     border-color: #1495CC #2B8AB3 #066D99;
     background-color: #088EC8;
     background: -moz-linear-gradient(top, #AFE3FA, #6CB8D9 5%, #088EC8 100%);
@@ -1075,12 +1066,12 @@ div.about img {
 }
 
 .slideshow {
-    height:  300px; 
-    width:   300px; 
-    padding: 0; 
-    margin:  0; 
+    height:  300px;
+    width:   300px;
+    padding: 0;
+    margin:  0;
     border-radius: 10px;
-    border:  2px solid #ccc; 
+    border:  2px solid #ccc;
     -webkit-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
     -moz-box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
     box-shadow: 3px 3px 1px 0px rgba(0,0,0,0.5);
@@ -1098,8 +1089,8 @@ div.about img {
 }
 
 .thick_hr {
-    height: 10px; 
-    width: 500px; 
-    margin-left: auto; 
+    height: 10px;
+    width: 500px;
+    margin-left: auto;
     margin-right: auto;
 }
