@@ -298,6 +298,10 @@
         $("[name=button_count]").change(update_preview);
 
         update_preview();
+
+        $('#go_to_shopify').click(function() {
+            window.location = "{{shop_url}}/admin";
+        });
     });
 </script>
 {% endblock %}
@@ -443,6 +447,19 @@
                 </div>
             </form>
         </div>
+    </div>
+</div>
+<div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
+    <h3 class="center">Have other questions? Email: fraser@getwillet.com</h3>
+    <br />
+
+    <div class="center">
+        <button class='blue' id='go_to_shopify'>
+            <img src="/static/imgs/shopify-bag-36.png" />
+                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                    Return to your Store
+                </span>
+        </button>
     </div>
 </div>
 {% endblock content %}
