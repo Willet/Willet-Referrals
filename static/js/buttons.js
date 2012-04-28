@@ -886,7 +886,6 @@ _willet = (function (me, config) {
             if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
                 try {
                     window.FB.XFBML.parse();
-                    clearInterval(interval);
                 } catch(e) {}
             }
 
