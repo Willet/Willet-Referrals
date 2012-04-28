@@ -441,6 +441,7 @@ _willet.networks = (function (willet) {
                              +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
                     button.appendChild(style);
+
                     return button;
                 },
                 "onload": function(methods, params) {
@@ -879,6 +880,13 @@ _willet = (function (me, config) {
                 } catch (e) {
                     debug.error('Buttons: '+network+' encountered error: '+e);
                 }
+            }
+
+            // If FB script was already loaded, fire it off again
+            if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
+                try {
+                    window.FB.XFBML.parse();
+                } catch(e) {}
             }
 
             // Make visible if hidden
