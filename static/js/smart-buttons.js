@@ -185,10 +185,14 @@ _willet.debug = (function (willet) {
         isDebugging = false,
         callbacks = [],
         log_array = [],
-        _log = function() {},
-        _error = function() {};
+        _log = function() { log_array.push(arguments); },
+        _error = function() { log_array.push(arguments); };
 
-    if (window.console) {
+    if (typeof(window.console) === 'object' 
+        && ( ( typeof(window.console.log) === 'function'
+        && typeof(window.console.error) ==='function' )
+        || (typeof(window.console.log) === 'object' // IE 
+        && typeof(window.console.error) ==='object') )) {
         _log = function () {
             var log = window.console.log;
             if (log.apply) {
@@ -1137,7 +1141,7 @@ _willet = (function (me, config) {
 
 try {
     if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
-        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.debug.set(false); //set to true if you want logging turned on
         _willet.init();
     }
 } catch(e) {
