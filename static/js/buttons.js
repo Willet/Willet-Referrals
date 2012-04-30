@@ -967,11 +967,17 @@ try {
     }
 } catch(e) {
     (function() {
-        var error = encodeURIComponent("Error initializing smart-buttons");
-        var script = encodeURIComponent("buttons.js");
+        // Apparently, IE9 can fail for really stupid reasons.
+        // This is problematic.
+        // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
 
-        //TODO: include line number
-        var st = encodeURIComponent(e.toString());
+        // There are better stack trace tools in JS...
+        // but they don't work in IE, which is exactly where we need it
+        var error = encodeURIComponent("Error initializing buttons");
+        var line    = e.number || e.lineNumber || "Unknown";
+        var script  = encodeURIComponent("buttons.js:" +line);
+        var message = e.stack || e.toString();
+        var st      = encodeURIComponent(message);
 
         var params = "error=" + error + "&script=" + script + "&st=" + st;
 
