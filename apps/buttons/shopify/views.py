@@ -125,49 +125,16 @@ class ButtonsShopifyWelcome(URIHandler):
 
                 self.show_upsell_page(**template_values)
             else:
-                self.show_config_page(app, details)
+                page = build_url("ButtonsShopifyInstructions", qs={
+                    "t"   : app.store_token,
+                    "shop": app.store_url,
+                    "app" : "ButtonsShopify"
+                })
+                self.redirect(page)
 
         else:
             # Usually direct traffic to the url, show disabled version
             self.show_upsell_page()
-
-    @catch_error
-    def post(self):
-        r = self.request
-        details = get_details(self)
-        app = ButtonsShopify.get_by_url(details["shop_url"])
-        if not app:
-            logging.error("error updating preferences: "
-                          "'app' not found. Install first?")
-
-        # TODO: Find a generic way to validate arguments
-        def tryParse(func, val, default_value=0):
-            try:
-                return func(val)
-            except:
-                return default_value
-
-        prefs = {}
-        prefs["button_count"]    = (r.get("button_count") == "True")
-        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
-        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
-        prefs["sharing_message"] = tryParse(strip_tags,
-                                            r.get("sharing_message"), "")
-
-        # What validation should be done here?
-        prefs["button_order"]    = r.get("button_order").split(",")
-
-        app.update_prefs(prefs)
-
-        #redirect to Welcome
-        page = build_url("ButtonsShopifyWelcome", qs={
-            "t"   : self.request.get("t"),
-            "shop": self.request.get("shop"),
-            "app" : "ButtonsShopify",
-            "message": "Your configuration was saved successfully!"
-        })
-
-        self.redirect(page)
 
     def show_upsell_page(self, shop_owner='Store Owner', shop_name='Store',
                          price='-.--', shop_url='www.example.com',
@@ -184,40 +151,6 @@ class ButtonsShopifyWelcome(URIHandler):
 
         self.response.out.write(self.render_page('upsell.html',
                                                  template_values))
-
-    def show_config_page(self, app, details):
-        # get values from datastore
-        page = build_url("ButtonsShopifyWelcome", qs={
-            "t"   : self.request.get("t"),
-            "shop": self.request.get("shop"),
-            "app" : "ButtonsShopify"
-        })
-
-        preferences = app.get_prefs()
-
-        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
-                           'Svpply', 'Tumblr', 'Twitter'])
-        button_order    = preferences.get("button_order",
-                                          ["Pinterest","Tumblr","Fancy"])
-
-        # That's right! TAKE THAT MATH-HATERS!
-        unused_buttons  = buttons.difference(button_order)
-
-        # Use .get in case properties don't exist yet
-        template_values = {
-            'action'         : page,
-            'button_count'   : preferences.get("button_count", False),
-            'button_spacing' : preferences.get("button_spacing", 5),
-            'button_padding' : preferences.get("button_padding", 5),
-            'sharing_message': preferences.get("sharing_message", ""),
-            'message'        : self.request.get("message", "Welcome Back!"),
-            'button_order'   : button_order,
-            'unused_buttons' : unused_buttons,
-            'shop_url'       : self.request.get("shop")
-        }
-
-        # prepopulate values
-        self.response.out.write(self.render_page('config.html', template_values))
 
 
 class ButtonsShopifyUpgrade(URIHandler):
@@ -341,7 +274,7 @@ class ButtonsShopifyInstructions(URIHandler):
         app, _ = ButtonsShopify.get_or_create_app(client, token=token)
 
         config_enabled = app.billing_enabled
-        config_url     = build_url("ButtonsShopifyWelcome", qs={
+        config_url     = build_url("ButtonsShopifyConfig", qs={
             "t": app.store_token,
             "shop": app.store_url,
             "app": "ButtonsShopify"
@@ -358,6 +291,89 @@ class ButtonsShopifyInstructions(URIHandler):
 
         self.response.out.write(self.render_page('welcome.html',
                                                  template_values))
+
+
+class ButtonsShopifyConfig(URIHandler):
+    """Actions for the config page."""
+
+    @catch_error
+    def get(self):
+        """Display the config page for first use"""
+        token = self.request.get( 't' )
+        details = get_details(self)
+        app, _ = ButtonsShopify.get_or_create_app(details["client"],
+                                                  token=token)
+
+        # get values from datastore
+        page = build_url("ButtonsShopifyConfig", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify"
+        })
+
+        preferences = app.get_prefs()
+
+        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
+                               'Svpply', 'Tumblr', 'Twitter'])
+        button_order    = preferences.get("button_order",
+            ["Pinterest","Tumblr","Fancy"])
+
+        # That's right! TAKE THAT MATH-HATERS!
+        unused_buttons  = buttons.difference(button_order)
+
+        # Use .get in case properties don't exist yet
+        template_values = {
+            'action'         : page,
+            'button_count'   : preferences.get("button_count", False),
+            'button_spacing' : preferences.get("button_spacing", 5),
+            'button_padding' : preferences.get("button_padding", 5),
+            'sharing_message': preferences.get("sharing_message", ""),
+            'message'        : self.request.get("message", "Welcome Back!"),
+            'button_order'   : button_order,
+            'unused_buttons' : unused_buttons,
+            'shop_url'       : self.request.get("shop")
+        }
+
+        # prepopulate values
+        self.response.out.write(self.render_page('config.html', template_values))
+
+    @catch_error
+    def post(self):
+        """Store the results from the config form"""
+        r = self.request
+        details = get_details(self)
+        app = ButtonsShopify.get_by_url(details["shop_url"])
+        if not app:
+            logging.error("error updating preferences: "
+                          "'app' not found. Install first?")
+
+        # TODO: Find a generic way to validate arguments
+        def tryParse(func, val, default_value=0):
+            try:
+                return func(val)
+            except:
+                return default_value
+
+        prefs = {}
+        prefs["button_count"]    = (r.get("button_count") == "True")
+        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
+        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
+        prefs["sharing_message"] = tryParse(strip_tags,
+                                            r.get("sharing_message"), "")
+
+        # What validation should be done here?
+        prefs["button_order"]    = r.get("button_order").split(",")
+
+        app.update_prefs(prefs)
+
+        #redirect to Welcome
+        page = build_url("ButtonsShopifyConfig", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify",
+            "message": "Your configuration was saved successfully!"
+        })
+        self.redirect(page)
 
 
 class ButtonsShopifyInstallError(URIHandler):
