@@ -310,6 +310,9 @@ class ButtonsShopifyConfig(URIHandler):
             "app" : "ButtonsShopify"
         }
 
+        if not app.billing_enabled:
+            self.redirect(build_url("ButtonsShopifyWelcome", qs=query_params))
+
         # get values from datastore
         page = build_url("ButtonsShopifyConfig", qs=query_params)
         instructions_url = build_url("ButtonsShopifyInstructions", qs=query_params)
