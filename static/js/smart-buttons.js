@@ -190,20 +190,18 @@ _willet.debug = (function (willet) {
 
     if (window.console) {
         _log = function () {
-            var log = window.console.log;
-            if (log.apply) {
-                log.apply(window.console, arguments);
+            if (window.console.log.apply) {
+                window.console.log.apply(window.console, arguments);
             } else {
-                log(arguments);
+                window.console.log(arguments);
             }
             log_array.push(arguments); // Add to logs
         };
         _error = function () {
-            var error = window.console.error;
-            if (error.apply) {
-                error.apply(window.console, arguments);
+            if (window.console.error.apply) {
+                window.console.error.apply(window.console, arguments);
             } else {
-                error(arguments);
+                window.console.error(arguments);
             }
             log_array.push(arguments); // Add to logs
         };
