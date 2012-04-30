@@ -318,24 +318,22 @@
 
                 // extra google analytics component
                 try {
-                    if (_gaq) {  // async
-                        _gaq.push([
-                            '_trackEvent',
-                            'TrackSIBTAction',
-                            encodeURIComponent(message),
-                            encodeURIComponent(metadata())
-                        ]);
-                    } else {
-                        if (_gat && !pageTracker) {
-                            // synchronous tracking
-                            pageTracker = _gat._getTracker(ANALYTICS_ID);
-                        }
-                        pageTracker._trackEvent(
-                            'TrackSIBTAction',
-                            encodeURIComponent(message),
-                            encodeURIComponent(metadata())
-                        );
+                    // async
+                    _gaq.push([
+                        '_trackEvent',
+                        'TrackSIBTAction',
+                        encodeURIComponent(message),
+                        encodeURIComponent(metadata())
+                    ]);
+                    if (!pageTracker) {
+                        // synchronous tracking
+                        pageTracker = _gat._getTracker(ANALYTICS_ID);
                     }
+                    pageTracker._trackEvent(
+                        'TrackSIBTAction',
+                        encodeURIComponent(message),
+                        encodeURIComponent(metadata())
+                    );
                     console.log("Success! We have secured the enemy intelligence.");
                 } catch (e) { // log() is {} on live.
                     console.log("We have dropped the enemy intelligence: " + e);
@@ -426,27 +424,6 @@
                         "&ids=" + shopify_ids.join(',') +
                         "&" + metadata()
                 });
-
-                /* WOSIB deprecation
-                if (shopify_ids.length > 1 || products.length > 1) { // WOSIB mode
-                    return showColorbox({
-                        href: "{{URL}}{% url WOSIBAskDynamicLoader %}" +
-                            // do not merge with metadata(): it escapes commas
-                            "?products=" + getProductUUIDs().join(',') +
-                            "&ids=" + shopify_ids.join(',') +
-                            "&" + metadata()
-                    });
-                }
-
-                if (shopify_ids.length == 1 || products.length == 1) { // SIBT mode
-                    return showColorbox({
-                        href: "{{URL}}{% url AskDynamicLoader %}" +
-                            // do not merge with metadata(): it escapes commas
-                            "?products=" + getProductUUIDs().join(',') +
-                            "&ids=" + shopify_ids.join(',') +
-                            "&" + metadata()
-                    });
-                } */
 
                 // else if no products: do nothing
                 console.log("no products! cancelling dialogue.");

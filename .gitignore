@@ -12,3 +12,4 @@ aeenv.py
 *.DS_Store
 *.idea
 *~
+*.kate-swp
