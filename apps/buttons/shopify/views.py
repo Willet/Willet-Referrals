@@ -125,7 +125,7 @@ class ButtonsShopifyWelcome(URIHandler):
 
                 self.show_upsell_page(**template_values)
             else:
-                page = build_url("ButtonsShopifyInstructions", qs={
+                page = build_url("ButtonsShopifyConfig", qs={
                     "t"   : app.store_token,
                     "shop": app.store_url,
                     "app" : "ButtonsShopify"
