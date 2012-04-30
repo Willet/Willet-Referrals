@@ -216,8 +216,13 @@ class SIBTShopify(SIBT, AppShopify):
 
         # SIBT2 (multiple products)
         if self.version == '10':
-            willet_snippet = """<!-- START Willet Product page snippet -->
-                <div id="_willet_shouldIBuyThisButton"></div>
+            willet_snippet = """
+                <!-- START Willet Product page snippet -->
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%%3F' | replace: '&','%26'}}">
+                </div>
                 <script type="text/javascript">
                 (function(w, d) {
                     var hash = w.location.hash;

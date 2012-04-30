@@ -12,7 +12,7 @@
 
     // google analytics
     var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
-    var _gaq = _gaq || [];
+    var _gaq = w._gaq || d._gaq || [];
     _gaq.push(['_setAccount', ANALYTICS_ID]);
     // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
     _gaq.push(['_setDomainName', window.location.host]);

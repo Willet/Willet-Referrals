@@ -373,4 +373,3 @@ class SendWOSIBFriendAsks(URIHandler):
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
-
