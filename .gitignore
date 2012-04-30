@@ -11,3 +11,4 @@ util/local_consts.py
 aeenv.py
 *.DS_Store
 *.idea
+*~
