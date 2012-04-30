@@ -612,6 +612,16 @@
                 var hash_index = hash.indexOf(hash_search);
                 var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
 
+                var v3data = purchase_cta.data();
+                try {
+                    saveProduct({
+                        'title': v3data.title || false,
+                        'image': v3data.image_url || false
+                    });
+                } catch (e) {
+                    console.log("failed to let v3 button save product!");
+                }
+
                 {% if app.top_bar_enabled %} // add this topbar code only if necessary
                     console.log('topbar enabled');
                     var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
