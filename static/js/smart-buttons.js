@@ -465,6 +465,7 @@ _willet.networks = (function (willet) {
                              +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
                     button.appendChild(style);
+
                     return button;
                 },
                 "onload": function(methods, params) {
@@ -800,7 +801,7 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring
+            // How this regex works: replaces .../products/ or a trailing / with empty string
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
