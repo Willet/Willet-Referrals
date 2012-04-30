@@ -185,10 +185,14 @@ _willet.debug = (function (willet) {
         isDebugging = false,
         callbacks = [],
         log_array = [],
-        _log = function() {},
-        _error = function() {};
+        _log = function() { log_array.push(arguments); },
+        _error = function() { log_array.push(arguments); };
 
-    if (window.console) {
+    if (typeof(window.console) === 'object' 
+        && ( ( typeof(window.console.log) === 'function'
+        && typeof(window.console.error) ==='function' )
+        || (typeof(window.console.log) === 'object' // IE 
+        && typeof(window.console.error) ==='object') )) {
         _log = function () {
             if (window.console.log.apply) {
                 window.console.log.apply(window.console, arguments);
