@@ -445,6 +445,7 @@ _willet.networks = (function (willet) {
                              +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
                     button.appendChild(style);
+
                     return button;
                 },
                 "onload": function(methods, params) {
