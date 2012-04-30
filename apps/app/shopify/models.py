@@ -136,7 +136,7 @@ class AppShopify(Model):
         return cls.all().filter('store_url =', store_url).get()
 
     # Shopify API Calls -------------------------------------------------------
-    def _call_Shopify_API(self, verb, call, payload= None):
+    def _call_Shopify_API(self, verb, call, payload=None, expected_fail=False):
         """ Calls Shopify API
 
         Inputs:
@@ -193,6 +193,8 @@ class AppShopify(Model):
 
         if not error:
             return data
+        if error and expected_fail:
+            return {}
         else:
             Email.emailDevTeam(
                 '%s APPLICATION API REQUEST FAILED<br />Request: %s %s<br />Status: %s %s<br />Store: %s<br />Response: %s' % (

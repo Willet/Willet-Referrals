@@ -218,15 +218,14 @@ class ButtonsShopify(Buttons, AppShopify):
         try:
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
-                                   (theme_id, query_params))
+                                   (theme_id, query_params),
+                                   expected_fail=True)
 
             if result["asset"] and result["asset"]["value"]:
                 value           = result["asset"]["value"]
                 _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
-        except ShopifyAPIError:
-            pass  # No asset found; probably doesn't exist yet
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 
