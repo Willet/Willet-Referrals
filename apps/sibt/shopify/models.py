@@ -200,18 +200,15 @@ class SIBTShopify(SIBT, AppShopify):
                           "title" : "{{ item.title }}", // or "name"
                           "id" : "{{ item.product.id }}",
                           "product_url" : "{{ item.product.url }}"
-                        },
+                        }{%% unless forloop.last %%},{%% endunless %%}
                     {%% endfor %%}
-                {}];
-
-                // remove trailing element... IE7 trailing comma patch
-                _willet_cart_items.pop();
+                ];
 
                 (function (s) {
-                    s.type = 'text/javascript';
+                    s.type = "text/javascript";
                     s.src = _willet_wosib_script;
                     document.getElementsByTagName("head")[0].appendChild(s);
-                }(document.createElement('script')));
+                }(document.createElement("script")));
             </script>""" % (DOMAIN, reverse_url('SIBTServeScript'))
 
         # SIBT2 (multiple products)
@@ -221,7 +218,7 @@ class SIBTShopify(SIBT, AppShopify):
                 <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
                     data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
                     data-price="{{ product.price | money }}" data-page_source="product"
-                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%%3F' | replace: '&','%26'}}">
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%%3F' | replace: '&','%%26'}}">
                 </div>
                 <script type="text/javascript">
                 (function(w, d) {
