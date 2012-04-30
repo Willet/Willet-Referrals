@@ -304,12 +304,15 @@ class ButtonsShopifyConfig(URIHandler):
         app, _ = ButtonsShopify.get_or_create_app(details["client"],
                                                   token=token)
 
-        # get values from datastore
-        page = build_url("ButtonsShopifyConfig", qs={
+        query_params = {
             "t"   : self.request.get("t"),
             "shop": self.request.get("shop"),
             "app" : "ButtonsShopify"
-        })
+        }
+
+        # get values from datastore
+        page = build_url("ButtonsShopifyConfig", qs=query_params)
+        instructions_url = build_url("ButtonsShopifyInstructions", qs=query_params)
 
         preferences = app.get_prefs()
 
@@ -323,15 +326,16 @@ class ButtonsShopifyConfig(URIHandler):
 
         # Use .get in case properties don't exist yet
         template_values = {
-            'action'         : page,
-            'button_count'   : preferences.get("button_count", False),
-            'button_spacing' : preferences.get("button_spacing", 5),
-            'button_padding' : preferences.get("button_padding", 5),
-            'sharing_message': preferences.get("sharing_message", ""),
-            'message'        : self.request.get("message", "Welcome Back!"),
-            'button_order'   : button_order,
-            'unused_buttons' : unused_buttons,
-            'shop_url'       : self.request.get("shop")
+            'action'          : page,
+            'button_count'    : preferences.get("button_count", False),
+            'button_spacing'  : preferences.get("button_spacing", 5),
+            'button_padding'  : preferences.get("button_padding", 5),
+            'sharing_message' : preferences.get("sharing_message", ""),
+            'message'         : self.request.get("message", "Welcome Back!"),
+            'button_order'    : button_order,
+            'unused_buttons'  : unused_buttons,
+            'shop_url'        : self.request.get("shop"),
+            'instructions_url': instructions_url
         }
 
         # prepopulate values
