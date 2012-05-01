@@ -103,7 +103,8 @@ class ButtonsShopifyWelcome(URIHandler):
     @catch_error
     def get(self):
         """Display upgrade options."""
-        token = self.request.get( 't' )
+        token  = self.request.get( 't' )
+        upsell = (self.request.get( 'more' ) == "1")
         details = get_details(self)
 
         if details["client"]:
@@ -111,7 +112,7 @@ class ButtonsShopifyWelcome(URIHandler):
             app, created = ButtonsShopify.get_or_create_app(details["client"],
                                                             token=token)
 
-            if created or not app.billing_enabled:
+            if created or upsell:
                 price = app.get_price()
 
                 template_values = {
@@ -310,12 +311,16 @@ class ButtonsShopifyConfig(URIHandler):
             "app" : "ButtonsShopify"
         }
 
-        if not app.billing_enabled:
-            self.redirect(build_url("ButtonsShopifyWelcome", qs=query_params))
-
-        # get values from datastore
-        page = build_url("ButtonsShopifyConfig", qs=query_params)
+        config_url       = build_url("ButtonsShopifyConfig", qs=query_params)
         instructions_url = build_url("ButtonsShopifyInstructions", qs=query_params)
+        upgrade_url      = build_url("ButtonsShopifyUpgrade", qs=query_params)
+
+        learn_more_url   = build_url("ButtonsShopifyWelcome", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify",
+            "more": 1
+        })
 
         preferences = app.get_prefs()
 
@@ -329,7 +334,7 @@ class ButtonsShopifyConfig(URIHandler):
 
         # Use .get in case properties don't exist yet
         template_values = {
-            'action'          : page,
+            'action'          : config_url,
             'button_count'    : preferences.get("button_count", False),
             'button_spacing'  : preferences.get("button_spacing", 5),
             'button_padding'  : preferences.get("button_padding", 5),
@@ -338,7 +343,10 @@ class ButtonsShopifyConfig(URIHandler):
             'button_order'    : button_order,
             'unused_buttons'  : unused_buttons,
             'shop_url'        : self.request.get("shop"),
-            'instructions_url': instructions_url
+            'upgrade_url'     : upgrade_url,
+            'learn_more_url'  : learn_more_url,
+            'instructions_url': instructions_url,
+            'config_enabled'  : app.billing_enabled
         }
 
         # prepopulate values
