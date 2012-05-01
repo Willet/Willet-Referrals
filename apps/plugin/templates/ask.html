@@ -342,7 +342,7 @@
             // Validates email address at input element 'el'
             // Returns: <boolean> true = valid, false = invalid, null = empty
             var email = el.value || "";
-            var trimmedEmail = email.trim();
+            var trimmedEmail = $.trim(email);
             var emailRegex = /^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/;
 
             if (trimmedEmail === "") {
@@ -469,8 +469,7 @@
                 email = $elem.find('.email_option input').val(),
                 splitCharactersRegex = /[\+\.\_]/;
 
-            var cleanEmail = email
-                .trim() //remove any leading / trailing whitespace
+            var cleanEmail = $.trim(email) //remove any leading / trailing whitespace
                 .split('@')[0] //remove anything after @ symbol
                 .split('+')[0]; //remove anything after + (if anything exists)
 
