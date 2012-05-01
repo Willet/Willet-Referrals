@@ -2,9 +2,6 @@
 """ 'Get' functions for the ShopConnection application
 """
 import logging
-from collections                    import defaultdict
-from datetime                       import date
-from google.appengine.api           import taskqueue
 from google.appengine.ext.webapp    import template
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
@@ -85,7 +82,7 @@ def get_details(uri_handler=None, provided_client=None):
 
 class ButtonsShopifyBeta(URIHandler):
     """If an existing customer clicks through from Shopify."""
-    def get(self):
+    def get(self, _beta):
         """Display the default 'welcome' page."""
         template_values = {
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
@@ -215,7 +212,8 @@ class ButtonsShopifyWelcome(URIHandler):
             'sharing_message': preferences.get("sharing_message", ""),
             'message'        : self.request.get("message", "Welcome Back!"),
             'button_order'   : button_order,
-            'unused_buttons' : unused_buttons
+            'unused_buttons' : unused_buttons,
+            'shop_url'       : self.request.get("shop")
         }
 
         # prepopulate values
@@ -300,21 +298,20 @@ class ButtonsShopifyBillingCallback(URIHandler):
             app.put()
             app.do_upgrade()
 
-            template_values = {
-                'app'        : app,
-                'shop_owner' : details["shop_owner"],
-                'shop_name'  : details["shop_name"]
-            }
-
             # Render the page
-            self.response.out.write(self.render_page('welcome.html',
-                                                     template_values))
+            page = build_url("ButtonsShopifyInstructions", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+            self.redirect(page)
+
         else:
             #The user declined to pay, redirect to upsell page
             page = build_url("ButtonsShopifyWelcome", qs={
-                "t": app.store_token,
+                "t"   : app.store_token,
                 "shop": app.store_url,
-                "app": "ButtonsShopify"
+                "app" : "ButtonsShopify"
             })
 
             self.redirect(page)
@@ -343,11 +340,20 @@ class ButtonsShopifyInstructions(URIHandler):
         # Fetch or create the app
         app, _ = ButtonsShopify.get_or_create_app(client, token=token)
 
+        config_enabled = app.billing_enabled
+        config_url     = build_url("ButtonsShopifyWelcome", qs={
+            "t": app.store_token,
+            "shop": app.store_url,
+            "app": "ButtonsShopify"
+        })
+
         # Render the page
         template_values = {
-            'app'          : app,
-            'shop_owner'   : details["shop_owner"],
-            'shop_name'    : details["shop_name"]
+            'app'           : app,
+            'shop_owner'    : details["shop_owner"],
+            'shop_name'     : details["shop_name"],
+            'config_enabled': config_enabled,
+            'config_url'    : config_url
         }
 
         self.response.out.write(self.render_page('welcome.html',
@@ -369,26 +375,6 @@ class ButtonsShopifyInstallError(URIHandler):
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(self.render_page('install_error.html',
                                                  template_values))
-        return
-
-
-class ButtonsShopifyServeScript(URIHandler):
-    def get(self):
-        path = os.path.join('apps/buttons/shopify/templates/js/',
-                            'buttons.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'application/javascript'
-        self.response.out.write(template.render(path, {}))
-        return
-
-
-class ButtonsShopifyServeSmartScript(URIHandler):
-    def get(self):
-        path = os.path.join('apps/buttons/shopify/templates/js/',
-                            'smart-buttons.js')
-        self.response.headers.add_header('P3P', P3P_HEADER)
-        self.response.headers['Content-Type'] = 'application/javascript'
-        self.response.out.write(template.render(path, {}))
         return
 
 
@@ -435,75 +421,3 @@ class ButtonsShopifyItemShared(URIHandler):
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
 
-class ButtonsShopifyEmailReports(URIHandler):
-    """Queues the report emails"""
-    def get(self):
-        logging.info("Preparing reports...")
-
-        apps = ButtonsShopify.all().filter(" billing_enabled = ", True)
-
-        for app in apps:
-            logging.info("Setting up taskqueue for %s" % app.client.name)
-            params = {
-                "store": app.store_url,
-            }
-            url = build_url('ButtonsShopifyItemSharedReport')
-            logging.info("taskqueue URL: %s" % url)
-            taskqueue.add(queue_name='buttonsEmail', url=url, params=params)
-
-
-class ButtonsShopifyItemSharedReport(URIHandler):
-    """Sends individual emails"""
-    def get(self):
-        self.post()
-
-    def post(self):
-        product_page = self.request.get('store')
-
-        # We only want the scheme and location to build the url
-        store_url    = "%s://%s" % urlparse(product_page)[:2]
-        app = ButtonsShopify.get_by_url(store_url)
-
-        logging.info("Preparing individual report for %s..." % store_url)
-
-        if app is None:
-            logging.info("App not found!")
-            return
-
-        share_period = SharePeriod.all()\
-                        .filter('app_uuid =', app.uuid)\
-                        .order('-end')\
-                        .get()
-
-        if share_period is None:
-            logging.info("No share period found matching criteria")
-            return
-
-        shares_by_name    = share_period.get_shares_grouped_by_product()
-        shares_by_network = share_period.get_shares_grouped_by_network()
-
-        logging.info(shares_by_name)
-        logging.info(shares_by_network)
-
-        top_items        = sorted(shares_by_name,
-                                  key=lambda v: v["total_shares"],
-                                  reverse=True)[:10]
-        top_shares       = sorted(shares_by_network,
-                                  key=lambda v: v['shares'],
-                                  reverse=True)
-
-        logging.info(top_items)
-        logging.info(top_shares)
-
-        client = ClientShopify.get_by_url(store_url)
-        if client is None or (client is not None and client.merchant is None):
-            logging.info("No client!")
-            return
-
-        #email = client.email
-        email = 'info@getwillet.com'
-        shop  = client.name
-        name  = client.merchant.get_full_name()
-
-        Email.report_smart_buttons(email, top_items, top_shares,
-                                 shop_name=shop, client_name=name)

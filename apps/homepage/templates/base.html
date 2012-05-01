@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang='en'>
-	<head>
+    <head>
         <title>Willet | Turning Social Browsers into Online Shoppers</title>
         <meta name="description" content="Turning social browsers into online shoppers" />
         <meta name="keywords" content="social, buttons, sharing, share, collecting, collect, twitter, facebook, google plus, pinterest, tumblr, fancy, svpply" />
-        
+
         <meta http-equiv="X-UA-Compatible" content="IE=8" />
         <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
-        
+
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
 
@@ -34,15 +34,17 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
-            
+
+        {% block snapabug %}
         <script type="text/javascript">
         document.write(unescape("%3Cscript src='" + ((document.location.protocol=="https:")?"https://snapabug.appspot.com":"http://www.snapengage.com") + "/snapabug.js' type='text/javascript'%3E%3C/script%3E"));</script><script type="text/javascript">
         SnapABug.addButton("a9fae0a0-daea-42c5-a125-eafa1ffd0ac8","3","80%");
         </script>
-        
+        {% endblock snapabug %}
+
         {% block head %}{% endblock head %}
-	</head>
-	<body>
+    </head>
+    <body>
         <div id="background"></div>
         <div id="starburst"><div><div></div></div></div>
 
@@ -79,7 +81,7 @@
             </div>
         </div>
         <!-- END CONTENT -->
-        
+
         <!-- FOOTER -->
         <div id='footer' class='stripe'>
             <div id="sailboat">
@@ -90,38 +92,28 @@
             <div id="beach"></div>
 
             <div class='container'>
-                <div class="prepend-top span-24 last">
-                    <div class="prepend-1 span-5 lower-50" style="font-size: 1.5em"> 
-                        <a href="/">Home</a> <br />
-                        <a href="/about">About Us</a> <br />
-                        <a href="http://www.willetinc.com">Blog</a> <br />
-                        <a href="/more">Our Products</a> <br />
-                    </div>
-                    <div class="prepend-2 span-8 lower-75 center">
-                        <a href="/">
-                            <img src="/static/imgs/logo.png" width="100px"></img>
-                        </a>
-                    </div>
-                    <div class="prepend-2 span-6 lower-75 last center" style="margin-top: 5px;">
-                        <p>Copyright &copy; 2011 <a href='http://www.willetinc.com'>Willet Inc</a></p>
-                        <p><a href='/privacy'>Privacy Policy</a></p>
-                    </div>
-                </div>
+                <p style='text-align:center;'>
+                    <a href="/">
+                        <img src="/static/imgs/logo.png" width="100px"></img>
+                    </a>
+                    <br />
+                    Copyright &copy; 2012 <a href='http://www.willetinc.com'>Willet Inc</a>
+                </p>
             </div>
         </div>
         <!-- END FOOTER -->
 
         <!-- For anything you want fixed to the window -->
         {% block body-addendum %}{% endblock %}
-        
+
         <!-- Preload these images -->
         <div class='hidden'>
         {% block hidden %}{% endblock %}
         </div>
-     
+
          <!-- Late loading scripts -->
         {% block lazyload %}{% endblock %}
-        
+
         <script src="/static/js/boat.js" type="text/javascript" charset="utf-8"></script>
-	</body>
+    </body>
 </html>

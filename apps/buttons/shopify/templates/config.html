@@ -23,7 +23,7 @@
     .box-design {
         background-color: #fff;
     }
-    .box-design form {
+    .box-design form, .box-design .preview {
         padding-top: 20px;
         padding-bottom: 20px;
         font-size: 1.5em;
@@ -41,7 +41,7 @@
         display: block;
     }
 
-    .config-option .left-column {
+    .left-column {
         display   : inline-block;
         text-align: right;
         width     : 200px;
@@ -54,7 +54,7 @@
         height: 40px;
     }
 
-    .buttons label, .buttons span {
+    .buttons span {
         position: relative;
         top: -9px;
     }
@@ -85,47 +85,93 @@
         display: none;
     }
 
+    li.icon {
+        padding: 1px;
+    }
+
+    span.icon {
+        display: inline-block;
+    }
+
     .icon {
         height: 20px;
         background-repeat: no-repeat;
-        background-position-x: center;
+        background-position-x: left;
         background-position-y: center;
-        padding: 1px;
+        border: 0 none !important;
     }
 
     .icon.Facebook {
         background-image: url('/static/imgs/sb-config-facebook.png');
         width: 48px;
     }
+    .icon.Facebook.buttonCount {
+        background-image: url('/static/imgs/sb-config-facebook-count.png');
+        width: 90px;
+    }
 
     .icon.Twitter {
         background-image: url('/static/imgs/sb-config-twitter.png');
         width: 56px;
+    }
+    .icon.Twitter.buttonCount {
+        background-image: url('/static/imgs/sb-config-twitter-count.png');
+        width: 98px;
     }
 
     .icon.GooglePlus {
         background-image: url('/static/imgs/sb-config-googleplus.png');
         width: 32px;
     }
+    .icon.GooglePlus.buttonCount {
+        background-image: url('/static/imgs/sb-config-googleplus-count.png');
+        width: 74px;
+    }
 
     .icon.Svpply {
         background-image: url('/static/imgs/sb-config-svpply.png');
         width: 70px;
+    }
+    .icon.Svpply.buttonCount {
+        background-image: url('/static/imgs/sb-config-svpply.png');
     }
 
     .icon.Fancy {
         background-image: url('/static/imgs/sb-config-fancy.png');
         width: 56px;
     }
+    .icon.Fancy.buttonCount {
+        background-image: url('/static/imgs/sb-config-fancy-count.png');
+        width: 96px;
+    }
 
     .icon.Pinterest {
         background-image: url('/static/imgs/sb-config-pinterest.png');
         width: 43px;
     }
+    .icon.Pinterest.buttonCount {
+        background-image: url('/static/imgs/sb-config-pinterest-count.png');
+        width: 77px;
+    }
 
     .icon.Tumblr {
         background-image: url('/static/imgs/sb-config-tumblr.png');
         width: 62px;
+    }
+    .icon.Tumblr.buttonCount {
+        background-image: url('/static/imgs/sb-config-tumblr.png');
+    }
+
+    .preview {
+        display: block;
+        background-color: #ffa;
+    }
+
+    #buttons-preview {
+        display: inline-block;
+        border: 1px dotted #000;
+        margin-left: 200px;
+        margin-right: 20px;
     }
 </style>
 <!--[if IE 7]>
@@ -152,6 +198,18 @@
         position: relative;
         top: 20px;
     }
+
+    span.icon {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
+
+    #buttons-preview {
+        display: inline-block;
+        *display  : inline;
+        zoom: 1;
+    }
 </style>
 <script>
     $(document).ready(function(){
@@ -163,13 +221,15 @@
 <![endif]-->
 <!--[if IE 8]>
 <style>
-    .buttons label, .buttons span {
+    .buttons span {
         position: relative;
         top: -29px;
     }
 </style>
 <![endif]-->
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"
+        type="text/javascript"></script>
+<script src="/static/js/jquery.qtip-1.0.0-rc3.min.js"
         type="text/javascript"></script>
 <script>
     $(document).ready(function(){
@@ -183,12 +243,39 @@
                     networks.push(network);
                 });
                 $("input[name='button_order']").val(networks.join(","));
+            },
+            update_preview = function(event) {
+                var buttonsDiv = $('#buttons-preview'),
+                    buttonsDivPadding = $("#button-padding").val() || 0;
+                buttonsDiv.empty();
+
+                $(buttonsDiv).css("padding", buttonsDivPadding + "px");
+
+                $("#default-buttons > .icon").each(function(index, elem) {
+                    var buttonClass = $(elem).attr("class"),
+                        buttonCount = $("[name=button_count]:checked").val(),
+                        buttonPadding = $("#button-spacing").val() || 0,
+                        newImg;
+
+                    newImg = $("<span/>", {
+                        "class": buttonClass,
+                        "border": 0
+                    });
+                    if (buttonCount === "True") {
+                        $(newImg).addClass("buttonCount");
+                    }
+
+                    $(newImg).css("margin-right", buttonPadding + "px");
+
+                    buttonsDiv.append(newImg);
+                })
             };
 
         $("#default-buttons, #unused-buttons").sortable({
             connectWith: ".connectedSortable",
             update: function(event, ui) {
                 update_networks();
+                update_preview();
             },
             receive: function (event, ui) {
                 if ($("#default-buttons > li").length > MAX_BUTTONS) {
@@ -197,6 +284,24 @@
                 }
             }
         }).disableSelection();
+
+        $('.help[title]').qtip({
+            content: {
+                text: false
+            },
+            style: 'cream'
+        });
+
+        $("#button-padding").keyup(update_preview);
+        $("#button-spacing").keyup(update_preview);
+
+        $("[name=button_count]").change(update_preview);
+
+        update_preview();
+
+        $('#go_to_shopify').click(function() {
+            window.location = "{{shop_url}}/admin";
+        });
     });
 </script>
 {% endblock %}
@@ -214,12 +319,32 @@
 
     <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
         <div class="box-design">
+            <div class="preview">
+                <span class="left-column">
+                    <label for="buttons-preview">Preview:</label>
+                </span>
+                <span style="margin-right: 20px;">
+                    See how your ShopConnection buttons
+                    will appear in your store.
+                </span>
+
+                <span id="buttons-preview">
+                </span>
+            </div>
             <form method="POST" action="{{ action }}">
                 <div id="config-free">
                     <div class="config-option buttons">
-                        <label for="default-buttons" class="left-column">
-                            Default Buttons:
-                        </label>
+                        <span class="left-column">
+                            <label for="default-buttons">
+                                Default Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="These buttons will be displayed by default
+                                     when less than three networks are detected.<br/><br/>
+                                     You are limited to selecting 3 buttons.<br/><br/>
+                                     <i>Default: Pinterest, Tumblr, Fancy</i>"
+                                 class="help">
+                        </span>
                         <ul id="default-buttons" class="connectedSortable">
                             {% for button in button_order %}
                             <li class="icon {{ button }}">
@@ -227,13 +352,14 @@
                             </li>
                             {% endfor %}
                         </ul>
-                        <span>(Max: 3)</span>
                     </div>
                     <div class="config-option buttons">
-                        <label for="unused-buttons"
-                               class="left-column disabled">
-                            Available Buttons:
-                        </label>
+                        <span class="left-column">
+                            <label for="unused-buttons"
+                                   class="disabled">
+                                Available Buttons:
+                            </label>
+                        </span>
                         <ul id="unused-buttons" class="connectedSortable">
                             {% for button in unused_buttons %}
                             <li class="icon {{ button }}">
@@ -243,10 +369,16 @@
                         </ul>
                     </div>
                     <div class="config-option" style="height: 40px;">
-                        <label for="button-count"
-                               class="left-column">
-                            Show Button Count:
-                        </label>
+                        <span class="left-column">
+                            <label for="button-count">
+                                Show Button Count:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines whether or not a share count
+                                 should appear next to the share button.<br/><br/>
+                                 <i>Default: Hide</i>"
+                                 class="help">
+                        </span>
                         <input id="button-count" name="button_count"
                                type="radio"
                                value="True"
@@ -259,40 +391,75 @@
                         <label for="no-button-count">Hide</label>
                     </div>
                     <div class="config-option">
-                        <label for="button-spacing" class="left-column">
-                            Button Spacing:
-                        </label>
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Button Spacing:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be put between the buttons.<br/><br/>
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
                         <input id="button-spacing" name="button_spacing"
                                type="text" value="{{ button_spacing }}"
                                style="width: 50px;"
                                class="textbox"/>px
                     </div>
                     <div class="config-option">
-                        <label for="button-padding" class="left-column">
-                            Button Padding:
-                        </label>
+                        <span class="left-column">
+                            <label for="button-padding">
+                                Container Padding:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be around the button container.<br/><br/>
+
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
                         <input id="button-padding" name="button_padding"
                                type="text" value="{{ button_padding }}"
                                style="width: 50px;"
                                class="textbox"/>px
                     </div>
                     <div class="config-option">
-                        <label for="sharing-message" class="left-column">
-                            Sharing Message:
-                        </label>
+                        <span class="left-column">
+                            <label for="sharing-message">
+                                Sharing Message:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines what message will be displayed
+                                 when sharing on Twitter or Pinterest.<br/><br/>
+
+                                 <i>Default: I found this on {{shop_url}}</i>"
+                                 class="help">
+                        </span>
                         <input id="sharing-message" name="sharing_message"
                                type="text" value="{{ sharing_message }}"
                                class="textbox"/>
-                        (for Twitter and Pinterest)
                     </div>
                 </div>
                 <div class="submit">
-                    <input type="hidden" name="button_order"
+                    <input id="button-order" type="hidden" name="button_order"
                            value='{{ button_order|join:"," }}' />
                     <button class="blue">Save</button>
                 </div>
             </form>
         </div>
+    </div>
+</div>
+<div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
+    <h3 class="center">Have other questions? Email: fraser@getwillet.com</h3>
+    <br />
+
+    <div class="center">
+        <button class='blue' id='go_to_shopify'>
+            <img src="/static/imgs/shopify-bag-36.png" />
+                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                    Return to your Store
+                </span>
+        </button>
     </div>
 </div>
 {% endblock content %}
