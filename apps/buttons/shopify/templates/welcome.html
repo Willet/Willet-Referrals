@@ -201,6 +201,7 @@
                         <h3 class="center">Have other questions? Email: fraser@getwillet.com</h3>
                         <br />
 
+                        {% if not config_enabled %}
                         <div class="center">
                             <button class='blue' id='go_to_shopify'>
                                 <img src="/static/imgs/shopify-bag-36.png" />
@@ -209,6 +210,7 @@
                                 </span>
                             </button>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
 {% endblock content %}

@@ -136,7 +136,7 @@ class AppShopify(Model):
         return cls.all().filter('store_url =', store_url).get()
 
     # Shopify API Calls -------------------------------------------------------
-    def _call_Shopify_API(self, verb, call, payload= None):
+    def _call_Shopify_API(self, verb, call, payload=None):
         """ Calls Shopify API
 
         Inputs:
