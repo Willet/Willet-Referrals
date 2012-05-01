@@ -18,14 +18,14 @@ NAME = 'Willet'
 
 # Domain Stuff
 USING_DEV_SERVER = False # Never change - use local_consts.py
-PROTOCOL = 'http' 
+PROTOCOL = 'http'
 SECURE_PROTOCOL = 'https'
 APP_DOMAIN = 'social-referral.appspot.com'
 APP_LIVE = 'social-referral'
 APP_LIVE_DEBUG = bool(get_application_id() != APP_LIVE) # False on live
-DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN 
+DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
-SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', '')) 
+SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
 KEYS = os.environ['HTTP_HOST']
 
 # Our BS P3P Header
@@ -42,7 +42,7 @@ FACEBOOK_APP_SECRET = 'a34a3f5ba2d87975ae84dab0f2a47453'
 
 # MailChimp Stuff
 MAILCHIMP_API_KEY = 'b58ce277cd799842ed2bdf03b06d603b-us4'
-    
+
 # Mixpanel Stuff (Legacy)
 MIXPANEL_API_KEY = 'a4bed9e726adf0a972fe2277784b6f51'
 MIXPANEL_API_URL = 'http://api.mixpanel.com/track/?'
@@ -57,8 +57,8 @@ COOKIE_SECRET = 'f54eb793d727492e99601446aa9b06bab504c3d37bc54c8391f385f0dde0373
 
 SHOPIFY_APPS = {
     'AppShopify': {
-        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
-        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f',
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586',
         'class_name': 'SIBTShopify',
         'facebook': {
             'app_id': '132803916820614',
@@ -84,8 +84,8 @@ SHOPIFY_APPS = {
         },
         'mailchimp_list_id': None,
     }, 'ButtonsShopify': {
-        'api_key': 'ec07b486dee3ddae870ef082ac6a748f', 
-        'api_secret': '1076f41726eb9811ac925a0a8b7c4586', 
+        'api_key': 'ec07b486dee3ddae870ef082ac6a748f',
+        'api_secret': '1076f41726eb9811ac925a0a8b7c4586',
         'class_name': 'ButtonsShopify',
         'mailchimp_list_id': '01629537ab',
     }
@@ -93,7 +93,7 @@ SHOPIFY_APPS = {
 
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 4, 
+    'url_count_for_app_and_user': 4,
 }
 
 # controls the number of memcache buckets
@@ -153,12 +153,8 @@ INSTALLED_APPS = [
     'link',
 ]
 
-def str (string, encoding='utf8', errors=None):
-    ''' patch str to return unicode objects. '''
-    if errors:
-        return unicode(("%s" % string).encode(encoding, errors),encoding)
-    else: # errors=None cannot be passed in
-        return unicode(("%s" % string).encode(encoding),encoding)
+''' patch str to return unicode objects. '''
+str = unicode
 
 # Overide settings with local_consts unless the google app name is exactly 'social-referral'
 # HT: http://stackoverflow.com/questions/4650622/how-can-i-load-all-keys-from-a-dict-as-local-variables-a-better-aproach
@@ -167,7 +163,7 @@ def str (string, encoding='utf8', errors=None):
 # > ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 # > LOCAL_CONSTS = dict((name, value) for (name, value) in globals().items()
 # >                                   if name[:1] in ascii_uppercase)
-# > 
+# >
 appname = get_application_id() # e.g. brian-willet
 if appname != APP_LIVE:
     try:

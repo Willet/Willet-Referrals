@@ -313,6 +313,7 @@ class ShowResults(URIHandler):
         template_values = {}
         user = User.get(self.request.get('user_uuid'))
         target = get_target_url(self.request.get('url'))
+        doing_vote = False
         link = app = None
 
         # successive stages to get instance

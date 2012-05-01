@@ -8,12 +8,12 @@ urlpatterns = [
     (r'/user/get/(.*)/', ShowProfileJSON),
     (r'/user/(.*)/(.*)/', ShowProfilePage),
     (r'/user/safariCookieHack', UserCookieSafariHack),
-    
+
     # Processes
     (r'/updateEmailAddress', UpdateEmailAddress),
     (r'/fetchFB', FetchFacebookData),
     (r'/fetchFriends', FetchFacebookFriends),
     (r'/socialGraphAPI', QueryGoogleSocialGraphAPI),
-    (r'/u/updateFBAccessToken', UpdateFBAccessToken),  
+    (r'/u/updateFBAccessToken', UpdateFBAccessToken),
 ]
 

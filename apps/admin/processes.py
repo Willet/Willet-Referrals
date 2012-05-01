@@ -60,18 +60,18 @@ class UpdateStore(URIHandler):
             app.install_queued()
 
             url = '%s/admin/script_tags.json' % app.store_url
-            username = app.settings['api_key'] 
+            username = app.settings['api_key']
             password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
             header = {'content-type':'application/json'}
             h = httplib2.Http()
-            
+
             # Auth the http lib
             h.add_credentials(username, password)
 
             # First fetch webhooks that already exist
             resp, content = h.request(url, "GET", headers=header)
             logging.info( 'Fetching script_tags: %s' % content )
-            data = json.loads( content ) 
+            data = json.loads( content )
 
             for w in data['script_tags']:
                 if '%s/s/shopify/sibt.js' % URL in w['src']:
@@ -138,11 +138,11 @@ class EmailBatch(URIHandler):
                     full_name = "shop owner"
                 else:
                     full_name = app.client.merchant.full_name
-                
+
                 # Create body text
                 raw_body_text = self.request.get('body', '')
                 raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
-                
+
                 # Construct email body
                 body = template.render(Email.template_path('general_mail.html'),
                     {
@@ -152,7 +152,7 @@ class EmailBatch(URIHandler):
                 )
                 # Remove HTML formatting from email subject line
                 subject = re.compile(r'<.*?>').sub('', self.request.get('subject'))
-                
+
                 # Construct email
                 email = {
                     'client': app.client,
@@ -188,7 +188,7 @@ class EmailSomeone (URIHandler):
             )
             self.response.out.write ("200 OK")
         except Exception, e:
-            logging.warn("Error sending one of the emails in batch! %s\n%r" % 
+            logging.warn("Error sending one of the emails in batch! %s\n%r" %
                 (e, [
                     self.request.get('from', 'fraser@getwillet.com'),
                     self.request.get('to'),
@@ -201,7 +201,7 @@ class EmailSomeone (URIHandler):
 
 
 class UploadEmailsToMailChimp(URIHandler):
-    """ One-time use to upload existing ShopConnection customers to MailChimp 
+    """ One-time use to upload existing ShopConnection customers to MailChimp
     Remove after use
 
     MailChimp Docs: http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
@@ -232,7 +232,7 @@ class UploadEmailsToMailChimp(URIHandler):
                 except IndexError:
                     # Split didn't result in 2 parts
                     first_name, last_name = name, ''
-                
+
                 batch.append({ 'FNAME': first_name,
                                'LNAME': last_name,
                                'EMAIL': app.client.email,
@@ -265,7 +265,7 @@ class UploadEmailsToMailChimp(URIHandler):
                         # thrown when results is not iterable (eg bool)
                         logging.info('ListBatchSubscribed to ShopConnection OK: %r' % (resp,))
                     else:
-                        logging.info('ListBatchSubscribe to ShopConnection OK: %r' % (resp,))                        
+                        logging.info('ListBatchSubscribe to ShopConnection OK: %r' % (resp,))
 
         # Keep going if haven't reached end
         if len(apps) == batch_size:
@@ -309,7 +309,7 @@ class GenerateOlderHourPeriods(URIHandler):
             day_global = global_day.start - datetime.timedelta(days=1)
             memcache.set('day_global', day_global.date())
 
-            oldest_app = AppAnalyticsHourSlice.all().order('start').get() 
+            oldest_app = AppAnalyticsHourSlice.all().order('start').get()
             hour = oldest_app.start - datetime.timedelta(hours=1)
             memcache.set('hour', hour)
 
@@ -328,7 +328,7 @@ class AnalyticsRPC(URIHandler):
     def get(self, admin):
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
-        
+
         day_slices = GlobalAnalyticsDaySlice.all()\
                 .order('-start')\
                 .fetch(int(limit), offset=int(offset))
@@ -336,16 +336,16 @@ class AnalyticsRPC(URIHandler):
         for ds in day_slices:
             obj = {}
 
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-            
+            obj['start'] = unicode(ds.start)
+            obj['start_day'] = unicode(ds.start.date())
+
             for action in actions_to_count:
                 obj[action] = ds.get_attr(action)
             data.append(obj)
 
         response = {
             'success': True,
-            'data': data 
+            'data': data
         }
 
         self.response.out.write(json.dumps(response))
@@ -356,7 +356,7 @@ class AppAnalyticsRPC(URIHandler):
         app = App.get(app_uuid)
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
-        
+
         day_slices = AppAnalyticsDaySlice.all()\
                 .filter('app_ =', app)\
                 .order('-start')\
@@ -365,16 +365,16 @@ class AppAnalyticsRPC(URIHandler):
         for ds in day_slices:
             obj = {}
 
-            obj['start'] = str(ds.start)
-            obj['start_day'] = str(ds.start.date())
-            
+            obj['start'] = unicode(ds.start)
+            obj['start_day'] = unicode(ds.start.date())
+
             for action in actions_to_count:
                 obj[action] = ds.get_attr(action)
             data.append(obj)
 
         response = {
             'success': True,
-            'data': data 
+            'data': data
         }
 
         self.response.out.write(json.dumps(response))
