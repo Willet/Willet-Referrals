@@ -357,10 +357,21 @@ class ButtonsShopifyConfig(URIHandler):
         """Store the results from the config form"""
         r = self.request
         details = get_details(self)
+        config_url = build_url("ButtonsShopifyConfig", qs={
+            "t"   : self.request.get("t"),
+            "shop": self.request.get("shop"),
+            "app" : "ButtonsShopify",
+            "message": "Your configuration was saved successfully!"
+        })
+
         app = ButtonsShopify.get_by_url(details["shop_url"])
         if not app:
             logging.error("error updating preferences: "
                           "'app' not found. Install first?")
+
+        if not app.billing_enabled:
+            #Somehow, they've posted without having paid. Ignore the request.
+            self.redirect(config_url)
 
         # TODO: Find a generic way to validate arguments
         def tryParse(func, val, default_value=0):
@@ -380,15 +391,7 @@ class ButtonsShopifyConfig(URIHandler):
         prefs["button_order"]    = r.get("button_order").split(",")
 
         app.update_prefs(prefs)
-
-        #redirect to Welcome
-        page = build_url("ButtonsShopifyConfig", qs={
-            "t"   : self.request.get("t"),
-            "shop": self.request.get("shop"),
-            "app" : "ButtonsShopify",
-            "message": "Your configuration was saved successfully!"
-        })
-        self.redirect(page)
+        self.redirect(config_url)
 
 
 class ButtonsShopifyInstallError(URIHandler):
