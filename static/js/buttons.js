@@ -431,6 +431,7 @@ _willet.networks = (function (willet) {
                         "buttonSpacing": params.buttonSpacing,
                         "buttonAlignment": params.buttonAlignment
                     });
+                    button.style.overflow = "visible";
                     button.style.width = params.buttonCount ? '90px' : '48px';
                     var fb = document.createElement('div');
                     fb.className = 'fb-like';
