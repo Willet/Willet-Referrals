@@ -10,6 +10,7 @@ urlpatterns = [
     (r'/b/shopify/upgrade',             ButtonsShopifyUpgrade),
     (r'/b/shopify/billing_callback',    ButtonsShopifyBillingCallback),
     (r'/b/shopify/instructions',        ButtonsShopifyInstructions),
+    (r'/b/shopify/config',              ButtonsShopifyConfig),
     (r'/b/shopify/error.html',          ButtonsShopifyInstallError),
     (r'/b/shopify/item_shared',         ButtonsShopifyItemShared),
 
