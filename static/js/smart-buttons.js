@@ -768,7 +768,7 @@ _willet = (function (me, config) {
         ELEMENT_NODE = 1,
         NOT_FOUND = -1,
 
-        MAX_BUTTONS = 3,
+        MAX_BUTTONS = (config && config.max_buttons) || 3,
         DEFAULT_BUTTONS = (config && config.button_order) ||
                           ['Pinterest', 'Tumblr', 'Fancy'],
         DEFAULT_COUNT = 'false',
