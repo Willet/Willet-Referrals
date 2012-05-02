@@ -185,10 +185,14 @@ _willet.debug = (function (willet) {
         isDebugging = false,
         callbacks = [],
         log_array = [],
-        _log = function() {},
-        _error = function() {};
+        _log = function() { log_array.push(arguments); },
+        _error = function() { log_array.push(arguments); };
 
-    if (window.console) {
+    if (typeof(window.console) === 'object' 
+        && ( ( typeof(window.console.log) === 'function'
+        && typeof(window.console.error) ==='function' )
+        || (typeof(window.console.log) === 'object' // IE 
+        && typeof(window.console.error) ==='object') )) {
         _log = function () {
             var log = window.console.log;
             if (log.apply) {
@@ -441,6 +445,7 @@ _willet.networks = (function (willet) {
                              +"span.fb_edge_comment_widget.fb_iframe_widget iframe { width:401px !important; }");
                     button.appendChild(fb);
                     button.appendChild(style);
+
                     return button;
                 },
                 "onload": function(methods, params) {
@@ -879,6 +884,13 @@ _willet = (function (me, config) {
                 } catch (e) {
                     debug.error('Buttons: '+network+' encountered error: '+e);
                 }
+            }
+
+            // If FB script was already loaded, fire it off again
+            if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
+                try {
+                    window.FB.XFBML.parse();
+                } catch(e) {}
             }
 
             // Make visible if hidden

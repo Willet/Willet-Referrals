@@ -195,8 +195,10 @@ class AppShopify(Model):
             return data
         else:
             Email.emailDevTeam(
-                '%s APPLICATION API REQUEST FAILED\nStatus:%s %s\nStore: %s\nResponse: %s' % (
+                '%s APPLICATION API REQUEST FAILED<br />Request: %s %s<br />Status: %s %s<br />Store: %s<br />Response: %s' % (
                     self.class_name(),
+                    verb,
+                    call,
                     resp.status,
                     resp.reason,
                     self.store_url,
