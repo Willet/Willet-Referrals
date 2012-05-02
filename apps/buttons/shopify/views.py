@@ -296,6 +296,7 @@ class ButtonsShopifyInstructions(URIHandler):
 
 class ButtonsShopifyConfig(URIHandler):
     """Actions for the config page."""
+    button_range = range(2, 6)
 
     @catch_error
     def get(self):
@@ -335,6 +336,8 @@ class ButtonsShopifyConfig(URIHandler):
         # Use .get in case properties don't exist yet
         template_values = {
             'action'          : config_url,
+            'max_buttons'     : preferences.get("max_buttons", 3),
+            'button_range'    : self.button_range,
             'button_count'    : preferences.get("button_count", False),
             'button_spacing'  : preferences.get("button_spacing", 5),
             'button_padding'  : preferences.get("button_padding", 5),
@@ -386,6 +389,12 @@ class ButtonsShopifyConfig(URIHandler):
         prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
         prefs["sharing_message"] = tryParse(strip_tags,
                                             r.get("sharing_message"), "")
+        max_buttons              = tryParse(int, r.get("max_buttons"), 3)
+
+        if max_buttons in self.button_range:
+            prefs["max_buttons"] = max_buttons
+        else:
+            prefs["max_buttons"] = 3 #Default
 
         # What validation should be done here?
         prefs["button_order"]    = r.get("button_order").split(",")

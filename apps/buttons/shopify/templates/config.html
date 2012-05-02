@@ -204,6 +204,10 @@
         padding: 20px;
         cursor: auto;
     }
+
+    select {
+        font-size: 1.3em;
+    }
 </style>
 <!--[if IE 7]>
 <style>
@@ -352,6 +356,10 @@
         maskMessage += "Learn more</a>";
         $(".mask-target").mask(maskMessage);
         //{% endif %}
+
+        // Set the default selected element
+        // We do this in JS because it is cleaner than in the template
+        $("#max-buttons").val({{max_buttons}});
     });
 </script>
 {% endblock head %}
@@ -425,6 +433,25 @@
                             </li>
                             {% endfor %}
                         </ul>
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Number of Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines the maximum number of
+                                 buttons to be displayed.<br/><br/>
+                                 <i>Default: 3</i>"
+                                 class="help">
+                        </span>
+                        <select id="max-buttons" name="max_buttons">
+                            {% for number in button_range %}
+                            <option value="{{number}}">
+                            {{ number }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="config-option" style="height: 40px;">
                         <span class="left-column">
