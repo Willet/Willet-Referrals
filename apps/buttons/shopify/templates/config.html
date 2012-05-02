@@ -208,6 +208,14 @@
     select {
         font-size: 1.3em;
     }
+
+    #analytics li {
+        margin-left: 15px;
+    }
+
+    .small {
+        font-size: 0.65em;
+    }
 </style>
 <!--[if IE 7]>
 <style>
@@ -396,7 +404,9 @@
         $("[name=button_count]").change(update);
         $("#max-buttons").change(update);
 
+        //{% if config_enabled %}
         $(".tab-header").not(".tab-ignore").click(changeTabs);
+        //{% endif %}
 
         $('#go_to_shopify').click(function () {
             window.location = "{{shop_url}}/admin";
@@ -430,12 +440,21 @@
 <div class="prepend-top tab-bar">
     <span class="tab-header selected">
         <a href="#configuration">Configuration</a>
+        {% if not config_enabled %}
+        <br/><span class="small">(Unavailable in free version)</span>
+        {% endif %}
     </span>
     <span class="tab-header">
-        <a href="#analytics">Analytics</a>
+        <a href="#analytics">Share Details</a>
+        {% if not config_enabled %}
+        <br/><span class="small">(Unavailable in free version)</span>
+        {% endif %}
     </span>
     <span class="tab-header tab-ignore">
         <a href="{{ instructions_url }}">Instructions</a>
+        {% if not config_enabled %}
+        <br/><span class="small">&nbsp;</span>
+        {% endif %}
     </span>
 </div>
 
@@ -597,10 +616,13 @@
 
 <div id="analytics" class="page span-24 last box-design content-container"
      style="margin-top: 0px; display:none;">
-    <h1>ShopConnection Analytics</h1>
+    <h1>ShopConnection Share Details</h1>
 
     <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
         <div class="box-design mask-target">
+            <div style="padding: 20px;">
+            {% include "../../../email/templates/smart_buttons_report_content.html" %}
+            </div>
         </div>
     </div>
 </div>
