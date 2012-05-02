@@ -84,8 +84,8 @@
                 <input type="hidden" name="user_uuid" value="{{user_uuid}}">
                 <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
                 <input type="hidden" name="target_url" value="{{target_url}}">
-                
-                <input name="vote_btn" id="vote_btn" 
+
+                <input name="vote_btn" id="vote_btn"
                        class="button"
                        type="button" value="Done">
                 <div id="error_bar"></div>
@@ -113,7 +113,7 @@
             <!-- text should not mention 'buy' -->
         </div>
         <div>Something went wrong, and your vote was not counted! <br />
-            Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
+            Sorry! Please tell <a href="mailto:support@getwillet.com">us</a> about it.
         </div>
         <div class="dialog_button_area">
             <input type="button" class="button" value="Close">
@@ -156,20 +156,20 @@
 
             var that = this,
                 $elem = $(this.elem);
-            
+
             $elem.click (function (e) {
                 // add product selection events onto checkbox.
                 $('#cart_items_display input').prop('checked', false);
                 var checkbox = $(this).find('input')[0];
                 checkbox.checked = true;
-                
+
                 // cancel select for all other checkboxes
                 $('#cart_items_display li').each (function () {
                     var checkbox = $(this).find('input')[0];
                     $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
                 });
             });
-            
+
             var image = this.image = document.createElement('img');
             image.src = image_src || "/static/imgs/noimage-willet.png";
 
@@ -179,17 +179,17 @@
             input.className = "product_select";
             input.type = "checkbox";
             input.dataset.uuid = uuid;
-            
+
             var label = this.label = document.createElement('label');
             label.appendChild (input);
             label.innerHTML += title;
-            
+
             $elem.append ([image, label]);
-            
+
         };
-        
+
         Product.prototype = new LiWidget();
-        
+
         Product.prototype.getProductUuid = function () {
             return $elem.data('uuid');
         };
@@ -202,28 +202,28 @@
         for (x = 0; x < _willet_cart_products.length; x++) {
             // add products onto page.
             var prod = new Product (
-                _willet_cart_products[x].product_uuid, 
-                _willet_cart_products[x].title, 
+                _willet_cart_products[x].product_uuid,
+                _willet_cart_products[x].title,
                 _willet_cart_products[x].image,
                 _willet_cart_products[x].product_id
             );
             prod.attach ();
         }
-        
+
         var showScreen = function (id) {
             $('#wrapper').children().hide();
             $('#wrapper>#'+id).show();
         };
-        
+
         var closeWindow = function () {
             window.close();
         };
         $('[value="Close"]').click (closeWindow);
-        
+
         var showError = function (msg) {
             $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
         }
-        
+
         var vote = function () {
             var product_uuid = $('#cart_items_display input:checked').data('uuid');
             if (product_uuid) {
@@ -248,7 +248,7 @@
             }
         }
         $('#vote_btn').click(vote);
-        
+
         $('#cart_items_display input').prop('checked', false);
         showScreen('splash');
     });
