@@ -204,6 +204,10 @@
         padding: 20px;
         cursor: auto;
     }
+
+    select {
+        font-size: 1.3em;
+    }
 </style>
 <!--[if IE 7]>
 <style>
@@ -249,8 +253,8 @@
     }
 </style>
 <script>
-    $(document).ready(function(){
-        $(".submit button").click(function(){
+    $(document).ready(function () {
+        $(".submit button").click(function () {
             $("form").submit();
         });
     });
@@ -272,59 +276,91 @@
 <script src="/static/js/jquery.loadmask.min.js"
         type="text/javascript"></script>
 <script>
-    $(document).ready(function(){
-        var MAX_BUTTONS = 3,
-            update_networks = function() {
-                var networks = [],
-                    network = "";
-                $("#default-buttons > li").each(function(index, item){
+    $(document).ready(function () {
+        var maxButtons,
+            update,
+            updateNetworks,
+            updatePreview;
+
+        // Get the maximum number of buttons
+        maxButtons = function () {
+            return $("#max-buttons").val() || 3;
+        };
+
+        // update the networks hidden form field
+        updateNetworks = function () {
+            var networks = [],
+                network = "";
+
+            $("#default-buttons > li").each(function (index, item) {
+                if (index < maxButtons()) {
                     network = $(item).text();
                     network = $.trim(network);
                     networks.push(network);
+                } else {
+                    //move element back
+                    $(item).appendTo("#unused-buttons");
+                }
+            });
+            $("input[name='button_order']").val(networks.join(","));
+        };
+
+        // refresh the preview area
+        updatePreview = function (event) {
+            var buttons = $("input[name='button_order']").val().split(","),
+                buttonsDiv = $('#buttons-preview'),
+                buttonsDivPadding = $("#button-padding").val() || 0;
+
+            buttonsDiv.empty();
+
+            $(buttonsDiv).css("padding", buttonsDivPadding + "px");
+
+            $.each(buttons, function (index, elem) {
+                var buttonClass = "icon " + elem,
+                    buttonCount = $("[name=button_count]:checked").val(),
+                    buttonPadding = $("#button-spacing").val() || 0,
+                    newImg;
+
+                newImg = $("<span/>", {
+                    "class": buttonClass,
+                    "border": 0
                 });
-                $("input[name='button_order']").val(networks.join(","));
-            },
-            update_preview = function(event) {
-                var buttonsDiv = $('#buttons-preview'),
-                    buttonsDivPadding = $("#button-padding").val() || 0;
-                buttonsDiv.empty();
+                if (buttonCount === "True") {
+                    $(newImg).addClass("buttonCount");
+                }
 
-                $(buttonsDiv).css("padding", buttonsDivPadding + "px");
+                $(newImg).css("margin-right", buttonPadding + "px");
 
-                $("#default-buttons > .icon").each(function(index, elem) {
-                    var buttonClass = $(elem).attr("class"),
-                        buttonCount = $("[name=button_count]:checked").val(),
-                        buttonPadding = $("#button-spacing").val() || 0,
-                        newImg;
+                buttonsDiv.append(newImg);
+            })
+        };
 
-                    newImg = $("<span/>", {
-                        "class": buttonClass,
-                        "border": 0
-                    });
-                    if (buttonCount === "True") {
-                        $(newImg).addClass("buttonCount");
-                    }
+        update = function () {
+            updateNetworks();
+            updatePreview();
+        }
 
-                    $(newImg).css("margin-right", buttonPadding + "px");
+        //--------------- UI SETUP ---------------//
 
-                    buttonsDiv.append(newImg);
-                })
-            };
+        // Set the default selected element
+        // We do this in JS because it is cleaner than in the template
+        $("#max-buttons").val({{max_buttons}});
 
+        // Set up the drag and drop areas and constraints
         $("#default-buttons, #unused-buttons").sortable({
             connectWith: ".connectedSortable",
             update: function(event, ui) {
-                update_networks();
-                update_preview();
+                update();
             },
             receive: function (event, ui) {
-                if ($("#default-buttons > li").length > MAX_BUTTONS) {
+                if ($("#default-buttons > li").length > maxButtons()) {
                     $(ui.sender).sortable('cancel');
-                    update_networks();
+                    update();
                 }
             }
         }).disableSelection();
 
+        // Set up the tooltips
         $('.help[title]').qtip({
             content: {
                 text: false
@@ -332,18 +368,20 @@
             style: 'cream'
         });
 
-        $("#button-padding").keyup(update_preview);
-        $("#button-spacing").keyup(update_preview);
+        //--------------- BEHAVIOUR SETUP ---------------//
 
-        $("[name=button_count]").change(update_preview);
+        // set up handlers
+        $("#button-padding").keyup(update);
+        $("#button-spacing").keyup(update);
+        $("[name=button_count]").change(update);
+        $("#max-buttons").change(update);
 
-        update_preview();
-
-        $('#go_to_shopify').click(function() {
+        $('#go_to_shopify').click(function () {
             window.location = "{{shop_url}}/admin";
         });
 
         //{% if not config_enabled %}
+        // Display a mask if the user has not paid
         var maskMessage = "";
         maskMessage += "Sorry, only paid users can access the configuration page<br/>";
         maskMessage += "<br/>";
@@ -352,6 +390,9 @@
         maskMessage += "Learn more</a>";
         $(".mask-target").mask(maskMessage);
         //{% endif %}
+
+        // Refresh the preview since the page is ready
+        updatePreview();
     });
 </script>
 {% endblock head %}
@@ -425,6 +466,25 @@
                             </li>
                             {% endfor %}
                         </ul>
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Number of Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines the maximum number of
+                                 buttons to be displayed.<br/><br/>
+                                 <i>Default: 3</i>"
+                                 class="help">
+                        </span>
+                        <select id="max-buttons" name="max_buttons">
+                            {% for number in button_range %}
+                            <option value="{{number}}">
+                            {{ number }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="config-option" style="height: 40px;">
                         <span class="left-column">
