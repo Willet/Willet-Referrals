@@ -253,8 +253,8 @@
     }
 </style>
 <script>
-    $(document).ready(function(){
-        $(".submit button").click(function(){
+    $(document).ready(function () {
+        $(".submit button").click(function () {
             $("form").submit();
         });
     });
@@ -276,20 +276,24 @@
 <script src="/static/js/jquery.loadmask.min.js"
         type="text/javascript"></script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
+        var maxButtons,
+            update,
+            updateNetworks,
+            updatePreview;
 
         // Get the maximum number of buttons
-        var max_buttons = function() {
+        maxButtons = function () {
             return $("#max-buttons").val() || 3;
         };
 
         // update the networks hidden form field
-        var update_networks = function() {
+        updateNetworks = function () {
             var networks = [],
                 network = "";
 
-            $("#default-buttons > li").each(function(index, item){
-                if (index < max_buttons()) {
+            $("#default-buttons > li").each(function (index, item) {
+                if (index < maxButtons()) {
                     network = $(item).text();
                     network = $.trim(network);
                     networks.push(network);
@@ -302,7 +306,7 @@
         };
 
         // refresh the preview area
-        var update_preview = function(event) {
+        updatePreview = function (event) {
             var buttons = $("input[name='button_order']").val().split(","),
                 buttonsDiv = $('#buttons-preview'),
                 buttonsDivPadding = $("#button-padding").val() || 0;
@@ -311,7 +315,7 @@
 
             $(buttonsDiv).css("padding", buttonsDivPadding + "px");
 
-            $.each(buttons, function(index, elem) {
+            $.each(buttons, function (index, elem) {
                 var buttonClass = "icon " + elem,
                     buttonCount = $("[name=button_count]:checked").val(),
                     buttonPadding = $("#button-spacing").val() || 0,
@@ -331,9 +335,9 @@
             })
         };
 
-        var update = function() {
-            update_networks();
-            update_preview();
+        update = function () {
+            updateNetworks();
+            updatePreview();
         }
 
         //--------------- UI SETUP ---------------//
@@ -349,7 +353,7 @@
                 update();
             },
             receive: function (event, ui) {
-                if ($("#default-buttons > li").length > max_buttons()) {
+                if ($("#default-buttons > li").length > maxButtons()) {
                     $(ui.sender).sortable('cancel');
                     update();
                 }
@@ -372,7 +376,7 @@
         $("[name=button_count]").change(update);
         $("#max-buttons").change(update);
 
-        $('#go_to_shopify').click(function() {
+        $('#go_to_shopify').click(function () {
             window.location = "{{shop_url}}/admin";
         });
 
@@ -388,7 +392,7 @@
         //{% endif %}
 
         // Refresh the preview since the page is ready
-        update_preview();
+        updatePreview();
     });
 </script>
 {% endblock head %}
