@@ -246,6 +246,8 @@ class ButtonsShopify(Buttons, AppShopify):
                 _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
+        except ShopifyAPIError:
+            pass  # Explicitly catch this
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 

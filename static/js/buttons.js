@@ -579,7 +579,7 @@ _willet.networks = (function (willet) {
                     link.style.color = "#CD1F1F";
                     link.style.height = "20px";
                     link.style.width = "43px";
-                    link.style.zIndex = "100";
+                    link.style.zIndex = "1";
                     link.onclick = function() {
                         methods.itemShared("Pinterest", params);
                         window.open("//pinterest.com/pin/create/button/?" +
@@ -595,8 +595,8 @@ _willet.networks = (function (willet) {
                                                 +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
                                                 +"   background-position: 0 -7px; "
                                                 +"} "
-                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: hand; } "
-                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: hand; } "
+                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } "
+                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: pointer; } "
                                                 +"a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }");
                     button.appendChild(link);
                     button.appendChild(style);
@@ -965,7 +965,7 @@ _willet = (function (me, config) {
 
 try {
     if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
-        _willet.debug.set(true); //set to true if you want logging turned on
+        _willet.debug.set(false); //set to true if you want logging turned on
         _willet.init();
     }
 } catch(e) {
