@@ -55,16 +55,16 @@
         <div id="success_screen" class="hidden">
             Thanks for voting!
             <h2 class="yes">
-                Tell {{asker_name}} why you voted YES. 
+                Tell {{asker_name}} why you voted YES.
             </h2>
             <h2 class="no">
-                Tell {{asker_name}} why you voted NO. 
+                Tell {{asker_name}} why you voted NO.
             </h2>
             <div id="fb-root"></div>
             <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="400"></div>
         </div>
         <div id="error_screen" class="hidden">Something went wrong, and your vote was not counted! <br />
-            Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
+            Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
         </div>
     </div>
     <div id="choice">
@@ -78,7 +78,7 @@
             var percent_el = $('#percentage');
 
             var calculatePercent = function() {
-                var total = yesses + noes; 
+                var total = yesses + noes;
                 var value = Math.round(parseFloat(yesses/total)*100);
                 if (isNaN(value)) {
                     value = 0;
@@ -109,7 +109,7 @@
                         $("#success_screen h2." + which).show();
                         $("#FOO").show();
                         fbinit (document, 'script', 'facebook-jssdk');
-                    }, 
+                    },
                     error: function () {
                         $("#product_screen").hide();
                         $("#choice").hide();
@@ -119,7 +119,7 @@
             };
 
             percent_el.text(calculatePercent ());
-            
+
             $('#choice button').click(function () {
                 vote (this.id); // click button = vote
             });

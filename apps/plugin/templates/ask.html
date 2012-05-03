@@ -139,6 +139,7 @@
         }
     </script>
     <script src="/static/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.mailcheck.js" type="text/javascript"></script>
     <script type="text/javascript">
         /* JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js */
         var JSON;if(!JSON){JSON={};}
@@ -342,7 +343,7 @@
             // Validates email address at input element 'el'
             // Returns: <boolean> true = valid, false = invalid, null = empty
             var email = el.value || "";
-            var trimmedEmail = email.trim();
+            var trimmedEmail = $.trim(email);
             var emailRegex = /^[0-9A-Za-z._%+-]+@[0-9A-Za-z.-]+\.[A-Za-z]{2,6}$/;
 
             if (trimmedEmail === "") {
@@ -469,8 +470,7 @@
                 email = $elem.find('.email_option input').val(),
                 splitCharactersRegex = /[\+\.\_]/;
 
-            var cleanEmail = email
-                .trim() //remove any leading / trailing whitespace
+            var cleanEmail = $.trim(email) //remove any leading / trailing whitespace
                 .split('@')[0] //remove anything after @ symbol
                 .split('+')[0]; //remove anything after + (if anything exists)
 
@@ -1118,6 +1118,14 @@
                 friends.push(friend1, friend2);
                 $('#friends').append(friend1.getElement(), friend2.getElement());
             })();
+
+            $('.email, .email_option input').live('blur', function() {
+                $(this).mailcheck({
+                    suggested: function (element, suggestion) {
+                        element.val(suggestion.full);
+                    }
+                });
+            });
 
             // Add your js initialization code here!
             // Example: showScreen('splash');

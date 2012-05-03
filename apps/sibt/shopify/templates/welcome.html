@@ -23,12 +23,12 @@
 <div class="lower-100 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
         <div class="lower-100 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate 'Should I Buy This'</div>
         <div class="lower-100 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
-        
+
         <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
         <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
             <div class="center span-24 last append-bottom">
                 <p>
-                    {{shop_owner}}, thanks for installing "Should I Buy This"!  
+                    {{shop_owner}}, thanks for installing "Should I Buy This"!
                     <br />
                     Now, let's determine where to place the button on your product pages.
                 </p>
@@ -36,36 +36,36 @@
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
                 <p>1. In your <a href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
-                
+
                 <img class="span-18" src="/static/imgs/template_editor.png" />
             </div>
-            
-            <hr class="thick_hr" /> 
+
+            <hr class="thick_hr" />
 
             <div class="prepend-top prepend-3 span-12 append-bottom">
-                <p class="lower-50"> 
+                <p class="lower-50">
                     2. Under the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippts</em>, try looking under
                     <em>Templates</em>.
                 </p>
             </div>
-            
+
             <div class="prepend-top prepend-2 span-6 last append-bottom">
                  <img src="/static/imgs/snippets_product.png" />
             </div>
 
-            <hr class="thick_hr" /> 
-            
+            <hr class="thick_hr" />
+
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
                     <strong>3. Look </strong>for where you would like the advice button to be placed on your product pages. If you want to
                     place it near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
                 </p>
-                 
+
                  <img class="span-18" src="/static/imgs/form.png" />
             </div>
-            
-            <hr class="thick_hr" /> 
-            
+
+            <hr class="thick_hr" />
+
             <div class="prepend-top prepend-3 span-18 append-3 last">
                 <p>
                     <strong>4. Once </strong>you've picked a spot, add this code:
@@ -77,65 +77,65 @@
                     {% endifequal %}
                 </p>
             </div>
-           
-            <hr class="thick_hr" /> 
-            
+
+            <hr class="thick_hr" />
+
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
                     <strong>5. Click</strong> <em>save</em> near the top of the screen.
                 </p>
-                 
+
                  <img class="span-18" src="/static/imgs/save.png" />
             </div>
 
-            <hr class="thick_hr" /> 
+            <hr class="thick_hr" />
 
             <div class="prepend-top prepend-3 span-12 append-bottom">
-                <p class="lower-50"> 
+                <p class="lower-50">
                     6. Under the <em>Templates</em> section, click on <em>cart.liquid</em>.
                 </p>
             </div>
-            
-            <hr class="thick_hr" /> 
-            
+
+            <hr class="thick_hr" />
+
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
                     <strong>7. Look </strong>for where you would like the advice button to be placed on your cart page.
                     After the <em>&lt;/table&gt;</em> tag would be a nice spot.
                 </p>
-                 
+
                  <img class="span-18" src="/static/imgs/snippets_wosib.png" />
             </div>
-            
-            <hr class="thick_hr" /> 
-            
+
+            <hr class="thick_hr" />
+
             <div class="prepend-top prepend-3 span-18 append-3 last">
                 <p>
                     <strong>8. Once </strong>you've picked a spot, add this code:
                     <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_wosib' &#37;&#125;" />
                 </p>
             </div>
-           
-            <hr class="thick_hr" /> 
-            
+
+            <hr class="thick_hr" />
+
             <div class="prepend-3 span-18 append-3 last append-bottom">
                 <p>
                     <strong>9. Click</strong> <em>save</em> near the top of the screen.
                 </p>
-                 
+
             </div>
 
             {% if new_order_code %}
-                <hr class="thick_hr" /> 
-                
+                <hr class="thick_hr" />
+
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
                         10. Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
                     </p>
                 </div>
 
-                <hr class="thick_hr" /> 
-                
+                <hr class="thick_hr" />
+
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
                         11. Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
@@ -174,8 +174,8 @@
                     </p>
                 </div>
 
-               <hr class="thick_hr" /> 
-                
+               <hr class="thick_hr" />
+
                 <div class="prepend-3 span-18 append-3 last append-bottom">
                     <p>
                         <strong>12. Click</strong> <em>Apply these settings</em>.
@@ -183,20 +183,20 @@
                 </div>
 
             {% endif %}
-            
+
             <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
                 <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Email fraser@getwillet.com!</h3>
+                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Visit <a href="http://support.willetinc.com">our support website</a>, or Email support@getwillet.com!</h3>
                 <br />
 
                 <div class="center">
                     <button class='blue' id='go_to_shopify'>
                         <img src="/static/imgs/shopify-bag-36.png" />
                         <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                            Return to your Store 
+                            Return to your Store
                         </span>
                     </button>
                 </div>
