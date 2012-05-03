@@ -120,7 +120,7 @@ class ButtonsShopifyWelcome(URIHandler):
                     'shop_name'  : details["shop_name"],
                     'price'      : price,
                     'shop_url'   : details["shop_url"],
-                    'token'      : token,
+                    'token'      : app.store_token,
                     'disabled'   : False,
                 }
 
@@ -307,7 +307,7 @@ class ButtonsShopifyConfig(URIHandler):
                                                   token=token)
 
         query_params = {
-            "t"   : self.request.get("t"),
+            "t"   : app.store_token,
             "shop": self.request.get("shop"),
             "app" : "ButtonsShopify"
         }
@@ -317,7 +317,7 @@ class ButtonsShopifyConfig(URIHandler):
         upgrade_url      = build_url("ButtonsShopifyUpgrade", qs=query_params)
 
         learn_more_url   = build_url("ButtonsShopifyWelcome", qs={
-            "t"   : self.request.get("t"),
+            "t"   : app.store_token,
             "shop": self.request.get("shop"),
             "app" : "ButtonsShopify",
             "more": 1
