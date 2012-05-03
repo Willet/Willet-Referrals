@@ -595,8 +595,8 @@ _willet.networks = (function (willet) {
                                                 +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
                                                 +"   background-position: 0 -7px; "
                                                 +"} "
-                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: hand; } "
-                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: hand; } "
+                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } "
+                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: pointer; } "
                                                 +"a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }");
                     button.appendChild(link);
                     button.appendChild(style);
