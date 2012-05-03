@@ -22,13 +22,20 @@ def get_shopify_url(shopify_url):
     return shopify_url
 
 def get_url_variants(domain, keep_path=True):
-    """Given a url, return it, as well as its similar domain w or w/o www.
+    """Given a url, return it, as well as its similar domain with
+    or without www.
 
-    http://www.google.com -> [http://google.com, http://www.google.com]
-    http://google.com     -> [http://google.com, http://www.google.com]
-    http://a.b.com        -> [http://a.b.com, http://www.a.b.com]
+    http://www.google.com   -> (http://google.com,
+                                http://www.google.com)
+    http://google.com       -> (http://google.com,
+                                http://www.google.com)
+    http://a.b.com          -> (http://a.b.com,
+                                http://www.a.b.com)
+    http://a.b.com/d/e.html -> (http://a.b.com/d/e.html,
+                                http://www.a.b.com/d/e.html)
 
     keep_path = False will remove everything after the domain name.
+
     """
 
     if not domain:
@@ -50,8 +57,8 @@ def get_url_variants(domain, keep_path=True):
         domain = "%s://%s" % (ua.scheme, ua.netloc)  # do not add www.
         www_domain = "%s://www.%s" % (ua.scheme, ua.netloc)  # add www.
 
+    # re-append path info if it is needed
     if keep_path:
-        # re-append path info if it is needed
         domain = "%s%s?%s#%s" % (domain, ua.path, ua.query, ua.fragment)
         www_domain = "%s%s?%s#%s" % (www_domain, ua.path, ua.query,
                                      ua.fragment)
