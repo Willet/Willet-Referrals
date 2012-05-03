@@ -872,7 +872,7 @@ class SIBTServeScript(URIHandler):
 
         user = User.get_or_create_by_cookie(self, app)
         product = Product.get_or_fetch(page_url, client)
-        # let it pass - sibt.js will create attempt to create product
+        # let it pass - sibt.js will attempt to create product
 
         instance, event = get_instance_event()
 
@@ -958,6 +958,7 @@ class SIBTServeScript(URIHandler):
             'show_votes': False, # this is annoying if True
 
             # product info
+            'has_product': bool(product),
             'product': product,
 
             # user info
