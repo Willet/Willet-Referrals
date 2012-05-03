@@ -16,11 +16,12 @@ from util.consts import *
 from util.mailchimp import MailChimp
 from util.model import Model
 from util.helpers import generate_uuid
+from util.shopify_helpers import get_url_variants
 
 
 class Client(Model, polymodel.PolyModel):
     """A Client of the website.
-    
+
     Client models can be for any platform - use ClientShopify to easily
     authenticate with Shopify shops.
     """
@@ -40,7 +41,7 @@ class Client(Model, polymodel.PolyModel):
         if 'email' in kwargs:
             self._memcache_key = Client.build_secondary_key(kwargs['email'])
         super(Client, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         return True
 
@@ -48,10 +49,10 @@ class Client(Model, polymodel.PolyModel):
     def _get_from_datastore(google_user):
         """Datastore retrieval using memcache_key"""
         return db.Query(Client).filter('uuid =', google_user).get()
-    
+
     @staticmethod
     def create(url, request_handler, user):
-        """ Creates a Store (Client). 
+        """ Creates a Store (Client).
             This process requires a user (merchant) to be associated with the
             client. Code must supply a user object for Client to be created.
         """
@@ -60,7 +61,7 @@ class Client(Model, polymodel.PolyModel):
 
         if not user:
             raise ValueError("User is missing")
-        
+
         try:
             user_name = user.full_name
             user_email = user.emails[0].address  # emails is a back-reference
@@ -82,7 +83,7 @@ class Client(Model, polymodel.PolyModel):
         return client
 
     @staticmethod
-    def get_or_create (url, request_handler=None, user=None):
+    def get_or_create(url, request_handler=None, user=None):
         client = Client.get_by_url(url)
         if not client:
             client = Client.create(url=url,
@@ -93,15 +94,27 @@ class Client(Model, polymodel.PolyModel):
     # Retrievers --------------------------------------------------------------
     @classmethod
     def get_by_url(cls, url):
+        if not url:
+            return None
+
+        www_url = url
+
+        (url, www_url) = get_url_variants(url, keep_path=False)
+
         res = cls.get(url) # wild try w/ memcache?
         if res:
             return res
+
+        res = cls.get(www_url) # wild try w/ memcache?
+        if res:
+            return res
+
         # memcache miss?
-        res = db.Query(cls).filter('url =', url).get()
+        res = db.Query(cls).filter('url IN', [url, www_url]).get()
         if res:
             return res
         # domain is the less-authoritative field, but try it anyway
-        return db.Query(cls).filter('domain =', url).get()
+        return db.Query(cls).filter('domain IN', [url, www_url]).get()
 
     @classmethod
     def get_by_email(cls, email):
@@ -117,7 +130,7 @@ class Client(Model, polymodel.PolyModel):
     # Mailing list methods ----------------------------------------------------
     def subscribe_to_mailing_list(self, list_name='', list_id=None):
         """Add client to MailChimp.
-        
+
         MailChimp API Docs: http://apidocs.mailchimp.com/api/1.3/listsubscribe.func.php
         """
         resp = {}
@@ -130,7 +143,7 @@ class Client(Model, polymodel.PolyModel):
                 first_name, last_name = name, ''
         else:
             first_name, last_name = 'Store Owner', ''
-        
+
         if list_id:
             try:
                 resp = MailChimp(MAILCHIMP_API_KEY).listSubscribe(

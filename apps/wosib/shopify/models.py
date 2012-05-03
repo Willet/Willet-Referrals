@@ -26,6 +26,7 @@ from util import httplib2
 from util.consts import *
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
+from util.shopify_helpers import get_url_variants
 
 # ------------------------------------------------------------------------------
 # WOSIBShopify Class Definition -------------------------------------------------
@@ -144,18 +145,11 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
+        www_url = url
         if not url:
             return None  # can't get by store_url if no URL given
 
-        ua = urlparse.urlsplit(url)
-        url = "%s://%s" % (ua.scheme, ua.netloc)
-        # extra check for www.site.com
-        if 'www.' in ua.netloc[:4]:  # url includes www.
-            url = "%s://%s" % (ua.scheme, ua.netloc[4:])  # remove www.
-            www_url = "%s://%s" % (ua.scheme, ua.netloc)  # keep www.
-        else:  # url does not include www.
-            url = "%s://%s" % (ua.scheme, ua.netloc)  # do not add www.
-            www_url = "%s://www.%s" % (ua.scheme, ua.netloc)  # add www.
+        (url, www_url) = get_url_variants(url, keep_path=False)
 
         data = memcache.get("WOSIB-%s" % url)
         if data:

@@ -27,6 +27,7 @@ from apps.vote.models import VoteCounter
 
 from util.consts import *
 from util.helpers import generate_uuid
+from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
@@ -68,15 +69,7 @@ class SIBT(App):
         if not url:
             return None  # can't get by store_url if no URL given
 
-        ua = urlparse.urlsplit(url)
-        url = "%s://%s" % (ua.scheme, ua.netloc)
-        # extra check for www.site.com
-        if 'www.' in ua.netloc[:4]:  # url includes www.
-            url = "%s://%s" % (ua.scheme, ua.netloc[4:])  # remove www.
-            www_url = "%s://%s" % (ua.scheme, ua.netloc)  # keep www.
-        else:  # url does not include www.
-            url = "%s://%s" % (ua.scheme, ua.netloc)  # do not add www.
-            www_url = "%s://www.%s" % (ua.scheme, ua.netloc)  # add www.
+        (url, www_url) = get_url_variants(url, keep_path=False)
 
         app = cls.get(url)
         if app:
