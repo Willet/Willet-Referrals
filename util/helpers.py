@@ -67,11 +67,11 @@ def isGoodURL(url):
         return False
 
     return True
-            
+
 def generate_uuid(digits):
     """Generate a 'digits'-character hex endcoded string as
     a random identifier, with collision detection"""
-    while True:    
+    while True:
         tmp = min(digits, 32)
         uid = uuid.uuid4().hex[:tmp]
         digits -= 32
@@ -98,7 +98,7 @@ def get_request_variables(targets, rh):
        a dictionary"""
     rd = {}
     for t in targets:
-        rd[t] = rh.request.get(t) 
+        rd[t] = rh.request.get(t)
     return rd
 
 # Cookie Stuff
@@ -108,11 +108,11 @@ def set_user_cookie(request_handler, user_uuid):
     logging.info("Setting a user cookie: %s" % user_uuid)
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
     #cookieutil.set_secure_cookie(
-    #        name = 'willet_user_uuid', 
+    #        name = 'willet_user_uuid',
     #        value = user_uuid,
     #        expires_days= 365*10)
     cookieutil.set_secure_cookie(
-            name = 'willet_user_uuid', 
+            name = 'willet_user_uuid',
             value = user_uuid,
             expires_days= 365*10,
             domain = '.%s' % APP_DOMAIN)
@@ -130,7 +130,7 @@ def set_referrer_cookie(headers, campaign_uuid, code):
     cookieUtil[str(campaign_uuid)] = code
     cookieUtil.name = str(campaign_uuid)
     cookieUtil[str(campaign_uuid)]['expires'] = 31556928
-    
+
     headers.add_header('Set-Cookie', cookieUtil.output())
 
 def set_clicked_cookie(headers, code):
@@ -139,7 +139,7 @@ def set_clicked_cookie(headers, code):
     cookieUtil[code] = True
     cookieUtil.name = code
     cookieUtil[code]['expires'] = 31556928
-    
+
     headers.add_header('Set-Cookie', cookieUtil.output())
 
 def set_referral_cookie(headers, code):
@@ -149,7 +149,7 @@ def set_referral_cookie(headers, code):
     cookieUtil['referral'] = code
     cookieUtil.name = 'referral'
     cookieUtil['referral']['expires'] = 31556928
-    
+
     headers.add_header('Set-Cookie', cookieUtil.output())
 
 def set_visited_cookie(headers):
@@ -168,13 +168,13 @@ def admin_required(fn):
         from apps.user.models import User
         user_cookie = read_user_cookie(self)
         user = User.get(user_cookie) if user_cookie else None
-        
+
         try:
             if not user or not user.is_admin():
                 logging.error('@admin_required: Non-admin is attempting to access protected pages')
                 self.redirect ('/')
                 return
-            else:   
+            else:
                 fn(self, param)
         except Exception, e:
             logging.error('@admin_required - Error occured, redirecting to homepage: %s' % e, exc_info=True)
@@ -184,8 +184,8 @@ def admin_required(fn):
 
 #
 # Click tracking helpers
-# 
-user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, http://js-kit.com/', 'ceron.jp', 
+#
+user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, http://js-kit.com/', 'ceron.jp',
     'Mozilla/5.0 (compatible; MSIE 6.0b; Windows NT 5.0) Gecko/2009011913 Firefox/3.0.6 TweetmemeBot',
     'Jakarta Commons-HttpClient/3.1',
     'Crowsnest/0.5 (+http://www.crowsnest.tv/)',
@@ -201,7 +201,7 @@ user_agent_blacklist = ['Voyager/1.0', 'Twitterbot/1.0', 'JS-Kit URL Resolver, h
     'Mozilla/5.0 (compatible; Birubot/1.0) Gecko/2009032608 Firefox/3.0.8', 'Mozilla/5.0 (compatible; PrintfulBot/1.0; +http://printful.com/bot.html)',
     'Summify (Summify/1.0.1; +http://summify.com)', 'LinkedInBot/1.0 (compatible; Mozilla/5.0; Jakarta Commons-HttpClient/3.1 +http://www.linkedin.com)',
     'Mozilla/5.0 (compatible; ScribdReader/1.0; +http://www.scribd.com/reader.html)', 'LongURL API', 'InAGist URL Resolver (http://inagist.com)',
-    'Java/1.6.0_16', 'Java/1.6.0_26', 'Ruby', 'Twitturly / v0.6' 
+    'Java/1.6.0_16', 'Java/1.6.0_26', 'Ruby', 'Twitturly / v0.6'
     'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2) Gecko/20100115 Firefox/3.6 (FlipboardProxy/1.1; +http://flipboard.com/browserproxy)' ]
 
 def is_blacklisted(header):
@@ -249,7 +249,7 @@ def url(view, *args, **kwargs):
     except:
         logging.warn('Could not reverse url %s' % view)
 
-    return url  
+    return url
 
 def remove_html_tags(data):
     p = re.compile(r'<.*?>')

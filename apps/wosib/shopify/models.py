@@ -9,6 +9,7 @@ import datetime
 import hashlib
 import inspect
 import logging
+import urlparse
 
 from django.utils import simplejson as json
 from google.appengine.api import memcache
@@ -20,27 +21,28 @@ from apps.app.shopify.models import AppShopify
 from apps.client.models import Client
 from apps.email.models import Email
 from apps.user.models import User
-from apps.wosib.models import WOSIB 
+from apps.wosib.models import WOSIB
 from util import httplib2
 from util.consts import *
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
+from util.shopify_helpers import get_url_variants
 
 # ------------------------------------------------------------------------------
 # WOSIBShopify Class Definition -------------------------------------------------
 # ------------------------------------------------------------------------------
 class WOSIBShopify(WOSIB, AppShopify):
-    
+
     # NOTE
     # WOSIB is a subset of SIBT, and, as such, does not have a version number.
-    # To obtain the WOSIB version, load its SIBT counterpart 
+    # To obtain the WOSIB version, load its SIBT counterpart
     # with get_by_store_url() and read its version number.
     # version = db.StringProperty(default='2', indexed=False)
-    
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(WOSIBShopify, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         return True
 
@@ -110,9 +112,9 @@ class WOSIBShopify(WOSIB, AppShopify):
                         store_id = client.id, # Store id
                         store_token = token)
         app.put()
-        
+
         app.do_install(email_client)
-       
+
         return app
 
     @staticmethod
@@ -143,15 +145,26 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
+        www_url = url
+        if not url:
+            return None  # can't get by store_url if no URL given
+
+        (url, www_url) = get_url_variants(url, keep_path=False)
+
         data = memcache.get("WOSIB-%s" % url)
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        app = WOSIBShopify.all().filter('store_url =', url).get()
+        data = memcache.get("WOSIB-%s" % www_url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        # "first get by url, then by www_url"
+        app = WOSIBShopify.all().filter('store_url IN', [url, www_url]).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = WOSIBShopify.all().filter('extra_url =', url).get()
-        
+            app = WOSIBShopify.all().filter('extra_url IN', [url, www_url]).get()
+
         if app:
             app._memcache_by_store_url()
         return app
