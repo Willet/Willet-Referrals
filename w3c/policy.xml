@@ -1,10 +1,10 @@
- <POLICY name="sample" 
+ <POLICY name="sample"
    discuri="http://www.rf.rs/cookiepolicy.html"
    opturi="http://www.rf.rs/opt.html">
    <ENTITY>
      <DATA-GROUP>
        <DATA ref="#business.name">Willet, Inc.</DATA>
-       <DATA ref="#business.contact-info.online.email">Fraser@getWillet.com</DATA>
+       <DATA ref="#business.contact-info.online.email">support@getwillet.com</DATA>
 
      </DATA-GROUP>
    </ENTITY>
@@ -13,7 +13,7 @@
      <DISPUTES resolution-type="service"
       service="http://www.rf.rs/privacy.html"
       short-description="Please contact our customer service desk with
-                         privacy concerns by emailing Fraser@getWillet.com."/>
+                         privacy concerns by emailing Support@getWillet.com."/>
 
    </DISPUTES-GROUP>
    <STATEMENT>
