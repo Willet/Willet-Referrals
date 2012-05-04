@@ -63,11 +63,11 @@ class AskDynamicLoader(URIHandler):
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
-        page_url = self.request.get('url') or \
-                   self.request.get('page_url') or \
-                   self.request.get('target_url') or \
-                   self.request.get('refer_url') or \
-                   self.request.headers.get('referer')  # NOT page url!
+        page_url = self.request.get('url', '') or \
+                   self.request.get('page_url', '') or \
+                   self.request.get('target_url', '') or \
+                   self.request.get('refer_url', '') or \
+                   self.request.headers.get('referer', '')  # NOT page url!
         product = product_shopify = None
         product_images = []
         product_desc = []
@@ -122,7 +122,7 @@ class AskDynamicLoader(URIHandler):
             return products
 
         # Store registration url (with backup options if it's missing)
-        store_url = self.request.get('store_url') or page_url
+        store_url = self.request.get('store_url', '') or page_url
 
         if not store_url:
             msg = "store_url not found in ask.html query string!"
@@ -132,7 +132,7 @@ class AskDynamicLoader(URIHandler):
 
         # have page_url, store_url
         app = SIBT.get_by_store_url(store_url)
-        if not app:
+        if not app and store_url:
             url_parts = urlparse(store_url)
             # all db entries are currently http; makes sure https browsers
             # can also get app.
@@ -319,7 +319,7 @@ class VoteDynamicLoader(URIHandler):
         link = None
         products = [] # populate this to show products on design page.
         share_url = ''
-        target = get_target_url(self.request.get('url'))
+        target = get_target_url(self.request.get('url', ''))
         template_values = {}
         user = None
         willt_code = self.request.get('willt_code')
@@ -812,7 +812,7 @@ class SIBTServeScript(URIHandler):
 
         # have page_url
         # store_url: the domain name with which the shopify store registered
-        if not store_url:
+        if not store_url and page_url:
             # try to get store_url from page_url
             logging.warn("no store_url; attempting to get from page_url")
             parts = urlparse(page_url)
