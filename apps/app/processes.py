@@ -56,7 +56,7 @@ class BatchRequest(URIHandler):
         try:
             filter_obj = globals[app_cls].all()
         except AttributeError:
-            logging.error('app_cls either invalid')
+            logging.error('app_cls is not a valid model')
             self.error(400)
             return
         except KeyError:
