@@ -54,10 +54,15 @@ class BatchRequest(URIHandler):
 
         # Check that class is callable
         try:
-            filter_obj = getattr(app_cls, 'all')()
+            filter_obj = globals[app_cls].all()
         except AttributeError:
             logging.error('app_cls is not a valid model')
             self.error(400)
+            return
+        except KeyError:
+            logging.error('app_cls is not in scope')
+            self.error(400)
+            return
 
         # Check that method is safe and callable
         if method:
@@ -71,6 +76,7 @@ class BatchRequest(URIHandler):
             except AttributeError:
                 logging.error('method is not valid')
                 self.error(400) # Bad Request
+                return
 
         # Get model instances
         for ukey, value in criteria.iteritems():
