@@ -107,8 +107,8 @@ class BatchRequest(URIHandler):
                 'offset'    : offset + batch_size,
                 'app_cls'   : app_cls,
                 'method'    : method,
-                'params'    : self.request.get('params'),
-                'criteria'  : self.request.get('criteria')
+                'params'    : json.dumps(params),
+                'criteria'  : json.dumps(criteria)
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
