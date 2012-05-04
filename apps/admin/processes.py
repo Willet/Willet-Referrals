@@ -8,6 +8,7 @@ import re, logging, urllib
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache, mail, taskqueue
 from google.appengine.ext.db import ReferencePropertyResolveError
+from google.appengine.ext.db.metadata import Kind
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -60,18 +61,18 @@ class UpdateStore(URIHandler):
             app.install_queued()
 
             url = '%s/admin/script_tags.json' % app.store_url
-            username = app.settings['api_key'] 
+            username = app.settings['api_key']
             password = hashlib.md5(app.settings['api_secret'] + app.store_token).hexdigest()
             header = {'content-type':'application/json'}
             h = httplib2.Http()
-            
+
             # Auth the http lib
             h.add_credentials(username, password)
 
             # First fetch webhooks that already exist
             resp, content = h.request(url, "GET", headers=header)
             logging.info( 'Fetching script_tags: %s' % content )
-            data = json.loads( content ) 
+            data = json.loads( content )
 
             for w in data['script_tags']:
                 if '%s/s/shopify/sibt.js' % URL in w['src']:
@@ -138,11 +139,11 @@ class EmailBatch(URIHandler):
                     full_name = "shop owner"
                 else:
                     full_name = app.client.merchant.full_name
-                
+
                 # Create body text
                 raw_body_text = self.request.get('body', '')
                 raw_body_text = raw_body_text.replace('{{ name }}', full_name.split(' ')[0]).replace('{{name}}', full_name.split(' ')[0])
-                
+
                 # Construct email body
                 body = template.render(Email.template_path('general_mail.html'),
                     {
@@ -152,7 +153,7 @@ class EmailBatch(URIHandler):
                 )
                 # Remove HTML formatting from email subject line
                 subject = re.compile(r'<.*?>').sub('', self.request.get('subject'))
-                
+
                 # Construct email
                 email = {
                     'client': app.client,
@@ -188,7 +189,7 @@ class EmailSomeone (URIHandler):
             )
             self.response.out.write ("200 OK")
         except Exception, e:
-            logging.warn("Error sending one of the emails in batch! %s\n%r" % 
+            logging.warn("Error sending one of the emails in batch! %s\n%r" %
                 (e, [
                     self.request.get('from', 'fraser@getwillet.com'),
                     self.request.get('to'),
@@ -201,7 +202,7 @@ class EmailSomeone (URIHandler):
 
 
 class UploadEmailsToMailChimp(URIHandler):
-    """ One-time use to upload existing ShopConnection customers to MailChimp 
+    """ One-time use to upload existing ShopConnection customers to MailChimp
     Remove after use
 
     MailChimp Docs: http://apidocs.mailchimp.com/api/rtfm/listbatchsubscribe.func.php
@@ -232,7 +233,7 @@ class UploadEmailsToMailChimp(URIHandler):
                 except IndexError:
                     # Split didn't result in 2 parts
                     first_name, last_name = name, ''
-                
+
                 batch.append({ 'FNAME': first_name,
                                'LNAME': last_name,
                                'EMAIL': app.client.email,
@@ -265,7 +266,7 @@ class UploadEmailsToMailChimp(URIHandler):
                         # thrown when results is not iterable (eg bool)
                         logging.info('ListBatchSubscribed to ShopConnection OK: %r' % (resp,))
                     else:
-                        logging.info('ListBatchSubscribe to ShopConnection OK: %r' % (resp,))                        
+                        logging.info('ListBatchSubscribe to ShopConnection OK: %r' % (resp,))
 
         # Keep going if haven't reached end
         if len(apps) == batch_size:
@@ -309,7 +310,7 @@ class GenerateOlderHourPeriods(URIHandler):
             day_global = global_day.start - datetime.timedelta(days=1)
             memcache.set('day_global', day_global.date())
 
-            oldest_app = AppAnalyticsHourSlice.all().order('start').get() 
+            oldest_app = AppAnalyticsHourSlice.all().order('start').get()
             hour = oldest_app.start - datetime.timedelta(hours=1)
             memcache.set('hour', hour)
 
@@ -328,7 +329,7 @@ class AnalyticsRPC(URIHandler):
     def get(self, admin):
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
-        
+
         day_slices = GlobalAnalyticsDaySlice.all()\
                 .order('-start')\
                 .fetch(int(limit), offset=int(offset))
@@ -338,14 +339,14 @@ class AnalyticsRPC(URIHandler):
 
             obj['start'] = str(ds.start)
             obj['start_day'] = str(ds.start.date())
-            
+
             for action in actions_to_count:
                 obj[action] = ds.get_attr(action)
             data.append(obj)
 
         response = {
             'success': True,
-            'data': data 
+            'data': data
         }
 
         self.response.out.write(json.dumps(response))
@@ -356,7 +357,7 @@ class AppAnalyticsRPC(URIHandler):
         app = App.get(app_uuid)
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
-        
+
         day_slices = AppAnalyticsDaySlice.all()\
                 .filter('app_ =', app)\
                 .order('-start')\
@@ -367,14 +368,14 @@ class AppAnalyticsRPC(URIHandler):
 
             obj['start'] = str(ds.start)
             obj['start_day'] = str(ds.start.date())
-            
+
             for action in actions_to_count:
                 obj[action] = ds.get_attr(action)
             data.append(obj)
 
         response = {
             'success': True,
-            'data': data 
+            'data': data
         }
 
         self.response.out.write(json.dumps(response))
@@ -404,3 +405,86 @@ class ClientSideMessage(URIHandler):
         Email.emailDevTeam(msg, subject=subject, monospaced=True)
         self.redirect('%s/static/imgs/noimage.png' % URL)
 
+
+class DBIntegrityCheck(URIHandler):
+    """Repairs the DB.
+
+    It fires off different tasks based on the checks needed to be done.
+    """
+
+    def get(self):  # lets you start it using a URL
+        self.post()
+
+    def post(self):
+        """ Fires off a check.
+
+        required params:
+            check               - defines which DB check(s) to perform.
+                                  a empty check will quit this request.
+                                  'all' will perform all checks available.
+                                  checks can be comma-separated.
+                                  case-sensitive.
+
+        optional params:
+            stop                - if '1', stop all checks on the first failure.
+            cap                 - number of objects to fetch per check.
+                                  it may or may not be honoured, depending on
+                                  the type of check.
+        """
+        check = self.request.headers.get('check')
+        stop = bool(self.request.headers.get('stop', '0') == '1')
+
+        # later checks will prevent non-functions from being executed
+        allowed_checks = self.__dict__  # "all of my methods and stuff"
+
+        if not check:
+            logging.debug('check not defined; quitting')
+            return  # don't know what to do? quit.
+
+        if check == 'all':
+            checks = allowed_checks  # perform all checks
+        else:
+            checks = [c for c in check.split(',') if c in allowed_checks]
+
+        if not checks:
+            logging.debug('no valid checks to run (%r); quitting' % checks)
+            return
+
+        for check in checks:
+            try:
+                # if self.{check} isn't a function, it'll just fail
+                self.__dict__[check]()
+            except Exception, err:
+                logging.error('check failed: %s' % err, exc_info=True)
+                if stop:
+                    logging.debug('stop issued; quitting')
+                    return
+                # moving on
+
+    def get_kinds(start=None, end=None):
+        """Returns the list of kinds in the datastore.
+
+        start and end are optional, and filters kinds by ASCII range.
+        """
+        # Start with unrestricted kind query
+        q = Kind.all()
+
+        # Limit to specified range, if any
+        if not start:
+            q.filter('__key__ >=', Kind.key_for_kind(start))
+        if not end:
+            return []  # Empty string is not a valid kind name, so can't filter
+        q.filter('__key__ <', Kind.key_for_kind(end))
+
+        # Return list of query results
+        return [k.kind_name for k in q]
+
+    def fill_app_versions(self):
+        """If and App's versions are missing, it will be filled in and saved.
+        """
+        from apps.app.models import App
+        apps = db.Query(App)  # generator
+        for app in apps:
+            if not app.version:
+                app.version = App.CURRENT_INSTALL_VERSION
+                app.put()
