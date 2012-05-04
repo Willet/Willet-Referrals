@@ -82,7 +82,7 @@ class BatchRequest(URIHandler):
                 self.error(403) # Access Denied, Private method
                 return
             try:
-                if not hasattr(getattr(app_cls, method), '__call__'):
+                if not hasattr(getattr(globals()[app_cls], method), '__call__'):
                     raise AttributeError
             except AttributeError:
                 logging.error('method is not valid')
