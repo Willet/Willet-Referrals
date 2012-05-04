@@ -6,6 +6,7 @@ __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
+import urlparse
 
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
@@ -15,7 +16,8 @@ from apps.app.shopify.models import AppShopify
 from apps.wosib.models import WOSIB
 from util.consts import DOMAIN, MEMCACHE_TIMEOUT
 from util.helpers import generate_uuid
-from util.helpers import url
+from util.helpers import url as reverse_url
+from util.shopify_helpers import get_url_variants
 
 # -----------------------------------------------------------------------------
 # WOSIBShopify Class Definition -----------------------------------------------
@@ -60,7 +62,7 @@ class WOSIBShopify(WOSIB, AppShopify):
                     s.src = _willet_wosib_script;
                     document.getElementsByTagName("head")[0].appendChild(s);
                 }(document.createElement('script')));
-            </script>""" % (DOMAIN, DOMAIN, url('SIBTServeScript'))
+            </script>""" % (DOMAIN, DOMAIN, reverse_url('SIBTServeScript'))
 
         liquid_assets = [{
             'asset': {
@@ -136,15 +138,26 @@ class WOSIBShopify(WOSIB, AppShopify):
         return WOSIBShopify.get(uuid)
 
     @staticmethod
-    def get_by_store_url(store_url):
-        data = memcache.get("WOSIB-%s" % store_url)
+    def get_by_store_url(url):
+        www_url = url
+        if not url:
+            return None  # can't get by store_url if no URL given
+
+        (url, www_url) = get_url_variants(url, keep_path=False)
+
+        data = memcache.get("WOSIB-%s" % url)
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        app = WOSIBShopify.all().filter('store_url =', store_url).get()
+        data = memcache.get("WOSIB-%s" % www_url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        # "first get by url, then by www_url"
+        app = WOSIBShopify.all().filter('store_url IN', [url, www_url]).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = WOSIBShopify.all().filter('extra_url =', store_url).get()
+            app = WOSIBShopify.all().filter('extra_url IN', [url, www_url]).get()
 
         if app:
             app._memcache_by_store_url()

@@ -6,13 +6,13 @@ Here's a brief explanation of the apps in here. I make no promise that
 this README will be kept up-to-date after I leave!
 
  - action: We've built our own analytics code in-house. Good idea? Not
-           entirely sure yet! 
+           entirely sure yet!
 
            All analytics are stored as 'action' datapoints. The top-level, parent
-           class Actions are all located in models.py. 
+           class Actions are all located in models.py.
 
- - admin: If you ever need to run a little script on the db to either: a) do a 
-          migration, or b) Crawl some data quickly, then you should make a 
+ - admin: If you ever need to run a little script on the db to either: a) do a
+          migration, or b) Crawl some data quickly, then you should make a
           little admin script for it.
 
           All scripts are in views.py.
@@ -21,13 +21,13 @@ this README will be kept up-to-date after I leave!
           too.
 
  - analytics_backend: Once we've stored all the action (read: analytic) datapoints,
-                      we need to crawl and aggregate them to see how Users are 
-                      engaging with our apps. All the crawling / aggregation is 
+                      we need to crawl and aggregate them to see how Users are
+                      engaging with our apps. All the crawling / aggregation is
                       in here.
 
                       Written by: MrMCH
 
- - app: Each 'app' we develop for merchants will have some commonalities. These 
+ - app: Each 'app' we develop for merchants will have some commonalities. These
         are all managed in here.
 
         Right now, we have 'App' and 'AppShopify' as top-level, parent classes.
@@ -36,7 +36,7 @@ this README will be kept up-to-date after I leave!
 
  - buttons: A simple Shopify App to get us some initial customers.
 
- - client: A store is known as a 'Client'. We store all metadata about a 
+ - client: A store is known as a 'Client'. We store all metadata about a
            store here.
 
  - email: This is a basic GAE email sending wrapper. If you want to create a new
@@ -44,13 +44,13 @@ this README will be kept up-to-date after I leave!
           add a new HTML template file to templates/.
 
  - gae_bingo: Colloquially referred to as "Gay Bingo", this is our AB test framework.
-            
+
               Want to start a new AB test? Here's how:
                 1. Create the options for your test and list 'em.
                 2. Call ab_test on the options. It'll spit one of them out!
                 3. Use that option.
-            
-              To score a successful bingo, just call bingo with the test name 
+
+              To score a successful bingo, just call bingo with the test name
               when the user does the behaviour you want to see!
 
               So simple, eh?
@@ -58,21 +58,19 @@ this README will be kept up-to-date after I leave!
  - homepage: We have a realyl spiffy website. It's all kept in here. Mostly just
              views and HTML.
 
- - link: These were used heavily in some other projects we've built and they were 
+ - link: These were used heavily in some other projects we've built and they were
          ported over here. If you ever need a short link, create a Link!
 
          Whenever a user clicks on the short link, the handleLinkClick fcn will
          take care of always cookieing the user!
 
- - order: We get paid when we deliver a new user to a store and they buy something. 
-          This means we need to keep track of when people place an order right? 
+ - order: We get paid when we deliver a new user to a store and they buy something.
+          This means we need to keep track of when people place an order right?
 
           It's all stored in here.
 
  - product: Since products are so core to SIBT and Hot or Not, we just store all
             of our merchant's product metadata in our db.
-
- - referral: This is 100% deprecated. Leave it be until someone decides to delete it.
 
  - sibt: 'Should I Buy This' is our main app. There's all sorts of goodies in here!
 
@@ -82,12 +80,9 @@ this README will be kept up-to-date after I leave!
          Users are the ones who interact with our apps and place purchases. We
          store as much information as we possibly can about them in this class.
 
-         Caveats: If you come from a strong DB background, prepare to have your
-         mind BLOWN. User is an Expando class.
+         Caveats: User is an Expando class - every User object has different
+         properties attached to it and we can create/assign new properties.
          http://code.google.com/appengine/docs/python/datastore/expandoclass.html
-
-         This means, every User object has different properties attached to it
-         and we can create/assign new properties AT WHIM! Woooo!
 
          However, this means that anytime you want to fetch a value of property
          from a User object, you have to call user.get_attr('prop_name').

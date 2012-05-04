@@ -27,6 +27,7 @@ from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import generate_uuid
+from util.shopify_helpers import get_url_variants
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
@@ -67,26 +68,22 @@ class SIBT(App):
     @classmethod
     def get_by_store_url(cls, url):
         app = None
-        if not url:
-            return app
+        www_url = url
 
-        try:
-            ua = urlparse.urlsplit(url)
-            url = "%s://%s" % (ua.scheme, ua.netloc)
-        except:
-            pass # use original URL
+        if not url:
+            return None  # can't get by store_url if no URL given
+
+        (url, www_url) = get_url_variants(url, keep_path=False)
 
         app = cls.get(url)
         if app:
             return app
 
-        app = cls.all().filter('store_url =', url).get()
+        # "first get by url, then by www_url"
+        app = cls.all().filter('store_url IN', [url, www_url]).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = cls.all().filter('extra_url =', url).get()
-
-        if app:
-            app._memcache()  # direct get()s do not get memcached
+            app = cls.all().filter('extra_url IN', [url, www_url]).get()
         return app
 
     @staticmethod

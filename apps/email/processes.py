@@ -24,11 +24,11 @@ class SendEmailAsync(URIHandler):
             before emails are done sending.
         """
         
-        from_address = self.request.get('from_address')
-        to_address = self.request.get('to_address')
-        subject = self.request.get('subject')
-        body = self.request.get('body')
-        to_name = self.request.get('to_name')
+        from_address    = self.request.get('from_address')
+        to_address      = self.request.get('to_address')
+        subject         = self.request.get('subject')
+        body            = self.request.get('body')
+        to_name         = self.request.get('to_name')
         replyto_address = self.request.get('replyto_address')
         
         params = {
@@ -46,13 +46,19 @@ class SendEmailAsync(URIHandler):
         if replyto_address:
             params['replyto'] = replyto_address
 
-        if ',' in to_address:
+        # URLLib doesn't like unicode values; it can handle unicode strings,
+        # but not unicode strings with code points outside ASCII
+        # Normally, we would encode both key and value, but we know that the
+        # keys are ok because we created them above.
+        params = dict( (key, value.encode('utf-8')) for key, value in params.iteritems() )
+
+        if ',' in params["to"]:
             try:
-                e = EmailMessage(sender=from_address, 
-                                 to=to_address, 
-                                 subject=subject, 
-                                 html=body)
-                e.send()
+                email = EmailMessage(sender=params["from_address"],
+                                 to=params["to"],
+                                 subject=params["subject"],
+                                 html=params["body"])
+                email.send()
             except Exception,e:
                 logging.error('Error sending email: %s', e)
         else:
