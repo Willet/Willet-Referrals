@@ -1,0 +1,76 @@
+{% if item_shares and network_shares %}
+{% comment %}
+We should always have these two values or neither of them.
+After all, how can someone share no item on a network,
+or share an item on no network?
+{% endcomment %}
+<p>Top shares this week:</p>
+<ul style="list-style-type: none; padding-left: 0px;">
+    {% for item in item_shares %}
+    <li style="line-height: 51px; margin-bottom: 10px;">
+        {% if item.image %}
+        <img src="{{ item.image }}"
+             alt="{{ item.name }}"
+             style="height: 45px; width: 45px; padding: 2px;
+                             border: 1px solid #777; margin-right: 10px; float: left;">
+        {% else %}
+        <img src="{{ willet_url }}/static/imgs/noimage-willet.png"
+             alt="No image available"
+             style="height: 45px; width: 45px; padding: 2px;
+                             border: 1px solid #777; margin-right: 10px; float: left;">
+        {% endif %}
+        {{item.name}}
+        shared {{item.total_shares}}
+        time{{item.total_shares|pluralize}}
+    </li>
+    {% endfor %}
+</ul>
+<p>Top networks:</p>
+<ul style="list-style-type: none; padding-left: 0px;">
+    {% for item in network_shares %}
+    <li style="margin-bottom: 5px; margin-left: 60px;">
+        <img src="{{ willet_url }}/static/imgs/sb-{{item.network|lower}}.png"
+             alt="{{network.network}} Icon"
+             style="height: 16px; width: 16px;
+                             vertical-align: text-bottom;">
+        {{item.shares}} share{{item.shares|pluralize}} this
+        week ({{item.percent}}%
+        of all shares)
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+{% comment %}
+What do we do if they've received no shares?
+{% endcomment %}
+<p>We haven't detected any sharing this week for your
+    store.</p>
+<p>Here are some other apps that may help you increase the
+    number of visitors to your shop:</p>
+<ul style="list-style-type: none;">
+    <li style="line-height: 66px; margin-bottom: 10px;">
+        <img src="{{ willet_url }}/static/imgs/lexity.png"
+             alt="Lexity icon"
+             style="height: 60px; width: 60px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;">
+        <a href="http://apps.shopify.com/lexity-search-engine-marketing">
+            Lexity Search Engine Marketing
+        </a>
+    </li>
+    <li style="line-height: 66px; margin-bottom: 10px;">
+        <img src="{{ willet_url }}/static/imgs/olark.png"
+             alt="Olark icon"
+             style="height: 60px; width: 60px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;">
+        <a href="http://apps.shopify.com/olark-chat-cartsaver">
+            Olark Chat + CartSaver
+        </a>
+    </li>
+    <li style="line-height: 66px; margin-bottom: 10px;">
+        <img src="{{ willet_url }}/static/imgs/amazon.png"
+             alt="Amazon icon"
+             style="height: 60px; width: 60px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;">
+        <a href="http://apps.shopify.com/amazon-product-ads">
+            Amazon Product Ads
+        </a>
+    </li>
+</ul>
+{% endif %}
