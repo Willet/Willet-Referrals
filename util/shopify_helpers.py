@@ -12,7 +12,7 @@ def get_shopify_url(shopify_url):
     if not shopify_url:
         return ''
 
-    if shopify_url[:4] != 'http':get_shopify_url
+    if shopify_url[:4] != 'http':
         shopify_url = 'http://%s' % shopify_url  # assume no HTTPS
 
     if shopify_url.endswith('/'):
