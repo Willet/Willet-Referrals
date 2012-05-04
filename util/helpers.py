@@ -111,9 +111,11 @@ def get_target_url(referrer):
     target = ""
     if referrer:
         try:
-            page_url = urlparse(referrer)  # urlparse does not raise errors
+            # urlparse raises errors if referrer is None (impossible here)
+            page_url = urlparse(referrer)
             if page_url.scheme and page_url.netloc:
-                target = "%s://%s%s" % (page_url.scheme, page_url.netloc, page_url.path)
+                target = "%s://%s%s" % (page_url.scheme, page_url.netloc,
+                                        page_url.path)
         except Exception, e:
             logging.warn('error parsing referer %s: %s' % (referrer,e),
                          exc_info=True)
@@ -123,7 +125,7 @@ def get_target_url(referrer):
 def generate_uuid(digits):
     """Generate a 'digits'-character hex endcoded string as
     a random identifier, with collision detection"""
-    while True:    
+    while True:
         tmp = min(digits, 32)
         uid = uuid.uuid4().hex[:tmp]
         digits -= 32
@@ -151,22 +153,58 @@ def get_request_variables(targets, rh):
        a dictionary"""
     rd = {}
     for t in targets:
-        rd[t] = rh.request.get(t) 
+        rd[t] = rh.request.get(t)
     return rd
 
 
-# Cookie Stuff
+def cast(variable, rtype, raise_exception=True):
+    """Returns the variable of required type.
 
+    variable: the variable
+    rtype: a type-function, e.g. bool, int, str; or
+           a list of variable types.
+    raise_exception: True will raise a ValueError if the variable is not of
+                     the required type.
+                     False will attempt to convert the variable to the
+                     required type, returning the original variable if
+                     conversion fails.
+    Variable type enforcement is not pythonic, but all the libraries do it
+    (e.g. see behaviour in urlparse)
+
+    """
+    if isinstance(rtype, list):
+        # map-reduce to see if any condition is met
+        return reduce(lambda x, y: x or y,
+                      map(cast,
+                          [variable] * len(rtype),
+                          rtype,
+                          [raise_exception] * len(rtype)))
+
+    if isinstance(variable, rtype):
+        return variable
+
+    # so, it is not of the required type
+    if raise_exception:
+        raise ValueError('Variable not of requird type')
+
+    # not of required type, but want conversion done
+    try:
+        return rtype(variable)
+    except:
+        return variable  # conversion failed; oh well
+
+
+# Cookie Stuff
 def set_user_cookie(request_handler, user_uuid):
     """Sets a cookie to identify a user"""
     logging.info("Setting a user cookie: %s" % user_uuid)
     cookieutil = LilCookies(request_handler, COOKIE_SECRET)
     #cookieutil.set_secure_cookie(
-    #        name = 'willet_user_uuid', 
+    #        name = 'willet_user_uuid',
     #        value = user_uuid,
     #        expires_days= 365*10)
     cookieutil.set_secure_cookie(
-            name = 'willet_user_uuid', 
+            name = 'willet_user_uuid',
             value = user_uuid,
             expires_days= 365*10,
             domain = '.%s' % APP_DOMAIN)
@@ -228,13 +266,13 @@ def admin_required(fn):
         from apps.user.models import User
         user_cookie = read_user_cookie(self)
         user = User.get(user_cookie) if user_cookie else None
-        
+
         try:
             if not user or not user.is_admin():
                 logging.error('@admin_required: Non-admin is attempting to access protected pages')
                 self.redirect ('/')
                 return
-            else:   
+            else:
                 fn(self, param)
         except Exception, e:
             logging.error('@admin_required - Error occured, redirecting to homepage: %s' % e, exc_info=True)
@@ -280,7 +318,7 @@ def url(view, *args, **kwargs):
     except:
         logging.warn('Could not reverse url %s' % view)
 
-    return url  
+    return url
 
 
 def remove_html_tags(data):
@@ -288,7 +326,7 @@ def remove_html_tags(data):
     return p.sub('', data)
 
 
-def create_hash (*args):
+def create_hash(*args):
     """Returns a hash from args"""
     keys = list (args)
     if SALT:
