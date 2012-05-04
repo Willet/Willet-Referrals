@@ -56,7 +56,11 @@ class BatchRequest(URIHandler):
         try:
             filter_obj = globals[app_cls].all()
         except AttributeError:
-            logging.error('app_cls either invalid or is not in scope')
+            logging.error('app_cls either invalid')
+            self.error(400)
+            return
+        except KeyError:
+            logging.error('app_cls is not in scope')
             self.error(400)
             return
 
