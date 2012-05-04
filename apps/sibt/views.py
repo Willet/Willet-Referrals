@@ -984,6 +984,7 @@ class SIBTServeScript(URIHandler):
 class SIBTShopifyServeScript(URIHandler):
     """Does everything SIBTServeScript does."""
     def get(self):
+        """Does everything SIBTServeScript does."""
         self.redirect("%s%s?%s" % (URL,
                                    url('SIBTServeScript'),
                                    self.request.query_string),
