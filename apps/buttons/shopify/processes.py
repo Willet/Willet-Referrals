@@ -87,8 +87,6 @@ class ButtonsShopifyItemSharedReport(URIHandler):
         top_shares = sorted(shares_by_network, key=lambda v: v['shares'],
                             reverse=True)
 
-
-
         Email.report_smart_buttons(email=email, items=top_items,
                                    networks=top_shares,
                                    shop_name=shop, client_name=name)
