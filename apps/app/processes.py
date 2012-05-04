@@ -8,6 +8,7 @@ from google.appengine.ext import webapp
 import django.utils.simplejson as json
 
 from apps.app.models import App, ShareCounter
+from apps.buttons.shopify.models import ButtonsShopify
 from apps.user.models import * 
 from util.consts import *
 from util.helpers import *
@@ -51,23 +52,32 @@ class BatchRequest(URIHandler):
         # We do this because we will be using the keys as kwargs
         converted_params = dict( (key.encode('utf-8'), value) for key, value in params.iteritems() )
 
-        filter_obj = db.Query(App).filter('class = ', app_cls)
-        for ukey, value in criteria.iteritems():
-            key = " %s =" % ukey.encode('utf-8')
-            filter_obj.filter(key, value)
-
-        apps = filter_obj.fetch(limit=batch_size, offset=offset)
+        # Check that class is callable
+        try:
+            filter_obj = getattr(app_cls, 'all')()
+        except AttributeError:
+            logging.error('app_cls is not a valid model')
+            self.error(400)
 
         # Check that method is safe and callable
         if method:
             if method[0] == '_':
+                logging.error('method is private')
                 self.error(403) # Access Denied, Private method
                 return
             try:
                 if not hasattr(getattr(app_cls, method), '__call__'):
                     raise AttributeError
             except AttributeError:
+                logging.error('method is not valid')
                 self.error(400) # Bad Request
+
+        # Get model instances
+        for ukey, value in criteria.iteritems():
+            key = " %s =" % ukey.encode('utf-8')
+            filter_obj.filter(key, value)
+
+        apps = filter_obj.fetch(limit=batch_size, offset=offset)
 
         # If reached batch size, start another batch at the next offset
         if len(apps) == batch_size:
