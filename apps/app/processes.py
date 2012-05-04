@@ -42,6 +42,8 @@ class BatchRequest(URIHandler):
         params         = json.loads(self.request.get('params', "{}"))
         criteria       = json.loads(self.request.get('criteria', "{}"))
 
+        filter_obj     = None
+
         logging.warn('Running BatchRequest for %s.%s from %i to %i' % (app_cls,
                                                                        method,
                                                                        offset,
@@ -53,14 +55,23 @@ class BatchRequest(URIHandler):
         converted_params = dict( (key.encode('utf-8'), value) for key, value in params.iteritems() )
 
         # Check that class is callable
-        try:
-            filter_obj = globals[app_cls].all()
-        except AttributeError:
-            logging.error('app_cls is not a valid model')
-            self.error(400)
-            return
-        except KeyError:
-            logging.error('app_cls is not in scope')
+        if app_cls:
+            if app_cls[0] == '_':
+                logging.error('app_cls is private')
+                self.error(403) # Access Denied, Private class
+                return
+            try:
+                filter_obj = globals()[app_cls].all()
+            except AttributeError:
+                logging.error('app_cls is not a valid model')
+                self.error(400)
+                return
+            except KeyError:
+                logging.error('app_cls is not in scope')
+                self.error(400)
+                return
+        else:
+            logging.error('app_cls missing')
             self.error(400)
             return
 
@@ -77,6 +88,10 @@ class BatchRequest(URIHandler):
                 logging.error('method is not valid')
                 self.error(400) # Bad Request
                 return
+        else:
+            logging.error('method missing')
+            self.error(400)
+            return
 
         # Get model instances
         for ukey, value in criteria.iteritems():
