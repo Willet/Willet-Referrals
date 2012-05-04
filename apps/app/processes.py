@@ -42,6 +42,8 @@ class BatchRequest(URIHandler):
         params         = json.loads(self.request.get('params', "{}"))
         criteria       = json.loads(self.request.get('criteria', "{}"))
 
+        filter_obj     = None
+
         logging.warn('Running BatchRequest for %s.%s from %i to %i' % (app_cls,
                                                                        method,
                                                                        offset,
@@ -68,6 +70,10 @@ class BatchRequest(URIHandler):
                 logging.error('app_cls is not in scope')
                 self.error(400)
                 return
+        else:
+            logging.error('app_cls missing')
+            self.error(400)
+            return
 
         # Check that method is safe and callable
         if method:
