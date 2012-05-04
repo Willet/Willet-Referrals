@@ -326,6 +326,8 @@ class VoteDynamicLoader(URIHandler):
 
         def get_instance():
             """successive stages to get instance."""
+            link = None
+
             # stage 1: get instance by instance_uuid
             instance = SIBTInstance.get(instance_uuid)
             if instance:
