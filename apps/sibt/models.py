@@ -288,6 +288,11 @@ class SIBTInstance(Model):
         Array returned can be of one item.
         """
         instance_product_votes = []
+
+        if not self.products:
+            logging.warn("this instance has no products!")
+            return []
+
         for product_uuid in self.products:
             product_votes = Action.all()\
                                   .filter('sibt_instance =', self)\
@@ -296,6 +301,10 @@ class SIBTInstance(Model):
             # [votes, votes, votes]
             instance_product_votes.append(product_votes)
         logging.debug("instance_product_votes = %r" % instance_product_votes)
+
+        if not instance_product_votes:
+            logging.warn("none of the products have votes!")
+            return []
 
         # mash the list into a dict: {uuid: votes, uuid: votes, uuid: votes}
         instance_product_dict = dict(zip(self.products, instance_product_votes))

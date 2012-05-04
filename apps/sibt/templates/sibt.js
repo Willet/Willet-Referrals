@@ -78,6 +78,7 @@
         'version': '{{sibt_version|default:"10"}}'
     };
     instance = {
+        'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
         'has_results': ('{{has_results}}' === 'True'),
         'is_live': ('{{is_live}}' === 'True'),
         'show_votes': ('{{show_votes}}' === 'True')
@@ -522,7 +523,6 @@
             if (sibtjs_elem.length > 0) { // is the div there?
                 console.log('at least one ._willet_sibt exists');
                 storeAnalytics();
-
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
                     'background': (instance.has_results?
@@ -533,6 +533,14 @@
                     'cursor': 'pointer',
                     'display': 'inline-block'
                 });
+
+                if (!instance.has_product) {
+                    // if no product, try to detect one, but don't show button
+                    console.log("product does not exist here; hiding button.");
+                    sibtjs_elem.css ({
+                        'display': 'none'
+                    });
+                }
 
                 // shake ONLY the SIBT button when scrolled into view
                 addScrollShaking(sibtjs_elem);
@@ -555,6 +563,15 @@
                         'width': '80px'
                     });
                 }
+
+                if (!instance.has_product) {
+                    // if no product, try to detect one, but don't show button
+                    console.log("product does not exist here; hiding button.");
+                    sibt_elem.css ({
+                        'display': 'none'
+                    });
+                }
+
                 // shake ONLY the SIBT button when scrolled into view
                 addScrollShaking(sibt_elem);
                 saveProduct(sibt_elem.data());
@@ -622,101 +639,106 @@
                     console.log("failed to let v3 button save product!");
                 }
 
-                {% if app.top_bar_enabled %} // add this topbar code only if necessary
-                    console.log('topbar enabled');
-                    var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
+                // if no product, try to detect one, but don't show button
+                if (instance.has_product) {
+                    {% if app.top_bar_enabled %} // add this topbar code only if necessary
+                        console.log('topbar enabled');
+                        var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
-                    // create the hide button
-                    topbar_hide_button = $(d.createElement('div'));
-                    topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-                        .css('display', 'none')
-                        .click(unhide_topbar);
+                        // create the hide button
+                        topbar_hide_button = $(d.createElement('div'));
+                        topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+                            .css('display', 'none')
+                            .click(unhide_topbar);
 
-                    if (app.show_top_bar_ask) {
-                        topbar_hide_button.html('Get advice!');
-                    } else if(user.is_asker) {
-                        topbar_hide_button.html('See your results!');
-                    } else {
-                        topbar_hide_button.html('Help {{ asker_name }}!');
-                    }
-
-                    $('body').prepend(topbar_hide_button);
-
-                    if (app.show_top_bar_ask) {
-                        if (cookie_topbar_closed) {
-                            // user has hidden the top bar
-                            topbar_hide_button.slideDown('fast');
+                        if (app.show_top_bar_ask) {
+                            topbar_hide_button.html('Get advice!');
+                        } else if(user.is_asker) {
+                            topbar_hide_button.html('See your results!');
                         } else {
-                            storeAnalytics('SIBTShowingTopBarAsk');
-                            show_topbar_ask();
-                        }
-                    }
-                {% endif %} ; // app.top_bar_enabled
-
-                {% if app.button_enabled %} // add this button code only if necessary
-                    if (parseInt(app.version) <= 2) {
-                        console.log('v2 button is enabled');
-                        var button = d.createElement('a');
-                        var button_html = '';
-                        // only add button if it's enabled in the app
-                        if (user.is_asker) {
-                            button_html = 'See what your friends said!';
-                        } else if (instance.show_votes) {
-                            button_html = 'Help {{ asker_name }} by voting!';
-                        } else {
-                            var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-                            button_html = AB_CTA_text;
+                            topbar_hide_button.html('Help {{ asker_name }}!');
                         }
 
-                        button = $(button)
-                            .html(button_html)
-                            .css('display', 'inline-block')
-                            .attr('title', 'Ask your friends if you should buy this!')
-                            .attr('id','_willet_button')
-                            .attr('class','_willet_button willet_reset')
-                            .click(button_onclick);
-                        $(purchase_cta).append(button);
-                    } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
-                        console.log('v3+ button is enabled');
-                        if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
-                            var button = $("<div />", {
-                                'id': '_willet_button_v3'
-                            });
-                            button
-                                .html ("<p>Should you buy this? Can't decide?</p>" +
-                                        "<div class='button' " +
-                                            "title='Ask your friends if you should buy this!'>" +
-                                            "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                            "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                         "</div>")
-                                .css({'clear': 'both'});
+                        $('body').prepend(topbar_hide_button);
+
+                        if (app.show_top_bar_ask) {
+                            if (cookie_topbar_closed) {
+                                // user has hidden the top bar
+                                topbar_hide_button.slideDown('fast');
+                            } else {
+                                storeAnalytics('SIBTShowingTopBarAsk');
+                                show_topbar_ask();
+                            }
+                        }
+                    {% endif %} ; // app.top_bar_enabled
+
+                    {% if app.button_enabled %} // add this button code only if necessary
+                        if (parseInt(app.version) <= 2) {
+                            console.log('v2 button is enabled');
+                            var button = d.createElement('a');
+                            var button_html = '';
+                            // only add button if it's enabled in the app
+                            if (user.is_asker) {
+                                button_html = 'See what your friends said!';
+                            } else if (instance.show_votes) {
+                                button_html = 'Help {{ asker_name }} by voting!';
+                            } else {
+                                var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+                                button_html = AB_CTA_text;
+                            }
+
+                            button = $(button)
+                                .html(button_html)
+                                .css('display', 'inline-block')
+                                .attr('title', 'Ask your friends if you should buy this!')
+                                .attr('id','_willet_button')
+                                .attr('class','_willet_button willet_reset')
+                                .click(button_onclick);
                             $(purchase_cta).append(button);
-                        } else {
-                            var button = $('#_willet_button_v3');
-                        }
-                        $('#_willet_button').click(button_onclick);
+                        } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
+                            console.log('v3+ button is enabled');
+                            if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
+                                var button = $("<div />", {
+                                    'id': '_willet_button_v3'
+                                });
+                                button
+                                    .html ("<p>Should you buy this? Can't decide?</p>" +
+                                            "<div class='button' " +
+                                                "title='Ask your friends if you should buy this!'>" +
+                                                "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                                "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                             "</div>")
+                                    .css({'clear': 'both'});
+                                $(purchase_cta).append(button);
+                            } else {
+                                var button = $('#_willet_button_v3');
+                            }
+                            $('#_willet_button').click(button_onclick);
 
-                        // if server sends a flag that indicates "results available"
-                        // (not necessarily "finished") then show finished button
-                        if (instance.has_results) {
-                            $('#_willet_button_v3 .button').hide ();
-                            $('<div />', {
-                                'id': "_willet_SIBT_results",
-                                'class': "button"
-                            })
-                            .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
-                            .appendTo(button)
-                            .css('display', 'inline-block')
-                            .click (showResults);
-                        }
+                            // if server sends a flag that indicates "results available"
+                            // (not necessarily "finished") then show finished button
+                            if (instance.has_results) {
+                                $('#_willet_button_v3 .button').hide ();
+                                $('<div />', {
+                                    'id': "_willet_SIBT_results",
+                                    'class': "button"
+                                })
+                                .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                                .appendTo(button)
+                                .css('display', 'inline-block')
+                                .click (showResults);
+                            }
 
-                        var $wbtn = $('#_willet_button_v3 .button');
-                        if ($wbtn.length > 0) {
-                            $wbtn = $($wbtn[0]);
+                            var $wbtn = $('#_willet_button_v3 .button');
+                            if ($wbtn.length > 0) {
+                                $wbtn = $($wbtn[0]);
+                            }
+                            addScrollShaking($wbtn);
                         }
-                        addScrollShaking($wbtn);
-                    }
-                {% endif %} // app.button_enabled
+                    {% endif %} // app.button_enabled
+                } else {
+                    console.log("product does not exist here; hiding button.");
+                }
             } // if #_willet_shouldIBuyThisButton
 
             {% if app.bottom_popup_enabled %}
@@ -836,5 +858,26 @@
     };
 
     // Go time! Load script dependencies
-    manageScriptLoading(scripts_to_load, init);
+    try {
+        manageScriptLoading(scripts_to_load, init);
+    } catch (e) {
+        (function() {
+            // Apparently, IE9 can fail for really stupid reasons.
+            // This is problematic.
+            // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
+            var error   = encodeURIComponent("Error initializing SIBT");
+
+            var line    = e.number || e.lineNumber || "Unknown";
+            var script  = encodeURIComponent("sibt.js:" +line);
+            var message = e.stack || e.toString();
+            var st      = encodeURIComponent(message);
+            var params  = "error=" + error + "&script=" + script + "&st=" + st;
+            var _willetImage = d.createElement("img");
+            _willetImage.src = "{{URL}}/admin/ithinkiateacookie?" + params;
+            _willetImage.style.display = "none";
+            d.body.appendChild(_willetImage);
+
+            console.log("Error:", line, message);
+        }());
+    }
 })(window, document);
