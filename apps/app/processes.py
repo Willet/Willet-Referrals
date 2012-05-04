@@ -41,6 +41,12 @@ class BatchRequest(URIHandler):
         params         = json.loads(self.request.get('params', "{}"))
         criteria       = json.loads(self.request.get('criteria', "{}"))
 
+        logging.warn('Running BatchRequest for %s.%s.%s from %i to %i' % (app.__class__.__module__,
+                                                                          app.__class__.__name__,
+                                                                          method,
+                                                                          offset,
+                                                                          offset+batch_size-1))
+
         # Convert JSON keys from unicode to strings
         # Python 2.5 doesn't like this, but it will work in 2.7
         # We do this because we will be using the keys as kwargs
@@ -80,8 +86,11 @@ class BatchRequest(URIHandler):
         for app in apps:
             try:
                 getattr(app, method)(**converted_params)
+                logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
+                                                       app.__class__.__name__,
+                                                       method))
             except Exception, e:
-                logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__,
+                logging.error('%s.%s.%s() failed because %r' % (app.__class__.__module__,
                                                                app.__class__.__name__,
                                                                method,
                                                                e))
