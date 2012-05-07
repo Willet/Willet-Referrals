@@ -1,6 +1,48 @@
 {% extends "base.html" %}
 
 {% block head %}
+    <style type="text/css">
+        p {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            padding: 0px 0px 0px 0px;
+            margin-bottom: 5px;
+        }
+        html body .content-container {
+            margin-top: 130px;
+        }
+        .instruction-step {
+            background-color: #FFF;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            font-size: 1.0em;
+        }
+        .instruction-step input {
+            margin: 0;
+        }
+        .step-num, .step-warn {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            padding: 1px 7px 1px 9px;
+            font-size: 20px;
+            color: #FFF;
+            border-radius: 18px;
+            -webkit-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            -moz-box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            box-shadow: -3px -3px 20px rgba(0,0,0,0.1), -3px -3px 0px rgba(0,0,0,0);
+            behavior: ("../js/PIE.htc");
+        }
+        .step-num {
+            background-color: #0496AC;
+        }
+        .step-warn {
+            background-color: #C40000;
+            padding: 0 13px;
+        }
+    </style>
     <script>
         $(document).ready(function() {
             $('#go_to_shopify').click(function() {
@@ -13,133 +55,113 @@
 {% endblock head %}
 
 {% block right_head %}
-    {% if analytics %}
-        <p><a href="{% url ShowDashboard app.uuid %}">See Your Referral Analytics</a></p>
-    {% endif %}
-    <p><a href="{% url SIBTShopifyEditStyle app.uuid %}">Edit App Style</a></p>
+    <!-- customers can no longer edit their buttons themselves -->
 {% endblock right_head %}
 
 {% block content %}
-<div class="lower-100 prepend-3 span-4 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 1. Register Store </div>
-        <div class="lower-100 prepend-1 span-6 append-1 append-bottom" style="font-size: 1.5em; font-weight: bold;"> 2. Integrate 'Should I Buy This'</div>
-        <div class="lower-100 prepend-1 span-6 append-1 append-bottom last" style="font-size: 1.5em; font-weight: bold; opacity: 0.6;"> 3. Confirm Installation </div>
+        <div class="prepend-top span-24 last
+                    box-design content-container" >
+            <h1>Integration Guide for {{shop_name}}</h1>
 
-        <h1 class="span-24 last center">Integration Guide for {{shop_name}}</h1>
-        <div class="span-24 last" style="background-color: white; padding: 30px; border-radius: 20px" >
-            <div class="center span-24 last append-bottom">
-                <p>
-                    {{shop_owner}}, thanks for installing "Should I Buy This"!
-                    <br />
-                    Now, let's determine where to place the button on your product pages.
-                </p>
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                            box-design instruction-step">
+                    <div class="step-num">1.</div>
+                    <p><strong>In</strong> your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
+
+                    <img class="span-18" src="/static/imgs/template_editor.png" />
+                </div>
             </div>
 
-            <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <p>1. In your <a href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
-
-                <img class="span-18" src="/static/imgs/template_editor.png" />
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="span-10">
+                        <div class="step-num">2.</div>
+                        <p class="lower-50">
+                            <strong>Under</strong> the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippets</em>, try looking under <em>Templates</em>.
+                        </p>
+                    </div>
+                    <div class="prepend-2 span-6 last">
+                            <img src="/static/imgs/snippets_product.png" />
+                    </div>
+                </div>
             </div>
 
-            <hr class="thick_hr" />
-
-            <div class="prepend-top prepend-3 span-12 append-bottom">
-                <p class="lower-50">
-                    2. Under the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippts</em>, try looking under
-                    <em>Templates</em>.
-                </p>
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">3.</div>
+                    <p>
+                        <strong>Look </strong>for where you would like the sharing buttons to be placed on your product pages. If you want to place your buttons near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
+                    </p>
+                    <img class="span-18" src="/static/imgs/form.png" />
+                </div>
             </div>
 
-            <div class="prepend-top prepend-2 span-6 last append-bottom">
-                 <img src="/static/imgs/snippets_product.png" />
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-warn">!</div>
+                    <p>Having trouble finding your cart?  Some templates keep the cart separate as a snippet.  Your <i>product.liquid</i> includes this snippet wherever the cart is supposed to be.  Look through your template snippets, searching each for 'cart' or 'form'.</p>
+                </div>
             </div>
 
-            <hr class="thick_hr" />
-
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>3. Look </strong>for where you would like the advice button to be placed on your product pages. If you want to
-                    place it near your "Add to Cart" or "Buy Now" button, look for <em>&lt;/form&gt;</em>.
-                </p>
-
-                 <img class="span-18" src="/static/imgs/form.png" />
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">4.</div>
+                    <p>
+                        <strong>Once </strong>you've picked a spot, add this code:
+                        {% ifequal app.version '1' %}
+                            <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
+                        {% else %}
+                            <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
+                        {% endifequal %}
+                    </p>
+                </div>
             </div>
 
-            <hr class="thick_hr" />
-
-            <div class="prepend-top prepend-3 span-18 append-3 last">
-                <p>
-                    <strong>4. Once </strong>you've picked a spot, add this code:
-
-                    {% ifequal app.version '1' %}
-                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value='&lt;div id="_willet_shouldIBuyThisButton"&gt;&lt;/div&gt;' />
-                    {% else %}
-                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_sibt' &#37;&#125;" />
-                    {% endifequal %}
-                </p>
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">5.</div>
+                    <p>
+                        <strong>Click</strong> <em>save</em> near the top of the screen.
+                    </p>
+                    <img class="span-18" src="/static/imgs/save.png" />
+                </div>
             </div>
 
-            <hr class="thick_hr" />
-
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>5. Click</strong> <em>save</em> near the top of the screen.
-                </p>
-
-                 <img class="span-18" src="/static/imgs/save.png" />
-            </div>
-
-            <hr class="thick_hr" />
-
-            <div class="prepend-top prepend-3 span-12 append-bottom">
-                <p class="lower-50">
-                    6. Under the <em>Templates</em> section, click on <em>cart.liquid</em>.
-                </p>
-            </div>
-
-            <hr class="thick_hr" />
-
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>7. Look </strong>for where you would like the advice button to be placed on your cart page.
-                    After the <em>&lt;/table&gt;</em> tag would be a nice spot.
-                </p>
-
-                 <img class="span-18" src="/static/imgs/snippets_wosib.png" />
-            </div>
-
-            <hr class="thick_hr" />
-
-            <div class="prepend-top prepend-3 span-18 append-3 last">
-                <p>
-                    <strong>8. Once </strong>you've picked a spot, add this code:
-                    <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_wosib' &#37;&#125;" />
-                </p>
-            </div>
-
-            <hr class="thick_hr" />
-
-            <div class="prepend-3 span-18 append-3 last append-bottom">
-                <p>
-                    <strong>9. Click</strong> <em>save</em> near the top of the screen.
-                </p>
-
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">6.</div>
+                    <p>
+                        <strong>If </strong> you want a button on your <strong>cart</strong> page, add this code in <code>cart.liquid</code> like before:
+                        <input style='font-size:13px;max-width: 275px;width: 245px;' type='text' readonly='readonly' value="&#123;&#37; include 'willet_wosib' &#37;&#125;" />
+                    </p>
+                </div>
             </div>
 
             {% if new_order_code %}
-                <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">7.</div>
                     <p>
-                        10. Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
+                        Open your <a href="{{app.store_url}}/admin/payments">Checkout and Payments</a> Preferences.
                     </p>
                 </div>
-
-                <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
+            </div>
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">8.</div>
                     <p>
-                        11. Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
-                        <textarea style='font-size:13px;max-height: 450px; height:450px;max-width: 600px;width: 600px;' type='text' readonly='readonly'>
+                        Under <em>Additional Settings</em> -&gt; <em>Additional Content & Scripts</em>, insert this text:
+                    </p>
+                    <textarea style='font-size:13px;max-height: 450px; height:450px;max-width: 700px;width: 700px;' type='text' readonly='readonly'>
 &lt;!-- Begin Willet integration code --&gt;
 &lt;script type="text/javascript"&gt;
   (function()&#123;
@@ -169,27 +191,23 @@
   &#125;)();
 &lt;/script&gt;
 &lt;!-- End Willet integration code --&gt;
-                        </textarea>
-
-                    </p>
+                    </textarea>
+                    <p>Then <strong>click</strong> <em>Apply these settings</em>.</p>
                 </div>
-
-               <hr class="thick_hr" />
-
-                <div class="prepend-3 span-18 append-3 last append-bottom">
-                    <p>
-                        <strong>12. Click</strong> <em>Apply these settings</em>.
-                    </p>
-                </div>
-
+            </div>
             {% endif %}
 
-            <div class="center prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <p><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
+            <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                <div class="prepend-1 span-18 append-1 last
+                            box-design instruction-step">
+                    <div class="step-num">&#x2713;</div>
+                    <p class="center"><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
+                    <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
+                </div>
             </div>
 
             <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                <h3 class="center">Want to customize the location of the buttons? <br /> Have other questions? Visit <a href="http://support.willetinc.com">our support website</a>, or Email support@getwillet.com!</h3>
+                <h3 class="center">Have other questions? Email: <a href="mailto:fraser@getwillet.com">fraser@getwillet.com</a></h3>
                 <br />
 
                 <div class="center">
@@ -202,6 +220,7 @@
                 </div>
             </div>
         </div>
+
         <script type="text/javascript">
             ;(function ($) {
                 /* patch New SnapEngage script overlay does not close on click

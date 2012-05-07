@@ -26,7 +26,7 @@ class Product(Model, db.polymodel.PolyModel):
     title = db.StringProperty()  # name of the product
     type = db.StringProperty(indexed=False)  # The type of product
 
-    memcache_fields = ['resource_url']
+    _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None

@@ -1,6 +1,6 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
- * 
+ *
  */
 ;// Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
 var JSON;if(!window.JSON){window.JSON={};}
@@ -77,7 +77,7 @@ _willet.util = {
         s.media = 'screen';
         if (s.styleSheet) {
             s.styleSheet.cssText = rules; // IE
-        } else { 
+        } else {
             s.appendChild(document.createTextNode(rules)); // Every other browser
         }
         return s;
@@ -323,7 +323,7 @@ _willet.messaging = (function (willet) {
             }
 
             payload += MESSAGE_TOKEN + "=" + JSON.stringify(message);
-            
+
             debug.log("Messaging.XD: Sending payload..." + payload);
             if (window.parent.postMessage) {
                 // Try HTML5 postMessage
@@ -411,6 +411,30 @@ _willet.networks = (function (willet) {
         messaging = willet.messaging,
         util      = willet.util;
     return {
+        "AskFriends": {
+            "priority": 1,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//brian-willet.appspot.com/s/sibt.js?page_url=' + window.location,
+                "create": function () {
+                    var button = util.createBasicButton({
+                        "id": '_mini_sibt_button'
+                    });
+
+                    var d = document.createElement("a");
+                    d.id = 'mini_sibt_button';
+                    d.style.cursor = 'pointer';
+                    d.style.display = 'inline-block';
+                    d.style.background = "url('//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                    d.style.width = '80px';
+                    button.appendChild(d);
+                    return button;
+                }
+            }
+        },
         "Facebook": {
             "priority": 2,
             "detect": {
@@ -454,7 +478,7 @@ _willet.networks = (function (willet) {
                     // If Facebook is already loaded,
                     // trigger it to enable Like button
                     try {
-                        window.FB && window.FB.XFBML.parse(); 
+                        window.FB && window.FB.XFBML.parse();
                     } catch(e) {}
                 }
             }
@@ -492,7 +516,7 @@ _willet.networks = (function (willet) {
                     link.onclick = function() {
                         methods.itemShared("Fancy", params);
                     };
-                    
+
                     link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
                     button.appendChild(link);
                     return button;
@@ -532,9 +556,9 @@ _willet.networks = (function (willet) {
                             methods.itemShared("GooglePlus", params);
                         }
                     };
-                    
+
                     // Google is using the Open Graph spec
-                    var t, p, 
+                    var t, p,
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
                               { property: 'og:description', content: params.sharingMessage } ];
@@ -583,8 +607,8 @@ _willet.networks = (function (willet) {
                     link.onclick = function() {
                         methods.itemShared("Pinterest", params);
                         window.open("//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
-                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) +
+                            "&media=" + encodeURIComponent( params.photo ) +
                             "&description=" + encodeURIComponent(params.sharingMessage),
                             'signin',
                             'height=300,width=665');
@@ -610,8 +634,8 @@ _willet.networks = (function (willet) {
                         count.style.width = '77px';
                         var countLink = document.createElement("a");
                         countLink.href = "//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
-                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) +
+                            "&media=" + encodeURIComponent( params.photo ) +
                             "&description=" + encodeURIComponent(params.sharingMessage);
                         countLink.className = 'pin-it-button';
                         countLink.setAttribute('count-layout', 'horizontal');
@@ -780,7 +804,7 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring 
+            // How this regex works: replaces .../products/ or a trailing / with empty spring
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
@@ -920,7 +944,7 @@ _willet = (function (me, config) {
             // Shopify won't respond on localhost, so use example data
             me.createButtons({
                 product: {
-                    images: [{ 
+                    images: [{
                         created_at: "2012-02-03T11:42:17+09:00",
                         id: 166600132,
                         position: 1,
@@ -953,7 +977,7 @@ _willet = (function (me, config) {
                             me.buttonsLoaded = true;
                         }
                     }
-                });   
+                });
             } catch(e) {
                 debug.log("Buttons: request for product.json failed");
             }
@@ -989,5 +1013,5 @@ try {
         _willetImage.style.display = "none";
 
         document.body.appendChild(_willetImage)
-    }()); 
+    }());
 }
