@@ -144,7 +144,7 @@ class AskDynamicLoader(URIHandler):
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
-            logging.error("SIBT app has no client.  Probably uninstall.")
+            logging.error("SIBT app has no client. Probably uninstall.")
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         logging.debug("app = %r" % app)
