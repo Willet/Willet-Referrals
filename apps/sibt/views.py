@@ -568,6 +568,7 @@ class ShowResults(URIHandler):
 
                 'share_url': share_url,
                 'is_asker' : is_asker,
+                'is_live': has_voted,  # same thing?
                 'instance' : instance,
                 'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
 
