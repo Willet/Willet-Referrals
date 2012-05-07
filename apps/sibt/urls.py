@@ -11,8 +11,8 @@ urlpatterns = [
     (r'/s/results.html',            ShowResults),
     (r'/s/fb_thanks.html',          ShowFBThanks),
     (r'/s/track/unload',            ShowOnUnloadHook),
+    (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),  # merged
     (r'/s/sibt.js',                 SIBTServeScript),
-  # (r'/s',                         SIBTWelcome), # not used
     (r'/s/beta',                    ShowBetaPage),
     (r'/s/beta/signup',             SIBTSignUp),
 
