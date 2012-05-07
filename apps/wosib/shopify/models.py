@@ -1,56 +1,48 @@
 #!/usr/bin/python
 
-# WOSIBShopify model
+"""WOSIBShopify model extends WOSIB to provide Shopify-specific snippets."""
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import datetime
-import hashlib
-import inspect
 import logging
+import urlparse
 
-from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.datastore import entity_pb
 from google.appengine.ext import db
-from google.appengine.ext.webapp import template
 
 from apps.app.shopify.models import AppShopify
-from apps.client.models import Client
-from apps.email.models import Email
-from apps.user.models import User
-from apps.wosib.models import WOSIB 
-from util import httplib2
-from util.consts import *
+from apps.wosib.models import WOSIB
+from util.consts import DOMAIN, MEMCACHE_TIMEOUT
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
+from util.shopify_helpers import get_url_variants
 
-# ------------------------------------------------------------------------------
-# WOSIBShopify Class Definition -------------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# WOSIBShopify Class Definition -----------------------------------------------
+# -----------------------------------------------------------------------------
 class WOSIBShopify(WOSIB, AppShopify):
-    
-    # NOTE
-    # WOSIB is a subset of SIBT, and, as such, does not have a version number.
-    # To obtain the WOSIB version, load its SIBT counterpart 
-    # with get_by_store_url() and read its version number.
-    # version = db.StringProperty(default='2', indexed=False)
-    
+    """WOSIBShopify objects are datastore-bound Apps (i.e. cannot be installed
+    individually) that assist SIBT/SIBTShopify Apps in asking multi-product
+    questions.
+
+    The WOSIBShopify App communicates with Shopify using the SIBTShopify app.
+    """
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(WOSIBShopify, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         return True
 
     def do_install(self, email_client=True):
         # "You must escape a percent sign with another percent sign." TIL.
         """Installs this instance"""
-        script_src = """<!-- START willet wosib for Shopify -->
+        script_src = """<!-- START willet WOSIB for Shopify -->
             <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
             <script type="text/javascript">
-                var _willet_no_image = "http://%s/static/imgs/noimage.png";
                 var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
                 var _willet_cart_items = [
                     {%% for item in cart.items %%}
@@ -61,13 +53,16 @@ class WOSIBShopify(WOSIB, AppShopify):
                         },
                     {%% endfor %%}
                 {}];
-                _willet_cart_items.pop(); // remove trailing element... IE7 trailing comma patch
 
-                var _willet_st = document.createElement('script');
-                _willet_st.type = 'text/javascript';
-                _willet_st.src = _willet_wosib_script;
-                window.document.getElementsByTagName("head")[0].appendChild(_willet_st);
-            </script>""" % (DOMAIN, DOMAIN, reverse_url('WOSIBShopifyServeScript'))
+                // remove trailing element... IE7 trailing comma patch
+                _willet_cart_items.pop();
+
+                (function (s) {
+                    s.type = 'text/javascript';
+                    s.src = _willet_wosib_script;
+                    document.getElementsByTagName("head")[0].appendChild(s);
+                }(document.createElement('script')));
+            </script>""" % (DOMAIN, DOMAIN, reverse_url('SIBTServeScript'))
 
         liquid_assets = [{
             'asset': {
@@ -82,6 +77,7 @@ class WOSIBShopify(WOSIB, AppShopify):
         self.install_queued()
 
     def _memcache_by_store_url(self):
+        """Memcache in addition to that of the Model class."""
         success1 = memcache.set(
                 "WOSIB-%s" % self.store_url,
                 db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
@@ -101,18 +97,17 @@ class WOSIBShopify(WOSIB, AppShopify):
     @staticmethod
     def create(client, token, email_client=True):
         uuid = generate_uuid(16)
-        app = WOSIBShopify (
-                        key_name = uuid,
-                        uuid = uuid,
-                        client = client,
-                        store_name = client.name, # Store name
-                        store_url = client.url, # Store url
-                        store_id = client.id, # Store id
-                        store_token = token)
+        app = WOSIBShopify(key_name=uuid,
+                           uuid=uuid,
+                           client=client,
+                           store_name=client.name,  # Store name
+                           store_url=client.url,  # Store url
+                           store_id=client.id,  # Store id
+                           store_token=token)
         app.put()
-        
+
         app.do_install(email_client)
-       
+
         return app
 
     @staticmethod
@@ -133,8 +128,9 @@ class WOSIBShopify(WOSIB, AppShopify):
                     app.put()
 
                     app.do_install(email_client)
-                except:
-                    logging.error('Encountered error with reinstall', exc_info=True)
+                except Exception:
+                    logging.error('Encountered error with reinstall',
+                                  exc_info=True)
         return app
 
     @staticmethod
@@ -143,15 +139,26 @@ class WOSIBShopify(WOSIB, AppShopify):
 
     @staticmethod
     def get_by_store_url(url):
+        www_url = url
+        if not url:
+            return None  # can't get by store_url if no URL given
+
+        (url, www_url) = get_url_variants(url, keep_path=False)
+
         data = memcache.get("WOSIB-%s" % url)
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        app = WOSIBShopify.all().filter('store_url =', url).get()
+        data = memcache.get("WOSIB-%s" % www_url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        # "first get by url, then by www_url"
+        app = WOSIBShopify.all().filter('store_url IN', [url, www_url]).get()
         if not app:
             # no app in DB by store_url; try again with extra_url
-            app = WOSIBShopify.all().filter('extra_url =', url).get()
-        
+            app = WOSIBShopify.all().filter('extra_url IN', [url, www_url]).get()
+
         if app:
             app._memcache_by_store_url()
         return app

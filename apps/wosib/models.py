@@ -1,29 +1,23 @@
 #!/usr/bin/python
 
-# WOSIB model
-# Extends from "App"
+"""WOSIB model (helper class for SIBT)"""
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib
 import logging
 import random
-from datetime import datetime
 from datetime import timedelta
 
-from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext import db
-from google.appengine.datastore import entity_pb
 
 from apps.app.models import App
-from apps.email.models import Email
-from apps.link.models import Link
 from apps.product.models import Product
 from apps.user.models import User
 from apps.vote.models import VoteCounter
 from apps.wosib.actions import *
+
 from util.consts import *
 from util.helpers import generate_uuid
 from util.memcache_ref_prop import MemcacheReferenceProperty
@@ -32,20 +26,95 @@ from util.model import Model
 NUM_VOTE_SHARDS = 15
 
 
-# ------------------------------------------------------------------------------
-# WOSIB Class Definition --------------------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# WOSIB Class Definition ------------------------------------------------------
+# -----------------------------------------------------------------------------
 class WOSIB(App):
     """Model storing the data for a client's WOSIB app"""
-    
+
     # stored as App
 
     store_name = db.StringProperty(indexed = True)
 
+    # Apps cannot be memcached by secondary key, because they are all stored
+    # as App objects, and this may cause field collision.
+    _memcache_fields = []
+
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
         super(WOSIB, self).__init__(*args, **kwargs)
-    
+
+    @classmethod
+    def get_by_store_url(cls, url):
+        app = None
+        if not url:
+            return app
+
+        try:
+            ua = urlparse.urlsplit(url)
+            url = "%s://%s" % (ua.scheme, ua.netloc)
+        except:
+            pass # use original URL
+
+        app = cls.get(url)
+        if app:
+            logging.debug("got WOSIB via get(): %r" % app)
+            return app
+
+        app = cls.all().filter('store_url =', url).get()
+        if not app:
+            # no app in DB by store_url; try again with extra_url
+            app = cls.all().filter('extra_url =', url).get()
+        return app
+
+    @staticmethod
+    def create(client, token):
+        uuid = generate_uuid(16)
+        logging.debug("creating WOSIB v%s" % App.CURRENT_INSTALL_VERSION)
+        app = WOSIB(key_name=uuid,
+                    uuid=uuid,
+                    client=client,
+                    store_name=client.name,  # Store name
+                    store_url=client.url,
+                    version=App.CURRENT_INSTALL_VERSION)
+
+        try:
+            app.store_id = client.id  # Store id
+        except AttributeError:  # non-Shopify Shops need not Shop ID
+            logging.warn('Store created without store_id '
+                         '(ok if not installing WOSIB for Shopify)')
+            pass
+
+        app.put()
+        # app.do_install()  # this is JS-based; there is nothing to install
+        return app
+
+    @staticmethod
+    def get_or_create(client=None, domain=''):
+        """Creates a WOSIB app (used like a profile) for a specific domain."""
+        if client and not domain:
+            domain = client.url
+
+        if not domain:
+            raise AttributeError('A valid (client or domain) '
+                                 'must be supplied to create a WOSIB app')
+
+        if not client:
+            client = Client.get_or_create(url=domain,
+                                          email='')
+
+        app = WOSIB.get_by_store_url(domain)
+        if not app:
+            logging.debug("app not found; creating one.")
+            app = WOSIB.create(client, domain)
+
+        if not app.store_url:
+            app.store_url = domain
+            app.put()
+
+        logging.debug("WOSIB::get_or_create.app is now %s" % app)
+        return app
+
     def _validate_self(self):
         return True
 
@@ -67,28 +136,28 @@ class WOSIB(App):
         logging.info("MAKING A WOSIB INSTANCE")
         # Make the properties
         uuid = generate_uuid(16)
-        
+
         # Now, make the object
-        instance = WOSIBInstance(key_name = uuid,
-                                uuid = uuid,
-                                asker = user,
-                                app_ = self,
-                                link = link,
-                                products = products,
-                                url = link.target_url)
+        instance = WOSIBInstance(key_name=uuid,
+                                 uuid=uuid,
+                                 asker=user,
+                                 app_=self,
+                                 link=link,
+                                 products=products,
+                                 url=link.target_url)
         # set end if None
         if end == None:
             six_hours = timedelta(hours=6)
             end = instance.created + six_hours
         instance.end_datetime = end
         instance.put()
-            
+
         return instance
 
 
-# ------------------------------------------------------------------------------
-# WOSIBInstance Class Definition ------------------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# WOSIBInstance Class Definition ----------------------------------------------
+# -----------------------------------------------------------------------------
 class WOSIBInstance(Model):
 
     # Datetime when this model was put into the DB
@@ -111,14 +180,19 @@ class WOSIBInstance(Model):
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
-        self._memcache_key = kwargs['uuid'] 
+        self._memcache_key = kwargs['uuid']
         super(WOSIBInstance, self).__init__(*args, **kwargs)
 
-    @classmethod 
+    def _validate_self(self):
+        if not self.app_:
+            raise AttributeError("app_ is missing from WOSIBInstance")
+        return True
+
+    @classmethod
     def _get_from_datastore(cls, uuid):
         return cls.all().filter('uuid =', uuid).get()
 
-    # Accessors -------------------------------------------------------------------
+    # Accessors ---------------------------------------------------------------
     @classmethod
     def get_by_link(cls, link):
         return cls.all().filter('link =', link).get()
@@ -130,23 +204,25 @@ class WOSIBInstance(Model):
         return cls.all().filter('asker =', user).filter('app_ =', app_)\
                   .order('-created').get()
 
-    # ----------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def get_winning_products (self):
-        """ returns an array of products with the most votes in the instance.
-            array can be of one item. 
+        """Returns an array of products with the most votes in the instance.
+
+        Array can be of one item.
         """
-        
+
         # this list comprehension returns the number of votes (times chosen) for each product in the WOSIBInstance.
-        instance_product_votes = [Action.\
-                                    all().\
-                                    filter('wosib_instance =', self).\
-                                    filter('product_uuid =', product_uuid)\
-                                    .count() for product_uuid in self.products] # [votes,votes,votes]
+        # instance_product_votes = [votes,votes,votes]
+        instance_product_votes = [Action\
+                                  .all()\
+                                  .filter('wosib_instance =', self)\
+                                  .filter('product_uuid =', product_uuid)\
+                                  .count() for product_uuid in self.products]
         logging.debug ("instance_product_votes = %r" % instance_product_votes)
-        
+
         instance_product_dict = dict (zip (self.products, instance_product_votes)) # {uuid: votes, uuid: votes,uuid: votes}
         logging.debug ("instance_product_dict = %r" % instance_product_dict)
-        
+
         if instance_product_votes.count(max(instance_product_votes)) > 1:
             # that is, if multiple items have the same score
             winning_products_uuids = filter(lambda x: instance_product_dict[x] == instance_product_votes[0], self.products)
@@ -158,7 +234,7 @@ class WOSIBInstance(Model):
             # that is, if one product is winning the voting
             winning_product_uuid = self.products[instance_product_votes.index(max(instance_product_votes))]
             return [Product.all().filter('uuid =', winning_product_uuid).get()]
-    
+
     def get_votes_count(self):
         """Count this instance's votes count
            For compatibility reasons, the field 'yesses' is used to keep count"""
@@ -170,7 +246,7 @@ class WOSIBInstance(Model):
                 total += counter.yesses
             memcache.add(key=self.uuid+"WOSIBVoteCounter_count", value=total)
         return total
-    
+
     def increment_votes(self):
         """Increment this instance's votes counter
            For compatibility reasons, the field 'yesses' is used to keep count"""
@@ -180,7 +256,7 @@ class WOSIBInstance(Model):
             shard_name = self.uuid + str(index)
             counter = VoteCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = VoteCounter(key_name=shard_name, 
+                counter = VoteCounter(key_name=shard_name,
                                       instance_uuid=self.uuid)
             counter.yesses += 1
             counter.put()
@@ -190,9 +266,9 @@ class WOSIBInstance(Model):
 # end class
 
 
-# ------------------------------------------------------------------------------
-# PartialWOSIBInstance Class Definition -----------------------------------------
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# PartialWOSIBInstance Class Definition ---------------------------------------
+# -----------------------------------------------------------------------------
 class PartialWOSIBInstance(Model):
     """ Each User can have at most 1 PartialInstance:
         - created when facebook connect starts
@@ -200,31 +276,36 @@ class PartialWOSIBInstance(Model):
         - deleted never
     """
 
-    user = MemcacheReferenceProperty(db.Model, 
+    user = MemcacheReferenceProperty(db.Model,
                                      collection_name='partial_wosib_instances',
                                      indexed=True)
-    
-    link = db.ReferenceProperty(db.Model, 
+
+    link = db.ReferenceProperty(db.Model,
                                 collection_name='link_partial_wosib_instances',
                                 indexed=False)
-    
+
     # products are stored as 'uuid','uuid','uuid' because object lists aren't possible.
     products = db.StringListProperty(db.Text, indexed=False)
-    
+
     app_ = db.ReferenceProperty(db.Model,
                                 collection_name='app_partial_wosib_instances',
                                 indexed=False)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this model """
-        self._memcache_key = kwargs['uuid'] 
+        self._memcache_key = kwargs['uuid']
         super(PartialWOSIBInstance, self).__init__(*args, **kwargs)
 
-    @classmethod 
+    def _validate_self(self):
+        if not self.app_:
+            raise AttributeError("app_ is missing from PartialWOSIBInstance")
+        return True
+
+    @classmethod
     def _get_from_datastore(cls, uuid):
         return db.Query(cls).filter('uuid =', uuid).get()
 
-    # Constructors ------------------------------------------------------------------
+    # Constructors ------------------------------------------------------------
     """ Users can only have 1 of these ever. If they already have one, update it.
         Otherwise, make a new one.
     """
@@ -244,13 +325,13 @@ class PartialWOSIBInstance(Model):
             instance = cls(key_name=uuid,
                            uuid=uuid,
                            user=user,
-                           link=link, 
+                           link=link,
                            products=products, # type StringList
                            app_=app)
         instance.put()
         return instance
 
-    # Accessors ----------------------------------------------------------------------
+    # Accessors ---------------------------------------------------------------
     @classmethod
     def get_by_user(cls, user):
         return cls.all().filter('user =', user).get()
