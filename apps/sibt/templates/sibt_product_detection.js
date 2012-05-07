@@ -19,8 +19,8 @@
                 var head = document.getElementsByTagName('head')[0];
                 sibt_script.type = 'text/javascript';
                 sibt_script.src = "{{ URL }}{% url SIBTShopifyServeScript %}?" +
-                    "willt_code=" + willt_code + 
-                    "&user_uuid={{ user.uuid }}" + 
+                    "willt_code=" + willt_code +
+                    "&user_uuid={{ user.uuid }}" +
                     "&store_url={{ store_url }}";
                 sibt_script.setAttribute('charset','utf-8');
 
@@ -29,11 +29,11 @@
         } catch (e) {
             var error = e;
             var message = '';
-            var script = 'sibt_product_detection.js';
+            var script = encodeURIComponent('sibt_product_detection.js');
 
             if (e.name && e.message) {
-                error = e.name;
-                message = e.message;
+                error = encodeURIComponent(e.name);
+                message = encodeURIComponent(e.message);
             }
 
             var el = document.createElement('img');
@@ -83,4 +83,3 @@
         })();
     }
 }(window));
-

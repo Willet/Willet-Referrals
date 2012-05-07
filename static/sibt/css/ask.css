@@ -1,7 +1,7 @@
 /* ---------------------   DEFAULTS   ------------------------------- */
 
 html, body {
-    background-color: white;
+    /*background-color: white;*/
     color: #383f41;
     overflow: hidden;
     font: 1em/1.4em "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -10,10 +10,10 @@ html, body {
 }
 textarea {
     display: block;
-    background: #fff url("/static/inputshadow.gif") repeat-x top; 
+    background: #fff url("/static/inputshadow.gif") repeat-x top;
     border-style: none solid solid;
-    border: 1px solid #aaa; 
-    padding: 8px; 
+    border: 1px solid #aaa;
+    padding: 8px;
     color: black;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     overflow-x: hidden;
@@ -93,10 +93,10 @@ p {
     background-image: -webkit-linear-gradient(top, #E3E3E3, #D1D1D1);
     background-image: -ms-linear-gradient(top, #E3E3E3, #D1D1D1);
     -pie-background: linear-gradient(top, #E3E3E3, #D1D1D1);
-    background-image: linear-gradient(top, #E3E3E3, #D1D1D1); 
+    background-image: linear-gradient(top, #E3E3E3, #D1D1D1);
     -webkit-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     -moz-box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
-    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;    
+    box-shadow: 0 0 1px 1px #EEE inset, 0 1px 0 #BBB;
     behavior: url(/static/js/PIE.htc)
 }
 .grey_bar:hover {
@@ -214,7 +214,7 @@ p {
 
 /* ---------------------   PAGES   ----------------------- */
 
-/* ---------------------   Splash  ----------------------- */ 
+/* ---------------------   Splash  ----------------------- */
 
 #questionOptions {
     margin-top: 12px;
@@ -272,6 +272,16 @@ p {
     width: 100px;
     height:100px;
 }
+.message>img.normal {
+    border: none;
+    width: auto;
+    height: auto;
+}
+.message>img.quotes {
+    margin-left:20px;
+    margin-right:20px;
+    vertical-align:top;
+}
 .message>textarea {
     float: right;
     width: 70%;
@@ -293,10 +303,12 @@ p {
     height: 100px;
     width: 100%;
     text-align: center;
-    z-index: 1; /* PIE shows in IE8 */
+    z-index: 100; /* PIE shows in IE8 */
 }
 .option {
     margin: 0 15px;
+    z-index:101;
+    position:relative;
 }
 .or {
     float: left;
@@ -306,7 +318,8 @@ p {
     color: #888;
 }
 .options .or {
-    width: 52px;
+    width: 72px;
+    *width: 45px; /* smaller for IE7 */
 }
 .friend_options .or {
     width: 45px;
@@ -337,7 +350,7 @@ p {
     min-width: 150px;
 }
 
-/* ---------------------   Choose Friends  ----------------------- */ 
+/* ---------------------   Choose Friends  ----------------------- */
 
 ul.friends, ul.askers {
     list-style-type: none;

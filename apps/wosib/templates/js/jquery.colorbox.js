@@ -20,7 +20,7 @@
         var iframe = document.createElement( 'iframe' );
 
         iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url TrackWOSIBShowAction %}?evnt=" + message + 
+        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message +
                     "&app_uuid={{app_uuid}}" +
                     "&user_uuid={{user_uuid}}" +
                     "&instance_uuid={{instance_uuid}}" +
@@ -28,6 +28,6 @@
 
         document.body.appendChild( iframe );
     };
-    
+
     publicMethod.closeState = "WOSIBAskIframeCancelled";
 {% endblock %}
