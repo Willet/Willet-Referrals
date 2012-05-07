@@ -239,7 +239,8 @@ class ButtonsShopify(Buttons, AppShopify):
         try:
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
-                                   (theme_id, query_params))
+                                   (theme_id, query_params),
+                                   suppress_errors = True)
 
             if result["asset"] and result["asset"]["value"]:
                 value           = result["asset"]["value"]
