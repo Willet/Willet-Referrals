@@ -139,6 +139,7 @@ class SIBTVoteAction(VoteAction):
         # Make the action
         uuid = generate_uuid(16)
         product = Product.get(vote)
+        product_uuid = ''
         if product:
             product_uuid = product.uuid
         action = SIBTVoteAction(key_name=uuid,
