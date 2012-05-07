@@ -270,6 +270,7 @@ class Email():
 
         body = template.render(Email.template_path('wosib_ask.html'),
             {
+                'URL'               : URL,
                 'from_name'         : from_name.title(),
                 'from_first_name'   : from_first_name.title(),
                 'to_name'           : to_name.title(),
