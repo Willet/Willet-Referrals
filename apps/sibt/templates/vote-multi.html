@@ -225,7 +225,7 @@
 
         var showError = function (msg) {
             $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
-        }
+        };
 
         var vote = function () {
             var product_uuid = $('#cart_items_display input:checked').data('uuid');
@@ -236,20 +236,20 @@
                     "product_uuid" : product_uuid
                 };
                 $.ajax({
-                    url      : "{{ URL }}{% url DoVote %}",
-                    type     : 'post',
-                    data     : payload,
-                    success  : function () {
+                    url: "{{ URL }}{% url DoVote %}",
+                    type: 'post',
+                    data: payload,
+                    success: function () {
                         showScreen('thanks_for_vote');
                     },
-                    error    : function () {
+                    error: function () {
                         showScreen('wosib_error');
                     }
                 });
             } else {
-                showError ("Please select a product :)");
+                showError("Please select a product :)");
             }
-        }
+        };
         $('#vote_btn').click(vote);
 
         $('#cart_items_display input').prop('checked', false);
