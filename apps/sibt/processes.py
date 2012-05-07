@@ -809,7 +809,8 @@ class SendFriendAsks(URIHandler):
                                            vote_url=link.get_willt_url(),
                                            asker_img=a['pic'],
                                            client_name=app.client.name,
-                                           client_domain=app.client.domain)
+                                           client_domain=app.client.domain,
+                                           products=products)
                         else:
                             Email.SIBTAsk(from_name=a['name'],
                                           from_addr=a['email'],

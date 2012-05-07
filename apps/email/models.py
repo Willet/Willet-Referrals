@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" 
+"""
 Name: Email Class
 Purpose: All emails from Willet.com will be in this class.
 Author:  Barbara Macdonald
@@ -13,7 +13,7 @@ from google.appengine.api.app_identity import get_application_id
 from google.appengine.ext.webapp import template
 
 from util.consts import *
-from util.helpers import url 
+from util.helpers import url
 
 INFO = "info@getwillet.com"
 FRASER = 'fraser@getwillet.com'
@@ -29,7 +29,7 @@ DEV_APPS = {
     FRASER: ['fraser-willet','fraser-willet2'],
     BRIAN: ['brian-willet', 'brian-willet2', 'brian-willet3', 'brian-willet4'],
     NICK: ['willet-nterwoord'],
-    
+
     DEV_TEAM: [APP_LIVE] # email everyone if on live server
 }
 
@@ -49,10 +49,10 @@ class Email():
             body = '<pre>%s</pre>' % msg
         else:
             body = '<p>%s</p>' % msg
-        
+
         appname = get_application_id()
         to_addrs = [dev_member for dev_member in DEV_APPS if appname in DEV_APPS[dev_member]]
-        
+
         if to_addrs:
             Email.send_email(from_address=FROM_ADDR,
                              to_address=','.join(to_addrs),
@@ -65,7 +65,7 @@ class Email():
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
-    
+
         # Grab first name only
         try:
             name = name.split(' ')[0]
@@ -78,7 +78,7 @@ class Email():
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
                   <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
                   <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
-        
+
         elif app_name == 'Should I Buy This':
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
                   <p>You may notice small changes in the look and feel of the app in the coming weeks.  We are constantly making improvements to increase the benefit to you!</p>
@@ -101,7 +101,7 @@ class Email():
     def goodbyeFromFraser(to_addr, name, app_name):
         to_addr = to_addr
         subject = 'We are sad to see you go :('
-        
+
         # Grab first name only
         try:
             name = name.split(' ')[0]
@@ -121,7 +121,7 @@ class Email():
                   <p>Fraser</p>
                   <p>Founder, Willet<br />
                   www.willetinc.com | Cell 519-580-9876 | <a href="http://twitter.com/fjharris">@FJHarris</a></p> """ % (name, app_name)
-        
+
         Email.send_email(from_address=FRASER,
                          to_address=to_addr,
                          subject=subject,
@@ -155,7 +155,7 @@ class Email():
                          to_name=client_name.title(),
                          subject=subject,
                          body=body)
-    
+
     @staticmethod
     def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
                 product_img, product_title, client_name, client_domain,
@@ -172,7 +172,7 @@ class Email():
             to_first_name = to_name.split(' ')[0]
         except:
             to_first_name = to_name
-        
+
         body = template.render(Email.template_path('sibt_ask.html'),
             {
                 'from_name'         : from_name.title(),
@@ -188,7 +188,7 @@ class Email():
                 'client_domain'     : client_domain
             }
         )
-        
+
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          to_name=to_name.title(),
@@ -209,10 +209,10 @@ class Email():
                 'product_url'   : product_url,
                 'product_img'   : product_img,
                 'client_name'   : client_name,
-                'client_domain' : client_domain 
+                'client_domain' : client_domain
             }
         )
-        
+
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -253,7 +253,8 @@ class Email():
 
     @staticmethod
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                 client_name, client_domain, asker_img= None):
+                 client_name, client_domain, asker_img= None, products=None):
+        """Please, supply products as their objects."""
         subject = "Which one should I buy?"
         to_first_name = from_first_name = ''
 
@@ -266,7 +267,7 @@ class Email():
             to_first_name = to_name.split(' ')[0]
         except:
             to_first_name = to_name
-        
+
         body = template.render(Email.template_path('wosib_ask.html'),
             {
                 'from_name'         : from_name.title(),
@@ -277,10 +278,11 @@ class Email():
                 'vote_url'          : vote_url,
                 'asker_img'         : asker_img,
                 'client_name'       : client_name,
-                'client_domain'     : client_domain
+                'client_domain'     : client_domain,
+                'products'          : products or [None, None]  # just to shut it up
             }
         )
-        
+
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          to_name=to_name.title(),
@@ -301,29 +303,29 @@ class Email():
                 'name'        : name.title(),
                 'cart_url'    : cart_url,
                 'client_name' : client_name,
-                'client_domain' : client_domain 
+                'client_domain' : client_domain
             }
         )
-        
+
         logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
                          body=body,
                          to_name=name)
-    
+
     @staticmethod
     def WOSIBVoteCompletion(to_addr, name, products):
         if name == "":
             name = "Savvy Shopper"
         subject = '%s, the votes are in!' % name
-        
-        # would have been much more elegant had django 0.96 gotten the 
+
+        # would have been much more elegant had django 0.96 gotten the
         # {% if array|length > 1 %} notation (it doesn't work in GAE)
         product = products[0]
         if len (products) == 1:
             products = False
-        
+
         body = template.render(
             Email.template_path('wosib_voteCompletion.html'), {
                 'name': name,
@@ -340,7 +342,7 @@ class Email():
 
     ### MAILOUTS ###
 
-    @staticmethod 
+    @staticmethod
     def template_path(path):
         return os.path.join('apps/email/templates/', path)
 
