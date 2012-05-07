@@ -8,6 +8,7 @@ from google.appengine.ext import webapp
 import django.utils.simplejson as json
 
 from apps.app.models import App, ShareCounter
+from apps.buttons.shopify.models import ButtonsShopify
 from apps.user.models import * 
 from util.consts import *
 from util.helpers import *
@@ -41,28 +42,63 @@ class BatchRequest(URIHandler):
         params         = json.loads(self.request.get('params', "{}"))
         criteria       = json.loads(self.request.get('criteria', "{}"))
 
+        filter_obj     = None
+
+        logging.warn('Running BatchRequest for %s.%s from %i to %i' % (app_cls,
+                                                                       method,
+                                                                       offset,
+                                                                       offset+batch_size-1))
+
         # Convert JSON keys from unicode to strings
         # Python 2.5 doesn't like this, but it will work in 2.7
         # We do this because we will be using the keys as kwargs
         converted_params = dict( (key.encode('utf-8'), value) for key, value in params.iteritems() )
 
-        filter_obj = db.Query(App).filter('class = ', app_cls)
+        # Check that class is callable
+        if app_cls:
+            if app_cls[0] == '_':
+                logging.error('app_cls is private')
+                self.error(403) # Access Denied, Private class
+                return
+            try:
+                filter_obj = globals()[app_cls].all()
+            except AttributeError:
+                logging.error('app_cls is not a valid model')
+                self.error(400)
+                return
+            except KeyError:
+                logging.error('app_cls is not in scope')
+                self.error(400)
+                return
+        else:
+            logging.error('app_cls missing')
+            self.error(400)
+            return
+
+        # Check that method is safe and callable
+        if method:
+            if method[0] == '_':
+                logging.error('method is private')
+                self.error(403) # Access Denied, Private method
+                return
+            try:
+                if not hasattr(getattr(globals()[app_cls], method), '__call__'):
+                    raise AttributeError
+            except AttributeError:
+                logging.error('method is not valid')
+                self.error(400) # Bad Request
+                return
+        else:
+            logging.error('method missing')
+            self.error(400)
+            return
+
+        # Get model instances
         for ukey, value in criteria.iteritems():
             key = " %s =" % ukey.encode('utf-8')
             filter_obj.filter(key, value)
 
         apps = filter_obj.fetch(limit=batch_size, offset=offset)
-
-        # Check that method is safe and callable
-        if method:
-            if method[0] == '_':
-                self.error(403) # Access Denied, Private method
-                return
-            try:
-                if not hasattr(getattr(app_cls, method), '__call__'):
-                    raise AttributeError
-            except AttributeError:
-                self.error(400) # Bad Request
 
         # If reached batch size, start another batch at the next offset
         if len(apps) == batch_size:
@@ -71,8 +107,8 @@ class BatchRequest(URIHandler):
                 'offset'    : offset + batch_size,
                 'app_cls'   : app_cls,
                 'method'    : method,
-                'params'    : self.request.get('params'),
-                'criteria'  : self.request.get('criteria')
+                'params'    : json.dumps(params),
+                'criteria'  : json.dumps(criteria)
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
@@ -80,8 +116,11 @@ class BatchRequest(URIHandler):
         for app in apps:
             try:
                 getattr(app, method)(**converted_params)
+                logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
+                                                       app.__class__.__name__,
+                                                       method))
             except Exception, e:
-                logging.warn('%s.%s.%s() failed because %r' % (app.__class__.__module__,
+                logging.error('%s.%s.%s() failed because %r' % (app.__class__.__module__,
                                                                app.__class__.__name__,
                                                                method,
                                                                e))
