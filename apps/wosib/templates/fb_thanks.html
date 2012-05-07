@@ -21,7 +21,7 @@
                 var addr = document.getElementById( 'email-field' ).value;
 
                 $.ajax({
-                    url: "/updateEmailAddress",
+                    url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
                     data: { email : addr },
                     success: function (tr) {

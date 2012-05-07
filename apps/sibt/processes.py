@@ -289,7 +289,9 @@ class DoVote(URIHandler):
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
         if email:
+            logging.info('going to email shopper.')
             if which.lower() == "yes" or which.lower() == "no":  # SIBT
+                logging.debug('SIBT email')
                 Email.SIBTVoteNotification(to_addr=email,
                                            name=instance.asker.get_full_name(),
                                            vote_type=which,
@@ -298,11 +300,14 @@ class DoVote(URIHandler):
                                            client_name=app.client.name,
                                            client_domain=app.client.domain)
             else:
+                logging.debug('WOSIB email')
                 Email.WOSIBVoteNotification(to_addr=email,
                                             name=instance.asker.get_full_name(),
                                             cart_url="%s#open=1" % instance.link.origin_domain,  # cart url
                                             client_name=app.client.name,
                                             client_domain=app.client.domain)
+        else:
+            logging.info('shopper has no email - not going to send one.')
 
         self.response.out.write('ok')
 

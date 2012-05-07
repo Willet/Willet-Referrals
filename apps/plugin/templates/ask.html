@@ -856,11 +856,11 @@
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
-                    data: { email : addr },
+                    data: { email : addr }/*,
                     success: function (tr) {
                         doPostMessage('close');
                         window.close();
-                    }
+                    }*/
                 });
             }
         };
