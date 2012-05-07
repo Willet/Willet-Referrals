@@ -138,10 +138,15 @@ class SIBTVoteAction(VoteAction):
         """vote can be yes, no, or a product uuid."""
         # Make the action
         uuid = generate_uuid(16)
-        product = Product.get(vote)
-        product_uuid = ''
-        if product:
+
+        try:
+            # if vote is a product object (which is wrong)
             product_uuid = product.uuid
+            logging.debug('product_uuid = %s? Is it right?' % product_uuid)
+        except:
+            logging.debug('product_uuid = %s' % vote)
+            product_uuid = vote  # if vote is UUID (which is expected)
+
         action = SIBTVoteAction(key_name=uuid,
                                 uuid=uuid,
                                 user=user,
