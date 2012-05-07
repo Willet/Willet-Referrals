@@ -85,9 +85,9 @@ class SIBTShopifyWelcome(URIHandler):
 
             # Switched to new order tracking code on Jan 16
             if app.created > datetime(2012, 01, 16):
-                new_order_code = 1
+                new_order_code = True
             else:
-                new_order_code = 0
+                new_order_code = False
 
             template_values = {
                 'app': app,
