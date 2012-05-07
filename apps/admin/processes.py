@@ -411,8 +411,8 @@ class DBIntegrityCheck(URIHandler):
 
     It fires off different tasks based on the checks needed to be done.
     """
-
-    def get(self):  # lets you start it using a URL
+    def get(self):
+        """Lets you start it using a URL."""
         self.post()
 
     def post(self):
@@ -479,8 +479,9 @@ class DBIntegrityCheck(URIHandler):
         # Return list of query results
         return [k.kind_name for k in q]
 
+    #@check
     def fill_app_versions(self):
-        """If and App's versions are missing, it will be filled in and saved.
+        """If an App's version is missing, it will be filled in and saved.
         """
         from apps.app.models import App
         apps = db.Query(App)  # generator
@@ -488,3 +489,89 @@ class DBIntegrityCheck(URIHandler):
             if not app.version:
                 app.version = App.CURRENT_INSTALL_VERSION
                 app.put()
+
+    #@check
+    def fill_client_users(self):
+        """If a Client's user object is missing, it will be filled in and saved.
+
+        This fix requires Client's email.
+        """
+        from apps.client.models import Client
+        from apps.user.models import User
+        clients = db.Query(Client)  # generator
+        for client in clients:
+            if not client.merchant and client.email:
+                user = User.get_by_email(client.email)
+                if user:
+                    client.merchant = user
+                    client.put()
+
+    #@check
+    def fill_client_emails(self):
+        """If a Client's email is missing, it will be filled in and saved.
+
+        This fix requires Client's merchant object.
+        """
+        from apps.client.models import Client
+        clients = db.Query(Client)  # generator
+        for client in clients:
+            if not client.email and client.merchant:
+                client.email = merchant.get_attr('email')
+                client.put()
+
+    #@check
+    def fill_store_extra_urls(self):
+        """If an store has products whose resource URLs are in a different
+        domain than that of the store, then the store will get this domain
+        as its extra_url.
+
+        This applies only if the site doesn't already have an extra_url.
+        """
+        from apps.app.models import App
+        from apps.product.models import Product
+        from urlparse import urlparse
+        apps = db.Query(App)  # generator
+        for app in apps:
+            if app.extra_url:
+                continue  # already has it
+
+            # Client.products is ref-prop
+            if not (app.client and app.client.products):
+                continue
+
+            urls = [product.resource_url for product in app.client.products]
+            urls = filter(bool, urls)  # http://stackoverflow.com/questions/3845423
+            if not urls:
+                continue  # none of the products have urls. wtf?
+
+            url = urls[0]
+            if not url:
+                continue  # empty string. fix it elsewhere
+
+            ua = urlparse(url)  # let it fail - no try block
+            extra_domain = '%s://%s' % (ua.scheme, ua.netloc)  # http://abc.com
+            if app.store_url != extra_domain:
+                app.extra_url = extra_domain
+                app.put()
+
+    #@check
+    def fill_store_extra_urls_by_client_domain(self):
+        """Clients' domain property sometimes contain the shop TLDs.
+
+        Fill their Apps with this information as needed.
+        """
+        from apps.app.models import App
+        apps = db.Query(App)  # generator
+        for app in apps:
+            if app.extra_url:
+                continue  # already has it
+
+            # Client.products is ref-prop
+            if not app.client:
+                continue
+
+            if app.client.domain:
+                if app.client.domain != app.store_url:
+                    app.extra_url = app.client.domain
+                    app.put()
+
