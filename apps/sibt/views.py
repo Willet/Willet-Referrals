@@ -566,7 +566,6 @@ class ShowResults(URIHandler):
                 'target_url' : target,
                 'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
 
-
                 'share_url': share_url,
                 'is_asker' : is_asker,
                 'instance' : instance,

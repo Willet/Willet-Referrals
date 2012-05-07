@@ -75,7 +75,7 @@
 #product_image_result {
     padding: 0;
     text-align: center;
-    float: left;
+    margin: 0 auto;
     max-width: 500px;
 }
 
