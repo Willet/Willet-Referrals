@@ -283,6 +283,7 @@ class DoVote(URIHandler):
         if which.lower() == "no":
             instance.increment_nos()
         else:
+            # WOSIB mode increments this too.
             instance.increment_yesses()
 
         # Tell the Asker they got a vote!
