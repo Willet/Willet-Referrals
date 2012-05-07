@@ -136,19 +136,135 @@ _willet.util = {
         }
         return false;
     },
-    "getInternetExplorerVersion": function() {
-        // Returns the version of Internet Explorer or a -1
-        // (indicating the use of another browser).
+    "isLocalhost": function() {
+        return ((window.location.href.indexOf("http") >= 0) ? true : false);
+    }
+};
 
-        // http://msdn.microsoft.com/en-us/library/ms537509.aspx
-        var rv = 999; // Return value assumes failure.
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            var ua = navigator.userAgent;
-            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            if (re.exec(ua) != null)
-                rv = parseFloat( RegExp.$1 );
+// Modified from: http://www.quirksmode.org/js/detect.html
+_willet.util.detect = function() {
+    var browser,
+        browserVersion,
+        operatingSystem,
+        operatingSystems,
+        searchString,
+        searchVersion,
+        supportedBrowsers,
+        versionSearchString;
+
+    //Trim this list if we want to support less browsers
+    supportedBrowsers = [{
+        string: navigator.userAgent,
+        subString: "Chrome",
+        identity: "Chrome"
+    }, {
+        string: navigator.userAgent,
+        subString: "OmniWeb",
+        versionSearch: "OmniWeb/",
+        identity: "OmniWeb"
+    }, {
+        string: navigator.vendor,
+        subString: "Apple",
+        identity: "Safari",
+        versionSearch: "Version"
+    }, {
+        prop: window.opera,
+        identity: "Opera",
+        versionSearch: "Version"
+    }, {
+        string: navigator.vendor,
+        subString: "iCab",
+        identity: "iCab"
+    }, {
+        string: navigator.vendor,
+        subString: "KDE",
+        identity: "Konqueror"
+    }, {
+        string: navigator.userAgent,
+        subString: "Firefox",
+        identity: "Firefox"
+    }, {
+        string: navigator.vendor,
+        subString: "Camino",
+        identity: "Camino"
+    }, {   // for newer Netscapes (6+)
+        string: navigator.userAgent,
+        subString: "Netscape",
+        identity: "Netscape"
+    }, {
+        string: navigator.userAgent,
+        subString: "MSIE",
+        identity: "Explorer",
+        versionSearch: "MSIE"
+    }, {
+        string: navigator.userAgent,
+        subString: "Gecko",
+        identity: "Mozilla",
+        versionSearch: "rv"
+    }, {   // for older Netscapes (4-)
+        string: navigator.userAgent,
+        subString: "Mozilla",
+        identity: "Netscape",
+        versionSearch: "Mozilla"
+    }];
+
+    operatingSystems = [{
+        string: navigator.platform,
+        subString: "Win",
+        identity: "Windows"
+    }, {
+        string: navigator.platform,
+        subString: "Mac",
+        identity: "Mac"
+    }, {
+        string: navigator.userAgent,
+        subString: "iPhone",
+        identity: "iPhone/iPod"
+    }, {
+        string: navigator.platform,
+        subString: "Linux",
+        identity: "Linux"
+    }];
+
+    searchString = function (data) {
+        var dataString,
+            dataProp,
+            i;
+
+        for (i = 0; i < data.length; i++) {
+            dataString = data[i].string;
+            dataProp   = data[i].prop;
+
+            versionSearchString = data[i].versionSearch || data[i].identity;
+
+            if (dataString) {
+                if (dataString.indexOf(data[i].subString) != -1) {
+                    return data[i].identity;
+                }
+            } else if (dataProp) {
+                return data[i].identity;
+            }
         }
-        return rv;
+    };
+
+    searchVersion = function (dataString) {
+        var index = dataString.indexOf(versionSearchString);
+        if (index == -1) {
+            return;
+        }
+        return parseFloat(dataString.substring(index+versionSearchString.length+1));
+    };
+
+    operatingSystem = searchString(operatingSystems)  || "an unknown OS";
+    browser         = searchString(supportedBrowsers) || "An unknown browser";
+    browserVersion  = searchVersion(navigator.userAgent)
+        || searchVersion(navigator.appVersion)
+        || "an unknown version";
+
+    return {
+        browser: browser,
+        version: browserVersion,
+        os: operatingSystem
     }
 };
 
@@ -1163,10 +1279,18 @@ _willet = (function (me, config) {
 }(_willet, window._willet_shopconnection_config || {}));
 
 try {
-    if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
-        _willet.debug.set(false); //set to true if you want logging turned on
-        _willet.init();
+    if (_willet) {
+        var info = _willet.util.detect();
+        if (!_willet.buttonsLoaded
+            && !(info.browser === "Explorer" && info.version <= 7)
+            && !(info.browser === "An unknown browser")
+            && !(_willet.util.isLocalhost()))
+        {
+            _willet.debug.set(false); //set to true if you want logging turned on
+            _willet.init();
+        }
     }
+
 } catch(e) {
     (function() {
         // Apparently, IE9 can fail for really stupid reasons.
