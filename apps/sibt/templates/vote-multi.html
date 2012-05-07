@@ -178,10 +178,10 @@
             input.name = "item" + shopify_id;
             input.className = "product_select";
             input.type = "checkbox";
+            input.setAttribute("data-uuid", uuid);
 
             var label = this.label = document.createElement('label');
             label.appendChild (input);
-            $(input).data('uuid', uuid);
             label.innerHTML += title;
 
             $elem.append ([image, label]);

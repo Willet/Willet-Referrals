@@ -127,3 +127,6 @@
     text-align:left;
     margin-left: 10px;
 }
+.fleft {
+    float:left !important;
+}

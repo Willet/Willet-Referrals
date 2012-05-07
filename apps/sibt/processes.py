@@ -276,6 +276,7 @@ class DoVote(URIHandler):
                 self.request.get('which', 'yes')
 
         # Make a Vote action for this User
+        # vote will count as "selecting a product" if which is a product uuid.
         action = SIBTVoteAction.create(user, instance, which)
 
         # Count the vote.
@@ -291,14 +292,14 @@ class DoVote(URIHandler):
                 Email.SIBTVoteNotification(to_addr=email,
                                            name=instance.asker.get_full_name(),
                                            vote_type=which,
-                                           product_url="%s#open_sibt=1" % instance.url, # full product link
+                                           product_url="%s#open=1" % instance.url, # full product link
                                            product_img=instance.product_img,
                                            client_name=app.client.name,
                                            client_domain=app.client.domain)
             else:
                 Email.WOSIBVoteNotification(to_addr=email,
                                             name=instance.asker.get_full_name(),
-                                            cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
+                                            cart_url="%s#open=1" % instance.link.origin_domain,  # cart url
                                             client_name=app.client.name,
                                             client_domain=app.client.domain)
 
