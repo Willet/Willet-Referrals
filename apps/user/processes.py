@@ -45,7 +45,7 @@ class FetchFacebookData(URIHandler):
                     'email',
                     'name',
                     'username'
-                ] 
+                ]
                 collected_data = {}
                 for td in target_data:
                     if fb_response.has_key(td):
@@ -71,7 +71,7 @@ class FetchFacebookData(URIHandler):
         #user = User.all().filter('fb_identity =', rq_vars['fb_id']).get()
         result_user = db.run_in_transaction(txn, user)
 
-        # HACK to fix email. 
+        # HACK to fix email.
         # We cannot run queries in this transaction on EmailModel class.
         # If we want to setup the email correctly, we have to fix it here.
         if hasattr(result_user, 'fb_email'):
@@ -83,7 +83,7 @@ class FetchFacebookData(URIHandler):
             result_user.put_later()
         elif result_user is None:
             logging.debug ("result_user is None!")
-        
+
         logging.info("done updating")
 
 
@@ -102,7 +102,7 @@ class FetchFacebookFriends(URIHandler):
                             name=friend['name'], would_be=True)
                         friends.append(willet_friend.key())
                     user.update(fb_friends=friends)
-            return fb_response 
+            return fb_response
 
         rq_vars = get_request_variables(['fb_id'], self)
         user = User.all().filter('fb_identity =', rq_vars['fb_id'])
@@ -125,11 +125,11 @@ class QueryGoogleSocialGraphAPI(URIHandler):
             logging.info("Social Graph API for %s failed" % id)
         else:
             loaded_json = json.loads(result.content)
-            
+
             logging.info("Social Graph back: %r" % loaded_json)
 
             for i, value in loaded_json.iteritems():
-                
+
                 # Social Networks
                 if 'about.me' in i:
                     user.about_me_url = i
@@ -144,13 +144,13 @@ class QueryGoogleSocialGraphAPI(URIHandler):
                     user.quora_url = i
                 elif 'youtube' in i:
                     user.youtube_url = i
-                
-                # Other Stuff 
+
+                # Other Stuff
                 elif 'openid' in i:
                     user.openid_url = i
                 elif 'github' in i:
                     user.github_url = i
-                
+
                 # Profiles
                 elif 'aol' in i or 'aim' in i:
                     user.aol_profile_url = i
@@ -178,7 +178,7 @@ class QueryGoogleSocialGraphAPI(URIHandler):
                     user.wordpress_url = i
                 elif 'blog' in i:
                     user.blog_url = i
-                
+
                 # News Sites
                 elif 'google.com/reader' in i:
                     user.google_reader_url = i
@@ -186,7 +186,7 @@ class QueryGoogleSocialGraphAPI(URIHandler):
                 else:
                     user.other_data.append(i)
 
-                unpacker(value['attributes'], user) 
+                unpacker(value['attributes'], user)
 
             user.put_later()
 
@@ -201,7 +201,7 @@ def unpacker(obj, user):
             user.location = v
         elif 'fn' == k:
             user.full_name = v
-            
+
             tmp = v.split(' ')
             l = len(tmp)
             if l >= 2:
@@ -224,7 +224,6 @@ def unpacker(obj, user):
 class UpdateEmailAddress(URIHandler):
     def post(self):
         user = User.get_by_cookie(self)
-
         user.update(email=self.request.get('email'))
 
 
@@ -233,4 +232,4 @@ class UpdateFBAccessToken(URIHandler):
     def post(self):
         user = User.get(self.request.get('user_uuid'))
         user.update(fb_access_token = self.request.get('accessToken'),
-                     fb_identity = self.request.get('fbUserId')) 
+                     fb_identity = self.request.get('fbUserId'))

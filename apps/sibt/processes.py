@@ -276,31 +276,38 @@ class DoVote(URIHandler):
                 self.request.get('which', 'yes')
 
         # Make a Vote action for this User
+        # vote will count as "selecting a product" if which is a product uuid.
         action = SIBTVoteAction.create(user, instance, which)
 
         # Count the vote.
         if which.lower() == "no":
             instance.increment_nos()
         else:
+            # WOSIB mode increments this too.
             instance.increment_yesses()
 
         # Tell the Asker they got a vote!
         email = instance.asker.get_attr('email')
         if email:
+            logging.info('going to email shopper.')
             if which.lower() == "yes" or which.lower() == "no":  # SIBT
+                logging.debug('SIBT email')
                 Email.SIBTVoteNotification(to_addr=email,
                                            name=instance.asker.get_full_name(),
                                            vote_type=which,
-                                           product_url="%s#open_sibt=1" % instance.url, # full product link
+                                           product_url="%s#open=1" % instance.url, # full product link
                                            product_img=instance.product_img,
                                            client_name=app.client.name,
                                            client_domain=app.client.domain)
             else:
+                logging.debug('WOSIB email')
                 Email.WOSIBVoteNotification(to_addr=email,
                                             name=instance.asker.get_full_name(),
-                                            cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
+                                            cart_url="%s#open=1" % instance.link.origin_domain,  # cart url
                                             client_name=app.client.name,
                                             client_domain=app.client.domain)
+        else:
+            logging.info('shopper has no email - not going to send one.')
 
         self.response.out.write('ok')
 
@@ -808,7 +815,8 @@ class SendFriendAsks(URIHandler):
                                            vote_url=link.get_willt_url(),
                                            asker_img=a['pic'],
                                            client_name=app.client.name,
-                                           client_domain=app.client.domain)
+                                           client_domain=app.client.domain,
+                                           products=products)
                         else:
                             Email.SIBTAsk(from_name=a['name'],
                                           from_addr=a['email'],

@@ -24,7 +24,7 @@
                 width: 100%;
 
                 background-color: transparent;
-                
+
                 font-family: Helvetica, Arial, sans-serif;
                 line-height: 40px;
                 font-size: 16px;
@@ -77,17 +77,17 @@
             var title;
             $(document).ready(function() {
                 $.timeago.settings.allowFuture = true;
-                title = $('#title'); 
+                title = $('#title');
 
                 if (!is_live) {
-                    title.html("Comments"); 
+                    title.html("Comments");
                     $('abbr.timeago').prev('span').html('Voting ended ');
                 } else if (is_asker) {
                     title.html("");
                 }
 
                 $('iframe').load(function() {
-                    $(this).css('width', '100%'); 
+                    $(this).css('width', '100%');
                 });
                 $('abbr.timeago').timeago();
             });

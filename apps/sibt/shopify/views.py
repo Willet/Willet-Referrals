@@ -55,6 +55,8 @@ class SIBTShopifyWelcome(URIHandler):
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
+                logging.warn('Tokens mismatch! Client probably installed '
+                             'two or more of our apps. Updating token.')
                 client.token = token
                 client.put()
 
