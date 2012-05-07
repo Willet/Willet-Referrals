@@ -137,7 +137,7 @@ class AppShopify(Model):
 
     # Shopify API Calls -------------------------------------------------------
     def _call_Shopify_API(self, verb, call, payload=None,
-                          expected_fail = False):
+                          suppress_errors = False):
         """ Calls Shopify API
 
         Inputs:
@@ -192,7 +192,7 @@ class AppShopify(Model):
         else:
             error = True
 
-        if not error or expected_fail:
+        if not error or suppress_errors:
             return data
         else:
             Email.emailDevTeam(
