@@ -144,7 +144,7 @@ class AskDynamicLoader(URIHandler):
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
-            logging.error("SIBT app has no client.  Probably uninstall.")
+            logging.error("SIBT app has no client. Probably uninstall.")
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         logging.debug("app = %r" % app)
@@ -566,9 +566,9 @@ class ShowResults(URIHandler):
                 'target_url' : target,
                 'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
 
-
                 'share_url': share_url,
                 'is_asker' : is_asker,
+                'is_live': has_voted,  # same thing?
                 'instance' : instance,
                 'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
 
