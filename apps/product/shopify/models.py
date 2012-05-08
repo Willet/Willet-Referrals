@@ -79,10 +79,8 @@ class ProductShopify(Product):
             logging.warn('Could not get product for url: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
-                result = urlfetch.fetch(
-                        url='%s.json' % url,
-                        method=urlfetch.GET
-                )
+                result = urlfetch.fetch(url='%s.json' % url,
+                                        method=urlfetch.GET)
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id(str(data['id']))

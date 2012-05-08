@@ -171,7 +171,7 @@ var show_topbar_ask = function() {
         'id': '_willet_sibt_ask_bar',
         'class': 'willet_reset',
         'css': {
-            'display', 'none'
+            'display': 'none'
         }
     });
     topbar.html(build_top_bar_html(true));
