@@ -419,10 +419,12 @@ class DBIntegrityCheck(URIHandler):
 
         required params:
             check               - defines which DB check(s) to perform.
-                                  a empty check will quit this request.
+                                  all 'check_*' functions in this class
+                                    can be checks.
+                                  a empty check param will quit this request.
                                   'all' will perform all checks available.
-                                  checks can be comma-separated.
-                                  case-sensitive.
+                                  check can be a comma-separated list of
+                                  case-sensitive check names.
 
         optional params:
             stop                - if '1', stop all checks on the first failure.
@@ -435,7 +437,6 @@ class DBIntegrityCheck(URIHandler):
         stop = bool(self.request.get('stop', '0') == '1')
 
         # later checks will prevent non-functions from being executed
-        # all 'check_*' functions can be executed.
         allowed_checks = [c for c in dir(self) if 'check_' in c[:6]]
 
         if not check:
@@ -470,7 +471,6 @@ class DBIntegrityCheck(URIHandler):
             self.response.out.write("check %s run\n" % check)
         self.response.out.write("all checks run\n")
         return
-
 
     def get_kinds(start=None, end=None):
         """Returns the list of kinds in the datastore.
