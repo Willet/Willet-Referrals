@@ -535,7 +535,7 @@ _willet.messaging = (function (willet) {
                 }
 
                 //create the iframe
-                var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
+                var originDomain = window.location.protocol + "//" + window.location.hostname;
                 var iframe = document.createElement("iframe");
                 iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
                 iframe.style.display = "none";
