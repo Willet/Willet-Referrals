@@ -31,5 +31,6 @@ urlpatterns = [
     (r'/admin/updateStore',             UpdateStore),
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
     (r'/email/everyone',                EmailEveryone),
-    (r'/email/someone',                 EmailSomeone)
+    (r'/email/someone',                 EmailSomeone),
+    (r'/admin/db_integrity_check',      DBIntegrityCheck)
 ]
