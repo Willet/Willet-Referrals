@@ -36,21 +36,18 @@ class WOSIBClickAction(ClickAction):
                                           self.user.uuid,
                                           self.app_.uuid)
 
-    ## Constructor 
+    ## Constructor
     @staticmethod
     def create(user, app, link):
         # Make the action
         uuid = generate_uuid(16)
-        action = WOSIBClickAction(
-                key_name=uuid,
-                uuid=uuid,
-                user=user,
-                app_=app,
-                link=link,
-                url=link.target_url,
-                wosib_instance=link.wosib_instance.get()
-        )
-
+        action = WOSIBClickAction(key_name=uuid,
+                                  uuid=uuid,
+                                  user=user,
+                                  app_=app,
+                                  link=link,
+                                  url=link.target_url,
+                                  wosib_instance=link.wosib_instance.get())
         action.put()
 
         tracking_keys = memcache.get(action.get_tracking_key()) or []
@@ -58,24 +55,24 @@ class WOSIBClickAction(ClickAction):
         memcache.set(action.get_tracking_key(),
                      tracking_keys,
                      time=MEMCACHE_TIMEOUT)
-        
-        return action 
 
-    ## Accessors 
+        return action
+
+    ## Accessors
     @staticmethod
     def get_for_instance(app, user, url, key_list):
         logging.debug('getting action for:\napp: %s\nuser: %s\nurl: %s\nkeys: %s' % (
-            app, user, url, key_list    
+            app, user, url, key_list
         ))
         model = None
         try:
             tracking = WOSIBClickAction.get_tracking_by_user_and_app(user, app)
             actions = memcache.get_multi(tracking)
-            
+
             for key in tracking:
                 model = db.model_from_protobuf(entity_pb.EntityProto(actions.get(key)))
                 logging.info('got tracking key: %s and model %s %s' % (
-                    key, 
+                    key,
                     model,
                     model.wosib_instance.key().id_or_name()
                 ))
@@ -84,10 +81,10 @@ class WOSIBClickAction(ClickAction):
                 model = None
             if not model:
                 model = WOSIBClickAction.all()\
-                    .filter('user =', user)\
-                    .filter('url =', url)\
-                    .filter('wosib_instance IN', key_list)\
-                    .get()
+                                        .filter('user =', user)\
+                                        .filter('url =', url)\
+                                        .filter('wosib_instance IN', key_list)\
+                                        .get()
         except Exception, e:
             logging.error('could not get model for instance: %s' % e, exc_info=True)
         return model
@@ -104,7 +101,7 @@ class WOSIBClickAction(ClickAction):
             user.uuid
         )
         return memcache.get(tracking_key) or []
-    
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (
             self.__class__.__name__,
@@ -117,16 +114,16 @@ class WOSIBClickAction(ClickAction):
 ## WOSIBVoteAction Subclass ---------------------------------------------------
 ## ----------------------------------------------------------------------------
 class WOSIBVoteAction(VoteAction):
-    """ Designates a 'vote' action for a User on a WOSIB instance. 
+    """ Designates a 'vote' action for a User on a WOSIB instance.
         Currently used for 'WOSIB' App """
 
     wosib_instance = db.ReferenceProperty(db.Model,
                                           collection_name="wosib_vote_actions")
-    
+
     # because WOSIB contains more than one product, we have to record which
     # product to which this vote corresponds
     product_uuid = db.StringProperty(indexed = True, required = True)
-    
+
     # URL that was voted on
     url = db.LinkProperty(indexed = True)
 
@@ -143,9 +140,9 @@ class WOSIBVoteAction(VoteAction):
                                  url=instance.link.target_url,
                                  product_uuid=product,
                                  wosib_instance=instance)
-        
+
         action.put()
-        
+
         # we memcache by classname-instance_uuid-user_uuid
         # so we can look it up really easily later on
         memcache.set(action.get_tracking_key(),
@@ -153,7 +150,7 @@ class WOSIBVoteAction(VoteAction):
                      time=MEMCACHE_TIMEOUT)
 
         return action
-    
+
     def __str__(self):
         return 'WOSIBVOTE: %s(%s) %s' % (self.user.get_full_name(),
                                          self.user.uuid,
@@ -164,14 +161,14 @@ class WOSIBVoteAction(VoteAction):
         tracking_key = '%s-%s-%s' % (cls.__name__,
                                      wosib_instance.uuid,
                                      user.uuid)
-        return memcache.get(tracking_key) or None 
-    
+        return memcache.get(tracking_key) or None
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (self.__class__.__name__,
                              self.wosib_instance.uuid,
                              self.user.uuid)
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return WOSIBVoteAction.all().filter('wosib_instance =', instance)
@@ -201,7 +198,7 @@ class WOSIBVoteAction(VoteAction):
 
 class WOSIBShowAction(ShowAction):
     """ Class for storing WOSIB actions.
-    
+
     If a user is detected, the WOSIBUserAction class is recommended instead.
     """
     wosib_instance = db.ReferenceProperty(db.Model,
@@ -222,12 +219,12 @@ class WOSIBShowAction(ShowAction):
                                 wosib_instance = instance)
         act.put()
         return act
-    
+
     def __str__(self):
         try:
             return 'Showing %s to %s(%s) for wosib instance %s on site %s' % (
                     self.what,
-                    self.user.get_full_name(), 
+                    self.user.get_full_name(),
                     self.user.uuid,
                     self.wosib_instance.uuid,
                     self.wosib_instance.app_.client.domain
@@ -235,12 +232,12 @@ class WOSIBShowAction(ShowAction):
         except AttributeError, detail: # typically 'instance is null'
             return "Showing %s to %s(%s): Attribute error '%s'" % (
                     self.what,
-                    self.user.get_full_name(), 
+                    self.user.get_full_name(),
                     self.user.uuid,
                     detail
             )
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return WOSIBShowAction.all().filter('wosib_instance =', instance)
@@ -296,7 +293,7 @@ class WOSIBShowingButton(WOSIBShowAction):
             user.uuid
         )
         return memcache.get(tracking_key) or []
-    
+
     def get_tracking_key(self):
         return '%s-%s-%s' % (
             self.__class__.__name__,
@@ -308,7 +305,7 @@ class WOSIBShowingButton(WOSIBShowAction):
 class WOSIBShowingResults(WOSIBShowAction):
     """ Action created when the check results button is clicked. """
     # TODO: WOSIB Analytics
-    
+
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBResults'
@@ -338,7 +335,7 @@ class WOSIBShowingResults(WOSIBShowAction):
 class WOSIBShowingVote(WOSIBShowAction):
     """ Action created when the vote page is loaded. """
     # TODO: WOSIB Analytics
-    
+
     @staticmethod
     def create(user, **kwargs):
         what = 'WOSIBVote'
@@ -350,7 +347,7 @@ class WOSIBShowingVote(WOSIBShowAction):
             instance = kwargs['instance']
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
-        
+
         action = WOSIBShowingVote(
                 key_name=uuid,
                 uuid=uuid,
@@ -387,10 +384,10 @@ class WOSIBInstanceAction(UserAction):
         action.put()
 
         return action
-    
+
     def __str__(self):
         return 'WOSIBInstanceAction: User %s did %s on %s' % (
-                self.user.get_full_name(), 
+                self.user.get_full_name(),
                 self.what,
                 self.app_.client.domain
         )
@@ -405,7 +402,7 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
     def create(user, **kwargs):
         what = 'WOSIBInstanceCreated'
         medium = ""
-    
+
         # make sure we get an instance
         instance = None
         try:
@@ -413,7 +410,7 @@ class WOSIBInstanceCreated(WOSIBInstanceAction):
             medium = kwargs['medium']
         except Exception, e:
             logging.error('error getting instance: %s' % e, exc_info=True)
-        
+
         uuid = generate_uuid(16)
         action = WOSIBInstanceCreated(
                 key_name = uuid,
@@ -448,7 +445,7 @@ class WOSIBShowingAskIframe(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = WOSIBShowingAskIframe(
                 key_name = uuid,
                 uuid = uuid,
@@ -477,7 +474,7 @@ class WOSIBAskIframeCancelled(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = WOSIBAskIframeCancelled(
                 key_name = uuid,
                 uuid = uuid,
@@ -505,7 +502,7 @@ class WOSIBOverlayCancelled(ShowAction):
             app = kwargs['app']
         except Exception, e:
             logging.error('error getting url: %s' % e, exc_info=True)
-        
+
         action = WOSIBOverlayCancelled(
                 key_name = uuid,
                 uuid = uuid,
@@ -519,7 +516,7 @@ class WOSIBOverlayCancelled(ShowAction):
 
 
 class WOSIBUserClickedButtonAsk(UserAction):
-    """ Class created when the WOSIB button is clicked. 
+    """ Class created when the WOSIB button is clicked.
         However, since the button is the only way to open the WOSIB ask window,
         it serves the same purpose as WOSIBShowingAskIframe."""
     # TODO: WOSIB Analytics
@@ -720,9 +717,9 @@ class WOSIBNoConnectFBDialog(UserAction):
 
 
 class WOSIBConnectFBDialog(UserAction):
-    """Action created when user connects with FB and fetch FB friends, on 
+    """Action created when user connects with FB and fetch FB friends, on
        Choose Friends screen"""
-    
+
     @staticmethod
     def create(user, **kwargs):
         # Make the action
@@ -750,7 +747,7 @@ class WOSIBConnectFBDialog(UserAction):
 
 class WOSIBUserAction(UserAction):
     """Generic action for all actions relatable to a single user."""
-    
+
     wosib_instance = db.ReferenceProperty(db.Model,
                                           collection_name="wosib_user_actions")
 
@@ -769,17 +766,17 @@ class WOSIBUserAction(UserAction):
                                 wosib_instance = instance)
         act.put()
         return act
-    
+
     def __str__(self):
         return '%s(%s) did %s to %s(%s) for wosib instance %s on site %s' % (
-                self.user.get_full_name(), 
+                self.user.get_full_name(),
                 self.user.uuid,
                 self.what,
                 self.wosib_instance.uuid,
                 self.wosib_instance.app_.client.domain
         )
 
-    ## Accessors 
+    ## Accessors
     @staticmethod
     def get_by_instance(instance):
         return WOSIBUserAction.all().filter('wosib_instance =', instance)

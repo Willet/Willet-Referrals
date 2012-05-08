@@ -525,7 +525,7 @@
                 storeAnalytics();
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
-                    'background': (instance.has_results?
+                    'background': ((instance.is_live || instance.has_results)?
                                     "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
                                     "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
                     'width': '80px',
@@ -556,7 +556,7 @@
                     .css('height', '20px')
                     .click(button_onclick);
 
-                if (instance.has_results) {
+                if (instance.is_live || instance.has_results) {
                     sibt_elem.css ({
                         'background': "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
                         'cursor': 'pointer',
@@ -602,7 +602,7 @@
 
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
-                if (instance.has_results) {
+                if (instance.is_live || instance.has_results) {
                     $('#_willet_button').hide();
                     $('<div />', {
                         'id': "_willet_WOSIB_results",
@@ -717,7 +717,7 @@
 
                             // if server sends a flag that indicates "results available"
                             // (not necessarily "finished") then show finished button
-                            if (instance.has_results) {
+                            if (instance.is_live || instance.has_results) {
                                 $('#_willet_button_v3 .button').hide ();
                                 $('<div />', {
                                     'id': "_willet_SIBT_results",
