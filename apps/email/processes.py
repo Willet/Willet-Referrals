@@ -18,19 +18,19 @@ from util.urihandler import URIHandler
 class SendEmailAsync(URIHandler):
     def get (self):
         self.post()
-    
+
     def post (self):
-        """ Taskqueue-based email allows pages to be displayed 
+        """ Taskqueue-based email allows pages to be displayed
             before emails are done sending.
         """
-        
+
         from_address    = self.request.get('from_address')
         to_address      = self.request.get('to_address')
         subject         = self.request.get('subject')
         body            = self.request.get('body')
         to_name         = self.request.get('to_name')
         replyto_address = self.request.get('replyto_address')
-        
+
         params = {
             "api_user" : "BarbaraEMac",
             "api_key"  : "w1llet!!",
@@ -54,18 +54,18 @@ class SendEmailAsync(URIHandler):
 
         if ',' in params["to"]:
             try:
-                email = EmailMessage(sender=params["from_address"],
-                                 to=params["to"],
-                                 subject=params["subject"],
-                                 html=params["body"])
+                email = EmailMessage(sender=params["from"],
+                                     to=params["to"],
+                                     subject=params["subject"],
+                                     html=params["body"])
                 email.send()
-            except Exception,e:
-                logging.error('Error sending email: %s', e)
+            except Exception,err:
+                logging.error('Error sending email: %s', err, exc_info=True)
         else:
             try:
                 result = urlfetch.fetch(
                     url = 'https://sendgrid.com/api/mail.send.json',
-                    payload = urllib.urlencode(params), 
+                    payload = urllib.urlencode(params),
                     method = urlfetch.POST,
                     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                 )

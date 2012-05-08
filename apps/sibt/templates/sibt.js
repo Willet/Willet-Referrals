@@ -481,8 +481,8 @@
                     var data = {
                         'client_uuid': data.client_uuid || '{{ client.uuid }}', // REQUIRED
                         'sibtversion': data.sibtversion || app.version,
-                        'title': data.title || '{{ product.title }}' || getPageTitle(),
-                        'description': data.description || '{{ product.description }}',
+                        'title': data.title || '{{ product_title }}' || getPageTitle(),
+                        'description': data.description || '{{ product_description }}',
                         'images': data.images || '',
                         'image': data.image || getLargestImage(d),
                         'price': data.price || '0.0',
