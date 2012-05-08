@@ -65,7 +65,6 @@
     <div id="splash">
         <div id="asker_title">
             <div id="title">
-                Which one would you get?
                 {% if share_url %}
                 <div id="share_again">
                     Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
@@ -74,6 +73,7 @@
             </div>
         </div>
         <div class="slight_highlight">
+            <h1 style="text-align:center;">Which one would you get?</h1>
             <form method="POST" action="">
                 <ul id="cart_items_display">
                     <!-- JS -->
@@ -166,7 +166,10 @@
                 // cancel select for all other checkboxes
                 $('#cart_items_display li').each (function () {
                     var checkbox = $(this).find('input')[0];
-                    $(this).css('border', checkbox.checked ? '2px #666 solid' : '2px transparent solid');
+                    $(this).css({
+                        'border': checkbox.checked ? '2px #9ac solid' : '2px transparent solid',
+                        'background-color': checkbox.checked ? '#dfefff' : 'transparent'
+                    });
                 });
             });
 
@@ -178,7 +181,7 @@
             input.name = "item" + shopify_id;
             input.className = "product_select";
             input.type = "checkbox";
-            input.dataset.uuid = uuid;
+            input.setAttribute("data-uuid", uuid);
 
             var label = this.label = document.createElement('label');
             label.appendChild (input);
@@ -222,7 +225,7 @@
 
         var showError = function (msg) {
             $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
-        }
+        };
 
         var vote = function () {
             var product_uuid = $('#cart_items_display input:checked').data('uuid');
@@ -233,20 +236,20 @@
                     "product_uuid" : product_uuid
                 };
                 $.ajax({
-                    url      : "{{ URL }}{% url DoVote %}",
-                    type     : 'post',
-                    data     : payload,
-                    success  : function () {
+                    url: "{{ URL }}{% url DoVote %}",
+                    type: 'post',
+                    data: payload,
+                    success: function () {
                         showScreen('thanks_for_vote');
                     },
-                    error    : function () {
+                    error: function () {
                         showScreen('wosib_error');
                     }
                 });
             } else {
-                showError ("Please select a product :)");
+                showError("Please select a product :)");
             }
-        }
+        };
         $('#vote_btn').click(vote);
 
         $('#cart_items_display input').prop('checked', false);

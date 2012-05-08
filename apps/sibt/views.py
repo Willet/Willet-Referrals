@@ -11,6 +11,7 @@ import re
 
 from urlparse import urlparse, urlunsplit
 
+from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
@@ -144,7 +145,7 @@ class AskDynamicLoader(URIHandler):
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         elif not hasattr(app, 'client'):
-            logging.error("SIBT app has no client.  Probably uninstall.")
+            logging.error("SIBT app has no client. Probably uninstall.")
             self.response.out.write("Please register at http://rf.rs/s/shopify/beta to use this product.")
             return
         logging.debug("app = %r" % app)
@@ -443,6 +444,7 @@ class ShowResults(URIHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         app = None
+        has_voted = False
         instance_uuid = self.request.get('instance_uuid')
         link = None
         target = get_target_url(self.request.get('url'))
@@ -566,9 +568,9 @@ class ShowResults(URIHandler):
                 'target_url' : target,
                 'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
 
-
                 'share_url': share_url,
                 'is_asker' : is_asker,
+                'is_live': has_voted,  # same thing?
                 'instance' : instance,
                 'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
 
@@ -763,6 +765,8 @@ class SIBTServeScript(URIHandler):
         page_url = ''
         parts = {}
         product = None
+        product_title = 'false'
+        product_description = 'false'
         show_votes = False
         show_top_bar_ask = False
         store_url = get_shopify_url(self.request.get('store_url'))
@@ -874,6 +878,12 @@ class SIBTServeScript(URIHandler):
 
         user = User.get_or_create_by_cookie(self, app)
         product = Product.get_or_fetch(page_url, client)
+        try:
+            product_title = json.dumps(product.title)
+            product_description = json.dumps(product.description)
+        except:
+            product_title = 'false'
+            product_description = 'false'
         # let it pass - sibt.js will attempt to create product
 
         instance, event = get_instance_event()
@@ -962,6 +972,8 @@ class SIBTServeScript(URIHandler):
             # product info
             'has_product': bool(product),
             'product': product,
+            'product_title': product_title,
+            'product_description': product_description,
 
             # user info
             'user': user,

@@ -471,29 +471,52 @@
                 return products;
             };
 
-            var saveProduct = function(data) {
+            var saveProduct = function(fill) {
                 // auto-create product objects using page info, using
                 // (<div class='_willet_...' data-....>) or otherwise
                 // server decides if the input supplied is good to save.
                 // does not guarantee saving; no return value; asynchronous.
+
+                // 2012-05-08: hit max HTTP GET length; minimizing request length.
                 try {
                     // do NOT send .data() directly! Will cause unexpected func calls.
+
+                    // boolean test if empty
+                    // product_title and product_description are json dumps, so
+                    // they already come with their own double quotes.
+                    if ({{ product_title }} || {{ product_description }}) {
+                        console.log('product already in DB, it seems.');
+                        return;
+                    }
+
                     var data = {
-                        'client_uuid': data.client_uuid || '{{ client.uuid }}', // REQUIRED
-                        'sibtversion': data.sibtversion || app.version,
-                        'title': data.title || '{{ product.title }}' || getPageTitle(),
-                        'description': data.description || '{{ product.description }}',
-                        'images': data.images || '',
+                        'client_uuid': fill.client_uuid || '{{ client.uuid }}', // REQUIRED
+                        'sibtversion': fill.sibtversion || app.version,
+                        'title': fill.title || getPageTitle(),
                         'image': data.image || getLargestImage(d),
-                        'price': data.price || '0.0',
-                        'tags': data.tags || '',
-                        'type': data.type || '',
                         'resource_url': '{{ page_url }}' || w.location.href
                     };
+
+                    // optional fields
+                    if (fill.description) {
+                        data.description = fill.description;
+                    }
+                    if (fill.images) {
+                        data.images = fill.images;
+                    }
+                    if (fill.price) {
+                        data.price = fill.price;
+                    }
+                    if (fill.tags) {
+                        data.tags = fill.tags;
+                    }
+                    if (fill.type) {
+                        data.type = fill.type;
+                    }
                     if (data.client_uuid) {
                         // Chrome Access-Control-Allow-Origin: must use GET here.
                         $('<img />', {
-                            src: '{{URL}}{% url CreateProduct %}?' + metadata(data),
+                            src: '{{URL}}{% url CreateProduct %}?' + $.param(data),
                             css: {'display':'none'}
                         }).appendTo(d);
                         console.log('sent product request');
@@ -525,7 +548,7 @@
                 storeAnalytics();
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
-                    'background': (instance.has_results?
+                    'background': ((instance.is_live || instance.has_results)?
                                     "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
                                     "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
                     'width': '80px',
@@ -556,7 +579,7 @@
                     .css('height', '20px')
                     .click(button_onclick);
 
-                if (instance.has_results) {
+                if (instance.is_live || instance.has_results) {
                     sibt_elem.css ({
                         'background': "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent",
                         'cursor': 'pointer',
@@ -602,7 +625,7 @@
 
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
-                if (instance.has_results) {
+                if (instance.is_live || instance.has_results) {
                     $('#_willet_button').hide();
                     $('<div />', {
                         'id': "_willet_WOSIB_results",
@@ -717,7 +740,7 @@
 
                             // if server sends a flag that indicates "results available"
                             // (not necessarily "finished") then show finished button
-                            if (instance.has_results) {
+                            if (instance.is_live || instance.has_results) {
                                 $('#_willet_button_v3 .button').hide ();
                                 $('<div />', {
                                     'id': "_willet_SIBT_results",
