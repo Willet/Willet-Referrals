@@ -1118,19 +1118,34 @@ try {
 
 } catch(e) {
     (function() {
-        // Apparently, IE9 can fail for really stupid reasons.
-        // This is problematic.
-        // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
+        // More information on error object here:
+        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error
 
         // There are better stack trace tools in JS...
         // but they don't work in IE, which is exactly where we need it
-        var error = encodeURIComponent("Error initializing buttons");
-        var line    = e.number || e.lineNumber || "Unknown";
-        var script  = encodeURIComponent("buttons.js:" +line);
-        var message = e.stack || e.toString();
-        var st      = encodeURIComponent(message);
 
-        var params = "error=" + error + "&script=" + script + "&st=" + st;
+        // Format:
+        // {ErrorName}: {ErrorDescription}
+        // {ErrorStackTrace}
+        var prob   = encodeURIComponent("Error initializing buttons");
+        var line   = e.lineNumber || "Unknown";
+        var script = encodeURIComponent("buttons.js:" +line);
+
+        var errorInfo = e.stack || (e.number & 0xFFFF) || e.toString();
+        var errorDesc = e.message || e.description;
+        var errorName = e.name || errorDesc.split(":")[0];
+
+        if (errorInfo === (errorName + ": " + errorDesc)) {
+            errorInfo = "No additional information available";
+        }
+
+        var errorMsg  = errorName + ": " + errorDesc + "\n" + errorInfo;
+        var encError  = encodeURIComponent(errorMsg);
+
+        var params = "error=" + prob
+            + "&script=" + script
+            + "&st=" + encError
+            + "&subject=" + errorName;
 
         var _willetImage = document.createElement("img");
         _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
