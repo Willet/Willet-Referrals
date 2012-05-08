@@ -482,6 +482,8 @@
                     // do NOT send .data() directly! Will cause unexpected func calls.
 
                     // boolean test if empty
+                    // product_title and product_description are json dumps, so
+                    // they already come with their own double quotes.
                     if ({{ product_title }} || {{ product_description }}) {
                         console.log('product already in DB, it seems.');
                         return;

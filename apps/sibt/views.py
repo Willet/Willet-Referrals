@@ -765,8 +765,8 @@ class SIBTServeScript(URIHandler):
         page_url = ''
         parts = {}
         product = None
-        product_title = ''
-        product_description = ''
+        product_title = 'false'
+        product_description = 'false'
         show_votes = False
         show_top_bar_ask = False
         store_url = get_shopify_url(self.request.get('store_url'))
@@ -882,8 +882,8 @@ class SIBTServeScript(URIHandler):
             product_title = json.dumps(product.title)
             product_description = json.dumps(product.description)
         except:
-            product_title = ''
-            product_description = ''
+            product_title = 'false'
+            product_description = 'false'
         # let it pass - sibt.js will attempt to create product
 
         instance, event = get_instance_event()
