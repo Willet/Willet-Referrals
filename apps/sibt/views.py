@@ -11,6 +11,7 @@ import re
 
 from urlparse import urlparse, urlunsplit
 
+from django.utils import simplejson as json
 from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
@@ -878,8 +879,8 @@ class SIBTServeScript(URIHandler):
         user = User.get_or_create_by_cookie(self, app)
         product = Product.get_or_fetch(page_url, client)
         try:
-            product_title = product.title.replace("'", r"\'")
-            product_description = product.description.replace("'", r"\'")
+            product_title = json.dumps(product.title)
+            product_description = json.dumps(product.description)
         except:
             product_title = ''
             product_description = ''

@@ -482,7 +482,7 @@
                     // do NOT send .data() directly! Will cause unexpected func calls.
 
                     // boolean test if empty
-                    if ('{{ product_title }}' || '{{ product_description }}') {
+                    if ("{{ product_title }}" || "{{ product_description }}") {
                         console.log('product already in DB, it seems.');
                         return;
                     }
@@ -494,6 +494,8 @@
                         'image': data.image || getLargestImage(d),
                         'resource_url': '{{ page_url }}' || w.location.href
                     };
+
+                    // optional fields
                     if (fill.description) {
                         data.description = fill.description;
                     }
