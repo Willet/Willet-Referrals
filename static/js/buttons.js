@@ -133,7 +133,7 @@ _willet.util = {
         _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
         _willetImage.style.display = "none";
 
-        document.body.appendChild(_willetImage)
+        document.body.appendChild(_willetImage);
     },
     "getCanonicalUrl": function (default_url) {
         // Tries to retrieve a canonical link from the header
@@ -185,7 +185,7 @@ _willet.util = {
 };
 
 // Modified from: http://www.quirksmode.org/js/detect.html
-_willet.util.detect = function() {
+_willet.util.detectBrowser = function() {
     var browser,
         browserVersion,
         operatingSystem,
@@ -1162,7 +1162,7 @@ _willet = (function (me, config) {
 
 try {
     if (_willet) {
-        var info = _willet.util.detect();
+        var info = _willet.util.detectBrowser();
         if (!_willet.buttonsLoaded
             && !(info.browser === "Explorer" && info.version <= 7)
             && !(info.browser === "An unknown browser")
