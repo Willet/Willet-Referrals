@@ -57,3 +57,8 @@ cron:
   url: /b/shopify/start_report
   schedule: every sunday 23:00
   timezone: America/Toronto
+
+- description: weekly DB cleanup
+  url: /admin/db_integrity_check?check=all
+  schedule: every monday 09:00
+  timezone: America/Toronto
