@@ -242,7 +242,7 @@ class ButtonsShopify(Buttons, AppShopify):
                                    (theme_id, query_params),
                                    suppress_errors = True)
 
-            if result["asset"] and result["asset"]["value"]:
+            if result.get("asset") and result["asset"].get("value"):
                 value           = result["asset"]["value"]
                 _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
