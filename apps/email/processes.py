@@ -52,16 +52,23 @@ class SendEmailAsync(URIHandler):
         # keys are ok because we created them above.
         params = dict( (key, value.encode('utf-8')) for key, value in params.iteritems() )
 
-        # split thing *after* converting it to UTF-8
-        params['to'] = params['to'].split(',')
-
-        try:
-            result = urlfetch.fetch(
-                url = 'https://sendgrid.com/api/mail.send.json',
-                payload = urllib.urlencode(params),
-                method = urlfetch.POST,
-                headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            )
-            logging.info (result.content)
-        except DeadlineExceededError:
-            logging.error("SendGrid was lagging; email was not sent.")
+        if ',' in params["to"]:
+            try:
+                email = EmailMessage(sender=params["from"],
+                                     to=params["to"],
+                                     subject=params["subject"],
+                                     html=params["html"])
+                email.send()
+            except Exception,err:
+                logging.error('Error sending email: %s', err, exc_info=True)
+        else:
+            try:
+                result = urlfetch.fetch(
+                    url = 'https://sendgrid.com/api/mail.send.json',
+                    payload = urllib.urlencode(params),
+                    method = urlfetch.POST,
+                    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+                )
+                logging.info (result.content)
+            except DeadlineExceededError:
+                logging.error("SendGrid was lagging; email was not sent.")
