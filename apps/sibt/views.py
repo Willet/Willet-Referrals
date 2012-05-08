@@ -443,6 +443,7 @@ class ShowResults(URIHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         app = None
+        has_voted = False
         instance_uuid = self.request.get('instance_uuid')
         link = None
         target = get_target_url(self.request.get('url'))
