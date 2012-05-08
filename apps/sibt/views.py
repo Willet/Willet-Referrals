@@ -962,6 +962,8 @@ class SIBTServeScript(URIHandler):
             # product info
             'has_product': bool(product),
             'product': product,
+            'product_title': product.title.replace("'", r"\'"),
+            'product_description': product.description.replace("'", r"\'"),
 
             # user info
             'user': user,
