@@ -31,10 +31,10 @@ class SendEmailAsync(URIHandler):
         to_name         = self.request.get('to_name')
         replyto_address = self.request.get('replyto_address')
 
-        params = {
+        params = {  # all fields must be strings!
             "api_user" : "BarbaraEMac",
             "api_key"  : "w1llet!!",
-            "to"       : to_address.split(','),
+            "to"       : to_address,
             "subject"  : subject,
             "html"     : body,
             "from"     : INFO,
@@ -51,6 +51,9 @@ class SendEmailAsync(URIHandler):
         # Normally, we would encode both key and value, but we know that the
         # keys are ok because we created them above.
         params = dict( (key, value.encode('utf-8')) for key, value in params.iteritems() )
+
+        # split thing *after* converting it to UTF-8
+        params['to'] = params['to'].split(',')
 
         try:
             result = urlfetch.fetch(
