@@ -92,6 +92,49 @@ _willet.util = {
         }
         return result;
     },
+    "error": function (e, config) {
+        if (!e) {
+            return;
+        }
+
+        var message = config.message || "";
+        var type    = config.type || "";
+
+        // More information on error object here:
+        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error
+
+        // There are better stack trace tools in JS...
+        // but they don't work in IE, which is exactly where we need it
+
+        // Format:
+        // {ErrorName}: {ErrorDescription}
+        // {ErrorStackTrace}
+        var prob   = encodeURIComponent("Error initializing smart-buttons");
+        var line   = e.lineNumber || "Unknown";
+        var script = encodeURIComponent("smart-buttons.js:" +line);
+
+        var errorInfo = e.stack || (e.number & 0xFFFF) || e.toString();
+        var errorDesc = message || e.message || e.description;
+        var errorName = type || e.name || errorDesc.split(":")[0];
+
+        if (errorInfo === (errorName + ": " + errorDesc)) {
+            errorInfo = "No additional information available";
+        }
+
+        var errorMsg  = errorName + ": " + errorDesc + "\n" + errorInfo;
+        var encError  = encodeURIComponent(errorMsg);
+
+        var params = "error=" + prob
+            + "&script=" + script
+            + "&st=" + encError
+            + "&subject=" + errorName;
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
+    },
     "getCanonicalUrl": function (default_url) {
         // Tries to retrieve a canonical link from the header
         // Otherwise, returns default_url
@@ -452,51 +495,58 @@ _willet.messaging = (function (willet) {
 
         // sets up message handling
         xd.createMessageHandler = function(callback, url) {
-            var baseUrl = /https?:\/\/([^\/]+)/.exec(url)[0];
+            try {
+                var baseUrl = /https?:\/\/([^\/]+)/.exec(url)[0];
 
-            if (window.postMessage) {
-                // Note: IE w/ HTML5 supports addEventListener
-                var listener = function (event) {
-                    if (event.origin === baseUrl) {
-                        var data = parseMessage(event.data);
-                        callback(data);
+                if (window.postMessage) {
+                    // Note: IE w/ HTML5 supports addEventListener
+                    var listener = function (event) {
+                        if (event.origin === baseUrl) {
+                            var data = parseMessage(event.data);
+                            callback(data);
+                        }
+                    };
+
+                    if (window.addEventListener) {
+                        window.addEventListener('message', listener, false); //Standard method
+                    } else {
+                        window.attachEvent('onmessage', listener); //IE
                     }
-                };
 
-                if (window.addEventListener) {
-                    window.addEventListener('message', listener, false); //Standard method
+                    stopCommunication = function() {
+                         if(window.removeEventListener) {
+                            window.removeEventListener('message', listener, false); //Standard method
+                         } else {
+                            window.detachEvent('onmessage', listener); //IE
+                         }
+                    }
                 } else {
-                    window.attachEvent('onmessage', listener); //IE
+                    // Set up window.location.hash polling
+                    // Expects hash messages of the form:
+                    //  #willet?message=____
+                    var interval = setInterval(function () {
+                        var hash = window.location.hash;
+                        callback(parseMessage(hash));
+                    }, 1000);
+
+                    stopCommunication = function () {
+                        clearInterval(interval);
+                    };
                 }
 
-                stopCommunication = function() {
-                     if(window.removeEventListener) {
-                        window.removeEventListener('message', listener, false); //Standard method
-                     } else {
-                        window.detachEvent('onmessage', listener); //IE
-                     }
-                }
-            } else {
-                // Set up window.location.hash polling
-                // Expects hash messages of the form:
-                //  #willet?message=____
-                var interval = setInterval(function () {
-                    var hash = window.location.hash;
-                    callback(parseMessage(hash));
-                }, 1000);
+                //create the iframe
+                var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
+                var iframe = document.createElement("iframe");
+                iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
+                iframe.style.display = "none";
 
-                stopCommunication = function () {
-                    clearInterval(interval);
-                };
+                document.body.appendChild(iframe);
+            } catch (e) {
+                _willet.util.error(e, {
+                   "message": "Problem initializing cross-domain code. See stack trace.",
+                   "type": "Willet.CrossDomainError"
+                });
             }
-
-            //create the iframe
-            var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
-            var iframe = document.createElement("iframe");
-            iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
-            iframe.style.display = "none";
-
-            document.body.appendChild(iframe);
         };
 
         return xd;
@@ -557,9 +607,16 @@ _willet.networks = (function (willet) {
                 "method": "api",
                 "func": function(methods) {
                     messaging.xd.createMessageHandler(function(data) {
-                        var message = data && data.message || {};
-                        var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
-                        methods.updateLoggedInStatus("Facebook", status);
+                        try {
+                            var message = data && data.message || {};
+                            var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
+                            methods.updateLoggedInStatus("Facebook", status);
+                        } catch(e) {
+                            _willet.util.error(e, {
+                                "message": "Problem retrieving cross-domain result. See stack trace.",
+                                "type": "Willet.CrossDomainResultError"
+                            });
+                        }
                     }, willet.APP_URL + "/static/plugin/html/detectFB.html");
                 }
             },
@@ -1117,40 +1174,9 @@ try {
     }
 
 } catch(e) {
-    (function() {
-        // More information on error object here:
-        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error
-
-        // There are better stack trace tools in JS...
-        // but they don't work in IE, which is exactly where we need it
-
-        // Format:
-        // {ErrorName}: {ErrorDescription}
-        // {ErrorStackTrace}
-        var prob   = encodeURIComponent("Error initializing buttons");
-        var line   = e.lineNumber || "Unknown";
-        var script = encodeURIComponent("buttons.js:" +line);
-
-        var errorInfo = e.stack || (e.number & 0xFFFF) || e.toString();
-        var errorDesc = e.message || e.description;
-        var errorName = e.name || errorDesc.split(":")[0];
-
-        if (errorInfo === (errorName + ": " + errorDesc)) {
-            errorInfo = "No additional information available";
-        }
-
-        var errorMsg  = errorName + ": " + errorDesc + "\n" + errorInfo;
-        var encError  = encodeURIComponent(errorMsg);
-
-        var params = "error=" + prob
-            + "&script=" + script
-            + "&st=" + encError
-            + "&subject=" + errorName;
-
-        var _willetImage = document.createElement("img");
-        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
-        _willetImage.style.display = "none";
-
-        document.body.appendChild(_willetImage)
-    }());
+    //assume, potentially wrongfully, that we have access to _willet.util.error
+    _willet.util.error(e, {
+       "message": "We're not exactly sure what went wrong. Check the stack trace provided.",
+       "type": "Willet.UnexpectedError"
+    });
 }
