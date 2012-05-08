@@ -3,7 +3,7 @@
 {% block styles %}{% endblock styles %}
 
 {% block screens %}
-    <!---------------------------- Splash Screen ------------------------------>
+    <!--                          Splash Screen                             -->
 
     <div id="splash">
         <div class="title_bar">
@@ -146,6 +146,7 @@
                 statusCode : {
                     200: function () {
                         // Success
+                        updateEmailAddress();
                         showScreen('success');
                     },
                     400: function (resp, status) {

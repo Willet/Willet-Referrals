@@ -1,5 +1,7 @@
 """
 Copied from http://code.google.com/p/googleappengine/source/browse/trunk/python/google/appengine/ext/db/__init__.py#3563
+
+With added memcaching features
 """
 
 import logging
@@ -126,11 +128,11 @@ class MemcacheReferenceProperty(db.Property):
             else:
                 # Check for instance in memcache first
                 instance = memcache.get(self.memcache_key)
-                
+
                 if instance:
                     # Convert to model from protobuf
                     instance = db.model_from_protobuf(entity_pb.EntityProto(instance))
-                
+
             # Check in DB after checking in memcache
             if not instance:
                 instance = db.get(reference_id)
@@ -139,7 +141,7 @@ class MemcacheReferenceProperty(db.Property):
                     raise ReferencePropertyResolveError(
                                 'ReferenceProperty failed to be resolved: %s' %
                                 reference_id.to_path())
-            
+
             if not instance:
                 logging.error("END: THIS IS BAD. RETURNING NONE")
 
@@ -152,22 +154,29 @@ class MemcacheReferenceProperty(db.Property):
         """Set reference."""
 
         if not self.memcache_key:
+            if not value:
+                raise TypeError('MemcacheReferenceProperty: cannot set reference to None!')
+
             if isinstance(value, datastore.Key):
+                logging.debug('MemcacheReferenceProperty: value is a datastore key.')
                 obj = db.get(value)
-                
+
                 if obj:
+                    logging.debug('MemcacheReferenceProperty: got Model from DB; using its DB key.')
                     self.memcache_key = obj.get_key()
-                else:
-                    self.memcache_key = memcache.get(str(value)) 
+                else:  # wtf? what is this for?
+                    logging.debug('MemcacheReferenceProperty: db.get(%s) miss - using %s' % (value, memcache.get(unicode(value))))
+                    self.memcache_key = memcache.get(unicode(value))
 
             elif isinstance(value, db.Model):
                 self.memcache_key = value.get_key()
+                logging.debug('MemcacheReferenceProperty: value is a Model class object.')
             else:
                 raise TypeError('Value supplied is neither <google.appengine.datastore.Key> nor <google.appengine.ext.db.Model> (supplied %s)' % type (value))
-        
-        if self.memcache_key is None or self.memcache_key == '':
-            logging.error('Cannot create memcache key for %s!' % value)
-        
+
+        if not self.memcache_key:
+            logging.error('Cannot get/create memcache key for %s!' % value)
+
         value = self.validate(value)
         if value is not None:
             if isinstance(value, datastore.Key):

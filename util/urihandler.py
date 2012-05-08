@@ -14,7 +14,7 @@ from apps.user.models import User
 from util.consts import *
 from util.cookies import LilCookies
 from util.gaesessions import get_current_session
-from util.templates import render 
+from util.templates import render
 
 
 class URIHandler(webapp.RequestHandler):
@@ -30,26 +30,31 @@ class URIHandler(webapp.RequestHandler):
     # Return None if not authenticated.
     # Otherwise return db instance of client.
     def get_client(self):
-        if self.db_client:
-            return self.db_client
+        client = self.db_client
+        if client:
+            return client
 
         session = get_current_session()
         session.regenerate_id()
         email = session.get('email', '')
         if email:
-            self.db_client = Client.get_by_email(email)
+            client = Client.get_by_email(email)
         else:
-            self.db_client = None
-        
-        #logging.debug ("client by email's db_client = %s -> (%s) %s" % (email, type (self.db_client), self.db_client))
+            client = None
 
-        return self.db_client
-    
+        if client:
+            self.db_client = client  # "cache"
+
+        logging.debug("client by email's db_client = %s -> (%s) %s" % (email,
+                                                                       type(self.db_client),
+                                                                       self.db_client))
+        return client
+
     def get_browser(self):
         if 'user-agent' in self.request.headers:
                 return self.request.headers['user-agent'].lower()
         return '' # default is str(nothing)
-    
+
     def get_user(self):
         """ Reads a cookie, returns user. Does not auto-create. """
         user_cookie = read_user_cookie(self)
@@ -64,20 +69,17 @@ class URIHandler(webapp.RequestHandler):
         """This re-renders the full page with the specified template."""
         client = self.get_client()
 
-        template_values = {
-            'login_url'  : '/client/login',
-            'logout_url' : '/client/logout',
-            'URL'        : URL,
-            'NAME'       : NAME,
-            'client'     : client
-        }
+        template_values = {'login_url': '/client/login',
+                           'logout_url': '/client/logout',
+                           'URL': URL,
+                           'NAME': NAME,
+                           'client': client}
         merged_values = dict(template_values)
         merged_values.update(content_template_values)
-        
+
         path = os.path.join('templates/', template_file_name)
-        
+
         app_path = self.get_app_path()
-        
 
         if template_path != None:
             logging.info('got template_path: %s' % template_path)
@@ -93,7 +95,7 @@ class URIHandler(webapp.RequestHandler):
     def get_app_path(self):
         module = inspect.getmodule(self).__name__
         parts = module.split('.')
-        app_path = None 
+        app_path = None
 
         if len(parts) > 2:
             if parts[0] == 'apps':
@@ -105,13 +107,11 @@ class URIHandler(webapp.RequestHandler):
     def set_cookie(field, value):
         """Sets a cookie on the browser"""
         cookie = LilCookies(self, COOKIE_SECRET)
-        cookie.set_secure_cookie(
-            name=field,
-            value=value,
-            expires_days=365*10,
-            domain='.%s' % APP_DOMAIN
-        )
-        
+        cookie.set_secure_cookie(name=field,
+                                 value=value,
+                                 expires_days=365*10,
+                                 domain='.%s' % APP_DOMAIN)
+
     def get_cookie(field):
         """Retrieves a cookie value from the browser; None if N/A."""
         cookie = LilCookies(self, COOKIE_SECRET)
