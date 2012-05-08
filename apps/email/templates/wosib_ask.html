@@ -10,6 +10,13 @@
                     {% if asker_img %}<img alt="{{ from_first_name }}'s picture" src="{{ asker_img }}" style="height: 40px; width: 40px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />{% endif %}
                     {{ from_name }} asks:
                 </div>
+                {% if products.1 %}
+                <div style="margin: 0 auto;text-align:center;">
+                    <img src="{{ products.0.images.0 }}" style="width:150px;height:150px;" />
+                    <img src="{{URL}}/static/imgs/or-150.png" style="width:150px;height:150px;" alt="or" />
+                    <img src="{{ products.1.images.0 }}" style="width:150px;height:150px;" />
+                </div>
+                {% endif %}
                 <div style="font-size:110%; margin-left: 50px;">
                     <p> Hi {{ to_first_name }}, </p>
                     <p>{{ message }}</p>

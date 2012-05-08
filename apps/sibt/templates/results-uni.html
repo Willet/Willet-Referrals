@@ -2,7 +2,7 @@
 <html lang='en'>
     <head>
         <!-- Favicon -->
-        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />        
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
         <title>Should I Buy This?</title>
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/sibt/css/ask.css" type="text/css" />
@@ -33,7 +33,7 @@
                     <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
                     <div>Your friends recommend this item.</div>
                 </div>
-                <ul id="product_image_result">
+                <ul id="product_image_result" class="fleft">
                     <li>
                         <img src="{{product_image}}" alt="" />
                         <label> {{product.title}} </label>
@@ -41,7 +41,12 @@
                 </ul>
                 <div id="product_desc_result">{{product.description|striptags}}</div>
                 {% if has_product_link %}
-                    <p><a class="button _willet_button" href="{{product_link}}">Get it</a></p>
+                    <p style="text-align:center;">
+                        <a class="button _willet_button"
+                           href="{{product_link}}"
+                           style="text-decoration:none;"
+                           target="_blank">Get it</a>
+                    </p>
                 {% endif %}
             </div>
         </div>

@@ -55,6 +55,8 @@ class SIBTShopifyWelcome(URIHandler):
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
+                logging.warn('Tokens mismatch! Client probably installed '
+                             'two or more of our apps. Updating token.')
                 client.token = token
                 client.put()
 
@@ -83,9 +85,9 @@ class SIBTShopifyWelcome(URIHandler):
 
             # Switched to new order tracking code on Jan 16
             if app.created > datetime(2012, 01, 16):
-                new_order_code = 1
+                new_order_code = True
             else:
-                new_order_code = 0
+                new_order_code = False
 
             template_values = {
                 'app': app,

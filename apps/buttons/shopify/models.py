@@ -73,13 +73,13 @@ class ButtonsShopify(Buttons, AppShopify):
         elif monthly_orders < 20:
             price = 1.99 #basic
         elif monthly_orders < 50:
-            price = 4.99 #professional
+            price = 2.99 #professional
         elif monthly_orders < 100:
-            price = 9.99 #business
+            price = 3.99 #business
         elif monthly_orders < 200:
-            price = 14.99 #unlimited
+            price = 5.99 #unlimited
         else:
-            price = 19.99 #enterprise
+            price = 9.99 #enterprise
 
         self.recurring_billing_price = unicode(price)
         self.put()
@@ -239,7 +239,8 @@ class ButtonsShopify(Buttons, AppShopify):
         try:
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
-                                   (theme_id, query_params))
+                                   (theme_id, query_params),
+                                   suppress_errors = True)
 
             if result["asset"] and result["asset"]["value"]:
                 value           = result["asset"]["value"]

@@ -136,7 +136,8 @@ class AppShopify(Model):
         return cls.all().filter('store_url =', store_url).get()
 
     # Shopify API Calls -------------------------------------------------------
-    def _call_Shopify_API(self, verb, call, payload=None):
+    def _call_Shopify_API(self, verb, call, payload=None,
+                          suppress_errors = False):
         """ Calls Shopify API
 
         Inputs:
@@ -191,7 +192,7 @@ class AppShopify(Model):
         else:
             error = True
 
-        if not error:
+        if not error or suppress_errors:
             return data
         else:
             Email.emailDevTeam(

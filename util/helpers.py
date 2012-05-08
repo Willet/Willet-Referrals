@@ -333,7 +333,7 @@ def url(view, *args, **kwargs):
         if qs:
             url += '?%s' % urllib.urlencode(qs)
 
-        logging.info('url(\'%s\',...) became: %s' % (view, url))
+        # logging.info('url(\'%s\',...) became: %s' % (view, url))
     except:
         logging.warn('Could not reverse url %s' % view)
 
