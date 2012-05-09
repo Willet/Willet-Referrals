@@ -16,7 +16,6 @@
     var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
     var _gaq = w._gaq || d._gaq || [];
     _gaq.push(['_setAccount', ANALYTICS_ID]);
-    // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
     _gaq.push(['_setDomainName', w.location.host]);
     _gaq.push(['_setAllowLinker', true]);
 
@@ -77,6 +76,7 @@
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
         // true when visitor on page more than (5) times
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+        'uuid': '{{ app.uuid }}',
         'version': '{{sibt_version|default:"10"}}'
     };
     instance = {
@@ -87,7 +87,8 @@
     };
     user = {
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
-        'is_asker': ('{{is_asker}}' === 'True') // did they ask?
+        'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
+        'uuid': '{{ user.uuid }}'
     };
 
     try { // debug if available
@@ -314,46 +315,49 @@
             // Send action to server
             var storeAnalytics = function (message) {
                 var message = message || '{{ evnt }}';
-                var random_id = 'a' + randomString();
-
-                $('<iframe />', {
-                    id: random_id,
-                    name: random_id,
-                    css: {'display': 'none'},
-                    src: "{{URL}}{% url TrackSIBTShowAction %}?" +
-                          metadata({"evnt": encodeURIComponent(message)}),
-                    load: function () {
-                        try {
-                            var iframe_handle = d.getElementById(random_id);
-                            iframe_handle.parentNode.removeChild (iframe_handle);
-                        } catch (e) {
-                            console.log(e.message);
+                {% if use_db_analytics %}
+                    var random_id = 'a' + randomString();
+                    $('<iframe />', {
+                        id: random_id,
+                        name: random_id,
+                        css: {'display': 'none'},
+                        src: "{{URL}}{% url TrackSIBTShowAction %}?" +
+                            metadata({"evnt": encodeURIComponent(message)}),
+                        load: function () {
+                            try {
+                                var iframe_handle = d.getElementById(random_id);
+                                iframe_handle.parentNode.removeChild (iframe_handle);
+                            } catch (e) {
+                                console.log(e.message);
+                            }
                         }
-                    }
-                }).appendTo("body");
+                    }).appendTo("body");
+                {% endif %}
 
-                // extra google analytics component
-                try {
-                    // async
-                    _gaq.push([
-                        '_trackEvent',
-                        'TrackSIBTAction',
-                        encodeURIComponent(message),
-                        encodeURIComponent(metadata())
-                    ]);
-                    if (!pageTracker) {
-                        // synchronous tracking
-                        pageTracker = _gat._getTracker(ANALYTICS_ID);
+                {% if use_google_analytics %}
+                    // extra google analytics component
+                    try {
+                        // async
+                        _gaq.push([
+                            '_trackEvent',
+                            'TrackSIBTAction',
+                            encodeURIComponent(message),
+                            encodeURIComponent(app.uuid)
+                        ]);
+                        if (!pageTracker) {
+                            // synchronous tracking
+                            pageTracker = _gat._getTracker(ANALYTICS_ID);
+                        }
+                        pageTracker._trackEvent(
+                            'TrackSIBTAction',
+                            encodeURIComponent(message),
+                            encodeURIComponent(app.uuid)
+                        );
+                        console.log("Success! We have secured the enemy intelligence.");
+                    } catch (e) { // log() is {} on live.
+                        console.log("We have dropped the enemy intelligence: " + e);
                     }
-                    pageTracker._trackEvent(
-                        'TrackSIBTAction',
-                        encodeURIComponent(message),
-                        encodeURIComponent(metadata())
-                    );
-                    console.log("Success! We have secured the enemy intelligence.");
-                } catch (e) { // log() is {} on live.
-                    console.log("We have dropped the enemy intelligence: " + e);
-                }
+                {% endif %}
             };
 
             // Called when ask iframe is closed
@@ -377,6 +381,7 @@
             };
 
             var showColorbox = function (options) {
+                storeAnalytics('showColorbox');
                 var defaults = {
                     transition: 'fade',
                     close: '',
@@ -412,6 +417,7 @@
             }
 
             var showResults = function () {
+                storeAnalytics('showResults');
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 showColorbox({
@@ -424,6 +430,7 @@
 
             var showAsk = function (message) {
                 // shows the ask your friends iframe
+                storeAnalytics('showAsk');
                 var shopify_ids = [];
                 if (_willet_cart_items) {
                     // WOSIB exists on page; send extra data
@@ -537,6 +544,7 @@
                             css: {'display':'none'}
                         }).appendTo(d);
                         console.log('sent product request');
+                        storeAnalytics('saveProduct');
                     }
                 } catch (e) {
                     console.log(e.message);
@@ -622,6 +630,7 @@
             // (a sign that the WOSIB snippet ran on this page)
             if (wosib_elem.length > 0 && _willet_cart_items) {
                 // add the button onto the page right now
+                storeAnalytics('WOSIB');
                 var button = $("<div />", {
                         'id': '_willet_button_v3'
                     });
@@ -682,6 +691,7 @@
                 // if no product, try to detect one, but don't show button
                 if (instance.has_product) {
                     {% if app.top_bar_enabled %} // add this topbar code only if necessary
+                        storeAnalytics('topbarEnabled');
                         console.log('topbar enabled');
                         var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
@@ -713,6 +723,7 @@
                     {% endif %} ; // app.top_bar_enabled
 
                     {% if app.button_enabled %} // add this button code only if necessary
+                        storeAnalytics('buttonEnabled');
                         if (parseInt(app.version) <= 2) {
                             console.log('v2 button is enabled');
                             var button = d.createElement('a');
@@ -806,8 +817,11 @@
                     var clickedOff = false;
 
                     var popup = buildBottomPopup();
-                    var show_popup = function () { popup.fadeIn('slow'); };
-                    var hide_popup = function () { popup.fadeOut('slow'); };
+                    var showPopup = function () {
+                        storeAnalytics('showPopup');
+                        popup.fadeIn('slow');
+                    };
+                    var hidePopup = function () { popup.fadeOut('slow'); };
 
                     var product1_image = $.cookie('product1_image') || '';
                     var product2_image = $.cookie('product2_image') || '';
@@ -834,29 +848,32 @@
 
                         // popup will show only for pages sufficiently long.
                         if (pageHeight > windowHeight * 1.5) {
+                            storeAnalytics('popupEnabled');
                             if (scrollPos >= threshold) {
                                 if (!popup.is(':visible') && !clickedOff) {
-                                    show_popup();
+                                    showPopup();
                                 }
                             } else {
                                 if (popup.is(':visible')) {
-                                    hide_popup();
+                                    hidePopup();
                                 }
                             }
                         } else {
+                            storeAnalytics('popupDisabled.pageHeight');
                             console.log("page too short");
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {
                         showAsk();
-                        hide_popup();
+                        hidePopup();
                     });
                     $('#willet_sibt_popup #anti_cta').click(function (e) {
                         clickedOff = true;
                         e.preventDefault();
-                        hide_popup();
+                        hidePopup();
                     });
                 } else {
+                    storeAnalytics('popupDisabled.unsureFailed');
                     console.log('cookies not populated / not unsure yet');
                 }
             {% endif %} ; // app.bottom_popup_enabled
