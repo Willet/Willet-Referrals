@@ -354,9 +354,7 @@ class ButtonsShopifyConfig(URIHandler):
             "more": 1
         })
 
-        preferences = {}
-        if app.billing_enabled:
-            preferences = app.get_prefs()
+        preferences = app.get_prefs()
 
         button_order, unused_buttons = self.determine_buttons(preferences)
         item_shares, network_shares  = self.get_button_shares(app)
