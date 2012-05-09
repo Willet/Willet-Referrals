@@ -288,6 +288,12 @@ class User(db.Expando):
 
         Each subclass must have a staticmethod _get_from_datastore
         """
+
+        # so now you can do Model.get(urihandler.request.get(id))) without
+        # worrying about the resulting None.
+        if memcache_key is None:
+            return None  # None is definitely not a key, bro
+
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
         # logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
