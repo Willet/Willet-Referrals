@@ -1,7 +1,7 @@
 #!/usr/bin/env/python
 
 # The Action Model
-# A parent class for all User actions 
+# A parent class for all User actions
 # ie. ClickAction, VoteAction, ViewAction, etc
 
 __author__ = "Willet, Inc."
@@ -25,7 +25,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
     from apps.wosib.actions import *
-    action_dict = memcache.get_multi(list_keys) 
+    action_dict = memcache.get_multi(list_keys)
 
     mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
 
@@ -51,7 +51,7 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
                 old_count = mbc.count
                 mbc.decrement_count()
                 logging.warn(
-                    'encounted error, going to decrement buckets from %s to %s' 
+                    'encounted error, going to decrement buckets from %s to %s'
                     % (old_count, mbc.count), exc_info=True)
 
                 last_keys = memcache.get(old_key) or []
@@ -90,11 +90,11 @@ class Action(Model, polymodel.PolyModel):
     is_admin = db.BooleanProperty(default = False)
     # The App that this Action is for
     app_ = db.ReferenceProperty(db.Model, collection_name = 'app_actions')
-    
+
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(Action, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         if self.duration < 0:
             raise ValueError('duration cannot be less than 0 seconds')
@@ -104,8 +104,8 @@ class Action(Model, polymodel.PolyModel):
     def put(self):
         """Override util.model.put with some custom shizzbang"""
         # Not the best spot for this, but I can't think of a better spot either ..
-        self.is_admin = self.user.is_admin() 
-        
+        self.is_admin = self.user.is_admin()
+
         key = self.get_key()
         memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
 
@@ -142,8 +142,8 @@ class Action(Model, polymodel.PolyModel):
     def __str__(self):
         # Subclasses should override this
         pass
-    
-    ## Accessors 
+
+    ## Accessors
     @staticmethod
     def count(admins_too = False):
         if admins_too:
@@ -183,19 +183,19 @@ class Action(Model, polymodel.PolyModel):
 ## ClickAction Subclass --------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class ClickAction(Action):
-    """ Designates a 'click' action for a User. 
+    """ Designates a 'click' action for a User.
         Currently used for 'SIBT' and 'WOSIB' Apps
     """
-    
+
     # Link that caused the click action ...
     link = db.ReferenceProperty(db.Model, collection_name = "link_clicks")
-    
+
     def __init__(self, *args, **kwargs):
         super(ClickAction, self).__init__(*args, **kwargs)
 
         # Tell Mixplanel that we got a click
         #self.app_.storeAnalyticsDatum(self.class_name(), self.user, self.link.target_url)
-           
+
     def __str__(self):
         return 'CLICK: %s(%s) %s' % (
                 self.user.get_full_name(),
@@ -203,26 +203,26 @@ class ClickAction(Action):
                 self.app_.uuid
         )
 
-   
+
 ## -----------------------------------------------------------------------------
 ## VoteAction Subclass ---------------------------------------------------------
 ## -----------------------------------------------------------------------------
 class VoteAction(Action):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
-    
+
     # Link that caused the vote action ...
     link = db.ReferenceProperty(db.Model, collection_name = "link_votes")
 
     # Either 'yes' or 'no'
     vote = db.StringProperty(indexed = True)
-    
+
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
-        
+
         # Tell Mixplanel that we got a vote
         #self.app_.storeAnalyticsDatum(self.class_name(), self.user, self.link.target_url)
-    
+
     def __str__(self):
         return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
@@ -270,7 +270,7 @@ class ScriptLoadAction(LoadAction):
     def __str__(self):
         return 'ScriptLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
 
-    ## Constructor 
+    ## Constructor
     @staticmethod
     def create(user, app, url):
         uuid = generate_uuid(16)
@@ -288,36 +288,6 @@ class ScriptLoadAction(LoadAction):
         return ScriptLoadAction.all().filter('app_ =', app)
 
 ## -----------------------------------------------------------------------------
-## ButtonLoadAction Subclass ---------------------------------------------------
-## -----------------------------------------------------------------------------
-class ButtonLoadAction(LoadAction):
-    """ Created when a button is loaded.
-        ie. "SIBT?" button or Want FB button. """
-
-    def __str__(self):
-        return 'ButtonLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
-
-    ## Constructor 
-    @staticmethod
-    def create(user, app, url):
-        uuid = generate_uuid(16)
-        act = ButtonLoadAction(key_name = uuid,
-                                 uuid = uuid,
-                                 user = user,
-                                 app_ = app,
-                                 url = url)
-        
-        act.put()
-
-    @staticmethod
-    def get_by_app(app):
-        return ButtonLoadAction.all().filter('app_ =', app)
-
-    @staticmethod
-    def get_by_user_and_url(user, url):
-        return ButtonLoadAction.all().filter('user = ', user).filter('url =', url)
-
-## -----------------------------------------------------------------------------
 ## ShowAction Subclass ---------------------------------------------------
 ## -----------------------------------------------------------------------------
 class ShowAction(Action):
@@ -326,9 +296,9 @@ class ShowAction(Action):
     # what we are showing... dumb but true!
     what = db.StringProperty()
 
-    # url/page this was shown on 
+    # url/page this was shown on
     url = db.LinkProperty(indexed = True)
-    
+
     @staticmethod
     def create(user, app, what, url):
         uuid = generate_uuid(16)
@@ -340,7 +310,7 @@ class ShowAction(Action):
             what=what,
             url=url
         )
-        
+
         action.put()
         return action
 
@@ -357,12 +327,12 @@ class ShowAction(Action):
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
 
-    # what did they do 
+    # what did they do
     what = db.StringProperty()
 
-    # url/page this was acted on 
+    # url/page this was acted on
     url = db.LinkProperty(indexed = True)
-    
+
     @staticmethod
     def create(user, app, what, url):
         uuid = generate_uuid(16)
@@ -374,7 +344,7 @@ class UserAction(Action):
             what=what,
             url=url
         )
-        
+
         action.put()
         return action
 
