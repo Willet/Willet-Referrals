@@ -221,22 +221,23 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_prefs(self):
         """Get preferences, provided that they exist."""
         #need to get theme id first...
-        result = self._call_Shopify_API("GET", "themes.json")
-
-        theme_id = None
-        for theme in result['themes']:
-            if 'role' in theme and 'id' in theme:
-                if theme['role'] == 'main':
-                    theme_id = theme['id']
-                    break
-
-        query_params = urlencode({
-            "asset[key]": "snippets/willet-shopconnection.liquid",
-            "theme_id": theme_id
-        })
-
         prefs = {}
+
         try:
+            result = self._call_Shopify_API("GET", "themes.json")
+
+            theme_id = None
+            for theme in result['themes']:
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        theme_id = theme['id']
+                        break
+
+            query_params = urlencode({
+                "asset[key]": "snippets/willet-shopconnection.liquid",
+                "theme_id": theme_id
+            })
+
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
                                    (theme_id, query_params),
@@ -248,7 +249,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
-            pass  # Explicitly catch this
+            pass  # Either user is unbilled, or doesn't have the snippet.
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 
