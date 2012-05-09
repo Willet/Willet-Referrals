@@ -444,6 +444,7 @@ class ShowResults(URIHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         app = None
+        event = 'SIBTShowingResultsToFriend'  # default event
         has_voted = False
         instance_uuid = self.request.get('instance_uuid')
         link = None
@@ -540,7 +541,6 @@ class ShowResults(URIHandler):
                 event = 'SIBTShowingResultsToAsker'
             elif has_voted:
                 SIBTShowingResults.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToFriend'
             else:
                 SIBTShowingVote.create(user=user, instance=instance)
 
@@ -772,6 +772,8 @@ class SIBTServeScript(URIHandler):
         store_url = get_shopify_url(self.request.get('store_url'))
         template_values = {}
         unsure_multi_view = False
+        use_db_analytics = False
+        use_google_analytics = True
         user = None
         votes_count = 0
         willet_code = self.request.get('willt_code')
@@ -985,6 +987,8 @@ class SIBTServeScript(URIHandler):
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
+            'use_db_analytics': use_db_analytics,
+            'use_google_analytics': use_google_analytics,
             'willt_code': link.willt_url_code if link else "",
         }
 
