@@ -543,6 +543,7 @@ class ShowResults(URIHandler):
                 event = 'SIBTShowingResultsToFriend'
             else:
                 SIBTShowingVote.create(user=user, instance=instance)
+                event = 'SIBTShowingResultsToFriend'
 
             if link == None:
                 link = instance.link
