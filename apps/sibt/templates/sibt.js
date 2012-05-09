@@ -7,6 +7,8 @@
      * w and d are aliases of window and document.
      */
 
+    var _willet = w._willet || {};
+
     // declare vars
     var app, instance, products, sys, topbar, user;
 
@@ -14,7 +16,7 @@
     var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
     var _gaq = w._gaq || d._gaq || [];
     _gaq.push(['_setAccount', ANALYTICS_ID]);
-    _gaq.push(['_setDomainName', window.location.host]);
+    _gaq.push(['_setDomainName', w.location.host]);
     _gaq.push(['_setAllowLinker', true]);
 
     // keep track of this many products, max
@@ -205,7 +207,7 @@
     // set up a list of scripts to load asynchronously.
     var scripts_to_load = [
         '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-        ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+        ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
     ];
     // turns out we need at least 1.4 for the $(<tag>,{props}) notation
     if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
@@ -227,23 +229,6 @@
 
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
-
-            var metadata = function (more) {
-                // constructs the 'willet' query string - no prefixing ?
-                // will be added for you.
-                // add more query properties with the "more" param.
-                return $.param($.extend (
-                    {}, // blank original
-                    {
-                        'app_uuid': '{{ app.uuid }}',
-                        'user_uuid': '{{ user.uuid }}',
-                        'instance_uuid': '{{ instance.uuid }}',
-                        'store_url': '{{ store_url }}', // registration url
-                        'target_url': '{{ page_url }}' || w.location.href // window.location
-                    },
-                    more || {}
-                ));
-            };
 
             var cleanArray = function (actual) {
                 var i;
@@ -271,6 +256,19 @@
                 return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
             };
 
+            var getCanonicalURL = function (default_url) {
+                // Tries to retrieve a canonical link from the header
+                // Otherwise, returns default_url
+                var links = d.getElementsByTagName('link'),
+                    i = links.length;
+                while (i--) {
+                    if (links[i].rel === 'canonical' && links[i].href) {
+                        return links[i].href;
+                    }
+                }
+                return default_url;
+            };
+
             var getLargestImage = function (within) {
                 // Returns <img>.src for the largest <img> in <elem>within
                 // source: http://stackoverflow.com/questions/3724738
@@ -295,6 +293,23 @@
             var getProductUUIDs = function () {
                 // currently, products are just their UUIDs (to save space)
                 return cleanArray(products);
+            };
+
+            var metadata = function (more) {
+                // constructs the 'willet' query string - no prefixing ?
+                // will be added for you.
+                // add more query properties with the "more" param.
+                return $.param($.extend (
+                    {}, // blank original
+                    {
+                        'app_uuid': '{{ app.uuid }}',
+                        'user_uuid': '{{ user.uuid }}',
+                        'instance_uuid': '{{ instance.uuid }}',
+                        'store_url': '{{ store_url }}', // registration url
+                        'target_url': '{{ page_url }}' || getCanonicalURL(w.location.href) // window.location
+                    },
+                    more || {}
+                ));
             };
 
             // Send action to server
@@ -388,7 +403,7 @@
                     var height = parseInt(options.innerHeight);
                     var left = (screen.width - width) / 2;
                     var top = (screen.height - height) / 2;
-                    var new_window = window.open(
+                    var new_window = w.open(
                         options.href, // url
                         '_blank', // name
                         'width=' + width + ',' +
@@ -407,7 +422,9 @@
                 // this can be detected if a finished flag is raised.
                 showColorbox({
                     href: "{{URL}}/s/results.html?" +
-                           metadata({'refer_url': w.location.href})
+                           metadata({
+                               'refer_url': getCanonicalURL(w.location.href)
+                           })
                 });
             };
 
@@ -501,7 +518,7 @@
                         'sibtversion': fill.sibtversion || app.version,
                         'title': fill.title || getPageTitle(),
                         'image': data.image || getLargestImage(d),
-                        'resource_url': '{{ page_url }}' || w.location.href
+                        'resource_url': '{{ page_url }}' || getCanonicalURL(w.location.href)
                     };
 
                     // optional fields

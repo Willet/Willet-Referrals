@@ -866,6 +866,11 @@ class User(db.Expando):
 
             # Update the params - personalize the msg
             params.update({ 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) })
+            try:
+                params = dict((key, value.encode('utf-8')) for key, value in params.iteritems())
+            except:
+                logging.warn('Cannot encode all UTF-8 characters for fb share')
+
             payload = urllib.urlencode(params)
 
             facebook_share_url = "https://graph.facebook.com/%s/feed" % id
