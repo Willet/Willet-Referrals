@@ -172,6 +172,7 @@
         border: 1px dotted #000;
         margin-left: 200px;
         margin-right: 20px;
+        line-height: initial;
     }
 
     .tab-bar {
@@ -215,6 +216,19 @@
 
     .small {
         font-size: 0.65em;
+    }
+
+    .grabbable {
+        cursor: hand;
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+    }
+
+    .grabbable:active {
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
     }
 </style>
 <!--[if IE 7]>
@@ -492,7 +506,7 @@
                         </span>
                         <ul id="default-buttons" class="connectedSortable">
                             {% for button in button_order %}
-                            <li class="icon {{ button }}">
+                            <li class="icon {{ button }} grabbable">
                                 <span>{{ button }}</span>
                             </li>
                             {% endfor %}
@@ -507,11 +521,13 @@
                         </span>
                         <ul id="unused-buttons" class="connectedSortable">
                             {% for button in unused_buttons %}
-                            <li class="icon {{ button }}">
+                            <li class="icon {{ button }} grabbable">
                                 <span>{{ button }}</span>
                             </li>
                             {% endfor %}
                         </ul>
+                        <img src="/static/imgs/draganddrop.png"
+                             style="position: relative; top: -10px;">
                     </div>
                     <div class="config-option">
                         <span class="left-column">
