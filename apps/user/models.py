@@ -288,6 +288,12 @@ class User(db.Expando):
 
         Each subclass must have a staticmethod _get_from_datastore
         """
+
+        # so now you can do Model.get(urihandler.request.get(id))) without
+        # worrying about the resulting None.
+        if memcache_key is None:
+            return None  # None is definitely not a key, bro
+
         key = '%s-%s' % (cls.__name__.lower(), memcache_key)
         # logging.debug('User::get(): Pulling %s from memcache.' % key)
         data = memcache.get(key)
@@ -860,6 +866,11 @@ class User(db.Expando):
 
             # Update the params - personalize the msg
             params.update({ 'message' : "Hey %s! %s" % (name.split(' ')[0], msg) })
+            try:
+                params = dict((key, value.encode('utf-8')) for key, value in params.iteritems())
+            except:
+                logging.warn('Cannot encode all UTF-8 characters for fb share')
+
             payload = urllib.urlencode(params)
 
             facebook_share_url = "https://graph.facebook.com/%s/feed" % id

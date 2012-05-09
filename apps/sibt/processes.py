@@ -372,57 +372,50 @@ class RemoveExpiredSIBTInstance(URIHandler):
 
 
 class TrackSIBTShowAction(URIHandler):
+    """DB Action tracking is *being* replaced by Google Analytics."""
     def get(self):
-        """Compatibility with iframe shizz"""
+        """Compatibility with iframe scheisse."""
         self.post()
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        app = None
+        app = App.get(self.request.get('app_uuid'))
         action = None
-        duration = 0.0
-        instance = None
-        success = False
-        user = None
-
-        if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))
-        if self.request.get('user_uuid'):
-            user = User.get(self.request.get('user_uuid'))
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+        duration = self.request.get('duration', 0.0)
         event = self.request.get('evnt')
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+        success = False
         url = self.request.get('target_url')
+        user = User.get(self.request.get('user_uuid'))
 
-        if not event or not user:
+        if not (app and event and user):
             return # we can't track who did what or what they did; logging this item is not useful.
 
         try:
-            logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, event = %s' % (user, instance, event))
+            logging.debug ('user = %s, instance = %s, event = %s' % (user, instance, event))
             action_class = globals()[event]
             action = action_class.create(user,
-                    instance=instance,
-                    url=url,
-                    app=app,
-                    duration=duration
-            )
+                                         instance=instance,
+                                         url=url,
+                                         app=app,
+                                         duration=duration)
         except Exception,e:
-            logging.warn('(this is not serious) could not create class: %s' % e)
-            try:
-                logging.debug ('TrackSIBTShowAction 2: user = %s, instance = %s, event = %s' % (user, instance, event))
-                action = SIBTShowAction.create(user, instance, event)
-            except Exception, e:
-                logging.error('this is serious: %s' % e, exc_info=True)
-            else:
-                logging.info('tracked action: %s' % action)
-                success = True
+            logging.debug('Could not create Action class %s: %s' % (event, e))
         else:
             logging.info('tracked action: %s' % action)
-            success = True
+            self.response.out.write('')
+            return
+
+        try:
+            logging.debug('Retrying by creating generic action class')
+            action = SIBTShowAction.create(user, instance, event)
+        except Exception, e:
+            logging.error('Could not log action!: %s' % e, exc_info=True)
+        else:
+            logging.info('tracked action: %s' % action)
 
         self.response.out.write('')
+        return
 
 
 class TrackSIBTUserAction(URIHandler):

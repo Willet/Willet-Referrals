@@ -56,3 +56,6 @@ handlers:
 - url: /
   script: urls.py
 
+- url: /admin/db_integrity_check
+  script: urls.py
+  login: admin

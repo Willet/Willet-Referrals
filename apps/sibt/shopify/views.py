@@ -14,7 +14,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from apps.action.models import ButtonLoadAction, ScriptLoadAction
+from apps.action.models import ScriptLoadAction
 from apps.app.models import *
 from apps.client.models import *
 from apps.client.shopify.models import *
@@ -46,7 +46,11 @@ class ShowBetaPage(URIHandler):
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
     def get(self):
-        client_email = shop_owner = shop_name = ''
+        client_email = ''
+        client_url = ''
+        shop_name = ''
+        shop_owner = ''
+
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
@@ -63,13 +67,15 @@ class SIBTShopifyWelcome(URIHandler):
             if not client:
                 # client was just put, expected to be in memcache
                 logging.error('Memcache is lagging!')
+                raise IOError('The server is busy. '
+                              'Please refresh the page to try again!')
 
+            client_url = client.url
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
-            # app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
 
             shop_owner = 'Shopify Merchant'
             shop_name = 'Your Shopify Store'
-            if client is not None and client.merchant is not None:
+            if client.merchant:
                 client_email = client.email
                 shop_owner = client.merchant.name or 'Merchant'
                 shop_name = client.name
@@ -98,17 +104,20 @@ class SIBTShopifyWelcome(URIHandler):
                 'client_uuid' : client.uuid,
                 'new_order_code' : new_order_code
             }
+            path = 'welcome.html'
 
-            self.response.out.write(self.render_page('welcome.html', template_values))
-        except Exception, e:
-            logging.error('SIbt install error, may require reinstall', exc_info=True)
+        except Exception, err:
+            logging.error('SIBT install error, may require reinstall (%s)' % err,
+                          exc_info=True)
             # Email DevTeam
-            Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' %
-                    (client_email, shop_owner, client.url, shop_name)
-            )
-            self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
-            return
+            Email.emailDevTeam('SIBT install error, may require reinstall: %s, %s, %s, %s' %
+                               (client_email, shop_owner, client_url, shop_name))
+            template_values = {'URL': URL,
+                              'reason': err}
+            path = 'install_error.html'
+
+        self.response.out.write(self.render_page(path, template_values))
+        return
 
 class SIBTShopifyEditStyle(URIHandler):
     """ Modifies SIBT button style - internal use only. """
@@ -291,7 +300,6 @@ class SIBTShopifyProductDetection(URIHandler):
                 # commonly caused by naughty visitors who disables referrer info
                 # http://en.wikipedia.org/wiki/Referrer_spoofing
                 target = "http://no-referrer.com"
-            ScriptLoadAction.create(user, app, target)
 
             template_values = {
                 'URL' : URL,
