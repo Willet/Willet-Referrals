@@ -444,6 +444,7 @@ class ShowResults(URIHandler):
     """Shows the results of a 'Should I Buy This?'"""
     def get(self):
         app = None
+        event = 'SIBTShowingResultsToFriend'  # default event
         has_voted = False
         instance_uuid = self.request.get('instance_uuid')
         link = None
@@ -540,10 +541,8 @@ class ShowResults(URIHandler):
                 event = 'SIBTShowingResultsToAsker'
             elif has_voted:
                 SIBTShowingResults.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToFriend'
             else:
                 SIBTShowingVote.create(user=user, instance=instance)
-                event = 'SIBTShowingResultsToFriend'
 
             if link == None:
                 link = instance.link
