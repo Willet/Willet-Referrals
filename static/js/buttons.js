@@ -138,15 +138,14 @@ _willet.util = {
     "getCanonicalUrl": function (default_url) {
         // Tries to retrieve a canonical link from the header
         // Otherwise, returns default_url
-        var url,
-            links = document.getElementsByTagName('link'),
+        var links = document.getElementsByTagName('link'),
             i = links.length;
         while (i--) {
             if (links[i].rel === 'canonical' && links[i].href) {
-                url = links[i].href;
+                return links[i].href;
             }
         }
-        return url || default_url;
+        return default_url;
     },
     "getElemValue": function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
@@ -347,10 +346,10 @@ _willet.debug = (function (willet) {
         _log = function() { log_array.push(arguments); },
         _error = function() { log_array.push(arguments); };
 
-    if (typeof(window.console) === 'object' 
+    if (typeof(window.console) === 'object'
         && ( ( typeof(window.console.log) === 'function'
         && typeof(window.console.error) ==='function' )
-        || (typeof(window.console.log) === 'object' // IE 
+        || (typeof(window.console.log) === 'object' // IE
         && typeof(window.console.error) ==='object') )) {
         _log = function () {
             if (window.console.log.apply) {
