@@ -190,7 +190,6 @@ class ButtonsShopify(Buttons, AppShopify):
 
         try:
             # Get the previous tag...
-            # TODO: Should we make sure they had the tag previously?
             results = self._call_Shopify_API("GET", "script_tags.json")
 
             if not results.get("script_tags"):
