@@ -59,9 +59,14 @@ def get_url_variants(domain, keep_path=True):
 
     # re-append path info if it is needed
     if keep_path:
-        domain = "%s%s?%s#%s" % (domain, ua.path, ua.query, ua.fragment)
-        www_domain = "%s%s?%s#%s" % (www_domain, ua.path, ua.query,
-                                     ua.fragment)
+        domain = "%s%s" % (domain, ua.path)
+        www_domain = "%s%s" % (www_domain, ua.path)
+        if ua.query:
+            domain = "%s?%s" % (domain, ua.query)
+            www_domain = "%s?%s" % (www_domain, ua.query)
+        if ua.fragment:
+            domain = "%s#%s" % (domain, ua.fragment)
+            www_domain = "%s#%s" % (www_domain, ua.fragment)
 
     if not (domain and www_domain):
         raise ValueError('Not sure why, but not all arguments were processed')
