@@ -2,6 +2,7 @@ var _willet = _willet || {};  // ensure namespace is there
 
 // module description comment
 _willet.ModuleName = (function (me) {
+    var wm = _willet.Mediator || {};
 
     // default actions
     me.defaultParams = me.defaultParams || null;

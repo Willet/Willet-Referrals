@@ -3,6 +3,7 @@ var _willet = _willet || {};  // ensure namespace is there
 // Loader agent
 // Loader.js() is a function written by Fraser Harris.
 _willet.Loader = (function (me) {
+    var wm = _willet.Mediator || {};
     var head_elem = document.getElementsByTagName("head")[0];
 
     me.css = me.css || function (url) {
@@ -73,11 +74,25 @@ _willet.Loader = (function (me) {
         }
     };
 
+    // https://gist.github.com/2648231
+    // loads the first script in a list of scripts that can be fetched.
+    me.js_redundantly = function (scripts) {
+        scripts = scripts instanceof Array ? scripts : [scripts];
+        var script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', scripts[0]);
+        script.onerror = function () {
+            scripts.shift();
+            me.js_redundantly(scripts);
+        };
+        document.body.appendChild(script);
+    };
+
     // set up your module hooks
-    if (_willet.Mediator) {
-        _willet.Mediator.on('loadCSS', me.css);
-        _willet.Mediator.on('loadCSSText', me.cssText);
-        _willet.Mediator.on('loadJS', me.js);
+    if (wm) {
+        wm.on('loadCSS', me.css);
+        wm.on('loadCSSText', me.cssText);
+        wm.on('loadJS', me.js);
     }
 
     return me;
