@@ -1164,8 +1164,7 @@ try {
         var info = _willet.util.detectBrowser();
         if (!_willet.buttonsLoaded
             && !(info.browser === "Explorer" && info.version <= 7)
-            && !(info.browser === "An unknown browser")
-            && !(_willet.util.isLocalhost()))
+            && !(info.browser === "An unknown browser"))
         {
             _willet.debug.set(false); //set to true if you want logging turned on
             _willet.init();
