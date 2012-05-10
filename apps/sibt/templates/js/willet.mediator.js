@@ -39,6 +39,9 @@ _willet.Mediator = (function (me) {
         for (var i = 0; i < me.hooks[event].length; i++) {
             try {
                 params = params || me.hooks[event][i][1];
+
+                // the following shitty line executes one of the callback
+                // functions for this event.
                 me.hooks[event][i][0](params);
             } catch (err) {
                 // continue running other hooks.

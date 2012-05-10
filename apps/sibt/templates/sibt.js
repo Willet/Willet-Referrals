@@ -12,6 +12,7 @@
     {% include "js/willet.debug.js" %}
     {% include "js/willet.colorbox.js" %}
     {% include "js/willet.analytics.js" %}
+    {% include "js/willet.loader.js" %}
 
     // declare vars
     var app, instance, products, sys, topbar, user;
@@ -24,7 +25,6 @@
     var padding_elem = null;
     var topbar = null;
     var topbar_hide_button = null;
-    var pageTracker = null; // google analytics tracker object
 
     // CSS rules
     var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
@@ -34,8 +34,10 @@
     // WOSIB: get this thing inside the closure
     var _willet_cart_items = _willet_cart_items || w._willet_cart_items || [];
 
-    var attachCSS = function () {
-        var styles = [app_css, colorbox_css, popup_css];
+    var attachCSS = function (styles) {
+        // styles = list of CSS CONTENTS
+        styles = styles instanceof Array? styles : [styles]; // autocorrect
+
         var head_elem = d.getElementsByTagName('head')[0];
         for (var i = 0; i < styles.length; i++) {
             var style = styles[i];
@@ -54,7 +56,8 @@
         }
     }
 
-    attachCSS(); // load CSS for colorbox as soon as possible!!
+    // load CSS for colorbox as soon as possible!!
+    attachCSS([app_css, colorbox_css, popup_css]);
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     sys = {
@@ -148,7 +151,7 @@
     };
 
     // Stores user_uuid for all browsers - differently for Safari.
-    var setCookieStorageFlag = function() {
+    var setCookieStorageFlag = function () {
         w.cookieSafariStorageReady = true;
     };
 
@@ -212,7 +215,7 @@
     }
 
     // Once all dependencies are loading, fire this function
-    var init = function () {
+    _willet.Mediator.on('scriptsReady', function () {
 
         if (sys.$_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
@@ -220,7 +223,7 @@
 
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
-            _willet.Mediator.fire('hasjQuery');
+            _willet.Mediator.fire('hasjQuery', $);
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
@@ -833,29 +836,26 @@
                       metadata({'evnt': 'SIBTVisitLength'})
             }).appendTo("body");
         });
-    };
+    });
 
     // Go time! Load script dependencies
     try {
-        manageScriptLoading(scripts_to_load, init);
+        _willet.Mediator.fire('loadJS', {
+            'scripts': scripts_to_load,
+            'callback': _willet.Mediator.callback('scriptsReady')
+        });
     } catch (e) {
-        (function() {
-            // Apparently, IE9 can fail for really stupid reasons.
-            // This is problematic.
-            // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
-            var error   = encodeURIComponent("Error initializing SIBT");
+        var error   = encodeURIComponent("SIBT Error");
+        var line    = e.number || e.lineNumber || "Unknown";
+        var script  = encodeURIComponent("sibt.js: " +line);
+        var message = e.stack || e.toString();
+        var st      = encodeURIComponent(message);
+        var params  = "error=" + error + "&script=" + script + "&st=" + st;
+        var err_img = d.createElement("img");
+        err_img.src = "{{URL}}{% url ClientSideMessage %}?" + params;
+        err_img.style.display = "none";
+        d.body.appendChild(err_img);
 
-            var line    = e.number || e.lineNumber || "Unknown";
-            var script  = encodeURIComponent("sibt.js:" +line);
-            var message = e.stack || e.toString();
-            var st      = encodeURIComponent(message);
-            var params  = "error=" + error + "&script=" + script + "&st=" + st;
-            var _willetImage = d.createElement("img");
-            _willetImage.src = "{{URL}}/admin/ithinkiateacookie?" + params;
-            _willetImage.style.display = "none";
-            d.body.appendChild(_willetImage);
-
-            _willet.Mediator.fire('log', "Error:", line, message);
-        }());
+        _willet.Mediator.fire('log', "Error:", line, message);
     }
 })(window, document);
