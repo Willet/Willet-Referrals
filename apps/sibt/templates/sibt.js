@@ -9,6 +9,10 @@
 
     var _willet = w._willet || {};
 
+    {% include "js/willet.mediator.js" %}
+    {% include "js/willet.analytics.js" %}
+    {% include "js/willet.debug.js" %}
+
     // declare vars
     var app, instance, products, sys, topbar, user;
 
@@ -137,7 +141,7 @@
                 }
                 loaded = true;
                 d.body.removeChild(script); // Clean up DOM
-                // console.log('loaded ' + url);
+                // _willet.Mediator.fire('log', 'loaded ' + url);
                 script_loaded(); // Script done, update manager
             };
             d.body.appendChild(script);
@@ -313,47 +317,7 @@
 
             // Send action to server
             var storeAnalytics = function (message) {
-                var message = message || '{{ evnt }}';
-                var random_id = 'a' + randomString();
-
-                $('<iframe />', {
-                    id: random_id,
-                    name: random_id,
-                    css: {'display': 'none'},
-                    src: "{{URL}}{% url TrackSIBTShowAction %}?" +
-                          metadata({"evnt": encodeURIComponent(message)}),
-                    load: function () {
-                        try {
-                            var iframe_handle = d.getElementById(random_id);
-                            iframe_handle.parentNode.removeChild (iframe_handle);
-                        } catch (e) {
-                            console.log(e.message);
-                        }
-                    }
-                }).appendTo("body");
-
-                // extra google analytics component
-                try {
-                    // async
-                    _gaq.push([
-                        '_trackEvent',
-                        'TrackSIBTAction',
-                        encodeURIComponent(message),
-                        encodeURIComponent(metadata())
-                    ]);
-                    if (!pageTracker) {
-                        // synchronous tracking
-                        pageTracker = _gat._getTracker(ANALYTICS_ID);
-                    }
-                    pageTracker._trackEvent(
-                        'TrackSIBTAction',
-                        encodeURIComponent(message),
-                        encodeURIComponent(metadata())
-                    );
-                    console.log("Success! We have secured the enemy intelligence.");
-                } catch (e) { // log() is {} on live.
-                    console.log("We have dropped the enemy intelligence: " + e);
-                }
+                _willet.Mediator.fire('storeAnalytics', message);
             };
 
             // Called when ask iframe is closed
@@ -393,7 +357,7 @@
                 if ($.willet_colorbox) {
                     $.willet_colorbox(options);
                 } else { // backup
-                    console.log("opening window");
+                    _willet.Mediator.fire('log', "opening window");
                     var width = parseInt(options.innerWidth);
                     var height = parseInt(options.innerHeight);
                     var left = (screen.width - width) / 2;
@@ -432,8 +396,8 @@
                     }
                 }
 
-                console.log(shopify_ids);
-                console.log(products);
+                _willet.Mediator.fire('log', shopify_ids);
+                _willet.Mediator.fire('log', products);
 
                 return showColorbox({
                     href: "{{URL}}{% url AskDynamicLoader %}" +
@@ -444,7 +408,7 @@
                 });
 
                 // else if no products: do nothing
-                console.log("no products! cancelling dialogue.");
+                _willet.Mediator.fire('log', "no products! cancelling dialogue.");
             };
 
             var addScrollShaking = function (elem) {
@@ -474,16 +438,16 @@
 
                 // load product currently on page
                 var ptemp = $.cookie('products') || '';
-                console.log("read product cookie, got " + ptemp);
+                _willet.Mediator.fire('log', "read product cookie, got " + ptemp);
                 products = ptemp.split(','); // load
                 if ($.inArray("{{product.uuid}}", products) === -1) { // unique
                     products.unshift("{{product.uuid}}"); // insert as products[0]
                     products = products.splice(0, PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
                     products = cleanArray(products); // remove empties
                     $.cookie('products', products.join(',')); // save
-                    console.log("saving product cookie " + products.join(','));
+                    _willet.Mediator.fire('log', "saving product cookie " + products.join(','));
                 } else {
-                    console.log("product already in cookie");
+                    _willet.Mediator.fire('log', "product already in cookie");
                 }
                 return products;
             };
@@ -502,7 +466,7 @@
                     // product_title and product_description are json dumps, so
                     // they already come with their own double quotes.
                     if ({{ product_title }} || {{ product_description }}) {
-                        console.log('product already in DB, it seems.');
+                        _willet.Mediator.fire('log', 'product already in DB, it seems.');
                         return;
                     }
 
@@ -536,10 +500,10 @@
                             src: '{{URL}}{% url CreateProduct %}?' + $.param(data),
                             css: {'display':'none'}
                         }).appendTo(d);
-                        console.log('sent product request');
+                        _willet.Mediator.fire('log', 'sent product request');
                     }
                 } catch (e) {
-                    console.log(e.message);
+                    _willet.Mediator.fire('log', e.message);
                 }
             };
 
@@ -561,7 +525,7 @@
 
             // SIBT-JS
             if (sibtjs_elem.length > 0) { // is the div there?
-                console.log('at least one ._willet_sibt exists');
+                _willet.Mediator.fire('log', 'at least one ._willet_sibt exists');
                 storeAnalytics();
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
@@ -576,7 +540,7 @@
 
                 if (!instance.has_product) {
                     // if no product, try to detect one, but don't show button
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                     sibtjs_elem.css ({
                         'display': 'none'
                     });
@@ -589,7 +553,7 @@
 
             // SIBT Connection
             if (sibt_elem.length > 0) { // is the div there?
-                console.log('#mini_sibt_button exists');
+                _willet.Mediator.fire('log', '#mini_sibt_button exists');
                 storeAnalytics();
 
                 sibt_elem
@@ -606,7 +570,7 @@
 
                 if (!instance.has_product) {
                     // if no product, try to detect one, but don't show button
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                     sibt_elem.css ({
                         'display': 'none'
                     });
@@ -660,7 +624,7 @@
             // SIBT standalone
             if (!(app.detect_shopconnection && sibt_elem.length) && // if SIBT can show, and
                 purchase_cta.length > 0) {                      // if SIBT *should* show
-                console.log('#_willet_shouldIBuyThisButton exists');
+                _willet.Mediator.fire('log', '#_willet_shouldIBuyThisButton exists');
                 storeAnalytics();
 
                 // run our scripts
@@ -676,13 +640,13 @@
                         'image': v3data.image_url || false
                     });
                 } catch (e) {
-                    console.log("failed to let v3 button save product!");
+                    _willet.Mediator.fire('log', "failed to let v3 button save product!");
                 }
 
                 // if no product, try to detect one, but don't show button
                 if (instance.has_product) {
                     {% if app.top_bar_enabled %} // add this topbar code only if necessary
-                        console.log('topbar enabled');
+                        _willet.Mediator.fire('log', 'topbar enabled');
                         var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
                         // create the hide button
@@ -714,7 +678,7 @@
 
                     {% if app.button_enabled %} // add this button code only if necessary
                         if (parseInt(app.version) <= 2) {
-                            console.log('v2 button is enabled');
+                            _willet.Mediator.fire('log', 'v2 button is enabled');
                             var button = d.createElement('a');
                             var button_html = '';
                             // only add button if it's enabled in the app
@@ -736,7 +700,7 @@
                                 .click(button_onclick);
                             $(purchase_cta).append(button);
                         } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
-                            console.log('v3+ button is enabled');
+                            _willet.Mediator.fire('log', 'v3+ button is enabled');
                             if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                                 var button = $("<div />", {
                                     'id': '_willet_button_v3'
@@ -777,7 +741,7 @@
                         }
                     {% endif %} // app.button_enabled
                 } else {
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                 }
             } // if #_willet_shouldIBuyThisButton
 
@@ -802,7 +766,7 @@
                 if ($.cookie('product1_image') &&
                     $.cookie('product2_image') &&
                     app.unsure_multi_view) {
-                    console.log('bottom popup enabled');
+                    _willet.Mediator.fire('log', 'bottom popup enabled');
                     var clickedOff = false;
 
                     var popup = buildBottomPopup();
@@ -844,7 +808,7 @@
                                 }
                             }
                         } else {
-                            console.log("page too short");
+                            _willet.Mediator.fire('log', "page too short");
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {
@@ -857,7 +821,7 @@
                         hide_popup();
                     });
                 } else {
-                    console.log('cookies not populated / not unsure yet');
+                    _willet.Mediator.fire('log', 'cookies not populated / not unsure yet');
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
@@ -882,7 +846,7 @@
                     var hash_index = hash.indexOf(hash_search);
                     if (instance.has_results && hash_index !== -1) {
                         // if vote has results and voter came from an email
-                        console.log("has results?");
+                        _willet.Mediator.fire('log', "has results?");
                         showResults();
                     }
                 });
@@ -917,7 +881,7 @@
             _willetImage.style.display = "none";
             d.body.appendChild(_willetImage);
 
-            console.log("Error:", line, message);
+            _willet.Mediator.fire('log', "Error:", line, message);
         }());
     }
 })(window, document);
