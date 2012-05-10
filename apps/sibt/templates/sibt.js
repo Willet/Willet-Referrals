@@ -73,6 +73,7 @@
         'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
         // true when visitor on page more than (5) times
         'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+        'uuid': '{{ app.uuid }}',
         'version': '{{sibt_version|default:"10"}}'
     };
     instance = {
@@ -83,7 +84,8 @@
     };
     user = {
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
-        'is_asker': ('{{is_asker}}' === 'True') // did they ask?
+        'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
+        'uuid': '{{ user.uuid }}'
     };
 
     try { // debug if available
@@ -334,6 +336,7 @@
             };
 
             var showColorbox = function (options) {
+                storeAnalytics('showColorbox');
                 var defaults = {
                     transition: 'fade',
                     close: '',
@@ -351,6 +354,7 @@
             }
 
             var showResults = function () {
+                storeAnalytics('showResults');
                 // show results if results are done.
                 // this can be detected if a finished flag is raised.
                 showColorbox({
@@ -363,6 +367,7 @@
 
             var showAsk = function (message) {
                 // shows the ask your friends iframe
+                storeAnalytics('showAsk');
                 var shopify_ids = [];
                 if (_willet_cart_items) {
                     // WOSIB exists on page; send extra data
@@ -561,6 +566,7 @@
             // (a sign that the WOSIB snippet ran on this page)
             if (wosib_elem.length > 0 && _willet_cart_items) {
                 // add the button onto the page right now
+                storeAnalytics('WOSIB');
                 var button = $("<div />", {
                         'id': '_willet_button_v3'
                     });
@@ -621,7 +627,9 @@
                 // if no product, try to detect one, but don't show button
                 if (instance.has_product) {
                     {% if app.top_bar_enabled %} // add this topbar code only if necessary
+                        storeAnalytics('topbarEnabled');
                         _willet.Mediator.fire('log', 'topbar enabled');
+
                         var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
                         // create the hide button
@@ -652,6 +660,7 @@
                     {% endif %} ; // app.top_bar_enabled
 
                     {% if app.button_enabled %} // add this button code only if necessary
+                        storeAnalytics('buttonEnabled');
                         if (parseInt(app.version) <= 2) {
                             _willet.Mediator.fire('log', 'v2 button is enabled');
                             var button = d.createElement('a');
@@ -745,8 +754,11 @@
                     var clickedOff = false;
 
                     var popup = buildBottomPopup();
-                    var show_popup = function () { popup.fadeIn('slow'); };
-                    var hide_popup = function () { popup.fadeOut('slow'); };
+                    var showPopup = function () {
+                        storeAnalytics('showPopup');
+                        popup.fadeIn('slow');
+                    };
+                    var hidePopup = function () { popup.fadeOut('slow'); };
 
                     var product1_image = $.cookie('product1_image') || '';
                     var product2_image = $.cookie('product2_image') || '';
@@ -773,29 +785,32 @@
 
                         // popup will show only for pages sufficiently long.
                         if (pageHeight > windowHeight * 1.5) {
+                            storeAnalytics('popupEnabled');
                             if (scrollPos >= threshold) {
                                 if (!popup.is(':visible') && !clickedOff) {
-                                    show_popup();
+                                    showPopup();
                                 }
                             } else {
                                 if (popup.is(':visible')) {
-                                    hide_popup();
+                                    hidePopup();
                                 }
                             }
                         } else {
                             _willet.Mediator.fire('log', "page too short");
+                            storeAnalytics('popupDisabled.pageHeight');
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {
                         showAsk();
-                        hide_popup();
+                        hidePopup();
                     });
                     $('#willet_sibt_popup #anti_cta').click(function (e) {
                         clickedOff = true;
                         e.preventDefault();
-                        hide_popup();
+                        hidePopup();
                     });
                 } else {
+                    storeAnalytics('popupDisabled.unsureFailed');
                     _willet.Mediator.fire('log', 'cookies not populated / not unsure yet');
                 }
             {% endif %} ; // app.bottom_popup_enabled
