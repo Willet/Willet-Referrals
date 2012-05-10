@@ -179,7 +179,7 @@ _willet.util = {
         return false;
     },
     "isLocalhost": function() {
-        return ((window.location.href.indexOf("http") >= 0) ? true : false);
+        return ((window.location.href.indexOf("http") >= 0) ? false : true);
     }
 };
 
@@ -1337,13 +1337,16 @@ _willet = (function (me, config) {
 try {
     if (_willet) {
         var info = _willet.util.detectBrowser();
+        _willet.debug.set(false); //set to true if you want logging turned on
+
         if (!_willet.buttonsLoaded
             && !(info.browser === "Explorer" && info.version <= 7)
             && !(info.browser === "An unknown browser")
             && !(_willet.util.isLocalhost()))
         {
-            _willet.debug.set(false); //set to true if you want logging turned on
             _willet.init();
+        } else {
+            _willet.debug.log("Buttons not loaded: Unsupported browser or localhost");
         }
     }
 
