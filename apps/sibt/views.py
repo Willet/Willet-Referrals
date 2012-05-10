@@ -175,15 +175,8 @@ class AskDynamicLoader(URIHandler):
                 logging.error("Could not save app extra_url", exc_info=True)
                 pass  # failure is, in fact, an option.
 
-        try:
-            incentive_enabled = app.incentive_enabled
-        except:
-            incentive_enabled = False
-
-        try:
-            product_shopify_id = product.shopify_id
-        except:
-            product_shopify_id = ''
+        incentive_enabled = getattr(app, 'incentive_enabled', False)
+        product_shopify_id = getattr(product, 'shopify_id', '')
 
         # successive steps to obtain the product(s) using any way possible
         products = get_products(app=app)
