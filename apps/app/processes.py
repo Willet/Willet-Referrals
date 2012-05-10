@@ -31,6 +31,7 @@ class BatchRequest(URIHandler):
             - criteria  *: JSON-encoded matching criteria
                            to filter (equality only)
                            NOTE: the criteria need to be indexed!
+            - exclude_uninstalled*: 1 if we want to exclude uninstalled apps
 
             *Optional
         """
@@ -41,6 +42,9 @@ class BatchRequest(URIHandler):
         offset         = int(self.request.get('offset', 0))
         params         = json.loads(self.request.get('params', "{}"))
         criteria       = json.loads(self.request.get('criteria', "{}"))
+
+        exclude_val    = int(self.request.get('exclude_uninstalled', 0))
+        exclude        = True if exclude_val == 1 else False
 
         filter_obj     = None
 
@@ -103,18 +107,25 @@ class BatchRequest(URIHandler):
         # If reached batch size, start another batch at the next offset
         if len(apps) == batch_size:
             p = {
-                'batch_size': batch_size,
-                'offset'    : offset + batch_size,
-                'app_cls'   : app_cls,
-                'method'    : method,
-                'params'    : json.dumps(params),
-                'criteria'  : json.dumps(criteria)
+                'batch_size'         : batch_size,
+                'offset'             : offset + batch_size,
+                'app_cls'            : app_cls,
+                'method'             : method,
+                'params'             : json.dumps(params),
+                'criteria'           : json.dumps(criteria),
+                'exclude_uninstalled': exclude_val
             }
             taskqueue.add(url=url('BatchRequest'), params=p)
 
         # For each app, try to create an email & send it
         for app in apps:
             try:
+                if exclude and hasattr(app, "client") and not getattr(app, "client"):
+                    logging.info('%s.%s has not client. Probably uninstalled' %
+                                 (app.__class__.__module__,
+                                  app.__class__.__name__,))
+                    continue
+
                 getattr(app, method)(**converted_params)
                 logging.info('%s.%s.%s() succeeded' % (app.__class__.__module__,
                                                        app.__class__.__name__,
