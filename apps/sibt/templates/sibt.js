@@ -8,16 +8,14 @@
      */
 
     var _willet = w._willet || {};
+    {% include "js/willet.mediator.js" %}
+    {% include "js/willet.debug.js" %}
+    {% include "js/willet.loader.js" %}
+    {% include "js/willet.analytics.js" %}
+    {% include "js/willet.colorbox.js" %}
 
     // declare vars
     var app, instance, products, sys, topbar, user;
-
-    // google analytics
-    var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
-    var _gaq = w._gaq || d._gaq || [];
-    _gaq.push(['_setAccount', ANALYTICS_ID]);
-    _gaq.push(['_setDomainName', w.location.host]);
-    _gaq.push(['_setAllowLinker', true]);
 
     // keep track of this many products, max
     var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }};
@@ -27,7 +25,6 @@
     var padding_elem = null;
     var topbar = null;
     var topbar_hide_button = null;
-    var pageTracker = null; // google analytics tracker object
 
     // CSS rules
     var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
@@ -37,27 +34,11 @@
     // WOSIB: get this thing inside the closure
     var _willet_cart_items = _willet_cart_items || w._willet_cart_items || [];
 
-    var attachCSS = function () {
-        var styles = [app_css, colorbox_css, popup_css];
-        var head_elem = d.getElementsByTagName('head')[0];
-        for (var i = 0; i < styles.length; i++) {
-            var style = styles[i];
-            var willet_style = d.createElement('style');
-            willet_style.type = 'text/css';
-            willet_style.setAttribute('type','text/css');
-            willet_style.setAttribute('charset','utf-8');
-            willet_style.setAttribute('media','all');
-            try { // try inserting CSS all ways (IE)
-                willet_style.styleSheet.cssText = style;
-            } catch (e) { }
-            try { // try inserting CSS all ways (DOM)
-                willet_style.appendChild(d.createTextNode(style));
-            } catch (e) { }
-            head_elem.appendChild(willet_style);
-        }
+    // load CSS for colorbox as soon as possible!!
+    var styles = [app_css, colorbox_css, popup_css];
+    for (var i = 0; i < styles.length; i++) {
+        _willet.Mediator.fire('loadCSSText', styles[i]);
     }
-
-    attachCSS(); // load CSS for colorbox as soon as possible!!
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     sys = {
@@ -83,7 +64,8 @@
         'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
         'has_results': ('{{has_results}}' === 'True'),
         'is_live': ('{{is_live}}' === 'True'),
-        'show_votes': ('{{show_votes}}' === 'True')
+        'show_votes': ('{{show_votes}}' === 'True'),
+        'uuid': '{{ instance.uuid }}'
     };
     user = {
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
@@ -91,67 +73,8 @@
         'uuid': '{{ user.uuid }}'
     };
 
-    try { // debug if available
-        if (sys.debug) {
-            if (!(typeof(w.console) === 'object' &&
-                (typeof(w.console.log) === 'function' ||
-                 typeof(w.console.log) === 'object') &&
-                (typeof(w.console.error) ==='function' ||
-                 typeof(w.console.error) === 'object'))) {
-                throw new Error("Invalid console object");
-            }
-        } else {
-            // if not debugging, proceed to make empty console
-            throw new Error("I'm sorry, Dave. I'm afraid I can't do that.");
-        }
-    } catch (e) {
-        w.console = {
-            log: function () {},
-            error: function () {}
-        };
-    }
-
-    var manageScriptLoading = function (scripts, ready_callback) {
-        // Loads scripts in parallel, and executes ready_callback when all are finished loading
-        var i, scripts_not_ready;
-        i = scripts_not_ready = scripts.length;
-        var ready_callback = ready_callback || function () {};
-
-        var script_loaded = function (index) {
-            // Checks if the scripts are all loaded
-            if (!--scripts_not_ready) {
-                // Good to go!
-                ready_callback();
-            }
-        };
-
-        var load = function (url, index) {
-            // Load one script
-            var script = d.createElement('script');
-            var loaded = false;
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', url);
-            script.onload = script.onreadystatechange = function() {
-                var rs = this.readyState;
-                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) {
-                    return;
-                }
-                loaded = true;
-                d.body.removeChild(script); // Clean up DOM
-                // console.log('loaded ' + url);
-                script_loaded(); // Script done, update manager
-            };
-            d.body.appendChild(script);
-        };
-
-        // Start asynchronously loading all scripts
-        while (i--) {
-            load(scripts[i], i);
-        }
-    };
-
     // Stores user_uuid for all browsers - differently for Safari.
-    var setCookieStorageFlag = function() {
+    var setCookieStorageFlag = function () {
         w.cookieSafariStorageReady = true;
     };
 
@@ -204,18 +127,8 @@
         setCookieStorageFlag();
     }
 
-    // set up a list of scripts to load asynchronously.
-    var scripts_to_load = [
-        '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-        ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
-    ];
-    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
-    }
-
     // Once all dependencies are loading, fire this function
-    var init = function () {
+    _willet.Mediator.on('scriptsReady', function () {
 
         if (sys.$_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
@@ -223,6 +136,7 @@
 
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
+            _willet.Mediator.fire('hasjQuery', $);  // not currently handled
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
@@ -314,50 +228,7 @@
 
             // Send action to server
             var storeAnalytics = function (message) {
-                var message = message || '{{ evnt }}';
-                {% if use_db_analytics %}
-                    var random_id = 'a' + randomString();
-                    $('<iframe />', {
-                        id: random_id,
-                        name: random_id,
-                        css: {'display': 'none'},
-                        src: "{{URL}}{% url TrackSIBTShowAction %}?" +
-                            metadata({"evnt": encodeURIComponent(message)}),
-                        load: function () {
-                            try {
-                                var iframe_handle = d.getElementById(random_id);
-                                iframe_handle.parentNode.removeChild (iframe_handle);
-                            } catch (e) {
-                                console.log(e.message);
-                            }
-                        }
-                    }).appendTo("body");
-                {% endif %}
-
-                {% if use_google_analytics %}
-                    // extra google analytics component
-                    try {
-                        // async
-                        _gaq.push([
-                            '_trackEvent',
-                            'TrackSIBTAction',
-                            encodeURIComponent(message),
-                            encodeURIComponent(app.uuid)
-                        ]);
-                        if (!pageTracker) {
-                            // synchronous tracking
-                            pageTracker = _gat._getTracker(ANALYTICS_ID);
-                        }
-                        pageTracker._trackEvent(
-                            'TrackSIBTAction',
-                            encodeURIComponent(message),
-                            encodeURIComponent(app.uuid)
-                        );
-                        console.log("Success! We have secured the enemy intelligence.");
-                    } catch (e) { // log() is {} on live.
-                        console.log("We have dropped the enemy intelligence: " + e);
-                    }
-                {% endif %}
+                _willet.Mediator.fire('storeAnalytics', message);
             };
 
             // Called when ask iframe is closed
@@ -395,25 +266,7 @@
                     onClosed: function () {}
                 };
                 options = $.extend({}, defaults, options);
-                if ($.willet_colorbox) {
-                    $.willet_colorbox(options);
-                } else { // backup
-                    console.log("opening window");
-                    var width = parseInt(options.innerWidth);
-                    var height = parseInt(options.innerHeight);
-                    var left = (screen.width - width) / 2;
-                    var top = (screen.height - height) / 2;
-                    var new_window = w.open(
-                        options.href, // url
-                        '_blank', // name
-                        'width=' + width + ',' +
-                        'height=' + height + ',' +
-                        'left=' + left + ',' +
-                        'top=' + top,
-                        true //.preserve history
-                    );
-                    new_window.focus();
-                }
+                _willet.Mediator.fire('openColorbox', options);
             }
 
             var showResults = function () {
@@ -439,8 +292,8 @@
                     }
                 }
 
-                console.log(shopify_ids);
-                console.log(products);
+                _willet.Mediator.fire('log', shopify_ids);
+                _willet.Mediator.fire('log', products);
 
                 return showColorbox({
                     href: "{{URL}}{% url AskDynamicLoader %}" +
@@ -451,7 +304,7 @@
                 });
 
                 // else if no products: do nothing
-                console.log("no products! cancelling dialogue.");
+                _willet.Mediator.fire('log', "no products! cancelling dialogue.");
             };
 
             var addScrollShaking = function (elem) {
@@ -481,16 +334,16 @@
 
                 // load product currently on page
                 var ptemp = $.cookie('products') || '';
-                console.log("read product cookie, got " + ptemp);
+                _willet.Mediator.fire('log', "read product cookie, got " + ptemp);
                 products = ptemp.split(','); // load
                 if ($.inArray("{{product.uuid}}", products) === -1) { // unique
                     products.unshift("{{product.uuid}}"); // insert as products[0]
                     products = products.splice(0, PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
                     products = cleanArray(products); // remove empties
                     $.cookie('products', products.join(',')); // save
-                    console.log("saving product cookie " + products.join(','));
+                    _willet.Mediator.fire('log', "saving product cookie " + products.join(','));
                 } else {
-                    console.log("product already in cookie");
+                    _willet.Mediator.fire('log', "product already in cookie");
                 }
                 return products;
             };
@@ -509,7 +362,7 @@
                     // product_title and product_description are json dumps, so
                     // they already come with their own double quotes.
                     if ({{ product_title }} || {{ product_description }}) {
-                        console.log('product already in DB, it seems.');
+                        _willet.Mediator.fire('log', 'product already in DB, it seems.');
                         return;
                     }
 
@@ -543,11 +396,10 @@
                             src: '{{URL}}{% url CreateProduct %}?' + $.param(data),
                             css: {'display':'none'}
                         }).appendTo(d);
-                        console.log('sent product request');
-                        storeAnalytics('saveProduct');
+                        _willet.Mediator.fire('log', 'sent product request');
                     }
                 } catch (e) {
-                    console.log(e.message);
+                    _willet.Mediator.fire('log', e.message);
                 }
             };
 
@@ -569,7 +421,7 @@
 
             // SIBT-JS
             if (sibtjs_elem.length > 0) { // is the div there?
-                console.log('at least one ._willet_sibt exists');
+                _willet.Mediator.fire('log', 'at least one ._willet_sibt exists');
                 storeAnalytics();
                 sibtjs_elem.click(button_onclick);
                 sibtjs_elem.css ({
@@ -584,7 +436,7 @@
 
                 if (!instance.has_product) {
                     // if no product, try to detect one, but don't show button
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                     sibtjs_elem.css ({
                         'display': 'none'
                     });
@@ -597,7 +449,7 @@
 
             // SIBT Connection
             if (sibt_elem.length > 0) { // is the div there?
-                console.log('#mini_sibt_button exists');
+                _willet.Mediator.fire('log', '#mini_sibt_button exists');
                 storeAnalytics();
 
                 sibt_elem
@@ -614,7 +466,7 @@
 
                 if (!instance.has_product) {
                     // if no product, try to detect one, but don't show button
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                     sibt_elem.css ({
                         'display': 'none'
                     });
@@ -669,7 +521,7 @@
             // SIBT standalone
             if (!(app.detect_shopconnection && sibt_elem.length) && // if SIBT can show, and
                 purchase_cta.length > 0) {                      // if SIBT *should* show
-                console.log('#_willet_shouldIBuyThisButton exists');
+                _willet.Mediator.fire('log', '#_willet_shouldIBuyThisButton exists');
                 storeAnalytics();
 
                 // run our scripts
@@ -685,14 +537,15 @@
                         'image': v3data.image_url || false
                     });
                 } catch (e) {
-                    console.log("failed to let v3 button save product!");
+                    _willet.Mediator.fire('log', "failed to let v3 button save product!");
                 }
 
                 // if no product, try to detect one, but don't show button
                 if (instance.has_product) {
                     {% if app.top_bar_enabled %} // add this topbar code only if necessary
                         storeAnalytics('topbarEnabled');
-                        console.log('topbar enabled');
+                        _willet.Mediator.fire('log', 'topbar enabled');
+
                         var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
                         // create the hide button
@@ -725,7 +578,7 @@
                     {% if app.button_enabled %} // add this button code only if necessary
                         storeAnalytics('buttonEnabled');
                         if (parseInt(app.version) <= 2) {
-                            console.log('v2 button is enabled');
+                            _willet.Mediator.fire('log', 'v2 button is enabled');
                             var button = d.createElement('a');
                             var button_html = '';
                             // only add button if it's enabled in the app
@@ -747,7 +600,7 @@
                                 .click(button_onclick);
                             $(purchase_cta).append(button);
                         } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
-                            console.log('v3+ button is enabled');
+                            _willet.Mediator.fire('log', 'v3+ button is enabled');
                             if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                                 var button = $("<div />", {
                                     'id': '_willet_button_v3'
@@ -788,11 +641,13 @@
                         }
                     {% endif %} // app.button_enabled
                 } else {
-                    console.log("product does not exist here; hiding button.");
+                    _willet.Mediator.fire('log', "product does not exist here; hiding button.");
                 }
             } // if #_willet_shouldIBuyThisButton
 
             {% if app.bottom_popup_enabled %}
+                _willet.Mediator.fire('log', "bottom_popup_enabled! yay!");
+
                 var buildBottomPopup = function () {
                     var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     var popup = $('<div />', {
@@ -813,7 +668,7 @@
                 if ($.cookie('product1_image') &&
                     $.cookie('product2_image') &&
                     app.unsure_multi_view) {
-                    console.log('bottom popup enabled');
+                    _willet.Mediator.fire('log', 'bottom popup enabled');
                     var clickedOff = false;
 
                     var popup = buildBottomPopup();
@@ -859,8 +714,8 @@
                                 }
                             }
                         } else {
+                            _willet.Mediator.fire('log', "page too short");
                             storeAnalytics('popupDisabled.pageHeight');
-                            console.log("page too short");
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {
@@ -874,67 +729,67 @@
                     });
                 } else {
                     storeAnalytics('popupDisabled.unsureFailed');
-                    console.log('cookies not populated / not unsure yet');
+                    _willet.Mediator.fire(
+                        'log',
+                        'did not activate bottom popup because: ' +
+                        [
+                            Boolean($.cookie('product1_image')),
+                            Boolean($.cookie('product2_image')),
+                            app.unsure_multi_view
+                        ]
+                    );
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
-            // Load jQuery colorbox last. It cannot be loaded twice!
-            if (!($.willet_colorbox || jQuery.willet_colorbox)) {
-                $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
-                    if (jQuery.willet_colorbox) {
-                        $.willet_colorbox = jQuery.willet_colorbox;
-                    }
-                    $.willet_colorbox.init();
-
-                    // watch for message; Create IE + others compatible event handler
-                    $(w).bind('onmessage message', function(e) {
-                        if (e.originalEvent.data === 'close') {
-                            $.willet_colorbox.close();
-                        }
-                    });
-
-                    // auto-show results on hash
-                    var hash = w.location.hash;
-                    var hash_search = '#open';
-                    var hash_index = hash.indexOf(hash_search);
-                    if (instance.has_results && hash_index !== -1) {
-                        // if vote has results and voter came from an email
-                        console.log("has results?");
-                        showResults();
-                    }
-                });
+            // auto-show results on hash
+            var hash = window.location.hash;
+            var hash_search = '#open';
+            var hash_index = hash.indexOf(hash_search);
+            if (instance.has_results && hash_index !== -1) {
+                // if vote has results and voter came from an email
+                _willet.Mediator.fire('log', "has results?");
+                showResults();
             }
 
             // analytics to record the amount of time this script has been loaded
+            // this must be an iframe to time it + send synchronous requests
             $('<iframe />', {
                 css: {'display': 'none'},
                 src: "{{URL}}{% url ShowOnUnloadHook %}?" +
                       metadata({'evnt': 'SIBTVisitLength'})
             }).appendTo("body");
         });
-    };
+    });
 
     // Go time! Load script dependencies
     try {
-        manageScriptLoading(scripts_to_load, init);
+        // set up a list of scripts to load asynchronously.
+        var scripts_to_load = [
+            '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',  // AB call to action text
+            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+        ];
+
+        // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+        if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
+            scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
+        }
+
+        _willet.Mediator.fire('loadJS', {
+            'scripts': scripts_to_load,
+            'callback': _willet.Mediator.callback('scriptsReady')
+        });
     } catch (e) {
-        (function() {
-            // Apparently, IE9 can fail for really stupid reasons.
-            // This is problematic.
-            // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
-            var error   = encodeURIComponent("Error initializing SIBT");
+        var error   = encodeURIComponent("SIBT Error");
+        var line    = e.number || e.lineNumber || "Unknown";
+        var script  = encodeURIComponent("sibt.js: " + line);
+        var message = e.stack || e.toString();
+        var st      = encodeURIComponent(message);
+        var params  = "error=" + error + "&script=" + script + "&st=" + st;
+        var err_img = d.createElement("img");
+        err_img.src = "{{URL}}{% url ClientSideMessage %}?" + params;
+        err_img.style.display = "none";
+        d.body.appendChild(err_img);
 
-            var line    = e.number || e.lineNumber || "Unknown";
-            var script  = encodeURIComponent("sibt.js:" +line);
-            var message = e.stack || e.toString();
-            var st      = encodeURIComponent(message);
-            var params  = "error=" + error + "&script=" + script + "&st=" + st;
-            var _willetImage = d.createElement("img");
-            _willetImage.src = "{{URL}}/admin/ithinkiateacookie?" + params;
-            _willetImage.style.display = "none";
-            d.body.appendChild(_willetImage);
-
-            console.log("Error:", line, message);
-        }());
+        _willet.Mediator.fire('log', "Error:", line, message);
     }
 })(window, document);
