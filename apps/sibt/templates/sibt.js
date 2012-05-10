@@ -10,9 +10,9 @@
     var _willet = w._willet || {};
     {% include "js/willet.mediator.js" %}
     {% include "js/willet.debug.js" %}
-    {% include "js/willet.colorbox.js" %}
-    {% include "js/willet.analytics.js" %}
     {% include "js/willet.loader.js" %}
+    {% include "js/willet.analytics.js" %}
+    {% include "js/willet.colorbox.js" %}
 
     // declare vars
     var app, instance, products, sys, topbar, user;
@@ -34,30 +34,11 @@
     // WOSIB: get this thing inside the closure
     var _willet_cart_items = _willet_cart_items || w._willet_cart_items || [];
 
-    var attachCSS = function (styles) {
-        // styles = list of CSS CONTENTS
-        styles = styles instanceof Array? styles : [styles]; // autocorrect
-
-        var head_elem = d.getElementsByTagName('head')[0];
-        for (var i = 0; i < styles.length; i++) {
-            var style = styles[i];
-            var willet_style = d.createElement('style');
-            willet_style.type = 'text/css';
-            willet_style.setAttribute('type','text/css');
-            willet_style.setAttribute('charset','utf-8');
-            willet_style.setAttribute('media','all');
-            try { // try inserting CSS all ways (IE)
-                willet_style.styleSheet.cssText = style;
-            } catch (e) { }
-            try { // try inserting CSS all ways (DOM)
-                willet_style.appendChild(d.createTextNode(style));
-            } catch (e) { }
-            head_elem.appendChild(willet_style);
-        }
-    }
-
     // load CSS for colorbox as soon as possible!!
-    attachCSS([app_css, colorbox_css, popup_css]);
+    var styles = [app_css, colorbox_css, popup_css];
+    for (var i = 0; i < styles.length; i++) {
+        _willet.Mediator.fire('loadCSSText', styles[i]);
+    }
 
     // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
     sys = {
@@ -89,65 +70,6 @@
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
         'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
         'uuid': '{{ user.uuid }}'
-    };
-
-    try { // debug if available
-        if (sys.debug) {
-            if (!(typeof(w.console) === 'object' &&
-                (typeof(w.console.log) === 'function' ||
-                 typeof(w.console.log) === 'object') &&
-                (typeof(w.console.error) ==='function' ||
-                 typeof(w.console.error) === 'object'))) {
-                throw new Error("Invalid console object");
-            }
-        } else {
-            // if not debugging, proceed to make empty console
-            throw new Error("I'm sorry, Dave. I'm afraid I can't do that.");
-        }
-    } catch (e) {
-        w.console = {
-            log: function () {},
-            error: function () {}
-        };
-    }
-
-    var manageScriptLoading = function (scripts, ready_callback) {
-        // Loads scripts in parallel, and executes ready_callback when all are finished loading
-        var i, scripts_not_ready;
-        i = scripts_not_ready = scripts.length;
-        var ready_callback = ready_callback || function () {};
-
-        var script_loaded = function (index) {
-            // Checks if the scripts are all loaded
-            if (!--scripts_not_ready) {
-                // Good to go!
-                ready_callback();
-            }
-        };
-
-        var load = function (url, index) {
-            // Load one script
-            var script = d.createElement('script');
-            var loaded = false;
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', url);
-            script.onload = script.onreadystatechange = function() {
-                var rs = this.readyState;
-                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) {
-                    return;
-                }
-                loaded = true;
-                d.body.removeChild(script); // Clean up DOM
-                // _willet.Mediator.fire('log', 'loaded ' + url);
-                script_loaded(); // Script done, update manager
-            };
-            d.body.appendChild(script);
-        };
-
-        // Start asynchronously loading all scripts
-        while (i--) {
-            load(scripts[i], i);
-        }
     };
 
     // Stores user_uuid for all browsers - differently for Safari.
@@ -204,16 +126,6 @@
         setCookieStorageFlag();
     }
 
-    // set up a list of scripts to load asynchronously.
-    var scripts_to_load = [
-        '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',
-        ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
-    ];
-    // turns out we need at least 1.4 for the $(<tag>,{props}) notation
-    if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
-        scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
-    }
-
     // Once all dependencies are loading, fire this function
     _willet.Mediator.on('scriptsReady', function () {
 
@@ -223,7 +135,7 @@
 
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
-            _willet.Mediator.fire('hasjQuery', $);
+            _willet.Mediator.fire('hasjQuery', $);  // not currently handled
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
@@ -840,6 +752,17 @@
 
     // Go time! Load script dependencies
     try {
+        // set up a list of scripts to load asynchronously.
+        var scripts_to_load = [
+            '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',  // AB call to action text
+            ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
+        ];
+
+        // turns out we need at least 1.4 for the $(<tag>,{props}) notation
+        if (!w.jQuery || w.jQuery.fn.jquery < "1.4.0") {
+            scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
+        }
+
         _willet.Mediator.fire('loadJS', {
             'scripts': scripts_to_load,
             'callback': _willet.Mediator.callback('scriptsReady')
@@ -847,7 +770,7 @@
     } catch (e) {
         var error   = encodeURIComponent("SIBT Error");
         var line    = e.number || e.lineNumber || "Unknown";
-        var script  = encodeURIComponent("sibt.js: " +line);
+        var script  = encodeURIComponent("sibt.js: " + line);
         var message = e.stack || e.toString();
         var st      = encodeURIComponent(message);
         var params  = "error=" + error + "&script=" + script + "&st=" + st;

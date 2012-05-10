@@ -3,13 +3,14 @@ var _willet = _willet || {};  // ensure namespace is there
 // Loader agent
 // Loader.js() is a function written by Fraser Harris.
 _willet.Loader = (function (me) {
+    var head_elem = document.getElementsByTagName("head")[0];
 
     me.css = me.css || function (url) {
         var tag = document.createElement("link");
         tag.setAttribute("rel", "stylesheet");
         tag.setAttribute("type", "text/css");
         tag.setAttribute("href", url);
-        document.getElementsByTagName("head")[0].appendChild(tag);
+        head_elem.appendChild(tag);
     };
 
     me.cssText = me.cssText || function (style) {
@@ -35,38 +36,40 @@ _willet.Loader = (function (me) {
          *      'callback': func
          * }
          */
-        var i, scripts_not_ready;
-        i = scripts_not_ready = param.scripts.length;
-        param.callback = param.callback || function () {};
+        if (param && param.scripts) {
+            var i, scripts_not_ready;
+            i = scripts_not_ready = param.scripts.length;
+            param.callback = param.callback || function () {};
 
-        var script_loaded = function () {
-            // Checks if the scripts are all loaded
-            if (!--scripts_not_ready) {
-                param.callback();  // Good to go!
-            }
-        };
-
-        var load = function (url) {
-            // Load one script
-            var script = document.createElement('script');
-            var loaded = false;
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', url);
-            script.onload = script.onreadystatechange = function() {
-                var rs = this.readyState;
-                if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) {
-                    return;
+            var script_loaded = function () {
+                // Checks if the scripts are all loaded
+                if (!--scripts_not_ready) {
+                    param.callback();  // Good to go!
                 }
-                loaded = true;
-                document.body.removeChild(script); // Clean up DOM
-                script_loaded(); // Script done, update manager
             };
-            document.body.appendChild(script);
-        };
 
-        // Start asynchronously loading all scripts
-        while (i--) {
-            load(param.scripts[i], i);
+            var load = function (url) {
+                // Load one script
+                var script = document.createElement('script');
+                var loaded = false;
+                script.setAttribute('type', 'text/javascript');
+                script.setAttribute('src', url);
+                script.onload = script.onreadystatechange = function() {
+                    var rs = this.readyState;
+                    if (loaded || (rs && rs !== 'complete' && rs !== 'loaded')) {
+                        return;
+                    }
+                    loaded = true;
+                    document.body.removeChild(script); // Clean up DOM
+                    script_loaded(); // Script done, update manager
+                };
+                document.body.appendChild(script);
+            };
+
+            // Start asynchronously loading all scripts
+            while (i--) {
+                load(param.scripts[i], i);
+            }
         }
     };
 

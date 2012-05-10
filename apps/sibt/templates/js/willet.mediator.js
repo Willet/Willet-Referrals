@@ -23,10 +23,9 @@ _willet.Mediator = (function (me) {
 
     // get a callback for a given event.
     // it allows other applications to call our registered events.
-    // params is optional.
-    me.callback = me.callback || function (event, params) {
+    me.callback = me.callback || function (event) {
         return function (params) {
-            me.fire('event', params);
+            me.fire(event, params);
         };
     }
 
@@ -43,6 +42,9 @@ _willet.Mediator = (function (me) {
                 // the following shitty line executes one of the callback
                 // functions for this event.
                 me.hooks[event][i][0](params);
+                // if (event !== 'log') {
+                //     me.fire('log', 'fired event ' + event);
+                // }
             } catch (err) {
                 // continue running other hooks.
                 if (event !== 'log') {  // prevent stack overflow (fo cereals)
@@ -72,6 +74,7 @@ _willet.Mediator = (function (me) {
         delete me.hooks[event];
         return me;
     };
+    me.unregister = me.on;
 
     // replace all previous hooks with this single one.
     // params is optional.
