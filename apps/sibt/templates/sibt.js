@@ -64,7 +64,8 @@
         'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
         'has_results': ('{{has_results}}' === 'True'),
         'is_live': ('{{is_live}}' === 'True'),
-        'show_votes': ('{{show_votes}}' === 'True')
+        'show_votes': ('{{show_votes}}' === 'True'),
+        'uuid': '{{ instance.uuid }}'
     };
     user = {
         'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
@@ -645,6 +646,8 @@
             } // if #_willet_shouldIBuyThisButton
 
             {% if app.bottom_popup_enabled %}
+                _willet.Mediator.fire('log', "bottom_popup_enabled! yay!");
+
                 var buildBottomPopup = function () {
                     var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     var popup = $('<div />', {
@@ -726,7 +729,15 @@
                     });
                 } else {
                     storeAnalytics('popupDisabled.unsureFailed');
-                    _willet.Mediator.fire('log', 'cookies not populated / not unsure yet');
+                    _willet.Mediator.fire(
+                        'log',
+                        'did not activate bottom popup because: ' +
+                        [
+                            Boolean($.cookie('product1_image')),
+                            Boolean($.cookie('product2_image')),
+                            app.unsure_multi_view
+                        ]
+                    );
                 }
             {% endif %} ; // app.bottom_popup_enabled
 

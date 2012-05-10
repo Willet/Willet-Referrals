@@ -92,7 +92,7 @@ SHOPIFY_APPS = {
 
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 5,
+    'url_count_for_app_and_user': 4,
 }
 
 # controls the number of memcache buckets
