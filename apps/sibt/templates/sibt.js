@@ -517,7 +517,7 @@
                         'client_uuid': fill.client_uuid || '{{ client.uuid }}', // REQUIRED
                         'sibtversion': fill.sibtversion || app.version,
                         'title': fill.title || getPageTitle(),
-                        'image': data.image || getLargestImage(d),
+                        'image': fill.image || getLargestImage(d),
                         'resource_url': '{{ page_url }}' || getCanonicalURL(w.location.href)
                     };
 
