@@ -175,10 +175,8 @@ class AskDynamicLoader(URIHandler):
                 logging.error("Could not save app extra_url", exc_info=True)
                 pass  # failure is, in fact, an option.
 
-        try:
-            incentive_enabled = app.incentive_enabled
-        except:
-            incentive_enabled = False
+        incentive_enabled = getattr(app, 'incentive_enabled', False)
+        product_shopify_id = getattr(product, 'shopify_id', '')
 
         # successive steps to obtain the product(s) using any way possible
         products = get_products(app=app)
@@ -196,11 +194,11 @@ class AskDynamicLoader(URIHandler):
                     image = '/static/imgs/noimage-willet.png'
 
                 template_products.append({
-                    'id': product.shopify_id,
+                    'id': product_shopify_id,
                     'uuid': product.uuid,
                     'image': image,
                     'title': product.title,
-                    'shopify_id': product.shopify_id,
+                    'shopify_id': product_shopify_id,
                     'product_uuid': product.uuid,
                     'product_desc': product.description,
                 })
