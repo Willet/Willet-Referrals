@@ -8,21 +8,13 @@
      */
 
     var _willet = w._willet || {};
-
     {% include "js/willet.mediator.js" %}
-    {% include "js/willet.analytics.js" %}
     {% include "js/willet.debug.js" %}
+    {% include "js/willet.colorbox.js" %}
+    {% include "js/willet.analytics.js" %}
 
     // declare vars
     var app, instance, products, sys, topbar, user;
-
-    // google analytics
-    var ANALYTICS_ID = 'UA-23764505-9'; // DerpShop: UA-31001469-1
-    var _gaq = w._gaq || d._gaq || [];
-    _gaq.push(['_setAccount', ANALYTICS_ID]);
-    // https://developers.google.com/analytics/devguides/collection/gajs/gaTrackingSite#domainToNone
-    _gaq.push(['_setDomainName', w.location.host]);
-    _gaq.push(['_setAllowLinker', true]);
 
     // keep track of this many products, max
     var PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }};
@@ -226,6 +218,7 @@
 
         // wait for DOM elements to appear + $ closure!
         jQuery(d).ready(function($) {
+            _willet.Mediator.fire('hasjQuery');
 
             // jQuery shaker plugin
             (function(a){var b={};var c=5;a.fn.shaker=function(){b=a(this);b.css("position","relative");b.run=true;b.find("*").each(function(b,c){a(c).css("position","relative")});var c=function(){a.fn.shaker.animate(a(b))};setTimeout(c,25)};a.fn.shaker.animate=function(c){if(b.run==true){a.fn.shaker.shake(c);c.find("*").each(function(b,c){a.fn.shaker.shake(c)});var d=function(){a.fn.shaker.animate(c)};setTimeout(d,25)}};a.fn.shaker.stop=function(a){b.run=false;b.css("top","0px");b.css("left","0px")};a.fn.shaker.shake=function(b){var d=a(b).position();a(b).css("left",d["left"]+Math.random()<.5?Math.random()*c*-1:Math.random()*c)}})($);
@@ -354,25 +347,7 @@
                     onClosed: function () {}
                 };
                 options = $.extend({}, defaults, options);
-                if ($.willet_colorbox) {
-                    $.willet_colorbox(options);
-                } else { // backup
-                    _willet.Mediator.fire('log', "opening window");
-                    var width = parseInt(options.innerWidth);
-                    var height = parseInt(options.innerHeight);
-                    var left = (screen.width - width) / 2;
-                    var top = (screen.height - height) / 2;
-                    var new_window = w.open(
-                        options.href, // url
-                        '_blank', // name
-                        'width=' + width + ',' +
-                        'height=' + height + ',' +
-                        'left=' + left + ',' +
-                        'top=' + top,
-                        true //.preserve history
-                    );
-                    new_window.focus();
-                }
+                _willet.Mediator.fire('openColorbox', options);
             }
 
             var showResults = function () {
@@ -825,34 +800,18 @@
                 }
             {% endif %} ; // app.bottom_popup_enabled
 
-            // Load jQuery colorbox last. It cannot be loaded twice!
-            if (!($.willet_colorbox || jQuery.willet_colorbox)) {
-                $.getScript('{{URL}}/s/js/jquery.colorbox.js?' + metadata(), function () {
-                    if (jQuery.willet_colorbox) {
-                        $.willet_colorbox = jQuery.willet_colorbox;
-                    }
-                    $.willet_colorbox.init();
-
-                    // watch for message; Create IE + others compatible event handler
-                    $(w).bind('onmessage message', function(e) {
-                        if (e.originalEvent.data === 'close') {
-                            $.willet_colorbox.close();
-                        }
-                    });
-
-                    // auto-show results on hash
-                    var hash = w.location.hash;
-                    var hash_search = '#open';
-                    var hash_index = hash.indexOf(hash_search);
-                    if (instance.has_results && hash_index !== -1) {
-                        // if vote has results and voter came from an email
-                        _willet.Mediator.fire('log', "has results?");
-                        showResults();
-                    }
-                });
+            // auto-show results on hash
+            var hash = window.location.hash;
+            var hash_search = '#open';
+            var hash_index = hash.indexOf(hash_search);
+            if (instance.has_results && hash_index !== -1) {
+                // if vote has results and voter came from an email
+                _willet.Mediator.fire('log', "has results?");
+                showResults();
             }
 
             // analytics to record the amount of time this script has been loaded
+            // this must be an iframe to time it + send synchronous requests
             $('<iframe />', {
                 css: {'display': 'none'},
                 src: "{{URL}}{% url ShowOnUnloadHook %}?" +

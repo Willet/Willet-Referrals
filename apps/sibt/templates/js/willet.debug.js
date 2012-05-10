@@ -1,6 +1,6 @@
 var _willet = _willet || {};  // ensure namespace is there
 
-// willet debugger
+// willet debugger. This is mostly code by Nicholas Terwoord.
 _willet.debug = (function (me) {
     var isDebugging = ('{{ debug }}' === 'True'),
         callbacks = [],
@@ -62,8 +62,8 @@ _willet.debug = (function (me) {
 
     // set up a hook to let log and error be fired
     if (_willet.Mediator) {
-        _willet.Mediator.on('log', me._log);
-        _willet.Mediator.on('error', me._error);
+        _willet.Mediator.on('log', _log);
+        _willet.Mediator.on('error', _error);
     }
 
     return me;
