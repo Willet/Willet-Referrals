@@ -188,6 +188,40 @@ class ButtonsShopify(Buttons, AppShopify):
         # Correct the object, and re-index any properties
         self.put()
 
+        try:
+            # Get the previous tag...
+            # TODO: Should we make sure they had the tag previously?
+            results = self._call_Shopify_API("GET", "script_tags.json")
+
+            if not results.get("script_tags"):
+                # What?
+                return
+
+            tag = None
+            for script_tag in results.get("script_tags"):
+                if "/b/shopify/load/" in script_tag.get("src", ""):
+                    tag = script_tag
+                    break
+
+            if not tag:
+                # What?
+                return
+
+            # Update the tag...
+            version = os.environ['CURRENT_VERSION_ID']
+            button_type = ""
+            if self.billing_enabled:
+                button_type = "smart-"
+
+            tag["src"] = "%s/b/shopify/load/%sbuttons.js?app_uuid=%s&v=%s" %\
+                      (URL, button_type, self.uuid, version)
+
+            self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
+                                   payload={"script_tag": tag})
+        except ShopifyAPIError:
+            logging.warning("Couldn't get or put script")
+
+
     def update_prefs(self, preferences):
         """Update preferences for the application."""
         if self.billing_enabled:
