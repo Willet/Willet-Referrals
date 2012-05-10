@@ -15,18 +15,10 @@
         publicMethod.close();
     };
 
-    publicMethod.storeAnalytics = function( message ) {
-        var message = message;
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message +
-                    "&app_uuid={{app_uuid}}" +
-                    "&user_uuid={{user_uuid}}" +
-                    "&instance_uuid={{instance_uuid}}" +
-                    "&target_url={{target_url}}";
-
-        document.body.appendChild( iframe );
+    publicMethod.storeAnalytics = function(message) {
+        if (_willet && _willet.Mediator) {
+            _willet.Mediator.fire('storeAnalytics', message);
+        }
     };
 
     publicMethod.closeState = "SIBTAskIframeCancelled";
