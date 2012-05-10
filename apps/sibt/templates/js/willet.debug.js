@@ -1,7 +1,7 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // willet debugger. This is mostly code by Nicholas Terwoord.
-_willet.debug = (function (me) {
+_willet.Debug = (function (me) {
     var isDebugging = ('{{ debug }}' === 'True'),
         callbacks = [],
         log_array = [],
@@ -67,4 +67,4 @@ _willet.debug = (function (me) {
     }
 
     return me;
-}(_willet.debug || {}));
+}(_willet.Debug || {}));

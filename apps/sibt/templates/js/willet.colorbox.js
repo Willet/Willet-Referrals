@@ -18,7 +18,8 @@ _willet.Colorbox = (function (me) {
         onClosed: function () {}
     };
 
-    me.init = me.init || function () {
+    me.init = me.init || function ($) {
+        // can use jQuery as $ only if it is passed in.
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
         if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
             $.getScript('{{URL}}/s/js/jquery.colorbox.js', function () {

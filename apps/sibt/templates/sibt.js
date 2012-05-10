@@ -292,8 +292,8 @@
                     }
                 }
 
-                _willet.Mediator.fire('log', shopify_ids);
-                _willet.Mediator.fire('log', products);
+                // _willet.Mediator.fire('log', shopify_ids);
+                // _willet.Mediator.fire('log', products);
 
                 return showColorbox({
                     href: "{{URL}}{% url AskDynamicLoader %}" +
@@ -703,7 +703,6 @@
 
                         // popup will show only for pages sufficiently long.
                         if (pageHeight > windowHeight * 1.5) {
-                            storeAnalytics('popupEnabled');
                             if (scrollPos >= threshold) {
                                 if (!popup.is(':visible') && !clickedOff) {
                                     showPopup();
@@ -715,7 +714,6 @@
                             }
                         } else {
                             _willet.Mediator.fire('log', "page too short");
-                            storeAnalytics('popupDisabled.pageHeight');
                         }
                     });
                     $('#willet_sibt_popup .cta').click(function () {

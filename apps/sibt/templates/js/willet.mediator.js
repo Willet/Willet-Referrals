@@ -33,7 +33,7 @@ _willet.Mediator = (function (me) {
     // params is optional.
     me.fire = me.fire || function (event, params) {
         if (!me.hooks[event]) {
-            return; // no functions registered with this event.
+            return me; // no functions registered with this event.
         }
         for (var i = 0; i < me.hooks[event].length; i++) {
             try {
@@ -42,20 +42,17 @@ _willet.Mediator = (function (me) {
                 // the following shitty line executes one of the callback
                 // functions for this event.
                 me.hooks[event][i][0](params);
-                // if (event !== 'log') {
-                //     me.fire('log', 'fired event ' + event);
-                // }
             } catch (err) {
                 // continue running other hooks.
                 if (event !== 'log') {  // prevent stack overflow (fo cereals)
-                    me.fire('log', 'failed to load a hook: ' + err);
+                    me.fire('log', 'failed to call an event: ' + err);
                 }
             }
         }
         return me;
     };
 
-    // subscribing to an event - fire a function when it happens.
+    // subscribing to an event - fire a function when it happens. (FIFO)
     // params is optional.
     me.on = me.on || function (event, func, params) {
         var hooks = me.hooks;

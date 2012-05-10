@@ -24,6 +24,8 @@ _willet.Analytics = (function (me) {
     me.store = me.store || function (message, extras) {
         var message = message || me.default;
 
+        if (!message) return;  // do not record nothing
+
         // extra google analytics component
         try {
             // async
@@ -40,9 +42,9 @@ _willet.Analytics = (function (me) {
                 encodeURIComponent(message),
                 encodeURIComponent(extras)
             );
-            console.log("Success! We have secured the enemy intelligence: " + message);
+            _willet.Mediator.fire('log', "Success! We have secured the enemy intelligence: " + message);
         } catch (e) { // log() is {} on live.
-            console.log("We have dropped the enemy intelligence: " + e);
+            _willet.Mediator.fire('log', "We have DROPPED the enemy intelligence: " + e);
         }
     };
 
