@@ -5,10 +5,10 @@ var _willet = _willet || {};  // ensure namespace is there
 // product_title and product_description django tags require their own
 // double quotes!
 
-_willet.SIBT = (function (me) {
-    var wm = _willet.Mediator || {};
+_willet.sibt = (function (me) {
+    var wm = _willet.mediator || {};
     var $ = jQuery || {};  // I want jQuery here, but it won't be available
-                           // until Mediator says so.
+                           // until mediator says so.
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,
         SMALL_WOSIB = 3, LARGE_WOSIB = 4,
@@ -780,4 +780,4 @@ _willet.SIBT = (function (me) {
     }
 
     return me;
-} (_willet.SIBT || {}));
+} (_willet.sibt || {}));

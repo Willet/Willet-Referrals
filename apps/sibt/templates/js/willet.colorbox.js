@@ -1,10 +1,10 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // le colorbox for willet (has a custom name, willet_colorbox)
-_willet.Colorbox = (function (me) {
-    var wm = _willet.Mediator || {};
+_willet.colorbox = (function (me) {
+    var wm = _willet.mediator || {};
     var $ = jQuery || {};  // I want jQuery here, but it won't be available
-                           // until Mediator says so.
+                           // until mediator says so.
 
     me._cboxobj = null;
 
@@ -90,4 +90,4 @@ _willet.Colorbox = (function (me) {
     }
 
     return me;
-} (_willet.Colorbox || {}));
+} (_willet.colorbox || {}));

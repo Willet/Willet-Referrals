@@ -1,8 +1,8 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // module description comment
-_willet.ModuleName = (function (me) {
-    var wm = _willet.Mediator || {};
+_willet.moduleName = (function (me) {
+    var wm = _willet.mediator || {};
 
     // default actions
     me.defaultParams = me.defaultParams || null;
@@ -12,9 +12,9 @@ _willet.ModuleName = (function (me) {
     };
 
     // set up your module hooks
-    if (_willet.Mediator) {
-        _willet.Mediator.on('customEvent', me.customEvent, defaultParams);
+    if (_willet.mediator) {
+        _willet.mediator.on('customEvent', me.customEvent, defaultParams);
     }
 
     return me;
-} (_willet.ModuleName || {}));
+} (_willet.moduleName || {}));

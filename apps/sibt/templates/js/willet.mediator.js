@@ -2,11 +2,11 @@ var _willet = _willet || {};  // ensure namespace is there
 
 // bulletin board for module hooks.
 // idea from http://goo.gl/mLVK2; contains no code from it.
-_willet.Mediator = (function (me) {
-    // example on: _willet.Mediator.on('eventName', function (params) {
+_willet.mediator = (function (me) {
+    // example on: _willet.mediator.on('eventName', function (params) {
     //     alert(params);
     // });
-    // example fire: _willet.Mediator.fire('eventName', 'hello world');
+    // example fire: _willet.mediator.fire('eventName', 'hello world');
 
     // you shouldn't need to manipulate this object, but you can if you want.
     me.hooks = me.hooks || {
@@ -86,4 +86,4 @@ _willet.Mediator = (function (me) {
     };
 
     return me;
-} (_willet.Mediator || {}));
+} (_willet.mediator || {}));

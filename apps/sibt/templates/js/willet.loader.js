@@ -1,9 +1,9 @@
 var _willet = _willet || {};  // ensure namespace is there
 
-// Loader agent
-// Loader.js() is a function written by Fraser Harris.
-_willet.Loader = (function (me) {
-    var wm = _willet.Mediator || {};
+// loader agent
+// loader.js() is a function written by Fraser Harris.
+_willet.loader = (function (me) {
+    var wm = _willet.mediator || {};
     var head_elem = document.getElementsByTagName("head")[0];
 
     me.css = me.css || function (url) {
@@ -96,4 +96,4 @@ _willet.Loader = (function (me) {
     }
 
     return me;
-} (_willet.Loader || {}));
+} (_willet.loader || {}));

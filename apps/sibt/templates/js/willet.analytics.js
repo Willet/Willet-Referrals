@@ -1,8 +1,8 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // Google Analytics events tracker
-_willet.Analytics = (function (me) {
-    var wm = _willet.Mediator || {};
+_willet.analytics = (function (me) {
+    var wm = _willet.mediator || {};
 
     // default actions
     me.defaultEvent = me.defaultEvent || '{{ evnt }}';
@@ -56,4 +56,4 @@ _willet.Analytics = (function (me) {
 
     me.init();
     return me;
-} (_willet.Analytics || {}));
+} (_willet.analytics || {}));
