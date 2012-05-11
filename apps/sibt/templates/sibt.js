@@ -29,7 +29,7 @@
     // load CSS for colorbox as soon as possible!!
     var styles = [app_css, colorbox_css, topbar_css, popup_css];
     for (var i = 0; i < styles.length; i++) {
-        _willet.Mediator.fire('loadCSSText', styles[i]);
+        _willet.mediator.fire('loadCSSText', styles[i]);
     }
 
 
@@ -90,7 +90,7 @@
 
 
     // Once all dependencies are loading, fire this function
-    _willet.Mediator.on('scriptsReady', function () {
+    _willet.mediator.on('scriptsReady', function () {
 
         if (sys.$_conflict) {
             jQuery.noConflict(); // Suck it, Prototype!
@@ -105,8 +105,8 @@
             // jQuery cookie plugin (included to solve lagging requests)
             {% include '../../plugin/templates/js/jquery.cookie.js' %}
 
-            _willet.Mediator.fire('hasjQuery', $);
-            _willet.Mediator.fire('scriptComplete');
+            _willet.mediator.fire('hasjQuery', $);
+            _willet.mediator.fire('scriptComplete');
         });
     });
 
@@ -123,9 +123,9 @@
             scripts_to_load.push('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js');
         }
 
-        _willet.Mediator.fire('loadJS', {
+        _willet.mediator.fire('loadJS', {
             'scripts': scripts_to_load,
-            'callback': _willet.Mediator.callback('scriptsReady')
+            'callback': _willet.mediator.callback('scriptsReady')
         });
     } catch (e) {
         var error   = encodeURIComponent("SIBT Error");
@@ -139,6 +139,6 @@
         err_img.style.display = "none";
         d.body.appendChild(err_img);
 
-        _willet.Mediator.fire('log', "Error:", line, message);
+        _willet.mediator.fire('log', "Error:", line, message);
     }
 })(window, document);
