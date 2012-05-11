@@ -2,6 +2,9 @@ var _willet = _willet || {};  // ensure namespace is there
 
 // Should I Buy This
 // The hasjQuery event starts off automatic initialisation.
+// product_title and product_description django tags require their own
+// double quotes!
+
 _willet.SIBT = (function (me) {
     var wm = _willet.Mediator || {};
     var $ = jQuery || {};  // I want jQuery here, but it won't be available
@@ -15,22 +18,52 @@ _willet.SIBT = (function (me) {
             '._willet_sibt': SMALL_SIBT, // SIBT-JS
             '#_willet_WOSIB_Button': LARGE_WOSIB // WOSIB mode
         },
+        cart_items = cart_items || window._willet_cart_items || [],
         PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
         SHAKE_DURATION = 600, // ms
-        SHAKE_WAIT = 700; // ms
+        SHAKE_WAIT = 1000, // ms
 
-    // these are required variables from outside the scope
-    var sys = sys || {},
-        app = app || {},
-        instance = instance || {},
-        products = products || [],
-        user = user || {},
-        cart_items = cart_items || window._willet_cart_items || [];
+        padding_elem = null,
+        topbar = null,
+        topbar_hide_button = null;
 
+    // declare vars in this scope
+    var app, instance, products, topbar, user;
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
         wm.fire('log', 'initialisating SIBT!');
+
+        // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
+        app = {
+            // true when SIBT needs to be disabled on the same page as Buttons
+            'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
+            'detect_shopconnection': ('{{detect_shopconnection}}' === 'True'),
+            'features': {
+                'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
+                'button': ('{{app.button_enabled}}' === 'True'),
+                'topbar': ('{{app.top_bar_enabled}}' === 'True')
+            },
+            'show_top_bar_ask': ('{{show_top_bar_ask}}' === 'True'),
+            // true when visitor on page more than (5) times
+            'unsure_multi_view': ('{{unsure_multi_view}}' === 'True'),
+            'uuid': '{{ app.uuid }}',
+            'version': '{{sibt_version|default:"10"}}'
+        };
+        instance = {
+            'has_product': ('{{has_product}}' === 'True'), // product exists in DB?
+            'has_results': ('{{has_results}}' === 'True'),
+            'is_live': ('{{is_live}}' === 'True'),
+            'show_votes': ('{{show_votes}}' === 'True'),
+            'uuid': '{{ instance.uuid }}'
+        };
+        user = {
+            'has_voted': ('{{has_voted}}' === 'True'), // did they vote?
+            'is_asker': ('{{is_asker}}' === 'True'), // did they ask?
+            'uuid': '{{ user.uuid }}'
+        };
+
+        me.updateProductHistory(); // generates the required variable, 'products'
 
         for(var prop in selectors) {
             if(!selectors.hasOwnProperty(prop)) {
@@ -38,11 +71,15 @@ _willet.SIBT = (function (me) {
             }
             var matches = $(prop);
             if (matches.length >= 1) {  // found
-                wm.fire('log', 'setting button type ' + selectors[prop] + '!');
-                me.setButton(
-                    $(matches.eq(0)), // set my button
-                    selectors[prop]   // as this kind
-                );
+                try {
+                    me.setButton(
+                        $(matches.eq(0)), // set my button
+                        selectors[prop]   // as this kind
+                    );
+                    // me.saveProduct($(matches.eq(0)).data());
+                } catch (err) {  // don't fail all buttons on the page
+                    wm.fire('log', 'error setting button: ' + err);
+                }
             }
         }
     };
@@ -61,9 +98,9 @@ _willet.SIBT = (function (me) {
         return wm.fire('showColorbox', {
             href: "{{URL}}{% url AskDynamicLoader %}" +
                 // do not merge with metadata(): it escapes commas
-                "?products=" + getProductUUIDs().join(',') +
+                "?products=" + me.getProductUUIDs().join(',') +
                 "&ids=" + shopify_ids.join(',') +
-                "&" + metadata()
+                "&" + me.metadata()
         });
 
         // else if no products: do nothing
@@ -76,8 +113,8 @@ _willet.SIBT = (function (me) {
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
             href: "{{URL}}/s/results.html?" +
-                    metadata({
-                        'refer_url': getCanonicalURL(w.location.href)
+                    me.metadata({
+                        'refer_url': me.getCanonicalURL(window.location.href)
                     })
         });
     };
@@ -126,11 +163,11 @@ _willet.SIBT = (function (me) {
 
     // large buttons are larger than the small ones.
     me.setLargeSIBTButton = me.setLargeSIBTButton || function (jqElem) {
-        wm.fire('log', 'setting a small SIBT button');
+        wm.fire('log', 'setting a large SIBT button');
         wm.fire('storeAnalytics');
 
         // run our scripts
-        var hash = w.location.hash;
+        var hash = window.location.hash;
         var hash_search = '#code=';
         var hash_index = hash.indexOf(hash_search);
         var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
@@ -146,104 +183,108 @@ _willet.SIBT = (function (me) {
         }
 
         // if no product, try to detect one, but don't show button
-        if (instance.has_product) {
-            if (app.features.topbar) {
-                wm.fire('storeAnalytics', 'topbarEnabled');
-                wm.fire('log', 'topbar enabled');
+        if (!instance.has_product) {
+            wm.fire('log', "product does not exist here; hiding button.");
+            return;
+        }
 
-                var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
+        // show the topbar...
+        if (app.features.topbar) {
+            wm.fire('storeAnalytics', 'topbarEnabled');
+            wm.fire('log', 'topbar enabled');
 
-                // create the hide button
-                topbar_hide_button = $(d.createElement('div'));
-                topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-                    .css('display', 'none')
-                    .click(unhide_topbar);
+            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
-                if (app.show_top_bar_ask) {
-                    topbar_hide_button.html('Get advice!');
-                } else if(user.is_asker) {
-                    topbar_hide_button.html('See your results!');
-                } else {
-                    topbar_hide_button.html('Help {{ asker_name }}!');
-                }
+            // create the hide button
+            topbar_hide_button = $(document.createElement('div'));
+            topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+                .css('display', 'none')
+                .click(unhide_topbar);
 
-                $('body').prepend(topbar_hide_button);
-
-                if (app.show_top_bar_ask) {
-                    if (cookie_topbar_closed) {
-                        // user has hidden the top bar
-                        topbar_hide_button.slideDown('fast');
-                    } else {
-                        storeAnalytics('SIBTShowingTopBarAsk');
-                        show_topbar_ask();
-                    }
-                }
+            if (app.show_top_bar_ask) {
+                topbar_hide_button.html('Get advice!');
+            } else if(user.is_asker) {
+                topbar_hide_button.html('See your results!');
+            } else {
+                topbar_hide_button.html('Help {{ asker_name }}!');
             }
 
-            if (app.features.button) {
-                wm.fire('storeAnalytics', 'buttonEnabled');
-                if (parseInt(app.version) <= 2) {
-                    wm.fire('log', 'v2 button is enabled');
-                    var button = d.createElement('a');
-                    var button_html = '';
-                    // only add button if it's enabled in the app
-                    if (user.is_asker) {
-                        button_html = 'See what your friends said!';
-                    } else if (instance.show_votes) {
-                        button_html = 'Help {{ asker_name }} by voting!';
-                    } else {
-                        var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-                        button_html = AB_CTA_text;
-                    }
+            $('body').prepend(topbar_hide_button);
 
-                    button = $(button)
-                        .html(button_html)
-                        .css('display', 'inline-block')
-                        .attr('title', 'Ask your friends if you should buy this!')
-                        .attr('id','_willet_button')
-                        .attr('class','_willet_button willet_reset')
-                        .click(button_onclick);
-                    jqElem.append(button);
-                } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
-                    wm.fire('log', 'v3+ button is enabled');
-                    if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
-                        var button = $("<div />", {
-                            'id': '_willet_button_v3'
-                        });
-                        button
-                            .html ("<p>Should you buy this? Can't decide?</p>" +
-                                    "<div class='button' " +
-                                        "title='Ask your friends if you should buy this!'>" +
-                                        "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                        "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
-                                        "</div>")
-                            .css({'clear': 'both'});
-                        jqElem.append(button);
-                    } else {
-                        var button = $('#_willet_button_v3');
-                    }
-                    $('#_willet_button').click(button_onclick);
-
-                    // if server sends a flag that indicates "results available"
-                    // (not necessarily "finished") then show finished button
-                    if (instance.is_live || instance.has_results) {
-                        $('#_willet_button_v3 .button').hide();
-                        $('<div />', {
-                            'id': "_willet_SIBT_results",
-                            'class': "button"
-                        })
-                        .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
-                        .appendTo(button)
-                        .css('display', 'inline-block')
-                        .click(me.showResults);
-                    }
-
-                    var $wbtn = $('#_willet_button_v3 .button');
-                    if ($wbtn.length > 0) {
-                        $wbtn = $($wbtn[0]);
-                    }
-                    me.addScrollShaking($wbtn);
+            if (app.show_top_bar_ask) {
+                if (cookie_topbar_closed) {
+                    // user has hidden the top bar
+                    topbar_hide_button.slideDown('fast');
+                } else {
+                    wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
+                    me.showTopbarAsk();
                 }
+            }
+        }
+
+        if (app.features.button) {
+            wm.fire('storeAnalytics', 'buttonEnabled');
+            if (parseInt(app.version) <= 2) {
+                wm.fire('log', 'v2 button is enabled');
+                var button = document.createElement('a');
+                var button_html = '';
+                // only add button if it's enabled in the app
+                if (user.is_asker) {
+                    button_html = 'See what your friends said!';
+                } else if (instance.show_votes) {
+                    button_html = 'Help {{ asker_name }} by voting!';
+                } else {
+                    var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+                    button_html = AB_CTA_text;
+                }
+
+                button = $(button)
+                    .html(button_html)
+                    .css('display', 'inline-block')
+                    .attr('title', 'Ask your friends if you should buy this!')
+                    .attr('id','_willet_button')
+                    .attr('class','_willet_button willet_reset')
+                    .click(me.button_onclick);
+                jqElem.append(button);
+            } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
+                wm.fire('log', 'v3+ button is enabled');
+                if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
+                    var button = $("<div />", {
+                        'id': '_willet_button_v3'
+                    });
+                    button
+                        .html ("<p>Should you buy this? Can't decide?</p>" +
+                                "<div class='button' " +
+                                    "title='Ask your friends if you should buy this!'>" +
+                                    "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
+                                    "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                    "</div>")
+                        .css({'clear': 'both'});
+                    jqElem.append(button);
+                } else {
+                    var button = $('#_willet_button_v3');
+                }
+                $('#_willet_button').click(me.button_onclick);
+
+                // if server sends a flag that indicates "results available"
+                // (not necessarily "finished") then show finished button
+                if (instance.is_live || instance.has_results) {
+                    $('#_willet_button_v3 .button').hide();
+                    $('<div />', {
+                        'id': "_willet_SIBT_results",
+                        'class': "button"
+                    })
+                    .append("<div class='title' style='margin-left:0;'>Show results</div>") // if no button image, don't need margin
+                    .appendTo(button)
+                    .css('display', 'inline-block')
+                    .click(me.showResults);
+                }
+
+                var $wbtn = $('#_willet_button_v3 .button');
+                if ($wbtn.length > 0) {
+                    $wbtn = $($wbtn[0]);
+                }
+                me.addScrollShaking($wbtn);
             }
         } else {
             wm.fire('log', "product does not exist here; hiding button.");
@@ -316,7 +357,7 @@ _willet.SIBT = (function (me) {
     me.getCanonicalURL = me.getCanonicalURL || function (default_url) {
         // Tries to retrieve a canonical link from the header
         // Otherwise, returns default_url
-        var links = d.getElementsByTagName('link'),
+        var links = document.getElementsByTagName('link'),
             i = links.length;
         while (i--) {
             if (links[i].rel === 'canonical' && links[i].href) {
@@ -363,7 +404,7 @@ _willet.SIBT = (function (me) {
                 'user_uuid': '{{ user.uuid }}',
                 'instance_uuid': '{{ instance.uuid }}',
                 'store_url': '{{ store_url }}', // registration url
-                'target_url': '{{ page_url }}' || me.getCanonicalURL(w.location.href) // window.location
+                'target_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
             },
             more || {}
         ));
@@ -388,16 +429,16 @@ _willet.SIBT = (function (me) {
     me.updateProductHistory = me.updateProductHistory || function () {
         // save past products' images
         // check if page is visited twice or more in a row
-        if (getLargestImage() !== $.cookie('product1_image') &&
-            getLargestImage() !== $.cookie('product2_image')) {
+        if (me.getLargestImage() !== $.cookie('product1_image') &&
+            me.getLargestImage() !== $.cookie('product2_image')) {
             // image 1 is more recent; shift products
             $.cookie('product2_image', $.cookie('product1_image'));
-            $.cookie('product1_image', getLargestImage());
+            $.cookie('product1_image', me.getLargestImage());
         }
 
         // load product currently on page
         var ptemp = $.cookie('products') || '';
-        wm.fire('log', "read product cookie, got " + ptemp);
+        // wm.fire('log', "read product cookie, got " + ptemp);
         products = ptemp.split(','); // load
         if ($.inArray("{{product.uuid}}", products) === -1) { // unique
             products.unshift("{{product.uuid}}"); // insert as products[0]
@@ -405,9 +446,9 @@ _willet.SIBT = (function (me) {
             products = me.cleanArray(products); // remove empties
             $.cookie('products', products.join(',')); // save
             wm.fire('log', "saving product cookie " + products.join(','));
-        } else {
-            wm.fire('log', "product already in cookie");
-        }
+        } // else {
+            // wm.fire('log', "product already in cookie");
+        // }
         return products;
     };
 
@@ -425,7 +466,7 @@ _willet.SIBT = (function (me) {
             // product_title and product_description are json dumps, so
             // they already come with their own double quotes.
             if ({{ product_title }} || {{ product_description }}) {
-                wm.fire('log', 'product already in DB, it seems.');
+                // wm.fire('log', 'product already in DB, it seems.');
                 return;
             }
 
@@ -434,7 +475,7 @@ _willet.SIBT = (function (me) {
                 'sibtversion': fill.sibtversion || app.version,
                 'title': fill.title || me.getPageTitle(),
                 'image': fill.image || me.getLargestImage(d),
-                'resource_url': '{{ page_url }}' || me.getCanonicalURL(w.location.href)
+                'resource_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
             };
 
             // optional fields
@@ -483,13 +524,259 @@ _willet.SIBT = (function (me) {
         }
     };
 
+    me.autoShowResults = me.autoShowResults || function () {
+        // auto-show results on hash
+        var hash = window.location.hash;
+        var hash_search = '#open';
+        var hash_index = hash.indexOf(hash_search);
+        if (instance.has_results && hash_index !== -1) {
+            // if vote has results and voter came from an email
+            // wm.fire('log', "has results?");
+            me.showResults();
+        }
+    };
+
+    me.getVisitLength = me.getVisitLength || function () {
+        // analytics to record the amount of time this script has been loaded
+        // this must be an iframe to time it + send synchronous requests
+        $('<iframe />', {
+            css: {'display': 'none'},
+            src: "{{URL}}{% url ShowOnUnloadHook %}?" +
+                 me.metadata({'evnt': 'SIBTVisitLength'})
+        }).appendTo("body");
+    };
+
+
+    // =================== deprecated topbar functions ========================
+    me.topbar_onclick = me.topbar_onclick || function(e) {
+        // Onclick event handler for the 'sibt' button
+        me.button_onclick(e, 'SIBTUserClickedTopBarAsk');
+    };
+
+    me.unhideTopbar = me.unhideTopbar || function() {
+        // When a user hides the top bar, it shows the little
+        // "Show" button in the top right. This handles the clicks to that
+        $.cookie('_willet_topbar_closed', false);
+        topbar_hide_button.slideUp('fast');
+        if (topbar === null) {
+            if (instance.show_votes || hash_index !== -1) {
+                me.showTopbar();
+                wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
+            } else {
+                me.showTopbarAsk();
+                wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
+            }
+        } else {
+            topbar.slideDown('fast');
+            wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
+        }
+    };
+
+    me.closeTopbar = me.closeTopbar || function() {
+        // Hides the top bar and padding
+        $.cookie('_willet_topbar_closed', true);
+        topbar.slideUp('fast');
+        topbar_hide_button.slideDown('fast');
+        wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
+    };
+
+    // Expand the top bar and load the results iframe
+    me.doVote = me.doVote || function(vote) {
+        // detecting if we just voted or not
+        var doing_vote = (vote !== -1);
+        var vote_result = (vote === 1);
+
+        // getting the neccesary dom elements
+        var iframe_div = topbar.find('div.iframe');
+        var iframe = topbar.find('div.iframe iframe');
+
+        // constructing the iframe src
+        var hash        = window.location.hash;
+        var hash_search = '#code=';
+        var hash_index  = hash.indexOf(hash_search);
+        var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
+        var results_src = "{{URL}}/s/results.html?" +
+            "willt_code=" + encodeURIComponent(willt_code) +
+            "&user_uuid={{user.uuid}}" +
+            "&doing_vote=" + encodeURIComponent(doing_vote) +
+            "&vote_result=" + encodeURIComponent(vote_result) +
+            "&is_asker=" + user.is_asker +
+            "&store_id={{store_id}}" +
+            "&store_url={{store_url}}" +
+            "&instance_uuid={{instance.uuid}}" +
+            "&url=" + encodeURIComponent(window.location.href);
+
+        // show/hide stuff
+        topbar.find('div.vote').hide();
+        if (doing_vote || user.has_voted) {
+            topbar.find('div.message').html('Thanks for voting!').fadeIn();
+        } else if (user.is_asker) {
+            topbar.find('div.message').html('Your friends say:   ').fadeIn();
+        }
+
+        // start loading the iframe
+        iframe_div.show();
+        iframe.attr('src', '');
+        iframe.attr('src', results_src);
+
+        iframe.fadeIn('medium');
+    };
+
+    me.doVote_yes = me.doVote_yes || function () {
+        me.doVote(1);
+    };
+    me.doVote_no = me.doVote_no || function () {
+        me.doVote(0);
+    };
+
+    me.buildTopBarHTML = me.buildTopBarHTML || function (is_ask_bar) {
+        // Builds the top bar html
+        // is_ask_bar option boolean
+        // if true, loads ask_in_the_bar iframe
+
+        if (is_ask_bar || false) {
+            var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+            var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
+                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
+                "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                "</div>" +
+            "</div>";
+        } else {
+            var asker_text = '';
+            var message = 'Should <em>{{ asker_name }}</em> Buy This?';
+            var image_src = '{{ asker_pic }}';
+
+            var bar_html = "<div class='_willet_wrapper'> " +
+                "<div class='asker'>" +
+                    "<div class='pic'><img src='" + image_src + "' /></div>" +
+                "</div>" +
+                "<div class='message'>" + message + "</div>" +
+                "<div class='vote last' style='display: none'>" +
+                "    <button id='yesBtn' class='yes'>Yes</button> "+
+                "    <button id='noBtn' class='no'>No</button> "+
+                "</div> "+
+                "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
+                "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+
+                "</div>" +
+                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
+                "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                "</div>" +
+            "</div>";
+        }
+        return bar_html;
+    };
+
+    me.showTopbar = me.showTopbar || function() {
+        // Shows the vote top bar
+        var body = $('body');
+
+        // create the padding for the top bar
+        padding_elem = document.createElement('div');
+        padding_elem = $(padding_elem)
+            .attr('id', '_willet_padding')
+            .css('display', 'none');
+
+        topbar = document.createElement('div');
+        topbar = $(topbar)
+            .attr('id', '_willet_sibt_bar')
+            .css('display', "none")
+            .html(me.buildTopBarHTML());
+        body.prepend(padding_elem);
+        body.prepend(topbar);
+
+        // bind event handlers
+        $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
+        $('#yesBtn').click(me.doVote_yes);
+        $('#noBtn').click(me.doVote_no);
+
+        padding_elem.show();
+        topbar.slideDown('slow');
+
+        if (!instance.is_live) {
+            // voting is over folks!
+            topbar.find('div.message').html('Voting is over!');
+            me.toggleResults();
+        } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
+            // show voting!
+            topbar.find('div.vote').show();
+        } else if (user.has_voted && !user.is_asker) {
+            // someone has voted && not the asker!
+            topbar.find('div.message').html('Thanks for voting!').fadeIn();
+            me.toggleResults();
+        } else if (user.is_asker) {
+            // showing top bar to asker!
+            topbar.find('div.message').html('Your friends say:   ').fadeIn();
+            me.toggleResults();
+        }
+    };
+
+    me.showTopbarAsk = me.showTopbarAsk || function() {
+        //Shows the ask top bar
+
+        // create the padding for the top bar
+        padding_elem = document.createElement('div');
+
+        padding_elem = $(padding_elem)
+            .attr('id', '_willet_padding')
+            .css('display', 'none');
+
+        topbar = $('<div />', {
+            'id': '_willet_sibt_ask_bar',
+            'class': 'willet_reset',
+            'css': {
+                'display': 'none'
+            }
+        });
+        topbar.html(me.buildTopBarHTML(true));
+
+        $("body").prepend(padding_elem).prepend(topbar);
+
+        var iframe = topbar.find('div.iframe iframe');
+        var iframe_div = topbar.find('div.iframe');
+
+        $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
+
+        topbar.find( '._willet_wrapper p')
+            .css('cursor', 'pointer')
+            .click(me.topbar_onclick);
+        padding_elem.show();
+        topbar.slideDown('slow');
+    };
+
+    me.topbarAskSuccess = me.topbarAskSuccess || function () {
+        // if we get a postMessage from the iframe
+        // that the share was successful
+        wm.fire('storeAnalytics', 'SIBTTopBarShareSuccess');
+        var iframe = topbar.find('div.iframe iframe');
+        var iframe_div = topbar.find('div.iframe');
+
+        user.is_asker = true;
+
+        iframe_div.fadeOut('fast', function() {
+            topbar.animate({height: '40'}, 500);
+            iframe.attr('src', '');
+            me.toggleResults();
+        });
+    };
+
+    me.toggleResults = me.toggleResults || function() {
+        // Used to toggle the results view
+        // iframe has no source, hasnt been loaded yet
+        // and we are FOR SURE showing it
+        doVote(-1);
+    };
+    // =================== deprecated topbar functions ========================
+
+
+
 
     // set up your module hooks
     if (wm) {
-        wm.on('hasjQuery', function (jq) {
-            wm.fire('log', "woot!");
-            me.init(jq);
-        });
+        wm.on('hasjQuery', me.init);
+
+        // auto-show results on hash
+        wm.on('scriptComplete', me.autoShowResults);
+        wm.on('scriptComplete', me.getVisitLength);
     }
 
     return me;

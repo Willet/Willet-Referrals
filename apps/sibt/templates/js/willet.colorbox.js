@@ -22,24 +22,29 @@ _willet.Colorbox = (function (me) {
     };
 
     me.init = me.init || function (jQueryObject) {
+        console.log('jQueryObject = ', jQueryObject);
         $ = jQueryObject;  // throw $ into module scope
 
         // can use jQuery as $ only if it is passed in.
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
         if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
             $.getScript('{{URL}}/s/js/jquery.colorbox.js', function () {
-                if (jQuery.willet_colorbox) {
+                if (jQuery && jQuery.willet_colorbox) {
                     $.willet_colorbox = jQuery.willet_colorbox;
                 }
-                me._cboxobj = $.willet_colorbox;
-                me._cboxobj.init();
+                if ($.willet_colorbox) {
+                    me._cboxobj = $.willet_colorbox;
+                    me._cboxobj.init();
 
-                // watch for message; Create IE + others compatible event handler
-                $(window).bind('onmessage message', function(e) {
-                    if (e.originalEvent.data === 'close') {
-                        me._cboxobj.close();
-                    }
-                });
+                    // watch for message; Create IE + others compatible event handler
+                    $(window).bind('onmessage message', function(e) {
+                        if (e.originalEvent.data === 'close') {
+                            me._cboxobj.close();
+                        }
+                    });
+                } else {
+                    wm.fire('log', "Could not setup colorbox!");
+                }
             });
         }
     };
@@ -50,8 +55,10 @@ _willet.Colorbox = (function (me) {
         options = $.extend({}, me.defaultParams, options);
 
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
-        if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
-            me.init();
+
+         // colorbox cannot be loaded twice on a page.
+        if (!me._cboxobj && (jQuery || window.jQuery)) {
+            me.init(jQuery || window.jQuery);
         }
 
         if (me._cboxobj) {
