@@ -32,7 +32,7 @@ _willet.sibt = (function (me) {
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
-        wm.fire('log', 'initialisating SIBT!');
+        // wm.fire('log', 'initialisating SIBT!');
 
         // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
         app = {
@@ -199,7 +199,7 @@ _willet.sibt = (function (me) {
             topbar_hide_button = $(document.createElement('div'));
             topbar_hide_button.attr('id', '_willet_topbar_hide_button')
                 .css('display', 'none')
-                .click(unhide_topbar);
+                .click(me.unhideTopbar);
 
             if (app.show_top_bar_ask) {
                 topbar_hide_button.html('Get advice!');
