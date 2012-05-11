@@ -16,8 +16,8 @@
     };
 
     publicMethod.storeAnalytics = function(message) {
-        if (_willet && _willet.Mediator) {
-            _willet.Mediator.fire('storeAnalytics', message);
+        if (_willet && _willet.mediator) {
+            _willet.mediator.fire('storeAnalytics', message);
         }
     };
 

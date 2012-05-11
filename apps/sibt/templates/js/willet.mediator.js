@@ -2,11 +2,11 @@ var _willet = _willet || {};  // ensure namespace is there
 
 // bulletin board for module hooks.
 // idea from http://goo.gl/mLVK2; contains no code from it.
-_willet.Mediator = (function (me) {
-    // example on: _willet.Mediator.on('eventName', function (params) {
+_willet.mediator = (function (me) {
+    // example on: _willet.mediator.on('eventName', function (params) {
     //     alert(params);
     // });
-    // example fire: _willet.Mediator.fire('eventName', 'hello world');
+    // example fire: _willet.mediator.fire('eventName', 'hello world');
 
     // you shouldn't need to manipulate this object, but you can if you want.
     me.hooks = me.hooks || {
@@ -33,8 +33,9 @@ _willet.Mediator = (function (me) {
     // params is optional.
     me.fire = me.fire || function (event, params) {
         if (!me.hooks[event]) {
-            return; // no functions registered with this event.
+            return me; // no functions registered with this event.
         }
+        // console.log(me.hooks[event].length + ' events to run');
         for (var i = 0; i < me.hooks[event].length; i++) {
             try {
                 params = params || me.hooks[event][i][1];
@@ -42,20 +43,21 @@ _willet.Mediator = (function (me) {
                 // the following shitty line executes one of the callback
                 // functions for this event.
                 me.hooks[event][i][0](params);
+
                 // if (event !== 'log') {
-                //     me.fire('log', 'fired event ' + event);
+                //     me.fire('log', 'called event: ' + event);
                 // }
             } catch (err) {
                 // continue running other hooks.
                 if (event !== 'log') {  // prevent stack overflow (fo cereals)
-                    me.fire('log', 'failed to load a hook: ' + err);
+                    me.fire('log', 'failed to call an event: ' + err);
                 }
             }
         }
         return me;
     };
 
-    // subscribing to an event - fire a function when it happens.
+    // subscribing to an event - fire a function when it happens. (FIFO)
     // params is optional.
     me.on = me.on || function (event, func, params) {
         var hooks = me.hooks;
@@ -84,4 +86,4 @@ _willet.Mediator = (function (me) {
     };
 
     return me;
-} (_willet.Mediator || {}));
+} (_willet.mediator || {}));
