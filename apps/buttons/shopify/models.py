@@ -88,13 +88,15 @@ class ButtonsShopify(Buttons, AppShopify):
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
+        version = os.environ['CURRENT_VERSION_ID']
 
         # Define our script tag 
         tags = [{
             "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s&v=%s" % (
                     URL,
-                    self.uuid
+                    self.uuid,
+                    version
                 ),
                 "event": "onload"
             }
@@ -132,16 +134,20 @@ class ButtonsShopify(Buttons, AppShopify):
 
     def do_upgrade(self):
         """ Remove button scripts and add the paid version """
-        self.uninstall_script_tags();
+        self.uninstall_script_tags()
+        version = os.environ['CURRENT_VERSION_ID']
+
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
                     URL,
-                    self.uuid
+                    self.uuid,
+                    version
                 ),
                 "event": "onload"
             }
         }])
+
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/willet-shopconnection.liquid',
@@ -163,6 +169,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 """
             }
         }])
+        
         self.install_queued()
 
         # Email DevTeam
