@@ -22,11 +22,12 @@
 
     // Load CSS onto the page.
     var colorbox_css = '{% spaceless %}{% include "../../plugin/templates/css/colorbox.css" %}{% endspaceless %}';
+    var topbar_css = '{% spaceless %}{% include "../../plugin/templates/css/topbar.css" %}{% endspaceless %}';
     var popup_css = '{% spaceless %}{% include "../../plugin/templates/css/popup.css" %}{% endspaceless %}';
     var app_css = '{% spaceless %}{{ app_css }}{% endspaceless %}';
 
     // load CSS for colorbox as soon as possible!!
-    var styles = [app_css, colorbox_css, popup_css];
+    var styles = [app_css, colorbox_css, topbar_css, popup_css];
     for (var i = 0; i < styles.length; i++) {
         _willet.Mediator.fire('loadCSSText', styles[i]);
     }
