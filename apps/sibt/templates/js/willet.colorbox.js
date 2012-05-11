@@ -1,7 +1,10 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // le colorbox for willet (has a custom name, willet_colorbox)
-_willet.Colorbox = (function (me) {
+_willet.colorbox = (function (me) {
+    var wm = _willet.mediator || {};
+    var $ = jQuery || {};  // I want jQuery here, but it won't be available
+                           // until mediator says so.
 
     me._cboxobj = null;
 
@@ -18,22 +21,30 @@ _willet.Colorbox = (function (me) {
         onClosed: function () {}
     };
 
-    me.init = me.init || function () {
+    me.init = me.init || function (jQueryObject) {
+        console.log('jQueryObject = ', jQueryObject);
+        $ = jQueryObject;  // throw $ into module scope
+
+        // can use jQuery as $ only if it is passed in.
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
         if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
             $.getScript('{{URL}}/s/js/jquery.colorbox.js', function () {
-                if (jQuery.willet_colorbox) {
+                if (jQuery && jQuery.willet_colorbox) {
                     $.willet_colorbox = jQuery.willet_colorbox;
                 }
-                me._cboxobj = $.willet_colorbox;
-                me._cboxobj.init();
+                if ($.willet_colorbox) {
+                    me._cboxobj = $.willet_colorbox;
+                    me._cboxobj.init();
 
-                // watch for message; Create IE + others compatible event handler
-                $(window).bind('onmessage message', function(e) {
-                    if (e.originalEvent.data === 'close') {
-                        me._cboxobj.close();
-                    }
-                });
+                    // watch for message; Create IE + others compatible event handler
+                    $(window).bind('onmessage message', function(e) {
+                        if (e.originalEvent.data === 'close') {
+                            me._cboxobj.close();
+                        }
+                    });
+                } else {
+                    wm.fire('log', "Could not setup colorbox!");
+                }
             });
         }
     };
@@ -41,16 +52,20 @@ _willet.Colorbox = (function (me) {
     // well, opens it.
     // if you don't supply params, the default ones will be used instead.
     me.open = me.open || function (options) {
+        options = $.extend({}, me.defaultParams, options);
+
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
-        if (!me._cboxobj) { // colorbox cannot be loaded twice on a page.
-            me.init();
+
+         // colorbox cannot be loaded twice on a page.
+        if (!me._cboxobj && (jQuery || window.jQuery)) {
+            me.init(jQuery || window.jQuery);
         }
 
         if (me._cboxobj) {
-            _willet.Mediator.fire('log', "Colorbox module: opening colorbox");
+            wm.fire('log', "Colorbox module: opening colorbox");
             me._cboxobj(options);
         } else { // backup
-            _willet.Mediator.fire('log', "Colorbox module: opening window");
+            wm.fire('log', "Colorbox module: opening window");
             var width = parseInt(options.innerWidth);
             var height = parseInt(options.innerHeight);
             var left = (screen.width - width) / 2;
@@ -69,10 +84,10 @@ _willet.Colorbox = (function (me) {
     };
 
     // set up your module hooks
-    if (_willet.Mediator) {
-        _willet.Mediator.on('hasjQuery', me.init);
-        _willet.Mediator.on('openColorbox', me.open, me.defaultParams);
+    if (wm) {
+        wm.on('hasjQuery', me.init);
+        wm.on('showColorbox', me.open, me.defaultParams);
     }
 
     return me;
-} (_willet.Colorbox || {}));
+} (_willet.colorbox || {}));

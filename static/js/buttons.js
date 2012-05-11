@@ -583,7 +583,7 @@ _willet.networks = (function (willet) {
                 "func": function(methods) { return ""; }
             },
             "button": {
-                "script": '//brian-willet.appspot.com/s/sibt.js?page_url=' + window.location,
+                "script": '//social-referral.appspot.com/s/sibt.js?page_url=' + window.location,
                 "create": function () {
                     var button = util.createBasicButton({
                         "id": '_mini_sibt_button'
@@ -593,7 +593,7 @@ _willet.networks = (function (willet) {
                     d.id = 'mini_sibt_button';
                     d.style.cursor = 'pointer';
                     d.style.display = 'inline-block';
-                    d.style.background = "url('//brian-willet.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                    d.style.background = "url('//social-referral.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
                     d.style.width = '80px';
                     button.appendChild(d);
                     return button;

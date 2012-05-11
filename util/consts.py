@@ -124,7 +124,8 @@ ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
               '216.16.232.86',      # Brian Desktop network drop
-              '206.126.92.56'       # Brian House
+              '206.126.92.56',      # Brian House
+              '216.16.232.86'       # TenantWifi
             ]
 
 # the apps we are using
