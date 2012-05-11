@@ -35,6 +35,7 @@ _willet.Mediator = (function (me) {
         if (!me.hooks[event]) {
             return me; // no functions registered with this event.
         }
+        console.log(me.hooks[event].length + ' events to run');
         for (var i = 0; i < me.hooks[event].length; i++) {
             try {
                 params = params || me.hooks[event][i][1];
@@ -42,6 +43,10 @@ _willet.Mediator = (function (me) {
                 // the following shitty line executes one of the callback
                 // functions for this event.
                 me.hooks[event][i][0](params);
+
+                if (event !== 'log') {
+                    me.fire('log', 'called event: ' + event);
+                }
             } catch (err) {
                 // continue running other hooks.
                 if (event !== 'log') {  // prevent stack overflow (fo cereals)

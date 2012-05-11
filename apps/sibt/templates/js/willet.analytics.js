@@ -5,7 +5,7 @@ _willet.Analytics = (function (me) {
     var wm = _willet.Mediator || {};
 
     // default actions
-    me.default = me.default || '{{ evnt }}';
+    me.defaultEvent = me.defaultEvent || '{{ evnt }}';
     me.gaq = null;
     me.gat = null;
     me.pageTracker = null;
@@ -23,7 +23,7 @@ _willet.Analytics = (function (me) {
     // message and extras are optional, but if you leave out message, you
     // aren't recording anything meaningful.
     me.store = me.store || function (message, extras) {
-        var message = message || me.default;
+        var message = message || me.defaultEvent;
 
         if (!message) return;  // do not record nothing
 
@@ -51,7 +51,7 @@ _willet.Analytics = (function (me) {
 
     // set up a hook to let storeAnalytics be fired
     if (wm) {
-        wm.on('storeAnalytics', me.store, me.default);
+        wm.on('storeAnalytics', me.store, me.defaultEvent);
     }
 
     me.init();

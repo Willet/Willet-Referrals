@@ -14,17 +14,23 @@ _willet.SIBT = (function (me) {
             '#_willet_shouldIBuyThisButton': LARGE_SIBT, // SIBT standalone (v2, v3, v10)
             '._willet_sibt': SMALL_SIBT, // SIBT-JS
             '#_willet_WOSIB_Button': LARGE_WOSIB // WOSIB mode
-        };
+        },
+        PRODUCT_HISTORY_COUNT = {{ product_history_count|default:10 }},
+        SHAKE_DURATION = 600, // ms
+        SHAKE_WAIT = 700; // ms
 
     // these are required variables from outside the scope
     var sys = sys || {},
         app = app || {},
         instance = instance || {},
-        user = user || {};
+        products = products || [],
+        user = user || {},
+        cart_items = cart_items || window._willet_cart_items || [];
 
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
+        wm.fire('log', 'initialisating SIBT!');
 
         for(var prop in selectors) {
             if(!selectors.hasOwnProperty(prop)) {
@@ -32,6 +38,7 @@ _willet.SIBT = (function (me) {
             }
             var matches = $(prop);
             if (matches.length >= 1) {  // found
+                wm.fire('log', 'setting button type ' + selectors[prop] + '!');
                 me.setButton(
                     $(matches.eq(0)), // set my button
                     selectors[prop]   // as this kind
@@ -44,10 +51,10 @@ _willet.SIBT = (function (me) {
         // shows the ask your friends iframe
         wm.fire('storeAnalytics', 'showAsk');
         var shopify_ids = [];
-        if (_willet_cart_items) {
+        if (cart_items) {
             // WOSIB exists on page; send extra data
-            for (var i = 0; i < _willet_cart_items.length; i++) {
-                shopify_ids.push(_willet_cart_items[i].id);
+            for (var i = 0; i < cart_items.length; i++) {
+                shopify_ids.push(cart_items[i].id);
             }
         }
 
@@ -237,7 +244,7 @@ _willet.SIBT = (function (me) {
                     }
                     me.addScrollShaking($wbtn);
                 }
-            {% endif %} // app.button_enabled
+            }
         } else {
             wm.fire('log', "product does not exist here; hiding button.");
         }
@@ -280,11 +287,93 @@ _willet.SIBT = (function (me) {
         }
     };
 
+    me.cleanArray = me.cleanArray || function (actual) {
+        var i;
+        var new_array = [];
+        for(i = 0; i < actual.length; i++) {
+            if (Boolean(actual[i]) === true) {
+                new_array.push(actual[i]);
+            }
+        }
+        return new_array;
+    };
+
+    me.randomString = me.randomString || function () {
+        //http://fyneworks.blogspot.com/2008/04/random-string-in-javascript.html
+        return String((new Date()).getTime()).replace(/\D/gi,'');
+    };
+
+    me.isScrolledIntoView = me.isScrolledIntoView || function (elem) {
+        // http://stackoverflow.com/questions/487073
+        // returns true if elem has dimensions within the viewport.
+        var docViewTop = $(w).scrollTop();
+        var docViewBottom = docViewTop + $(w).height();
+        var elemTop = $(elem).offset().top;
+        var elemBottom = elemTop + $(elem).height();
+        return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
+    };
+
+    me.getCanonicalURL = me.getCanonicalURL || function (default_url) {
+        // Tries to retrieve a canonical link from the header
+        // Otherwise, returns default_url
+        var links = d.getElementsByTagName('link'),
+            i = links.length;
+        while (i--) {
+            if (links[i].rel === 'canonical' && links[i].href) {
+                return links[i].href;
+            }
+        }
+        return default_url;
+    };
+
+    me.getLargestImage = me.getLargestImage || function (within) {
+        // Returns <img>.src for the largest <img> in <elem>within
+        // source: http://stackoverflow.com/questions/3724738
+        within = within || d; // defaults to document
+        var nMaxDim = 0;
+        var largest_image = '';
+        $(within).find('img').each(function () {
+            var $this = $(this);
+            var nDim = parseFloat($this.width()) * parseFloat($this.height());
+            if (nDim > nMaxDim) {
+                largest_image = $this.prop('src');
+                nMaxDim = nDim;
+            }
+        });
+        return largest_image;
+    };
+
+    me.getPageTitle = me.getPageTitle || function () {
+        return document.title || '';
+    };
+
+    me.getProductUUIDs = me.getProductUUIDs || function () {
+        // currently, products are just their UUIDs (to save space)
+        return me.cleanArray(products);
+    };
+
+    me.metadata = me.metadata || function (more) {
+        // constructs the 'willet' query string - no prefixing ?
+        // will be added for you.
+        // add more query properties with the "more" param.
+        return $.param($.extend (
+            {}, // blank original
+            {
+                'app_uuid': '{{ app.uuid }}',
+                'user_uuid': '{{ user.uuid }}',
+                'instance_uuid': '{{ instance.uuid }}',
+                'store_url': '{{ store_url }}', // registration url
+                'target_url': '{{ page_url }}' || me.getCanonicalURL(w.location.href) // window.location
+            },
+            more || {}
+        ));
+    };
+
     me.addScrollShaking = me.addScrollShaking || function (elem) {
         // needs the shaker jQuery plugin.
         var $elem = $(elem);
-        $(w).scroll(function () {
-            if (isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
+        $(window).scroll(function () {
+            if (me.isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
                 setTimeout(function () {
                     $elem.shaker();
                     setTimeout(function () {
@@ -313,7 +402,7 @@ _willet.SIBT = (function (me) {
         if ($.inArray("{{product.uuid}}", products) === -1) { // unique
             products.unshift("{{product.uuid}}"); // insert as products[0]
             products = products.splice(0, PRODUCT_HISTORY_COUNT); // limit count (to 4kB!)
-            products = cleanArray(products); // remove empties
+            products = me.cleanArray(products); // remove empties
             $.cookie('products', products.join(',')); // save
             wm.fire('log', "saving product cookie " + products.join(','));
         } else {
@@ -343,9 +432,9 @@ _willet.SIBT = (function (me) {
             var data = {
                 'client_uuid': fill.client_uuid || '{{ client.uuid }}', // REQUIRED
                 'sibtversion': fill.sibtversion || app.version,
-                'title': fill.title || getPageTitle(),
-                'image': fill.image || getLargestImage(d),
-                'resource_url': '{{ page_url }}' || getCanonicalURL(w.location.href)
+                'title': fill.title || me.getPageTitle(),
+                'image': fill.image || me.getLargestImage(d),
+                'resource_url': '{{ page_url }}' || me.getCanonicalURL(w.location.href)
             };
 
             // optional fields
@@ -377,6 +466,11 @@ _willet.SIBT = (function (me) {
         }
     };
 
+    me.ask_callback = me.ask_callback || function (fb_response) {
+        user.is_asker = true;
+        $('#_willet_button').html('Refresh the page to see your results!');
+    };
+
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
@@ -392,7 +486,10 @@ _willet.SIBT = (function (me) {
 
     // set up your module hooks
     if (wm) {
-        wm.on('hasjQuery', me.init);
+        wm.on('hasjQuery', function (jq) {
+            wm.fire('log', "woot!");
+            me.init(jq);
+        });
     }
 
     return me;
