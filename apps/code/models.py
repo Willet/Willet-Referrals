@@ -97,6 +97,11 @@ class DiscountCode(Code):
     # not whenever the User receives a discount.
     used = db.BooleanProperty(default=False, indexed=True)
 
+    # used for checking if a user got multiple discount codes from the same
+    # client.
+    user = MemcacheReferenceProperty(db.Model,
+                                     collection_name='user_discount_codes')
+
     # rebated is True if user got a discount from it.
     # currently used and handled by nobody.
     rebated = db.BooleanProperty(default=False, indexed=False)
@@ -173,14 +178,16 @@ class DiscountCode(Code):
         logging.warn('ran out of discount codes?!')
         return None
 
-    def use_code(self):
+    def use_code(self, user=None):
         """Not very useful now; marks a DiscountCode as used."""
         self.used = True
+        self.user = user
         self.put()
 
     def unuse_code(self):
         """Not very useful now; marks a DiscountCode as unused."""
         self.used = False
+        self.user = None
         self.put()
 
     def is_expired(self):
