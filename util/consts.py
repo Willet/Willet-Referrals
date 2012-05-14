@@ -90,6 +90,10 @@ SHOPIFY_APPS = {
     }
 }
 
+# REROUTE_EMAIL: Email to use if we want to redirect ShopConnection install
+# emails. Otherwise, set to None
+REROUTE_EMAIL = "fraser@getwillet.com"
+
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
     'url_count_for_app_and_user': 4,
