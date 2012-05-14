@@ -25,11 +25,14 @@ class ImportDiscountCodes(URIHandler):
                 already expired.
         - expiry: some kind of date format that python understands,
                   representing the date of "coupon expiry".
+
+        Example call:
+        http://brian-willet.appspot.com/code/import
+            ?client_uuid=30620aed69b84b38
+            &codes=SAVE 40,SAVE 50,SAVE 60,SAVE 70
         """
         self.response.headers['Content-Type'] = 'text/plain'
-        store_url = self.request.get('store_url',
-                                     'http://kiehn-mertz3193.myshopify.com')
-        client = Client.get_by_url(store_url) or \
+        client = Client.get_by_url(self.request.get('store_url', '')) or \
                  Client.get(self.request.get('client_uuid', ''))
 
         if not client:
@@ -45,6 +48,7 @@ class ImportDiscountCodes(URIHandler):
 
         codes = codes.split(',')
         for code in codes:
+            code = code.strip()
             if code:
                 try:
                     new_code = DiscountCode.get_or_create(code=code,
@@ -60,3 +64,4 @@ class ImportDiscountCodes(URIHandler):
     def get(self):
         """This should be POST, but then you can't do it from the QS."""
         self.post()
+

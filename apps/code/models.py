@@ -107,6 +107,9 @@ class DiscountCode(Code):
     def _validate_self(self):
         if not self.client:
             raise ValueError('Cannot save a discount code without a client')
+        if self.rebated and not self.used:
+            raise ValueError('wtf? Must use discount code to rebate it')
+        return True
 
     @classmethod
     def generate_code(cls, prefix=''):
@@ -126,6 +129,8 @@ class DiscountCode(Code):
 
         By default, this returns only unused codes.
         """
+        logging.debug('getting discount code '
+                      'using params %r %r %r' % (code, client, used))
         return cls.all()\
                   .filter('code =', code)\
                   .filter('client =', client)\
@@ -140,20 +145,20 @@ class DiscountCode(Code):
         """
         code = cls.get(kwargs.get('uuid', ''))
         if code:
-            logging.debug('found by uuid; returning')
             return code
 
-        code = cls.get_by_client_and_code(code=kwargs.get('code', None),
-                                          client=kwargs.get('client', None))
+        # logging.debug('code not found by uuid')
+        # assuming you got the params right...
+        code = cls.get_by_client_and_code(**kwargs)
         if code:
-            logging.debug('found by client and code; returning')
             return code
 
+        # logging.debug('code not found by client and code! creating.')
         code = cls.create(**kwargs)
         return code
 
     @classmethod
-    def get_by_client_at_random(cls, code, client):
+    def get_by_client_at_random(cls, client):
         """Return a random, non-expired code from a client.
 
         Note that this will cost extra reads.
