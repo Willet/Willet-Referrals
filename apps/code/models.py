@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import random
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
@@ -71,6 +72,10 @@ class Code(Model):
         code = cls.create(**kwargs)
         return code
 
+    @classmethod
+    def get_by_code(cls, code):
+        return cls.all().filter('code =', code).get()
+
 
 class DiscountCode(Code):
     """Stores information about a discount code.
@@ -95,12 +100,45 @@ class DiscountCode(Code):
         if not self.client:
             raise ValueError('Cannot save a discount code without a client')
 
+    @classmethod
+    def get_by_client_and_code(cls, code, client, used=False):
+        """In the case that multiple clients have different discount
+        codes of the same value (e.g. SAVE50), then we can filter by client.
+
+        By default, this returns only unused codes.
+        """
+        return cls.all()\
+                  .filter('code =', code)\
+                  .filter('client =', client)\
+                  .filter('used =', used)\
+                  .get()
+
+    @classmethod
+    def get_by_client_at_random(cls, code, client):
+        """Return a random, non-expired code from a client.
+
+        Note that this will cost extra reads.
+        """
+        all_tickets = cls.all()\
+                         .filter('client =', client)\
+                         .filter('used =', False)
+        get_ticket_number = random.randint(0, all_tickets.count() - 1)
+        if get_ticket_number:  # if it's not 0
+            return all_tickets.get(offset=get_ticket_number)
+
+        logging.warn('ran out of discount codes?!')
+        return None
+
     def use_code(self):
-        """Not very useful now, but it marks a DiscountCode as used."""
+        """Not very useful now; marks a DiscountCode as used."""
         self.used = True
         self.put()
 
-    @property
+    def unuse_code(self):
+        """Not very useful now; marks a DiscountCode as unused."""
+        self.used = False
+        self.put()
+
     def is_expired(self):
         """If it is used, it also counts as expired."""
         if datetime.datetime.now() > self.expiry_date:
@@ -109,4 +147,5 @@ class DiscountCode(Code):
         if self.used:
             return True
 
+        # I guess it's still good
         return False
