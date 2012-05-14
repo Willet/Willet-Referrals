@@ -88,7 +88,7 @@ _willet.sibt = (function (me) {
 
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
-        wm.fire('storeAnalytics', 'showAsk');
+        wm.fire('storeAnalytics', 'SIBTShowingAsk');
         var shopify_ids = [];
         if (cart_items) {
             // WOSIB exists on page; send extra data
@@ -110,7 +110,7 @@ _willet.sibt = (function (me) {
     };
 
     me.showResults = me.showResults || function () {
-        wm.fire('storeAnalytics', 'showResults');
+        wm.fire('storeAnalytics', 'SIBTShowingResults');
         // show results if results are done.
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
