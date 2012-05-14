@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import hashlib
 import logging
 import random
 
@@ -54,6 +55,7 @@ class Code(Model):
             raise AttributeError("Must have code")
 
         kwargs['uuid'] = kwargs.get('uuid', generate_uuid(16))
+        kwargs['key_name'] = kwargs.get('uuid')
 
         code_obj = cls(**kwargs)
         code_obj.put()
@@ -65,7 +67,7 @@ class Code(Model):
         """Looks up by kwargs[uuid], or creates one using the rest of kwargs
         if none found.
         """
-        code = Code.get(kwargs.get('uuid', ''))
+        code = cls.get(kwargs.get('uuid', ''))
         if code:
             return code
 
@@ -91,7 +93,13 @@ class DiscountCode(Code):
     expiry_date = db.DateTimeProperty(required=False)
 
     # whether this discount code is used.
+    # because of who we are, a code is used whenever we give it out,
+    # not whenever the User receives a discount.
     used = db.BooleanProperty(default=False, indexed=True)
+
+    # rebated is True if user got a discount from it.
+    # currently used and handled by nobody.
+    rebated = db.BooleanProperty(default=False, indexed=False)
 
     def __init__(self, *args, **kwargs):
         super(DiscountCode, self).__init__(*args, **kwargs)
@@ -101,9 +109,20 @@ class DiscountCode(Code):
             raise ValueError('Cannot save a discount code without a client')
 
     @classmethod
+    def generate_code(cls, prefix=''):
+        """for types of discount code where we get our hands on the
+        generating algorithm, this method can be overwritten.
+
+        It is not used by Shu Uemura because they just give us the codes.
+        """
+        return generate_uuid(16)
+
+    @classmethod
     def get_by_client_and_code(cls, code, client, used=False):
         """In the case that multiple clients have different discount
         codes of the same value (e.g. SAVE50), then we can filter by client.
+
+        Function gets the first code available and exits.
 
         By default, this returns only unused codes.
         """
@@ -112,6 +131,26 @@ class DiscountCode(Code):
                   .filter('client =', client)\
                   .filter('used =', used)\
                   .get()
+
+    @classmethod
+    def get_or_create(cls, **kwargs):
+        """Looks up by kwargs[uuid], or any other method that this subclass
+        understands. Otherwise, it creates one using the rest of kwargs
+        if none found.
+        """
+        code = cls.get(kwargs.get('uuid', ''))
+        if code:
+            logging.debug('found by uuid; returning')
+            return code
+
+        code = cls.get_by_client_and_code(code=kwargs.get('code', None),
+                                          client=kwargs.get('client', None))
+        if code:
+            logging.debug('found by client and code; returning')
+            return code
+
+        code = cls.create(**kwargs)
+        return code
 
     @classmethod
     def get_by_client_at_random(cls, code, client):

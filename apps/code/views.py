@@ -12,15 +12,18 @@ from util.urihandler import URIHandler
 
 class ShowClientDiscountCodes(URIHandler):
 
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
+        self.response.headers['Content-Type'] = 'text/plain'
         store_url = self.request.get('store_url',
                                      'http://kiehn-mertz3193.myshopify.com')
-        client = Client.get_by_url(store_url)
+        client = Client.get_by_url(store_url) or \
+                 Client.get(self.request.get('client_uuid', ''))
 
-        '''
-        test_code = DiscountCode.create(code='12345',
-                                        client=client)
-        '''
+        if not client:
+            self.response.out.write('No client specified\n')
+            return
+
         for code in client.discount_codes:
             self.response.out.write('%s\n' % code.uuid)
