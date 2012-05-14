@@ -61,16 +61,18 @@ class Email():
                              to_name='Dev Team')
 
     @staticmethod
-    def welcomeClient(app_name, to_addr, name, store_name):
+    def welcomeClient(app_name, to_addr, name, store_name,
+                      use_full_name=False):
         to_addr = to_addr
         subject = 'Thanks for Installing "%s"' % (app_name)
         body = ''
 
-        # Grab first name only
-        try:
-            name = name.split(' ')[0]
-        except:
-            pass
+        if not use_full_name:
+            # Grab first name only
+            try:
+                name = name.split(' ')[0]
+            except:
+                pass
 
         body += "<p>Hi %s,</p>" % (name,)
 
