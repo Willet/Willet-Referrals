@@ -655,3 +655,44 @@ class EmailEveryone (URIHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.out.write ("%r" % all_emails)
         return
+
+
+class RealFetch(URIHandler):
+    """Can't find what you want? Use RealFetch to scrape the entire DB!"""
+    def get(self):
+        """In your query string, do ?kind=App
+                                    &field1=something
+                                    &field2=some_other
+        to search for Apps with field1 equal to 'something'
+        and field2 equal to 'some_other' at the same time.
+
+        Criteria stack.
+
+        This view costs a lot of reads. Do not use unless you really want to
+        confirm something really exists.
+        """
+        criteria = {}
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        try:
+            kind = globals()[self.request.get('kind')]
+            kind_objs = db.Query(kind)
+        except:
+            # if kind isn't a Kind, those lines will certainly blow up
+            return
+
+        # get {'field1': 'something', ...} for all non-empty values
+        for c in self.request.arguments():
+            if self.request.get(c):
+                criteria[c] = self.request.get(c)
+        del(criteria['kind'])
+
+        self.response.out.write ('%r\n' % criteria)
+
+        for obj in kind_objs:
+            for criterion in criteria.keys():
+                if getattr(obj, criterion, None) != criteria[criterion]:
+                    continue  # this item fails
+            # this item passes
+            self.response.out.write ('[%s] %r\n' % (getattr(obj,'uuid', '???'),
+                                                    obj))

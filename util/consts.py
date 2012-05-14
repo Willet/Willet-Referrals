@@ -138,6 +138,7 @@ INSTALLED_APPS = [
     'buttons.shopify',
     'client',
     'client.shopify',
+    'code',
     'email',
     'gae_bingo',
     'gae_bingo.tests',
@@ -148,9 +149,9 @@ INSTALLED_APPS = [
     'product.shopify',
     'sibt',
     'sibt.shopify',
+    'user',
     'wosib',
     'wosib.shopify',
-    'user',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
