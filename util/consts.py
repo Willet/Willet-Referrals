@@ -153,6 +153,7 @@ INSTALLED_APPS = [
     'product.shopify',
     'sibt',
     'sibt.shopify',
+    'sibt.shuuemura',
     'user',
     'wosib',
     'wosib.shopify',
