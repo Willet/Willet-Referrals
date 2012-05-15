@@ -121,7 +121,7 @@ class BatchRequest(URIHandler):
         for app in apps:
             try:
                 if exclude and hasattr(app, "client") and not getattr(app, "client"):
-                    logging.info('%s.%s has not client. Probably uninstalled' %
+                    logging.info('%s.%s has no client. Probably uninstalled' %
                                  (app.__class__.__module__,
                                   app.__class__.__name__,))
                     continue
