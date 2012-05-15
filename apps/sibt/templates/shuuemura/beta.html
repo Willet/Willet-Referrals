@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        input[type='text'], textarea {
+            width: 75%;
+            margin-bottom: 5px;
+        }
+        div button {
+            position: relative;
+            top: -1px;
+        }
+        #success_script .insert {
+            font-family: Monaco, 'Courier New', 'Lucida Console', monospace;
+            border: 1px #ddd solid;
+            background-color: #f6f6f6;
+            font-size: 1em;
+            width:80%;
+            height:500px;
+            max-width:100%;
+            max-height:100%;
+            margin:auto;
+            text-align: left;
+            overflow: scroll;
+            padding: 10px;
+            white-space: pre;
+            line-height: 13px;
+        }
+        #sibt_reg_form table td, #sibt_reg_form input,
+        #prod_form table td, #prod_form input, #prod_form p {
+            font-size: 1.1em;
+        }
+        #prod_form table {
+            margin-left:50px;
+        }
+        #sibt_reg_form input[type="text"] {
+            width: 500px;
+            max-width: 500px;
+        }
+        #prod_form input[type="text"] {
+            width: 400px;
+            max-width: 400px;
+        }
+        #error_bar {
+            color: #f20;
+        }
+        .deemphasize {
+            color: #888;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var $form = $('#sibt_reg_form');
+            if ($form.length > 0) {
+                $form.submit(function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: '{% url SIBTSignUp %}',
+                        cache: false,
+                        data: $(this).serialize(),
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#success_script .insert').html(
+                                $('#success_script .insert').html()
+                                    .replace("(client_uuid)", data.client_uuid)
+                                    .replace("(app_uuid)", data.app_uuid)
+                            );
+                            $('#success_script').show();
+                            $('#sibt_reg_form').slideUp('slow');
+                        },
+                        error: function (jqXHR) {
+                            switch (jqXHR.status) {
+                                case 400:
+                                    $('#error_bar').html('Please ensure all of your information is correctly filled in.').slideDown();
+                                    break;
+                                case 500:
+                                    $('#error_bar').html('The server could not process your request - please try again later.').slideDown();
+                                    break;
+                                default:
+                                    $('#error_bar').html('An unknown error occurred!').slideDown();
+                                    break;
+                            }
+                        }
+                    });
+                });
+            }
+            $('.autofill').each(function() {
+                $('#' + $(this).data('target')).text($(this).attr('placeholder'));
+            }).keyup(function () {
+                $('#' + $(this).data('target')).text($(this).val());
+            });
+        });
+    </script>
+{% endblock head %}
+
+{% block content %}
+
+    <h1 class="span-24 last lower-100 center">Should I Buy This?</h1>
+
+    <div class="span-8 append-1">
+        <p class="span-8 lower-50">
+            Lowering cart abandonment <strong>and</strong> gaining you <strong>new</strong>, <strong>better</strong> customers!
+            <br /><br />
+            Empower your customers to get shopping advice from their friends!
+            <br /><br />
+            Friends come to <strong>your site</strong>, discover your products, and help your initial customer make a decision!
+            <br /><br />
+            <b>100% free</b> for our Beta customers - <b>That's YOU</b>!
+        </p>
+    </div>
+
+    <div class="span-15 last">
+        <iframe style="border: 10px solid #474747; border-radius: 10px;" width="560" height="315" src="http://www.youtube.com/embed/VujD0OOZNvU" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <div class="about prepend-top append-bottom span-24 last center">
+        <form id='sibt_reg_form'>
+            <h3>Interested? Sign up now!</h3>
+            <br />
+            <fieldset>
+                <legend>Your information</legend>
+                <table>
+                    <tr>
+                        <td style='width:50%'>Full name:</td>
+                        <td><input type="text" name="fullname" placeholder="Full name" /></td>
+                    </tr>
+                    <tr>
+                        <td>Email:</td>
+                        <td><input type="text" name="email" placeholder="Admin email" /></td>
+                    </tr>
+                    <tr>
+                        <td>Phone number (optional):</td>
+                        <td><input type="text" name="phone" placeholder="Phone number (optional)" /></td>
+                    </tr>
+                    <tr>
+                        <td>Address (optional):</td>
+                        <td><input type="text" name="address1" placeholder="Address (optional)" /></td>
+                    </tr>
+                </table>
+            </fieldset>
+
+            <fieldset>
+                <legend>Site information</legend>
+                <table>
+                    <tr>
+                        <td style='width:50%'>Store name:</td>
+                        <td><input type="text" name="shopname" placeholder="Shop name" value="Amy&rsquo;s Bakery" /></td>
+                        <!-- ridiculous name here is to encourage real input -->
+                    </tr>
+                    <tr>
+                        <td>Store URL:</td>
+                        <td><input type="text" name="shop_url" placeholder="URL" value="http://amysbakery.com" />
+                            <br />
+                            The app will only work on this domain.
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+
+            <input class="button" type="submit" value="Done" />
+            <div id='error_bar'></div>
+        </form>
+        <div id='success_script' style='display:none'>
+            <h3>Congratulations!</h3>
+            <p>All you need to do now is to paste this snippet into your web pages.</p>
+            <div class="insert">
+<span class="deemphasize">&lt;div class=&quot;_willet_sibt&quot;<br />
+     data-sibtversion=&quot;{{ sibt_version }}&quot;<br />
+     data-app_uuid=&quot;(app_uuid)&quot;<br />
+     data-client_uuid=&quot;(client_uuid)&quot;<br />
+     data-title=</span>&quot;<span id="prodname"></span>&quot;<span class="deemphasize"><br />
+     data-description=</span>&quot;<span id="proddesc"></span>&quot;<span class="deemphasize"><br />
+     data-images=</span>&quot;<span id="prodimgs"></span>&quot;<span class="deemphasize"><br />
+     data-tags=</span>&quot;<span id="prodtags"></span>&quot;<span class="deemphasize"><br />
+     data-price=</span>&quot;<span id="prodpric"></span>&quot;<span class="deemphasize">&gt;<br />
+&lt;/div&gt;<br />
+&lt;script type=&quot;text/javascript&quot;&gt;/*&lt;![CDATA[*//*----&gt;*/;!function (d, st) {<br />
+     &quot;use strict&quot;; try {<br />
+        var jse = d.getElementsByTagName(st)[0], jsa = d.createElement(st);<br />
+        jsa.src = '{{ URL }}{% url SIBTServeScript %}' + <br />
+            '?url=' + encodeURIComponent(window.location.href); // required<br />
+        jse.parentNode.insertBefore(jsa, jse);<br />
+    } catch (e) {}<br />
+}(document, 'script');/*--*//*]]&gt;*/&lt;/script&gt;</span></div>
+            <!-- do not reindent lines above -->
+            <div id="prod_form">
+                <p> <br />
+                    Need help with filling in your product details?<br />
+                    Type in the boxes below - the code above will change accordingly.</p>
+                <table>
+                    <tr>
+                        <td style='width:30%'>Product name:</td>
+                        <td><input type="text" class="autofill" data-target="prodname" placeholder="Nice shirt" /></td>
+                    </tr>
+                    <tr>
+                        <td>Description:</td>
+                        <td><input type="text" class="autofill" data-target="proddesc" placeholder="This is a beautiful shirt." /></td>
+                    </tr>
+                    <tr>
+                        <td>Pictures:</td>
+                        <td><input type="text" class="autofill" data-target="prodimgs" placeholder="{{URL}}/static/imgs/use-your-own.png" /></td>
+                    </tr>
+                    <tr>
+                        <td>Tags, e.g. Shoes, Shirts</td>
+                        <td><input type="text" class="autofill" data-target="prodtags" placeholder="Tags" /></td>
+                    </tr>
+                    <tr>
+                        <td>Price:</td>
+                        <td><input type="text" class="autofill" data-target="prodpric" placeholder="1.00" /></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

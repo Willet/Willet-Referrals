@@ -74,6 +74,7 @@ class AskDynamicLoader(URIHandler):
         product_desc = []
         store_url = ''
         template_products = []
+        vendor = self.request.get('vendor', '')  # changes template used
 
         # We should absolutely have a user here, but they could have blocked their cookies
         user = User.get(self.request.get('user_uuid'))
@@ -242,9 +243,9 @@ class AskDynamicLoader(URIHandler):
             ab_opt = "ADMIN: Should I buy this? Please let me know!"
         else:
             ab_opt = ab_test('sibt_share_text3',
-                            ab_share_options,
-                            user=user,
-                            app=app)
+                             ab_share_options,
+                             user=user,
+                             app=app)
 
         template_values = {
             'URL' : URL,
@@ -282,9 +283,11 @@ class AskDynamicLoader(URIHandler):
 
         # render SIBT/WOSIB
         if len(template_products) > 1:  # WOSIB mode
-            path = os.path.join('apps/sibt/templates/', 'ask-multi.html')
+            path = os.path.join('apps/sibt/templates', vendor,
+                                'ask-multi.html')
         else:  # SIBT mode
-            path = os.path.join('apps/sibt/templates/', 'ask.html')
+            path = os.path.join('apps/sibt/templates', vendor,
+                                'ask%s.html')
             # Fix the product description
             """
             try:
@@ -954,22 +957,10 @@ class SIBTServeScript(URIHandler):
         except AttributeError:
             app_css = ''  # it was not a SIBTShopify
 
-        try:
-            browser_ip = self.request.remote_addr
-            if browser_ip in ADMIN_IPS:
-                admin_testing_on_live = True
-
-            # should not check using email address because people can
-            # spoof admin by sending an ask with our email addresses
-            '''if user.emails[0].address in ADMIN_EMAILS:
-                admin_testing_on_live = True'''
-        except AttributeError:
-            admin_testing_on_live = False
-
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
-            'debug': APP_LIVE_DEBUG or admin_testing_on_live,
+            'debug': APP_LIVE_DEBUG or (self.request.remote_addr in ADMIN_IPS),
             'URL': URL,
 
             # store info

@@ -27,33 +27,33 @@ class SIBTShuuemuraWelcome(URIHandler):
         Please do this in a private browsing window, or you will be cookied
         as a Shu Uemura user for a month.
         """
-        logging.info('SIBTShuuemuraWelcome: trying to create app')
-
         domain = 'http://shuuemura-usa.com'
         email = 'shuuemura@getwillet.com'  # need to activate this one
         first_name = "Shu Uemura"
         last_name = "USA"  # heheh (his name is actually Uemura Shu)
-        full_name = "%s %s" % (first_name, last_name)
+        phone = "1-888-748-5678"
+
+        # vendor-agnostic below this line
+        logging.info('SIBTShuuemuraWelcome: trying to create app')
 
         # show the script as plain text (without executing it)
         self.response.headers['Content-Type'] = 'text/plain'
 
-        # def get_or_create_by_email(cls, email, request_handler, app):
         user = User.get_or_create_by_email(email=email, request_handler=self,
                                            app=None)
         if not user:
             logging.error('wtf, no user?')
             return
 
+        full_name = "%s %s" % (first_name, last_name)
         user.update(email=email,
                     first_name=first_name,
                     last_name=last_name,
                    #name=full_name,  # can't assign to read-only property
                     full_name=full_name,
-                    phone="1-888-748-5678",
+                    phone=phone,
                     accepts_marketing=False)
 
-        # def get_or_create(url, request_handler=None, user=None):
         client = Client.get_or_create(url=domain, request_handler=self,
                                       user=user)
         if not client:
@@ -62,13 +62,11 @@ class SIBTShuuemuraWelcome(URIHandler):
 
         # got a client; update its info
         client.email = email
-        client.name = "Shu Uemura USA"
+        client.name = full_name
         client.put()
 
         user.update(client=client)  # can't bundle with previous user update
 
-
-        # def get_or_create(client=None, domain=''):
         app = SIBT.get_or_create(client=client, domain=domain)
         if not client:
             logging.error('wtf, no app?')
@@ -84,6 +82,8 @@ class SIBTShuuemuraWelcome(URIHandler):
                            'client': client,
                            'sibt_version': app.version,
                            'new_order_code': True}
+
+        # give you (the admin?) the install code
         self.response.out.write(self.render_page('../templates/vendor_include.js',
                                                  template_values))
         return

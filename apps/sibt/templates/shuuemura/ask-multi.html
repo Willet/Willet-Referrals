@@ -1,0 +1,348 @@
+{% extends "../../plugin/templates/ask.html" %}
+
+{% block jquery_plugins %}{% endblock jquery_plugins %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
+{% endblock styles %}
+
+
+
+{% block screens %}
+    <!--                          Splash Screen                             -->
+
+    <div id="splash">
+        <div class="title_bar">
+            <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
+            <div>Not sure which one you should buy?</div>
+        </div>
+        <div style="margin-top:10px">
+            <!-- div class="step">Select items to ask.</div -->
+            <div id="selection_box_container">
+                <div id="selection_box"><!-- JS --></div>
+            </div>
+        </div>
+        <div class="options">
+            <div class="restrictedWidth">
+                <!-- div class="step">2. Add a message:</div -->
+                <textarea id="fbComment" name="fbComment">Hi! I can't decide between these two items. Which one do you like more?</textarea>
+                <br />
+                <div class="option left">
+                    <div class="button" id="postOnWall" title="Post to your wall">
+                        <img alt="friends" src="/static/sibt/imgs/friends_green_bg_60x40.png" />
+                        <div class="title">Ask Friends</div>
+                        <div class="subtitle">Post to Facebook</div>
+                    </div>
+                </div>
+                <div class="or">or</div>
+                <div class="option right">
+                    <div class="button" id="showChooseScreen" title="Post to your friends' walls">
+                        <img alt="friend" src="/static/plugin/imgs/happy_face.png" />
+                        <div class="title">Choose Friends</div>
+                        <div class="subtitle">Get trusted advice</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock screens %}
+
+
+
+{% block js_globals %}
+{% endblock js_globals %}
+
+
+
+{% block ajax_methods %}
+    var storeAnalytics = function( evnt ) {
+        var payload = { what          : evnt,
+                        instance_uuid : '',
+                        app_uuid      : '{{ app_uuid }}',
+                        user_uuid     : '{{ user_uuid }}',
+                        target_url    : '{{ target_url }}'
+                      };
+        $.ajax({
+            url      : "{{ URL }}{% url TrackSIBTUserAction %}",
+            dataType : 'json',
+            data     : payload,
+            type     : 'post',
+            success  : function (response) {
+                return;
+            }
+        });
+    };
+
+    var updateServerUser = function( accessToken, userId ) {
+        var payload = { user_uuid   : "{{user_uuid}}",
+                    accessToken : accessToken,
+                    fbUserId    : userId
+                  };
+        $.ajax({
+            url      : "{{ URL }}{% url UpdateFBAccessToken %}",
+            type     : 'post',
+            dataType : 'json',
+            data     : payload,
+            success  : function (tr) {
+                return;
+            }
+        });
+
+        fbAccessToken = accessToken;
+        fbIdentity    = userId;
+    };
+
+    var startPartialInstance = function() {
+        if (get_selected_objects ()) {
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_sibt_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    var startFullInstance = function() {
+        if (get_selected_objects ()) {
+            var payload = { app_uuid     : "{{app_uuid}}",
+                            user_uuid    : "{{user_uuid}}",
+                            product_uuids : get_selected_objects (),
+                            willt_code   : "{{willt_code}}" };
+            $.ajax({
+                url      : "{{ URL }}{% url StartSIBTInstance %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                success  : function (tr) {
+                    window._willet_sibt_partial_instance_uuid = tr;
+                }
+            });
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    // Sends information to server to ask friends & handles response
+    var sendMessages = function() {
+        var payload, friend_info, asker_info,
+            msg   = $("#fbComment").val(),
+            error = false;
+
+        // Gather up friend info, recording if a friend has an error
+        friend_info = getFriendsInfo(); // either null or [...]
+
+        // Gather asker info
+        asker_info = asker.getAskerInfo(); // either null or [...]
+
+        if (friend_info && friend_info.length > 0 && asker_info && asker_info.length > 1) {
+            // Clean up UI to show loader gif
+            showScreen('asking');
+
+            // No errors with friends, submit!
+            var payload = {
+                user_name       : "{{user_name}}",
+                user_uuid       : "{{user_uuid}}",
+                app_uuid        : "{{app_uuid}}",
+                product_uuid    : "{{product_uuid}}",
+                fb_access_token : fbAccessToken,
+                fb_id           : fbIdentity,
+                friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
+                asker           : JSON.stringify(asker_info),
+                products        : get_selected_objects (),
+                msg             : msg,
+                default_msg     : "{{AB_share_text|escape}}",
+                willt_code      : "{{willt_code}}"
+            };
+
+            $.ajax({
+                url      : "{{ URL }}{% url SendFriendAsks %}",
+                type     : 'post',
+                dataType : 'json',
+                data     : payload,
+                statusCode : {
+                    200: function () {
+                        // Success
+                        updateEmailAddress();
+                        showScreen('success');
+                    },
+                    400: function (resp, status) {
+                        // Bad Request
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("400 "+resp.data.message);
+                        }
+                        showScreen('failure');
+
+                    },
+                    401: function (resp, status) {
+                        // Unauthorized
+                        if (resp && resp.data && resp.data.message) {
+                            $('.error_message').innerHTML("401 "+resp.data.message);
+                        }
+                        showScreen('failure');
+
+                    },
+                    500: function () {
+                        // Internal server error
+                        showScreen('failure');
+                    }
+                }
+            });
+        }
+    };
+
+    /*var updateEmailAddress = function() {
+        var addr = document.getElementById( 'email-field' ).value;
+        $.ajax({
+            url: "{{ URL }}{% url UpdateEmailAddress %}",
+            type: 'post',
+            data: { email : addr },
+            success: function (tr) {
+                doPostMessage('close');
+                window.close();
+            }
+        });
+    };*/
+{% endblock ajax_methods %}
+
+
+
+{% block js_functions %}
+    // Open up the FB dialog. Does not do a FB connect with us.
+    var postOnWall = function () {
+        try { // detect adblock
+            if (startPartialInstance ()) {
+                FB.ui({ method:  "feed",
+                        display: "popup",
+                        link:    "{{share_url}}",
+                        picture: "{{image|first}}",
+                        name:    "{{title|escape}}",
+                        caption: "{{store_domain}}",
+                        description: $('#fbComment').val(),
+                        redirect_uri: "{{fb_redirect}}" });
+            }
+        } catch (e) {
+            alert ('Oops... AdBlock is probably blocking facebook!');
+        }
+        closeIframe( 'SIBTNoConnectFBDialog' );
+    };
+
+    var resizeProductImage = function (img) {
+        var logoWidth = img.width,
+            logoHeight = img.height,
+            $img = $(img);
+
+        if (logoWidth > 150 || logoHeight > 150) {
+            if (logoWidth >= logoHeight){
+               $img.height((logoHeight / logoWidth)*150);
+               $img.width(150);
+            } else {
+                $img.height(150);
+                $img.width((logoWidth / logoHeight)*150);
+            }
+        }
+    };
+
+    var get_selected_objects = function () {
+        // returns a comma-separated string of product uuids "id,id,id"
+        var uuids = [];
+        uuids.push($('#selection_box_container>img').prop('alt'));
+        uuids.push($('#selection_box>img').prop('alt'));
+        return uuids.join(',');
+    };
+
+    // Connect with FB and fetch FB friends, on Choose Friends screen
+    var runFBConnect = function () {
+        storeAnalytics('SIBTConnectFBDialog');
+
+        FB.login( function(response) {
+            var authResp = response.authResponse;
+
+            if (!authResp) {
+                // We weren't given permission, do nothing
+                return;
+            } else {
+                storeAnalytics('SIBTFBConnected');
+
+                // Store FB data in the server.
+                updateServerUser(authResp.accessToken, authResp.userID);
+                fetchFBFriends();
+            }
+        }, {scope: 'publish_stream,offline_access,user_about_me,email'});
+    };
+
+    // Query FB api to grab logged-in user's friends
+    var fetchFBFriends = function () {
+        FB.api('/me/friends', function (response) {
+            fb_friends = response.data;
+            fb_friends.sort();
+
+            $.each( response.data, function (i) {
+                friendNames.push(fb_friends[i].name);
+            });
+
+            // Code here changes all FB Connect options into FB Friend Select options
+            var i = friends.length;
+            while (i--) {
+                friends[i].FBLoggedIn();
+            }
+       });
+    };
+{% endblock js_functions %}
+
+
+
+{% block js_init %}
+    $(document).ready(function () {
+        /*  server (AskDynamicLoader) guarantees there to be > 0 products;
+            if there are 0 products, this script is not loaded at all.
+        */
+        var cart_products = [ {% for product in products %}
+            {   "id": "{{product.id}}",
+                "title": "{{product.title}}",
+                "image": "{{product.image}}",
+                "uuid": "{{product.product_uuid}}"
+            },
+        {% endfor %} {}];
+        cart_products.pop(); // remove trailing element... IE7 trailing comma patch
+
+        var $selection_box_container = $('#selection_box_container');
+        var $selection_box = $('#selection_box');
+        for (var i = 1; i < cart_products.length; i++) {
+            $selection_box
+                .append($('<img />', { // 2nd image onwards are in a dropdown
+                    'src': cart_products[i].image,
+                    'alt': cart_products[i].uuid
+                }));
+        }
+        $selection_box_container
+            .append($('<img />', { // 1st image is just a tag
+                'src': cart_products[0].image,
+                'alt': cart_products[0].uuid,
+                'css': {
+                    'max-width': '150px',
+                    'max-height': '150px'
+                }
+            }))
+            .append($('<img />', {
+                'src': '/static/imgs/or-150.png'
+            }))
+            .append($selection_box);
+        $selection_box
+            .imageDropdown();
+
+        $('#postOnWall').click(postOnWall);
+    });
+    showScreen('splash');
+{% endblock js_init %}

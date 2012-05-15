@@ -414,15 +414,34 @@ _willet.sibt = (function (me) {
         // constructs the 'willet' query string - no prefixing ?
         // will be added for you.
         // add more query properties with the "more" param.
-        return $.param($.extend (
+        var metabuilder = {},
+            page_url = '{{ page_url }}' || me.getCanonicalURL(window.location.href);
+        if ('{{ app.uuid }}') {
+            metabuilder.app_uuid = '{{ app.uuid }}';
+        }
+        if ('{{ user.uuid }}') {
+            metabuilder.user_uuid = '{{ user.uuid }}';
+        }
+        if ('{{ instance.uuid }}') {
+            metabuilder.instance_uuid = '{{ instance.uuid }}';
+        }
+        if ('{{ store_url }}') {
+            metabuilder.store_url = '{{ store_url }}'; // registration url
+        }
+        if ('{{ app.uuid }}') {
+            metabuilder.app_uuid = '{{ app.uuid }}';
+        }
+        if (page_url) {
+            metabuilder.target_url = page_url;
+        }
+        if ('{{ vendor }}') {
+            // activate vendor mode for asks and results
+            metabuilder.vendor = '{{ vendor }}';
+        }
+
+        return $.param($.extend(
             {}, // blank original
-            {
-                'app_uuid': '{{ app.uuid }}',
-                'user_uuid': '{{ user.uuid }}',
-                'instance_uuid': '{{ instance.uuid }}',
-                'store_url': '{{ store_url }}', // registration url
-                'target_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
-            },
+            metabuilder,
             more || {}
         ));
     };
