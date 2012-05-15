@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
+"""Contains functions to initialise a SIBT app for Shu Uemura."""
+
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib
-import datetime
+import logging
 
 from apps.client.models import Client
 from apps.sibt.models import SIBT
@@ -12,7 +13,6 @@ from apps.user.actions import UserCreate
 from apps.user.models import User
 
 from util.consts import URL
-from util.helpers import url
 from util.urihandler import URIHandler
 
 
@@ -39,12 +39,24 @@ class SIBTShuuemuraWelcome(URIHandler):
             logging.error('wtf, no user?')
             return
 
+        # got a user; update its info
+        user.update(first_name="Shu Uemura",
+                    last_name="USA",  # heheh (his name is actually Uemura Shu)
+                    phone="1-888-748-5678",
+                    email=email,
+                    accepts_marketing=False)
+
         # def get_or_create(url, request_handler=None, user=None):
         client = Client.get_or_create(url=domain, request_handler=self,
                                       user=user)
         if not client:
             logging.error('wtf, no client?')
             return
+
+        # got a client; update its info
+        client.email = email
+        client.name = "Shu Uemura USA"
+        client.put()
 
         # def get_or_create(client=None, domain=''):
         app = SIBT.get_or_create(client=client, domain=domain)
@@ -57,11 +69,11 @@ class SIBTShuuemuraWelcome(URIHandler):
 
         template_values = {'app': app,
                            'URL': URL,
-                           'shop_name': shop_name,
-                           'shop_owner': shop_owner,
-                           'client_email': client_email,
+                           'shop_name': client.name,
+                           'shop_owner': client.merchant.name,
+                           'client_email': client.email,
                            'client_uuid': client.uuid,
                            'new_order_code': True}
-        self.response.out.write(self.render_page('welcome.html',
+        self.response.out.write(self.render_page('../templates/vendor_include.js',
                                                  template_values))
         return

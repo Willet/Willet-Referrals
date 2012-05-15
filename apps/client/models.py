@@ -118,7 +118,7 @@ class Client(Model, polymodel.PolyModel):
 
     @classmethod
     def get_by_email(cls, email):
-        if email == None or email == '':
+        if not email:
             return None
 
         client = cls.get(email)
