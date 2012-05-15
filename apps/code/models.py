@@ -7,12 +7,14 @@ import random
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
+
 from apps.client.models import Client
+from apps.user.models import User
 
 from util.helpers import generate_uuid
+from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
 from util.shopify_helpers import get_url_variants
-
 
 class Code(Model):
     """Superclass about a code.
@@ -99,8 +101,8 @@ class DiscountCode(Code):
 
     # used for checking if a user got multiple discount codes from the same
     # client.
-    user = MemcacheReferenceProperty(db.Model,
-                                     collection_name='user_discount_codes')
+    user = db.ReferenceProperty(User, required=False,
+                                collection_name='user_discount_codes')
 
     # rebated is True if user got a discount from it.
     # currently used and handled by nobody.
@@ -148,17 +150,17 @@ class DiscountCode(Code):
         understands. Otherwise, it creates one using the rest of kwargs
         if none found.
         """
-        code = cls.get(kwargs.get('uuid', ''))
+        code = cls.get(kwargs.get('uuid'))
         if code:
             return code
 
-        # logging.debug('code not found by uuid')
+        logging.debug('code not found by uuid')
         # assuming you got the params right...
         code = cls.get_by_client_and_code(**kwargs)
         if code:
             return code
 
-        # logging.debug('code not found by client and code! creating.')
+        logging.debug('code not found by client and code! creating.')
         code = cls.create(**kwargs)
         return code
 
@@ -171,12 +173,13 @@ class DiscountCode(Code):
         all_tickets = cls.all()\
                          .filter('client =', client)\
                          .filter('used =', False)
-        get_ticket_number = random.randint(0, all_tickets.count() - 1)
-        if get_ticket_number:  # if it's not 0
-            return all_tickets.get(offset=get_ticket_number)
-
-        logging.warn('ran out of discount codes?!')
-        return None
+        try:
+            get_ticket_number = random.randint(0, all_tickets.count())
+            if get_ticket_number:  # if it's not 0
+                return all_tickets.get(offset=get_ticket_number)
+        except ValueError, err:
+            logging.warn('ran out of discount codes?! %s' % err, exc_info=True)
+            return None
 
     def use_code(self, user=None):
         """Not very useful now; marks a DiscountCode as used."""

@@ -168,7 +168,7 @@ class Model(db.Model):
 
         # so now you can do Model.get(urihandler.request.get(id))) without
         # worrying about the resulting None.
-        if identifier is None:
+        if not identifier:
             return None  # None is definitely not a key, bro
 
         key = cls.build_key(identifier)

@@ -44,7 +44,7 @@ class ImportDiscountCodes(URIHandler):
             self.response.out.write('No codes\n')
             return
 
-        used = bool(self.request.get('used', '0'))
+        used = bool(self.request.get('used', False))
 
         codes = codes.split(',')
         for code in codes:
@@ -53,11 +53,11 @@ class ImportDiscountCodes(URIHandler):
                 try:
                     new_code = DiscountCode.get_or_create(code=code,
                                                           client=client,
-                                                          used=used)
+                                                          used=used,
+                                                          user=None)
                     self.response.out.write('Created code %s\n' % code)
-                except:
-                    self.response.out.write('Failed to create code\n')
-
+                except Exception, err:
+                    self.response.out.write('Failed to create code: %s\n' % err)
 
     #@admin_required
     #def get(self, admin):
@@ -65,3 +65,55 @@ class ImportDiscountCodes(URIHandler):
         """This should be POST, but then you can't do it from the QS."""
         self.post()
 
+
+class DispenseClientDiscountCode(URIHandler):
+    """Writes out a discount code for a given client. The code will
+    then be marked as 'used'. Note that 'used' is not the same as 'rebated';
+    used means being given out, while rebated means that the user has redeemed
+    the coupon.
+
+    [!] There is nothing stopping malicious users from
+        getting unlimited discount codes through this control.
+
+    Prints a code on success, or nothing on error.
+    """
+    def post(self):
+        """Dispense a DiscountCode.
+
+        Possible parameters:
+        - store_url or client_uuid
+        - email: an email address with which to retrieve a user.
+                 it is used only if there is no user cookie.
+        """
+        le_code = 'All codes have been taken'
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        client = Client.get_by_url(self.request.get('store_url')) or \
+                 Client.get(self.request.get('client_uuid', ''))
+        if not client:
+            logging.error('No client specified')
+            return
+
+        '''
+        app = App.get_by_url(self.request.get('store_url', '')) or \
+              App.get(self.request.get('client_uuid', ''))
+        '''
+
+        # attempt to find user to reward
+        user = User.get_by_cookie(self) or \
+               User.get_by_email(self.request.get('email'))
+        if not user:
+            logging.error('No user could be found by cookie or email')
+            return
+
+        code = DiscountCode.get_by_client_at_random(client)
+        if code:
+            # now it's marked and we can't use it again
+            code.use_code(user=user)
+            le_code = code.code
+
+        self.response.out.write(le_code)  # here is the code.
+        return
+
+    def get(self):
+        self.post()

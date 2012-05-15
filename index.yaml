@@ -138,3 +138,14 @@ indexes:
   - name: app_uuid
   - name: end
     direction: desc
+
+- kind: DiscountCode
+  properties:
+  - name: code
+  - name: client
+  - name: used
+
+- kind: DiscountCode
+  properties:
+  - name: client
+  - name: used
