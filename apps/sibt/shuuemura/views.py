@@ -31,6 +31,12 @@ class SIBTShuuemuraWelcome(URIHandler):
 
         domain = 'http://shuuemura-usa.com'
         email = 'shuuemura@getwillet.com'  # need to activate this one
+        first_name = "Shu Uemura"
+        last_name = "USA"  # heheh (his name is actually Uemura Shu)
+        full_name = "%s %s" % (first_name, last_name)
+
+        # show the script as plain text (without executing it)
+        self.response.headers['Content-Type'] = 'text/plain'
 
         # def get_or_create_by_email(cls, email, request_handler, app):
         user = User.get_or_create_by_email(email=email, request_handler=self,
@@ -39,11 +45,12 @@ class SIBTShuuemuraWelcome(URIHandler):
             logging.error('wtf, no user?')
             return
 
-        # got a user; update its info
-        user.update(first_name="Shu Uemura",
-                    last_name="USA",  # heheh (his name is actually Uemura Shu)
+        user.update(email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                   #name=full_name,  # can't assign to read-only property
+                    full_name=full_name,
                     phone="1-888-748-5678",
-                    email=email,
                     accepts_marketing=False)
 
         # def get_or_create(url, request_handler=None, user=None):
@@ -58,6 +65,9 @@ class SIBTShuuemuraWelcome(URIHandler):
         client.name = "Shu Uemura USA"
         client.put()
 
+        user.update(client=client)  # can't bundle with previous user update
+
+
         # def get_or_create(client=None, domain=''):
         app = SIBT.get_or_create(client=client, domain=domain)
         if not client:
@@ -71,8 +81,8 @@ class SIBTShuuemuraWelcome(URIHandler):
                            'URL': URL,
                            'shop_name': client.name,
                            'shop_owner': client.merchant.name,
-                           'client_email': client.email,
-                           'client_uuid': client.uuid,
+                           'client': client,
+                           'sibt_version': app.version,
                            'new_order_code': True}
         self.response.out.write(self.render_page('../templates/vendor_include.js',
                                                  template_values))

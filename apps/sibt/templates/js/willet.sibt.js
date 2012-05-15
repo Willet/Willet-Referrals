@@ -281,10 +281,10 @@ _willet.sibt = (function (me) {
             jqElem.click(me.button_onclick);
             jqElem.css ({
                 'background': ((instance.is_live || instance.has_results)?
-                                "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
-                                "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
-                'width': '80px',
-                'height': '21px',
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent":
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent"),
+                'width': '92px',
+                'height': '24px',
                 'cursor': 'pointer',
                 'display': 'inline-block'
             });

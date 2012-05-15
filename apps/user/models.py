@@ -691,7 +691,7 @@ class User(db.Expando):
                     self.ips = [ kwargs['ip'] ]
 
             elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
-                #logging.info("Adding %s %s" % (k, kwargs[k]))
+                logging.info("Adding %s %s" % (k, kwargs[k]))
                 setattr(self, k, kwargs[k])
         self.put_later()
 

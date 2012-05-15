@@ -113,11 +113,9 @@ class Model(db.Model):
         try:
             db.put(self)
             key = self.get_key()
-            memcache.set(
-                key=key,
-                value=db.model_to_protobuf(self).Encode(),
-                time=MEMCACHE_TIMEOUT
-            )
+            memcache.set(key=key,
+                         value=db.model_to_protobuf(self).Encode(),
+                         time=MEMCACHE_TIMEOUT)
         except Exception, e:
             logging.error('Error saving model <%s:%s>: %s' % (
                            self.__class__.__module__,
