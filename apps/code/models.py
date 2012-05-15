@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
+"""Code and DiscountCode classes."""
+
+__author__ = "Willet, Inc."
+__copyright__ = "Copyright 2012, Willet, Inc"
+
 import datetime
-import hashlib
 import logging
 import random
 
-from google.appengine.api import memcache
 from google.appengine.ext import db
 
 from apps.client.models import Client
 from apps.user.models import User
 
 from util.helpers import generate_uuid
-from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
-from util.shopify_helpers import get_url_variants
 
 class Code(Model):
     """Superclass about a code.
@@ -78,6 +79,10 @@ class Code(Model):
 
     @classmethod
     def get_by_code(cls, code):
+        """Retrieve a Code object by its actual code string.
+
+        Subclass-specific filtering functions may be available.
+        """
         return cls.all().filter('code =', code).get()
 
 
@@ -119,7 +124,7 @@ class DiscountCode(Code):
         return True
 
     @classmethod
-    def generate_code(cls, prefix=''):
+    def generate_code(cls):
         """for types of discount code where we get our hands on the
         generating algorithm, this method can be overwritten.
 
@@ -128,7 +133,7 @@ class DiscountCode(Code):
         return generate_uuid(16)
 
     @classmethod
-    def get_by_client_and_code(cls, code, client, used=False):
+    def get_by_client_and_code(cls, code, client, used=False, **kwargs):
         """In the case that multiple clients have different discount
         codes of the same value (e.g. SAVE50), then we can filter by client.
 
@@ -136,6 +141,7 @@ class DiscountCode(Code):
 
         By default, this returns only unused codes.
         """
+
         logging.debug('getting discount code '
                       'using params %r %r %r' % (code, client, used))
         return cls.all()\

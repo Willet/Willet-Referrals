@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
+"""Code procedures; updates DB codes."""
+
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
+import logging
+
 from apps.client.models import Client
 from apps.code.models import DiscountCode
+from apps.user.models import User
 
-from util.helpers import admin_required
 from util.urihandler import URIHandler
 
 
@@ -116,4 +120,5 @@ class DispenseClientDiscountCode(URIHandler):
         return
 
     def get(self):
+        """Testing or otherwise, it allows for GETting a code."""
         self.post()

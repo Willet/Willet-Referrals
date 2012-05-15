@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
+"""Idempotent Code operations go here."""
+
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 
-from apps.app.models import App
 from apps.client.models import Client
-from apps.code.models import DiscountCode
-from apps.user.models import User
 
-from util.helpers import admin_required
 from util.urihandler import URIHandler
 
 
@@ -25,6 +23,7 @@ class ShowClientDiscountCodes(URIHandler):
                  Client.get(self.request.get('client_uuid'))
 
         if not client:
+            logging.warn('Could not fetch DiscountCodes without client')
             self.response.out.write('No client specified\n')
             return
 
