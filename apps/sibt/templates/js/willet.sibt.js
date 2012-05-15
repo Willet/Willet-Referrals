@@ -28,7 +28,7 @@ _willet.sibt = (function (me) {
         topbar_hide_button = null;
 
     // declare vars in this scope
-    var app, instance, products, topbar, user;
+    var app, instance, popup, products, topbar, user;
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
@@ -82,11 +82,13 @@ _willet.sibt = (function (me) {
                 }
             }
         }
+
+        me.initBottomPopup();
     };
 
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
-        wm.fire('storeAnalytics', 'showAsk');
+        wm.fire('storeAnalytics', 'SIBTShowingAsk');
         var shopify_ids = [];
         if (cart_items) {
             // WOSIB exists on page; send extra data
@@ -108,7 +110,7 @@ _willet.sibt = (function (me) {
     };
 
     me.showResults = me.showResults || function () {
-        wm.fire('storeAnalytics', 'showResults');
+        wm.fire('storeAnalytics', 'SIBTShowingResults');
         // show results if results are done.
         // this can be detected if a finished flag is raised.
         wm.fire('showColorbox', {
@@ -190,7 +192,7 @@ _willet.sibt = (function (me) {
 
         // show the topbar...
         if (app.features.topbar) {
-            wm.fire('storeAnalytics', 'topbarEnabled');
+            // wm.fire('storeAnalytics', 'topbarEnabled');
             wm.fire('log', 'topbar enabled');
 
             var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
@@ -216,14 +218,14 @@ _willet.sibt = (function (me) {
                     // user has hidden the top bar
                     topbar_hide_button.slideDown('fast');
                 } else {
-                    wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
+                    // wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
                     me.showTopbarAsk();
                 }
             }
         }
 
         if (app.features.button) {
-            wm.fire('storeAnalytics', 'buttonEnabled');
+            // wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
                 wm.fire('log', 'v2 button is enabled');
                 var button = document.createElement('a');
@@ -546,6 +548,100 @@ _willet.sibt = (function (me) {
         }).appendTo("body");
     };
 
+    // ==================== bottom popup functions ============================
+    me.buildBottomPopup = me.buildBottomPopup || function () {
+        var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+        var popup = $('<div />', {
+            'id': 'willet_sibt_popup',
+            'css': {'display': 'none'}
+        });
+        popup
+            .append('<h2 class="title">Hey! Need help deciding?</h2>')
+            .append($('<div />', {'id': 'product_selector'}))
+            .append(
+                '<button class="cta">' + AB_CTA_text + '</button>' +
+                '<a id="anti_cta" href="#">No thanks</a>'
+            );
+        return popup;
+    }
+
+    me.showBottomPopup = me.showBottomPopup || function () {
+        // wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
+        if (popup) {
+            popup.fadeIn('slow');
+        }
+    };
+    me.hideBottomPopup = me.hideBottomPopup || function () {
+        // wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
+        if (popup) {
+            popup.fadeOut('slow');
+        }
+    };
+
+    me.initBottomPopup = me.initBottomPopup || function () {
+        // if user visited at least two different product pages
+        if ($.cookie('product1_image') && $.cookie('product2_image') &&
+            app.features.bottom_popup && app.unsure_multi_view) {
+            wm.fire('log', 'bottom popup enabled');
+            var clickedOff = false;
+
+            popup = me.buildBottomPopup();
+
+            var product1_image = $.cookie('product1_image') || '';
+            var product2_image = $.cookie('product2_image') || '';
+            $('body').prepend(popup);
+            $('#product_selector').append(
+                '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
+                '<div class="product">' +
+                    '<img class="image" src="' + product1_image + '" />' +
+                '</div>' +
+                '<span class="or">OR</span>' +
+                '<div class="product">' +
+                    '<img class="image" src="' + product2_image + '"/>' +
+                '</div>' +
+                '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
+            );
+
+            $(window).scroll(function () {
+                var pageHeight, scrollPos, threshold, windowHeight;
+
+                pageHeight = $(document).height();
+                scrollPos = $(window).scrollTop() + $(w).height();
+                threshold = pageHeight * app.bottom_popup_trigger;
+                windowHeight = $(window).height();
+
+                // popup will show only for pages sufficiently long.
+                if (pageHeight > windowHeight * 1.5) {
+                    wm.fire('storeAnalytics', 'popupEnabled');
+                    if (scrollPos >= threshold) {
+                        if (!popup.is(':visible') && !clickedOff) {
+                            me.showBottomPopup();
+                        }
+                    } else {
+                        if (popup.is(':visible')) {
+                            me.hideBottomPopup();
+                        }
+                    }
+                } else {
+                    wm.fire('storeAnalytics', 'popupDisabled.pageHeight');
+                    wm.fire('log', "page too short");
+                }
+            });
+            $('#willet_sibt_popup .cta').click(function () {
+                wm.fire('storeAnalytics', 'SIBTUserClickedBottomPopupAsk');
+                me.showAsk();
+                me.hideBottomPopup();
+            });
+            $('#willet_sibt_popup #anti_cta').click(function (e) {
+                wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
+                clickedOff = true;
+                e.preventDefault();
+                me.hideBottomPopup();
+            });
+        } else {
+            wm.fire('log', 'cookies not populated / not unsure yet');
+        }
+    };
 
     // =================== deprecated topbar functions ========================
     me.topbar_onclick = me.topbar_onclick || function(e) {
@@ -737,8 +833,8 @@ _willet.sibt = (function (me) {
         $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
 
         topbar.find( '._willet_wrapper p')
-            .css('cursor', 'pointer')
-            .click(me.topbar_onclick);
+              .css('cursor', 'pointer')
+              .click(me.topbar_onclick);
         padding_elem.show();
         topbar.slideDown('slow');
     };

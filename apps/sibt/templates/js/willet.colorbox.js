@@ -22,7 +22,7 @@ _willet.colorbox = (function (me) {
     };
 
     me.init = me.init || function (jQueryObject) {
-        console.log('jQueryObject = ', jQueryObject);
+        // console.log('jQueryObject = ', jQueryObject);
         $ = jQueryObject;  // throw $ into module scope
 
         // can use jQuery as $ only if it is passed in.
