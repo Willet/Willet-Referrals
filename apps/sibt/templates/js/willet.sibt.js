@@ -12,10 +12,13 @@ _willet.sibt = (function (me) {
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,
         SMALL_WOSIB = 3, LARGE_WOSIB = 4,
+        SMALL_SIBT_VENDOR = 5, LARGE_SIBT_VENDOR = 6,
         selectors = {
             '#mini_sibt_button': SMALL_SIBT, // SIBT for ShopConnection (SIBT Connection)
             '#_willet_shouldIBuyThisButton': LARGE_SIBT, // SIBT standalone (v2, v3, v10)
+            '#_vendor_shouldIBuyThisButton': LARGE_SIBT_VENDOR,
             '._willet_sibt': SMALL_SIBT, // SIBT-JS
+            '._vendor_sibt': SMALL_SIBT_VENDOR,
             '#_willet_WOSIB_Button': LARGE_WOSIB // WOSIB mode
         },
         cart_items = cart_items || window._willet_cart_items || [],
@@ -131,6 +134,10 @@ _willet.sibt = (function (me) {
             // there is no small wosib button.
         } else if (mode === LARGE_WOSIB) {
             me.setLargeWOSIBButton(jqElem);
+        } else if (mode === SMALL_SIBT_VENDOR) {
+            me.setSmallSIBTVendorButton(jqElem);
+        } else if (mode === LARGE_SIBT_VENDOR) {
+            me.setLargeSIBTVendorButton(jqElem);
         }
     };
 
@@ -291,6 +298,43 @@ _willet.sibt = (function (me) {
         } else {
             wm.fire('log', "product does not exist here; hiding button.");
         }
+    };
+
+    // Vendor-specific procedures
+    me.setSmallSIBTVendorButton = me.setSmallSIBTVendorButton || function (jqElem) {
+        wm.fire('log', 'setting a small vendor-specific SIBT button');
+        wm.fire('storeAnalytics');
+
+        // hide vendor info on server side
+        {% ifequal client.name "Shu Uemura USA" %}
+            jqElem.click(me.button_onclick);
+            jqElem.css ({
+                'background': ((instance.is_live || instance.has_results)?
+                                "url('{{URL}}/static/sibt/imgs/button_bkg_see_results.png') 3% 20% no-repeat transparent":
+                                "url('{{URL}}/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent"),
+                'width': '80px',
+                'height': '21px',
+                'cursor': 'pointer',
+                'display': 'inline-block'
+            });
+
+            if (!instance.has_product) {
+                // if no product, try to detect one, but don't show button
+                wm.fire('log', "product does not exist here; hiding button.");
+                jqElem.css ({
+                    'display': 'none'
+                });
+            } else {
+                me.addScrollShaking(jqElem);
+            }
+
+            // Shu Uemura special data scraping
+            me.saveProduct({
+                'title': $('#productdetailsName').text() || me.getPageTitle(),
+                'description': $('#RightContainer h2').text() || '',
+                'image': $('#ProductMagicZoomImg img')[0].src || me.getLargestImage()
+            });
+        {% endifequal %}
     };
 
     me.setLargeWOSIBButton = me.setLargeWOSIBButton || function (jqElem) {
@@ -873,6 +917,10 @@ _willet.sibt = (function (me) {
         // auto-show results on hash
         wm.on('scriptComplete', me.autoShowResults);
         wm.on('scriptComplete', me.getVisitLength);
+
+        // vendor-specific mediator hooks for other libraries
+        wm.on('setSmallSIBTVendorButton', me.setSmallSIBTVendorButton);
+        wm.on('setLargeSIBTVendorButton', me.setLargeSIBTVendorButton);
     }
 
     return me;

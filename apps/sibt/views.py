@@ -770,8 +770,8 @@ class SIBTServeScript(URIHandler):
         page_url = ''
         parts = {}
         product = None
-        product_title = 'false'
-        product_description = 'false'
+        product_title = 'false'  # must be a javascript variable
+        product_description = 'false'  # must be a javascript variable
         show_votes = False
         show_top_bar_ask = False
         store_url = get_shopify_url(self.request.get('store_url'))
