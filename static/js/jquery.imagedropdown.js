@@ -57,7 +57,18 @@
                     'width': parseInt(settings.width) - 20,
                     'height': parseInt(settings.height),
                     'margin-top': '5'
-                });
+                }).hover(
+                    function () {
+                        $(this).css({
+                            // http://stackoverflow.com/questions/5162993/jquery-how-to-bright-up-an-image
+                            'opacity': '0.5'
+                        });
+                    }, function () {
+                        $(this).css({
+                            'opacity': '1'
+                        });
+                    }
+                );
                 $this.children('img').css('margin-top', '0');
 
                 $expansion = $('<div />', {
@@ -67,7 +78,8 @@
                         'width': parseInt(settings.width) - 20,
                         'height': $images.length * parseInt(settings.height),
                         'border-radius': settings['border-radius'],
-                        'position': 'absolute'
+                        'position': 'absolute',
+                        'tabindex': '1'
                     }
                 });
 
@@ -85,6 +97,7 @@
                     $expansion.fadeOut(INT_TIME_ANIM);
                     return false;
                 };
+                $expansion.blur(closeDropdown);
 
                 expansionIsVisible = function () {
                     return $expansion.is(':visible');

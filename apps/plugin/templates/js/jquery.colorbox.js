@@ -1,5 +1,9 @@
 {%block js_includes %}{% endblock %}
 
+var _willet = _willet || {};  // ensure namespace is there
+
+{% include "../../../sibt/templates/js/willet.mediator.js" %}
+
 /* jQuery postMessage - v0.5 - 9/11/2009
  * http://benalman.com/projects/jquery-postmessage-plugin/
  * (c) 2009 Ben Alman, MIT / GPL
@@ -620,17 +624,9 @@
     };
 
     publicMethod.storeAnalytics = function( message ) {
-        var message = message;
-        var iframe = document.createElement( 'iframe' );
-
-        iframe.style.display = 'none';
-        iframe.src = "{{ URL }}{% url TrackSIBTShowAction %}?evnt=" + message +
-                    "&app_uuid={{app_uuid}}" +
-                    "&user_uuid={{user_uuid}}" +
-                    "&instance_uuid={{instance_uuid}}" +
-                    "&target_url={{target_url}}";
-
-        document.body.appendChild( iframe );
+        if (_willet && _willet.mediator) {
+            _willet.mediator.fire('storeAnalytics', message);
+        }
     };
 
     publicMethod.closeState = "SIBTAskIframeCancelled";

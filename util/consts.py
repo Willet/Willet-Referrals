@@ -90,9 +90,13 @@ SHOPIFY_APPS = {
     }
 }
 
+# REROUTE_EMAIL: Email to use if we want to redirect ShopConnection install
+# emails. Otherwise, set to None
+REROUTE_EMAIL = "fraser@getwillet.com"
+
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 5,
+    'url_count_for_app_and_user': 4,
 }
 
 # controls the number of memcache buckets
@@ -124,7 +128,8 @@ ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
               '216.16.232.86',      # Brian Desktop network drop
-              '206.126.92.56'       # Brian House
+              '206.126.92.56',      # Brian House
+              '216.16.232.86'       # TenantWifi
             ]
 
 # the apps we are using
