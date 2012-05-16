@@ -108,11 +108,19 @@ class ButtonsShopify(Buttons, AppShopify):
 
         self.install_queued()
 
+        email = self.client.email
+        name  = self.client.merchant.get_full_name()
+        store = self.client.name
+        use_full_name = False
+
+        if REROUTE_EMAIL:
+            name += " (%s) [%s]" % (email, self.store_url)
+            email = REROUTE_EMAIL
+            use_full_name = True
+
         # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", 
-                             self.client.email, 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name)
+        Email.welcomeClient("ShopConnection", email, name, store,
+                            use_full_name=use_full_name)
         
         # Email DevTeam
         Email.emailDevTeam(

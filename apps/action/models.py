@@ -297,19 +297,17 @@ class ShowAction(Action):
     what = db.StringProperty()
 
     # url/page this was shown on
-    url = db.LinkProperty(indexed = True)
+    url = db.LinkProperty(indexed=True)
 
     @staticmethod
     def create(user, app, what, url):
         uuid = generate_uuid(16)
-        action = ShowAction(
-            key_name=uuid,
-            uuid=uuid,
-            user=user,
-            app_=app,
-            what=what,
-            url=url
-        )
+        action = ShowAction(key_name=uuid,
+                            uuid=uuid,
+                            user=user,
+                            app_=app,
+                            what=what,
+                            url=url)
 
         action.put()
         return action

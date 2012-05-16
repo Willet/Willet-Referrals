@@ -610,8 +610,9 @@ class ShowFBThanks(URIHandler):
                 app = partial.app_
                 link = partial.link
                 product = partial.product
-            except AttributeError, e:
-                logging.error ("partial is: %s (%s)" % (partial, e))
+                products = partial.products
+            except AttributeError, err:
+                logging.error("partial is: %s (%s)" % (partial, err))
 
             try:
                 product_image = product.images[0]
@@ -619,8 +620,13 @@ class ShowFBThanks(URIHandler):
                 product_image = '%s/static/imgs/blank.png' % URL # blank
 
             # Make the Instance!
-            instance = app.create_instance(user, None, link, product_image,
-                                           motivation=None, dialog="NoConnectFB")
+            instance = app.create_instance(user,
+                                           end=None,
+                                           link=link,
+                                           img=product_image,
+                                           motivation=None,
+                                           dialog="NoConnectFB",
+                                           products=products)
 
             # partial's link is actually bogus (points to vote.html without an instance_uuid)
             # this adds the full SIBT instance_uuid to the URL, so that the vote page can
@@ -642,8 +648,8 @@ class ShowFBThanks(URIHandler):
         elif partial != None:
             # Create cancelled action
             SIBTNoConnectFBCancelled.create(user,
-                                             url=partial.link.target_url,
-                                             app=partial.app_)
+                                            url=partial.link.target_url,
+                                            app=partial.app_)
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!
@@ -749,6 +755,7 @@ class SIBTServeScript(URIHandler):
         Optional params: willt_code (helps find instance)
         """
         # declare vars.
+        admin_testing_on_live = False
         app = None
         app_css = ''
         asker_name = ''
@@ -923,6 +930,10 @@ class SIBTServeScript(URIHandler):
             logging.debug ("has_results = %s" % has_results)
 
         # unsure detection
+        # this must be created to track view counts.
+        SIBTShowingButton.create(app=app,
+                                 url=page_url,
+                                 user=user)
         if app and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
             logging.info('got tracked_urls: %r' % tracked_urls)
@@ -930,12 +941,12 @@ class SIBTServeScript(URIHandler):
                 # user has viewed page more than once show top-bar-ask
                 show_top_bar_ask = True
 
-                # this number or more URLs tracked for (app and user)
-                threshold = UNSURE_DETECTION['url_count_for_app_and_user']
-
-                if len(tracked_urls) >= threshold:
-                    # activate unsure_multi_view (bottom popup)
-                    unsure_multi_view = True
+            # this number or more URLs tracked for (app and user)
+            threshold = UNSURE_DETECTION['url_count_for_app_and_user']
+            logging.debug('len(tracked_urls) = %d' % len(tracked_urls))
+            if len(tracked_urls) >= threshold:
+                # activate unsure_multi_view (bottom popup)
+                unsure_multi_view = True
 
         # have client, app, user, and maybe instance
         try:
@@ -943,10 +954,22 @@ class SIBTServeScript(URIHandler):
         except AttributeError:
             app_css = ''  # it was not a SIBTShopify
 
+        try:
+            browser_ip = self.request.remote_addr
+            if browser_ip in ADMIN_IPS:
+                admin_testing_on_live = True
+
+            # should not check using email address because people can
+            # spoof admin by sending an ask with our email addresses
+            '''if user.emails[0].address in ADMIN_EMAILS:
+                admin_testing_on_live = True'''
+        except AttributeError:
+            admin_testing_on_live = False
+
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
-            'debug': APP_LIVE_DEBUG,
+            'debug': APP_LIVE_DEBUG or admin_testing_on_live,
             'URL': URL,
 
             # store info
