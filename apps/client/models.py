@@ -30,13 +30,12 @@ class Client(Model, polymodel.PolyModel):
 
     merchant = MemcacheReferenceProperty(db.Model, collection_name="stores")
     # Store properties
-    name = db.StringProperty(indexed = False)
-    url = db.LinkProperty  (indexed = True)
-    domain = db.LinkProperty  (indexed = True)
+    name = db.StringProperty(indexed=False)
+    url = db.LinkProperty(indexed=True)
+    domain = db.LinkProperty(indexed=True)
 
-    # Blank, unless this client has a private deal with us.
-    # In that case, vendor is a meaningful vendor name (e.g. "Shu Uemura USA").
-    vendor = db.StringProperty(required=False, default='', index=False)
+    # False, unless this client has a private deal with us.
+    vendor = db.BooleanProperty(required=False, default=False)
 
     _memcache_fields = ['domain', 'email', 'url']
 
@@ -81,7 +80,8 @@ class Client(Model, polymodel.PolyModel):
                         email=user_email,
                         url=url,
                         domain=url,  # I really don't see the difference.
-                        merchant=user)
+                        merchant=user,
+                        vendor=False)
         client.put()
 
         return client

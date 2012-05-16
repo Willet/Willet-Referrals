@@ -765,6 +765,7 @@ class SIBTServeScript(URIHandler):
         use_db_analytics = False
         use_google_analytics = True
         user = None
+        vendor_name = ''
         votes_count = 0
         willet_code = self.request.get('willt_code')
 
@@ -939,6 +940,9 @@ class SIBTServeScript(URIHandler):
         except AttributeError:
             app_css = ''  # it was not a SIBTShopify
 
+        # see if we should run this script as a vendor.
+        vendor_name = getattr(client, 'name', '') if client.vendor else ''
+
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
@@ -950,12 +954,11 @@ class SIBTServeScript(URIHandler):
             'page_url': page_url,  # current page
             'store_url': store_url,  # registration url
           # 'store_id': getattr(app, 'store_id', ''),
-            'vendor': getattr(client, 'vendor', ''),  # triggers vendor modes
+            'vendor': vendor_name,  # triggers vendor modes
 
             # app info
             'app': app, # if missing, django omits these silently
             'app_css': app_css, # SIBT-JS does not allow custom CSS.
-            'detect_shopconnection': True,
             'sibt_version': app.version or App.CURRENT_INSTALL_VERSION,
 
             # instance info

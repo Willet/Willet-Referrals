@@ -41,7 +41,6 @@ _willet.sibt = (function (me) {
         app = {
             // true when SIBT needs to be disabled on the same page as Buttons
             'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
-            'detect_shopconnection': ('{{detect_shopconnection}}' === 'True'),
             'features': {
                 'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
                 'button': ('{{app.button_enabled}}' === 'True'),
@@ -328,6 +327,11 @@ _willet.sibt = (function (me) {
                 'image': $('#ProductMagicZoomImg img')[0].src || me.getLargestImage()
             });
         {% endifequal %}
+    };
+
+    me.setLargeSIBTVendorButton = me.setLargeSIBTVendorButton || function (jqElem) {
+        // there is no large sibt vendor button.
+        // well, there will be one, but I won't be writing it right now.
     };
 
     me.setLargeWOSIBButton = me.setLargeWOSIBButton || function (jqElem) {
@@ -668,7 +672,7 @@ _willet.sibt = (function (me) {
 
                 // popup will show only for pages sufficiently long.
                 if (pageHeight > windowHeight * 1.5) {
-                    wm.fire('storeAnalytics', 'popupEnabled');
+                    // wm.fire('storeAnalytics', 'popupEnabled');
                     if (scrollPos >= threshold) {
                         if (!popup.is(':visible') && !clickedOff) {
                             me.showBottomPopup();
@@ -679,7 +683,7 @@ _willet.sibt = (function (me) {
                         }
                     }
                 } else {
-                    wm.fire('storeAnalytics', 'popupDisabled.pageHeight');
+                    // wm.fire('storeAnalytics', 'popupDisabled.pageHeight');
                     wm.fire('log', "page too short");
                 }
             });
