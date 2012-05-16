@@ -288,12 +288,10 @@ class AskDynamicLoader(URIHandler):
         }
 
         # render SIBT/WOSIB
-        if len(template_products) > 1:  # WOSIB mode
-            path = os.path.join('apps/sibt/templates', vendor,
-                                'ask-multi.html')
-        else:  # SIBT mode
-            path = os.path.join('apps/sibt/templates', vendor,
-                                'ask.html')
+        filename = 'ask-multi.html' if len(template_products) > 1 else 'ask.html'
+        path = os.path.join('apps/sibt/templates', vendor, filename)
+        if not os.path.exists(path):
+            path = os.path.join('apps/sibt/templates', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -429,12 +427,10 @@ class VoteDynamicLoader(URIHandler):
             'noes': instance.get_nos_count()
         }
 
-        if len(products) > 1:  # wosib mode
-            path = os.path.join('apps/sibt/templates', vendor,
-                                'vote-multi.html')
-        else:
-            path = os.path.join('apps/sibt/templates', vendor,
-                                'vote.html')
+        filename = 'vote-multi.html' if len(products) > 1 else 'vote.html'
+        path = os.path.join('apps/sibt/templates', vendor, filename)
+        if not os.path.exists(path):
+            path = os.path.join('apps/sibt/templates', filename)
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))

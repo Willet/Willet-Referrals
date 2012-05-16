@@ -116,6 +116,7 @@ class DispenseClientDiscountCode(URIHandler):
             code.use_code(user=user)
             le_code = code.code
 
+        logging.debug('DISPENSING DISCOUNT CODE %s' % le_code)
         self.response.out.write(le_code)  # here is the code.
         return
 
