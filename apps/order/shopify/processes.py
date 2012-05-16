@@ -65,7 +65,7 @@ class CreateShopifyOrder(URIHandler):
                         email = email,
                         accepts_marketing = marketing)
         else:
-            logging.error('NO USER: ')
+            logging.warn('NO USER: ')
 
 
 

@@ -1,22 +1,15 @@
-{% extends "../../plugin/templates/ask.html" %}
+{% extends "../../../plugin/templates/ask.html" %}
 
 {% block styles %}{% endblock styles %}
 
 {% block screens %}
     <!--                          Splash Screen                             -->
-
     <div id="splash">
         <div class="title_bar">
             <img alt="logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
             <div>Need Help Deciding? Ask Your Friends</div>
         </div>
         <div class="content narrow">
-            <!--
-            // Enable when styling complete
-            {% if incentive_enabled %}
-            <p>Save $5 off your next purchase by <br />asking your friends for shopping advice!</p>
-            {% endif %}
-            -->
             <div class="message" id="message">
                 <img alt="product" src="{{ product_images|first }}" />
                 <textarea id='shareText'>I like this, but...</textarea>
@@ -51,19 +44,7 @@
     </div>
 {% endblock screens %}
 
-{% block js_globals %}
-    var options = [
-        // Could use template here
-        {
-            title: "Should I buy this?",
-            text: "{{ AB_share_text|escape }}"
-        },
-        {
-            title: "Does anyone own this?",
-            text: "I need help!  Does anyone own this? Let me know here:"
-        }
-    ];
-{% endblock js_globals %}
+{% block js_globals %}{% endblock js_globals %}
 
 {% block ajax_methods %}
     // Sends analytic data point to server
@@ -128,7 +109,6 @@
                 user_uuid       : "{{user_uuid}}",
                 app_uuid        : "{{app_uuid}}",
                 product_uuid    : "{{product_uuid}}",
-             // products        : get_selected_objects (),
                 fb_access_token : fbAccessToken,
                 fb_id           : fbIdentity,
                 friends         : JSON.stringify(friend_info), // jQuery can't handle complex objects, make it string
@@ -139,34 +119,22 @@
             };
 
             $.ajax({
-                url      : "{{ URL }}{% url SendFriendAsks %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                statusCode : {
-                    200: function () {
-                        // Success
+                url: "{{ URL }}{% url SendFriendAsks %}",
+                type: 'post',
+                dataType: 'json',
+                data: payload,
+                statusCode: {
+                    200: function () { // Success
                         updateEmailAddress();
                         showScreen('success');
                     },
                     400: function (resp, status) {
-                        // Bad Request
-                        if (resp && resp.data && resp.data.message) {
-                            $('.error_message').innerHTML("400 "+resp.data.message);
-                        }
                         showScreen('failure');
-
                     },
                     401: function (resp, status) {
-                        // Unauthorized
-                        if (resp && resp.data && resp.data.message) {
-                            $('.error_message').innerHTML("401 "+resp.data.message);
-                        }
                         showScreen('failure');
-
                     },
                     500: function () {
-                        // Internal server error
                         showScreen('failure');
                     }
                 }

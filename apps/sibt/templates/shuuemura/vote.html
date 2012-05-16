@@ -4,9 +4,6 @@
         <!-- Favicon -->
         <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
         <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-
-        <link rel="stylesheet" href="/static/sibt/css/vote.css" type="text/css" />
-        <link rel="stylesheet" href="/static/wosib/css/wosib.css" type="text/css" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script type="text/javascript">
             if (typeof jQuery == 'undefined') {
@@ -18,9 +15,15 @@
             {% block head_script %}{% endblock %}
         </script>
         <style type="text/css">
-            html. body {
-                background: transparent !important;
-                background-color: transparent !important;
+            html, body {
+                background: #fff url('/static/imgs/brillant.png');
+                color: #444;
+                font-family: 'PT sans', Helvetica, Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            h2 {
+                text-align:center;
             }
             h2 a {
                 color: inherit;
@@ -28,12 +31,6 @@
             }
             h2 a:hover {
                 text-decoration: underline;
-            }
-            #wrapper, .wrapper { /* overrides ask.css defaults */
-                height: auto;
-                /* width: auto; */
-                margin-top: 130px;
-                display: auto;
             }
             #error_bar {
                 display:none;
@@ -44,39 +41,106 @@
                 border: 2px transparent solid;
                 box-shadow: none;
             }
+            #wrapper {
+                background: #fff;
+                width: 960px;
+                margin: 0 auto;
+            }
+            #header {
+                background-color: #000;
+                height: 150px;
+            }
+            #header .vendor_logo {
+                display:block;
+                padding: 60px 0 0 60px;
+            }
+            #header .vendor_logo a {
+                border: 0;
+            }
+            #asker_bar {
+                float: left;
+                width: 415px;
+                margin-left: -7px; /* shadow compensation */
+            }
+            #main_content {
+                float: right;
+                width: 550px;
+                text-align: justify;
+            }
+            #product_img {
+                display: block;
+                margin: 0 auto;
+            }
+            #success_message h2 {
+                display: none;
+            }
+            #share_again {
+                margin-left: 10px;
+            }
+            .blob {
+                /* a 'dialog box' */
+                background-color: #f5f5f5;
+                box-shadow: 0 5px 10px 0 #999;
+                border-radius: 0 0 5px 5px;
+                padding: 10px;
+                margin: 30px 10px;
+            }
+            .blob>.title {
+                background-color: #e0e0e0;
+                color: #222;
+                padding: 5px;
+                margin: -10px -10px 10px -10px;
+            }
+            .blob>.title>img {
+                margin: 5px;
+            }
+            .center {
+                text-align:center;
+            }
+            .hidden {
+                display: none;
+            }
+            .slight_highlight {
+                margin: 24px;
+                padding: 20px;
+                background-color: #fff;
+                box-shadow: 0px 8px 16px 0px rgb(206, 206, 206);
+                border: 1px #eee solid;
+                border-radius: 3px;
+            }
         </style>
-        <meta http-equiv="X-UA-Compatible" content="IE=8" />
-        <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
         <title>Shu Uemura - Ask a Friend</title>
     </head>
     <body>
         <div id="wrapper">
-            <div id="asker_title">
-                <div id="title">
-                    {% if asker_pic %}
-                        <img align="left" src="{{ asker_pic }}"  />
-                    {% endif %}
-                    Should <b>{{asker_name}}</b> Buy This?
-                    <div id="share_again">
-                        Invite a friend to vote: <input style="width: 250px" type="text" readonly="readonly" value="{{ share_url }}" />
-                    </div>
-                </div>
+            <div id="header">
+                <img class="vendor_logo"
+                     src="/static/sibt/imgs/sibt-shu-logo.png"
+                     width="226"
+                     height="29" />
             </div>
-            <div id="main_content" class="slight_highlight">
-                <div id="product_screen">
-                    <h2><a href="{{ product_url }}">{{ product.title }}</a>
-                        <br />
-                        <span class="mini">From <a href="{{ store_url }}">{{ store_name }}</a></span>
-                    </h2>
-                    <div id="left-div">
-                        <img src="{{ product_img }}" />
-                    </div>
-                    <div id="right-div" class="description">
-                        {{ product.description }}
+            <div id="asker_bar">
+                <div class="blob">
+                    <div class="title">
+                    {% if asker_pic %}
+                        <img align="left" src="{{ asker_pic }}" />
+                    {% endif %}
+                    {{asker_name}} asks:</div>
+                    <div id="asker_message">
+                        {{ asker_message|default:"I like this, but..." }}
                     </div>
                 </div>
-                <div id="success_screen" class="hidden">
-                    Thanks for voting!
+                <div class="choice blob">
+                    <div class="title">
+                        Should <b>{{asker_name}}</b> get this?
+                    </div>
+                    <div class="center">
+                        <button class="button" id="yes">Yes</button>
+                        <button class="button" id="no">No</button>
+                    </div>
+                </div>
+                <div id="success_message" class="hidden blob">
+                    <div class="title">Thanks for voting!</div>
                     <h2 class="yes">
                         Tell {{asker_name}} why you voted YES.
                     </h2>
@@ -84,40 +148,29 @@
                         Tell {{asker_name}} why you voted NO.
                     </h2>
                     <div id="fb-root"></div>
-                    <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="400"></div>
+                    <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
                 </div>
-                <div id="error_screen" class="hidden">Something went wrong, and your vote was not counted! <br />
+                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
                     Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
                 </div>
+                <div id="share_again">
+                    Invite a friend to vote:
+                    <input style="width: 245px" type="text"
+                            readonly="readonly" value="{{ share_url }}" />
+                </div>
             </div>
-            <div id="choice">
-                <button class="button" id="yes">Yes</button>
-                <button class="button" id="no">No</button>
+            <div id="main_content">
+                <div id="product_screen">
+                    <h2><a href="{{ product_url }}">{{ product.title }}</a></h2>
+                    <img id="product_img" class="slight_highlight" src="{{ product_img }}" />
+                    <div id="right-div" class="description">
+                        {{ product.description }}
+                    </div>
+                </div>
             </div>
             <script type="text/javascript">
                 $(document).ready(function() {
-                    var yesses = {{yesses}};
-                    var noes = {{noes}};
-                    var percent_el = $('#percentage');
-
-                    var calculatePercent = function() {
-                        var total = yesses + noes;
-                        var value = Math.round(parseFloat(yesses/total)*100);
-                        if (isNaN(value)) {
-                            value = 0;
-                        }
-                        return value;
-                    };
                     var vote = function( which ) {
-                        //var count = $('#' + which + 'Count span');
-                        //var val = parseInt(count.text()) + 1;
-                        //count.text(val);
-                        if (which == 'yes') {
-                            yesses++;
-                        } else {
-                            noes++;
-                        }
-                        percent_el.text(calculatePercent());
                         $.ajax({
                             url: "/s/doVote",
                             type: 'post',
@@ -126,24 +179,19 @@
                                 which : which
                             },
                             success: function (tr) {
-                                $("#product_screen").hide();
-                                $("#choice").hide();
-                                $("#success_screen").show();
-                                $("#success_screen h2." + which).show();
+                                $(".choice").hide();
+                                $("#success_message").show();
+                                $("#success_message h2." + which).show();
                                 $("#FOO").show();
                                 fbinit (document, 'script', 'facebook-jssdk');
                             },
                             error: function () {
-                                $("#product_screen").hide();
-                                $("#choice").hide();
-                                $("#error_screen").show();
+                                $(".choice").hide();
+                                $("#error_message").show();
                             }
                         });
                     };
-
-                    percent_el.text(calculatePercent ());
-
-                    $('#choice button').click(function () {
+                    $('.choice button').click(function () {
                         vote (this.id); // click button = vote
                     });
                 });
@@ -158,11 +206,10 @@
                         status: true, // check login status
                         cookie: true, // enable cookies to allow the server to access the session
                         oauth: true, // enable OAuth 2.0
-                        width: 400,
+                        width: 375,
                         xfbml: true  // parse XFBML
                     });
                 };
-
                 var fbinit = function(d, s, id) {
                     var js, fjs = d.getElementsByTagName(s)[0];
                     if (d.getElementById(id)) {return;}
@@ -173,7 +220,6 @@
                     fjs.parentNode.insertBefore(js, fjs);
                 };
             </script>
-
         </div>
         <script type="text/javascript">
             {% block body_script %}{% endblock %}

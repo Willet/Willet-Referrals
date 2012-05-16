@@ -332,6 +332,7 @@ _willet.sibt = (function (me) {
     me.setLargeSIBTVendorButton = me.setLargeSIBTVendorButton || function (jqElem) {
         // there is no large sibt vendor button.
         // well, there will be one, but I won't be writing it right now.
+        me.setLargeSIBTButton(jqElem);
     };
 
     me.setLargeWOSIBButton = me.setLargeWOSIBButton || function (jqElem) {

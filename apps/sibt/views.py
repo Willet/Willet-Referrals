@@ -178,6 +178,13 @@ class AskDynamicLoader(URIHandler):
         incentive_enabled = getattr(app, 'incentive_enabled', False)
         product_shopify_id = getattr(product, 'shopify_id', '')
 
+        # see which template we should we using.
+        try:
+            if app.client and app.client.vendor:
+                vendor = app.client.name
+        except NameError, AttributeError:
+            pass  # not a vendor
+
         # successive steps to obtain the product(s) using any way possible
         products = get_products(app=app)
         if not products[0]:  # we failed to find a single product!
@@ -286,7 +293,7 @@ class AskDynamicLoader(URIHandler):
                                 'ask-multi.html')
         else:  # SIBT mode
             path = os.path.join('apps/sibt/templates', vendor,
-                                'ask%s.html')
+                                'ask.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
@@ -307,6 +314,7 @@ class VoteDynamicLoader(URIHandler):
         target = get_target_url(self.request.get('url', ''))
         template_values = {}
         user = None
+        vendor = self.request.get('vendor', '')  # changes template used
         willt_code = self.request.get('willt_code')
 
         def get_instance():
@@ -350,6 +358,14 @@ class VoteDynamicLoader(URIHandler):
             # We can't find the app?!
             self.response.out.write("Drat! This vote was not created properly.")
             return
+
+        # see which template we should we using.
+        try:
+            if app.client and app.client.vendor:
+                vendor = app.client.name
+        except NameError, AttributeError:
+            pass  # not a vendor
+
 
         user = User.get(self.request.get('user_uuid')) or \
                User.get_or_create_by_cookie(self, app)
@@ -414,9 +430,11 @@ class VoteDynamicLoader(URIHandler):
         }
 
         if len(products) > 1:  # wosib mode
-            path = os.path.join('apps/sibt/templates/', 'vote-multi.html')
+            path = os.path.join('apps/sibt/templates', vendor,
+                                'vote-multi.html')
         else:
-            path = os.path.join('apps/sibt/templates/', 'vote.html')
+            path = os.path.join('apps/sibt/templates', vendor,
+                                'vote.html')
 
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
