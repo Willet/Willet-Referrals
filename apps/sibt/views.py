@@ -58,7 +58,6 @@ class AskDynamicLoader(URIHandler):
 
             user_uuid (optional)
         """
-
         app_uuid = self.request.get('app_uuid')
         instance_uuid = self.request.get('instance_uuid')
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
@@ -288,23 +287,7 @@ class AskDynamicLoader(URIHandler):
         else:  # SIBT mode
             path = os.path.join('apps/sibt/templates', vendor,
                                 'ask%s.html')
-            # Fix the product description
-            """
-            try:
-                ex = '[!\.\?]+'
-                product_desc = strip_html(product.description)
-                parts = re.split(ex, product_desc[:150])
-                if len(parts) > 1:
-                    product_desc = '.'.join(parts[:-1])
-                else:
-                    product_desc = '.'.join(parts)
-                if product_desc[:-1] not in ex:
-                    product_desc += '.'
-            except Exception, e:
-                product_desc = ''
-                logging.warn('Probably no product description: %s' % e,
-                             exc_info=True)
-            """
+
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
@@ -406,29 +389,28 @@ class VoteDynamicLoader(URIHandler):
             percentage = 0.0 # "it's true that 0% said buy it"
 
         template_values = {
-                'evnt' : event,
-                'product': product,
-                'product_img': product_img,
-                'app' : app,
-                'URL': URL,
-                'instance_uuid' : instance_uuid,
+            'evnt' : event,
+            'product': product,
+            'product_img': product_img,
+            'app' : app,
+            'URL': URL,
+            'instance_uuid' : instance_uuid,
 
-
-                'user': user,
-                'asker_name' : name if name else "your friend",
-                'asker_pic' : instance.asker.get_attr('pic'),
-                'target_url' : target,
-                'fb_comments_url' : '%s' % (link.get_willt_url()),
-                'percentage': percentage,
-                'products': products,
-                'share_url': share_url,
-                'product_url': product.resource_url,
-                'store_url': app.store_url,
-                'store_name': app.store_name,
-                'instance' : instance,
-                'votes': yesses + nos,
-                'yesses': instance.get_yesses_count(),
-                'noes': instance.get_nos_count()
+            'user': user,
+            'asker_name' : name if name else "your friend",
+            'asker_pic' : instance.asker.get_attr('pic'),
+            'target_url' : target,
+            'fb_comments_url' : '%s' % (link.get_willt_url()),
+            'percentage': percentage,
+            'products': products,
+            'share_url': share_url,
+            'product_url': product.resource_url,
+            'store_url': app.store_url,
+            'store_name': app.store_name,
+            'instance' : instance,
+            'votes': yesses + nos,
+            'yesses': instance.get_yesses_count(),
+            'noes': instance.get_nos_count()
         }
 
         if len(products) > 1:  # wosib mode
@@ -968,6 +950,7 @@ class SIBTServeScript(URIHandler):
             'page_url': page_url,  # current page
             'store_url': store_url,  # registration url
           # 'store_id': getattr(app, 'store_id', ''),
+            'vendor': getattr(client, 'vendor', ''),  # triggers vendor modes
 
             # app info
             'app': app, # if missing, django omits these silently

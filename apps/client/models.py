@@ -34,6 +34,10 @@ class Client(Model, polymodel.PolyModel):
     url = db.LinkProperty  (indexed = True)
     domain = db.LinkProperty  (indexed = True)
 
+    # Blank, unless this client has a private deal with us.
+    # In that case, vendor is a meaningful vendor name (e.g. "Shu Uemura USA").
+    vendor = db.StringProperty(required=False, default='', index=False)
+
     _memcache_fields = ['domain', 'email', 'url']
 
     def __init__(self, *args, **kwargs):

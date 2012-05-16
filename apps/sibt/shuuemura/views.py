@@ -32,6 +32,7 @@ class SIBTShuuemuraWelcome(URIHandler):
         first_name = "Shu Uemura"
         last_name = "USA"  # heheh (his name is actually Uemura Shu)
         phone = "1-888-748-5678"
+        vendor = "Shu Uemura USA"  # unique vendor name
 
         # vendor-agnostic below this line
         logging.info('SIBTShuuemuraWelcome: trying to create app')
@@ -63,6 +64,7 @@ class SIBTShuuemuraWelcome(URIHandler):
         # got a client; update its info
         client.email = email
         client.name = full_name
+        client.vendor = vendor
         client.put()
 
         user.update(client=client)  # can't bundle with previous user update

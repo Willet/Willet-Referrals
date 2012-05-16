@@ -89,6 +89,20 @@ _willet.sibt = (function (me) {
         me.initBottomPopup();
     };
 
+    me.vendorMode = me.vendorMode || function () {
+        // returns true or false on whether this script is running on
+        // a vendor's website.
+        // function can be called only after init() is.
+        if ('{{ vendor }}') {
+            return true;
+        }
+        if (!$) {
+            return false;
+        }
+        return Boolean($('._vendor_sibt')) ||
+               Boolean($('#_vendor_shouldIBuyThisButton'));
+    }
+
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
         wm.fire('storeAnalytics', 'SIBTShowingAsk');
@@ -127,9 +141,17 @@ _willet.sibt = (function (me) {
     // turn a $(elem) into a SIBT button of (SMALL_SIBT/LARGE_SIBT/...) mode.
     me.setButton = me.setButton || function (jqElem, mode) {
         if (mode === SMALL_SIBT) {
-            me.setSmallSIBTButton(jqElem);
+            if (me.vendorMode()) { // double check
+                me.setSmallSIBTVendorButton(jqElem);
+            } else {
+                me.setSmallSIBTButton(jqElem);
+            }
         } else if (mode === LARGE_SIBT) {
-            me.setLargeSIBTButton(jqElem);
+            if (me.vendorMode()) { // double check
+                me.setLargeSIBTVendorButton(jqElem);
+            } else {
+                me.setLargeSIBTButton(jqElem);
+            }
         } else if (mode === SMALL_WOSIB) {
             // there is no small wosib button.
         } else if (mode === LARGE_WOSIB) {
