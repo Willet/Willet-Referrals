@@ -1,434 +1,94 @@
-<!DOCTYPE html>
-<html lang='en'>
-    <head>
-        <!-- Favicon -->
-        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
-        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-        <script type="text/javascript">
-            if (typeof jQuery == 'undefined') {
-                var script= document.createElement('script');
-                script.type= 'text/javascript';
-                script.src= '/static/js/jquery.min.js';
-                document.appendChild(script);
-            }
-            {% block head_script %}{% endblock %}
-        </script>
-        <style type="text/css">
-            html, body {
-                background: #fff url('/static/imgs/brillant.png');
-                color: #444;
-                font-family: 'PT sans', Helvetica, Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-            }
-            h2 {
-                text-align:center;
-            }
-            h2 a {
-                color: inherit;
-                text-decoration: none;
-            }
-            h2 a:hover {
-                text-decoration: underline;
-            }
-            .title_bar {
-                width: 100%;
-                height: 55px;
-                font-size: 18px;
-                padding: 0 0 8px 0;
-                border-bottom: 1px solid #BBB;
-            }
-            .title_bar>* {
-                float: left;
-            }
-            .title_bar>img {
-                height: 60px;
-                width: 50px;
-                margin: 0px 0px 0px 15px;
-                padding: 0px;
-            }
-            .title_bar>div {
-                line-height: 30px;
-                margin: 14px 0 0 15px;
-            }
-            #error_bar {
-                display:none;
-                color: #f00;
-            }
-            #cart_items_display li {
-                background-color: transparent;
-                border: 2px transparent solid;
-                box-shadow: none;
-            }
+{% extends "vote-base.html" %}
 
-            #error_bar {
-                display:none;
-                color: #f00;
-            }
-            #cart_items_display li {
-                background-color: transparent;
-                border: 2px transparent solid;
-                box-shadow: none;
-            }
-            #wrapper {
-                background: #fff;
-                width: 960px;
-                margin: 0 auto;
-            }
-            #header {
-                background-color: #000;
-                height: 150px;
-            }
-            #header .vendor_logo {
-                display:block;
-                padding: 60px 0 0 60px;
-            }
-            #header .vendor_logo a {
-                border: 0;
-            }
-            #asker_bar {
-                float: left;
-                width: 415px;
-                margin-left: -7px; /* shadow compensation */
-            }
-            #main_content {
-                float: right;
-                width: 550px;
-                text-align: justify;
-            }
-            #product_img {
-                display: block;
-                margin: 0 auto;
-            }
-            #success_message h4 {
-                display: none;
-            }
-            #share_again {
-                margin-left: 10px;
-            }
-            #discount_screen {
-                padding-top: 110px;
-                text-align: center;
-            }
-            #discount_code {
-                font-size: 30px;
-                text-align: center;
-                display: block;
-                margin: 0 auto;
-                width:200px;
-            }
-            .blob {
-                /* a 'dialog box' */
-                background-color: #f5f5f5;
-                box-shadow: 0 5px 10px 0 #999;
-                border: 1px #e0e0e0 solid;
-                border-radius: 0 0 5px 5px;
-                padding: 10px;
-                margin: 30px 10px;
-            }
-            .blob>.title {
-                background-color: #e0e0e0;
-                color: #222;
-                padding: 5px;
-                margin: -10px -10px 10px -10px;
-            }
-            .blob>.title>img {
-                margin: 5px;
-            }
-            .center {
-                text-align:center;
-            }
-            .hidden {
-                display: none;
-            }
-            .slight_highlight {
-                margin: 24px;
-                padding: 20px;
-                background-color: #fff;
-                box-shadow: 0px 8px 16px 0px rgb(206, 206, 206);
-                border: 1px #eee solid;
-                border-radius: 3px;
-            }
-        </style>
-        <title>Ask a Friend | Shu Uemura</title>
-    </head>
-    <body>
-        <div id="wrapper">
-            <div id="header">
-                <img class="vendor_logo"
-                     src="/static/sibt/imgs/sibt-shu-logo.png"
-                     width="226"
-                     height="29" />
-            </div>
-            <div id="asker_bar">
-                <div class="blob">
-                    <div class="title">
-                    {% if asker_pic %}
-                        <img align="left" src="{{ asker_pic }}" />
-                    {% endif %}
-                    {{asker_name}} asks:</div>
-                    <div id="asker_message">
-                        {{ asker_message|default:"Which one should I get?" }}
-                    </div>
-                </div>
-                <div class="choice blob">
-                    <div class="title">
-                        Should <b>{{asker_name}}</b> get this?
-                    </div>
-                    <div class="center">
-                        <button class="button" id="yes">Yes</button>
-                        <button class="button" id="no">No</button>
-                    </div>
-                </div>
-                <div id="success_message" class="hidden blob">
-                    <div class="title">Thanks for voting!</div>
-                    <h4 class="yes">
-                        Tell {{asker_name}} why you voted YES.
-                    </h4>
-                    <h4 class="no">
-                        Tell {{asker_name}} why you voted NO.
-                    </h4>
-                    <div id="fb-root"></div>
-                    <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
-                </div>
-                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
-                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
-                </div>
-                <div id="share_again">
-                    Invite a friend to vote:
-                    <input style="width: 245px" type="text"
-                            readonly="readonly" value="{{ share_url }}" />
-                </div>
-            </div>
-            <div id="main_content">
-                <div id="splash">
-                    <h1 style="text-align:center;">Which one would you get?</h1>
-                    <form method="POST" action="">
-                        <ul id="cart_items_display">
-                            <!-- JS -->
-                        </ul>
-                    </form>
-                    <div class="dialog_button_area">
-                        <input type="hidden" name="app_uuid" value="{{app_uuid}}">
-                        <input type="hidden" name="user_uuid" value="{{user_uuid}}">
-                        <input type="hidden" name="instance_uuid" value="{{instance_uuid}}">
-                        <input type="hidden" name="target_url" value="{{target_url}}">
-
-                        <input name="vote_btn" id="vote_btn"
-                            class="button"
-                            type="button" value="Done">
-                        <div id="error_bar"></div>
-                    </div>
-                </div>
-                <div id="discount_screen" class="hidden">
-                    <h2>Thank you for helping {{asker_name}}.</h2>
-                    <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
-                    <input id="discount_code" type="text" />
-                    <p style="margin-top:24px;">
-                        <a href="http://shuuemura-usa.com">Continue Shopping</a>
-                    </p>
-                </div>
-                <div id="thanks_for_vote">
-                    <div class="title_bar">
-                        <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                        <div>Thank you!</div>
-                        <!-- text should not mention 'buy' -->
-                    </div>
-                    <div>Thank you. You're awesome! <br />
-                        We'll email your friend the result in a couple of hours.
-                    </div>
-                    <div class="dialog_button_area">
-                        <input type="button" class="button" value="Close">
-                    </div>
-                </div>
-                <div id="wosib_error">
-                    <div class="title_bar">
-                        <img alt="SIBT Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-                        <div>Doh!</div>
-                        <!-- text should not mention 'buy' -->
-                    </div>
-                    <div>Something went wrong, and your vote was not counted! <br />
-                        Sorry! Please tell <a href="mailto:fraser@getwillet.com">us</a> about it.
-                    </div>
-                    <div class="dialog_button_area">
-                        <input type="button" class="button" value="Close">
-                    </div>
-                </div>
-
-            </div>
-            <script type="text/javascript">
-                $(document).ready (function () {
-                    // controller guarantees there to be > 0 products
-                    var _willet_cart_products = [ {% for product in products %}
-                        {   "id": "{{product.shopify_id}}",
-                            "title": "{{product.title}}",
-                            "image" : "{{product.images.0}}" || "/static/imgs/noimage-willet.png",
-                            "product_uuid": "{{product.uuid}}",
-                        },
-                    {% endfor %} {}];
-                    _willet_cart_products.pop(); // remove trailing {} to fix IE trailing comma
-
-                    // Widget class
-                    // Base widget, same basic functionality
-                    var LiWidget = function (name) {
-                        var elem = this.elem = document.createElement('li');
-                        elem.id = elem.name = name || '';
-                    };
-                    LiWidget.prototype = {
-                        getElement: function () {
-                            return this.elem;
-                        },
-                        getName: function () {
-                            return this.name;
-                        },
-                        setVisible: function (i) {
-                            this.elem.style.display = i ? 'block' : 'none';
-                        }
-                    };
-
-                    var Product = function (uuid, title, image_src, shopify_id) {
-                        LiWidget.call(this, "item" + shopify_id);
-
-                        var that = this,
-                            $elem = $(this.elem);
-
-                        $elem.click (function (e) {
-                            // add product selection events onto checkbox.
-                            $('#cart_items_display input').prop('checked', false);
-                            var checkbox = $(this).find('input')[0];
-                            checkbox.checked = true;
-
-                            // cancel select for all other checkboxes
-                            $('#cart_items_display li').each (function () {
-                                var checkbox = $(this).find('input')[0];
-                                $(this).css({
-                                    'border': checkbox.checked ? '2px #9ac solid' : '2px transparent solid',
-                                    'background-color': checkbox.checked ? '#dfefff' : 'transparent'
-                                });
-                            });
-                        });
-
-                        var image = this.image = document.createElement('img');
-                        image.src = image_src || "/static/imgs/noimage-willet.png";
-
-                        var input = this.input = document.createElement('input');
-                        input.id = "item" + shopify_id;
-                        input.name = "item" + shopify_id;
-                        input.className = "product_select";
-                        input.type = "checkbox";
-                        input.setAttribute("data-uuid", uuid);
-
-                        var label = this.label = document.createElement('label');
-                        label.appendChild (input);
-                        label.innerHTML += title;
-
-                        $elem.append ([image, label]);
-
-                    };
-
-                    Product.prototype = new LiWidget();
-
-                    Product.prototype.getProductUuid = function () {
-                        return $elem.data('uuid');
-                    };
-
-                    Product.prototype.attach = function () {
-                        $('#cart_items_display').append(this.elem);
-                    };
-
-                    var x = 0;
-                    for (x = 0; x < _willet_cart_products.length; x++) {
-                        // add products onto page.
-                        var prod = new Product (
-                            _willet_cart_products[x].product_uuid,
-                            _willet_cart_products[x].title,
-                            _willet_cart_products[x].image,
-                            _willet_cart_products[x].product_id
-                        );
-                        prod.attach ();
-                    }
-
-                    var showScreen = function (id) {
-                        $('#wrapper').children().hide();
-                        $('#wrapper>#'+id).show();
-                    };
-
-                    var closeWindow = function () {
-                        window.close();
-                    };
-                    $('[value="Close"]').click (closeWindow);
-
-                    var showError = function (msg) {
-                        $('#error_bar').text(msg).fadeIn(350).delay(3000).fadeOut(700);
-                    };
-
-                    var vote = function () {
-                        var product_uuid = $('#cart_items_display input:checked').data('uuid');
-                        if (product_uuid) {
-                            var payload = {
-                                "user_uuid" : "{{ user_uuid }}",
-                                "instance_uuid" : "{{ instance_uuid }}",
-                                "product_uuid" : product_uuid
-                            };
-                            $.ajax({
-                                url: "{{ URL }}{% url DoVote %}",
-                                type: 'post',
-                                data: payload,
-                                success: function () {
-                                    showScreen('thanks_for_vote');
-                                },
-                                error: function () {
-                                    showScreen('wosib_error');
-                                }
-                            });
-                        } else {
-                            showError("Please select a product :)");
-                        }
-                    };
-                    $('#vote_btn').click(vote);
-
-                    $('#cart_items_display input').prop('checked', false);
-                    showScreen('splash');
-                });
-            </script>
-            <script>
-                window.fbAsyncInit = function() {
-                    // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
-                    FB.init({
-                        appId: '{{FACEBOOK_APP_ID}}', // App ID
-                        //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
-                        status: true, // check login status
-                        cookie: true, // enable cookies to allow the server to access the session
-                        oauth: true, // enable OAuth 2.0
-                        width: 375,
-                        xfbml: true  // parse XFBML
-                    });
-                };
-                var fbinit = function(d, s, id) {
-                    var js, fjs = d.getElementsByTagName(s)[0];
-                    if (d.getElementById(id)) {return;}
-                    js = d.createElement(s);
-                    js.id = id;
-                    js.async = true;
-                    js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
-                    fjs.parentNode.insertBefore(js, fjs);
-                };
-            </script>
+{% block left_screens %}
+    <div class="choice blob">
+        <div class="title">
+            Which one should <b>{{asker_name}}</b> get?
         </div>
-        <script type="text/javascript">
-            {% block body_script %}{% endblock %}
-        </script>
-        <!-- Google Analytics -->
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-23764505-9']);
-            _gaq.push(['_trackPageview']);
-            (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-    </body>
-</html>
+        <div class="center">
+            {% for product in products %}
+                <button class="button vote" data-uuid="{{ product.uuid }}">
+                    {{ product.title }}
+                </button>
+            {% endfor %}
+            <div id="error_bar"></div>
+        </div>
+    </div>
+    <div id="success_message" class="hidden blob">
+        <div class="title">Thanks for voting!</div>
+        {% for product in products %}
+            <h4 id="why-{{ product.uuid }}" class="hidden">
+                Tell {{asker_name}} why you voted for <i>{{ product.title }}</i>.
+            </h4>
+        {% endfor %}
+        <div id="fb-root"></div>
+        <div id="FOO" class="fb-comments hidden" data-href="{{fb_comments_url}}" data-num-posts="5" data-width="375"></div>
+    </div>
+{% endblock left_screens %}
+
+{% block right_screens %}
+    <div id="product_screen">
+        <table>
+            {% for product in products %}
+            <tr>
+                <td>
+                    <h2 class="title">
+                        <a href='{{ product.resource_url|default:"#" }}'>{{ product.title }}</a>
+                    </h2>
+                    <img alt="product image" src="{{ product.images.0 }}" class="slight-highlight product-image" />
+                    <div class="description">
+                    {{ product.description|linebreaksbr|striptags }}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock right_screens %}
+
+{% block body_script %}
+    $(document).ready(function () {
+        var vote = function () {
+            var product_uuid = $(this).data('uuid');
+            if (product_uuid) {
+                var payload = {
+                    "user_uuid" : "{{ user_uuid }}",
+                    "instance_uuid" : "{{ instance_uuid }}",
+                    "product_uuid" : product_uuid
+                };
+                $.ajax({
+                    url: "{{ URL }}{% url DoVote %}",
+                    type: 'post',
+                    data: payload,
+                    success: function () {
+                        $(".choice, #product_screen").hide();
+                        $("#discount_screen, #success_message, #why-" + product_uuid + ", #FOO").show();
+
+                        // get the discount code.
+                        $.ajax({
+                            url: "{% url DispenseClientDiscountCode %}",
+                            data: {
+                                'client_uuid': "{{ client_uuid }}",
+                                'store_url': "{{ store_url }}"
+                            },
+                            type: 'post',
+                            dataType: 'text',
+                            success: function (data) {
+                                $("#discount_code").val(data || "We're out!");
+                            }
+                        });
+                        fbinit (document, 'script', 'facebook-jssdk');
+                    },
+                    error: function () {
+                        $(".choice").hide();
+                        $("#error_message").show();
+                    }
+                });
+            } else {
+                showError("Please select a product :)");
+            }
+        };
+        $('.vote').click(vote);
+        $('#cart_items_display input').prop('checked', false);
+    });
+{% endblock body_script %}

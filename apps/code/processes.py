@@ -110,11 +110,16 @@ class DispenseClientDiscountCode(URIHandler):
             logging.error('No user could be found by cookie or email')
             return
 
-        code = DiscountCode.get_by_client_at_random(client)
-        if code:
-            # now it's marked and we can't use it again
-            code.use_code(user=user)
-            le_code = code.code
+        if user.user_discount_codes:  # if this user already has one
+            logging.warn('User already got a discount code... '
+                         'dispensing that one')
+            le_code = user.user_discount_codes[0].code
+        else:
+            code = DiscountCode.get_by_client_at_random(client)
+            if code:
+                # now it's marked and we can't use it again
+                code.use_code(user=user)
+                le_code = code.code
 
         logging.debug('DISPENSING DISCOUNT CODE %s' % le_code)
         self.response.out.write(le_code)  # here is the code.
