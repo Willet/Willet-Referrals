@@ -287,27 +287,13 @@ class DoVote(URIHandler):
             instance.increment_yesses()
 
         # Tell the Asker they got a vote!
-        email = instance.asker.get_attr('email')
-        if email:
-            logging.info('going to email shopper.')
-            if which.lower() == "yes" or which.lower() == "no":  # SIBT
-                logging.debug('SIBT email')
-                Email.SIBTVoteNotification(to_addr=email,
-                                           name=instance.asker.get_full_name(),
-                                           vote_type=which,
-                                           product_url="%s#open=1" % instance.url, # full product link
-                                           product_img=instance.product_img,
-                                           client_name=app.client.name,
-                                           client_domain=app.client.domain)
-            else:
-                logging.debug('WOSIB email')
-                Email.WOSIBVoteNotification(to_addr=email,
-                                            name=instance.asker.get_full_name(),
-                                            cart_url="%s#open=1" % instance.link.origin_domain,  # cart url
-                                            client_name=app.client.name,
-                                            client_domain=app.client.domain)
+        if which.lower() == "yes" or which.lower() == "no":  # SIBT
+            logging.info('going to SIBT email shopper.')
+            Email.SIBTVoteNotification(instance=instance,
+                                       vote_type=which)
         else:
-            logging.info('shopper has no email - not going to send one.')
+            logging.info('going to WOSIB email shopper.')
+            Email.WOSIBVoteNotification(instance=instance)
 
         self.response.out.write('ok')
 
@@ -356,16 +342,8 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
-            email = instance.asker.get_attr('email')
-            if email:
-                Email.SIBTVoteCompletion(
-                    to_addr=email,
-                    name=result_instance.asker.get_full_name(),
-                    product_url=result_instance.url, # original product URL
-                    product_img=result_instance.product_img,
-                    yesses=result_instance.get_yesses_count(),
-                    noes=result_instance.get_nos_count()
-                )
+            Email.SIBTVoteCompletion(instance=instance,
+                                     product=instance.products[0])
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
@@ -807,8 +785,7 @@ class SendFriendAsks(URIHandler):
                                            message=msg,
                                            vote_url=link.get_willt_url(),
                                            asker_img=a['pic'],
-                                           client_name=app.client.name,
-                                           client_domain=app.client.domain,
+                                           client=app.client,
                                            products=products)
                         else:
                             Email.SIBTAsk(from_name=a['name'],
@@ -820,8 +797,7 @@ class SendFriendAsks(URIHandler):
                                           product_img=product_image,
                                           asker_img=a['pic'],
                                           product_title=product.title,
-                                          client_name=app.client.name,
-                                          client_domain=app.client.domain)
+                                          client=app.client)
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)

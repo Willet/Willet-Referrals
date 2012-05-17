@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 
 {% block head %}
-		<style>
-			.video-container {
-				padding: 30px;
-				background-color: white;
-				background-image: none;
-				margin-bottom: 30px;
-				overflow-y: hidden;
-			}
-			.video-container #videoDiv,
-			.video-container object {
-				display: block;
-				width: 560px;
-				height: 315px;
-				margin: 0 auto;
-				border: 0;
-			}
-			.video-container p {
-				margin: 20px 10%;
-				text-align: justify;
-			}
-			.shopconnection-header {
-				height: 62px;
-				margin: 10px 0;
-			}
-			.shopconnection-header img {
-	            border: 1px solid #93BC8B;
-	            border-radius: 10px;
-	            width: 60px;
-	            height: 60px;
-	            float: left;
-	        }
-	        .shopconnection-header h3 {
-	            color: #0496AC;
-	            text-shadow: 1px 1px 1px #FFF;
-	            line-height: 2em;
-	            padding-left: 90px;
-	            margin: 0;
-	        }
+        <style>
+            .video-container {
+                padding: 30px;
+                background-color: white;
+                background-image: none;
+                margin-bottom: 30px;
+                overflow-y: hidden;
+            }
+            .video-container #videoDiv,
+            .video-container object {
+                display: block;
+                width: 560px;
+                height: 315px;
+                margin: 0 auto;
+                border: 0;
+            }
+            .video-container p {
+                margin: 20px 10%;
+                text-align: justify;
+            }
+            .shopconnection-header {
+                height: 62px;
+                margin: 10px 0;
+            }
+            .shopconnection-header img {
+                border: 1px solid #93BC8B;
+                border-radius: 10px;
+                width: 60px;
+                height: 60px;
+                float: left;
+            }
+            .shopconnection-header h3 {
+                color: #0496AC;
+                text-shadow: 1px 1px 1px #FFF;
+                line-height: 2em;
+                padding-left: 90px;
+                margin: 0;
+            }
             .under-wave {
                 position: relative;
             }
@@ -52,20 +52,20 @@
 {% block header-class %}tall{% endblock %}
 
 {% block content %}
-				<div class="span-24 last
-							shopconnection-header">
+                <div class="span-24 last
+                            shopconnection-header">
                     <img src="/static/imgs/ShopConnection_icon_60x60.png" />
                 </div>
 
-		    	<div class="prepend-top span-24 last
-		                    box-design content-container" >
-					<h1>Learn More About <span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</h1>
+                <div class="prepend-top span-24 last
+                            box-design content-container" >
+                    <h1>Learn More About <span class="under-wave"><img src="/static/imgs/red-underline.png" />Smart</span> ShopConnection</h1>
 
-					<div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
-						<div class="box-design">
-							<!-- #content is imported into other windows as a colorbox popup -->
-							{% include 'video.html' %}
-						</div>
-					</div>
-				</div>
+                    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
+                        <div class="box-design">
+                            <!-- #content is imported into other windows as a colorbox popup -->
+                            {% include 'video.html' %}
+                        </div>
+                    </div>
+                </div>
 {% endblock content %}

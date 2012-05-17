@@ -1,7 +1,7 @@
 <html>
-    <!-- ShowOnUnloadHook serves this page to our users. 
+    <!-- ShowOnUnloadHook serves this page to our users.
          Please read (private) documentation of ShowOnUnloadHook for the
-         purpose and usage of this template. 
+         purpose and usage of this template.
     -->
     <head>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
@@ -14,18 +14,18 @@
     <body>
         <script type="text/javascript">
             var _willet_visit_start = new Date ();
-	        $(window).unload(function () {
+            $(window).unload(function () {
                 var _willet_visit_end = new Date ();
-	            $.ajax ({
-                    url: "{% url TrackSIBTUserAction %}?evnt={{evnt}}&duration=" + 
-                         (_willet_visit_end - _willet_visit_start) / 1000 + 
-                         "&app_uuid={{app_uuid}}" + 
-                         "&user_uuid={{user_uuid}}" + 
-                         "&instance_uuid={{instance_uuid}}" + 
+                $.ajax ({
+                    url: "{% url TrackSIBTUserAction %}?evnt={{evnt}}&duration=" +
+                         (_willet_visit_end - _willet_visit_start) / 1000 +
+                         "&app_uuid={{app_uuid}}" +
+                         "&user_uuid={{user_uuid}}" +
+                         "&instance_uuid={{instance_uuid}}" +
                          "&target_url={{target_url}}",
                     async: false // million-dollar line right here
-	            });
-	        });
-	    </script>
+                });
+            });
+        </script>
     </body>
 </html>

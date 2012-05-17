@@ -328,7 +328,7 @@ class User(db.Expando):
     @classmethod
     def get_by_email(cls, email):
         # TODO: Reduce exception handler to expected error
-        if email == None or email == '':
+        if not email:
             return None
 
         logging.info("Getting %s by email: %s" % (cls, email))

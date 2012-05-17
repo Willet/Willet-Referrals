@@ -31,39 +31,11 @@ from util.urihandler import URIHandler
 
 class WOSIBDoVote(URIHandler):
     def post(self):
-        """ Since WOSIBInstances contain more than one product, clients
-            just call WOSIBDoVote multiple time to vote on each product
-            they select. (right now, the UI permits selection of only
-            product per vote anyway)
-        """
-        instance_uuid = self.request.get('instance_uuid')
-        logging.info("instance_uuid = %s" % instance_uuid)
-        product_uuid = self.request.get('product_uuid')
+        self.redirect("%s%s?%s" % (URL,
+                            url('DoVote'),
+                            self.request.query_string),
+                permanent=True)
 
-        instance = WOSIBInstance.get(instance_uuid)
-        if not instance:
-            logging.error("no instance found")
-            return
-
-        # Make a Vote action for this User
-        app = instance.app_
-        user = User.get_or_create_by_cookie(self, app)
-        action = WOSIBVoteAction.create(user, instance, product_uuid)
-        instance.increment_votes() # increase instance vote counter
-        instance.put()
-
-        # Tell the Asker they got a vote!
-        email = instance.asker.get_attr('email')
-        if email:
-            logging.debug("Sending email to asker!")
-            Email.WOSIBVoteNotification(to_addr=email,
-                                        name=instance.asker.get_full_name(),
-                                        cart_url="%s#open_wosib=1" % instance.link.origin_domain,  # cart url
-                                        client_name=app.client.name,
-                                        client_domain=app.client.domain)
-
-        # client just cares if it was HTTP 200 or 500.
-        self.response.out.write('ok')
 
 class GetExpiredWOSIBInstances(URIHandler):
     def post(self):
@@ -85,6 +57,7 @@ class GetExpiredWOSIBInstances(URIHandler):
             )
         logging.info('expiring %d instances' % expired_instances.count())
 
+
 class RemoveExpiredWOSIBInstance(URIHandler):
     def post(self):
         return self.get()
@@ -100,15 +73,11 @@ class RemoveExpiredWOSIBInstance(URIHandler):
         if instance != None:
             result_instance = db.run_in_transaction(txn, instance)
             email = instance.asker.get_attr('email')
-            if email != "":
-                Email.WOSIBVoteCompletion(
-                    email,
-                    result_instance.asker.get_full_name(),
-                    result_instance.get_winning_products()
-                )
+            Email.WOSIBVoteCompletion(result_instance)
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
+
 
 class StartPartialWOSIBInstance(URIHandler):
     def get (self):
@@ -122,6 +91,7 @@ class StartPartialWOSIBInstance(URIHandler):
         logging.info ('products = %s' % products)
         user = User.get(self.request.get('user_uuid'))
         PartialWOSIBInstance.create(user, app, link, products.split(','))
+
 
 class StartWOSIBInstance(URIHandler):
     def post(self):
@@ -153,6 +123,7 @@ class StartWOSIBInstance(URIHandler):
             logging.error('we had an error creating the instnace', exc_info=True)
 
         self.response.out.write(json.dumps(response))
+
 
 class StartWOSIBAnalytics(URIHandler):
     # StartWOSIBAnalytics will eventually serve the same purpose as StartSIBTAnalytics
@@ -186,190 +157,6 @@ class SendWOSIBFriendAsks(URIHandler):
         self.post()
 
     def post(self):
-        logging.info("TARGETTED_SHARE_WOSIB_EMAIL_AND_FB")
-
-        # Fetch arguments
-        friends = json.loads(self.request.get('friends'))
-        asker = json.loads(self.request.get('asker'))
-        msg = self.request.get('msg')
-        default_msg = self.request.get('default_msg')
-        link = Link.get_by_code(self.request.get('willt_code'))
-        user = User.get(self.request.get('user_uuid'))
-        fb_token = self.request.get('fb_access_token')
-        fb_id = self.request.get('fb_id')
-
-        app = WOSIB.get(self.request.get('app_uuid')) # Could be <WOSIB>, <WOSIBShopify> or something
-        if not isinstance(app, WOSIB):  # probably SIBT
-            logging.debug("non-WOSIB triggered %s" % app.__class__.__name__)
-            app = WOSIB.all().filter('store_url =', app.store_url).get()  # re-get app by the same store
-            logging.debug("WOSIB is now %r" % app)
-
-        product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
-        fb_friends = []
-        email_friends = []
-        email_share_counter = 0
-        fb_share_counter = 0
-
-        # Default response
-        response = {
-            'success': False,
-            'data': {
-                'message': "",
-                'warnings': []
-            }
-        }
-
-        products = [Product.get(uuid) for uuid in product_uuids] # supposedly: [Product, Product, Product]
-        random_product = random.choice(products)
-
-        # Request appears valid, proceed!
-        a = {
-            'name': asker[0],
-            'email': asker[1],
-            # If asker didn't log into Facebook, test Gravatar for a profile photo
-            # s=40 -> 40px size
-            # d=mm -> defaults a grey outline of a person picture (mystery man)
-            'pic': asker[2] if len(asker) == 3 else 'http://www.gravatar.com/avatar/'+hashlib.md5(asker[1].lower()).hexdigest()+'?s=40&d=mm'
-        }
-
-        # Split up friends into FB and email
-        for friend in friends:
-            try:
-                if friend[0] == 'fb':
-                    # Validation can be added here if necessary
-                    fb_friends.append(friend)
-                elif friend[0] == 'email':
-                    # Validation can be added here if necessary
-                    email_friends.append(friend)
-                else:
-                    raise ValueError
-            except (TypeError, IndexError, ValueError):
-                response['data']['warnings'].append('Invalid friend entry: %s' % friend)
-
-        # Add spam warning if there are > 5 email friends
-        if len(email_friends) > 5:
-            logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
-
-        # Check formatting of share message
-        try:
-            if len(msg) == 0:
-                if default_msg:
-                    msg = default_msg
-                else:
-                    msg = "I'm not sure which one I should buy. What do you think?"
-            if isinstance(msg, str):
-                msg = unicode(msg, errors='ignore')
-        except:
-            logging.warning('error transcoding to unicode', exc_info=True)
-
-        product_image = "%s/static/imgs/blank.png" % URL # blank
-
-        #--- Start with sharing to FB friends ---#
-
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            )
-
-        if fb_friends: # [] is falsy
-            ids = []
-            names = []
-
-            for (_, fname, fid) in fb_friends:
-                ids.append(fid)
-                names.append(fname)
-            try:
-                fb_share_ids = user.fb_post_to_friends(ids,
-                                                        names,
-                                                        msg,
-                                                        random_product.images[0], # product image
-                                                        random_product.title, # product title
-                                                        random_product.description,
-                                                        app.client.domain,
-                                                        link)
-                fb_share_counter += len(fb_share_ids)
-                logging.info('shared on facebook, got share id %s' % fb_share_ids)
-
-            except Exception,e:
-                # Should still do email friends
-                response['data']['warnings'].append('Error sharing on Facebook: %s' % str(e))
-                logging.error('we had an error sharing on facebook', exc_info=True)
-
-        #--- Second do email friends ---#
-
-        if email_friends: # [] is falsy
-            for (_, fname, femail) in email_friends:
-                try:
-                    logging.info ("sending email with link %s" % link.get_willt_url())
-                    Email.WOSIBAsk(from_name=a['name'],
-                                   from_addr=a['email'],
-                                   to_name=fname,
-                                   to_addr=femail,
-                                   message=msg,
-                                   vote_url=link.get_willt_url(),
-                                   asker_img=a['pic'],
-                                   client_name=app.client.name,
-                                   client_domain=app.client.domain)
-                except Exception,e:
-                    response['data']['warnings'].append('Error sharing via email: %s' % str(e))
-                    logging.error('we had an error sharing via email', exc_info=True)
-                finally:
-                    email_share_counter += 1
-
-        friend_share_counter = fb_share_counter + email_share_counter
-
-        if friend_share_counter > 0:
-            # create the instance!
-            instance = app.create_instance(user,
-                                           None,
-                                           link,
-                                           product_uuids)
-            # change link to reflect to the vote page.
-            link.target_url = urlunsplit([PROTOCOL,
-                                          DOMAIN,
-                                          url('WOSIBVoteDynamicLoader'),
-                                          ('instance_uuid=%s' % instance.uuid),
-                                          ''])
-
-            logging.info ("link.target_url changed to %s (%s)" % (link.target_url, instance.uuid))
-            link.put()
-            link.memcache_by_code() # doubly memcached
-
-            # increment shares
-            for _ in range(friend_share_counter):
-                app.increment_shares()
-
-            response['success'] = True
-
-            if friend_share_counter == len(friends):
-                response['data']['message'] = 'Messages sent to every friend'
-            else:
-                response['data']['message'] = 'Messages sent to some friends'
-        else:
-            response['data']['message'] = 'Could not successfully contact any friends'
-
-        if not response['data']['warnings']:
-            del response['data']['warnings']
-
-        try:
-            iuid = instance.uuid
-        except:
-            iuid = None
-
-        logging.info('Friends: %s\n \
-            Successful shares on FB: %d\n \
-            Successful shares via email: %d\n \
-            Message: %s\n \
-            Instance: %s' % (friends, fb_share_counter, email_share_counter, msg, iuid))
-
-        Email.emailDevTeam('<p>Friends: %s</p> \
-            <p>Successful shares on FB: #%d</p> \
-            <p>Successful shares via email: #%d</p> \
-            <p>Message: %s</p> \
-            <p>Instance: %s</p>' % (friends, fb_share_counter, email_share_counter, msg, iuid))
-
-        logging.info('response: %s' % response)
-        self.response.headers['Content-Type'] = "application/json"
-        self.response.out.write(json.dumps(response))
+        self.redirect("%s?%s" % (url('SendFriendAsks'),
+                                 self.request.query_string))
+        return
