@@ -20,7 +20,7 @@ from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
-from apps.action.models import ScriptLoadAction
+# from apps.action.models import ScriptLoadAction
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link

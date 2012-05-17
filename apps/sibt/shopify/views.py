@@ -14,7 +14,7 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from apps.action.models import ScriptLoadAction
+# from apps.action.models import ScriptLoadAction
 from apps.app.models import *
 from apps.client.models import *
 from apps.client.shopify.models import *

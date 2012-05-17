@@ -486,11 +486,11 @@ _willet.sibt = (function (me) {
         $(window).scroll(function () {
             if (me.isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
                 setTimeout(function () {
-                    wm.fire('storeAnalytics', 'SIBTButtonShake');
                     $elem.shaker();
                     setTimeout(function () {
                         $elem.shaker.stop();
                         $elem.data('shaken_yet', true);
+                        wm.fire('storeAnalytics', 'SIBTButtonShake');
                     }, SHAKE_DURATION);
                 }, SHAKE_WAIT); // wait for ?ms until it shakes
             }

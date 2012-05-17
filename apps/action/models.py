@@ -1,8 +1,9 @@
 #!/usr/bin/env/python
 
-# The Action Model
-# A parent class for all User actions
-# ie. ClickAction, VoteAction, ViewAction, etc
+"""The Action Model.
+
+A parent class for all User actions e.g. ClickAction, VoteAction, ViewAction
+"""
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
@@ -20,7 +21,7 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
 
 """Helper method to persist actions to datastore"""
-def persist_actions(bucket_key, list_keys, decrementing=False):
+'''def persist_actions(bucket_key, list_keys, decrementing=False):
     from apps.buttons.actions import *
     from apps.gae_bingo.actions import *
     from apps.sibt.actions import *
@@ -69,10 +70,9 @@ def persist_actions(bucket_key, list_keys, decrementing=False):
     if decrementing:
         logging.warn('decremented mbc `%s` to %d and removed %s' % (
             mbc.name, mbc.count, bucket_key))
+'''
 
-## ----------------------------------------------------------------------------
-## Action SuperClass ----------------------------------------------------------
-## ----------------------------------------------------------------------------
+
 class Action(Model, polymodel.PolyModel):
     """ Whenever a 'User' completes a Willet Action,
         an 'Action' obj will be stored for them.
@@ -102,6 +102,8 @@ class Action(Model, polymodel.PolyModel):
         return True
 
     def put(self):
+        self.put_later()
+        '''
         """Override util.model.put with some custom shizzbang"""
         # Not the best spot for this, but I can't think of a better spot either ..
         self.is_admin = self.user.is_admin()
@@ -123,6 +125,7 @@ class Action(Model, polymodel.PolyModel):
             deferred.defer(persist_actions, bucket, list_identities, _queue='slow-deferred')
         else:
             memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
+        '''
 
     def get_class_name(self):
         return self.__class__.__name__
@@ -179,9 +182,6 @@ class Action(Model, polymodel.PolyModel):
         return Action.all().filter('user =', user).filter('app_ =', app).get()
 
 
-## -----------------------------------------------------------------------------
-## ClickAction Subclass --------------------------------------------------------
-## -----------------------------------------------------------------------------
 class ClickAction(Action):
     """ Designates a 'click' action for a User.
         Currently used for 'SIBT' and 'WOSIB' Apps
@@ -204,9 +204,6 @@ class ClickAction(Action):
         )
 
 
-## -----------------------------------------------------------------------------
-## VoteAction Subclass ---------------------------------------------------------
-## -----------------------------------------------------------------------------
 class VoteAction(Action):
     """ Designates a 'vote' action for a User.
         Primarily used for 'SIBT' App """
@@ -243,9 +240,6 @@ class VoteAction(Action):
         return VoteAction.all().filter('vote =', 'no')
 
 
-## -----------------------------------------------------------------------------
-## LoadAction Subclass ---------------------------------------------------------------
-## -----------------------------------------------------------------------------
 class LoadAction(Action):
     """ Parent class for Load actions.
         ie. ScriptLoad, ButtonLoad """
@@ -263,9 +257,8 @@ class LoadAction(Action):
     def get_by_user_and_url(user, url):
         return LoadAction.all().filter('user = ', user).filter('url =', url)
 
-## -----------------------------------------------------------------------------
-## ScriptLoadAction Subclass ---------------------------------------------------------
-## -----------------------------------------------------------------------------
+
+'''
 class ScriptLoadAction(LoadAction):
     def __str__(self):
         return 'ScriptLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
@@ -286,10 +279,9 @@ class ScriptLoadAction(LoadAction):
     def get_by_app(app):
         """docstring for get_by_app"""
         return ScriptLoadAction.all().filter('app_ =', app)
+'''
 
-## -----------------------------------------------------------------------------
-## ShowAction Subclass ---------------------------------------------------
-## -----------------------------------------------------------------------------
+
 class ShowAction(Action):
     """We are showing something ..."""
 
@@ -319,9 +311,7 @@ class ShowAction(Action):
             self.url,
         )
 
-## -----------------------------------------------------------------------------
-## UserAction Subclass ---------------------------------------------------
-## -----------------------------------------------------------------------------
+
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
 
