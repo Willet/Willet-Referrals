@@ -198,8 +198,9 @@ class Email():
     @staticmethod
     def SIBTVoteNotification(instance, vote_type):
         """Send an "A friend Voted!" email to the asker."""
-
-        client = getattr(instance.app_, 'client') or None
+        client = getattr(instance.app_, 'client', None)
+        if not client:
+            return  # client uninstalled
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
@@ -230,7 +231,9 @@ class Email():
 
     @staticmethod
     def SIBTVoteCompletion(instance, product):
-        client = getattr(product, 'client') or None
+        client = getattr(product, 'client', None)
+        if not client:
+            return  # client uninstalled
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
@@ -309,7 +312,9 @@ class Email():
     def WOSIBVoteNotification(instance):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
-        client = getattr(instance.app_, 'client') or None
+        client = getattr(instance.app_, 'client', None)
+        if not client:
+            return  # client uninstalled
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
@@ -371,7 +376,7 @@ class Email():
         path if the client does not have special templates.
         """
         if client and client.vendor:
-            vendor_path = os.path.join('apps/email/templates', vendor.name,
+            vendor_path = os.path.join('apps/email/templates', client.name,
                                        path)
             if os.path.exists(vendor_path):
                 return vendor_path

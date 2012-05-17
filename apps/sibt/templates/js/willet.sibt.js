@@ -224,17 +224,21 @@ _willet.sibt = (function (me) {
         }
 
         if (app.features.button) {
-            // wm.fire('storeAnalytics', 'buttonEnabled');
+            wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
                 wm.fire('log', 'v2 button is enabled');
+                wm.fire('storeAnalytics', 'v2ButtonEnabled');
                 var button = document.createElement('a');
                 var button_html = '';
                 // only add button if it's enabled in the app
                 if (user.is_asker) {
+                    wm.fire('storeAnalytics', 'userIsAsker');
                     button_html = 'See what your friends said!';
                 } else if (instance.show_votes) {
+                    wm.fire('storeAnalytics', 'userIsNotAsker');
                     button_html = 'Help {{ asker_name }} by voting!';
                 } else {
+                    wm.fire('storeAnalytics', 'userIsNew');
                     var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     button_html = AB_CTA_text;
                 }
@@ -249,6 +253,7 @@ _willet.sibt = (function (me) {
                 jqElem.append(button);
             } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                 wm.fire('log', 'v3+ button is enabled');
+                wm.fire('storeAnalytics', 'v3ButtonEnabled');
                 if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                     var button = $("<div />", {
                         'id': '_willet_button_v3'
@@ -270,6 +275,7 @@ _willet.sibt = (function (me) {
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
                 if (instance.is_live || instance.has_results) {
+                    wm.fire('storeAnalytics', 'SIBTShowingResultsButton');
                     $('#_willet_button_v3 .button').hide();
                     $('<div />', {
                         'id': "_willet_SIBT_results",
@@ -476,9 +482,11 @@ _willet.sibt = (function (me) {
     me.addScrollShaking = me.addScrollShaking || function (elem) {
         // needs the shaker jQuery plugin.
         var $elem = $(elem);
+        wm.fire('storeAnalytics', 'SIBTAddScrollShaking');
         $(window).scroll(function () {
             if (me.isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
                 setTimeout(function () {
+                    wm.fire('storeAnalytics', 'SIBTButtonShake');
                     $elem.shaker();
                     setTimeout(function () {
                         $elem.shaker.stop();
@@ -627,14 +635,14 @@ _willet.sibt = (function (me) {
     }
 
     me.showBottomPopup = me.showBottomPopup || function () {
-        // wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
         if (popup) {
+            wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
             popup.fadeIn('slow');
         }
     };
     me.hideBottomPopup = me.hideBottomPopup || function () {
-        // wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
         if (popup) {
+            wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
             popup.fadeOut('slow');
         }
     };
@@ -644,6 +652,7 @@ _willet.sibt = (function (me) {
         if ($.cookie('product1_image') && $.cookie('product2_image') &&
             app.features.bottom_popup && app.unsure_multi_view) {
             wm.fire('log', 'bottom popup enabled');
+            wm.fire('storeAnalytics', 'SIBTBottomPopupEnabled');
             var clickedOff = false;
 
             popup = me.buildBottomPopup();
@@ -684,7 +693,7 @@ _willet.sibt = (function (me) {
                         }
                     }
                 } else {
-                    // wm.fire('storeAnalytics', 'popupDisabled.pageHeight');
+                    wm.fire('storeAnalytics', 'SIBTBottomPopupDisabled');
                     wm.fire('log', "page too short");
                 }
             });
@@ -708,6 +717,7 @@ _willet.sibt = (function (me) {
         // ================= deprecated topbar functions ======================
         me.setTopBar = me.setTopBar || function () {
             wm.fire('log', 'topbar enabled');
+            wm.fire('storeAnalytics', 'SIBTTopBarEnabled');
 
             var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
 
@@ -764,10 +774,11 @@ _willet.sibt = (function (me) {
 
         me.closeTopbar = me.closeTopbar || function() {
             // Hides the top bar and padding
+            wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
+
             $.cookie('_willet_topbar_closed', true);
             topbar.slideUp('fast');
             topbar_hide_button.slideDown('fast');
-            wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
         };
 
         // Expand the top bar and load the results iframe
@@ -814,9 +825,11 @@ _willet.sibt = (function (me) {
         };
 
         me.doVote_yes = me.doVote_yes || function () {
+            wm.fire('storeAnalytics', 'SIBTDoVoteYes');
             me.doVote(1);
         };
         me.doVote_no = me.doVote_no || function () {
+            wm.fire('storeAnalytics', 'SIBTDoVoteNo');
             me.doVote(0);
         };
 
@@ -859,6 +872,8 @@ _willet.sibt = (function (me) {
 
         me.showTopbar = me.showTopbar || function() {
             // Shows the vote top bar
+            wm.fire('storeAnalytics', 'SIBTShowTopbar');
+
             var body = $('body');
 
             // create the padding for the top bar
@@ -903,6 +918,7 @@ _willet.sibt = (function (me) {
 
         me.showTopbarAsk = me.showTopbarAsk || function() {
             //Shows the ask top bar
+            wm.fire('storeAnalytics', 'SIBTShowTopbarAsk');
 
             // create the padding for the top bar
             padding_elem = document.createElement('div');
@@ -951,6 +967,7 @@ _willet.sibt = (function (me) {
         };
 
         me.toggleResults = me.toggleResults || function() {
+            wm.fire('storeAnalytics', 'SIBTToggleResults');
             // Used to toggle the results view
             // iframe has no source, hasnt been loaded yet
             // and we are FOR SURE showing it

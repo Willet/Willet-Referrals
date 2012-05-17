@@ -931,9 +931,7 @@ class SIBTServeScript(URIHandler):
 
         # unsure detection
         # this must be created to track view counts.
-        SIBTShowingButton.create(app=app,
-                                 url=page_url,
-                                 user=user)
+        SIBTShowingButton.create(app=app, url=page_url, user=user)
         if app and not instance:
             tracked_urls = SIBTShowingButton.get_tracking_by_user_and_app(user, app)
             logging.info('got tracked_urls: %r' % tracked_urls)

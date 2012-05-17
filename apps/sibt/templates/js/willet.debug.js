@@ -28,16 +28,17 @@ _willet.debug = (function (me) {
             } else {
                 window.console.error(arguments);
             }
+            me.emailError(arguments[0]);
             log_array.push(arguments); // Add to logs
         };
     }
 
-    me.register = function(callback) {
+    me.register = me.register || function(callback) {
         // Register a callback to fire when debug.set is called
         callbacks.push(callback);
     };
 
-    me.set = function(debug) {
+    me.set = me.set || function(debug) {
         // Set debugging on (true) / off (false)
         me.log = (debug) ? _log : function() { log_array.push(arguments) };
         me.error = (debug) ? _error : function() { log_array.push(arguments) };
@@ -48,18 +49,29 @@ _willet.debug = (function (me) {
         }
     };
 
-    me.isDebugging = function() {
+    me.isDebugging = me.isDebugging || function() {
         // True = printing to console & logs, False = only logs
         return isDebugging;
     };
 
-    me.logs = function () {
+    me.logs = me.logs || function () {
         // Returns as list of all log & error items
         return log_array;
     };
 
     me.set(isDebugging); //setup proper log functions
 
+    me.emailError = me.emailError || function (msg) {
+        // email if module-scope error is called.
+        var error   = encodeURIComponent("SIBT Module Error");
+        var script  = encodeURIComponent("sibt.js");
+        var st      = encodeURIComponent(msg);
+        var params  = "error=" + error + "&script=" + script + "&st=" + st;
+        var err_img = d.createElement("img");
+        err_img.src = "{{URL}}{% url ClientSideMessage %}?" + params;
+        err_img.style.display = "none";
+        d.body.appendChild(err_img);
+    };
 
     // set up a hook to let log and error be fired
     if (wm) {
