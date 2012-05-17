@@ -22,17 +22,36 @@
 
 
             /* Client-specific Styles */
-            #outlook a{padding:0;} /* Force Outlook to provide a "view in browser" button. */
-            .ReadMsgBody{width:100%;} .ExternalClass{width:100%;} /* Force Hotmail to display emails at full width */
-            body{-webkit-text-size-adjust:none;} /* Prevent Webkit platforms from changing default text sizes. */
+            #outlook a {
+                /* Force Outlook to provide a "view in browser" button. */
+                padding:0;
+            }
+            .ReadMsgBody{
+                width:100%;
+            }
+            .ExternalClass {
+                /* Force Hotmail to display emails at full width */
+                width:100%;
+            }
+            body {
+                /* Prevent Webkit platforms from changing default text sizes. */
+                -webkit-text-size-adjust:none;
+            }
 
             /* Reset Styles */
-            body{margin:0; padding:0;}
-            img{border:0; height:auto; line-height:100%; outline:none; text-decoration:none;}
-            table td{border-collapse:collapse;}
+            img {
+                border:0;
+                height:auto;
+                line-height:100%;
+                outline:none;
+                text-decoration:none;
+            }
+            table td {
+                border-collapse:collapse;
+            }
 
             body {
-                background-color: #fff;
+                background-color: #FFFFFF;
                 line-height: 150%;
             }
 
@@ -73,64 +92,75 @@
         </style>
     </head>
     <!-- Force Hotmail to display emails at full width -->
-    <body style="width:100% !important;">
+    <body style="width:100% !important; margin:0; padding:0;">
         <!-- you must use tables to define email styles.
              http://24ways.org/2009/rock-solid-html-emails -->
-        <table style="width: 100% !important;
-                      margin-top: 0;
-                      margin-bottom: 0;
-                      margin-left: auto;
-                      margin-right: auto;
-                      font-family: Helvetica, Arial, sans-serif;">
-            <tr>
-                <td>&nbsp;</td>
-                <td style="font-size: 30px;
-                           background: #000;
-                           color: #fff;
-                           padding: 25px;
-                           border-bottom: 5px solid #505050;
-                           width: 600px !important;">
-                    Shu Uemura
-                </td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td style="background-color: #fff;
-                           color: #505050;
-                           font-size: 14px;
-                           padding-bottom: 10px;">
-                    <h2 style="color:#404040;
-                               font-size:18px;
-                               font-weight:bold;
-                               margin: 5% 0;">
-                        {{ title }}
-                    </h2>
-                    <hr />
-                    {% block content %}
-                        <h1>Hello</h1>
-                        <h2>Hello</h2>
-                        <h3>Hello</h3>
-                        <h4>Hello</h4>
-                        <h5>Hello</h5>
-                        <h6>Hello</h6>
-                    {% endblock %}
-                </td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td style="color:#707070;
-                           font-size:9px;
-                           line-height:125%;
-                           text-align:left;
-                           border-top: 3px solid #909090;
-                           padding-top: 4px;
-                           text-align: center;">
-                    &copy; 2012 Shu Uemura, L'Or&eacute;al.
-                </td>
-                <td>&nbsp;</td>
-            </tr>
-        </table>
+        <center>
+            <!-- that's right, a center tag -->
+            <table style="width: 100% !important;
+                        border: 0;
+                        margin-top: 0;
+                        margin-bottom: 0;
+                        margin-left: auto;
+                        margin-right: auto;
+                        font-family: Helvetica, Arial, sans-serif;"
+                cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                    <td>&nbsp;</td>
+                    <td style="font-size: 30px;
+                            background: #000000;
+                            color: #FFFFFF;
+                            padding: 25px;
+                            border-bottom: 5px solid #505050;
+                            width: 600px !important;"
+                        bgcolor="000000">
+                        <font color="FFFFFF">
+                            <!-- that's right, a font tag -->
+                            <img alt="Shu Uemura"
+                                 src="{{ URL }}/static/sibt/imgs/sibt-shu-logo.png" />
+                        </font>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td style="background-color: FFFFFF;
+                            color: #505050;
+                            font-size: 14px;
+                            padding-bottom: 10px;"
+                        bgcolor="FFFFFF">
+                        <h2 style="color:#404040;
+                                font-size:18px;
+                                font-weight:bold;
+                                margin: 5% 0;">
+                            {{ title }}
+                        </h2>
+                        <hr />
+                        {% block content %}
+                            <h1>Hello</h1>
+                            <h2>Hello</h2>
+                            <h3>Hello</h3>
+                            <h4>Hello</h4>
+                            <h5>Hello</h5>
+                            <h6>Hello</h6>
+                        {% endblock %}
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td style="color:#707070;
+                            font-size:9px;
+                            line-height:125%;
+                            text-align:left;
+                            border-top: 3px solid #909090;
+                            padding-top: 4px;
+                            text-align: center;">
+                        &copy; 2012 Shu Uemura, L'Or&eacute;al.
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </center>
     </body>
 </html>
