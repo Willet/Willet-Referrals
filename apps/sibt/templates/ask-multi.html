@@ -113,27 +113,6 @@
         }
     };
 
-    var startFullInstance = function() {
-        if (get_selected_objects ()) {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code   : "{{willt_code}}" };
-            $.ajax({
-                url      : "{{ URL }}{% url StartSIBTInstance %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    window._willet_sibt_partial_instance_uuid = tr;
-                }
-            });
-            return true;
-        } else {
-            return false;
-        }
-    };
-
     // Sends information to server to ask friends & handles response
     var sendMessages = function() {
         var payload, friend_info, asker_info,

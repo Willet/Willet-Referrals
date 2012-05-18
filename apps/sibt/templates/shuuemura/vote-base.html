@@ -32,8 +32,8 @@
                         <img align="left" src="{{ asker_pic }}" />
                     {% endif %}
                     {{asker_name}} asks:</div>
-                    <div id="asker_message">
-                        {{ asker_message|default:"I like this, but..." }}
+                    <div id="sharing_message">
+                        {{ instance.sharing_message|default:"I like this, but..." }}
                     </div>
                 </div>
                 {% block left_screens %}{% endblock left_screens %}

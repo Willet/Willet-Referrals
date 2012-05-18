@@ -85,7 +85,13 @@ _willet.sibt = (function (me) {
             }
         }
 
-        me.initBottomPopup();
+        // show topbar and stuff ...
+        if (app.features.topbar) {
+            wm.fire('SIBTSetTopBar');
+        }
+        if (app.features.bottom_popup) {
+            wm.fire('SIBTSetBottomPopup');
+        }
     };
 
     me.vendorMode = me.vendorMode || function () {
@@ -219,11 +225,6 @@ _willet.sibt = (function (me) {
             return;
         }
 
-        // show the topbar...
-        if (app.features.topbar) {
-            wm.fire('SIBTSetTopBar');
-        }
-
         if (app.features.button) {
             wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
@@ -304,9 +305,8 @@ _willet.sibt = (function (me) {
         wm.fire('log', 'setting a small vendor-specific SIBT button');
         wm.fire('storeAnalytics');
 
-        // hide vendor info on server side
-        // % ifequal client.name "Shu Uemura USA" %
-            jqElem.click(me.button_onclick);
+        // process vendor info on server side
+        {% ifequal client.name "Shu Uemura USA" %}
             jqElem.css ({
                 'background': ((instance.is_live || instance.has_results)?
                                 "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent":
@@ -315,7 +315,8 @@ _willet.sibt = (function (me) {
                 'height': '24px',
                 'cursor': 'pointer',
                 'display': 'inline-block'
-            });
+            })
+            .click(me.button_onclick);
 
             if (!instance.has_product) {
                 // if no product, try to detect one, but don't show button
@@ -331,20 +332,27 @@ _willet.sibt = (function (me) {
             var img_src = '';
             try {
                 img_src = $('#ProductMagicZoomImg img')[0].src;
-            } catch (e) { /* don't give a single s***/ }
+            } catch (e) { /*don't give a single s***/ }
             me.saveProduct({
                 'title': $('#productdetailsName').text() || me.getPageTitle(),
                 'description': $('#RightContainer h2').text() || '',
                 'image': img_src || me.getLargestImage()
             });
-        // % else %
-        //     wm.fire('error', 'requested a Vendor-level SIBT button, but client is not a vendor');
-        // % endifequal %
+        {% else %}
+             wm.fire('log', 'Requested a Vendor-level SIBT button, ' +
+                            'but no vendor-specific routine has been ' +
+                            'defined for this client. Reverting to ' +
+                            'Small SIBT button.');
+             me.setSmallSIBTButton(jqElem);
+        {% endifequal %}
     };
 
     me.setLargeSIBTVendorButton = me.setLargeSIBTVendorButton || function (jqElem) {
         // there is no large sibt vendor button.
         // well, there will be one, but I won't be writing it right now.
+        wm.fire('log', 'setting a large vendor-specific SIBT button');
+        wm.fire('storeAnalytics');
+
         me.setLargeSIBTButton(jqElem);
     };
 
@@ -355,11 +363,11 @@ _willet.sibt = (function (me) {
                 'id': '_willet_button_v3'
             });
             button.html("<p>Which ones should you buy?</p>\
-                            <div id='_willet_button' class='button' \
-                                title='Ask your friends if you should buy this!'>\
-                            <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
-                            <div class='title'>Ask Trusted Friends</div>\
-                            </div>")
+                         <div id='_willet_button' class='button' \
+                             title='Ask your friends if you should buy this!'>\
+                             <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
+                             <div class='title'>Ask Trusted Friends</div>\
+                         </div>")
             .css({
                 'clear': 'both',
                 'display': 'inline-block'
@@ -632,115 +640,117 @@ _willet.sibt = (function (me) {
     };
 
     // ==================== bottom popup functions ============================
-    me.buildBottomPopup = me.buildBottomPopup || function () {
-        var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-        var popup = $('<div />', {
-            'id': 'willet_sibt_popup',
-            'css': {'display': 'none'}
-        });
-        popup
-            .append('<h2 class="title">Hey! Need help deciding?</h2>')
-            .append($('<div />', {'id': 'product_selector'}))
-            .append(
-                '<button class="cta">' + AB_CTA_text + '</button>' +
-                '<a id="anti_cta" href="#">No thanks</a>'
-            );
-        return popup;
-    }
-
-    me.showBottomPopup = me.showBottomPopup || function () {
-        if ($.cookie('_willet_bottom_popup_closed')) {
-            wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopupWithCookie');
-            return;
+    {% if app.bottom_popup_enabled %}
+        me.buildBottomPopup = me.buildBottomPopup || function () {
+            var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+            var popup = $('<div />', {
+                'id': 'willet_sibt_popup',
+                'css': {'display': 'none'}
+            });
+            popup
+                .append('<h2 class="title">Hey! Need help deciding?</h2>')
+                .append($('<div />', {'id': 'product_selector'}))
+                .append(
+                    '<button class="cta">' + AB_CTA_text + '</button>' +
+                    '<a id="anti_cta" href="#">No thanks</a>'
+                );
+            return popup;
         }
-        if (popup) {
-            wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
-            popup.fadeIn('slow');
-        }
-    };
-    me.hideBottomPopup = me.hideBottomPopup || function (permanently) {
-        if (popup) {
-            wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
-            popup.fadeOut('slow');
-        }
-        if (permanently) {
-            // save that preference.
-            wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
-            $.cookie('_willet_bottom_popup_closed', true);
-        }
-    };
 
-    me.initBottomPopup = me.initBottomPopup || function () {
-        // if user visited at least two different product pages
-        if ($.cookie('product1_image') && $.cookie('product2_image') &&
-            app.features.bottom_popup && app.unsure_multi_view) {
-            wm.fire('log', 'bottom popup enabled');
-            wm.fire('storeAnalytics', 'SIBTBottomPopupEnabled');
-            var clickedOff = false;
+        me.showBottomPopup = me.showBottomPopup || function () {
+            if ($.cookie('_willet_bottom_popup_closed')) {
+                wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopupWithCookie');
+                return;
+            }
+            if (popup) {
+                wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
+                popup.fadeIn('slow');
+            }
+        };
+        me.hideBottomPopup = me.hideBottomPopup || function (permanently) {
+            if (popup) {
+                wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
+                popup.fadeOut('slow');
+            }
+            if (permanently) {
+                // save that preference.
+                wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
+                $.cookie('_willet_bottom_popup_closed', true);
+            }
+        };
 
-            popup = me.buildBottomPopup();
+        me.initBottomPopup = me.initBottomPopup || function () {
+            // if user visited at least two different product pages
+            if ($.cookie('product1_image') && $.cookie('product2_image') &&
+                app.features.bottom_popup && app.unsure_multi_view) {
+                wm.fire('log', 'bottom popup enabled');
+                wm.fire('storeAnalytics', 'SIBTBottomPopupEnabled');
+                var clickedOff = false;
 
-            var product1_image = $.cookie('product1_image') || '';
-            var product2_image = $.cookie('product2_image') || '';
-            $('body').prepend(popup);
-            $('#product_selector').append(
-                '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
-                '<div class="product">' +
-                    '<img class="image" src="' + product1_image + '" />' +
-                '</div>' +
-                '<span class="or">OR</span>' +
-                '<div class="product">' +
-                    '<img class="image" src="' + product2_image + '"/>' +
-                '</div>' +
-                '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
-            );
+                popup = me.buildBottomPopup();
 
-            $(window).scroll(function () {
-                var pageHeight, scrollPos, threshold, windowHeight;
+                var product1_image = $.cookie('product1_image') || '';
+                var product2_image = $.cookie('product2_image') || '';
+                $('body').prepend(popup);
+                $('#product_selector').append(
+                    '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
+                    '<div class="product">' +
+                        '<img class="image" src="' + product1_image + '" />' +
+                    '</div>' +
+                    '<span class="or">OR</span>' +
+                    '<div class="product">' +
+                        '<img class="image" src="' + product2_image + '"/>' +
+                    '</div>' +
+                    '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
+                );
 
-                pageHeight = $(document).height();
-                scrollPos = $(window).scrollTop() + $(w).height();
-                threshold = pageHeight * app.bottom_popup_trigger;
-                windowHeight = $(window).height();
+                $(window).scroll(function () {
+                    var pageHeight, scrollPos, threshold, windowHeight;
 
-                // popup will show only for pages sufficiently long.
-                if (pageHeight > windowHeight * 1.5) {
-                    // wm.fire('storeAnalytics', 'popupEnabled');
-                    if (scrollPos >= threshold) {
-                        if (!popup.is(':visible') && !clickedOff) {
-                            me.showBottomPopup();
+                    pageHeight = $(document).height();
+                    scrollPos = $(window).scrollTop() + $(w).height();
+                    threshold = pageHeight * app.bottom_popup_trigger;
+                    windowHeight = $(window).height();
+
+                    // popup will show only for pages sufficiently long.
+                    if (pageHeight > windowHeight * 1.5) {
+                        // wm.fire('storeAnalytics', 'popupEnabled');
+                        if (scrollPos >= threshold) {
+                            if (!popup.is(':visible') && !clickedOff) {
+                                me.showBottomPopup();
+                            }
+                        } else {
+                            if (popup.is(':visible')) {
+                                me.hideBottomPopup();
+                            }
                         }
                     } else {
-                        if (popup.is(':visible')) {
-                            me.hideBottomPopup();
-                        }
+                        wm.fire('storeAnalytics', 'SIBTBottomPopupDisabled');
+                        wm.fire('log', "page too short");
                     }
-                } else {
-                    wm.fire('storeAnalytics', 'SIBTBottomPopupDisabled');
-                    wm.fire('log', "page too short");
-                }
-            });
-            $('#willet_sibt_popup .cta').click(function () {
-                me.showAsk('SIBTUserClickedBottomPopupAsk');
-                me.hideBottomPopup();
-            });
-            $('#willet_sibt_popup #anti_cta').click(function (e) {
-                wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
-                clickedOff = true;
-                e.preventDefault();
-                me.hideBottomPopup();
-            });
-        } else {
-            wm.fire('log', 'cookies not populated / not unsure yet: ',
-                    $.cookie('product1_image'),
-                    $.cookie('product2_image'),
-                    app.features.bottom_popup,
-                    app.unsure_multi_view);
-        }
-    };
+                });
+                $('#willet_sibt_popup .cta').click(function () {
+                    me.showAsk('SIBTUserClickedBottomPopupAsk');
+                    me.hideBottomPopup();
+                });
+                $('#willet_sibt_popup #anti_cta').click(function (e) {
+                    wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
+                    clickedOff = true;
+                    e.preventDefault();
+                    me.hideBottomPopup();
+                });
+            } else {
+                wm.fire('log', 'cookies not populated / not unsure yet: ',
+                        $.cookie('product1_image'),
+                        $.cookie('product2_image'),
+                        app.features.bottom_popup,
+                        app.unsure_multi_view);
+            }
+        };
+    {% endif %}
 
+    // =================== deprecated topbar functions ========================
     {% if app.top_bar_enabled %}
-        // ================= deprecated topbar functions ======================
         me.setTopBar = me.setTopBar || function () {
             wm.fire('log', 'topbar enabled');
             wm.fire('storeAnalytics', 'SIBTTopBarEnabled');
@@ -999,9 +1009,7 @@ _willet.sibt = (function (me) {
             // and we are FOR SURE showing it
             doVote(-1);
         };
-        // ================= deprecated topbar functions ======================
     {% endif %}
-
 
 
     // set up your module hooks
@@ -1023,6 +1031,8 @@ _willet.sibt = (function (me) {
         // others
         // we don't know if setTopBar is always there
         wm.on('SIBTSetTopBar', me.setTopBar || function () {});
+        // we don't know if initBottomPopup is always there
+        wm.on('SIBTSetBottomPopup', me.initBottomPopup || function () {});
     }
 
     return me;

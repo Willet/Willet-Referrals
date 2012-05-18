@@ -111,117 +111,6 @@ class SIBTSignUp(URIHandler):
         return
 
 
-class ShareSIBTInstanceOnFacebook(URIHandler):
-    def post(self):
-        logging.info("SHARE SIBT ON FACEBOOK")
-
-        app = App.get_by_uuid(self.request.get('app_uuid'))
-        user = User.get(self.request.get('user_uuid'))
-        if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = User.get_or_create_by_cookie(self, app)
-        willt_code = self.request.get('willt_code')
-        link = Link.get_by_code(willt_code)
-        img = self.request.get('product_img')
-        product_name = self.request.get('name')
-        product_desc = None
-        product_id = self.request.get('product_id')
-        motivation = self.request.get('motivation')
-        fb_token = self.request.get('fb_token')
-        fb_id = self.request.get('fb_id')
-        message = self.request.get('msg')
-
-        product = None
-        try:
-            product = ProductShopify.get_by_shopify_id(str(product_id))
-        except:
-            logging.info('Could not get product by id %s' % product_id, exc_info=True)
-        try:
-            #product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
-            #product_desc = remove_html_tags(product_desc)
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.info('could not get product description')
-
-        try:
-            if isinstance(message, str):
-                message = unicode(message, errors='ignore')
-
-            if isinstance(img, str):
-                img = unicode(img, errors='ignore')
-
-            if isinstance(product_name, str):
-                product_name = unicode(product_name, errors='ignore')
-
-            if isinstance(product_desc, str):
-                product_desc = unicode(product_desc, errors='ignore')
-        except:
-            logging.info('error transcoding to unicode', exc_info=True)
-
-        # defaults
-        response = {
-            'success': False,
-            'data': {}
-        }
-
-        # first do sharing on facebook
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            )
-        if not hasattr(user, 'fb_access_token') or \
-            not hasattr(user, 'fb_identity'):
-            logging.info('Setting users facebook info')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            )
-
-        try:
-            facebook_share_id, plugin_response = user.facebook_share(
-                message,
-                img,
-                product_name,
-                product_desc,
-                link
-            )
-            logging.info('shared on facebook, got share id and response %s %s' % (
-                facebook_share_id,
-                plugin_response
-            ))
-
-            # if it wasn't successful ...
-            if facebook_share_id == None or plugin_response == 'fail':
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
-            else:
-                # create the instance!
-                # Make the Instance!
-                instance = app.create_instance(user,
-                        None, link, img, motivation=motivation,
-                        dialog="ConnectFB")
-
-                # increment link stuff
-                link.app_.increment_shares()
-                link.add_user(user)
-                logging.info('incremented link and added user')
-
-                response['success'] = True
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
-
-        logging.info('response: %s' % response)
-        self.response.out.write(json.dumps(response))
-
-
 class StartSIBTInstance(URIHandler):
     def post(self):
         app = App.get_by_uuid(self.request.get('app_uuid'))
@@ -242,9 +131,13 @@ class StartSIBTInstance(URIHandler):
 
         try:
             # Make the Instance!
-            instance = app.create_instance(user, None, link, img,
-                                           motivation=None, dialog="ConnectFB")
-
+            instance = app.create_instance(user=user,
+                                           end=None,
+                                           link=link,
+                                           dialog="ConnectFB",
+                                           img=img,
+                                           motivation=None,
+                                           share_message="")
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
@@ -814,6 +707,7 @@ class SendFriendAsks(URIHandler):
                                                product_image,
                                                motivation="",
                                                dialog="ConnectFB",
+                                               sharing_message=msg,
                                                products=product_uuids)
 
                 # change link to reflect to the vote page.

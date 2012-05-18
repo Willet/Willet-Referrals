@@ -625,6 +625,7 @@ class ShowFBThanks(URIHandler):
                                            img=product_image,
                                            motivation=None,
                                            dialog="NoConnectFB",
+                                           sharing_message="",
                                            products=products)
 
             # partial's link is actually bogus (points to vote.html without an instance_uuid)
