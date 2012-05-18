@@ -23,7 +23,6 @@ from apps.product.models import Product
 from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
 from apps.user.models import User
 from apps.vote.models import VoteCounter
-from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import generate_uuid
