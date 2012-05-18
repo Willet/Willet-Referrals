@@ -305,7 +305,7 @@ _willet.sibt = (function (me) {
         wm.fire('storeAnalytics');
 
         // hide vendor info on server side
-        {% ifequal client.name "Shu Uemura USA" %}
+        // % ifequal client.name "Shu Uemura USA" %
             jqElem.click(me.button_onclick);
             jqElem.css ({
                 'background': ((instance.is_live || instance.has_results)?
@@ -323,17 +323,23 @@ _willet.sibt = (function (me) {
                 jqElem.css ({
                     'display': 'none'
                 });
-            } else {
+            }/* else {
                 me.addScrollShaking(jqElem);
-            }
+            }*/
 
             // Shu Uemura special data scraping
+            var img_src = '';
+            try {
+                img_src = $('#ProductMagicZoomImg img')[0].src;
+            } catch (e) { /* don't give a single s***/ }
             me.saveProduct({
                 'title': $('#productdetailsName').text() || me.getPageTitle(),
                 'description': $('#RightContainer h2').text() || '',
-                'image': $('#ProductMagicZoomImg img')[0].src || me.getLargestImage()
+                'image': img_src || me.getLargestImage()
             });
-        {% endifequal %}
+        // % else %
+        //     wm.fire('error', 'requested a Vendor-level SIBT button, but client is not a vendor');
+        // % endifequal %
     };
 
     me.setLargeSIBTVendorButton = me.setLargeSIBTVendorButton || function (jqElem) {

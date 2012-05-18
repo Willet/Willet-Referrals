@@ -678,6 +678,7 @@ class ColorboxJSServer(URIHandler):
         }
 
         path = os.path.join('apps/sibt/templates/js/', 'jquery.colorbox.js')
+        self.response.headers["Content-Type"] = "text/javascript"
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
