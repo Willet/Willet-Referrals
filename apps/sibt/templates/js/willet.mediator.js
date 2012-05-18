@@ -49,8 +49,8 @@ _willet.mediator = (function (me) {
                 // }
             } catch (err) {
                 // continue running other hooks.
-                if (event !== 'log') {  // prevent stack overflow (fo cereals)
-                    me.fire('log', 'failed to call an event: ' + err);
+                if (event !== 'error') {  // prevent stack overflow (fo cereals)
+                    me.fire('error', 'failed to call an event: ' + err);
                 }
             }
         }

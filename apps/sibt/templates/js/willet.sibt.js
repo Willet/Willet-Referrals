@@ -35,7 +35,7 @@ _willet.sibt = (function (me) {
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
-        // wm.fire('log', 'initialisating SIBT!');
+        wm.fire('log', 'initialisating SIBT!');
 
         // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
         app = {
@@ -80,7 +80,7 @@ _willet.sibt = (function (me) {
                     );
                     // me.saveProduct($(matches.eq(0)).data());
                 } catch (err) {  // don't fail all buttons on the page
-                    wm.fire('log', 'error setting button: ' + err);
+                    wm.fire('error', 'error setting button: ' + err);
                 }
             }
         }
@@ -92,14 +92,16 @@ _willet.sibt = (function (me) {
         // returns true or false on whether this script is running on
         // a vendor's website.
         // function can be called only after init() is.
+        wm.fire('log', 'checking vendor mode');
         if ('{{ vendor }}') {
+            wm.fire('log', 'vendorMode == true');
             return true;
         }
         if (!$) {
             return false;
         }
-        return Boolean($('._vendor_sibt')) ||
-               Boolean($('#_vendor_shouldIBuyThisButton'));
+        return Boolean($('._vendor_sibt').length) ||
+               Boolean($('#_vendor_shouldIBuyThisButton').length);
     }
 
     me.showAsk = me.showAsk || function (message) {
@@ -180,7 +182,9 @@ _willet.sibt = (function (me) {
 
         if (!instance.has_product) {
             // if no product, try to detect one, but don't show button
-            wm.fire('log', "product does not exist here; hiding button.");
+            wm.fire('log', "product did not exist here; hiding button. " +
+                           "(if product detection succeeds, refreshing this " +
+                           "page will make the button show again.)");
             jqElem.css ({
                 'display': 'none'
             });
@@ -203,14 +207,11 @@ _willet.sibt = (function (me) {
         var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
 
         var v3data = jqElem.data();
-        try {
-            me.saveProduct({
-                'title': v3data.title || false,
-                'image': v3data.image_url || false
-            });
-        } catch (e) {
-            wm.fire('log', "failed to let v3 button save product!");
-        }
+
+        me.saveProduct({
+            'title': v3data.title || false,
+            'image': v3data.image_url || false
+        });
 
         // if no product, try to detect one, but don't show button
         if (!instance.has_product) {
@@ -359,7 +360,7 @@ _willet.sibt = (function (me) {
             })
             .appendTo(jqElem);
 
-        $('#_willet_button').click(me.showAsk);
+        $('#_willet_button').click(me.button_onclick);
 
         // if server sends a flag that indicates "results available"
         // (not necessarily "finished") then show finished button
@@ -377,6 +378,9 @@ _willet.sibt = (function (me) {
             .click(me.showResults);
         }
     };
+
+    // there is no small WOSIB button.
+    me.setSmallWOSIBButton = me.setSmallWOSIBButton || me.setLargeWOSIBButton;
 
     me.cleanArray = me.cleanArray || function (actual) {
         var i;
@@ -517,9 +521,9 @@ _willet.sibt = (function (me) {
             products = me.cleanArray(products); // remove empties
             $.cookie('products', products.join(',')); // save
             wm.fire('log', "saving product cookie " + products.join(','));
-        } // else {
+        } else {
             // wm.fire('log', "product already in cookie");
-        // }
+        }
         return products;
     };
 
@@ -537,7 +541,7 @@ _willet.sibt = (function (me) {
             // product_title and product_description are json dumps, so
             // they already come with their own double quotes.
             if ({{ product_title }} || {{ product_description }}) {
-                // wm.fire('log', 'product already in DB, it seems.');
+                wm.fire('log', 'product already in DB, it seems.');
                 return;
             }
 
@@ -574,7 +578,7 @@ _willet.sibt = (function (me) {
                 wm.fire('log', 'sent product request');
             }
         } catch (e) {
-            wm.fire('log', e.message);
+            wm.fire('error', "failed to save product! " + e);
         }
     };
 
@@ -586,6 +590,7 @@ _willet.sibt = (function (me) {
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
+        me.hideBottomPopup(); // don't want it here now!
         if (user.is_asker || instance.show_votes) {
             // we are no longer showing results with the topbar.
             me.showResults();
@@ -602,7 +607,7 @@ _willet.sibt = (function (me) {
         var hash_index = hash.indexOf(hash_search);
         if (instance.has_results && hash_index !== -1) {
             // if vote has results and voter came from an email
-            // wm.fire('log', "has results?");
+            wm.fire('log', "has results?");
             me.showResults();
         }
     };
@@ -635,15 +640,24 @@ _willet.sibt = (function (me) {
     }
 
     me.showBottomPopup = me.showBottomPopup || function () {
+        if ($.cookie('_willet_bottom_popup_closed')) {
+            wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopupWithCookie');
+            return;
+        }
         if (popup) {
             wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
             popup.fadeIn('slow');
         }
     };
-    me.hideBottomPopup = me.hideBottomPopup || function () {
+    me.hideBottomPopup = me.hideBottomPopup || function (permanently) {
         if (popup) {
             wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
             popup.fadeOut('slow');
+        }
+        if (permanently) {
+            // save that preference.
+            wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
+            $.cookie('_willet_bottom_popup_closed', true);
         }
     };
 
@@ -986,7 +1000,11 @@ _willet.sibt = (function (me) {
         wm.on('scriptComplete', me.autoShowResults);
         wm.on('scriptComplete', me.getVisitLength);
 
-        // vendor-specific mediator hooks for other libraries
+        // hooks for other libraries
+        wm.on('setSmallSIBTButton', me.setSmallSIBTButton);
+        wm.on('setLargeSIBTButton', me.setLargeSIBTButton);
+        wm.on('setSmallWOSIBButton', me.setSmallWOSIBButton);
+        wm.on('setLargeWOSIBButton', me.setLargeWOSIBButton);
         wm.on('setSmallSIBTVendorButton', me.setSmallSIBTVendorButton);
         wm.on('setLargeSIBTVendorButton', me.setLargeSIBTVendorButton);
 

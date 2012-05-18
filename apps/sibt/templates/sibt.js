@@ -139,6 +139,6 @@
         err_img.style.display = "none";
         d.body.appendChild(err_img);
 
-        _willet.mediator.fire('log', "Error:", line, message);
+        _willet.mediator.fire('error', "Error:", line, message);
     }
 })(window, document);
