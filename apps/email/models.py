@@ -197,13 +197,20 @@ class Email():
 
     @staticmethod
     def SIBTVoteNotification(instance, vote_type):
-        """Send an "A friend Voted!" email to the asker."""
+        """Send an "A friend Voted!" email to the asker.
+
+        vote_type is a string.
+        """
         client = getattr(instance.app_, 'client', None)
         if not client:
+            logging.warn('client uninstalled app; '
+                         'not emailing on behalf of it.')
             return  # client uninstalled
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
+            logging.warn('asker has no email; '
+                         'not emailing him/her/it.')
             return  # no need to email anyone
 
         subject = 'A Friend Voted!'
@@ -233,10 +240,14 @@ class Email():
     def SIBTVoteCompletion(instance, product):
         client = getattr(product, 'client', None)
         if not client:
+            logging.warn('client uninstalled app; '
+                         'not emailing on behalf of it.')
             return  # client uninstalled
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
+            logging.warn('asker has no email; '
+                         'not emailing him/her/it.')
             return  # no need to email anyone
 
         yesses = instance.get_yesses_count()

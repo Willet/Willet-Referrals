@@ -201,11 +201,4 @@ class DiscountCode(Code):
 
     def is_expired(self):
         """If it is used, it also counts as expired."""
-        if datetime.datetime.now() > self.expiry_date:
-            return True  # yes, it is expired
-
-        if self.used:
-            return True
-
-        # I guess it's still good
-        return False
+        return bool(datetime.datetime.now() > self.expiry_date) or self.used

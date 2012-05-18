@@ -34,6 +34,7 @@ class SIBTShuuemuraWelcome(URIHandler):
         last_name = "USA"  # heheh (his name is actually Uemura Shu)
         phone = "1-888-748-5678"
 
+        # so it doesn't execute the javascript
         self.response.headers['Content-Type'] = 'text/plain'
         (success, script) = VendorSignUp(request_handler=self,
                                          domain=domain,

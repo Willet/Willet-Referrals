@@ -73,7 +73,7 @@ h2 a:hover {
     margin-left: 10px;
 }
 #discount_screen {
-    padding-top: 110px;
+    padding-top: 150px;
     text-align: center;
 }
 #discount_code {
@@ -81,7 +81,7 @@ h2 a:hover {
     text-align: center;
     display: block;
     margin: 0 auto;
-    width: 200px;
+    width: 400px;
 }
 .blob {
     /* a 'dialog box' */
@@ -148,7 +148,7 @@ h2 a:hover {
     border: 1px #999 solid;
     color: #555;
     cursor: pointer;
-    margin:6px;
+    margin: 6px;
     font-weight: bold;
     border-radius: 5px;
     text-shadow: 1px 1px #fff;

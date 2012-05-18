@@ -113,8 +113,12 @@ class DispenseClientDiscountCode(URIHandler):
         if user.user_discount_codes:  # if this user already has one
             logging.warn('User already got a discount code... '
                          'dispensing that one')
-            le_code = user.user_discount_codes[0].code
-        else:
+            try:
+                le_code = user.user_discount_codes[0].code
+            except IndexError:
+                pass  # failed because code is gone / not created yet
+
+        if not le_code:
             code = DiscountCode.get_by_client_at_random(client)
             if code:
                 # now it's marked and we can't use it again
