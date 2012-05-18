@@ -23,7 +23,7 @@ from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserIsFBLoggedIn
+from apps.user.actions import UserCreate, UserIsFBLoggedIn
 from apps.user.models import User
 from apps.wosib.actions import *
 
@@ -866,3 +866,58 @@ class SendFriendAsks(URIHandler):
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
+
+
+def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
+    """Function to create a vendor's Client, SIBT App, and User.
+
+    Returns (<bool>success?, <string>code), where code is the error message
+    if it fails, or a javascript snippet if it succeeds.
+
+    If previous user/client/app objects exist, they will be reused.
+    """
+    user = User.get_or_create_by_email(email=email,
+                                       request_handler=request_handler,
+                                       app=None)
+    if not user:
+        return (False, 'wtf, no user?')
+
+    full_name = "%s %s" % (first_name, last_name)
+    user.update(email=email,
+                first_name=first_name,
+                last_name=last_name,
+                full_name=full_name,
+                phone=phone,
+                accepts_marketing=False)
+
+    client = Client.get_or_create(url=domain,
+                                  request_handler=request_handler,
+                                  user=user)
+    if not client:
+        return (False, 'wtf, no client?')
+
+    # got a client; update its info
+    client.email = email
+    client.name = full_name
+    client.vendor = True
+    client.put()
+
+    user.update(client=client)  # can't bundle with previous user update
+
+    app = SIBT.get_or_create(client=client, domain=domain)
+    if not client:
+        return (False, 'wtf, no app?')
+
+    # put back the UserAction that we skipped making
+    UserCreate.create(user, app)
+
+    template_values = {'app': app,
+                       'URL': URL,
+                       'shop_name': client.name,
+                       'shop_owner': client.merchant.name,
+                       'client': client,
+                       'sibt_version': app.version,
+                       'new_order_code': True}
+
+    return (True, request_handler.render_page('templates/vendor_include.js',
+                                              template_values))
