@@ -215,7 +215,7 @@ class OrderWebhookNotification(URIHandler):
                             ip = ip,
                             accepts_marketing = accepts_marketing)
             else:
-                logging.error('NO USER: %s' % token)
+                logging.warn('NO USER: %s' % token)
 
             if o == None:
                 # Make the Order

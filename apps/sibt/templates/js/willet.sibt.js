@@ -35,7 +35,7 @@ _willet.sibt = (function (me) {
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
-        wm.fire('log', 'initialisating SIBT!');
+        wm.fire('log', 'Let the (SIBT) games begin!');
 
         // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
         app = {
@@ -106,7 +106,7 @@ _willet.sibt = (function (me) {
 
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
-        wm.fire('storeAnalytics', 'SIBTShowingAsk');
+        wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
         var shopify_ids = [];
         if (cart_items) {
             // WOSIB exists on page; send extra data
@@ -309,8 +309,8 @@ _willet.sibt = (function (me) {
             jqElem.click(me.button_onclick);
             jqElem.css ({
                 'background': ((instance.is_live || instance.has_results)?
-                                "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent":
-                                "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent"),
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent":
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent"),
                 'width': '92px',
                 'height': '24px',
                 'cursor': 'pointer',
@@ -553,28 +553,20 @@ _willet.sibt = (function (me) {
 
             var data = {
                 'client_uuid': fill.client_uuid || '{{ client.uuid }}', // REQUIRED
+                'description': fill.description || '',
                 'sibtversion': fill.sibtversion || app.version,
                 'title': fill.title || me.getPageTitle(),
                 'image': fill.image || me.getLargestImage(d),
+                'images': fill.images || '',
+                'price': fill.price || 0,
+                'tags': fill.tags || '',
+                'type': fill.type || '',
                 'resource_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
             };
 
-            // optional fields
-            if (fill.description) {
-                data.description = fill.description;
-            }
-            if (fill.images) {
-                data.images = fill.images;
-            }
-            if (fill.price) {
-                data.price = fill.price;
-            }
-            if (fill.tags) {
-                data.tags = fill.tags;
-            }
-            if (fill.type) {
-                data.type = fill.type;
-            }
+            // don't send empty params over the network.
+            data = me.filterFalsyProps(data);
+
             if (data.client_uuid) {
                 // Chrome Access-Control-Allow-Origin: must use GET here.
                 $('<img />', {
@@ -601,9 +593,20 @@ _willet.sibt = (function (me) {
             // we are no longer showing results with the topbar.
             me.showResults();
         } else {
-            wm.fire('storeAnalytics', message);
-            me.showAsk();
+            // wm.fire('storeAnalytics', message);
+            me.showAsk(message);
         }
+    };
+
+    me.filterFalsyProps = me.filterFalsyProps || function (obj) {
+        // return a copy of obj with falsy values removed.
+        var new_obj = {};
+        for (i in obj) {
+            if (obj.hasOwnProperty(i) && i) {
+                new_obj[i] = obj[i];
+            }
+        }
+        return new_obj;
     };
 
     me.autoShowResults = me.autoShowResults || function () {
@@ -718,8 +721,7 @@ _willet.sibt = (function (me) {
                 }
             });
             $('#willet_sibt_popup .cta').click(function () {
-                wm.fire('storeAnalytics', 'SIBTUserClickedBottomPopupAsk');
-                me.showAsk();
+                me.showAsk('SIBTUserClickedBottomPopupAsk');
                 me.hideBottomPopup();
             });
             $('#willet_sibt_popup #anti_cta').click(function (e) {
@@ -729,7 +731,11 @@ _willet.sibt = (function (me) {
                 me.hideBottomPopup();
             });
         } else {
-            wm.fire('log', 'cookies not populated / not unsure yet');
+            wm.fire('log', 'cookies not populated / not unsure yet: ',
+                    $.cookie('product1_image'),
+                    $.cookie('product2_image'),
+                    app.features.bottom_popup,
+                    app.unsure_multi_view);
         }
     };
 

@@ -27,12 +27,15 @@ class SIBTShuuemuraWelcome(URIHandler):
         # vendor-agnostic below this line
         logging.info('SIBTShuuemuraWelcome: trying to create app')
 
-        domain = 'http://shuuemura-usa.com'
-        # email = 'shuuemura@getwillet.com'  # need to activate this one
-        email = 'brian@getwillet.com'  # it was said that these emails go to me
-        first_name = "Shu Uemura"
-        last_name = "USA"  # heheh (his name is actually Uemura Shu)
-        phone = "1-888-748-5678"
+        domain = self.request.get('domain', 'http://shuuemura-usa.com')
+        # it was said that these emails go to me
+        email = self.request.get('email', 'brian@getwillet.com')
+
+        first_name = self.request.get('first_name', 'Shu Uemura')
+        # heheh (his name is actually Uemura Shu)
+        last_name = self.request.get('last_name', 'USA')
+
+        phone = self.request.get('phone', '1-888-748-5678')
 
         # so it doesn't execute the javascript
         self.response.headers['Content-Type'] = 'text/plain'
