@@ -1,6 +1,8 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // module description comment
+// requires server-side template vars:
+// - abc
 _willet.moduleName = (function (me) {
     var wm = _willet.mediator || {};
 

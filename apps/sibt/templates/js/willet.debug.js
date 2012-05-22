@@ -1,6 +1,9 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // willet debugger. This is mostly code by Nicholas Terwoord.
+// requires server-side template vars:
+// - debug
+// - URL
 _willet.debug = (function (me) {
     var wm = _willet.mediator || {};
     var isDebugging = ('{{ debug }}' === 'True'),

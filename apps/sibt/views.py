@@ -257,8 +257,10 @@ class AskDynamicLoader(URIHandler):
                              app=app)
 
         template_values = {
-            'URL' : URL,
-            'title' : "Which One ... Should I Buy This?",
+            'URL': URL,
+            'title': "Which One ... Should I Buy This?",
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),,
+            'evnt': 'SIBTShowingAsk',
 
             'app': app,
             'app_uuid': app_uuid,
@@ -406,25 +408,25 @@ class VoteDynamicLoader(URIHandler):
             percentage = 0.0 # "it's true that 0% said buy it"
 
         template_values = {
-            'evnt' : event,
+            'evnt': event,
             'product': product,
             'product_img': product_img,
-            'app' : app,
+            'app': app,
             'URL': URL,
-            'instance_uuid' : instance_uuid,
+            'instance_uuid': instance_uuid,
 
             'user': user,
-            'asker_name' : name if name else "your friend",
-            'asker_pic' : instance.asker.get_attr('pic'),
-            'target_url' : target,
-            'fb_comments_url' : '%s' % (link.get_willt_url()),
+            'asker_name': name if name else "your friend",
+            'asker_pic': instance.asker.get_attr('pic'),
+            'target_url': target,
+            'fb_comments_url': '%s' % (link.get_willt_url()),
             'percentage': percentage,
             'products': products,
             'share_url': share_url,
             'product_url': product.resource_url,
             'store_url': app.store_url,
             'store_name': app.store_name,
-            'instance' : instance,
+            'instance': instance,
             'votes': yesses + nos,
             'yesses': instance.get_yesses_count(),
             'noes': instance.get_nos_count()
@@ -558,24 +560,24 @@ class ShowResults(URIHandler):
             product = Product.get_or_fetch(instance.url, app.client)
 
             template_values = {
-                'evnt' : event,
+                'evnt': event,
                 'product_img': product.images,
-                'app' : app,
+                'app': app,
                 'URL': URL,
                 'user': user,
-                'asker_name' : name if name != '' else "your friend",
-                'asker_pic' : instance.asker.get_attr('pic'),
-                'target_url' : target,
-                'fb_comments_url' : '%s#code=%s' % (target, link.willt_url_code),
+                'asker_name': name if name != '' else "your friend",
+                'asker_pic': instance.asker.get_attr('pic'),
+                'target_url': target,
+                'fb_comments_url': '%s#code=%s' % (target, link.willt_url_code),
 
                 'share_url': share_url,
-                'is_asker' : is_asker,
+                'is_asker': is_asker,
                 'is_live': has_voted,  # same thing?
-                'instance' : instance,
+                'instance': instance,
                 'instance_ends': '%s%s' % (instance.end_datetime.isoformat(), 'Z'),
 
                 'vote_percentage': vote_percentage,
-                'total_votes' : total
+                'total_votes': total
             }
             path = os.path.join('apps/sibt/templates/', 'results.html')
 

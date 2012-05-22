@@ -1,10 +1,30 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // Should I Buy This
+// requires server-side template vars:
+// - app
+// - asker_name
+// - asker_pic
+// - has_product
+// - has_voted
+// - instance
+// - is_asker
+// - page_url
+// - product
+// - product_description
+// - product_history_count
+// - product_title
+// - show_top_bar_ask
+// - sibt_version
+// - store_id
+// - store_url
+// - unsure_multi_view
+// - URL
+// - vendor
+
 // The hasjQuery event starts off automatic initialisation.
 // product_title and product_description django tags require their own
 // double quotes!
-
 _willet.sibt = (function (me) {
     var wm = _willet.mediator || {};
     var $ = jQuery || {};  // I want jQuery here, but it won't be available
