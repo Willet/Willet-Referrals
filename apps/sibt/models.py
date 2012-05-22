@@ -194,7 +194,7 @@ class SIBT(App):
             bingo('sibt_share_text3')
 
         # "if it is a non-admin share on live server"
-        if not user.is_admin() and not APP_LIVE_DEBUG:
+        if not user.is_admin() and not USING_DEV_SERVER:
             try:
                 Email.emailDevTeam("""
                     SIBT INSTANCE:<br />

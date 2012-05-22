@@ -960,7 +960,7 @@ class SIBTServeScript(URIHandler):
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
             # general things
-            'debug': APP_LIVE_DEBUG or (self.request.remote_addr in ADMIN_IPS),
+            'debug': USING_DEV_SERVER or (self.request.remote_addr in ADMIN_IPS),
             'URL': URL,
 
             # store info

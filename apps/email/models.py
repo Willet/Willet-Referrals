@@ -219,6 +219,9 @@ class Email():
         product_url = "%s#open=1" % instance.url  # full product link
         product_img = instance.product_img
 
+        logging.info("product_url, product_img = %r" % [product_url,
+                                                        product_img])
+
         body = template.render(
             Email.template_path('sibt_voteNotification.html', client),
             {
