@@ -54,7 +54,33 @@ _willet.mediator = (function (me) {
                 }
             }
         }
+
+        // execute auto-registered functions, if any.
+        try {
+            me.autoFire(event, params);
+        } catch (err) {
+            if (event !== 'log') {
+                me.fire('log', 'failed to autoCall an event: ' + err);
+            }
+        }
         return me;
+    };
+
+    me.autoFire = me.autoFire || function (event, params) {
+        // http://addyosmani.com/largescalejavascript/
+        // automatic firing of non-subscribed functions inside all modules.
+        // functions can be autofired...
+        // e.g. autoEventCall will be called when "eventCall" is fired.
+
+        // auto-camel-case the function that we will be calling.
+        funcName = 'auto' + event[0].toUpperCase() + event.substr(1);
+        for (module in _willet) {
+            if (_willet.hasOwnProperty(module)) {
+                if (module[funcName]) {
+                    module[funcName](params);
+                }
+            }
+        }
     };
 
     // subscribing to an event - fire a function when it happens. (FIFO)

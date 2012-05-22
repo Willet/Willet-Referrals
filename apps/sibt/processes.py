@@ -752,7 +752,8 @@ class SendFriendAsks(URIHandler):
                 Successful shares on FB: %d\n \
                 Successful shares via email: %d\n \
                 Message: %s\n \
-                Instance: %s' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
+                Instance: %s' % (asker, friends, fb_share_counter,
+                                 email_share_counter, msg, iuid))
 
             Email.emailDevTeam('<p>SIBT Share!\n</p> \
                 <p>Asker: %s\n</p> \
@@ -760,7 +761,10 @@ class SendFriendAsks(URIHandler):
                 <p>Successful shares on FB: %d</p> \
                 <p>Successful shares via email: %d</p> \
                 <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
+                <p>Instance: %s</p> \
+                <p>Link: %s</p>' % (asker, friends, fb_share_counter,
+                                    email_share_counter, msg, iuid,
+                                    link.get_willt_url()))
 
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
