@@ -7,7 +7,7 @@ import datetime
 import logging
 import os
 import random
-import re
+import urllib2
 
 from urlparse import urlparse, urlunsplit
 
@@ -21,14 +21,17 @@ from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import *
+from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
+                              SIBTShowingButton, SIBTShowingAskIframe, \
+                              SIBTShowingVote, SIBTShowingResults, \
+                              SIBTShowingResultsToAsker, SIBTVoteAction
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.user.models import User
 
-from util.consts import *
-from util.helpers import *
+from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
+                        SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
+from util.helpers import get_target_url, url
 from util.shopify_helpers import get_shopify_url
-from util.strip_html import strip_html
 from util.urihandler import URIHandler
 
 
@@ -182,7 +185,7 @@ class AskDynamicLoader(URIHandler):
         try:
             if app.client and app.client.vendor:
                 vendor = app.client.name
-        except NameError, AttributeError:
+        except (NameError, AttributeError):
             pass  # not a vendor
 
         # successive steps to obtain the product(s) using any way possible
@@ -210,7 +213,7 @@ class AskDynamicLoader(URIHandler):
                     'product_desc': product.description,
                 })
             else:
-                logging.warning("Product of UUID %s not found in DB" % uuid)
+                logging.warning("Product not found in DB")
 
         if not template_products:
             """do not raise ValueError - "UnboundLocalError:
@@ -596,6 +599,12 @@ class ShowFBThanks(URIHandler):
         post_id = self.request.get('post_id') # from FB
         user = User.get_by_cookie(self)
         partial = PartialSIBTInstance.get_by_user(user)
+        product = None
+
+        if not partial:
+            logging.error('Something is lagging real bad - aborting attempt '
+                          'to create SIBTInstance without PartialSIBTInstance')
+            return  # there's nothing we can do now
 
         if post_id != "":
             user_cancelled = False
@@ -608,14 +617,19 @@ class ShowFBThanks(URIHandler):
             try:
                 app = partial.app_
                 link = partial.link
-                product = partial.product
-                products = partial.products
+                product = getattr(partial, 'product', None)
+                products = getattr(partial, 'products', [])
             except AttributeError, err:
                 logging.error("partial is: %s (%s)" % (partial, err))
 
             try:
+                if not product and products and products[0]:
+                    logging.info('instance with no product but with '
+                                 'products - using products[0] as product')
+                    product = Product.get(products[0])
                 product_image = product.images[0]
             except:
+                logging.warn('product has no image - resorting to blank')
                 product_image = '%s/static/imgs/blank.png' % URL # blank
 
             # Make the Instance!
@@ -756,7 +770,6 @@ class SIBTServeScript(URIHandler):
         Optional params: willt_code (helps find instance)
         """
         # declare vars.
-        admin_testing_on_live = False
         app = None
         app_css = ''
         asker_name = ''
@@ -773,13 +786,10 @@ class SIBTServeScript(URIHandler):
         product = None
         product_title = 'false'  # must be a javascript variable
         product_description = 'false'  # must be a javascript variable
-        show_votes = False
         show_top_bar_ask = False
         store_url = get_shopify_url(self.request.get('store_url'))
         template_values = {}
         unsure_multi_view = False
-        use_db_analytics = False
-        use_google_analytics = True
         user = None
         vendor_name = ''
         votes_count = 0
@@ -993,14 +1003,13 @@ class SIBTServeScript(URIHandler):
             'user': user,
             'asker_name': asker_name,
             'asker_pic': asker_pic,
+            'has_voted': has_voted,
             'is_asker': is_asker,
             'unsure_multi_view': unsure_multi_view,
 
             # misc.
             'FACEBOOK_APP_ID': SHOPIFY_APPS['SIBTShopify']['facebook']['app_id'],
             'fb_redirect': "%s%s" % (URL, url('ShowFBThanks')),
-            'use_db_analytics': use_db_analytics,
-            'use_google_analytics': use_google_analytics,
             'willt_code': link.willt_url_code if link else "",
         }
 

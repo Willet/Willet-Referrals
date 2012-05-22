@@ -12,6 +12,13 @@
         <!-- Add styles here! Try to reuse as much of ask.css as possible -->
         {% block styles %}{% endblock styles %}
 
+        <script type="text/javascript">
+            var _willet = w._willet || {};
+            {% include "../../sibt/templates/js/willet.mediator.js" %}
+            {% include "../../sibt/templates/js/willet.debug.js" %}
+            {% include "../../sibt/templates/js/willet.loader.js" %}
+            {% include "../../sibt/templates/js/willet.analytics.js" %}
+        </script>
     </head>
     <body>
         <div class="wrapper" id="wrapper">
@@ -871,22 +878,22 @@
         // See sibt/templates/ask.html for example implementations
 
         // Sends analytic data point to server
-        var storeAnalytics = function( evnt ) {
+        var storeAnalytics = function (evnt) {
             // Stub function!
-            throw new Error("Attemp to use stub function 'storeAnalytics'");
+            throw new Error("Attempt to use stub function 'storeAnalytics'");
         };
 
         // Initiates an instance of your app on the server
         // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-        var startPartialInstance = function() {
+        var startPartialInstance = function () {
             // Stub function!
-            throw new Error("Attemp to use stub function 'startPartialInstance'");
+            throw new Error("Attempt to use stub function 'startPartialInstance'");
         };
 
         // Sends information to server to ask friends & handles response
-        var sendMessages = function() {
+        var sendMessages = function () {
             // Stub function!
-            throw new Error("Attemp to use stub function 'sendMessages'");
+            throw new Error("Attempt to use stub function 'sendMessages'");
         };
         {% endblock ajax_methods %}
 
