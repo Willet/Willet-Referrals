@@ -27,7 +27,7 @@ var _willet = _willet || {};  // ensure namespace is there
 // double quotes!
 _willet.sibt = (function (me) {
     var wm = _willet.mediator || {};
-    var $ = jQuery || {};  // I want jQuery here, but it won't be available
+    var $ = window.jQuery || {};  // I want jQuery here, but it won't be available
                            // until mediator says so.
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,

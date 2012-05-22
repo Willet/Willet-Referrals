@@ -340,6 +340,7 @@
                     <div class='helpful'>The best way to get advice</div> \
                     <div class='fb_connect' alt='Connect with Facebook'></div> \
                 ").find('.fb_connect').click( function () {
+                    storeAnalytics('SIBTFBStartConnect');
                     runFBConnect(fetchFBFriends);
                 });
             }
@@ -1106,17 +1107,30 @@
                 doPostMessage('close');
             });
 
-            $('#postOnWall').click(postOnWall);
+            $('#postOnWall').click(function () {
+                storeAnalytics('SIBTAskUserClickedPostOnWall');
+                postOnWall();
+            });
 
             $('#showChooseScreen').click(function () {
+                storeAnalytics('SIBTAskUserClickedChooseFriends');
                 showScreen('choose');
             });
 
-            $('#addFriend>div').click(addFriend);
+            $('#addFriend>div').click(function () {
+                storeAnalytics('SIBTAskUserClickedAddFriend');
+                addFriend();
+            });
 
-            $('#chosenButton').click(reviewFriendsThenGetInfo);
+            $('#chosenButton').click(function () {
+                storeAnalytics('SIBTAskUserClickedChosenButton');
+                reviewFriendsThenGetInfo();
+            });
 
-            $('#askButton').click(reviewThenAsk);
+            $('#askButton').click(function () {
+                storeAnalytics('SIBTAskUserClickedAskButton');
+                reviewThenAsk();
+            });
 
             $('#askers').append(asker.getElement());
 

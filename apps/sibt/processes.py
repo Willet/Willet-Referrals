@@ -366,7 +366,9 @@ class StartPartialSIBTInstance(URIHandler):
         # product_uuids: ['uuid','uuid','uuid'] or [''] edge case
         # product_uuid (singular, deprecated) is used only if
         # product_uuids is missing.
+        logging.debug('products = %s' % self.request.get('products')
         product_uuids = self.request.get('products', '').split(',')
+        logging.debug('product_uuids = %r' % product_uuids
         if not product_uuids[0]:  # ? '' evals to False; [''] evals to True.
             product_uuids = [self.request.get('product_uuid')]
 
@@ -701,12 +703,12 @@ class SendFriendAsks(URIHandler):
 
             if friend_share_counter > 0:
                 # create the instance!
-                instance = app.create_instance(user,
-                                               None,
-                                               link,
-                                               product_image,
-                                               motivation="",
+                instance = app.create_instance(user=user,
+                                               end=None,
+                                               link=link,
                                                dialog="ConnectFB",
+                                               img=product_image,
+                                               motivation="",
                                                sharing_message=msg,
                                                products=product_uuids)
 
