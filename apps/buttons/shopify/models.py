@@ -91,13 +91,22 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Define our script tag 
         tags = [{
-            "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                ),
-                "event": "onload"
-            }
+                "script_tag": {
+                    "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                        URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+            },
+            {
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                        SECURE_URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
         }]
 
         # Install yourself in the Shopify store

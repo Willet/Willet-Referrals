@@ -155,7 +155,7 @@ class AppShopify(Model):
             raise ValueError('verb must be one of GET, POST, PUT, DELETE')
         
         url      = '%s/admin/%s' % (self.store_url, call)
-        username = self.settings['api_key'] 
+        username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
         h        = httplib2.Http()
