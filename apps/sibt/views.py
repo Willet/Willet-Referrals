@@ -607,8 +607,7 @@ class ShowFBThanks(URIHandler):
         product = None
 
         if not partial:
-            logging.error('Something is lagging real bad - aborting attempt '
-                          'to create SIBTInstance without PartialSIBTInstance')
+            logging.warn('PartialSIBTInstance is already gone')
             return  # there's nothing we can do now
 
         if post_id != "":

@@ -14,15 +14,30 @@
                     <p>
                         Overall, <strong>{{ buy_it_percentage }}%</strong> said to buy it.
                     </p>
-                    {% if buy_it %}
-                        <p>
-                            <a href="{{ product_url }}">Click here to buy it now!</a>
-                        </p>
-                    {% else %}
-                        <p>
-                            <a href="{{ product_url }}">Find something else you might like!</a>
-                        </p>
-                    {% endif %}
+                    <table cellspacing="0"
+                           cellpadding="0"
+                           style="border-collapse:collapse">
+                        <tbody>
+                            <tr>
+                                <td style="padding:5px;
+                                           background-color:#fff9d7;
+                                           border-left:1px solid #eecc22;
+                                           border-right:1px solid #eecc22;
+                                           border-top:1px solid #eecc22;
+                                           border-bottom:1px solid #eecc22">
+                                    <a href="{{product_url}}"
+                                       style="color:#336699;"
+                                       target="_blank">
+                                        {% if buy_it %}
+                                            Click here to buy it now
+                                        {% else %}
+                                            Find something else you might like!
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </td>
         </tr>

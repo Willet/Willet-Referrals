@@ -323,9 +323,10 @@ class Email():
                          body=body)
 
     @staticmethod
-    def WOSIBVoteNotification(instance):
+    def WOSIBVoteNotification(instance, product):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
+        # pass roduct is a Product object.
         client = getattr(instance.app_, 'client', None)
         if not client:
             return  # client uninstalled
@@ -343,6 +344,7 @@ class Email():
                                                    client),
                                {'name': name.title(),
                                 'cart_url': cart_url,
+                                'product': product,
                                 'client_name': client.name,
                                 'client_domain': client.domain})
 

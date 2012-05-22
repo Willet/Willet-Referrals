@@ -182,11 +182,14 @@ class DoVote(URIHandler):
         # Tell the Asker they got a vote!
         if which.lower() == "yes" or which.lower() == "no":  # SIBT
             logging.info('going to SIBT email shopper.')
-            Email.SIBTVoteNotification(instance=instance,
-                                       vote_type=which)
+            Email.SIBTVoteNotification(instance=instance, vote_type=which)
         else:
             logging.info('going to WOSIB email shopper.')
-            Email.WOSIBVoteNotification(instance=instance)
+            try:
+                product = Product.get(which)  # note that None is okay here.
+            except:
+                product = None
+            Email.WOSIBVoteNotification(instance=instance, product=product)
 
         self.response.out.write('ok')
 
