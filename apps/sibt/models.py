@@ -154,7 +154,7 @@ class SIBT(App):
                                             link.willt_url_code))
 
     def create_instance(self, user, end, link, dialog="", img="",
-                        motivation=None, share_message="", products=None):
+                        motivation=None, sharing_message="", products=None):
         """SIBT2: products supersedes img."""
         logging.info("Making a SIBT instance (dialog = %s)" % dialog)
         # Make the properties
@@ -175,7 +175,7 @@ class SIBT(App):
                                 product_img=img or product_img,
                                 products=products,
                                 motivation=motivation,
-                                share_message=share_message,
+                                sharing_message=sharing_message,
                                 url=link.target_url)
         # set end if None
         if end == None:
@@ -238,7 +238,7 @@ class SIBTInstance(Model):
     # records the message with which this instance was shared.
     # if FBNoConnect (i.e. we can't capture the message),
     # then this property is empty.
-    share_message = db.StringProperty(required=False, default="")
+    sharing_message = db.StringProperty(required=False, default="")
 
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)

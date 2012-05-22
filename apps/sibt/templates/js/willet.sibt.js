@@ -695,7 +695,7 @@ _willet.sibt = (function (me) {
             if (permanently) {
                 // save that preference.
                 wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
-                $.cookie('_willet_bottom_popup_closed', true);
+                $.cookie('_willet_bottom_popup_closed', '1');
             }
         };
 
@@ -757,7 +757,7 @@ _willet.sibt = (function (me) {
                     wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
                     clickedOff = true;
                     e.preventDefault();
-                    me.hideBottomPopup();
+                    me.hideBottomPopup(clickedOff);
                 });
             } else {
                 wm.fire('log', 'cookies not populated / not unsure yet: ',

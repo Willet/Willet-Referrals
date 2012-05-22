@@ -314,6 +314,7 @@ class VoteDynamicLoader(URIHandler):
         link = None
         products = [] # populate this to show products on design page.
         share_url = ''
+        sharing_message = ''
         target = get_target_url(self.request.get('url', ''))
         template_values = {}
         user = None
@@ -356,6 +357,7 @@ class VoteDynamicLoader(URIHandler):
             self.response.out.write("This vote is now over.")
             return
 
+        sharing_message = instance.sharing_message
         app = instance.app_
         if not app:
             # We can't find the app?!
@@ -423,6 +425,7 @@ class VoteDynamicLoader(URIHandler):
             'percentage': percentage,
             'products': products,
             'share_url': share_url,
+            'sharing_message': sharing_message,
             'product_url': product.resource_url,
             'store_url': app.store_url,
             'store_name': app.store_name,
@@ -635,7 +638,7 @@ class ShowFBThanks(URIHandler):
                 product_image = '%s/static/imgs/blank.png' % URL # blank
 
             # Make the Instance!
-            instance = app.create_instance(user,
+            instance = app.create_instance(user=user,
                                            end=None,
                                            link=link,
                                            img=product_image,

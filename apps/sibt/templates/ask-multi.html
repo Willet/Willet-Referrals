@@ -195,7 +195,7 @@
                 FB.ui({ method:  "feed",
                         display: "popup",
                         link:    "{{share_url}}",
-                        picture: "{{image|first}}",
+                        picture: "{{ image }}",
                         name:    "{{title|escape}}",
                         caption: "{{store_domain}}",
                         description: $('#fbComment').val(),

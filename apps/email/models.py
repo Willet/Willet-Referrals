@@ -286,7 +286,7 @@ class Email():
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
                  client, asker_img= None, products=None):
         """Please, supply products as their objects."""
-        subject = "Which one should I buy?"
+        subject = "Can I get your advice?"
         to_first_name = from_first_name = ''
 
         # Grab first name only

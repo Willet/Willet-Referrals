@@ -137,7 +137,7 @@ class StartSIBTInstance(URIHandler):
                                            dialog="ConnectFB",
                                            img=img,
                                            motivation=None,
-                                           share_message="")
+                                           sharing_message="")
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
@@ -366,9 +366,9 @@ class StartPartialSIBTInstance(URIHandler):
         # product_uuids: ['uuid','uuid','uuid'] or [''] edge case
         # product_uuid (singular, deprecated) is used only if
         # product_uuids is missing.
-        logging.debug('products = %s' % self.request.get('products')
+        logging.debug('products = %s' % self.request.get('products'))
         product_uuids = self.request.get('products', '').split(',')
-        logging.debug('product_uuids = %r' % product_uuids
+        logging.debug('product_uuids = %r' % product_uuids)
         if not product_uuids[0]:  # ? '' evals to False; [''] evals to True.
             product_uuids = [self.request.get('product_uuid')]
 
