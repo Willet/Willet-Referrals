@@ -3,6 +3,7 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 {% include "../../../sibt/templates/js/willet.mediator.js" %}
+{% include "../../../sibt/templates/js/willet.analytics.js" %}
 
 /* jQuery postMessage - v0.5 - 9/11/2009
  * http://benalman.com/projects/jquery-postmessage-plugin/

@@ -3,6 +3,8 @@ var _willet = _willet || {};  // ensure namespace is there
 // Google Analytics events tracker
 // requires server-side template vars:
 // - evnt
+// requires this module:
+// - loader
 _willet.analytics = (function (me) {
     var wm = _willet.mediator || {};
 

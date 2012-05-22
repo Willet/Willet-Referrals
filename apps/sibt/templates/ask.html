@@ -68,7 +68,7 @@
 {% block ajax_methods %}
     // Sends analytic data point to server
     var storeAnalytics = function(evnt) {
-        var payload = {
+        /* var payload = {
             evnt: evnt,
             instance_uuid: '',
             app_uuid: '{{ app_uuid }}',
@@ -83,7 +83,8 @@
             success  : function (response) {
                 return;
             }
-        });
+        });*/
+        _willet.Mediator.fire('storeAnalytics', evnt);
     };
 
     // Initiates an instance of your app on the server
