@@ -79,4 +79,3 @@ def load(path, template_dirs=()):
                 URLNode.render = save_urlnode_render
         template.render = wrap_render
     return template
-

@@ -28,25 +28,30 @@ _willet.analytics = (function (me) {
         if (!message) return;  // do not record nothing
 
         // extra google analytics component
-        try {
-            // async
-            me.gaq.push([
-                '_trackEvent',
-                'TrackSIBTAction',
-                encodeURIComponent(message),
-                encodeURIComponent(extras)
-            ]);
-            me.gat = me.gat || window._gat || document._gat || [];
-            me.pageTracker = me.pageTracker || me.gat._getTracker(me.ANALYTICS_ID);
-            me.pageTracker._trackEvent(
-                'TrackSIBTAction',
-                encodeURIComponent(message),
-                encodeURIComponent(extras)
-            );
-            wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
-        } catch (e) { // log() is {} on live.
-            wm.fire('error', "We have DROPPED the enemy intelligence: " + e);
-        }
+        {% if debug %}
+            wm.fire('log', "This was not sent to Google Analytics because " +
+                           "you are debugging: " + message);
+        {% else %}
+            try {
+                // async
+                me.gaq.push([
+                    '_trackEvent',
+                    'TrackSIBTAction',
+                    encodeURIComponent(message),
+                    encodeURIComponent(extras)
+                ]);
+                me.gat = me.gat || window._gat || document._gat || [];
+                me.pageTracker = me.pageTracker || me.gat._getTracker(me.ANALYTICS_ID);
+                me.pageTracker._trackEvent(
+                    'TrackSIBTAction',
+                    encodeURIComponent(message),
+                    encodeURIComponent(extras)
+                );
+                wm.fire('log', "Success! We have secured the enemy intelligence: " + message);
+            } catch (e) { // log() is {} on live.
+                wm.fire('error', "We have DROPPED the enemy intelligence: " + e);
+            }
+        {% endif %}
     };
 
     // set up a hook to let storeAnalytics be fired
