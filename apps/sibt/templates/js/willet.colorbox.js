@@ -57,8 +57,8 @@ _willet.colorbox = (function (me) {
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
 
          // colorbox cannot be loaded twice on a page.
-        if (!me._cboxobj && ($ || window.jQuery)) {
-            me.init($ || window.jQuery);
+        if (!me._cboxobj && (window.jQuery || $)) {
+            me.init(window.jQuery || $);
         }
 
         if (me._cboxobj) {
