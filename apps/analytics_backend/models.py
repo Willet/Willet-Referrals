@@ -21,7 +21,7 @@ from apps.buttons.shopify.models import *
 from util.consts import MEMCACHE_TIMEOUT
 
 actions_to_count = [
-    'ScriptLoadAction',
+  # 'ScriptLoadAction',
 
     'SIBTUserClickedTopBarAsk',
     'SIBTUserClickedButtonAsk',

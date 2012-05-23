@@ -1,4 +1,4 @@
-<div class="_willet_sibt" 
+<div class="_willet_sibt"
      data-sibtversion="{{ sibt_version }}"
      data-app_uuid="{{ app.uuid }}"
      data-client_uuid="{{ client.uuid }}"
@@ -13,7 +13,7 @@
     "use strict";
     try {
         var jse = d.getElementsByTagName(st)[0], jsa = d.createElement(st);
-        jsa.src = '{{ URL }}{% url SIBTServeScript %}' + 
+        jsa.src = '{{ URL }}{% url SIBTServeScript %}' +
             '?url=' + encodeURIComponent(window.location.href); // required
         jse.parentNode.insertBefore(jsa, jse);
     } catch (e) {}

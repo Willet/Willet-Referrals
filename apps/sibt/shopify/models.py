@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
-# SIBTShopify model
-# Extends from "Referral", which extends from "App"
+"""The SIBTShopify model.
+
+Extends from SIBT/App.
+"""
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib
 import inspect
 import logging
 from datetime import datetime
@@ -19,16 +20,14 @@ from google.appengine.ext.webapp import template
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
 from apps.sibt.models import SIBT
-from util.consts import *
+from util.consts import DOMAIN
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
 
-# ------------------------------------------------------------------------------
-# SIBTShopify Class Definition -------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class SIBTShopify(SIBT, AppShopify):
-    # CSS to style the button (deprecated for SIBTShopify v11+)
-    button_css = db.TextProperty(default=None,required=False)
+    # CSS to style the button (deprecated for SIBTShopify v10+)
+    button_css = db.TextProperty(default=None, required=False)
 
     def _validate_self(self):
         return True
@@ -123,21 +122,16 @@ class SIBTShopify(SIBT, AppShopify):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
-    # Retreivers --------------------------------------------------------------------
+    # Retreivers --------------------------------------------------------------
     @classmethod
-    def get_by_uuid(uuid):
+    def get_by_uuid(cls, uuid):
         return cls.get(uuid)
 
-    @staticmethod
-    def get_by_store_id(store_id):
-        logging.info("Shopify: Looking for %s" % store_id)
-        logging.error('Deprecated method get_by_store_id should be\
-                       replaced by %s.get or %s.get_by_store_url: %s' % (cls, cls, inspect.stack()[0][3]))
-        return SIBTShopify.all()\
-                .filter('store_id =', store_id)\
-                .get()
+    @classmethod
+    def get_by_store_id(cls, store_id):
+        return cls.all().filter('store_id =', store_id).get()
 
-    # Constructors -----------------------------------------------------------------------------
+    # Constructors ------------------------------------------------------------
     @staticmethod
     def create(client, token, email_client=True):
         uuid = generate_uuid(16)
@@ -158,7 +152,7 @@ class SIBTShopify(SIBT, AppShopify):
 
         return app
 
-    # 'Retreive or Construct'ers -------------------------------------------------------------
+    # 'Retreive or Construct'ers ----------------------------------------------
     @classmethod
     def get_or_create(cls, client, token=None, email_client=True):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
@@ -396,5 +390,3 @@ class SIBTShopify(SIBT, AppShopify):
         logging.error('Deprecated method get_default_button_css should be\
                        replaced by %s.get_default_css: %s' % (cls,  inspect.stack()[0][3]))
         return cls.get_default_css()
-
-# end class
