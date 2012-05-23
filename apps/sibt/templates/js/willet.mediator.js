@@ -73,8 +73,8 @@ _willet.mediator = (function (me) {
         // e.g. autoEventCall will be called when "eventCall" is fired.
 
         // auto-camel-case the function that we will be calling.
-        funcName = 'auto' + event[0].toUpperCase() + event.substr(1);
-        for (module in _willet) {
+        var funcName = 'auto' + event[0].toUpperCase() + event.substr(1);
+        for (var module in _willet) {
             if (_willet.hasOwnProperty(module)) {
                 if (module[funcName]) {
                     module[funcName](params);

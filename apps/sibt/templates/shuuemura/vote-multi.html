@@ -74,6 +74,7 @@
                             type: 'post',
                             dataType: 'text',
                             success: function (data) {
+                                $("#discount_gettest").show();
                                 $("#discount_code").val(data || "We're out!");
                             }
                         });

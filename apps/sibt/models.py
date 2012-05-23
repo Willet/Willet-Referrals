@@ -238,6 +238,7 @@ class SIBTInstance(Model):
     # records the message with which this instance was shared.
     # if FBNoConnect (i.e. we can't capture the message),
     # then this property is empty.
+    # sharing_message cannot exceed 1000 characters.
     sharing_message = db.StringProperty(required=False, default="")
 
     # Datetime when this model was put into the DB
@@ -274,6 +275,8 @@ class SIBTInstance(Model):
         super(SIBTInstance, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
+        if len(self.sharing_message) > 1000:
+            raise ValueError('Sharing message is too long')
         return True
 
     @staticmethod

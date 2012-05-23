@@ -159,8 +159,17 @@ class Email():
                          body=body)
 
     @staticmethod
-    def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                product_img, product_title, client, asker_img= None):
+    def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
+                vote_url, product=None, products=None, asker_img= None):
+        """Please, supply products as their objects.
+
+        Supplying a products list of more than one item will trigger WOSIB
+        emails.
+        """
+
+        if products is None:
+            products = []
+
         subject = "Can I get your advice?"
         to_first_name = from_first_name = ''
 
@@ -174,19 +183,31 @@ class Email():
         except:
             to_first_name = to_name
 
-        body = template.render(Email.template_path('sibt_ask.html', client), {
-                'from_name'         : from_name.title(),
-                'from_first_name'   : from_first_name.title(),
-                'to_name'           : to_name.title(),
-                'to_first_name'     : to_first_name.title(),
-                'message'           : message,
-                'vote_url'          : vote_url,
-                'product_title'     : product_title,
-                'product_img'       : product_img,
-                'asker_img'         : asker_img,
-                'client_name'       : client.name,
-                'client_domain'     : client.domain
-            })
+        try:
+            product_img = product.images[0]
+        except (TypeError, IndexError):
+            product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+
+        if len(products) > 1:  # WOSIB mode
+            template_file = 'wosib_ask.html'
+        else:
+            template_file = 'sibt_ask.html'
+
+        body = template.render(Email.template_path('wosib_ask.html', client), {
+            'URL': URL,
+            'from_name': from_name.title(),
+            'from_first_name': from_first_name.title(),
+            'to_name': to_name.title(),
+            'to_first_name': to_first_name.title(),
+            'message': message,
+            'vote_url': vote_url,
+            'asker_img': asker_img,
+            'client_name': client.name,
+            'client_domain': client.domain,
+            'products': products or [None, None],  # just to shut it up
+            'product_title': getattr(product, 'title', 'Awesome product'),
+            'product_img': product_img
+        })
 
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
@@ -194,6 +215,7 @@ class Email():
                          replyto_address=from_addr,
                          subject=subject,
                          body=body)
+
 
     @staticmethod
     def SIBTVoteNotification(instance, vote_type):

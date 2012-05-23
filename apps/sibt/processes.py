@@ -495,17 +495,21 @@ class StartSIBTAnalytics(URIHandler):
 
 
 class SendFriendAsks(URIHandler):
-    """ Sends messages to email & FB friends
+    """Sends messages to email & FB friends.
 
     Expected inputs:
-        friends: JSON-encoded <Array> [ <array> [ <string> type, <string> name, <string> identifier ]
-        asker: JSON-encoded <array> [<string> name, <string> email_address [, <string> picture_url ]]
+        friends: JSON-encoded <Array> [ <array> [ <string> type,
+                                                  <string> name,
+                                                  <string> identifier ]
+        asker: JSON-encoded <array> [<string> name,
+                                     <string> email_address [,
+                                     <string> picture_url ]]
         msg: <string> message
         default_msg: <string> message before user edited it
         app_uuid: <string> a SIBT app uuid
         product_uuid: <string> a <Product> uuid
         products: <string> a CSV of <Product> uuids
-        willt_code: <string> willt_code corresponding to a parital SIBT instance
+        willt_code: <string> willt_code corresponding to a PartialSIBTInstance
         user_uuid: <string> a <User> uuid
         fb_access_token: <string> a Facebook API access token for this user
         fb_id: <string> a Facebook user id for this user
@@ -514,52 +518,58 @@ class SendFriendAsks(URIHandler):
         success: <Boolean> at least some friends were successfully contacted
         data: <Dict>
             message: <String> description of outcome
-            warnings: <Array> [ <string> explanation of any incompleted friend asks ]
+            warnings: <Array> [ <string> explanation of any incompleted
+                                friend asks ]
     """
     def post(self):
+        """See class docstring for details."""
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
 
-        # Fetch arguments
-        app = App.get(self.request.get('app_uuid')) # Could be <SIBT>, <SIBTShopify> or something...
-        asker = json.loads(self.request.get('asker'))
-        default_msg = self.request.get('default_msg')
+        # Shorthand
+        rget = self.request.get
+
+        # app is returned as its subclass - a characteristic of App Engine.
+        app = App.get(rget('app_uuid'))
+        asker = json.loads(rget('asker'))
+        default_msg = rget('default_msg')
         email_friends = []
         email_share_counter = 0
         fb_friends = []
-        fb_id = self.request.get('fb_id')
+        fb_id = rget('fb_id')
         fb_share_counter = 0
-        fb_token = self.request.get('fb_access_token')
-        friends = json.loads(self.request.get('friends'))
-        link = Link.get_by_code(self.request.get('willt_code'))
-        msg = self.request.get('msg')
-        product = Product.get(self.request.get('product_uuid'))
-        products = []
-        product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
-        user = User.get(self.request.get('user_uuid'))
+        fb_token = rget('fb_access_token')
+        friends = json.loads(rget('friends'))
+        instance = None
+        link = Link.get_by_code(rget('willt_code'))
+        msg = rget('msg', '')[:1000]  # sharing message is limited to 1k chars
+        user = User.get(rget('user_uuid'))
 
-        # Default response
-        response = {
-            'success': False,
-            'data': {
-                'message': "",
-                'warnings': []
-            }
-        }
+        product = Product.get(rget('product_uuid'))
 
-        logging.debug('asker: %r \n\
-            friends: %r \n\
-            msg: %s \n\
-            link: %s' % (asker, friends, msg, link))
+        # [uuid,uuid,uuid]
+        product_uuids = rget('products').split(',')
 
         # supposedly: [Product, Product, Product]
         products = [Product.get(uuid) for uuid in product_uuids]
+
+        # Default response
+        response = {'success': False,
+                    'data': {'message': "",
+                             'warnings': []}}
+
+        logging.debug('asker: %r \n'
+                      'friends: %r \n'
+                      'msg: %s \n'
+                      'link: %s' % (asker, friends, msg, link))
+
+        # back-fill the product variable
         if not products[0] and product:
             products = [product]
-        elif not product:  # back-fill the product variable
+        elif not product:
             product = random.choice(products)
 
         if not user:
-            logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            logging.error('failed to get user by uuid %s' % rget('user_uuid'))
             self.response.set_status(401) # Unauthorized
             response['data']['message'] = 'Unauthorized: Could not find user by supplied id'
 
@@ -601,10 +611,13 @@ class SendFriendAsks(URIHandler):
             # Add spam warning if there are > 5 email friends
             if len(email_friends) > 5:
                 logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
-                Email.emailDevTeam('<p>SIBT SPAMMER? Emailing %i friends</p> \
-                    <p>Asker: %s</p> \
-                    <p>Message: %s</p> \
-                    <p>Instance: %s</p>' % (email_share_counter, asker, msg, instance.uuid))
+                Email.emailDevTeam('<p>SIBT SPAMMER? Emailing %i friends</p>'
+                                   '<p>Asker: %s</p>'
+                                   '<p>Message: %s</p>'
+                                   '<p>Instance: %s</p>' % (email_share_counter,
+                                                            asker,
+                                                            msg,
+                                                            instance.uuid))
 
             # Format the product's desc for sharing
             try:
@@ -634,7 +647,7 @@ class SendFriendAsks(URIHandler):
             try:
                 product_image = product.images[0]
             except (TypeError, IndexError):
-                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
+                product_image = 'http://rf.rs/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
             #--- Start with sharing to FB friends ---#
@@ -675,27 +688,16 @@ class SendFriendAsks(URIHandler):
             if email_friends: # [] is falsy
                 for (_, fname, femail) in email_friends:
                     try:
-                        if len(products) > 1:
-                            Email.WOSIBAsk(from_name=a['name'],
-                                           from_addr=a['email'],
-                                           to_name=fname,
-                                           to_addr=femail,
-                                           message=msg,
-                                           vote_url=link.get_willt_url(),
-                                           asker_img=a['pic'],
-                                           client=app.client,
-                                           products=products)
-                        else:
-                            Email.SIBTAsk(from_name=a['name'],
-                                          from_addr=a['email'],
-                                          to_name=fname,
-                                          to_addr=femail,
-                                          message=msg,
-                                          vote_url=link.get_willt_url(),
-                                          product_img=product_image,
-                                          asker_img=a['pic'],
-                                          product_title=product.title,
-                                          client=app.client)
+                        Email.SIBTAsk(client=app.client,
+                                      from_name=a['name'],
+                                      from_addr=a['email'],
+                                      to_name=fname,
+                                      to_addr=femail,
+                                      message=msg,
+                                      vote_url=link.get_willt_url(),
+                                      product=product or None,
+                                      products=products or [],
+                                      asker_img=a['pic'])
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)
@@ -742,29 +744,26 @@ class SendFriendAsks(URIHandler):
             if not response['data']['warnings']:
                 del response['data']['warnings']
 
-            try:
-                iuid = instance.uuid
-            except:
-                iuid = None
+            iuid = getattr(instance, 'uuid', None)
 
-            logging.info('Asker: %s\n \
-                Friends: %s\n \
-                Successful shares on FB: %d\n \
-                Successful shares via email: %d\n \
-                Message: %s\n \
-                Instance: %s' % (asker, friends, fb_share_counter,
-                                 email_share_counter, msg, iuid))
+            logging.info('Asker: %s\n'
+                         'Friends: %s\n'
+                         'Successful shares on FB: %d\n'
+                         'Successful shares via email: %d\n'
+                         'Message: %s\n'
+                         'Instance: %s' % (asker, friends, fb_share_counter,
+                                           email_share_counter, msg, iuid))
 
-            Email.emailDevTeam('<p>SIBT Share!\n</p> \
-                <p>Asker: %s\n</p> \
-                <p>Friends: %s</p> \
-                <p>Successful shares on FB: %d</p> \
-                <p>Successful shares via email: %d</p> \
-                <p>Message: %s</p> \
-                <p>Instance: %s</p> \
-                <p>Link: %s</p>' % (asker, friends, fb_share_counter,
-                                    email_share_counter, msg, iuid,
-                                    link.get_willt_url()))
+            Email.emailDevTeam('<p>SIBT Share!\n</p>'
+                '<p>Asker: %s\n</p>'
+                '<p>Friends: %s</p>'
+                '<p>Successful shares on FB: %d</p>'
+                '<p>Successful shares via email: %d</p>'
+                '<p>Message: %s</p>'
+                '<p>Instance: %s</p>'
+                '<p>Link: %s</p>' % (asker, friends, fb_share_counter,
+                                     email_share_counter, msg, iuid,
+                                     link.get_willt_url()))
 
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"

@@ -83,6 +83,9 @@ h2 a:hover {
     margin: 0 auto;
     width: 400px;
 }
+#discount_gettest {
+    display: none;
+}
 .blob {
     /* a 'dialog box' */
     background-color: #f5f5f5;
