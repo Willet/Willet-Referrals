@@ -13,6 +13,11 @@ _willet.moduleName = (function (me) {
         console.log('derp');
     };
 
+    me.autoTriggeredEvent = me.autoTriggeredEvent || function (params) {
+        console.log('autoTriggeredEvent will be called when ' +
+                    'triggeredEvent is fired');
+    };
+
     // set up your module hooks
     if (_willet.mediator) {
         _willet.mediator.on('customEvent', me.customEvent, defaultParams);

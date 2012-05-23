@@ -35,7 +35,7 @@ class Client(Model, polymodel.PolyModel):
     domain = db.LinkProperty(indexed=True)
 
     # False, unless this client has a private deal with us.
-    vendor = db.BooleanProperty(required=False, default=False)
+    is_vendor = db.BooleanProperty(required=False, default=False)
 
     _memcache_fields = ['domain', 'email', 'url']
 
@@ -81,7 +81,7 @@ class Client(Model, polymodel.PolyModel):
                         url=url,
                         domain=url,  # I really don't see the difference.
                         merchant=user,
-                        vendor=False)
+                        is_vendor=False)
         client.put()
 
         return client

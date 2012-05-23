@@ -2,7 +2,7 @@
      data-sibtversion="{{ sibt_version }}"
      data-client_uuid="{{ client.uuid }}"></div>
 <script type="text/javascript">/*<![CDATA[*//*---->*/
-    !function (d, st) {
+    (function (d, st) {
         "use strict";
         try {
             var jse = d.getElementsByTagName(st)[0],
@@ -11,5 +11,5 @@
                       '?url=' + encodeURIComponent(window.location.href);
             jse.parentNode.insertBefore(jsa, jse);
         } catch (e) {}
-    }(document, 'script');
+    })(document, 'script');
 /*--*//*]]>*/</script>

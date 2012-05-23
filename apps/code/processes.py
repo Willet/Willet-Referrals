@@ -98,11 +98,6 @@ class DispenseClientDiscountCode(URIHandler):
             logging.error('No client specified')
             return
 
-        '''
-        app = App.get_by_url(self.request.get('store_url', '')) or \
-              App.get(self.request.get('client_uuid', ''))
-        '''
-
         # attempt to find user to reward
         user = User.get_by_cookie(self) or \
                User.get_by_email(self.request.get('email'))

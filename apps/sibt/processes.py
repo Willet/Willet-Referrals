@@ -801,7 +801,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     # got a client; update its info
     client.email = email
     client.name = full_name
-    client.vendor = True
+    client.is_vendor = True
     client.put()
 
     user.update(client=client)  # can't bundle with previous user update

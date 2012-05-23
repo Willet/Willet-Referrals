@@ -413,7 +413,7 @@ class Email():
         """Returns the email template path for a given client, or the default
         path if the client does not have special templates.
         """
-        if client and client.vendor:
+        if client and client.is_vendor:
             vendor_path = os.path.join('apps/email/templates', client.name,
                                        path)
             if os.path.exists(vendor_path):

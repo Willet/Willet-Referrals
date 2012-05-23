@@ -183,7 +183,7 @@ class AskDynamicLoader(URIHandler):
 
         # see which template we should we using.
         try:
-            if app.client and app.client.vendor:
+            if app.client and app.client.is_vendor:
                 vendor = app.client.name
         except (NameError, AttributeError):
             pass  # not a vendor
@@ -366,7 +366,7 @@ class VoteDynamicLoader(URIHandler):
 
         # see which template we should we using.
         try:
-            if app.client and app.client.vendor:
+            if app.client and app.client.is_vendor:
                 vendor = app.client.name
         except NameError, AttributeError:
             pass  # not a vendor
@@ -375,7 +375,8 @@ class VoteDynamicLoader(URIHandler):
         user = User.get(self.request.get('user_uuid')) or \
                User.get_or_create_by_cookie(self, app)
 
-        name = instance.asker.get_full_name()
+        if instance.asker:
+            name = instance.asker.get_full_name()
 
         if not link:
             link = instance.link
@@ -969,7 +970,7 @@ class SIBTServeScript(URIHandler):
             app_css = ''  # it was not a SIBTShopify
 
         # see if we should run this script as a vendor.
-        vendor_name = getattr(client, 'name', '') if client.vendor else ''
+        vendor_name = getattr(client, 'name', '') if client.is_vendor else ''
 
         # indent like this: http://stackoverflow.com/questions/6388187
         template_values = {
