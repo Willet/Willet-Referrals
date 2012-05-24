@@ -709,24 +709,6 @@ class ShowOnUnloadHook(URIHandler):
         return
 
 
-class SIBTGetUseCount (URIHandler):
-    """Outputs the number of times the SIBT app has been used.
-
-    This handler is GET-only. All other methods raise NotImplementedError.
-    """
-    def get(self):
-        """Returns number of button loads divided by 100."""
-        try:
-            product_uuid = self.request.get ('product_uuid')
-            button_use_count = memcache.get ("usecount-%s" % product_uuid)
-            if button_use_count is None:
-                button_use_count = int (SIBTShowingButton.all().count() / 100)
-                memcache.add ("usecount-%s" % product_uuid, button_use_count)
-            self.response.out.write (str (button_use_count))
-        except:
-            self.response.out.write ('0') # no shame in that?
-
-
 class SIBTServeScript(URIHandler):
     """Serves a script that shows the SIBT button.
 
