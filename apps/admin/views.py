@@ -454,25 +454,6 @@ class ShowClickActions(URIHandler):
         self.response.out.write(self.render_page('action_stats.html', template_values))
 
 
-class FBConnectStats(URIHandler):
-    def get(self):
-        no_connect = SIBTNoConnectFBDialog.all().count()
-        connect = SIBTConnectFBDialog.all().count()
-
-        instance_connect = SIBTInstanceCreated.all().filter('medium =', "ConnectFB").count()
-        instance_noconnect = SIBTInstanceCreated.all().filter('medium =', "NoConnectFB").count()
-
-        html = "<h2> Opportunity Counts </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % no_connect
-        html += "<p>Connect Dialog: %d</p>" % connect
-
-        html += "<h2> Instances </h2>"
-        html += "<p>No Connect Dialog: %d</p>" % instance_noconnect
-        html += "<p>Connect Dialog: %d</p>" % instance_connect
-
-        self.response.out.write(html)
-
-
 class ReloadURIS(URIHandler):
     def get(self):
         if self.request.get('all'):
