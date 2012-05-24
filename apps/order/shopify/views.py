@@ -23,14 +23,14 @@ from util.urihandler import URIHandler
 class OrderJSLoader(URIHandler):
     """When requested serves a plugin that will contain various functionality
        for sharing information about a purchase just made by one of our clients"""
-    
+
     def get(self):
         user = User.get_by_cookie(self)
-        
+
         # Grab shop URL from params
         shop_url = self.request.get('shop')
         if shop_url[:7] != 'http://':
-            shop_url = 'http://%s' % shop_url 
+            shop_url = 'http://%s' % shop_url
 
         # Grab Shopify Store
         client = ClientShopify.get_by_url(shop_url)
@@ -44,9 +44,9 @@ class OrderJSLoader(URIHandler):
 
         # Finally, render the JS!
         path = os.path.join('apps/order/templates/', 'order.js')
-        
+
         self.response.headers.add_header('P3P', 'CP="NOI DSP LAW DEVo IVDo OUR STP ONL PRE NAV"')
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
-        
+
         return

@@ -95,20 +95,20 @@ indexes:
   - name: class
   - name: is_admin
   - name: created
-  
+
 - kind: Action
   properties:
   - name: user
   - name: created
     direction: desc
-    
+
 - kind: Action
   properties:
   - name: user
   - name: what
   - name: created
     direction: desc
-    
+
 - kind: Action
   properties:
   - name: what
@@ -121,20 +121,19 @@ indexes:
   - name: what
   - name: created
 
-- kind: WOSIBInstance
-  properties:
-  - name: is_live
-  - name: end_datetime
-
-- kind: WOSIBInstance
-  properties:
-  - name: asker
-  - name: app_
-  - name: created
-    direction: desc
-
 - kind: SharePeriod
   properties:
   - name: app_uuid
   - name: end
     direction: desc
+
+- kind: DiscountCode
+  properties:
+  - name: code
+  - name: client
+  - name: used
+
+- kind: DiscountCode
+  properties:
+  - name: client
+  - name: used

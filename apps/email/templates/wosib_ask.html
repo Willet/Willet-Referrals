@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Which one should I buy?{% endblock %}
+{% block title %}Can I get your advice?{% endblock %}
 
 {% block content %}
     <table border="0" cellpadding="10" cellspacing="0" width="100%">
@@ -20,15 +20,32 @@
                 <div style="font-size:110%; margin-left: 50px;">
                     <p> Hi {{ to_first_name }}, </p>
                     <p>{{ message }}</p>
-                    <p><a href="{{ vote_url }}">Click here to provide advice</a></p>
+                    <table cellspacing="0"
+                           cellpadding="0"
+                           style="border-collapse:collapse">
+                        <tbody>
+                            <tr>
+                                <td style="padding:5px;
+                                           background-color:#fff9d7;
+                                           border-left:1px solid #eecc22;
+                                           border-right:1px solid #eecc22;
+                                           border-top:1px solid #eecc22;
+                                           border-bottom:1px solid #eecc22">
+                                    <a href="{{ vote_url }}"
+                                       style="color:#336699;"
+                                       target="_blank">Click here to provide advice</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <div style="clear:both;"></div>
                     <p>Thanks,</p>
                     <p>{{ from_first_name }}</p>
-				</div>
+                </div>
                 <div>
                     <p style="font-size: 10px; margin-bottom: 0px; margin-top: 40px;">Email sent from <a href="http://willetinc.com">Willet</a> on behalf of <a href="{{ client_domain }}">{{ client_name }}</a>.</p>
                 </div>
-			</td>
+            </td>
         </tr>
     </table>
 {% endblock %}

@@ -20,7 +20,7 @@ from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
-from apps.action.models import ScriptLoadAction
+# from apps.action.models import ScriptLoadAction
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
@@ -40,8 +40,9 @@ from util.memcache_bucket_config import MemcacheBucketConfig
 
 
 class Admin(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         links = Link.all()
         str = " Bad Links "
         for l in links:
@@ -116,7 +117,7 @@ class ManageApps(URIHandler):
                 logging.warn('Error adding app: %s' % e, exc_info=True)
         return apps
 
-    @admin_required
+    #@admin_required
     def get(self, client=None):
         template_values = {
             'apps': self.get_app_list()
@@ -128,7 +129,7 @@ class ManageApps(URIHandler):
             )
         )
 
-    @admin_required
+    #@admin_required
     def post(self, admin=None):
         """ does a predefined list of actions on apps."""
         app_id = self.request.get('app_id')
@@ -287,8 +288,9 @@ class SIBTInstanceStats(URIHandler):
 
 
 class ShowActions(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         template_values = {}
 
         self.response.out.write(self.render_page(
@@ -299,8 +301,9 @@ class ShowActions(URIHandler):
 
 
 class GetActionsSince(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         """This is going to fetch actions since a datetime"""
         since = self.request.get('since')
         before = self.request.get('before')
@@ -353,8 +356,9 @@ class GetActionsSince(URIHandler):
 
 
 class ShowClickActions(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         things = {
             'tb': {
                 'action': 'SIBTUserClickedTopBarAsk',
@@ -489,8 +493,9 @@ class CheckMBC(URIHandler):
     """ /admin/check_mbc displays the current number of "memcache buckets".
         /admin/check_mbc?num=50 sets the number of memcache buckets to 50.
         Default seems to be 20 or 25. """
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         num = self.request.get('num')
         if num:
@@ -501,8 +506,9 @@ class CheckMBC(URIHandler):
 
 
 class ShowMemcacheConsole(URIHandler):
-    @admin_required
-    def post(self, admin):
+    #@admin_required
+    #def post(self, admin):
+    def post(self):
         key = self.request.get('key')
         value = None
         clear_value = self.request.get('clear')
@@ -536,8 +542,9 @@ class ShowMemcacheConsole(URIHandler):
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(data))
 
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         self.response.out.write(self.render_page(
                 'memcache_console.html', {},
             )
@@ -572,8 +579,9 @@ class ShowCounts(URIHandler):
 
 
 class ShowAnalytics(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
 
         template_values = {
             'actions': actions_to_count,
@@ -598,8 +606,9 @@ class ShowAppAnalytics(URIHandler):
 
 
 class AppAnalyticsCompare(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         template_values = {
             'actions': actions_to_count,
             'app': ''
@@ -613,14 +622,16 @@ class EmailEveryone (URIHandler):
     # TODO: change mass_mail_client.html to call EmailBatch instead of post
     # TODO: change EmailBatch request into BatchRequest
     """ Task Queue-based blast email URL. """
-    @admin_required
-    def get (self, admin):
+    #@admin_required
+    #def get (self, admin):
+    def get (self):
         # render the mail client
         template_values = {}
         self.response.out.write(self.render_page('mass_mail_client.html', template_values))
 
-    @admin_required
-    def post (self, admin):
+    #@admin_required
+    #def post (self, admin):
+    def post (self):
         batch_size = 100
         full_name = ''
 
@@ -655,3 +666,44 @@ class EmailEveryone (URIHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.out.write ("%r" % all_emails)
         return
+
+
+class RealFetch(URIHandler):
+    """Can't find what you want? Use RealFetch to scrape the entire DB!"""
+    def get(self):
+        """In your query string, do ?kind=App
+                                    &field1=something
+                                    &field2=some_other
+        to search for Apps with field1 equal to 'something'
+        and field2 equal to 'some_other' at the same time.
+
+        Criteria stack.
+
+        This view costs a lot of reads. Do not use unless you really want to
+        confirm something really exists.
+        """
+        criteria = {}
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        try:
+            kind = globals()[self.request.get('kind')]
+            kind_objs = db.Query(kind)
+        except:
+            # if kind isn't a Kind, those lines will certainly blow up
+            return
+
+        # get {'field1': 'something', ...} for all non-empty values
+        for c in self.request.arguments():
+            if self.request.get(c):
+                criteria[c] = self.request.get(c)
+        del(criteria['kind'])
+
+        self.response.out.write ('%r\n' % criteria)
+
+        for obj in kind_objs:
+            for criterion in criteria.keys():
+                if getattr(obj, criterion, None) != criteria[criterion]:
+                    continue  # this item fails
+            # this item passes
+            self.response.out.write ('[%s] %r\n' % (getattr(obj,'uuid', '???'),
+                                                    obj))
