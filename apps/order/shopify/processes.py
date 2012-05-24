@@ -3,21 +3,13 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import hashlib
 import logging
 
-from django.utils import simplejson as json
-from google.appengine.api import urlfetch
-
-from apps.app.models import App
 from apps.client.models import Client
-from apps.client.shopify.models import ClientShopify
 from apps.order.shopify.models import OrderShopify
 from apps.product.shopify.models import ProductShopify
 from apps.user.models import User
 
-from util import httplib2
-from util.helpers import *
 from util.urihandler import URIHandler
 
 class CreateShopifyOrder(URIHandler):
@@ -65,3 +57,11 @@ class CreateShopifyOrder(URIHandler):
                         accepts_marketing = marketing)
         else:
             logging.warn('NO USER: ')
+
+
+class OrderIframeNotification(URIHandler):
+    """ When order.js is loaded on a confirmation page, it'll
+        notify us here so that we can score a sale for this User"""
+
+    def get(self):
+        return # some sort of deprecation
