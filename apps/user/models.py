@@ -25,7 +25,6 @@ from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 from apps.email.models import Email
-from apps.user.actions import UserCreate
 
 from util.consts import ADMIN_EMAILS
 from util.consts import ADMIN_IPS
@@ -360,8 +359,6 @@ class User(db.Expando):
         user = cls(key_name=uuid, uuid=uuid)
         user.put_later()
 
-        UserCreate.create(user, app) # Store User creation action
-
         return user
 
     @classmethod
@@ -382,9 +379,6 @@ class User(db.Expando):
         # Store email
         EmailModel.create(user, email)
 
-        # Store User creation action
-        UserCreate.create(user, app)
-
         # Query the SocialGraphAPI
         taskqueue.add(queue_name='socialAPI',
                        url='/socialGraphAPI',
@@ -400,9 +394,6 @@ class User(db.Expando):
         user.put() # cannot put_later() here; app creation relies on merchant
 
         EmailModel.create(user, email) # Store email
-
-        if app:  # optional, really
-            UserCreate.create(user, app) # Store User creation action
 
         return user
 

@@ -23,7 +23,7 @@ from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserCreate, UserIsFBLoggedIn
+from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models import User
 from apps.wosib.actions import *
 
@@ -796,9 +796,6 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     app = SIBT.get_or_create(client=client, domain=domain)
     if not client:
         return (False, 'wtf, no app?')
-
-    # put back the UserAction that we skipped making
-    UserCreate.create(user, app)
 
     template_values = {'app': app,
                        'URL': URL,
