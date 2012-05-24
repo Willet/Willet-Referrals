@@ -51,7 +51,7 @@ class AskDynamicLoader(URIHandler):
     for sharing information about a purchase just made by one of our clients
     """
 
-    @obtain('app_uuid', 'instance_uuid', 'user_uuid')  # experimental
+    @obtain('app_uuid', 'instance_uuid', 'user_uuid')
     def get(self, app_uuid, instance_uuid, user_uuid):
         """Shows the SIBT Ask page. Also used by SIBTShopify.
 
