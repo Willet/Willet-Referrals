@@ -71,3 +71,37 @@ def get_url_variants(domain, keep_path=True):
     if not (domain and www_domain):
         raise ValueError('Not sure why, but not all arguments were processed')
     return (domain, www_domain)
+
+
+def sibt_instance(*args, **kwargs):
+    """Returns a parameterized decorator that retrieves a SIBTInstance.
+
+    Example usage:
+    @sibt_instance(param='instance_uuid')  # tries to get instance by
+                                           # self.request.get(instance_uuid)
+
+    Possible kwargs to this decorator:
+    - param (the parameter in the URL or POST request)
+    - default (the default for default is None)
+    """
+    dec_args = args  # preserve internal references
+    dec_kwargs = kwargs
+    def func_decorator(original_function):
+        """Executes func_wrapper(original_function)."""
+        def func_wrapper(*args, **kwargs):
+            """Returns a function with me wrapped around it."""
+            from apps.sibt.models import SIBTInstance
+
+            param = dec_kwargs.get('param', 'instance_uuid')
+            default = dec_kwargs.get('default', None)
+            req = args[0].request  # the RequestHandler (or URIHandler)
+
+            if 'instance' not in kwargs:  # override only if it didn't exist
+                kwargs['instance'] = SIBTInstance.get(req.get(param))
+
+            if 'instance' not in kwargs:  # if it's still not there...
+                kwargs['instance'] = default
+
+            return original_function(*args, **kwargs)
+        return func_wrapper  # pretend nothing happened
+    return func_decorator
