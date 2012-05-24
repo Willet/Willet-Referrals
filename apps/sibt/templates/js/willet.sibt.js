@@ -333,8 +333,10 @@ _willet.sibt = (function (me) {
                                 "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent"),
                 'width': '92px',
                 'height': '24px',
+                'margin-top': '3px',
                 'cursor': 'pointer',
-                'display': 'inline-block'
+                'display': 'block',
+                'clear': 'both'
             })
             .click(me.button_onclick);
 
