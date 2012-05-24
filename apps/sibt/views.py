@@ -915,7 +915,7 @@ class SIBTServeScript(URIHandler):
         # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
-        if instance and user:
+        if instance and instance.asker and user:
             is_live = instance.is_live
             event = 'SIBTShowingResults'
 
