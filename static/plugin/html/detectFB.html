@@ -58,7 +58,7 @@
             // Nick's Test App: 119776401486297
             var appId = (DEBUG) ? '119776401486297' : '132803916820614';
 
-            FB.init({ appId:'119776401486297', status:true, cookie:true, xfbml:true});
+            FB.init({ appId: appId, status:true, cookie:true, xfbml:true});
             FB.getLoginStatus(function(response){
                 var status = response.status != "unknown";
                 sendMessage({
