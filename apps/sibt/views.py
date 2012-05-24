@@ -32,7 +32,7 @@ from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
 from util.shopify_helpers import get_shopify_url
-from util.urihandler import URIHandler
+from util.urihandler import obtain, URIHandler
 
 
 class ShowBetaPage(URIHandler):
@@ -51,7 +51,8 @@ class AskDynamicLoader(URIHandler):
     for sharing information about a purchase just made by one of our clients
     """
 
-    def get(self):
+    @obtain('app_uuid', 'instance_uuid', 'user_uuid')
+    def get(self, app_uuid, instance_uuid, user_uuid):
         """Shows the SIBT Ask page. Also used by SIBTShopify.
 
         params:
@@ -61,8 +62,6 @@ class AskDynamicLoader(URIHandler):
 
             user_uuid (optional)
         """
-        app_uuid = self.request.get('app_uuid')
-        instance_uuid = self.request.get('instance_uuid')
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
@@ -79,7 +78,7 @@ class AskDynamicLoader(URIHandler):
         vendor = self.request.get('vendor', '')  # changes template used
 
         # We should absolutely have a user here, but they could have blocked their cookies
-        user = User.get(self.request.get('user_uuid'))
+        user = User.get(user_uuid)
         user_found = hasattr(user, 'fb_access_token')
         user_is_admin = user.is_admin() if isinstance(user , User) else False
 
@@ -352,7 +351,7 @@ class VoteDynamicLoader(URIHandler):
             return instance  # could be none
 
         instance = get_instance()
-        if not instance:
+        if not instance or not instance.is_live:
             # We can't find the instance, so let's assume the vote is over
             self.response.out.write("This vote is now over.")
             return
@@ -915,7 +914,7 @@ class SIBTServeScript(URIHandler):
         # If we have an instance, figure out if
         # a) Is User asker?
         # b) Has this User voted?
-        if instance and user:
+        if instance and instance.asker and user:
             is_live = instance.is_live
             event = 'SIBTShowingResults'
 

@@ -6,6 +6,8 @@ __copyright__ = "Copyright 2011, Willet, Inc"
 import logging
 import datetime
 
+from google.appengine.ext import db
+
 from apps.app.models import *
 from apps.client.shopify.models import ClientShopify
 from apps.email.models import Email
@@ -33,31 +35,34 @@ class DoUninstalledApp(URIHandler):
 
         # "Delete" the App
         apps = client.apps
-        for app in apps:
-            if app.class_name() == app_class_name:
-                # put client aside to keep record
-                # (None client means "not installed")
-                try:
-                    duration = (datetime.datetime.utcnow() - app.created).days
-                except:
-                    logging.error("Could not create install duration", exc_info=True)
-                    pass
+        try:
+            for app in apps:
+                if app.class_name() == app_class_name:
+                    # put client aside to keep record
+                    # (None client means "not installed")
+                    try:
+                        duration = (datetime.datetime.utcnow() - app.created).days
+                    except:
+                        logging.error("Could not create install duration", exc_info=True)
+                        pass
 
-                if hasattr(app, 'recurring_billing_status'):
-                    app.recurring_billing_status = 'none'
-                if hasattr(app, 'recurring_billing_id'):
-                    app.recurring_billing_id = 0
-                if hasattr(app, 'recurring_billing_price'):
-                    price = app.recurring_billing_price or 'n/a'
-                    app.recurring_billing_price = ''
+                    if hasattr(app, 'recurring_billing_status'):
+                        app.recurring_billing_status = 'none'
+                    if hasattr(app, 'recurring_billing_id'):
+                        app.recurring_billing_id = 0
+                    if hasattr(app, 'recurring_billing_price'):
+                        price = app.recurring_billing_price or 'n/a'
+                        app.recurring_billing_price = ''
 
-                app.old_client = client
-                app.client = None
-                app.billing_enabled = False
-                app.put_later()
+                    app.old_client = client
+                    app.client = None
+                    app.billing_enabled = False
+                    app.put_later()
 
-                uninstalled_apps_count += 1
-        
+                    uninstalled_apps_count += 1
+        except db.KindError:
+            logging.warn('App of this kind no longer exists! Ignoring.')
+
         if uninstalled_apps_count:
             # Stop sending email updates
             if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
@@ -85,5 +90,5 @@ class DoUninstalledApp(URIHandler):
                 # nothing bad happened to our webhooks
         else:
             logging.warn('No apps uninstalled! (Are they in DB?)')
-        
+
         return

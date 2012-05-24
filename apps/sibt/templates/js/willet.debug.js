@@ -36,6 +36,9 @@ _willet.debug = (function (me) {
         };
     }
 
+    // found this gem that Twitter uses:
+    // window.console||function(){var a=["log","debug","info","warn","error","assert","dir","dirxml","group","groupEnd","time","timeEnd","count","trace","profile","profileEnd"];window.console={};for(var b=0;b<a.length;++b)window.console[a[b]]=function(){}}();
+
     me.register = me.register || function(callback) {
         // Register a callback to fire when debug.set is called
         callbacks.push(callback);

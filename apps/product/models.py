@@ -16,7 +16,7 @@ class Product(Model, db.polymodel.PolyModel):
     client = db.ReferenceProperty(Client, collection_name='products')
     description = db.TextProperty()
     images = db.StringListProperty()  # list of urls to images
-    price = db.FloatProperty(default=float(0))
+    price = db.FloatProperty(default=0.0)
 
     # product page url & main lookup key
     resource_url = db.StringProperty(default="")
@@ -33,7 +33,9 @@ class Product(Model, db.polymodel.PolyModel):
         super(Product, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
-        return True
+        """Do some cleanup before saving."""
+        self.title = self.title.strip()
+        self.description = self.description.strip()
 
     @classmethod
     def _get_memcache_key (cls, unique_identifier):
