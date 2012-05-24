@@ -51,7 +51,7 @@ class AskDynamicLoader(URIHandler):
     for sharing information about a purchase just made by one of our clients
     """
 
-    @obtain('app_uuid', 'instance_uuid', 'user_uuid')
+    @obtain('app_uuid', 'instance_uuid', 'user_uuid')  # experimental
     def get(self, app_uuid, instance_uuid, user_uuid):
         """Shows the SIBT Ask page. Also used by SIBTShopify.
 
@@ -62,7 +62,6 @@ class AskDynamicLoader(URIHandler):
 
             user_uuid (optional)
         """
-        logging.debug('instance=%r' % instance)
         fb_app_id = SHOPIFY_APPS['SIBTShopify']['facebook']['app_id']
         incentive_enabled = False
         origin_domain = os.environ.get('HTTP_REFERER', 'UNKNOWN')
@@ -352,7 +351,7 @@ class VoteDynamicLoader(URIHandler):
             return instance  # could be none
 
         instance = get_instance()
-        if not instance:
+        if not instance or not instance.is_live:
             # We can't find the instance, so let's assume the vote is over
             self.response.out.write("This vote is now over.")
             return

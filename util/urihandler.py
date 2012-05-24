@@ -120,7 +120,7 @@ class URIHandler(webapp.RequestHandler):
 # end class
 
 
-def obtain(variables):
+def obtain(*args):
     """Given a list of requested parameters, supply the parent function with
     there values unpacked as a keyword argument.
 
@@ -136,7 +136,6 @@ def obtain(variables):
         ...
     """
     dec_args = args  # preserve internal references
-    dec_kwargs = kwargs
     def func_decorator(original_function):
         """Executes func_wrapper(original_function)."""
         def func_wrapper(*args, **kwargs):
@@ -150,6 +149,8 @@ def obtain(variables):
                     (key, default) = (arg, None)
 
                 if key not in kwargs:  # override only if it didn't exist
+                    logging.debug('adding key %s into the original '
+                                  'function parameter.' % key)
                     kwargs[key] = req.get(key, default)
 
             return original_function(*args, **kwargs)
