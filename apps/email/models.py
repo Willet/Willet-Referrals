@@ -229,7 +229,12 @@ class Email():
                          'not emailing on behalf of it.')
             return  # client uninstalled
 
+        if not instance.asker:
+            logging.warn('The deuce? Instance has no asker.')
+            return  # no need to email anyone
+
         to_addr = instance.asker.get_attr('email')
+
         if not to_addr:
             logging.warn('asker has no email; '
                          'not emailing him/her/it.')
@@ -268,6 +273,10 @@ class Email():
             logging.warn('client uninstalled app; '
                          'not emailing on behalf of it.')
             return  # client uninstalled
+
+        if not instance.asker:
+            logging.warn('The deuce? Instance has no asker.')
+            return  # no need to email anyone
 
         to_addr = instance.asker.get_attr('email')
         if not to_addr:
@@ -370,36 +379,6 @@ class Email():
                                 'client_name': client.name,
                                 'client_domain': client.domain})
 
-        Email.send_email(from_address=FROM_ADDR,
-                         to_address=to_addr,
-                         subject=subject,
-                         body=body,
-                         to_name=name)
-
-    @staticmethod
-    def WOSIBVoteCompletion(name, products, client=None):
-        to_addr = instance.asker.get_attr('email')
-        if not to_addr:
-            return  # no one to email
-
-        name = instance.asker.get_full_name() or "Savvy Shopper"
-        subject = '%s, the votes are in!' % name
-
-        # would have been much more elegant had django 0.96 gotten the
-        # {% if array|length > 1 %} notation (it doesn't work in GAE)
-        products = instance.get_winning_products()
-        product = products[0]
-        if len (products) == 1:
-            products = False
-
-        body = template.render(
-            Email.template_path('wosib_voteCompletion.html', client), {
-                'name': name,
-                'products': products,
-                'product' : product
-        })
-
-        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
