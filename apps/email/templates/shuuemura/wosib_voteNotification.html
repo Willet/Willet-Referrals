@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}A Friend Voted!{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:110%">
+                    <p> Hi {{name}}, </p>
+                    <p>
+                        {% if product %}
+                        Your friend recommends getting <b>{{ product.title }}</b>.
+                        {% else %}
+                        Your friend voted for one of your products.
+                        {% endif %}
+                    </p>
+                    <table cellspacing="0"
+                           cellpadding="0"
+                           style="border-collapse:collapse">
+                        <tbody>
+                            <tr>
+                                <td style="padding:5px;
+                                           background-color:#fff9d7;
+                                           border-left:1px solid #eecc22;
+                                           border-right:1px solid #eecc22;
+                                           border-top:1px solid #eecc22;
+                                           border-bottom:1px solid #eecc22">
+                                    <a href="{{cart_url}}"
+                                       style="color:#336699;"
+                                       target="_blank">Go back to the shop</a>
+                                    {% if product %}
+                                    to get it!
+                                    {% else %}
+                                    and check which one it is!
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

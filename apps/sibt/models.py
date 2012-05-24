@@ -23,7 +23,6 @@ from apps.product.models import Product
 from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
 from apps.user.models import User
 from apps.vote.models import VoteCounter
-from apps.wosib.models import WOSIB
 
 from util.consts import *
 from util.helpers import generate_uuid
@@ -154,8 +153,8 @@ class SIBT(App):
         urihandler.redirect('%s#code=%s' % (link.target_url,
                                             link.willt_url_code))
 
-    def create_instance(self, user, end, link, img="",
-                        motivation=None, dialog="", products=None):
+    def create_instance(self, user, end, link, dialog="", img="",
+                        motivation=None, sharing_message="", products=None):
         """SIBT2: products supersedes img."""
         logging.info("Making a SIBT instance (dialog = %s)" % dialog)
         # Make the properties
@@ -176,6 +175,7 @@ class SIBT(App):
                                 product_img=img or product_img,
                                 products=products,
                                 motivation=motivation,
+                                sharing_message=sharing_message,
                                 url=link.target_url)
         # set end if None
         if end == None:
@@ -194,7 +194,7 @@ class SIBT(App):
             bingo('sibt_share_text3')
 
         # "if it is a non-admin share on live server"
-        if not user.is_admin() and not APP_LIVE_DEBUG:
+        if not user.is_admin() and not USING_DEV_SERVER:
             try:
                 Email.emailDevTeam("""
                     SIBT INSTANCE:<br />
@@ -235,6 +235,12 @@ class SIBTInstance(Model):
     # the users motivation for sharing (unknown use / deprecated)
     motivation = db.StringProperty(default="")
 
+    # records the message with which this instance was shared.
+    # if FBNoConnect (i.e. we can't capture the message),
+    # then this property is empty.
+    # sharing_message cannot exceed 1000 characters.
+    sharing_message = db.StringProperty(required=False, default="")
+
     # Datetime when this model was put into the DB
     created = db.DateTimeProperty(auto_now_add=True)
 
@@ -269,6 +275,8 @@ class SIBTInstance(Model):
         super(SIBTInstance, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
+        if len(self.sharing_message) > 1000:
+            raise ValueError('Sharing message is too long')
         return True
 
     @staticmethod

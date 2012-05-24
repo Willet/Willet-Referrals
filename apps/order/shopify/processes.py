@@ -65,7 +65,7 @@ class CreateShopifyOrder(URIHandler):
                         email = email,
                         accepts_marketing = marketing)
         else:
-            logging.error('NO USER: ')
+            logging.warn('NO USER: ')
 
 
 
@@ -215,7 +215,7 @@ class OrderWebhookNotification(URIHandler):
                             ip = ip,
                             accepts_marketing = accepts_marketing)
             else:
-                logging.error('NO USER: %s' % token)
+                logging.warn('NO USER: %s' % token)
 
             if o == None:
                 # Make the Order

@@ -328,6 +328,9 @@ class User(db.Expando):
     @classmethod
     def get_by_email(cls, email):
         # TODO: Reduce exception handler to expected error
+        if not email:
+            return None
+
         logging.info("Getting %s by email: %s" % (cls, email))
         email_model = EmailModel.all().filter('address = ', email).get()
         try:
@@ -394,11 +397,12 @@ class User(db.Expando):
     def create_by_email(cls, email, app):
         """Create a new User object with the given attributes"""
         user = cls(key_name=email, uuid=generate_uuid(16))
-        logging.info("Putting later: %s %s" % (user.uuid, user.key()))
         user.put() # cannot put_later() here; app creation relies on merchant
 
         EmailModel.create(user, email) # Store email
-        UserCreate.create(user, app) # Store User creation action
+
+        if app:  # optional, really
+            UserCreate.create(user, app) # Store User creation action
 
         return user
 
@@ -456,11 +460,11 @@ class User(db.Expando):
         user = cls.get_by_cookie(request_handler)
 
         # Then find via email
-        if user is None:
+        if not user:
             user = cls.get_by_email(email)
 
         # Otherwise, make a new one
-        if user is None:
+        if not user:
             logging.info("Creating %s: %s" % (cls, email))
             user = cls.create_by_email(email, app)
 
@@ -687,7 +691,7 @@ class User(db.Expando):
                     self.ips = [ kwargs['ip'] ]
 
             elif kwargs[k] != '' and kwargs[k] != None and kwargs[k] != []:
-                #logging.info("Adding %s %s" % (k, kwargs[k]))
+                logging.info("Adding %s %s" % (k, kwargs[k]))
                 setattr(self, k, kwargs[k])
         self.put_later()
 

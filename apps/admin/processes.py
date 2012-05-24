@@ -324,8 +324,9 @@ class GenerateOlderHourPeriods(URIHandler):
 
 
 class AnalyticsRPC(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
 

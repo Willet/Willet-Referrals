@@ -22,6 +22,7 @@ from util.consts import *
 from util.helpers import generate_uuid
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.shopify_helpers import get_url_variants
 
 NUM_SHARE_SHARDS = 15
 
@@ -89,6 +90,22 @@ class App(Model, polymodel.PolyModel):
     @classmethod
     def get_by_client(cls, client):
         return cls.all().filter('client =', client).get()
+
+    @classmethod
+    def get_by_url(cls, store_url):
+        """Fetch an app via the store's url. This app can be of any type,
+        and of any subclass. Use subclass-specific get_by_url functions
+        to obtain more precise targets.
+        """
+        (url, www_url) = get_url_variants(store_url, keep_path=False)
+
+        logging.info("Looking for App in %s" % url)
+        app = cls.all().filter('store_url IN', [url, www_url]).get()
+        if app:
+            return app
+
+        app = cls.all().filter('extra_url IN', [url, www_url]).get()
+        return app
 
     # Counters ----------------------------------------------------------------
     def count_clicks(self):

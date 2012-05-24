@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <!-- Favicon -->
+        <link rel='icon' type='image/vnd.microsoft.icon' href='/static/imgs/favicon.ico' />
+        <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" />
+        <link href="/static/sibt/css/shuuemura.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript">
+            if (typeof jQuery == 'undefined') {
+                var script= document.createElement('script');
+                script.type= 'text/javascript';
+                script.src= '/static/js/jquery.min.js';
+                document.appendChild(script);
+            }
+            {% block head_script %}{% endblock %}
+        </script>
+        <title>Ask a Friend | Shu Uemura</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="header">
+                <img class="vendor_logo"
+                     src="/static/sibt/imgs/sibt-shu-logo.png"
+                     width="226"
+                     height="29" />
+            </div>
+            <div id="asker_bar">
+                <div class="blob">
+                    <div class="title">
+                    {% if asker_pic %}
+                        <img align="left" src="{{ asker_pic }}" />
+                    {% endif %}
+                    {{asker_name}} asks:</div>
+                    <div id="sharing_message">
+                        {{ instance.sharing_message|default:"I like this, but..." }}
+                    </div>
+                </div>
+                {% block left_screens %}{% endblock left_screens %}
+                <div id="error_message" class="hidden">Something went wrong, and your vote was not counted! <br />
+                    Sorry! Please <a href="mailto:support@getwillet.com">tell us</a> about it.
+                </div>
+                <div id="share_again">
+                    Invite a friend to vote:
+                    <input style="width: 245px" type="text"
+                            readonly="readonly" value="{{ share_url }}" />
+                </div>
+            </div>
+            <div id="main_content" class="slight-highlight">
+                {% block right_screens %}{% endblock right_screens %}
+                <div id="discount_screen" class="hidden">
+                    <h2>Thank you for helping {{asker_name}}.</h2>
+                    <div id="discount_gettest">
+                        <p style="margin-top:24px;">Here is a discount code for you! You can enjoy this discount on our website.</p>
+                        <input id="discount_code" type="text" />
+                    </div>
+                    <p style="margin-top:24px;">
+                        <a href="http://shuuemura-usa.com">Continue Shopping</a>
+                    </p>
+                </div>
+            </div>
+            <script type="text/javascript">
+                {% block body_script %}{% endblock %}
+
+                window.fbAsyncInit = function() {
+                    // see: http://stackoverflow.com/questions/7655352/facebook-comment-fbcomment-returning-https-content-when-called-over-http
+                    FB.init({
+                        appId: '{{FACEBOOK_APP_ID}}', // App ID
+                        //channelURL : '//WWW.YOUR_DOMAIN.COM/channel.html', // Channel File
+                        status: true, // check login status
+                        cookie: true, // enable cookies to allow the server to access the session
+                        oauth: true, // enable OAuth 2.0
+                        width: 375,
+                        xfbml: true  // parse XFBML
+                    });
+                };
+                var fbinit = function(d, s, id) {
+                    var js, fjs = d.getElementsByTagName(s)[0];
+                    if (d.getElementById(id)) {return;}
+                    js = d.createElement(s);
+                    js.id = id;
+                    js.async = true;
+                    js.src = "https://connect.facebook.net/en_US/all.js#xfbml=1";
+                    fjs.parentNode.insertBefore(js, fjs);
+                };
+            </script>
+        </div>
+        <!-- Google Analytics -->
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-23764505-9']);
+            _gaq.push(['_trackPageview']);
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </body>
+</html>

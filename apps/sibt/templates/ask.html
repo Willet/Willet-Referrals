@@ -19,7 +19,7 @@
             -->
             <div class="message" id="message">
                 <img alt="product" src="{{ product_images|first }}" />
-                <textarea id='shareText'>I like this, but...</textarea>
+                <textarea id='shareText' maxlength='1000'>I like this, but...</textarea>
                 <div class="detailed">Hint: detailed questions get better answers</div>
             </div>
             <div class="options">
@@ -68,31 +68,20 @@
 {% block ajax_methods %}
     // Sends analytic data point to server
     var storeAnalytics = function(evnt) {
-        var payload = {
-            evnt: evnt,
-            instance_uuid: '',
-            app_uuid: '{{ app_uuid }}',
-            user_uuid: '{{ user_uuid }}',
-            target_url: '{{ target_url }}'
-        };
-        $.ajax({
-            url      : "{{ URL }}{% url TrackSIBTUserAction %}",
-            dataType : 'json',
-            data     : payload,
-            type     : 'post',
-            success  : function (response) {
-                return;
-            }
-        });
+        _willet.mediator.fire('storeAnalytics', evnt);
     };
 
     // Initiates an instance of your app on the server
     var startPartialInstance = function() {
         // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-        var payload = { app_uuid     : "{{ app_uuid }}",
-                        user_uuid    : "{{ user_uuid }}",
-                        product_uuid : "{{ product_uuid }}",
-                        willt_code   : "{{ willt_code }}" };
+        storeAnalytics('SIBTStartPartialInstanceOnAskSingle');
+        var payload = {
+            app_uuid    : "{{ app_uuid }}",
+            user_uuid   : "{{ user_uuid }}",
+            product_uuid: "{{ product_uuid }}",
+          //products  : get_selected_objects(), // multi-product mode only
+            willt_code  : "{{ willt_code }}"
+        };
         $.ajax({
             url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
             type     : 'post',
