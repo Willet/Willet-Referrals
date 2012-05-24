@@ -5,8 +5,7 @@ Egads! You've made it all the way into the depths of the apps/ folder?!
 Here's a brief explanation of the apps in here. I make no promise that
 this README will be kept up-to-date after I leave!
 
- - action: We've built our own analytics code in-house. Good idea? Not
-           entirely sure yet!
+ - action: We've built our own analytics code in-house. It was a terrible idea.
 
            All analytics are stored as 'action' datapoints. The top-level, parent
            class Actions are all located in models.py.
@@ -20,11 +19,7 @@ this README will be kept up-to-date after I leave!
           Other admin pages (like memcache viewer, uri routers etc) are in views.py
           too.
 
- - analytics_backend: Once we've stored all the action (read: analytic) datapoints,
-                      we need to crawl and aggregate them to see how Users are
-                      engaging with our apps. All the crawling / aggregation is
-                      in here.
-
+ - analytics_backend: deprecated.
                       Written by: MrMCH
 
  - app: Each 'app' we develop for merchants will have some commonalities. These
@@ -74,8 +69,7 @@ this README will be kept up-to-date after I leave!
 
  - sibt: 'Should I Buy This' is our main app. There's all sorts of goodies in here!
 
- - user: People who visit a merchant's store are Users AND WE COOKIE THEM ALL AND
-         TRACK ALL THEIR ACTIONS ON A WEBSITE!
+ - user: People who visit a merchant's store are Users AND WE COOKIE THEM ALL!
 
          Users are the ones who interact with our apps and place purchases. We
          store as much information as we possibly can about them in this class.

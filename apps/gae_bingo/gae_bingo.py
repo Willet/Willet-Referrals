@@ -6,7 +6,6 @@ import time
 
 from google.appengine.api import memcache
 
-from apps.gae_bingo.actions import GaeBingoAlt
 from apps.gae_bingo import cookies
 
 from .cache import BingoCache, bingo_and_identity_cache
@@ -38,7 +37,7 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, c
                 if not locked:
                     # Lock looks available, try to take it with compare and set (expiration of 10 seconds)
                     got_lock = client.cas(lock_key, True, time=10)
-                
+
                 if not got_lock:
                     # If we didn't get it, wait a bit and try again
                     time.sleep(0.1)
@@ -61,7 +60,7 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, c
                     exp, alts = create_experiment_and_alternatives(
                                     unique_experiment_name,
                                     canonical_name,
-                                    alternative_params, 
+                                    alternative_params,
                                     conversion_name,
                                     conversion_type
                                    )
@@ -106,10 +105,6 @@ def ab_test(canonical_name, alternative_params = None, conversion_name = None, c
             # It shouldn't matter which experiment's alternative content we send back --
             # alternative N should be the same across all experiments w/ same canonical name.
             returned_content = alternative.content
-
-    # Barbara's Code
-    if user:
-        GaeBingoAlt.create(user, app, canonical_name, returned_content)
 
     return returned_content
 
