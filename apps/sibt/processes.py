@@ -23,7 +23,6 @@ from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserIsFBLoggedIn
 from apps.user.models import User
 from apps.wosib.actions import *
 
