@@ -1,32 +1,22 @@
 #!/usr/bin/env/python
 
-# Actions for SIBT
-# SIBTClickAction,
+"""Actions for SIBT."""
+
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import datetime
 import logging
 
 from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
-from apps.action.models import Action
-from apps.action.models import ClickAction
-from apps.action.models import ShowAction
-from apps.action.models import UserAction
-from apps.action.models import VoteAction
+from apps.action.models import ClickAction, ShowAction, VoteAction
 
-from apps.gae_bingo.gae_bingo import bingo
-from apps.product.models import Product
-
-from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
+from util.helpers import generate_uuid
 
-## ----------------------------------------------------------------------------
-## SIBTClickAction Subclass ---------------------------------------------------
-## ----------------------------------------------------------------------------
+
 class SIBTClickAction(ClickAction):
     """ Designates a 'click' action for a User on a SIBT instance.
         Currently used for 'Referral' and 'SIBT' Apps """
@@ -35,7 +25,7 @@ class SIBTClickAction(ClickAction):
                                          collection_name="click_actions")
 
     # URL that was clicked on
-    url = db.LinkProperty(indexed = True)
+    url = db.LinkProperty(indexed=True)
 
     def __str__(self):
         return 'SIBTCLICK: %s(%s) %s' % (self.user.get_full_name(),
@@ -47,31 +37,23 @@ class SIBTClickAction(ClickAction):
     def create(user, app, link):
         # Make the action
         uuid = generate_uuid(16)
-        action = SIBTClickAction(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                link = link,
-                url = link.target_url,
-                sibt_instance = link.sibt_instance.get()
-        )
-        #super(SIBTClickAction, act).create()
-
+        action = SIBTClickAction(key_name=uuid, uuid=uuid, user=user,
+                                 app_=app, link=link, url=link.target_url,
+                                 sibt_instance=link.sibt_instance.get())
         action.put()
 
         tracking_keys = memcache.get(action.get_tracking_key()) or []
         tracking_keys.append(action.get_key())
-        memcache.set(action.get_tracking_key(), tracking_keys, time=MEMCACHE_TIMEOUT)
+        memcache.set(action.get_tracking_key(), tracking_keys,
+                     time=MEMCACHE_TIMEOUT)
 
         return action
 
     ## Accessors
     @staticmethod
     def get_for_instance(app, user, url, key_list):
-        logging.debug('getting action for:\napp: %s\nuser: %s\nurl: %s\nkeys: %s' % (
-            app, user, url, key_list
-        ))
+        logging.debug('getting action for:\napp: %s\nuser: %s\n'
+                      'url: %s\nkeys: %s' % (app, user, url, key_list))
         model = None
         try:
             tracking = SIBTClickAction.get_tracking_by_user_and_app(user, app)
@@ -94,7 +76,8 @@ class SIBTClickAction(ClickAction):
                     .filter('sibt_instance IN', key_list)\
                     .get()
         except Exception, e:
-            logging.error('could not get model for instance: %s' % e, exc_info=True)
+            logging.error('could not get model for instance: %s' % e,
+                          exc_info=True)
         return model
 
     @staticmethod
@@ -111,26 +94,22 @@ class SIBTClickAction(ClickAction):
         return memcache.get(tracking_key) or []
 
     def get_tracking_key(self):
-        return '%s-%s-%s' % (
-            self.__class__.__name__,
-            self.app_.uuid,
-            self.user.uuid
-        )
+        return '%s-%s-%s' % (self.__class__.__name__, self.app_.uuid,
+                             self.user.uuid)
 
-## -----------------------------------------------------------------------------
-## SIBTVoteAction Subclass ----------------------------------------------------
-## -----------------------------------------------------------------------------
+
 class SIBTVoteAction(VoteAction):
     """ Designates a 'vote' action for a User on a SIBT instance.
         Currently used for 'SIBT' App """
 
-    sibt_instance = db.ReferenceProperty(db.Model, collection_name="vote_actions")
+    sibt_instance = db.ReferenceProperty(db.Model,
+                                         collection_name="vote_actions")
 
     # added if multi-product.
     product_uuid = db.StringProperty(indexed=True, required=False)
 
     # URL that was voted on
-    url = db.LinkProperty(indexed = True)
+    url = db.LinkProperty(indexed=True)
 
     ## Constructor
     @staticmethod
@@ -141,21 +120,18 @@ class SIBTVoteAction(VoteAction):
 
         try:
             # if vote is a product object (which is wrong)
-            product_uuid = product.uuid
+            product_uuid = vote.uuid
+            vote = 'yes'  # fix vote to be text, not object
             logging.debug('product_uuid = %s? Is it right?' % product_uuid)
         except:
             logging.debug('product_uuid = %s' % vote)
             product_uuid = vote  # if vote is UUID (which is expected)
 
-        action = SIBTVoteAction(key_name=uuid,
-                                uuid=uuid,
-                                user=user,
-                                app_=instance.app_,
-                                link=instance.link,
+        action = SIBTVoteAction(key_name=uuid, uuid=uuid, user=user,
+                                app_=instance.app_, link=instance.link,
                                 url=instance.link.target_url,
                                 product_uuid=product_uuid,
-                                sibt_instance=instance,
-                                vote=vote)
+                                sibt_instance=instance, vote=vote)
         action.put()
 
         # we memcache by classname-instance_uuid-user_uuid
@@ -215,7 +191,8 @@ class SIBTVoteAction(VoteAction):
                 .get()
 
 class SIBTShowAction(ShowAction):
-    sibt_instance = db.ReferenceProperty(db.Model, collection_name="show_actions")
+    sibt_instance = db.ReferenceProperty(db.Model,
+                                         collection_name="show_actions")
 
     ## Constructor
     @staticmethod
@@ -231,15 +208,9 @@ class SIBTShowAction(ShowAction):
             link = None
             url = ''
 
-        act = SIBTShowAction(key_name=uuid,
-                             uuid=uuid,
-                             user=user,
-                             app_=instance.app_,
-                             link=instance.link,
-                             url=instance.link.target_url,
-                             what=what,
+        act = SIBTShowAction(key_name=uuid, uuid=uuid, user=user, app_=app_,
+                             link=link, url=url, what=what,
                              sibt_instance=instance)
-        #super(SIBTShowAction, act).create()
         act.put()
         return act
 
@@ -269,6 +240,7 @@ class SIBTShowAction(ShowAction):
         return SIBTVoteAction.all().filter('app_ =', app)\
                                    .filter('sibt_instance =', instance).get()
 
+
 class SIBTShowingButton(ShowAction):
     @staticmethod
     def create(user, **kwargs):
@@ -282,18 +254,15 @@ class SIBTShowingButton(ShowAction):
 
         what = 'SIBTShowingButton'
         uuid = generate_uuid(16)
-        action = SIBTShowingButton(key_name=uuid,
-                                   uuid=uuid,
-                                   user=user,
-                                   app_=app,
-                                   what=what,
-                                   url=url)
+        action = SIBTShowingButton(key_name=uuid, uuid=uuid, user=user,
+                                   app_=app, what=what, url=url)
         action.put()
 
         # tracking urls for fast lookup
         tracking_urls = memcache.get(action.get_tracking_key()) or []
         tracking_urls.append(url)
-        memcache.set(action.get_tracking_key(), tracking_urls, time=MEMCACHE_TIMEOUT)
+        memcache.set(action.get_tracking_key(), tracking_urls,
+                     time=MEMCACHE_TIMEOUT)
         return action
 
     @classmethod
@@ -306,8 +275,5 @@ class SIBTShowingButton(ShowAction):
         return memcache.get(tracking_key) or []
 
     def get_tracking_key(self):
-        return '%s-%s-%s' % (
-            self.__class__.__name__,
-            self.app_.uuid,
-            self.user.uuid
-        )
+        return '%s-%s-%s' % (self.__class__.__name__, self.app_.uuid,
+                             self.user.uuid)
