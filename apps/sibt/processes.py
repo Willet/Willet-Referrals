@@ -70,9 +70,7 @@ class SIBTSignUp(URIHandler):
             self.error(400)  # malformed URL
             return
 
-        user = User.get_or_create_by_email(email=email,
-                                           request_handler=self,
-                                           app=None)  # for now
+        user = User.get_or_create_by_email(email=email, request_handler=self)
         if not user:
             logging.error('Could not get user for SIBT signup')
             self.error(500)  # did something wrong
@@ -766,8 +764,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     If previous user/client/app objects exist, they will be reused.
     """
     user = User.get_or_create_by_email(email=email,
-                                       request_handler=request_handler,
-                                       app=None)
+                                       request_handler=request_handler)
     if not user:
         return (False, 'wtf, no user?')
 

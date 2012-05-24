@@ -388,7 +388,7 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def create_by_email(cls, email, app):
+    def create_by_email(cls, email):
         """Create a new User object with the given attributes"""
         user = cls(key_name=email, uuid=generate_uuid(16))
         user.put() # cannot put_later() here; app creation relies on merchant
@@ -443,7 +443,7 @@ class User(db.Expando):
         return user
 
     @classmethod
-    def get_or_create_by_email(cls, email, request_handler, app):
+    def get_or_create_by_email(cls, email, request_handler):
         """Retrieve a user object if it is in the datastore, otherwise create
           a new object"""
 
@@ -457,7 +457,7 @@ class User(db.Expando):
         # Otherwise, make a new one
         if not user:
             logging.info("Creating %s: %s" % (cls, email))
-            user = cls.create_by_email(email, app)
+            user = cls.create_by_email(email)
 
         # Set a cookie to identify the user in the future
         set_user_cookie(request_handler, user.uuid)
@@ -1045,9 +1045,9 @@ def create_user_by_facebook(*args, **kwargs):
     raise DeprecationWarning('Replaced by User.create_by_facebook')
     User.create_by_facebook(*args, **kwargs)
 
-def create_user_by_email(email, app):
+def create_user_by_email(email):
     raise DeprecationWarning('Replaced by User.create_by_email')
-    User.create_by_email(email, app)
+    User.create_by_email(email)
 
 def create_user(app):
     raise DeprecationWarning('Replaced by User.create')
@@ -1057,9 +1057,9 @@ def get_or_create_user_by_facebook(*args, **kwargs):
     raise DeprecationWarning('Replaced by User.get_or_create_by_facebook')
     User.get_or_create_by_facebook(*args, **kwargs)
 
-def get_or_create_user_by_email(email, request_handler, app):
+def get_or_create_user_by_email(email, request_handler):
     raise DeprecationWarning('Replaced by User.get_or_create_by_email')
-    User.get_or_create_by_email(email, request_handler, app)
+    User.get_or_create_by_email(email, request_handler)
 
 def get_or_create_user_by_cookie(request_handler, app):
     raise DeprecationWarning('Replaced by User.get_or_create_by_cookie')
