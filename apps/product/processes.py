@@ -32,7 +32,7 @@ class CreateProduct(URIHandler):
 
         # initialize vars
         client = Client.get(self.request.get("client_uuid"))
-        description = self.request.get("description", "")
+        description = self.request.get("description", "").strip()
         images = self.request.get("images", "").split(',')  # if empty string, -> [''] (True)
         price = float(self.request.get("price", "0.0"))
         resource_url = self.request.get("resource_url")

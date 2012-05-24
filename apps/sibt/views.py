@@ -31,7 +31,7 @@ from apps.user.models import User
 from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
-from util.shopify_helpers import get_shopify_url, sibt_instance
+from util.shopify_helpers import get_shopify_url
 from util.urihandler import obtain, URIHandler
 
 
