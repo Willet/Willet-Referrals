@@ -43,7 +43,7 @@ _willet.colorbox = (function (me) {
                         }
                     });
                 } else {
-                    wm.fire('log', "Could not setup colorbox!");
+                    wm.fire('error', "Could not setup colorbox!");
                 }
             });
         }

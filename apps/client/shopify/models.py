@@ -17,7 +17,7 @@ from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
 from apps.client.models import Client
-from apps.link.models import Link 
+from apps.link.models import Link
 from apps.product.shopify.models import ProductShopify
 from apps.user.models import User
 
@@ -25,7 +25,7 @@ from util import httplib2
 from util.consts import *
 from util.errors import *
 from util.helpers import generate_uuid
-from util.helpers import url as build_url 
+from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.memcache_ref_prop import MemcacheReferenceProperty
 
@@ -34,8 +34,8 @@ from util.memcache_ref_prop import MemcacheReferenceProperty
 # -----------------------------------------------------------------------------
 class ClientShopify(Client):
     """A Client of a Shopify website.
-    
-    ClientShopify models are meant for Shopify shops only - use Client to 
+
+    ClientShopify models are meant for Shopify shops only - use Client to
     store information about stores without a specific platform.
     """
     token = db.StringProperty(default = '')
@@ -44,7 +44,7 @@ class ClientShopify(Client):
     def __init__(self, *args, **kwargs):
         """ Initialize this obj """
         super(ClientShopify, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         self.url = get_shopify_url(self.url)
 
@@ -54,11 +54,11 @@ class ClientShopify(Client):
         """ Create a Shopify Store as a Client"""
 
         url_ = get_shopify_url(url_)
-        
+
         # Query the Shopify API to learn more about this store
         data = get_store_info(url_, token, app_type)
-        
-        # Make the Merchant 
+
+        # Make the Merchant
         # Note: App is attached later to the UserCreation action
         merchant = User.get_or_create_by_email(data['email'], request_handler, None)
         logging.info('MERCHANT UUID %s' % merchant.uuid)
@@ -113,7 +113,7 @@ class ClientShopify(Client):
     @staticmethod
     def get_by_id(id):
         return ClientShopify.all().filter('id =', id).get()
-    
+
     @staticmethod
     def get_by_uuid(uuid):
         return ClientShopify.all().filter('uuid =', uuid).get()
@@ -124,8 +124,8 @@ class ClientShopify(Client):
         store = ClientShopify.get_by_url(store_url)
 
         if not store:
-            store = ClientShopify.create(store_url, 
-                                         store_token, 
+            store = ClientShopify.create(store_url,
+                                         store_token,
                                          request_handler,
                                          app_type)
         return store
@@ -136,31 +136,31 @@ class ClientShopify(Client):
         # Construct the API URL
         url = '%s/admin/products.json' % (self.url)
         logging.info ("url = %s" % url)
-        
+
         # Fix inputs (legacy)
-        if app_type == "sibt": 
+        if app_type == "sibt":
             app_type = 'SIBTShopify'
         elif app_type == 'buttons':
             app_type = "ButtonsShopify"
-        
+
         # Grab Shopify API settings
         settings = SHOPIFY_APPS[app_type]
 
         # Constuct the API URL
-        username = settings['api_key'] 
+        username = settings['api_key']
         password = hashlib.md5(settings['api_secret'] + self.token).hexdigest()
         header = {'content-type':'application/json'}
         h = httplib2.Http()
-        
+
         # Auth the http lib
         h.add_credentials(username, password)
-        
+
         logging.info("Querying %s" % url)
         resp, content = h.request(url, "GET", headers=header)
-        
+
         details = json.loads(content)
         products = None
-        try: 
+        try:
             logging.debug ("got json: %r" % details)
             assert ('products' in details)
             products = details['products']
@@ -169,15 +169,15 @@ class ClientShopify(Client):
             raise RemoteError (resp.status, resp.reason, products)
 
         for p in products:
-            ProductShopify.create_from_json(self, p) 
+            ProductShopify.create_from_json(self, p)
 
 # Shopify API Calls  ----------------------------------------------------------
 def get_store_info(store_url, store_token, app_type):
-    
+
     # Fix inputs (legacy)
-    if app_type == "sibt": 
+    if app_type == "sibt":
         app_type = 'SIBTShopify'
-    elif app_type == "buttons": 
+    elif app_type == "buttons":
         app_type = 'ButtonsShopify'
 
     # Grab Shopify API settings
@@ -185,7 +185,7 @@ def get_store_info(store_url, store_token, app_type):
 
     # Constuct the API URL
     url = '%s/admin/shop.json' % (store_url)
-    username = settings['api_key'] 
+    username = settings['api_key']
     password = hashlib.md5(settings['api_secret'] + store_token).hexdigest()
     header = {'content-type':'application/json'}
     h = httplib2.Http()
@@ -195,8 +195,8 @@ def get_store_info(store_url, store_token, app_type):
 
     logging.info("Querying %s" % url)
     resp, content = h.request(url, "GET", headers = header)
-    
-    details = json.loads(content) 
+
+    details = json.loads(content)
     logging.info(details)
     shop = details['shop']
     logging.info('shop: %s' % (shop))
