@@ -11,6 +11,11 @@
                 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
                 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
             })();
+
+            {% include "js/willet.mediator.js" %}
+            {% include "js/willet.debug.js" %}
+            {% include "js/willet.loader.js" %}
+            {% include "js/willet.analytics.js" %}
         </script>
 
         <!-- Favicon -->
@@ -42,20 +47,8 @@
                 });
             };
 
-            var storeAnalytics = function( evnt ) {
-                $.ajax({
-                    url: "{{ URL }}{% url TrackSIBTUserAction %}",
-                    data: {
-                        what: evnt,
-                        instance_uuid: '',
-                        app_uuid: '{{ app.uuid }}',
-                        user_uuid: '{{ user.uuid }}',
-                        target_url: '{{ target_url }}'
-                    }, type: 'get',
-                    success: function (response) {
-                        return;
-                    }
-                });
+            var storeAnalytics = function (evnt) {
+                _willet.mediator.fire('storeAnalytics', evnt);
             };
 
 

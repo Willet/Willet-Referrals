@@ -21,10 +21,8 @@ from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, \
-                              SIBTShowingButton, SIBTShowingAskIframe, \
-                              SIBTShowingVote, SIBTShowingResults, \
-                              SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.actions import SIBTClickAction, SIBTShowingButton, \
+                              SIBTVoteAction
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.user.models import User
 
@@ -236,10 +234,6 @@ class AskDynamicLoader(URIHandler):
         # we get an instance.
         link = Link.create(page_url, app, origin_domain, user)
 
-        # log this "showage"
-        if user_found:
-            SIBTShowingAskIframe.create(user, url=page_url, app=app)
-
         # Which share message should we use?
         ab_share_options = [
             "I'm not sure if I should buy this. What do you think?",
@@ -385,8 +379,6 @@ class VoteDynamicLoader(URIHandler):
         except AttributeError, e:
             logging.warn ('Faulty link')
 
-        # record that the vote page was once opened.
-        SIBTShowingVote.create(user=user, instance=instance)
         event = 'SIBTShowingVote'
 
         # In the case of a Shopify product, it will fetch from a .json URL.
@@ -543,12 +535,7 @@ class ShowResults(URIHandler):
                 has_voted = True
 
             if is_asker:
-                SIBTShowingResultsToAsker.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                SIBTShowingResults.create(user=user, instance=instance)
-            else:
-                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None:
                 link = instance.link

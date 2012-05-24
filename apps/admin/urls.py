@@ -16,7 +16,6 @@ urlpatterns = [
     (r'/admin/reload_uris',         ReloadURIS),
     (r'/admin/memcache_console',    ShowMemcacheConsole),
     (r'/admin/check_mbc',           CheckMBC),
-    (r'/admin/counts',              ShowCounts),
     (r'/admin/analytics/compare',   AppAnalyticsCompare),
     (r'/admin/analytics/(.*)/',     ShowAppAnalytics),
     (r'/admin/analytics',           ShowAnalytics),

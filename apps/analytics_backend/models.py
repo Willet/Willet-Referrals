@@ -21,41 +21,18 @@ from apps.buttons.shopify.models import *
 from util.consts import MEMCACHE_TIMEOUT
 
 actions_to_count = [
-  # 'ScriptLoadAction',
 
-    'SIBTUserClickedTopBarAsk',
-    'SIBTUserClickedButtonAsk',
-    'SIBTUserClickedOverlayAsk',
-    'SIBTUserClickedTabAsk',
-    'SIBTAskUserClickedShare',
-    'SIBTVisitLength',
-
-    'SIBTShowingTopBarAsk',
     'SIBTShowingButton',
-    'SIBTShowingAskIframe',
-    'SIBTShowingResults',
-    'SIBTShowingResultsToAsker',
 
     'SIBTAskUserClosedIframe',
-    'SIBTAskUserClickedShare',
 
-    'SIBTInstanceCreated',
     'SIBTVoteAction',
-    'SIBTUserAction',
-    'SIBTFBConnected',
-
-    'SIBTUserClosedTopBar',
-    'SIBTUserReOpenedTopBar',
-    'SIBTAskIframeCancelled',
-    'SIBTNoConnectFBDialog',
-    'SIBTFriendChoosingCancelled'
 ]
 
 # removing duplicates for the lazy
 actions_to_count = list(set(actions_to_count))
 
 actions_to_average = [
-    'SIBTVisitLength',
 ]
 # removing duplicates for the lazy
 actions_to_average = list(set(actions_to_average))

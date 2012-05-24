@@ -292,58 +292,52 @@ class TrackSIBTShowAction(URIHandler):
         return
 
 
-class TrackSIBTUserAction(URIHandler):
+def track_sibt_user_action(URIHandler):
     """ For actions WITH AN INSTANCE """
-    def get(self):
-        """Compatibility with iframe shizz"""
-        self.post()
+    app = None
+    action = None
+    duration = 0.0
+    instance = None
+    success = False
+    user = None
 
-    def post(self):
-        """So javascript can track a sibt specific show actions"""
-        app = None
-        action = None
-        duration = 0.0
-        instance = None
-        success = False
-        user = None
+    if self.request.get('instance_uuid'):
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+    if self.request.get('app_uuid'):
+        app = App.get(self.request.get('app_uuid'))
+    if self.request.get('user_uuid'):
+        user = User.get(self.request.get('user_uuid'))
+    event = self.request.get('what')
+    url = self.request.get('target_url')
+    if self.request.get('duration'):
+        duration = self.request.get('duration')
 
-        if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))
-        if self.request.get('user_uuid'):
-            user = User.get(self.request.get('user_uuid'))
-        event = self.request.get('what')
-        url = self.request.get('target_url')
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+    if not event or not user:
+        return # we can't track who did what or what they did; logging this item is not useful.
 
-        if not event or not user:
-            return # we can't track who did what or what they did; logging this item is not useful.
-
-        action = None
+    action = None
+    try:
+        action_class = globals()[event]
+        action = action_class.create(user,
+                instance=instance,
+                url=url,
+                app=app,
+                duration=duration
+        )
+    except Exception,e:
+        logging.warn('(this is not serious) could not create class: %s' % e)
         try:
-            action_class = globals()[event]
-            action = action_class.create(user,
-                    instance=instance,
-                    url=url,
-                    app=app,
-                    duration=duration
-            )
-        except Exception,e:
-            logging.warn('(this is not serious) could not create class: %s' % e)
-            try:
-                action = SIBTUserAction.create(user, instance, event)
-            except Exception, e:
-                logging.error('this is serious: %s' % e, exc_info=True)
-            else:
-                logging.info('tracked action: %s' % action)
-                success = True
+            action = SIBTUserAction.create(user, instance, event)
+        except Exception, e:
+            logging.error('this is serious: %s' % e, exc_info=True)
         else:
             logging.info('tracked action: %s' % action)
             success = True
+    else:
+        logging.info('tracked action: %s' % action)
+        success = True
 
-        self.response.out.write('')
+    self.response.out.write('')
 
 
 class StartPartialSIBTInstance(URIHandler):
@@ -401,24 +395,17 @@ class StartSIBTAnalytics(URIHandler):
     def get(self):
         things = {
             'tb': {
-                'action': 'SIBTUserClickedTopBarAsk',
-                'show_action': 'SIBTShowingTopBarAsk',
                 'l': [],
                 'counts': {},
             },
             'b': {
-                'action': 'SIBTUserClickedButtonAsk',
                 'show_action': 'SIBTShowingButton',
                 'l': [],
                 'counts': {},
             }
         }
         actions_to_check = [
-            'SIBTShowingAskIframe',
-            'SIBTAskUserClickedEditMotivation',
             'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare',
-            'SIBTInstanceCreated',
         ]
         for t in things:
             things[t]['counts'][things[t]['show_action']] = Action\
