@@ -40,14 +40,6 @@ indexes:
 
 - kind: Action
   properties:
-  - name: class
-  - name: sibt_instance
-  - name: url
-  - name: user
-  - name: sibt_instance
-
-- kind: Action
-  properties:
   - name: app_
   - name: user
   - name: what
