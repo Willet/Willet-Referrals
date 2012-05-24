@@ -48,7 +48,6 @@ actions_to_count = [
     'SIBTUserReOpenedTopBar',
     'SIBTAskIframeCancelled',
     'SIBTNoConnectFBDialog',
-    'SIBTNoConnectFBCancelled',
     'SIBTFriendChoosingCancelled'
 ]
 

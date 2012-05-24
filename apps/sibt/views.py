@@ -21,7 +21,7 @@ from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
+from apps.sibt.actions import SIBTClickAction, \
                               SIBTShowingButton, SIBTShowingAskIframe, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
@@ -611,7 +611,7 @@ class ShowFBThanks(URIHandler):
             logging.warn('PartialSIBTInstance is already gone')
             return  # there's nothing we can do now
 
-        if post_id != "":
+        if post_id:
             user_cancelled = False
 
             # GAY BINGO
@@ -664,11 +664,6 @@ class ShowFBThanks(URIHandler):
             link.put()
             link.memcache_by_code() # doubly memcached
             logging.info('incremented link and added user')
-        elif partial != None:
-            # Create cancelled action
-            SIBTNoConnectFBCancelled.create(user,
-                                            url=partial.link.target_url,
-                                            app=partial.app_)
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!
