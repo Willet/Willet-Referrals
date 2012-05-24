@@ -7,6 +7,7 @@ from google.appengine.ext import db
 from apps.client.models import Client
 
 from util.model import Model
+from util.shopify_helpers import get_url_variants
 
 
 class Product(Model, db.polymodel.PolyModel):
@@ -25,7 +26,7 @@ class Product(Model, db.polymodel.PolyModel):
     title = db.StringProperty()  # name of the product
     type = db.StringProperty(indexed=False)  # The type of product
 
-    memcache_fields = ['resource_url']
+    _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
@@ -47,7 +48,7 @@ class Product(Model, db.polymodel.PolyModel):
     @staticmethod
     def create(title, description='', images=None, tags=None, price=0.0,
                client=None, resource_url='', type=''):
-        """Creates a product in the datastore. 
+        """Creates a product in the datastore.
            Accepts datastore fields, returns Product object.
         """
         if not client:
@@ -104,7 +105,18 @@ class Product(Model, db.polymodel.PolyModel):
     @classmethod
     def get_by_url(cls, url):
         """Retrieves a Product or its subclass instance by resource_url."""
+        www_url = url
+
+        if not url:
+            return None  # can't get by url if no URL given
+
+        (url, www_url) = get_url_variants(url, keep_path=True)
+
         data = memcache.get(cls._get_memcache_key(url))
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        data = memcache.get(cls._get_memcache_key(www_url))
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
@@ -112,7 +124,11 @@ class Product(Model, db.polymodel.PolyModel):
         if data:
             return db.model_from_protobuf(entity_pb.EntityProto(data))
 
-        product = cls.all().filter('resource_url =', url).get()
+        data = memcache.get(www_url)
+        if data:
+            return db.model_from_protobuf(entity_pb.EntityProto(data))
+
+        product = cls.all().filter('resource_url IN', [url, www_url]).get()
         return product
 
     @classmethod

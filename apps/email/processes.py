@@ -18,20 +18,20 @@ from util.urihandler import URIHandler
 class SendEmailAsync(URIHandler):
     def get (self):
         self.post()
-    
+
     def post (self):
-        """ Taskqueue-based email allows pages to be displayed 
+        """ Taskqueue-based email allows pages to be displayed
             before emails are done sending.
         """
-        
-        from_address = self.request.get('from_address')
-        to_address = self.request.get('to_address')
-        subject = self.request.get('subject')
-        body = self.request.get('body')
-        to_name = self.request.get('to_name')
+
+        from_address    = self.request.get('from_address')
+        to_address      = self.request.get('to_address')
+        subject         = self.request.get('subject')
+        body            = self.request.get('body')
+        to_name         = self.request.get('to_name')
         replyto_address = self.request.get('replyto_address')
-        
-        params = {
+
+        params = {  # all fields must be strings!
             "api_user" : "BarbaraEMac",
             "api_key"  : "w1llet!!",
             "to"       : to_address,
@@ -46,23 +46,29 @@ class SendEmailAsync(URIHandler):
         if replyto_address:
             params['replyto'] = replyto_address
 
-        if ',' in to_address:
+        # URLLib doesn't like unicode values; it can handle unicode strings,
+        # but not unicode strings with code points outside ASCII
+        # Normally, we would encode both key and value, but we know that the
+        # keys are ok because we created them above.
+        params = dict( (key, value.encode('utf-8')) for key, value in params.iteritems() )
+
+        if ',' in params["to"]:
             try:
-                e = EmailMessage(sender=from_address, 
-                                 to=to_address, 
-                                 subject=subject, 
-                                 html=body)
-                e.send()
-            except Exception,e:
-                logging.error('Error sending email: %s', e)
+                email = EmailMessage(sender=params["from"],
+                                     to=params["to"],
+                                     subject=params["subject"],
+                                     html=params["html"])
+                email.send()
+            except Exception,err:
+                logging.error('Error sending email: %s', err, exc_info=True)
         else:
             try:
                 result = urlfetch.fetch(
                     url = 'https://sendgrid.com/api/mail.send.json',
-                    payload = urllib.urlencode(params), 
+                    payload = urllib.urlencode(params),
                     method = urlfetch.POST,
                     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                 )
                 logging.info (result.content)
-            except DeadlineExceededError, e:
+            except DeadlineExceededError:
                 logging.error("SendGrid was lagging; email was not sent.")

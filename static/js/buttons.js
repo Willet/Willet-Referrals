@@ -1,6 +1,6 @@
 /*
  * Buttons JS. Copyright Willet Inc, 2012
- * 
+ *
  */
 ;// Source: JSON2, Author: Douglas Crockford, http://www.JSON.org/json2.js
 var JSON;if(!window.JSON){window.JSON={};}
@@ -77,7 +77,7 @@ _willet.util = {
         s.media = 'screen';
         if (s.styleSheet) {
             s.styleSheet.cssText = rules; // IE
-        } else { 
+        } else {
             s.appendChild(document.createTextNode(rules)); // Every other browser
         }
         return s;
@@ -92,18 +92,60 @@ _willet.util = {
         }
         return result;
     },
+    "error": function (e, config) {
+        if (!e) {
+            return;
+        }
+
+        var message = config.message || "";
+        var type    = config.type || "";
+
+        // More information on error object here:
+        // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Error
+
+        // There are better stack trace tools in JS...
+        // but they don't work in IE, which is exactly where we need it
+
+        // Format:
+        // {ErrorName}: {ErrorDescription}
+        // {ErrorStackTrace}
+        var prob   = encodeURIComponent("Error initializing smart-buttons");
+        var line   = e.lineNumber || "Unknown";
+        var script = encodeURIComponent("smart-buttons.js:" +line);
+
+        var errorInfo = e.stack || (e.number & 0xFFFF) || e.toString();
+        var errorDesc = message || e.message || e.description;
+        var errorName = type || e.name || errorDesc.split(":")[0];
+
+        if (errorInfo === (errorName + ": " + errorDesc)) {
+            errorInfo = "No additional information available";
+        }
+
+        var errorMsg  = errorName + ": " + errorDesc + "\n" + errorInfo;
+        var encError  = encodeURIComponent(errorMsg);
+
+        var params = "error=" + prob
+            + "&script=" + script
+            + "&st=" + encError
+            + "&subject=" + errorName;
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage);
+    },
     "getCanonicalUrl": function (default_url) {
         // Tries to retrieve a canonical link from the header
         // Otherwise, returns default_url
-        var url,
-            links = document.getElementsByTagName('link'),
+        var links = document.getElementsByTagName('link'),
             i = links.length;
         while (i--) {
             if (links[i].rel === 'canonical' && links[i].href) {
-                url = links[i].href;
+                return links[i].href;
             }
         }
-        return url || default_url;
+        return default_url;
     },
     "getElemValue": function (elem, key, default_val) {
         // Tries to retrive value stored on elem as 'data-*key*' or 'button_*key*'
@@ -136,19 +178,135 @@ _willet.util = {
         }
         return false;
     },
-    "getInternetExplorerVersion": function() {
-        // Returns the version of Internet Explorer or a -1
-        // (indicating the use of another browser).
+    "isLocalhost": function() {
+        return ((window.location.href.indexOf("http") >= 0) ? false : true);
+    }
+};
 
-        // http://msdn.microsoft.com/en-us/library/ms537509.aspx
-        var rv = 999; // Return value assumes failure.
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            var ua = navigator.userAgent;
-            var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            if (re.exec(ua) != null)
-                rv = parseFloat( RegExp.$1 );
+// Modified from: http://www.quirksmode.org/js/detect.html
+_willet.util.detectBrowser = function() {
+    var browser,
+        browserVersion,
+        operatingSystem,
+        operatingSystems,
+        searchString,
+        searchVersion,
+        supportedBrowsers,
+        versionSearchString;
+
+    //Trim this list if we want to support less browsers
+    supportedBrowsers = [{
+        string: navigator.userAgent,
+        subString: "Chrome",
+        identity: "Chrome"
+    }, {
+        string: navigator.userAgent,
+        subString: "OmniWeb",
+        versionSearch: "OmniWeb/",
+        identity: "OmniWeb"
+    }, {
+        string: navigator.vendor,
+        subString: "Apple",
+        identity: "Safari",
+        versionSearch: "Version"
+    }, {
+        prop: window.opera,
+        identity: "Opera",
+        versionSearch: "Version"
+    }, {
+        string: navigator.vendor,
+        subString: "iCab",
+        identity: "iCab"
+    }, {
+        string: navigator.vendor,
+        subString: "KDE",
+        identity: "Konqueror"
+    }, {
+        string: navigator.userAgent,
+        subString: "Firefox",
+        identity: "Firefox"
+    }, {
+        string: navigator.vendor,
+        subString: "Camino",
+        identity: "Camino"
+    }, {   // for newer Netscapes (6+)
+        string: navigator.userAgent,
+        subString: "Netscape",
+        identity: "Netscape"
+    }, {
+        string: navigator.userAgent,
+        subString: "MSIE",
+        identity: "Explorer",
+        versionSearch: "MSIE"
+    }, {
+        string: navigator.userAgent,
+        subString: "Gecko",
+        identity: "Mozilla",
+        versionSearch: "rv"
+    }, {   // for older Netscapes (4-)
+        string: navigator.userAgent,
+        subString: "Mozilla",
+        identity: "Netscape",
+        versionSearch: "Mozilla"
+    }];
+
+    operatingSystems = [{
+        string: navigator.platform,
+        subString: "Win",
+        identity: "Windows"
+    }, {
+        string: navigator.platform,
+        subString: "Mac",
+        identity: "Mac"
+    }, {
+        string: navigator.userAgent,
+        subString: "iPhone",
+        identity: "iPhone/iPod"
+    }, {
+        string: navigator.platform,
+        subString: "Linux",
+        identity: "Linux"
+    }];
+
+    searchString = function (data) {
+        var dataString,
+            dataProp,
+            i;
+
+        for (i = 0; i < data.length; i++) {
+            dataString = data[i].string;
+            dataProp   = data[i].prop;
+
+            versionSearchString = data[i].versionSearch || data[i].identity;
+
+            if (dataString) {
+                if (dataString.indexOf(data[i].subString) != -1) {
+                    return data[i].identity;
         }
-        return rv;
+            } else if (dataProp) {
+                return data[i].identity;
+    }
+        }
+};
+
+    searchVersion = function (dataString) {
+        var index = dataString.indexOf(versionSearchString);
+        if (index == -1) {
+            return;
+        }
+        return parseFloat(dataString.substring(index+versionSearchString.length+1));
+    };
+
+    operatingSystem = searchString(operatingSystems)  || "an unknown OS";
+    browser         = searchString(supportedBrowsers) || "An unknown browser";
+    browserVersion  = searchVersion(navigator.userAgent)
+        || searchVersion(navigator.appVersion)
+        || "an unknown version";
+
+    return {
+        browser: browser,
+        version: browserVersion,
+        os: operatingSystem
     }
 };
 
@@ -188,10 +346,10 @@ _willet.debug = (function (willet) {
         _log = function() { log_array.push(arguments); },
         _error = function() { log_array.push(arguments); };
 
-    if (typeof(window.console) === 'object' 
+    if (typeof(window.console) === 'object'
         && ( ( typeof(window.console.log) === 'function'
         && typeof(window.console.error) ==='function' )
-        || (typeof(window.console.log) === 'object' // IE 
+        || (typeof(window.console.log) === 'object' // IE
         && typeof(window.console.error) ==='object') )) {
         _log = function () {
             if (window.console.log.apply) {
@@ -323,7 +481,7 @@ _willet.messaging = (function (willet) {
             }
 
             payload += MESSAGE_TOKEN + "=" + JSON.stringify(message);
-            
+
             debug.log("Messaging.XD: Sending payload..." + payload);
             if (window.parent.postMessage) {
                 // Try HTML5 postMessage
@@ -336,51 +494,58 @@ _willet.messaging = (function (willet) {
 
         // sets up message handling
         xd.createMessageHandler = function(callback, url) {
-            var baseUrl = /https?:\/\/([^\/]+)/.exec(url)[0];
+            try {
+                var baseUrl = /https?:\/\/([^\/]+)/.exec(url)[0];
 
-            if (window.postMessage) {
-                // Note: IE w/ HTML5 supports addEventListener
-                var listener = function (event) {
-                    if (event.origin === baseUrl) {
-                        var data = parseMessage(event.data);
-                        callback(data);
+                if (window.postMessage) {
+                    // Note: IE w/ HTML5 supports addEventListener
+                    var listener = function (event) {
+                        if (event.origin === baseUrl) {
+                            var data = parseMessage(event.data);
+                            callback(data);
+                        }
+                    };
+
+                    if (window.addEventListener) {
+                        window.addEventListener('message', listener, false); //Standard method
+                    } else {
+                        window.attachEvent('onmessage', listener); //IE
                     }
-                };
 
-                if (window.addEventListener) {
-                    window.addEventListener('message', listener, false); //Standard method
+                    stopCommunication = function() {
+                         if(window.removeEventListener) {
+                            window.removeEventListener('message', listener, false); //Standard method
+                         } else {
+                            window.detachEvent('onmessage', listener); //IE
+                         }
+                    }
                 } else {
-                    window.attachEvent('onmessage', listener); //IE
+                    // Set up window.location.hash polling
+                    // Expects hash messages of the form:
+                    //  #willet?message=____
+                    var interval = setInterval(function () {
+                        var hash = window.location.hash;
+                        callback(parseMessage(hash));
+                    }, 1000);
+
+                    stopCommunication = function () {
+                        clearInterval(interval);
+                    };
                 }
 
-                stopCommunication = function() {
-                     if(window.removeEventListener) {
-                        window.removeEventListener('message', listener, false); //Standard method
-                     } else {
-                        window.detachEvent('onmessage', listener); //IE
-                     }
-                }
-            } else {
-                // Set up window.location.hash polling
-                // Expects hash messages of the form:
-                //  #willet?message=____
-                var interval = setInterval(function () {
-                    var hash = window.location.hash;
-                    callback(parseMessage(hash));
-                }, 1000);
+                //create the iframe
+                var originDomain = window.location.protocol + "//" + window.location.hostname;
+                var iframe = document.createElement("iframe");
+                iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
+                iframe.style.display = "none";
 
-                stopCommunication = function () {
-                    clearInterval(interval);
-                };
+                document.body.appendChild(iframe);
+            } catch (e) {
+                _willet.util.error(e, {
+                   "message": "Problem initializing cross-domain code. See stack trace.",
+                   "type": "Willet.CrossDomainError"
+                });
             }
-
-            //create the iframe
-            var originDomain = /https?:\/\/([^\/]+)/.exec(window.location.href)[0];
-            var iframe = document.createElement("iframe");
-            iframe.src = url + "?origin=" + originDomain + (debug.isDebugging()? "#debug" : "");
-            iframe.style.display = "none";
-
-            document.body.appendChild(iframe);
         };
 
         return xd;
@@ -411,15 +576,46 @@ _willet.networks = (function (willet) {
         messaging = willet.messaging,
         util      = willet.util;
     return {
+        "AskFriends": {
+            "priority": 1,
+            "detect": {
+                "method": "none",
+                "func": function(methods) { return ""; }
+            },
+            "button": {
+                "script": '//social-referral.appspot.com/s/sibt.js?page_url=' + window.location,
+                "create": function () {
+                    var button = util.createBasicButton({
+                        "id": '_mini_sibt_button'
+                    });
+
+                    var d = document.createElement("a");
+                    d.id = 'mini_sibt_button';
+                    d.style.cursor = 'pointer';
+                    d.style.display = 'inline-block';
+                    d.style.background = "url('//social-referral.appspot.com/static/sibt/imgs/button_bkg.png') 3% 20% no-repeat transparent";
+                    d.style.width = '80px';
+                    button.appendChild(d);
+                    return button;
+                }
+            }
+        },
         "Facebook": {
             "priority": 2,
             "detect": {
                 "method": "api",
                 "func": function(methods) {
                     messaging.xd.createMessageHandler(function(data) {
-                        var message = data && data.message || {};
-                        var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
-                        methods.updateLoggedInStatus("Facebook", status);
+                        try {
+                            var message = data && data.message || {};
+                            var status = (message.Facebook && message.Facebook.status) || false; //use status, if it exists
+                            methods.updateLoggedInStatus("Facebook", status);
+                        } catch(e) {
+                            _willet.util.error(e, {
+                                "message": "Problem retrieving cross-domain result. See stack trace.",
+                                "type": "Willet.CrossDomainResultError"
+                            });
+                        }
                     }, willet.APP_URL + "/static/plugin/html/detectFB.html");
                 }
             },
@@ -454,7 +650,7 @@ _willet.networks = (function (willet) {
                     // If Facebook is already loaded,
                     // trigger it to enable Like button
                     try {
-                        window.FB && window.FB.XFBML.parse(); 
+                        window.FB && window.FB.XFBML.parse();
                     } catch(e) {}
                 }
             }
@@ -492,7 +688,7 @@ _willet.networks = (function (willet) {
                     link.onclick = function() {
                         methods.itemShared("Fancy", params);
                     };
-                    
+
                     link.setAttribute('data-count', ( params.buttonCount ? 'true' : 'false' ));
                     button.appendChild(link);
                     return button;
@@ -532,9 +728,9 @@ _willet.networks = (function (willet) {
                             methods.itemShared("GooglePlus", params);
                         }
                     };
-                    
+
                     // Google is using the Open Graph spec
-                    var t, p, 
+                    var t, p,
                         m = [ { property: 'og:title', content: params.data.product.title },
                               { property: 'og:image', content: params.photo },
                               { property: 'og:description', content: params.sharingMessage } ];
@@ -583,8 +779,8 @@ _willet.networks = (function (willet) {
                     link.onclick = function() {
                         methods.itemShared("Pinterest", params);
                         window.open("//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
-                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) +
+                            "&media=" + encodeURIComponent( params.photo ) +
                             "&description=" + encodeURIComponent(params.sharingMessage),
                             'signin',
                             'height=300,width=665');
@@ -595,8 +791,8 @@ _willet.networks = (function (willet) {
                                                 +"   background-image: url('http://assets.pinterest.com/images/pinit6.png'); "
                                                 +"   background-position: 0 -7px; "
                                                 +"} "
-                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: hand; } "
-                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: hand; } "
+                                                +"a.willet-pinterest-button:hover { background-position: 0 -28px; cursor: pointer; } "
+                                                +"a.willet-pinterest-button:active { background-position: 0 -49px; cursor: pointer; } "
                                                 +"a.willet-pinterest-button.clicked { background-position: 0 -70px !important; }");
                     button.appendChild(link);
                     button.appendChild(style);
@@ -610,8 +806,8 @@ _willet.networks = (function (willet) {
                         count.style.width = '77px';
                         var countLink = document.createElement("a");
                         countLink.href = "//pinterest.com/pin/create/button/?" +
-                            "url=" + encodeURIComponent( params.canonicalUrl ) + 
-                            "&media=" + encodeURIComponent( params.photo ) + 
+                            "url=" + encodeURIComponent( params.canonicalUrl ) +
+                            "&media=" + encodeURIComponent( params.photo ) +
                             "&description=" + encodeURIComponent(params.sharingMessage);
                         countLink.className = 'pin-it-button';
                         countLink.setAttribute('count-layout', 'horizontal');
@@ -780,7 +976,7 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring 
+            // How this regex works: replaces .../products/ or a trailing / with empty spring
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
@@ -920,7 +1116,7 @@ _willet = (function (me, config) {
             // Shopify won't respond on localhost, so use example data
             me.createButtons({
                 product: {
-                    images: [{ 
+                    images: [{
                         created_at: "2012-02-03T11:42:17+09:00",
                         id: 166600132,
                         position: 1,
@@ -953,7 +1149,7 @@ _willet = (function (me, config) {
                             me.buttonsLoaded = true;
                         }
                     }
-                });   
+                });
             } catch(e) {
                 debug.log("Buttons: request for product.json failed");
             }
@@ -964,30 +1160,25 @@ _willet = (function (me, config) {
 }(_willet));
 
 try {
-    if (_willet && !_willet.buttonsLoaded && (_willet.util.getInternetExplorerVersion() > 7)) {
+    if (_willet) {
+        var info = _willet.util.detectBrowser();
         _willet.debug.set(false); //set to true if you want logging turned on
-        _willet.init();
+
+        if (!_willet.buttonsLoaded
+            && !(info.browser === "Explorer" && info.version <= 7)
+            && !(info.browser === "An unknown browser")
+            && !(_willet.util.isLocalhost()))
+        {
+            _willet.init();
+        } else {
+            _willet.debug.log("Buttons not loaded: Unsupported browser or localhost");
+        }
     }
+
 } catch(e) {
-    (function() {
-        // Apparently, IE9 can fail for really stupid reasons.
-        // This is problematic.
-        // http://msdn.microsoft.com/en-us/library/ie/gg622930(v=vs.85).aspx
-
-        // There are better stack trace tools in JS...
-        // but they don't work in IE, which is exactly where we need it
-        var error = encodeURIComponent("Error initializing buttons");
-        var line    = e.number || e.lineNumber || "Unknown";
-        var script  = encodeURIComponent("buttons.js:" +line);
-        var message = e.stack || e.toString();
-        var st      = encodeURIComponent(message);
-
-        var params = "error=" + error + "&script=" + script + "&st=" + st;
-
-        var _willetImage = document.createElement("img");
-        _willetImage.src = "http://social-referral.appspot.com/admin/ithinkiateacookie?" + params;
-        _willetImage.style.display = "none";
-
-        document.body.appendChild(_willetImage)
-    }()); 
+    //assume, potentially wrongfully, that we have access to _willet.util.error
+    _willet.util.error(e, {
+       "message": "We're not exactly sure what went wrong. Check the stack trace provided.",
+       "type": "Willet.UnexpectedError"
+    });
 }

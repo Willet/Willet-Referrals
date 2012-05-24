@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
-# SIBTShopify model
-# Extends from "Referral", which extends from "App"
+"""The SIBTShopify model.
+
+Extends from SIBT/App.
+"""
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
-import hashlib
 import inspect
 import logging
 from datetime import datetime
@@ -19,16 +20,14 @@ from google.appengine.ext.webapp import template
 from apps.app.shopify.models import AppShopify
 from apps.email.models import Email
 from apps.sibt.models import SIBT
-from util.consts import *
+from util.consts import DOMAIN
 from util.helpers import generate_uuid
 from util.helpers import url as reverse_url
 
-# ------------------------------------------------------------------------------
-# SIBTShopify Class Definition -------------------------------------------------
-# ------------------------------------------------------------------------------
+
 class SIBTShopify(SIBT, AppShopify):
-    # CSS to style the button.
-    button_css = db.TextProperty(default=None,required=False)
+    # CSS to style the button (deprecated for SIBTShopify v10+)
+    button_css = db.TextProperty(default=None, required=False)
 
     def _validate_self(self):
         return True
@@ -123,21 +122,16 @@ class SIBTShopify(SIBT, AppShopify):
         """ Initialize this model """
         super(SIBTShopify, self).__init__(*args, **kwargs)
 
-    # Retreivers --------------------------------------------------------------------
+    # Retreivers --------------------------------------------------------------
     @classmethod
-    def get_by_uuid(uuid):
+    def get_by_uuid(cls, uuid):
         return cls.get(uuid)
 
-    @staticmethod
-    def get_by_store_id(store_id):
-        logging.info("Shopify: Looking for %s" % store_id)
-        logging.error('Deprecated method get_by_store_id should be\
-                       replaced by %s.get or %s.get_by_store_url: %s' % (cls, cls, inspect.stack()[0][3]))
-        return SIBTShopify.all()\
-                .filter('store_id =', store_id)\
-                .get()
+    @classmethod
+    def get_by_store_id(cls, store_id):
+        return cls.all().filter('store_id =', store_id).get()
 
-    # Constructors -----------------------------------------------------------------------------
+    # Constructors ------------------------------------------------------------
     @staticmethod
     def create(client, token, email_client=True):
         uuid = generate_uuid(16)
@@ -158,7 +152,7 @@ class SIBTShopify(SIBT, AppShopify):
 
         return app
 
-    # 'Retreive or Construct'ers -------------------------------------------------------------
+    # 'Retreive or Construct'ers ----------------------------------------------
     @classmethod
     def get_or_create(cls, client, token=None, email_client=True):
         # logging.debug ("in get_or_create, client.url = %s" % client.url)
@@ -185,11 +179,61 @@ class SIBTShopify(SIBT, AppShopify):
             pass
         return app
 
-    # Shopify API calls -------------------------------------------------------------
+    # Shopify API calls -------------------------------------------------------
     def do_install(self, email_client=True):
-        """Installs this instance"""
-        if self.version == '3': # sweet buttons has different on-page snippet.
-            script_src = """<!-- START willet sibt for Shopify -->
+        """Installs this app."""
+
+        # SIBT2 (cart page snippet)
+        wosib_script_src = """<!-- START Willet (http://rf.rs) Cart snippet -->
+            <div id="_willet_WOSIB_Button" style="width:278px;height:88px;"></div>
+            <script type="text/javascript">
+                var _willet_wosib_script = "http://%s%s?store_url={{ shop.permanent_domain }}";
+                var _willet_cart_items = [
+                    {%% for item in cart.items %%}
+                        { "image" : "{{ item.image }}", // url
+                          "title" : "{{ item.title }}", // or "name"
+                          "id" : "{{ item.product.id }}",
+                          "product_url" : "{{ item.product.url }}"
+                        }{%% unless forloop.last %%},{%% endunless %%}
+                    {%% endfor %%}
+                ];
+
+                (function (s) {
+                    s.type = "text/javascript";
+                    s.src = _willet_wosib_script;
+                    document.getElementsByTagName("head")[0].appendChild(s);
+                }(document.createElement("script")));
+            </script>""" % (DOMAIN, reverse_url('SIBTServeScript'))
+
+        # SIBT2 (multiple products)
+        if self.version == '10':
+            willet_snippet = """
+                <!-- START Willet (http://rf.rs) Product page snippet -->
+                <div id="_willet_shouldIBuyThisButton" data-merchant_name="{{ shop.name | escape }}"
+                    data-product_id="{{ product.id }}" data-title="{{ product.title | escape  }}"
+                    data-price="{{ product.price | money }}" data-page_source="product"
+                    data-image_url="{{ product.images[0] | product_img_url: "large" | replace: '?', '%%3F' | replace: '&','%%26'}}">
+                </div>
+                <script type="text/javascript">
+                (function(w, d) {
+                    var hash = w.location.hash;
+                    var willt_code = hash.substring(hash.indexOf('#code=') + '#code='.length , hash.length);
+                    var product_json = {{ product | json }};
+                    var params = "store_url={{ shop.permanent_domain }}&willt_code="+willt_code+"&page_url="+w.location;
+                    if (product_json) {
+                        w._willet_product_json = product_json;
+                        params += '&product_id=' + product_json.id;
+                    }
+                    var src = "http://%s%s?" + params;
+                    var script = d.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = src;
+                    d.getElementsByTagName("head")[0].appendChild(script);
+                }(window, document));
+                </script>
+                <!-- END Willet SIBT for Shopify -->""" % (DOMAIN, reverse_url('SIBTShopifyServeScript'))
+        elif self.version == '3': # sweet buttons has different on-page snippet.
+            script_src = """<!-- START willet (http://rf.rs) sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;
@@ -216,7 +260,7 @@ class SIBTShopify(SIBT, AppShopify):
                 </div>
                 <!-- END Willet SIBT for Shopify -->"""
         else:
-            script_src = """<!-- START willet sibt for Shopify -->
+            script_src = """<!-- START willet (http://rf.rs) sibt for Shopify -->
                 <script type="text/javascript">
                 (function(window) {
                     var hash = window.location.hash;
@@ -241,6 +285,11 @@ class SIBTShopify(SIBT, AppShopify):
             'asset': {
                 'value': willet_snippet,
                 'key': 'snippets/willet_sibt.liquid'
+            }
+        },{
+            'asset': {
+                'value': wosib_script_src,
+                'key': 'snippets/willet_wosib.liquid'
             }
         }]
         # Install yourself in the Shopify store
@@ -271,9 +320,11 @@ class SIBTShopify(SIBT, AppShopify):
 
     def get_css_dict(self):
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
+            if not data:
+                raise Exception("No data")
         except Exception, e:
             #logging.error('could not decode: %s\n%s' %
             #        (e, self.button_css), exc_info=True)
@@ -283,7 +334,8 @@ class SIBTShopify(SIBT, AppShopify):
     def set_css(self, css=None):
         """Expects a dict"""
         try:
-            assert(css != None)
+            if not css:
+                raise Exception("No CSS")
             self.button_css = json.dumps(css)
         except:
             #logging.info('setting to default')
@@ -295,10 +347,11 @@ class SIBTShopify(SIBT, AppShopify):
         class_defaults = SIBTShopify.get_default_dict()
         logging.info('class_defaults : %s' % class_defaults)
         try:
-            assert(self.button_css != None)
+            if not self.button_css:
+                raise Exception("No CSS")
             data = json.loads(self.button_css)
-            assert(data != None)
-            #logging.warn('updating with data:\n%s' % data)
+            if not data:
+                raise Exception("No data")
             class_defaults.update(data)
         except Exception, e:
             logging.warning (e, exc_info=True)
@@ -337,5 +390,3 @@ class SIBTShopify(SIBT, AppShopify):
         logging.error('Deprecated method get_default_button_css should be\
                        replaced by %s.get_default_css: %s' % (cls,  inspect.stack()[0][3]))
         return cls.get_default_css()
-
-# end class

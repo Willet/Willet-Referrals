@@ -53,15 +53,15 @@
                 user_chart_data['{{s.service}}']['conversions'].push([
                     Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.conversions }}
-                ]); 
+                ]);
                 user_chart_data['{{s.service}}']['profit'].push([
                     Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.profit }}
-                ]); 
+                ]);
                 user_chart_data['{{s.service}}']['reach'].push([
                     Date.UTC({{ r.period_start|date:"Y" }}, {{ r.period_start|date:"m" }} , {{ r.period_start|date:"d" }}),
                     {{ s.reach }}
-                ]); 
+                ]);
             {% endfor %}
         {% endfor %}
         */
@@ -79,7 +79,7 @@
                             var el = $(fx.elem);
                             var current = parseInt(el.width());
                             var next = parseInt((current/max)*100);
-                            el.css('background-color','#'+colors[next].toString()); 
+                            el.css('background-color','#'+colors[next].toString());
                         }
                     });
             }).click(function() {
@@ -92,7 +92,7 @@
                             var el = $(fx.elem);
                             var current = parseInt(el.width());
                             var next = parseInt((current/max)*100);
-                            el.css('background-color','#'+colors[next].toString()); 
+                            el.css('background-color','#'+colors[next].toString());
                         }
                     });
             });
@@ -101,9 +101,9 @@
                 var src = el.attr('src');
                 $('#user_pic').fadeOut().attr('src', src).fadeIn();
             });
-            /* 
+            /*
             $('a.button.stats-view').click(function() {
-                var el = $(this);    
+                var el = $(this);
                 var hash = location.hash.split('#');
                 if (hash.length > 1) {
                     hash = hash[1];
@@ -124,7 +124,7 @@
                     }
                 });
             });
-            
+
             user_chart = new Highcharts.Chart({
                 chart: {
                     renderTo: 'user_chart_container',
@@ -155,7 +155,7 @@
                     },
                     labels: {
                         formatter: function() {
-                            return '$' + this.value;           
+                            return '$' + this.value;
                         },style: {
                             color: 'rgba(255, 215, 0, 0.75)'
                         }
@@ -164,7 +164,7 @@
                     min: 0
                 },{
                     title: {
-                        text: 'Social Reach'       
+                        text: 'Social Reach'
                     },
                     opposite: true,
                     min: 0
@@ -213,7 +213,7 @@
             });
             */
         });
-        
+
     </script>
     <style type="text/css">
         #user_top h1,
@@ -261,7 +261,7 @@
             position: relative;
         }
         img.pic {
-           box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5); 
+           box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
         }
         img.small_pic {
             cursor: pointer;
@@ -327,7 +327,7 @@
             color: rgba(0, 0, 0, 0.6);
         }
         .dollars {
-            background: url(/static/imgs/db_burst.png) no-repeat center center; 
+            background: url(/static/imgs/db_burst.png) no-repeat center center;
             height: 128px;
             text-align: center;
         }
@@ -375,10 +375,10 @@
         <p><a href='{{logout_url}}'>Logout</a></p>
         <p><a href='/client/account'>Your Apps</a></p>
     </div>
-    
+
     {% if not valid_user %}
         <h1 class="span-24 last center lower-100">
-           Invalid User 
+           Invalid User
         </h1>
 
         <p class="center">Invalid user specified. </p>
@@ -418,17 +418,17 @@
                 <div>
                     <h4>Influence</h4>
                     <div class="progress-bar red">
-						<div>
-							<span>92<sup>%</sup></span>
-						</div>
+                        <div>
+                            <span>92<sup>%</sup></span>
+                        </div>
                     </div>
                 </div>
                 <div>
                     <h4>Engagement</h4>
                     <div class="progress-bar red">
-						<div>
-							<span>32<sup>%</sup></span>
-						</div>
+                        <div>
+                            <span>32<sup>%</sup></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -440,40 +440,40 @@
                     <ul class="stats-summary">
                         <li>
                             <strong class="stats-count">{{ total_referrals }}</strong>
-							<p>Shares</p>
-                            <!-- 
+                            <p>Shares</p>
+                            <!--
                             <a href="#shares" class="button stats-view" title="View new visitros" rel="tooltip">Show</a>
-                            -->    
+                            -->
                         </li>
                         <li>
                             <strong class="stats-count">{{ total_clicks}}</strong>
-							<p>Click throughs</p>
-                            <!-- 
+                            <p>Click throughs</p>
+                            <!--
                             <a href="#clicks" class="button stats-view" rel="tooltip" original-title="View new orders">Show</a>
                             -->
                         </li>
-						<!--<li>
+                        <!--<li>
                             <strong class="stats-count">{{ reach }}</strong>
-							<p>Social Reach</p>
-                             
+                            <p>Social Reach</p>
+
                             <a href="#reach" class="button stats-view" rel="tooltip" original-title="View new sales">Show</a>
-                              
-                        </li>-->  
-						<li>
+
+                        </li>-->
+                        <li>
                             <strong class="stats-count">{{ total_conversions }}</strong>
-							<p>Conversions</p>
-                            <!-- 
+                            <p>Conversions</p>
+                            <!--
                             <a href="#conversions" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
-                            -->    
+                            -->
                         </li>
                         <li class="golden">
                             <strong class="stats-count">${{ total_profit }}</strong>
-							<p>Referral Purchases</p>
+                            <p>Referral Purchases</p>
                             <!-- <a href="#profit" class="button stats-view" title="View new requests" rel="tooltip">Show</a>
                             -->
                         </li>
 
-					</ul> 
+                    </ul>
                 </div>
             </div>
             <div class="span-12 last shaded lower-10">

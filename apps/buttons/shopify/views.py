@@ -2,6 +2,7 @@
 """ 'Get' functions for the ShopConnection application
 """
 import logging
+import datetime
 from google.appengine.ext.webapp    import template
 from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
 from apps.client.shopify.models     import ClientShopify
@@ -298,6 +299,37 @@ class ButtonsShopifyConfig(URIHandler):
     """Actions for the config page."""
     button_range = range(2, 6)
 
+    def determine_buttons(self, preferences):
+        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
+                               'Svpply', 'Tumblr', 'Twitter'])
+        button_order    = preferences.get("button_order",
+            ["Pinterest","Tumblr","Fancy"])
+
+        # That's right! TAKE THAT MATH-HATERS!
+        unused_buttons  = buttons.difference(button_order)
+
+        return (button_order, unused_buttons)
+
+    def get_button_shares(self, app):
+        share_period = SharePeriod.all()\
+            .filter('app_uuid =', app.uuid)\
+            .order('-end')\
+            .get()
+
+        if share_period is None or (share_period.end < datetime.date.today()):
+            logging.info("No shares have ever occured this period (or ever?)")
+            return ({}, {})
+
+        shares_by_name    = share_period.get_shares_grouped_by_product()
+        shares_by_network = share_period.get_shares_grouped_by_network()
+
+        top_items  = sorted(shares_by_name, key=lambda v: v["total_shares"],
+                            reverse=True)[:3]
+        top_shares = sorted(shares_by_network, key=lambda v: v['shares'],
+                            reverse=True)
+
+        return (top_items, top_shares)
+
     @catch_error
     def get(self):
         """Display the config page for first use"""
@@ -315,7 +347,6 @@ class ButtonsShopifyConfig(URIHandler):
         config_url       = build_url("ButtonsShopifyConfig", qs=query_params)
         instructions_url = build_url("ButtonsShopifyInstructions", qs=query_params)
         upgrade_url      = build_url("ButtonsShopifyUpgrade", qs=query_params)
-
         learn_more_url   = build_url("ButtonsShopifyWelcome", qs={
             "t"   : self.request.get("t"),
             "shop": self.request.get("shop"),
@@ -325,13 +356,8 @@ class ButtonsShopifyConfig(URIHandler):
 
         preferences = app.get_prefs()
 
-        buttons         = set(['Facebook', 'Fancy', 'GooglePlus', 'Pinterest',
-                               'Svpply', 'Tumblr', 'Twitter'])
-        button_order    = preferences.get("button_order",
-            ["Pinterest","Tumblr","Fancy"])
-
-        # That's right! TAKE THAT MATH-HATERS!
-        unused_buttons  = buttons.difference(button_order)
+        button_order, unused_buttons = self.determine_buttons(preferences)
+        item_shares, network_shares  = self.get_button_shares(app)
 
         # Use .get in case properties don't exist yet
         template_values = {
@@ -349,7 +375,9 @@ class ButtonsShopifyConfig(URIHandler):
             'upgrade_url'     : upgrade_url,
             'learn_more_url'  : learn_more_url,
             'instructions_url': instructions_url,
-            'config_enabled'  : app.billing_enabled
+            'config_enabled'  : app.billing_enabled,
+            'item_shares'     : item_shares,
+            'network_shares'  : network_shares
         }
 
         # prepopulate values

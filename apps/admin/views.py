@@ -20,7 +20,7 @@ from apps.email.models import Email
 from apps.app.models import App
 from apps.app.shopify.models import AppShopify
 from apps.action.models import Action
-from apps.action.models import ScriptLoadAction
+# from apps.action.models import ScriptLoadAction
 from apps.client.models import Client
 from apps.client.shopify.models import ClientShopify
 from apps.link.models import Link
@@ -36,12 +36,13 @@ from util.consts import *
 from util.helpers import *
 from util.helpers import url as reverse_url
 from util.urihandler import URIHandler
-from util.memcache_bucket_config import MemcacheBucketConfig 
+from util.memcache_bucket_config import MemcacheBucketConfig
 
 
 class Admin(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         links = Link.all()
         str = " Bad Links "
         for l in links:
@@ -115,8 +116,8 @@ class ManageApps(URIHandler):
             except Exception,e:
                 logging.warn('Error adding app: %s' % e, exc_info=True)
         return apps
-    
-    @admin_required
+
+    #@admin_required
     def get(self, client=None):
         template_values = {
             'apps': self.get_app_list()
@@ -128,13 +129,13 @@ class ManageApps(URIHandler):
             )
         )
 
-    @admin_required
+    #@admin_required
     def post(self, admin=None):
         """ does a predefined list of actions on apps."""
         app_id = self.request.get('app_id')
         action = self.request.get('action')
         app = App.get(app_id)
-        
+
         messages = []
 
         if app != None:
@@ -156,7 +157,7 @@ class ManageApps(URIHandler):
                     app.top_bar_enabled = True
                     app.put()
                 elif action == 'disable_tb':
-                    app.top_bar_enabled = False 
+                    app.top_bar_enabled = False
                     app.put()
                 elif action == 'set_number_shows_before_tb':
                     app.num_shows_before_tb = int(self.request.get('num_shows_before_tb'))
@@ -172,7 +173,7 @@ class ManageApps(URIHandler):
                     logging.warn("bad action: %s" % action)
                 messages.append({
                     'type': 'message',
-                    'text': '%s for %s' % (action, app.client.name) 
+                    'text': '%s for %s' % (action, app.client.name)
                 })
                 logging.info('done action %s on app of type %s\nbutton: %s\ntb: %s' % (
                     action,
@@ -188,19 +189,19 @@ class ManageApps(URIHandler):
         else:
             messages.append({
                 'type': 'error',
-                'text': 'Could not get app for id: %s' % app_id 
+                'text': 'Could not get app for id: %s' % app_id
             })
 
         template_values = {
-            'apps': self.get_app_list(), 
+            'apps': self.get_app_list(),
             'messages': messages
         }
-        
+
         self.response.out.write(self.render_page(
                 'manage_apps.html',
                 template_values
             )
-        ) 
+        )
 
 
 class SIBTInstanceStats(URIHandler):
@@ -213,7 +214,7 @@ class SIBTInstanceStats(URIHandler):
                     str += "<p> <a href='%s/admin/sibt?w=%s'> Store: %s Link: %s </a></p>" % (URL, l.link.get_willt_code(), l.app_.store_name, l.link.get_willt_code)
             except:
                 pass
-        
+
         str += "<br /><br /><h1> Dead Instances </h1>"
         dead_instances = SIBTInstance.all().filter('is_live =', False)
         for l in dead_instances:
@@ -241,11 +242,11 @@ class SIBTInstanceStats(URIHandler):
         actions = Action.all().filter('sibt_instance =', instance)
         clicks = SIBTClickAction.get_by_instance(instance)
         votes = SIBTVoteAction.get_by_instance(instance)
-        
+
         # Init the page
         str = "<h1>SIBT Instance: "
         str +="<a href='%s'>Link to Vote</a> </h1> " % (link.get_willt_url())
-        
+
         str += "Started: %s" % instance.created.strftime('%H:%M:%S %A %B %d, %Y')
 
         str += "<h2># Actions: %d " % actions.count() if actions else 0
@@ -254,18 +255,18 @@ class SIBTInstanceStats(URIHandler):
 
         str += "<p>Product: <a href='%s'>%s</a></p>" % (link.target_url, link.target_url)
         str += "<p>Asker: '%s' <a href='https://graph.facebook.com/%s?access_token=%s'>FB Profile</a>" % (asker.get_full_name(), asker.fb_identity, asker.fb_access_token)
-        
+
         str += "<br /><br />"
         str += "<table width='100%'><tr><td width='15%'> Time </td> <td width='15%'> Action </td> <td width='50%'> User </td></tr>"
-        
+
         # Actions
         so = sorted(actions, key=lambda x: x.created, reverse=True)
         for a in so:
             logging.info("actions %s" % a.user)
             u = a.user
 
-            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__)         
-            
+            str += "<tr><td>(%s):</td> <td>%s</td> <td>" % (a.created.strftime('%H:%M:%S'), a.__class__.__name__)
+
             if hasattr(u, 'fb_access_token'):
                 str += "<a href='https://graph.facebook.com/%s?access_token=%s'>%s</a>" % (u.fb_identity, u.fb_access_token, u.get_full_name())
             else:
@@ -273,7 +274,7 @@ class SIBTInstanceStats(URIHandler):
 
             if hasattr(u, 'ips'):
                 str += " IPs: %s " % u.ips
-            
+
                 str += " Admin? %s</td> </tr>" % u.is_admin()
 
         str += "</table> <h2> Instance Comments </h2>"
@@ -281,16 +282,17 @@ class SIBTInstanceStats(URIHandler):
         str += '<div id="fb-root"></div> <script>(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) {return;} js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=181838945216160"; fjs.parentNode.insertBefore(js, fjs); }(document, "script", "facebook-jssdk"));</script>'
 
         str += '<div class="fb-comments" data-href="%s?%s" data-num-posts="5" data-width="500"></div>' % (instance.url, instance.uuid)
-        
+
         self.response.out.write(str)
         return
 
 
 class ShowActions(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         template_values = {}
-            
+
         self.response.out.write(self.render_page(
                 'actions.html',
                 template_values,
@@ -299,8 +301,9 @@ class ShowActions(URIHandler):
 
 
 class GetActionsSince(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         """This is going to fetch actions since a datetime"""
         since = self.request.get('since')
         before = self.request.get('before')
@@ -308,7 +311,7 @@ class GetActionsSince(URIHandler):
             actions = Action.all()
             actions = actions.order('-created')
             if since:
-                logging.info('filtering by since %s' % since) 
+                logging.info('filtering by since %s' % since)
                 last_pull = Action.get(str(since))
                 actions = actions.filter('created >', last_pull.created)
                 actions = sorted(actions, key=lambda action: action.created)
@@ -346,15 +349,16 @@ class GetActionsSince(URIHandler):
             actions_json = json.dumps(actions_json)
 
             self.response.out.write(actions_json)
-            
+
         except Exception, e:
             logging.error(e, exc_info=True)
             self.response.out.write(e)
 
 
 class ShowClickActions(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         things = {
             'tb': {
                 'action': 'SIBTUserClickedTopBarAsk',
@@ -381,7 +385,7 @@ class ShowClickActions(URIHandler):
                     .all(keys_only=True)\
                     .filter('class =', things[t]['show_action'])\
                     .count(999999)
-            
+
             for click in Action.all().filter('what =', things[t]['action']).order('created'):
                 try:
                     # we want to get the askiframe event
@@ -438,7 +442,7 @@ class ShowClickActions(URIHandler):
                 except Exception, e:
                     logging.warn('had to ignore one: %s' % e, exc_info=True)
             things[t]['counts'][things[t]['action']] = len(things[t]['l'])
-            
+
             l = [{'name': item, 'value': things[t]['counts'][item]} for item in things[t]['counts']]
             l = sorted(l, key=lambda item: item['value'], reverse=True)
             things[t]['counts'] = l
@@ -465,7 +469,7 @@ class FBConnectStats(URIHandler):
         html += "<h2> Instances </h2>"
         html += "<p>No Connect Dialog: %d</p>" % instance_noconnect
         html += "<p>Connect Dialog: %d</p>" % instance_connect
-        
+
         self.response.out.write(html)
 
 
@@ -481,28 +485,30 @@ class ReloadURIS(URIHandler):
             'message': message,
             'stats': memcache.get_stats()
         }
-        self.response.out.write(self.render_page('reload_uris.html', 
+        self.response.out.write(self.render_page('reload_uris.html',
             template_values))
 
 
 class CheckMBC(URIHandler):
     """ /admin/check_mbc displays the current number of "memcache buckets".
-        /admin/check_mbc?num=50 sets the number of memcache buckets to 50. 
+        /admin/check_mbc?num=50 sets the number of memcache buckets to 50.
         Default seems to be 20 or 25. """
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
         num = self.request.get('num')
         if num:
-            mbc.count = int(num) 
+            mbc.count = int(num)
             mbc.put()
-        
+
         self.response.out.write('Count: %d' % mbc.count)
 
 
 class ShowMemcacheConsole(URIHandler):
-    @admin_required
-    def post(self, admin):
+    #@admin_required
+    #def post(self, admin):
+    def post(self):
         key = self.request.get('key')
         value = None
         clear_value = self.request.get('clear')
@@ -524,7 +530,7 @@ class ShowMemcacheConsole(URIHandler):
                 else:
                     memcache.set(key, new_value)
                     messages.append('Changed %s from %s to %s' % (
-                        key, value, new_value    
+                        key, value, new_value
                     ))
             logging.info('got value: %s' % value)
         data = {
@@ -536,8 +542,9 @@ class ShowMemcacheConsole(URIHandler):
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(data))
 
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         self.response.out.write(self.render_page(
                 'memcache_console.html', {},
             )
@@ -572,8 +579,9 @@ class ShowCounts(URIHandler):
 
 
 class ShowAnalytics(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
 
         template_values = {
             'actions': actions_to_count,
@@ -586,7 +594,7 @@ class ShowAnalytics(URIHandler):
 
 class ShowAppAnalytics(URIHandler):
     def get(self, app_uuid):
-        app = App.get(app_uuid) 
+        app = App.get(app_uuid)
 
         template_values = {
             'actions': actions_to_count,
@@ -598,8 +606,9 @@ class ShowAppAnalytics(URIHandler):
 
 
 class AppAnalyticsCompare(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         template_values = {
             'actions': actions_to_count,
             'app': ''
@@ -613,19 +622,21 @@ class EmailEveryone (URIHandler):
     # TODO: change mass_mail_client.html to call EmailBatch instead of post
     # TODO: change EmailBatch request into BatchRequest
     """ Task Queue-based blast email URL. """
-    @admin_required
-    def get (self, admin):
+    #@admin_required
+    #def get (self, admin):
+    def get (self):
         # render the mail client
         template_values = {}
         self.response.out.write(self.render_page('mass_mail_client.html', template_values))
 
-    @admin_required
-    def post (self, admin):
+    #@admin_required
+    #def post (self, admin):
+    def post (self):
         batch_size = 100
         full_name = ''
 
         logging.info("Sending everyone an email.")
-        
+
         app_cls = self.request.get('app_cls')
         target_version = self.request.get('version')
         subject = self.request.get('subject')
@@ -633,7 +644,7 @@ class EmailEveryone (URIHandler):
 
         logging.info('Requested email:\nApp Class = %s\nApp version = %r\nSubject = %s\nBody = %s'
                         % (app_cls, target_version, subject, body))
-        
+
         # Check that we have something to email
         if not (len(subject) > 0) or not (len(body) > 0):
             self.error(400) # Bad Request
@@ -655,3 +666,44 @@ class EmailEveryone (URIHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.out.write ("%r" % all_emails)
         return
+
+
+class RealFetch(URIHandler):
+    """Can't find what you want? Use RealFetch to scrape the entire DB!"""
+    def get(self):
+        """In your query string, do ?kind=App
+                                    &field1=something
+                                    &field2=some_other
+        to search for Apps with field1 equal to 'something'
+        and field2 equal to 'some_other' at the same time.
+
+        Criteria stack.
+
+        This view costs a lot of reads. Do not use unless you really want to
+        confirm something really exists.
+        """
+        criteria = {}
+
+        self.response.headers['Content-Type'] = 'text/plain'
+        try:
+            kind = globals()[self.request.get('kind')]
+            kind_objs = db.Query(kind)
+        except:
+            # if kind isn't a Kind, those lines will certainly blow up
+            return
+
+        # get {'field1': 'something', ...} for all non-empty values
+        for c in self.request.arguments():
+            if self.request.get(c):
+                criteria[c] = self.request.get(c)
+        del(criteria['kind'])
+
+        self.response.out.write ('%r\n' % criteria)
+
+        for obj in kind_objs:
+            for criterion in criteria.keys():
+                if getattr(obj, criterion, None) != criteria[criterion]:
+                    continue  # this item fails
+            # this item passes
+            self.response.out.write ('[%s] %r\n' % (getattr(obj,'uuid', '???'),
+                                                    obj))

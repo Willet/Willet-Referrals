@@ -11,15 +11,14 @@ urlpatterns = [
     (r'/s/results.html',            ShowResults),
     (r'/s/fb_thanks.html',          ShowFBThanks),
     (r'/s/track/unload',            ShowOnUnloadHook),
+    (r'/s/shopify/real-sibt.js',    SIBTShopifyServeScript),  # merged
     (r'/s/sibt.js',                 SIBTServeScript),
-  # (r'/s',                         SIBTWelcome), # not used
     (r'/s/beta',                    ShowBetaPage),
     (r'/s/beta/signup',             SIBTSignUp),
 
     # Processes
     (r'/s/doVote',                  DoVote),
     (r'/s/getExpired',              GetExpiredSIBTInstances),
-    (r'/s/instance/share/facebook', ShareSIBTInstanceOnFacebook),
     (r'/s/instance/start',          StartSIBTInstance),
     (r'/s/removeExpired',           RemoveExpiredSIBTInstance),
     (r'/s/sendFriendAsks',          SendFriendAsks),

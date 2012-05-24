@@ -172,10 +172,11 @@
         border: 1px dotted #000;
         margin-left: 200px;
         margin-right: 20px;
+        line-height: initial;
     }
 
     .tab-bar {
-        margin-top: 50px;
+        margin-top: 125px;
     }
 
     .tab-header {
@@ -207,6 +208,27 @@
 
     select {
         font-size: 1.3em;
+    }
+
+    #analytics li {
+        margin-left: 15px;
+    }
+
+    .small {
+        font-size: 0.65em;
+    }
+
+    .grabbable {
+        cursor: hand;
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+    }
+
+    .grabbable:active {
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
     }
 </style>
 <!--[if IE 7]>
@@ -277,7 +299,8 @@
         type="text/javascript"></script>
 <script>
     $(document).ready(function () {
-        var maxButtons,
+        var changeTabs,
+            maxButtons,
             update,
             updateNetworks,
             updatePreview;
@@ -340,6 +363,25 @@
             updatePreview();
         }
 
+        changeTabs = function(event) {
+            var target = event.currentTarget,
+                page = $(target).find("a").attr("href");
+
+            //remove selection from all the tabs
+            $(".tab-header").removeClass("selected");
+
+            //add selection to this particular tab
+            $(target).addClass("selected");
+
+            //hide all tabs
+            $(".page").hide();
+
+            //show the relevant tab
+            $(page).show();
+
+            event.preventDefault();
+        };
+
         //--------------- UI SETUP ---------------//
 
         // Set the default selected element
@@ -376,6 +418,10 @@
         $("[name=button_count]").change(update);
         $("#max-buttons").change(update);
 
+        //{% if config_enabled %}
+        $(".tab-header").not(".tab-ignore").click(changeTabs);
+        //{% endif %}
+
         $('#go_to_shopify').click(function () {
             window.location = "{{shop_url}}/admin";
         });
@@ -406,13 +452,27 @@
 </div>
 
 <div class="prepend-top tab-bar">
-    <span class="tab-header selected">Configuration</span>
+    <span class="tab-header selected">
+        <a href="#configuration">Configuration</a>
+        {% if not config_enabled %}
+        <br/><span class="small">(Unavailable in free version)</span>
+        {% endif %}
+    </span>
     <span class="tab-header">
+        <a href="#analytics">Share Details</a>
+        {% if not config_enabled %}
+        <br/><span class="small">(Unavailable in free version)</span>
+        {% endif %}
+    </span>
+    <span class="tab-header tab-ignore">
         <a href="{{ instructions_url }}">Instructions</a>
+        {% if not config_enabled %}
+        <br/><span class="small">&nbsp;</span>
+        {% endif %}
     </span>
 </div>
 
-<div class="span-24 last box-design content-container"
+<div id="configuration" class="page span-24 last box-design content-container"
      style="margin-top: 0px;">
     <h1>ShopConnection Configuration</h1>
 
@@ -446,7 +506,7 @@
                         </span>
                         <ul id="default-buttons" class="connectedSortable">
                             {% for button in button_order %}
-                            <li class="icon {{ button }}">
+                            <li class="icon {{ button }} grabbable">
                                 <span>{{ button }}</span>
                             </li>
                             {% endfor %}
@@ -461,11 +521,13 @@
                         </span>
                         <ul id="unused-buttons" class="connectedSortable">
                             {% for button in unused_buttons %}
-                            <li class="icon {{ button }}">
+                            <li class="icon {{ button }} grabbable">
                                 <span>{{ button }}</span>
                             </li>
                             {% endfor %}
                         </ul>
+                        <img src="/static/imgs/draganddrop.png"
+                             style="position: relative; top: -10px;">
                     </div>
                     <div class="config-option">
                         <span class="left-column">
@@ -567,8 +629,22 @@
         </div>
     </div>
 </div>
+
+<div id="analytics" class="page span-24 last box-design content-container"
+     style="margin-top: 0px; display:none;">
+    <h1>ShopConnection Share Details</h1>
+
+    <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
+        <div class="box-design mask-target">
+            <div style="padding: 20px;">
+            {% include "../../../email/templates/smart_buttons_report_content.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-    <h3 class="center">Have other questions? Email: support@getwillet.com</h3>
+    <h3 class="center">Have other questions? Visit <a href="http://support.willetinc.com">our support website</a>, or Email: support@getwillet.com</h3>
     <br />
 
     <div class="center">

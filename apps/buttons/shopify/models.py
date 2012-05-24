@@ -73,13 +73,13 @@ class ButtonsShopify(Buttons, AppShopify):
         elif monthly_orders < 20:
             price = 1.99 #basic
         elif monthly_orders < 50:
-            price = 4.99 #professional
+            price = 2.99 #professional
         elif monthly_orders < 100:
-            price = 9.99 #business
+            price = 3.99 #business
         elif monthly_orders < 200:
-            price = 14.99 #unlimited
+            price = 5.99 #unlimited
         else:
-            price = 19.99 #enterprise
+            price = 9.99 #enterprise
 
         self.recurring_billing_price = unicode(price)
         self.put()
@@ -106,11 +106,19 @@ class ButtonsShopify(Buttons, AppShopify):
 
         self.install_queued()
 
+        email = self.client.email
+        name  = self.client.merchant.get_full_name()
+        store = self.client.name
+        use_full_name = False
+
+        if REROUTE_EMAIL:
+            name += " (%s) [%s]" % (email, self.store_url)
+            email = REROUTE_EMAIL
+            use_full_name = True
+
         # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", 
-                             self.client.email, 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name)
+        Email.welcomeClient("ShopConnection", email, name, store,
+                            use_full_name=use_full_name)
         
         # Email DevTeam
         Email.emailDevTeam(
@@ -188,6 +196,39 @@ class ButtonsShopify(Buttons, AppShopify):
         # Correct the object, and re-index any properties
         self.put()
 
+        try:
+            # Get the previous tag...
+            results = self._call_Shopify_API("GET", "script_tags.json")
+
+            if not results.get("script_tags"):
+                # What?
+                return
+
+            tag = None
+            for script_tag in results.get("script_tags"):
+                if "/b/shopify/load/" in script_tag.get("src", ""):
+                    tag = script_tag
+                    break
+
+            if not tag:
+                # What?
+                return
+
+            # Update the tag...
+            version = os.environ['CURRENT_VERSION_ID']
+            button_type = ""
+            if self.billing_enabled:
+                button_type = "smart-"
+
+            tag["src"] = "%s/b/shopify/load/%sbuttons.js?app_uuid=%s&v=%s" %\
+                      (URL, button_type, self.uuid, version)
+
+            self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
+                                   payload={"script_tag": tag})
+        except ShopifyAPIError:
+            logging.warning("Couldn't get or put script")
+
+
     def update_prefs(self, preferences):
         """Update preferences for the application."""
         if self.billing_enabled:
@@ -221,33 +262,35 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_prefs(self):
         """Get preferences, provided that they exist."""
         #need to get theme id first...
-        result = self._call_Shopify_API("GET", "themes.json")
-
-        theme_id = None
-        for theme in result['themes']:
-            if 'role' in theme and 'id' in theme:
-                if theme['role'] == 'main':
-                    theme_id = theme['id']
-                    break
-
-        query_params = urlencode({
-            "asset[key]": "snippets/willet-shopconnection.liquid",
-            "theme_id": theme_id
-        })
-
         prefs = {}
+
         try:
+            result = self._call_Shopify_API("GET", "themes.json")
+
+            theme_id = None
+            for theme in result['themes']:
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        theme_id = theme['id']
+                        break
+
+            query_params = urlencode({
+                "asset[key]": "snippets/willet-shopconnection.liquid",
+                "theme_id": theme_id
+            })
+
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
-                                   (theme_id, query_params))
+                                   (theme_id, query_params),
+                                   suppress_errors = True)
 
-            if result["asset"] and result["asset"]["value"]:
+            if result.get("asset") and result["asset"].get("value"):
                 value           = result["asset"]["value"]
                 _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
-            pass  # Explicitly catch this
+            pass  # Either user is unbilled, or doesn't have the snippet.
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 

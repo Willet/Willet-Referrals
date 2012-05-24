@@ -28,22 +28,22 @@ class Order(Model, polymodel.PolyModel):
     user = MemcacheReferenceProperty(db.Model,
                                      default=None,
                                      collection_name="purchases")
-    
+
     # Person who is selling the wareZ (ie. seller)
     client = db.ReferenceProperty(db.Model, collection_name="orders")
-    
+
     # Total price of this Order (taxes not incl)
     subtotal_price = db.FloatProperty(indexed = False) # no taxes
-    
+
     # Products that were purchased in this order
     products = db.ListProperty(db.Key)
 
     def __init__(self, *args, **kwargs):
         """ Initialize this object"""
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
-        
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
+
         super(Order, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         return True
 

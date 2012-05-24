@@ -32,7 +32,7 @@
             .instruction-step input {
                 margin: 0;
             }
-            .step-num, .step-warn {
+            .step-num, .step-warn, .step-info {
                 position: absolute;
                 top: -10px;
                 left: -10px;
@@ -50,6 +50,10 @@
             }
             .step-warn {
                 background-color: #C40000;
+                padding: 0 13px;
+            }
+            .step-info {
+                background-color: #0496AC;
                 padding: 0 13px;
             }
 
@@ -73,6 +77,10 @@
                 padding-left: 90px;
                 margin: 0;
             }
+            .video-holder {
+                width: 560px;
+                margin: 0 auto;
+            }
         </style>
 {% endblock head %}
 
@@ -94,6 +102,17 @@
                     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                         <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
                                     box-design instruction-step">
+                            <div class="step-info">i</div>
+                            <div class="video-holder">
+                                <iframe width="560" height="315"
+                                        src="http://www.youtube.com/embed/YlGaizJwEiE?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                        <div class="prepend-top prepend-1 span-18 append-1 append-bottom last
+                                    box-design instruction-step">
                             <div class="step-num">1.</div>
                             <p><strong>In</strong> your <a target="_blank" href="{{app.store_url}}/admin">Shopify administration panel</a>, open the <em>Template Editor</em> under <em>Themes</em>.</p>
 
@@ -107,7 +126,7 @@
                             <div class="span-10">
                                 <div class="step-num">2.</div>
                                 <p class="lower-50">
-                                    <strong>Under</strong> the <em>Snippets</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Snippets</em>, try looking under <em>Templates</em>.
+                                    <strong>Under</strong> the <em>Templates</em> section, click on <em>product.liquid</em>. If you cannnot locate <em>product.liquid</em> under <em>Templates</em>, try looking under <em>Snippets</em>.
                                 </p>
                             </div>
                             <div class="prepend-2 span-6 last">
@@ -171,9 +190,8 @@
                     <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
                         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
-                            <div class="step-num">&#x2713;</div>
-                            <p class="center"><b>All done! Now, visit any of your product pages to verify the buttons are displaying correctly.</b></p>
-                            <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection"> Shopify App Store</a> for other merchants.</p>
+                            <div class="step-num">6.</div>
+                            <p class="center"><b>All done!</b> Now, visit any of your product pages to verify the buttons are displaying correctly.</p>
                         </div>
                     </div>
 
@@ -181,11 +199,26 @@
                         <div class="prepend-1 span-18 append-1 last
                                     box-design instruction-step">
                             <div class="step-warn">!</div>
-                            <p><b>Are</b> the buttons not displaying as expected?  Check out our <a target="_blank" href="http://willetshopconnection.blogspot.com/2012/03/troubleshooting-guide-for.html">Troubleshooting Guide for ShopConnection</a>.</p>
+                            <p><b>Are</b> the buttons not displaying as expected? Visit <a target="_blank" href="http://support.willetinc.com">our support website</a>, or email <a href="mailto:support@getwillet.com">support@getwillet.com</a></p>
+                        </div>
+                    </div>
+
+                    <div class="prepend-top prepend-2 span-20 append-2 append-bottom last">
+                        <div class="prepend-1 span-18 append-1 last
+                                    box-design instruction-step">
+                            <div class="step-num">&#x2713;</div>
                             {% if not config_enabled %}
-                            <p><b>Want</b> to customize the look or location of the buttons?  Check out our <a target="_blank" href="http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html">Customization Guide for ShopConnection</a>.</p>
+                            <p class="center">Liked the easy installation? Leave some kind words in the <a target="_blank" href="http://apps.shopify.com/shopconnection">Shopify App Store</a> for other merchants.</p>
+                            <div class="center lower-15">
+                                <button class='blue' id='go_to_shopify'>
+                                    <img src="/static/imgs/shopify-bag-36.png" />
+                                    <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
+                                        Return to your Store
+                                    </span>
+                                </button>
+                            </div>
                             {% else %}
-                            <div class="center">
+                            <div class="center lower-15">
                                 <button class='blue' id='next_page'>
                                     <img src="/static/imgs/shopify-bag-36.png" />
                                     <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
@@ -197,21 +230,7 @@
                         </div>
                     </div>
 
-                    <div class="prepend-top prepend-3 span-18 append-3 last append-bottom">
-                        <h3 class="center">Have other questions? Email: support@getwillet.com</h3>
-                        <br />
-
-                        {% if not config_enabled %}
-                        <div class="center">
-                            <button class='blue' id='go_to_shopify'>
-                                <img src="/static/imgs/shopify-bag-36.png" />
-                                <span style="float: right;display: block;padding-left: 10px;margin-top: 5%;">
-                                    Return to your Store
-                                </span>
-                            </button>
-                        </div>
-                        {% endif %}
-                    </div>
+                    <div class="lower-15 prepend-top span-24 append-bottom last"></div>
                 </div>
 {% endblock content %}
 

@@ -7,7 +7,7 @@ ie. Referral, 'Should I buy this?', etc
 """
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 import random
@@ -22,6 +22,7 @@ from util.consts import *
 from util.helpers import generate_uuid
 from util.model import Model
 from util.memcache_ref_prop import MemcacheReferenceProperty
+from util.shopify_helpers import get_url_variants
 
 NUM_SHARE_SHARDS = 15
 
@@ -49,17 +50,16 @@ class App(Model, polymodel.PolyModel):
 
     # Version number of the app
     # Version 1 = [Beginning, Nov. 22, 2011]
-    # Version 2 = [Nov. 23, 2011, Present]
+    # Version 2 = [Nov. 23, 2011, Feb. 2012]
     # version 3: "sweet buttons upgrade"
-    # version 10: merge SIBT into ShopConnection app
+    # version 10: SIBT-JS, SIBT2 (add WOSIB-like functionality)
     version = db.StringProperty(default='10', indexed=False)
-
     # STRING property of any integer
     # change on upgrade; new installs get this as version.
     CURRENT_INSTALL_VERSION = '10'
 
     def __init__(self, *args, **kwargs):
-        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None 
+        self._memcache_key = kwargs['uuid'] if 'uuid' in kwargs else None
         super(App, self).__init__(*args, **kwargs)
 
     def _validate_self(self):
@@ -68,6 +68,7 @@ class App(Model, polymodel.PolyModel):
     @classmethod
     def _get_from_datastore(cls, uuid):
         """Datastore retrieval using memcache_key"""
+        logging.debug("cls = %r, uuid = %s" % (cls, uuid))
         return cls.all().filter('uuid =', uuid).get()
 
     def delete(self):
@@ -90,12 +91,28 @@ class App(Model, polymodel.PolyModel):
     def get_by_client(cls, client):
         return cls.all().filter('client =', client).get()
 
+    @classmethod
+    def get_by_url(cls, store_url):
+        """Fetch an app via the store's url. This app can be of any type,
+        and of any subclass. Use subclass-specific get_by_url functions
+        to obtain more precise targets.
+        """
+        (url, www_url) = get_url_variants(store_url, keep_path=False)
+
+        logging.info("Looking for App in %s" % url)
+        app = cls.all().filter('store_url IN', [url, www_url]).get()
+        if app:
+            return app
+
+        app = cls.all().filter('extra_url IN', [url, www_url]).get()
+        return app
+
     # Counters ----------------------------------------------------------------
     def count_clicks(self):
         # Get an updated value by putting this on a queue
         taskqueue.add(
-            queue_name = 'app-ClicksCounter', 
-            url = '/a/appClicksCounter', 
+            queue_name = 'app-ClicksCounter',
+            url = '/a/appClicksCounter',
             name = 'app_ClicksCounter_%s_%s' % (
                 self.uuid,
                 generate_uuid(10)),
@@ -124,7 +141,7 @@ class App(Model, polymodel.PolyModel):
             shard_name = self.uuid + str(index)
             counter = ShareCounter.get_by_key_name(shard_name)
             if counter is None:
-                counter = ShareCounter(key_name=shard_name, 
+                counter = ShareCounter(key_name=shard_name,
                                        app_id=self.uuid)
             counter.count += num
             counter.put()

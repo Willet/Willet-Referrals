@@ -13,15 +13,15 @@ from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
 
 class ProductShopify(Product):
-    
+
     shopify_id = db.StringProperty(indexed = True)
     json_response = db.TextProperty(indexed = False) # add more product fields to json as necessary
 
-    memcache_fields = ['resource_url', 'shopify_id']
+    _memcache_fields = ['resource_url', 'shopify_id']
 
     def __init__(self, *args, **kwargs):
         super(ProductShopify, self).__init__(*args, **kwargs)
-    
+
     def _validate_self(self):
         # Could check if shopify_id is valid
         # Could check if resource_url is valid
@@ -39,7 +39,7 @@ class ProductShopify(Product):
                 logging.debug ('%d images for this product found; adding to \
                     ProductShopify object.' % len(data['images']))
                 images = [str(image['src']) for image in data['images']]
-            
+
             # Make the product
             product = ProductShopify(key_name=uuid,
                                      uuid=uuid,
@@ -65,20 +65,22 @@ class ProductShopify(Product):
 
     @classmethod
     def get_or_fetch(cls, url, client):
-        """ returns a product from our datastore, or if it is not found AND cls is ProductShopify, 
+        """ returns a product from our datastore, or if it is not found AND cls is ProductShopify,
             fire a JSON request to Shopify servers to get the product's
             information, create the Product object, and returns that.
         """
+        if not url:
+            logging.error('Cannot fetch product with blank URL!')
+            return None
+
         url = url.split('?')[0].strip('/') # removes www.abc.com/product[/?junk=...]
         product = Product.get_by_url(url)
         if not product:
             logging.warn('Could not get product for url: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
-                result = urlfetch.fetch(
-                        url='%s.json' % url,
-                        method=urlfetch.GET
-                )
+                result = urlfetch.fetch(url='%s.json' % url,
+                                        method=urlfetch.GET)
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id(str(data['id']))
@@ -87,8 +89,12 @@ class ProductShopify(Product):
                 else:
                     logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
+            except ValueError:
+                logging.warn("No JSON equivalent for this page: %s" % url,
+                             exc_info=True)
             except:
-                logging.error("error fetching and storing product for url %s" % url, exc_info=True)
+                logging.error("error fetching and storing product for url %s" % url,
+                              exc_info=True)
         return product
 
     def update_from_json(self, data):
@@ -97,7 +103,7 @@ class ProductShopify(Product):
         price = 0.0
 
         # remove all newlines from description
-        try:    
+        try:
             description = data['body_html']\
                     .replace('\r\n', '')\
                     .replace('\n', '')
@@ -127,7 +133,7 @@ class ProductShopify(Product):
         self.shopify_id = str(data['id'])
         self.title = data[ 'title' ]
         self.json_response = json.dumps(data)
-        
+
         if type:
             self.type = type
         if price != 0.0:

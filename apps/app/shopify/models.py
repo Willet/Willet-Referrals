@@ -136,7 +136,8 @@ class AppShopify(Model):
         return cls.all().filter('store_url =', store_url).get()
 
     # Shopify API Calls -------------------------------------------------------
-    def _call_Shopify_API(self, verb, call, payload=None):
+    def _call_Shopify_API(self, verb, call, payload=None,
+                          suppress_errors = False):
         """ Calls Shopify API
 
         Inputs:
@@ -191,7 +192,7 @@ class AppShopify(Model):
         else:
             error = True
 
-        if not error:
+        if not error or suppress_errors:
             return data
         else:
             Email.emailDevTeam(
@@ -531,14 +532,15 @@ class AppShopify(Model):
                         break
         else:
             error_msg = 'Error getting themes, %s: %s\n%s\n%s\n%s' % (
-                resp.status,
+                result.status_code,
                 theme_url,
                 self.store_url,
-                resp,
-                content
+                result,
+                result.content
             )
             logging.error(error_msg)
             Email.emailDevTeam(error_msg)
+            raise ShopifyAPIError(result.status_code, result.content, "Error getting theme, can not queue assets to install.")
 
         self._assets_url = '%s/admin/themes/%d/assets.json' % (self.store_url, main_id)
         self._queued_assets = assets
