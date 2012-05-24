@@ -21,6 +21,7 @@ urlpatterns = [
     (r'/admin/analytics/compare',   AppAnalyticsCompare),
     (r'/admin/analytics/(.*)/',     ShowAppAnalytics),
     (r'/admin/analytics',           ShowAnalytics),
+    (r'/admin/find',                RealFetch),
 
     # Processes
     (r'/admin/analytics/generate',      GenerateOlderHourPeriods),

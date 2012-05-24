@@ -16,7 +16,8 @@ from apps.link.models import Link
 from apps.app.models import get_app_by_id, App
 
 # helpers
-from util.helpers import admin_required, set_clicked_cookie, is_blacklisted, set_referral_cookie, set_referrer_cookie
+from util.helpers import set_clicked_cookie, is_blacklisted, \
+                         set_referral_cookie, set_referrer_cookie
 from util.consts import *
 from util.urihandler import URIHandler
 
@@ -48,7 +49,7 @@ class TrackWilltURL(URIHandler):
             logging.info("WHO IS THIS? -> " + self.request.headers['User-Agent'])
 
             link.app_.handleLinkClick( self, link )
-            
+
             # TODO(Barbara): Remove this when we make Referral app use Actions
             set_clicked_cookie(self.response.headers, code)
 
@@ -105,10 +106,10 @@ class IncrementCodeCounter(URIHandler):
             cc.count += cc.total_counter_nums
             cc.put()
             return cc
-        
+
         count = self.request.get('count')
         cc = CodeCounter.all().filter('count =', int(count)).get()
         if cc != None:
-            returned_cc = db.run_in_transaction(txn, cc) 
+            returned_cc = db.run_in_transaction(txn, cc)
             logging.info('incremented code counter %s' % returned_cc)
 

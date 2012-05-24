@@ -89,8 +89,12 @@ class ProductShopify(Product):
                 else:
                     logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
+            except ValueError:
+                logging.warn("No JSON equivalent for this page: %s" % url,
+                             exc_info=True)
             except:
-                logging.error("error fetching and storing product for url %s" % url, exc_info=True)
+                logging.error("error fetching and storing product for url %s" % url,
+                              exc_info=True)
         return product
 
     def update_from_json(self, data):

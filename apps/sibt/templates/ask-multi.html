@@ -56,21 +56,7 @@
 
 {% block ajax_methods %}
     var storeAnalytics = function( evnt ) {
-        var payload = { what          : evnt,
-                        instance_uuid : '',
-                        app_uuid      : '{{ app_uuid }}',
-                        user_uuid     : '{{ user_uuid }}',
-                        target_url    : '{{ target_url }}'
-                      };
-        $.ajax({
-            url      : "{{ URL }}{% url TrackSIBTUserAction %}",
-            dataType : 'json',
-            data     : payload,
-            type     : 'post',
-            success  : function (response) {
-                return;
-            }
-        });
+        _willet.mediator.fire('storeAnalytics', evnt);
     };
 
     var updateServerUser = function( accessToken, userId ) {
@@ -93,34 +79,17 @@
     };
 
     var startPartialInstance = function() {
+        storeAnalytics('SIBTStartPartialInstanceOnAskMulti');
         if (get_selected_objects ()) {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code   : "{{willt_code}}" };
+            var payload = {
+                app_uuid  : "{{app_uuid}}",
+                user_uuid : "{{user_uuid}}",
+              //product_uuid: "{{ product_uuid }}", // single-product mode only
+                products  : get_selected_objects(),
+                willt_code: "{{willt_code}}"
+            };
             $.ajax({
                 url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    window._willet_sibt_partial_instance_uuid = tr;
-                }
-            });
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    var startFullInstance = function() {
-        if (get_selected_objects ()) {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code   : "{{willt_code}}" };
-            $.ajax({
-                url      : "{{ URL }}{% url StartSIBTInstance %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
@@ -226,7 +195,7 @@
                 FB.ui({ method:  "feed",
                         display: "popup",
                         link:    "{{share_url}}",
-                        picture: "{{image|first}}",
+                        picture: "{{ image }}",
                         name:    "{{title|escape}}",
                         caption: "{{store_domain}}",
                         description: $('#fbComment').val(),

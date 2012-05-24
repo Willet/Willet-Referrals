@@ -50,12 +50,20 @@ handlers:
 - url: /gae_bingo/static
   static_dir: apps/gae_bingo/static
 
+- url: /admin/(.*)
+  script: urls.py
+  login: admin
+
+- url: /admin/db_integrity_check
+  script: urls.py
+  login: admin
+
+
+
+
+
 - url: /(.*)
   script: urls.py
 
 - url: /
   script: urls.py
-
-- url: /admin/db_integrity_check
-  script: urls.py
-  login: admin

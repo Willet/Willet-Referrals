@@ -113,11 +113,9 @@ class Model(db.Model):
         try:
             db.put(self)
             key = self.get_key()
-            memcache.set(
-                key=key,
-                value=db.model_to_protobuf(self).Encode(),
-                time=MEMCACHE_TIMEOUT
-            )
+            memcache.set(key=key,
+                         value=db.model_to_protobuf(self).Encode(),
+                         time=MEMCACHE_TIMEOUT)
         except Exception, e:
             logging.error('Error saving model <%s:%s>: %s' % (
                            self.__class__.__module__,
@@ -168,7 +166,7 @@ class Model(db.Model):
 
         # so now you can do Model.get(urihandler.request.get(id))) without
         # worrying about the resulting None.
-        if identifier is None:
+        if not identifier:
             return None  # None is definitely not a key, bro
 
         key = cls.build_key(identifier)

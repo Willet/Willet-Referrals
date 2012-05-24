@@ -1,21 +1,44 @@
 var _willet = _willet || {};  // ensure namespace is there
 
 // Should I Buy This
+// requires server-side template vars:
+// - app
+// - asker_name
+// - asker_pic
+// - has_product
+// - has_voted
+// - instance
+// - is_asker
+// - page_url
+// - product
+// - product_description
+// - product_history_count
+// - product_title
+// - show_top_bar_ask
+// - sibt_version
+// - store_id
+// - store_url
+// - unsure_multi_view
+// - URL
+// - vendor
+
 // The hasjQuery event starts off automatic initialisation.
 // product_title and product_description django tags require their own
 // double quotes!
-
 _willet.sibt = (function (me) {
     var wm = _willet.mediator || {};
-    var $ = jQuery || {};  // I want jQuery here, but it won't be available
+    var $ = window.jQuery || {};  // I want jQuery here, but it won't be available
                            // until mediator says so.
 
     var SMALL_SIBT = 1, LARGE_SIBT = 2,
         SMALL_WOSIB = 3, LARGE_WOSIB = 4,
+        SMALL_SIBT_VENDOR = 5, LARGE_SIBT_VENDOR = 6,
         selectors = {
             '#mini_sibt_button': SMALL_SIBT, // SIBT for ShopConnection (SIBT Connection)
             '#_willet_shouldIBuyThisButton': LARGE_SIBT, // SIBT standalone (v2, v3, v10)
+            '#_vendor_shouldIBuyThisButton': LARGE_SIBT_VENDOR,
             '._willet_sibt': SMALL_SIBT, // SIBT-JS
+            '._vendor_sibt': SMALL_SIBT_VENDOR,
             '#_willet_WOSIB_Button': LARGE_WOSIB // WOSIB mode
         },
         cart_items = cart_items || window._willet_cart_items || [],
@@ -32,13 +55,12 @@ _willet.sibt = (function (me) {
 
     me.init = me.init || function (jQueryObject) {
         $ = jQueryObject;  // throw $ into module scope
-        // wm.fire('log', 'initialisating SIBT!');
+        wm.fire('log', 'Let the (SIBT) games begin!');
 
         // These ('???' === 'True') guarantee missing tag, ('' === 'True') = false
         app = {
             // true when SIBT needs to be disabled on the same page as Buttons
             'bottom_popup_trigger': 0.5, // 1.0 = bottom of page
-            'detect_shopconnection': ('{{detect_shopconnection}}' === 'True'),
             'features': {
                 'bottom_popup': ('{{app.bottom_popup_enabled}}' === 'True'),
                 'button': ('{{app.button_enabled}}' === 'True'),
@@ -78,17 +100,39 @@ _willet.sibt = (function (me) {
                     );
                     // me.saveProduct($(matches.eq(0)).data());
                 } catch (err) {  // don't fail all buttons on the page
-                    wm.fire('log', 'error setting button: ' + err);
+                    wm.fire('error', 'error setting button: ' + err);
                 }
             }
         }
 
-        me.initBottomPopup();
+        // show topbar and stuff ...
+        if (app.features.topbar) {
+            wm.fire('SIBTSetTopBar');
+        }
+        if (app.features.bottom_popup) {
+            wm.fire('SIBTSetBottomPopup');
+        }
     };
+
+    me.vendorMode = me.vendorMode || function () {
+        // returns true or false on whether this script is running on
+        // a vendor's website.
+        // function can be called only after init() is.
+        wm.fire('log', 'checking vendor mode');
+        if ('{{ vendor }}') {
+            wm.fire('log', 'vendorMode == true');
+            return true;
+        }
+        if (!$) {
+            return false;
+        }
+        return Boolean($('._vendor_sibt').length) ||
+               Boolean($('#_vendor_shouldIBuyThisButton').length);
+    }
 
     me.showAsk = me.showAsk || function (message) {
         // shows the ask your friends iframe
-        wm.fire('storeAnalytics', 'SIBTShowingAsk');
+        wm.fire('storeAnalytics', message || 'SIBTShowingAsk');
         var shopify_ids = [];
         if (cart_items) {
             // WOSIB exists on page; send extra data
@@ -124,13 +168,25 @@ _willet.sibt = (function (me) {
     // turn a $(elem) into a SIBT button of (SMALL_SIBT/LARGE_SIBT/...) mode.
     me.setButton = me.setButton || function (jqElem, mode) {
         if (mode === SMALL_SIBT) {
-            me.setSmallSIBTButton(jqElem);
+            if (me.vendorMode()) { // double check
+                me.setSmallSIBTVendorButton(jqElem);
+            } else {
+                me.setSmallSIBTButton(jqElem);
+            }
         } else if (mode === LARGE_SIBT) {
-            me.setLargeSIBTButton(jqElem);
+            if (me.vendorMode()) { // double check
+                me.setLargeSIBTVendorButton(jqElem);
+            } else {
+                me.setLargeSIBTButton(jqElem);
+            }
         } else if (mode === SMALL_WOSIB) {
             // there is no small wosib button.
         } else if (mode === LARGE_WOSIB) {
             me.setLargeWOSIBButton(jqElem);
+        } else if (mode === SMALL_SIBT_VENDOR) {
+            me.setSmallSIBTVendorButton(jqElem);
+        } else if (mode === LARGE_SIBT_VENDOR) {
+            me.setLargeSIBTVendorButton(jqElem);
         }
     };
 
@@ -152,7 +208,9 @@ _willet.sibt = (function (me) {
 
         if (!instance.has_product) {
             // if no product, try to detect one, but don't show button
-            wm.fire('log', "product does not exist here; hiding button.");
+            wm.fire('log', "product did not exist here; hiding button. " +
+                           "(if product detection succeeds, refreshing this " +
+                           "page will make the button show again.)");
             jqElem.css ({
                 'display': 'none'
             });
@@ -175,14 +233,11 @@ _willet.sibt = (function (me) {
         var willt_code = hash.substring(hash_index + hash_search.length , hash.length);
 
         var v3data = jqElem.data();
-        try {
-            me.saveProduct({
-                'title': v3data.title || false,
-                'image': v3data.image_url || false
-            });
-        } catch (e) {
-            wm.fire('log', "failed to let v3 button save product!");
-        }
+
+        me.saveProduct({
+            'title': v3data.title || false,
+            'image': v3data.image_url || false
+        });
 
         // if no product, try to detect one, but don't show button
         if (!instance.has_product) {
@@ -190,52 +245,22 @@ _willet.sibt = (function (me) {
             return;
         }
 
-        // show the topbar...
-        if (app.features.topbar) {
-            // wm.fire('storeAnalytics', 'topbarEnabled');
-            wm.fire('log', 'topbar enabled');
-
-            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
-
-            // create the hide button
-            topbar_hide_button = $(document.createElement('div'));
-            topbar_hide_button.attr('id', '_willet_topbar_hide_button')
-                .css('display', 'none')
-                .click(me.unhideTopbar);
-
-            if (app.show_top_bar_ask) {
-                topbar_hide_button.html('Get advice!');
-            } else if(user.is_asker) {
-                topbar_hide_button.html('See your results!');
-            } else {
-                topbar_hide_button.html('Help {{ asker_name }}!');
-            }
-
-            $('body').prepend(topbar_hide_button);
-
-            if (app.show_top_bar_ask) {
-                if (cookie_topbar_closed) {
-                    // user has hidden the top bar
-                    topbar_hide_button.slideDown('fast');
-                } else {
-                    // wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
-                    me.showTopbarAsk();
-                }
-            }
-        }
-
         if (app.features.button) {
-            // wm.fire('storeAnalytics', 'buttonEnabled');
+            wm.fire('storeAnalytics', 'buttonEnabled');
             if (parseInt(app.version) <= 2) {
                 wm.fire('log', 'v2 button is enabled');
+                wm.fire('storeAnalytics', 'v2ButtonEnabled');
                 var button = document.createElement('a');
                 var button_html = '';
                 // only add button if it's enabled in the app
                 if (user.is_asker) {
+                    wm.fire('storeAnalytics', 'userIsAsker');
                     button_html = 'See what your friends said!';
                 } else if (instance.show_votes) {
+                    wm.fire('storeAnalytics', 'userIsNotAsker');
                     button_html = 'Help {{ asker_name }} by voting!';
                 } else {
+                    wm.fire('storeAnalytics', 'userIsNew');
                     var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
                     button_html = AB_CTA_text;
                 }
@@ -250,6 +275,7 @@ _willet.sibt = (function (me) {
                 jqElem.append(button);
             } else if (parseInt(app.version) >= 3) { // this should be changed to == 3 if SIBT standalone of a higher version will exist
                 wm.fire('log', 'v3+ button is enabled');
+                wm.fire('storeAnalytics', 'v3ButtonEnabled');
                 if ($('#_willet_button_v3').length === 0) { // if the v3 button isn't there already
                     var button = $("<div />", {
                         'id': '_willet_button_v3'
@@ -271,6 +297,7 @@ _willet.sibt = (function (me) {
                 // if server sends a flag that indicates "results available"
                 // (not necessarily "finished") then show finished button
                 if (instance.is_live || instance.has_results) {
+                    wm.fire('storeAnalytics', 'SIBTShowingResultsButton');
                     $('#_willet_button_v3 .button').hide();
                     $('<div />', {
                         'id': "_willet_SIBT_results",
@@ -293,6 +320,62 @@ _willet.sibt = (function (me) {
         }
     };
 
+    // Vendor-specific procedures
+    me.setSmallSIBTVendorButton = me.setSmallSIBTVendorButton || function (jqElem) {
+        wm.fire('log', 'setting a small vendor-specific SIBT button');
+        wm.fire('storeAnalytics');
+
+        // process vendor info on server side
+        {% ifequal client.name "Shu Uemura USA" %}
+            jqElem.css ({
+                'background': ((instance.is_live || instance.has_results)?
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-seeresults-blue.png') 3% 20% no-repeat transparent":
+                                "url('{{URL}}/static/sibt/imgs/sibt-shu-askfriends-blue.png') 3% 20% no-repeat transparent"),
+                'width': '92px',
+                'height': '24px',
+                'cursor': 'pointer',
+                'display': 'inline-block'
+            })
+            .click(me.button_onclick);
+
+            if (!instance.has_product) {
+                // if no product, try to detect one, but don't show button
+                wm.fire('log', "product does not exist here; hiding button.");
+                jqElem.css ({
+                    'display': 'none'
+                });
+            }/* else {
+                me.addScrollShaking(jqElem);
+            }*/
+
+            // Shu Uemura special data scraping
+            var img_src = '';
+            try {
+                img_src = $('#ProductMagicZoomImg img')[0].src;
+            } catch (e) { /*don't give a single s***/ }
+            me.saveProduct({
+                'title': $('#productdetailsName').text() || me.getPageTitle(),
+                'description': $('#RightContainer h2').text() || '',
+                'image': img_src || me.getLargestImage()
+            });
+        {% else %}
+             wm.fire('log', 'Requested a Vendor-level SIBT button, ' +
+                            'but no vendor-specific routine has been ' +
+                            'defined for this client. Reverting to ' +
+                            'Small SIBT button.');
+             me.setSmallSIBTButton(jqElem);
+        {% endifequal %}
+    };
+
+    me.setLargeSIBTVendorButton = me.setLargeSIBTVendorButton || function (jqElem) {
+        // there is no large sibt vendor button.
+        // well, there will be one, but I won't be writing it right now.
+        wm.fire('log', 'setting a large vendor-specific SIBT button');
+        wm.fire('storeAnalytics');
+
+        me.setLargeSIBTButton(jqElem);
+    };
+
     me.setLargeWOSIBButton = me.setLargeWOSIBButton || function (jqElem) {
         wm.fire('log', 'setting a large WOSIB button');
         wm.fire('storeAnalytics', 'WOSIBShowingButton');
@@ -300,18 +383,18 @@ _willet.sibt = (function (me) {
                 'id': '_willet_button_v3'
             });
             button.html("<p>Which ones should you buy?</p>\
-                            <div id='_willet_button' class='button' \
-                                title='Ask your friends if you should buy this!'>\
-                            <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
-                            <div class='title'>Ask Trusted Friends</div>\
-                            </div>")
+                         <div id='_willet_button' class='button' \
+                             title='Ask your friends if you should buy this!'>\
+                             <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
+                             <div class='title'>Ask Trusted Friends</div>\
+                         </div>")
             .css({
                 'clear': 'both',
                 'display': 'inline-block'
             })
             .appendTo(jqElem);
 
-        $('#_willet_button').click(me.showAsk);
+        $('#_willet_button').click(me.button_onclick);
 
         // if server sends a flag that indicates "results available"
         // (not necessarily "finished") then show finished button
@@ -329,6 +412,9 @@ _willet.sibt = (function (me) {
             .click(me.showResults);
         }
     };
+
+    // there is no small WOSIB button.
+    me.setSmallWOSIBButton = me.setSmallWOSIBButton || me.setLargeWOSIBButton;
 
     me.cleanArray = me.cleanArray || function (actual) {
         var i;
@@ -399,15 +485,34 @@ _willet.sibt = (function (me) {
         // constructs the 'willet' query string - no prefixing ?
         // will be added for you.
         // add more query properties with the "more" param.
-        return $.param($.extend (
+        var metabuilder = {},
+            page_url = '{{ page_url }}' || me.getCanonicalURL(window.location.href);
+        if ('{{ app.uuid }}') {
+            metabuilder.app_uuid = '{{ app.uuid }}';
+        }
+        if ('{{ user.uuid }}') {
+            metabuilder.user_uuid = '{{ user.uuid }}';
+        }
+        if ('{{ instance.uuid }}') {
+            metabuilder.instance_uuid = '{{ instance.uuid }}';
+        }
+        if ('{{ store_url }}') {
+            metabuilder.store_url = '{{ store_url }}'; // registration url
+        }
+        if ('{{ app.uuid }}') {
+            metabuilder.app_uuid = '{{ app.uuid }}';
+        }
+        if (page_url) {
+            metabuilder.target_url = page_url;
+        }
+        if ('{{ vendor }}') {
+            // activate vendor mode for asks and results
+            metabuilder.vendor = '{{ vendor }}';
+        }
+
+        return $.param($.extend(
             {}, // blank original
-            {
-                'app_uuid': '{{ app.uuid }}',
-                'user_uuid': '{{ user.uuid }}',
-                'instance_uuid': '{{ instance.uuid }}',
-                'store_url': '{{ store_url }}', // registration url
-                'target_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
-            },
+            metabuilder,
             more || {}
         ));
     };
@@ -415,6 +520,7 @@ _willet.sibt = (function (me) {
     me.addScrollShaking = me.addScrollShaking || function (elem) {
         // needs the shaker jQuery plugin.
         var $elem = $(elem);
+        wm.fire('storeAnalytics', 'SIBTAddScrollShaking');
         $(window).scroll(function () {
             if (me.isScrolledIntoView($elem) && !$elem.data('shaken_yet')) {
                 setTimeout(function () {
@@ -422,6 +528,7 @@ _willet.sibt = (function (me) {
                     setTimeout(function () {
                         $elem.shaker.stop();
                         $elem.data('shaken_yet', true);
+                        wm.fire('storeAnalytics', 'SIBTButtonShake');
                     }, SHAKE_DURATION);
                 }, SHAKE_WAIT); // wait for ?ms until it shakes
             }
@@ -448,9 +555,9 @@ _willet.sibt = (function (me) {
             products = me.cleanArray(products); // remove empties
             $.cookie('products', products.join(',')); // save
             wm.fire('log', "saving product cookie " + products.join(','));
-        } // else {
+        } else {
             // wm.fire('log', "product already in cookie");
-        // }
+        }
         return products;
     };
 
@@ -468,34 +575,26 @@ _willet.sibt = (function (me) {
             // product_title and product_description are json dumps, so
             // they already come with their own double quotes.
             if ({{ product_title }} || {{ product_description }}) {
-                // wm.fire('log', 'product already in DB, it seems.');
+                wm.fire('log', 'product already in DB, it seems.');
                 return;
             }
 
             var data = {
                 'client_uuid': fill.client_uuid || '{{ client.uuid }}', // REQUIRED
+                'description': fill.description || '',
                 'sibtversion': fill.sibtversion || app.version,
                 'title': fill.title || me.getPageTitle(),
                 'image': fill.image || me.getLargestImage(d),
+                'images': fill.images || '',
+                'price': fill.price || 0,
+                'tags': fill.tags || '',
+                'type': fill.type || '',
                 'resource_url': '{{ page_url }}' || me.getCanonicalURL(window.location.href)
             };
 
-            // optional fields
-            if (fill.description) {
-                data.description = fill.description;
-            }
-            if (fill.images) {
-                data.images = fill.images;
-            }
-            if (fill.price) {
-                data.price = fill.price;
-            }
-            if (fill.tags) {
-                data.tags = fill.tags;
-            }
-            if (fill.type) {
-                data.type = fill.type;
-            }
+            // don't send empty params over the network.
+            data = me.filterFalsyProps(data);
+
             if (data.client_uuid) {
                 // Chrome Access-Control-Allow-Origin: must use GET here.
                 $('<img />', {
@@ -505,7 +604,7 @@ _willet.sibt = (function (me) {
                 wm.fire('log', 'sent product request');
             }
         } catch (e) {
-            wm.fire('log', e.message);
+            wm.fire('error', "failed to save product! " + e);
         }
     };
 
@@ -517,13 +616,25 @@ _willet.sibt = (function (me) {
     me.button_onclick = me.button_onclick || function(e, message) {
         var message = message || 'SIBTUserClickedButtonAsk';
         $('#_willet_padding').hide(); // if any
+        me.hideBottomPopup(); // don't want it here now!
         if (user.is_asker || instance.show_votes) {
             // we are no longer showing results with the topbar.
             me.showResults();
         } else {
-            wm.fire('storeAnalytics', message);
-            me.showAsk();
+            // wm.fire('storeAnalytics', message);
+            me.showAsk(message);
         }
+    };
+
+    me.filterFalsyProps = me.filterFalsyProps || function (obj) {
+        // return a copy of obj with falsy values removed.
+        var new_obj = {};
+        for (i in obj) {
+            if (obj.hasOwnProperty(i) && i) {
+                new_obj[i] = obj[i];
+            }
+        }
+        return new_obj;
     };
 
     me.autoShowResults = me.autoShowResults || function () {
@@ -533,7 +644,7 @@ _willet.sibt = (function (me) {
         var hash_index = hash.indexOf(hash_search);
         if (instance.has_results && hash_index !== -1) {
             // if vote has results and voter came from an email
-            // wm.fire('log', "has results?");
+            wm.fire('log', "has results?");
             me.showResults();
         }
     };
@@ -549,321 +660,376 @@ _willet.sibt = (function (me) {
     };
 
     // ==================== bottom popup functions ============================
-    me.buildBottomPopup = me.buildBottomPopup || function () {
-        var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-        var popup = $('<div />', {
-            'id': 'willet_sibt_popup',
-            'css': {'display': 'none'}
-        });
-        popup
-            .append('<h2 class="title">Hey! Need help deciding?</h2>')
-            .append($('<div />', {'id': 'product_selector'}))
-            .append(
-                '<button class="cta">' + AB_CTA_text + '</button>' +
-                '<a id="anti_cta" href="#">No thanks</a>'
-            );
-        return popup;
-    }
-
-    me.showBottomPopup = me.showBottomPopup || function () {
-        // wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
-        if (popup) {
-            popup.fadeIn('slow');
+    {% if app.bottom_popup_enabled %}
+        me.buildBottomPopup = me.buildBottomPopup || function () {
+            var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+            var popup = $('<div />', {
+                'id': 'willet_sibt_popup',
+                'css': {'display': 'none'}
+            });
+            popup
+                .append('<h2 class="title">Hey! Need help deciding?</h2>')
+                .append($('<div />', {'id': 'product_selector'}))
+                .append(
+                    '<button class="cta">' + AB_CTA_text + '</button>' +
+                    '<a id="anti_cta" href="#">No thanks</a>'
+                );
+            return popup;
         }
-    };
-    me.hideBottomPopup = me.hideBottomPopup || function () {
-        // wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
-        if (popup) {
-            popup.fadeOut('slow');
-        }
-    };
 
-    me.initBottomPopup = me.initBottomPopup || function () {
-        // if user visited at least two different product pages
-        if ($.cookie('product1_image') && $.cookie('product2_image') &&
-            app.features.bottom_popup && app.unsure_multi_view) {
-            wm.fire('log', 'bottom popup enabled');
-            var clickedOff = false;
+        me.showBottomPopup = me.showBottomPopup || function () {
+            if ($.cookie('_willet_bottom_popup_closed')) {
+                wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopupWithCookie');
+                return;
+            }
+            if (popup) {
+                wm.fire('storeAnalytics', 'SIBTUserShowedBottomPopup');
+                popup.fadeIn('slow');
+            }
+        };
+        me.hideBottomPopup = me.hideBottomPopup || function (permanently) {
+            if (popup) {
+                wm.fire('storeAnalytics', 'SIBTUserHidBottomPopup');
+                popup.fadeOut('slow');
+            }
+            if (permanently) {
+                // save that preference.
+                wm.fire('storeAnalytics', 'SIBTUserHidBottomPopupWithCookie');
+                $.cookie('_willet_bottom_popup_closed', '1');
+            }
+        };
 
-            popup = me.buildBottomPopup();
+        me.initBottomPopup = me.initBottomPopup || function () {
+            // if user visited at least two different product pages
+            if ($.cookie('product1_image') && $.cookie('product2_image') &&
+                app.features.bottom_popup && app.unsure_multi_view) {
+                wm.fire('log', 'bottom popup enabled');
+                wm.fire('storeAnalytics', 'SIBTBottomPopupEnabled');
+                var clickedOff = false;
 
-            var product1_image = $.cookie('product1_image') || '';
-            var product2_image = $.cookie('product2_image') || '';
-            $('body').prepend(popup);
-            $('#product_selector').append(
-                '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
-                '<div class="product">' +
-                    '<img class="image" src="' + product1_image + '" />' +
-                '</div>' +
-                '<span class="or">OR</span>' +
-                '<div class="product">' +
-                    '<img class="image" src="' + product2_image + '"/>' +
-                '</div>' +
-                '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
-            );
+                popup = me.buildBottomPopup();
 
-            $(window).scroll(function () {
-                var pageHeight, scrollPos, threshold, windowHeight;
+                var product1_image = $.cookie('product1_image') || '';
+                var product2_image = $.cookie('product2_image') || '';
+                $('body').prepend(popup);
+                $('#product_selector').append(
+                    '<img class="quote" src="{{URL}}/static/imgs/quote-up.png" />' +
+                    '<div class="product">' +
+                        '<img class="image" src="' + product1_image + '" />' +
+                    '</div>' +
+                    '<span class="or">OR</span>' +
+                    '<div class="product">' +
+                        '<img class="image" src="' + product2_image + '"/>' +
+                    '</div>' +
+                    '<img class="quote down" src="{{URL}}/static/imgs/quote-down.png" />'
+                );
 
-                pageHeight = $(document).height();
-                scrollPos = $(window).scrollTop() + $(w).height();
-                threshold = pageHeight * app.bottom_popup_trigger;
-                windowHeight = $(window).height();
+                $(window).scroll(function () {
+                    var pageHeight, scrollPos, threshold, windowHeight;
 
-                // popup will show only for pages sufficiently long.
-                if (pageHeight > windowHeight * 1.5) {
-                    wm.fire('storeAnalytics', 'popupEnabled');
-                    if (scrollPos >= threshold) {
-                        if (!popup.is(':visible') && !clickedOff) {
-                            me.showBottomPopup();
+                    pageHeight = $(document).height();
+                    scrollPos = $(window).scrollTop() + $(w).height();
+                    threshold = pageHeight * app.bottom_popup_trigger;
+                    windowHeight = $(window).height();
+
+                    // popup will show only for pages sufficiently long.
+                    if (pageHeight > windowHeight * 1.5) {
+                        // wm.fire('storeAnalytics', 'popupEnabled');
+                        if (scrollPos >= threshold) {
+                            if (!popup.is(':visible') && !clickedOff) {
+                                me.showBottomPopup();
+                            }
+                        } else {
+                            if (popup.is(':visible')) {
+                                me.hideBottomPopup();
+                            }
                         }
                     } else {
-                        if (popup.is(':visible')) {
-                            me.hideBottomPopup();
-                        }
+                        wm.fire('storeAnalytics', 'SIBTBottomPopupDisabled');
+                        wm.fire('log', "page too short");
                     }
+                });
+                $('#willet_sibt_popup .cta').click(function () {
+                    me.showAsk('SIBTUserClickedBottomPopupAsk');
+                    me.hideBottomPopup();
+                });
+                $('#willet_sibt_popup #anti_cta').click(function (e) {
+                    wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
+                    clickedOff = true;
+                    e.preventDefault();
+                    me.hideBottomPopup(clickedOff);
+                });
+            } else {
+                wm.fire('log', 'cookies not populated / not unsure yet: ',
+                        $.cookie('product1_image'),
+                        $.cookie('product2_image'),
+                        app.features.bottom_popup,
+                        app.unsure_multi_view);
+            }
+        };
+    {% endif %}
+
+    // =================== deprecated topbar functions ========================
+    {% if app.top_bar_enabled %}
+        me.setTopBar = me.setTopBar || function () {
+            wm.fire('log', 'topbar enabled');
+            wm.fire('storeAnalytics', 'SIBTTopBarEnabled');
+
+            var cookie_topbar_closed = ($.cookie('_willet_topbar_closed') === 'true');
+
+            // create the hide button
+            topbar_hide_button = $(document.createElement('div'));
+            topbar_hide_button.attr('id', '_willet_topbar_hide_button')
+                .css('display', 'none')
+                .click(me.unhideTopbar);
+
+            if (app.show_top_bar_ask) {
+                topbar_hide_button.html('Get advice!');
+            } else if(user.is_asker) {
+                topbar_hide_button.html('See your results!');
+            } else {
+                topbar_hide_button.html('Help {{ asker_name }}!');
+            }
+
+            $('body').prepend(topbar_hide_button);
+
+            if (app.show_top_bar_ask) {
+                if (cookie_topbar_closed) {
+                    // user has hidden the top bar
+                    topbar_hide_button.slideDown('fast');
                 } else {
-                    wm.fire('storeAnalytics', 'popupDisabled.pageHeight');
-                    wm.fire('log', "page too short");
+                    // wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
+                    me.showTopbarAsk();
+                }
+            }
+        };
+
+        me.topbar_onclick = me.topbar_onclick || function(e) {
+            // Onclick event handler for the 'sibt' button
+            me.button_onclick(e, 'SIBTUserClickedTopBarAsk');
+        };
+
+        me.unhideTopbar = me.unhideTopbar || function() {
+            // When a user hides the top bar, it shows the little
+            // "Show" button in the top right. This handles the clicks to that
+            $.cookie('_willet_topbar_closed', false);
+            topbar_hide_button.slideUp('fast');
+            if (topbar === null) {
+                if (instance.show_votes || hash_index !== -1) {
+                    me.showTopbar();
+                    wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
+                } else {
+                    me.showTopbarAsk();
+                    wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
+                }
+            } else {
+                topbar.slideDown('fast');
+                wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
+            }
+        };
+
+        me.closeTopbar = me.closeTopbar || function() {
+            // Hides the top bar and padding
+            wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
+
+            $.cookie('_willet_topbar_closed', true);
+            topbar.slideUp('fast');
+            topbar_hide_button.slideDown('fast');
+        };
+
+        // Expand the top bar and load the results iframe
+        me.doVote = me.doVote || function(vote) {
+            // detecting if we just voted or not
+            var doing_vote = (vote !== -1);
+            var vote_result = (vote === 1);
+
+            // getting the neccesary dom elements
+            var iframe_div = topbar.find('div.iframe');
+            var iframe = topbar.find('div.iframe iframe');
+
+            // constructing the iframe src
+            var hash        = window.location.hash;
+            var hash_search = '#code=';
+            var hash_index  = hash.indexOf(hash_search);
+            var willt_code  = hash.substring(hash_index + hash_search.length ,
+                                             hash.length);
+            var results_src = "{{URL}}/s/results.html?" +
+                "willt_code=" + encodeURIComponent(willt_code) +
+                "&user_uuid={{user.uuid}}" +
+                "&doing_vote=" + encodeURIComponent(doing_vote) +
+                "&vote_result=" + encodeURIComponent(vote_result) +
+                "&is_asker=" + user.is_asker +
+                "&store_id={{store_id}}" +
+                "&store_url={{store_url}}" +
+                "&instance_uuid={{instance.uuid}}" +
+                "&url=" + encodeURIComponent(window.location.href);
+
+            // show/hide stuff
+            topbar.find('div.vote').hide();
+            if (doing_vote || user.has_voted) {
+                topbar.find('div.message').html('Thanks for voting!').fadeIn();
+            } else if (user.is_asker) {
+                topbar.find('div.message').html('Your friends say: ').fadeIn();
+            }
+
+            // start loading the iframe
+            iframe_div.show();
+            iframe.attr('src', '');
+            iframe.attr('src', results_src);
+
+            iframe.fadeIn('medium');
+        };
+
+        me.doVote_yes = me.doVote_yes || function () {
+            wm.fire('storeAnalytics', 'SIBTDoVoteYes');
+            me.doVote(1);
+        };
+        me.doVote_no = me.doVote_no || function () {
+            wm.fire('storeAnalytics', 'SIBTDoVoteNo');
+            me.doVote(0);
+        };
+
+        me.buildTopBarHTML = me.buildTopBarHTML || function (is_ask_bar) {
+            // Builds the top bar html
+            // is_ask_bar option boolean
+            // if true, loads ask_in_the_bar iframe
+
+            if (is_ask_bar || false) {
+                var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
+                var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
+                    "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
+                    "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                    "</div>" +
+                "</div>";
+            } else {
+                var asker_text = '';
+                var message = 'Should <em>{{ asker_name }}</em> Buy This?';
+                var image_src = '{{ asker_pic }}';
+
+                var bar_html = "<div class='_willet_wrapper'> " +
+                    "<div class='asker'>" +
+                        "<div class='pic'><img src='" + image_src + "' /></div>" +
+                    "</div>" +
+                    "<div class='message'>" + message + "</div>" +
+                    "<div class='vote last' style='display: none'>" +
+                    "    <button id='yesBtn' class='yes'>Yes</button> "+
+                    "    <button id='noBtn' class='no'>No</button> "+
+                    "</div> "+
+                    "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
+                    "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+
+                    "</div>" +
+                    "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
+                    "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
+                    "</div>" +
+                "</div>";
+            }
+            return bar_html;
+        };
+
+        me.showTopbar = me.showTopbar || function() {
+            // Shows the vote top bar
+            wm.fire('storeAnalytics', 'SIBTShowTopbar');
+
+            var body = $('body');
+
+            // create the padding for the top bar
+            padding_elem = document.createElement('div');
+            padding_elem = $(padding_elem)
+                .attr('id', '_willet_padding')
+                .css('display', 'none');
+
+            topbar = document.createElement('div');
+            topbar = $(topbar)
+                .attr('id', '_willet_sibt_bar')
+                .css('display', "none")
+                .html(me.buildTopBarHTML());
+            body.prepend(padding_elem);
+            body.prepend(topbar);
+
+            // bind event handlers
+            $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
+            $('#yesBtn').click(me.doVote_yes);
+            $('#noBtn').click(me.doVote_no);
+
+            padding_elem.show();
+            topbar.slideDown('slow');
+
+            if (!instance.is_live) {
+                // voting is over folks!
+                topbar.find('div.message').html('Voting is over!');
+                me.toggleResults();
+            } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
+                // show voting!
+                topbar.find('div.vote').show();
+            } else if (user.has_voted && !user.is_asker) {
+                // someone has voted && not the asker!
+                topbar.find('div.message').html('Thanks for voting!').fadeIn();
+                me.toggleResults();
+            } else if (user.is_asker) {
+                // showing top bar to asker!
+                topbar.find('div.message').html('Your friends say:   ').fadeIn();
+                me.toggleResults();
+            }
+        };
+
+        me.showTopbarAsk = me.showTopbarAsk || function() {
+            //Shows the ask top bar
+            wm.fire('storeAnalytics', 'SIBTShowTopbarAsk');
+
+            // create the padding for the top bar
+            padding_elem = document.createElement('div');
+
+            padding_elem = $(padding_elem)
+                .attr('id', '_willet_padding')
+                .css('display', 'none');
+
+            topbar = $('<div />', {
+                'id': '_willet_sibt_ask_bar',
+                'class': 'willet_reset',
+                'css': {
+                    'display': 'none'
                 }
             });
-            $('#willet_sibt_popup .cta').click(function () {
-                wm.fire('storeAnalytics', 'SIBTUserClickedBottomPopupAsk');
-                me.showAsk();
-                me.hideBottomPopup();
+            topbar.html(me.buildTopBarHTML(true));
+
+            $("body").prepend(padding_elem).prepend(topbar);
+
+            var iframe = topbar.find('div.iframe iframe');
+            var iframe_div = topbar.find('div.iframe');
+
+            $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
+
+            topbar.find( '._willet_wrapper p')
+                .css('cursor', 'pointer')
+                .click(me.topbar_onclick);
+            padding_elem.show();
+            topbar.slideDown('slow');
+        };
+
+        me.topbarAskSuccess = me.topbarAskSuccess || function () {
+            // if we get a postMessage from the iframe
+            // that the share was successful
+            wm.fire('storeAnalytics', 'SIBTTopBarShareSuccess');
+            var iframe = topbar.find('div.iframe iframe');
+            var iframe_div = topbar.find('div.iframe');
+
+            user.is_asker = true;
+
+            iframe_div.fadeOut('fast', function() {
+                topbar.animate({height: '40'}, 500);
+                iframe.attr('src', '');
+                me.toggleResults();
             });
-            $('#willet_sibt_popup #anti_cta').click(function (e) {
-                wm.fire('storeAnalytics', 'SIBTUserCancelledBottomPopup');
-                clickedOff = true;
-                e.preventDefault();
-                me.hideBottomPopup();
-            });
-        } else {
-            wm.fire('log', 'cookies not populated / not unsure yet');
-        }
-    };
+        };
 
-    // =================== deprecated topbar functions ========================
-    me.topbar_onclick = me.topbar_onclick || function(e) {
-        // Onclick event handler for the 'sibt' button
-        me.button_onclick(e, 'SIBTUserClickedTopBarAsk');
-    };
-
-    me.unhideTopbar = me.unhideTopbar || function() {
-        // When a user hides the top bar, it shows the little
-        // "Show" button in the top right. This handles the clicks to that
-        $.cookie('_willet_topbar_closed', false);
-        topbar_hide_button.slideUp('fast');
-        if (topbar === null) {
-            if (instance.show_votes || hash_index !== -1) {
-                me.showTopbar();
-                wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
-            } else {
-                me.showTopbarAsk();
-                wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
-            }
-        } else {
-            topbar.slideDown('fast');
-            wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
-        }
-    };
-
-    me.closeTopbar = me.closeTopbar || function() {
-        // Hides the top bar and padding
-        $.cookie('_willet_topbar_closed', true);
-        topbar.slideUp('fast');
-        topbar_hide_button.slideDown('fast');
-        wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
-    };
-
-    // Expand the top bar and load the results iframe
-    me.doVote = me.doVote || function(vote) {
-        // detecting if we just voted or not
-        var doing_vote = (vote !== -1);
-        var vote_result = (vote === 1);
-
-        // getting the neccesary dom elements
-        var iframe_div = topbar.find('div.iframe');
-        var iframe = topbar.find('div.iframe iframe');
-
-        // constructing the iframe src
-        var hash        = window.location.hash;
-        var hash_search = '#code=';
-        var hash_index  = hash.indexOf(hash_search);
-        var willt_code  = hash.substring(hash_index + hash_search.length , hash.length);
-        var results_src = "{{URL}}/s/results.html?" +
-            "willt_code=" + encodeURIComponent(willt_code) +
-            "&user_uuid={{user.uuid}}" +
-            "&doing_vote=" + encodeURIComponent(doing_vote) +
-            "&vote_result=" + encodeURIComponent(vote_result) +
-            "&is_asker=" + user.is_asker +
-            "&store_id={{store_id}}" +
-            "&store_url={{store_url}}" +
-            "&instance_uuid={{instance.uuid}}" +
-            "&url=" + encodeURIComponent(window.location.href);
-
-        // show/hide stuff
-        topbar.find('div.vote').hide();
-        if (doing_vote || user.has_voted) {
-            topbar.find('div.message').html('Thanks for voting!').fadeIn();
-        } else if (user.is_asker) {
-            topbar.find('div.message').html('Your friends say:   ').fadeIn();
-        }
-
-        // start loading the iframe
-        iframe_div.show();
-        iframe.attr('src', '');
-        iframe.attr('src', results_src);
-
-        iframe.fadeIn('medium');
-    };
-
-    me.doVote_yes = me.doVote_yes || function () {
-        me.doVote(1);
-    };
-    me.doVote_no = me.doVote_no || function () {
-        me.doVote(0);
-    };
-
-    me.buildTopBarHTML = me.buildTopBarHTML || function (is_ask_bar) {
-        // Builds the top bar html
-        // is_ask_bar option boolean
-        // if true, loads ask_in_the_bar iframe
-
-        if (is_ask_bar || false) {
-            var AB_CTA_text = AB_CTA_text || 'Ask your friends for advice!'; // AB lag
-            var bar_html = "<div class='_willet_wrapper'><p style='font-size: 15px'>Decisions are hard to make. " + AB_CTA_text + "</p>" +
-                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 1px; cursor: pointer;'>" +
-                "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                "</div>" +
-            "</div>";
-        } else {
-            var asker_text = '';
-            var message = 'Should <em>{{ asker_name }}</em> Buy This?';
-            var image_src = '{{ asker_pic }}';
-
-            var bar_html = "<div class='_willet_wrapper'> " +
-                "<div class='asker'>" +
-                    "<div class='pic'><img src='" + image_src + "' /></div>" +
-                "</div>" +
-                "<div class='message'>" + message + "</div>" +
-                "<div class='vote last' style='display: none'>" +
-                "    <button id='yesBtn' class='yes'>Yes</button> "+
-                "    <button id='noBtn' class='no'>No</button> "+
-                "</div> "+
-                "<div class='iframe last' style='display: none; margin-top: 1px;' width='600px'> "+
-                "    <iframe id='_willet_results' height='40px' frameBorder='0' width='600px' style='background-color: #3b5998'></iframe>"+
-                "</div>" +
-                "<div id='_willet_close_button' style='position: absolute;right: 13px;top: 13px;cursor: pointer;'>" +
-                "   <img src='{{URL}}/static/imgs/fancy_close.png' width='30' height='30' />" +
-                "</div>" +
-            "</div>";
-        }
-        return bar_html;
-    };
-
-    me.showTopbar = me.showTopbar || function() {
-        // Shows the vote top bar
-        var body = $('body');
-
-        // create the padding for the top bar
-        padding_elem = document.createElement('div');
-        padding_elem = $(padding_elem)
-            .attr('id', '_willet_padding')
-            .css('display', 'none');
-
-        topbar = document.createElement('div');
-        topbar = $(topbar)
-            .attr('id', '_willet_sibt_bar')
-            .css('display', "none")
-            .html(me.buildTopBarHTML());
-        body.prepend(padding_elem);
-        body.prepend(topbar);
-
-        // bind event handlers
-        $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
-        $('#yesBtn').click(me.doVote_yes);
-        $('#noBtn').click(me.doVote_no);
-
-        padding_elem.show();
-        topbar.slideDown('slow');
-
-        if (!instance.is_live) {
-            // voting is over folks!
-            topbar.find('div.message').html('Voting is over!');
-            me.toggleResults();
-        } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
-            // show voting!
-            topbar.find('div.vote').show();
-        } else if (user.has_voted && !user.is_asker) {
-            // someone has voted && not the asker!
-            topbar.find('div.message').html('Thanks for voting!').fadeIn();
-            me.toggleResults();
-        } else if (user.is_asker) {
-            // showing top bar to asker!
-            topbar.find('div.message').html('Your friends say:   ').fadeIn();
-            me.toggleResults();
-        }
-    };
-
-    me.showTopbarAsk = me.showTopbarAsk || function() {
-        //Shows the ask top bar
-
-        // create the padding for the top bar
-        padding_elem = document.createElement('div');
-
-        padding_elem = $(padding_elem)
-            .attr('id', '_willet_padding')
-            .css('display', 'none');
-
-        topbar = $('<div />', {
-            'id': '_willet_sibt_ask_bar',
-            'class': 'willet_reset',
-            'css': {
-                'display': 'none'
-            }
-        });
-        topbar.html(me.buildTopBarHTML(true));
-
-        $("body").prepend(padding_elem).prepend(topbar);
-
-        var iframe = topbar.find('div.iframe iframe');
-        var iframe_div = topbar.find('div.iframe');
-
-        $('#_willet_close_button').unbind().bind('click', me.closeTopbar);
-
-        topbar.find( '._willet_wrapper p')
-              .css('cursor', 'pointer')
-              .click(me.topbar_onclick);
-        padding_elem.show();
-        topbar.slideDown('slow');
-    };
-
-    me.topbarAskSuccess = me.topbarAskSuccess || function () {
-        // if we get a postMessage from the iframe
-        // that the share was successful
-        wm.fire('storeAnalytics', 'SIBTTopBarShareSuccess');
-        var iframe = topbar.find('div.iframe iframe');
-        var iframe_div = topbar.find('div.iframe');
-
-        user.is_asker = true;
-
-        iframe_div.fadeOut('fast', function() {
-            topbar.animate({height: '40'}, 500);
-            iframe.attr('src', '');
-            me.toggleResults();
-        });
-    };
-
-    me.toggleResults = me.toggleResults || function() {
-        // Used to toggle the results view
-        // iframe has no source, hasnt been loaded yet
-        // and we are FOR SURE showing it
-        doVote(-1);
-    };
-    // =================== deprecated topbar functions ========================
-
-
+        me.toggleResults = me.toggleResults || function() {
+            wm.fire('storeAnalytics', 'SIBTToggleResults');
+            // Used to toggle the results view
+            // iframe has no source, hasnt been loaded yet
+            // and we are FOR SURE showing it
+            doVote(-1);
+        };
+    {% endif %}
 
 
     // set up your module hooks
@@ -873,6 +1039,20 @@ _willet.sibt = (function (me) {
         // auto-show results on hash
         wm.on('scriptComplete', me.autoShowResults);
         wm.on('scriptComplete', me.getVisitLength);
+
+        // hooks for other libraries
+        wm.on('setSmallSIBTButton', me.setSmallSIBTButton);
+        wm.on('setLargeSIBTButton', me.setLargeSIBTButton);
+        wm.on('setSmallWOSIBButton', me.setSmallWOSIBButton);
+        wm.on('setLargeWOSIBButton', me.setLargeWOSIBButton);
+        wm.on('setSmallSIBTVendorButton', me.setSmallSIBTVendorButton);
+        wm.on('setLargeSIBTVendorButton', me.setLargeSIBTVendorButton);
+
+        // others
+        // we don't know if setTopBar is always there
+        wm.on('SIBTSetTopBar', me.setTopBar || function () {});
+        // we don't know if initBottomPopup is always there
+        wm.on('SIBTSetBottomPopup', me.initBottomPopup || function () {});
     }
 
     return me;

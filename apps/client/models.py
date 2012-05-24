@@ -30,9 +30,12 @@ class Client(Model, polymodel.PolyModel):
 
     merchant = MemcacheReferenceProperty(db.Model, collection_name="stores")
     # Store properties
-    name = db.StringProperty(indexed = False)
-    url = db.LinkProperty  (indexed = True)
-    domain = db.LinkProperty  (indexed = True)
+    name = db.StringProperty(indexed=False)
+    url = db.LinkProperty(indexed=True)
+    domain = db.LinkProperty(indexed=True)
+
+    # False, unless this client has a private deal with us.
+    is_vendor = db.BooleanProperty(required=False, default=False)
 
     _memcache_fields = ['domain', 'email', 'url']
 
@@ -77,7 +80,8 @@ class Client(Model, polymodel.PolyModel):
                         email=user_email,
                         url=url,
                         domain=url,  # I really don't see the difference.
-                        merchant=user)
+                        merchant=user,
+                        is_vendor=False)
         client.put()
 
         return client
@@ -118,6 +122,9 @@ class Client(Model, polymodel.PolyModel):
 
     @classmethod
     def get_by_email(cls, email):
+        if not email:
+            return None
+
         client = cls.get(email)
         if client:
             return client

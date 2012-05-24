@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Can I Get Your Advice?{% endblock %}
+
+{% block content %}
+    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+        <tr>
+            <td valign="top">
+                <div style="font-size:120%; line-height: 46px; margin-bottom: 20px;">
+                    {% if asker_img %}<img alt="{{ from_first_name }}'s picture" src="{{ asker_img }}" style="height: 40px; width: 40px; padding: 2px; border: 1px solid #777; margin-right: 10px; float: left;" />{% endif %}
+                    {{ from_name }} asks:
+                </div>
+                <div style="font-size:110%; margin-left: 50px;">
+                    <p> Hi {{ to_first_name }}, </p>
+                    {% if product_img %}<img alt="Enable images to see this!" src="{{ product_img }}" style="max-height: 25%; max-width: 25%; float: left; margin-right: 10px; padding: 2px; border: 1px solid #FFF;" />{% endif %}
+                    <p>{{ message }}</p>
+                    <table cellspacing="0"
+                           cellpadding="0"
+                           style="border-collapse:collapse">
+                        <tbody>
+                            <tr>
+                                <td style="padding:5px;
+                                           background-color:#fff9d7;
+                                           border-left:1px solid #eecc22;
+                                           border-right:1px solid #eecc22;
+                                           border-top:1px solid #eecc22;
+                                           border-bottom:1px solid #eecc22">
+                                    <a href="{{ vote_url }}"
+                                       style="color:#336699;"
+                                       target="_blank">Click here to provide advice</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="clear:both;"></div>
+                    <p>Thanks,</p>
+                    <p>{{ from_first_name }}</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
