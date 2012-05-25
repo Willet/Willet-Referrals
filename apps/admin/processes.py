@@ -3,7 +3,9 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import datetime, logging, re, urllib
+import datetime
+import logging
+import re
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache, mail, taskqueue
