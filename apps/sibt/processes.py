@@ -23,7 +23,6 @@ from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserCreate, UserIsFBLoggedIn
 from apps.user.models import User
 from apps.wosib.actions import *
 
@@ -70,9 +69,7 @@ class SIBTSignUp(URIHandler):
             self.error(400)  # malformed URL
             return
 
-        user = User.get_or_create_by_email(email=email,
-                                           request_handler=self,
-                                           app=None)  # for now
+        user = User.get_or_create_by_email(email=email, request_handler=self)
         if not user:
             logging.error('Could not get user for SIBT signup')
             self.error(500)  # did something wrong
@@ -292,58 +289,52 @@ class TrackSIBTShowAction(URIHandler):
         return
 
 
-class TrackSIBTUserAction(URIHandler):
+def track_sibt_user_action(URIHandler):
     """ For actions WITH AN INSTANCE """
-    def get(self):
-        """Compatibility with iframe shizz"""
-        self.post()
+    app = None
+    action = None
+    duration = 0.0
+    instance = None
+    success = False
+    user = None
 
-    def post(self):
-        """So javascript can track a sibt specific show actions"""
-        app = None
-        action = None
-        duration = 0.0
-        instance = None
-        success = False
-        user = None
+    if self.request.get('instance_uuid'):
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+    if self.request.get('app_uuid'):
+        app = App.get(self.request.get('app_uuid'))
+    if self.request.get('user_uuid'):
+        user = User.get(self.request.get('user_uuid'))
+    event = self.request.get('what')
+    url = self.request.get('target_url')
+    if self.request.get('duration'):
+        duration = self.request.get('duration')
 
-        if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))
-        if self.request.get('user_uuid'):
-            user = User.get(self.request.get('user_uuid'))
-        event = self.request.get('what')
-        url = self.request.get('target_url')
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+    if not event or not user:
+        return # we can't track who did what or what they did; logging this item is not useful.
 
-        if not event or not user:
-            return # we can't track who did what or what they did; logging this item is not useful.
-
-        action = None
+    action = None
+    try:
+        action_class = globals()[event]
+        action = action_class.create(user,
+                instance=instance,
+                url=url,
+                app=app,
+                duration=duration
+        )
+    except Exception,e:
+        logging.warn('(this is not serious) could not create class: %s' % e)
         try:
-            action_class = globals()[event]
-            action = action_class.create(user,
-                    instance=instance,
-                    url=url,
-                    app=app,
-                    duration=duration
-            )
-        except Exception,e:
-            logging.warn('(this is not serious) could not create class: %s' % e)
-            try:
-                action = SIBTUserAction.create(user, instance, event)
-            except Exception, e:
-                logging.error('this is serious: %s' % e, exc_info=True)
-            else:
-                logging.info('tracked action: %s' % action)
-                success = True
+            action = SIBTUserAction.create(user, instance, event)
+        except Exception, e:
+            logging.error('this is serious: %s' % e, exc_info=True)
         else:
             logging.info('tracked action: %s' % action)
             success = True
+    else:
+        logging.info('tracked action: %s' % action)
+        success = True
 
-        self.response.out.write('')
+    self.response.out.write('')
 
 
 class StartPartialSIBTInstance(URIHandler):
@@ -401,24 +392,17 @@ class StartSIBTAnalytics(URIHandler):
     def get(self):
         things = {
             'tb': {
-                'action': 'SIBTUserClickedTopBarAsk',
-                'show_action': 'SIBTShowingTopBarAsk',
                 'l': [],
                 'counts': {},
             },
             'b': {
-                'action': 'SIBTUserClickedButtonAsk',
                 'show_action': 'SIBTShowingButton',
                 'l': [],
                 'counts': {},
             }
         }
         actions_to_check = [
-            'SIBTShowingAskIframe',
-            'SIBTAskUserClickedEditMotivation',
             'SIBTAskUserClosedIframe',
-            'SIBTAskUserClickedShare',
-            'SIBTInstanceCreated',
         ]
         for t in things:
             things[t]['counts'][things[t]['show_action']] = Action\
@@ -779,8 +763,7 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     If previous user/client/app objects exist, they will be reused.
     """
     user = User.get_or_create_by_email(email=email,
-                                       request_handler=request_handler,
-                                       app=None)
+                                       request_handler=request_handler)
     if not user:
         return (False, 'wtf, no user?')
 
@@ -809,9 +792,6 @@ def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
     app = SIBT.get_or_create(client=client, domain=domain)
     if not client:
         return (False, 'wtf, no app?')
-
-    # put back the UserAction that we skipped making
-    UserCreate.create(user, app)
 
     template_values = {'app': app,
                        'URL': URL,

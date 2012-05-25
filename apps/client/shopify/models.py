@@ -60,7 +60,7 @@ class ClientShopify(Client):
 
         # Make the Merchant
         # Note: App is attached later to the UserCreation action
-        merchant = User.get_or_create_by_email(data['email'], request_handler, None)
+        merchant = User.get_or_create_by_email(data['email'], request_handler)
         logging.info('MERCHANT UUID %s' % merchant.uuid)
         logging.info('MERCHANT Key %s' % merchant.key())
 

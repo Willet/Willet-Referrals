@@ -24,5 +24,4 @@ urlpatterns = [
     (r'/s/sendFriendAsks',          SendFriendAsks),
     (r'/s/startPartialInstance',    StartPartialSIBTInstance),
     (r'/s/track/showaction',        TrackSIBTShowAction),
-    (r'/s/track/useraction',        TrackSIBTUserAction),
 ]

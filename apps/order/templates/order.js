@@ -9,7 +9,7 @@
         var iframe = document.createElement( 'iframe' );
 
         iframe.style.display = 'none';
-        iframe.src = "{{SECURE_URL}}/o/shopify/orderNotification?" + 
+        iframe.src = "{{SECURE_URL}}{% url OrderIframeNotification %}?" +
                      "&user_uuid={{user.uuid}}" +
                      "&client_uuid={{client.uuid}}" +
                      "&url=" + window.location.href;

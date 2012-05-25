@@ -20,7 +20,7 @@ from apps.app.models import App
 from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import bingo
 from apps.product.models import Product
-from apps.sibt.actions import SIBTClickAction, SIBTInstanceCreated
+from apps.sibt.actions import SIBTClickAction
 from apps.user.models import User
 from apps.vote.models import VoteCounter
 
@@ -185,9 +185,6 @@ class SIBT(App):
         logging.info('instance created: %s\nends: %s' % (instance.created,
                                                          instance.end_datetime))
         instance.put()
-
-        # Now, make an action
-        SIBTInstanceCreated.create(user, instance=instance, medium=dialog)
 
         # GAY BINGO
         if not user.is_admin():

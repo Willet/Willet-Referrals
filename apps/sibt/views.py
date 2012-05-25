@@ -21,10 +21,8 @@ from apps.gae_bingo.gae_bingo import ab_test, bingo
 from apps.link.models import Link
 from apps.product.models import Product
 from apps.product.shopify.models import ProductShopify
-from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
-                              SIBTShowingButton, SIBTShowingAskIframe, \
-                              SIBTShowingVote, SIBTShowingResults, \
-                              SIBTShowingResultsToAsker, SIBTVoteAction
+from apps.sibt.actions import SIBTClickAction, SIBTShowingButton, \
+                              SIBTVoteAction
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
 from apps.user.models import User
 
@@ -235,10 +233,6 @@ class AskDynamicLoader(URIHandler):
         # we get an instance.
         link = Link.create(page_url, app, origin_domain, user)
 
-        # log this "showage"
-        if user_found:
-            SIBTShowingAskIframe.create(user, url=page_url, app=app)
-
         # Which share message should we use?
         ab_share_options = [
             "I'm not sure if I should buy this. What do you think?",
@@ -384,8 +378,6 @@ class VoteDynamicLoader(URIHandler):
         except AttributeError, e:
             logging.warn ('Faulty link')
 
-        # record that the vote page was once opened.
-        SIBTShowingVote.create(user=user, instance=instance)
         event = 'SIBTShowingVote'
 
         # In the case of a Shopify product, it will fetch from a .json URL.
@@ -542,12 +534,7 @@ class ShowResults(URIHandler):
                 has_voted = True
 
             if is_asker:
-                SIBTShowingResultsToAsker.create(user=user, instance=instance)
                 event = 'SIBTShowingResultsToAsker'
-            elif has_voted:
-                SIBTShowingResults.create(user=user, instance=instance)
-            else:
-                SIBTShowingVote.create(user=user, instance=instance)
 
             if link == None:
                 link = instance.link
@@ -610,7 +597,7 @@ class ShowFBThanks(URIHandler):
             logging.warn('PartialSIBTInstance is already gone')
             return  # there's nothing we can do now
 
-        if post_id != "":
+        if post_id:
             user_cancelled = False
 
             # GAY BINGO
@@ -663,11 +650,6 @@ class ShowFBThanks(URIHandler):
             link.put()
             link.memcache_by_code() # doubly memcached
             logging.info('incremented link and added user')
-        elif partial != None:
-            # Create cancelled action
-            SIBTNoConnectFBCancelled.create(user,
-                                            url=partial.link.target_url,
-                                            app=partial.app_)
 
         if partial:
             # Now, remove the PartialSIBTInstance. We're done with it!
@@ -724,24 +706,6 @@ class ShowOnUnloadHook(URIHandler):
         self.response.headers.add_header('P3P', P3P_HEADER)
         self.response.out.write(template.render(path, template_values))
         return
-
-
-class SIBTGetUseCount (URIHandler):
-    """Outputs the number of times the SIBT app has been used.
-
-    This handler is GET-only. All other methods raise NotImplementedError.
-    """
-    def get(self):
-        """Returns number of button loads divided by 100."""
-        try:
-            product_uuid = self.request.get ('product_uuid')
-            button_use_count = memcache.get ("usecount-%s" % product_uuid)
-            if button_use_count is None:
-                button_use_count = int (SIBTShowingButton.all().count() / 100)
-                memcache.add ("usecount-%s" % product_uuid, button_use_count)
-            self.response.out.write (str (button_use_count))
-        except:
-            self.response.out.write ('0') # no shame in that?
 
 
 class SIBTServeScript(URIHandler):

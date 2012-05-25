@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from .processes import TrackShowAction
+from apps.action.processes import TrackShowAction
 
 urlpatterns = [
-    (r'/action/trackshowaction', TrackShowAction),        
+    (r'/action/trackshowaction', TrackShowAction),
 ]

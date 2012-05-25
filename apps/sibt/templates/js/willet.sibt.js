@@ -653,11 +653,13 @@ _willet.sibt = (function (me) {
     me.getVisitLength = me.getVisitLength || function () {
         // analytics to record the amount of time this script has been loaded
         // this must be an iframe to time it + send synchronous requests
-        $('<iframe />', {
-            css: {'display': 'none'},
-            src: "{{URL}}{% url ShowOnUnloadHook %}?" +
-                 me.metadata({'evnt': 'SIBTVisitLength'})
-        }).appendTo("body");
+
+        // deprecated
+        // $('<iframe />', {
+        //     css: {'display': 'none'},
+        //     src: "{{URL}}{% url ShowOnUnloadHook %}?" +
+        //          me.metadata({'evnt': 'SIBTVisitLength'})
+        // }).appendTo("body");
     };
 
     // ==================== bottom popup functions ============================
@@ -799,7 +801,6 @@ _willet.sibt = (function (me) {
                     // user has hidden the top bar
                     topbar_hide_button.slideDown('fast');
                 } else {
-                    // wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
                     me.showTopbarAsk();
                 }
             }
