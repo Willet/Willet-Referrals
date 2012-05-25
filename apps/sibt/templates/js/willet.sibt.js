@@ -286,7 +286,7 @@ _willet.sibt = (function (me) {
                                     "<img src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' alt='logo' />" +
                                     "<div id='_willet_button' class='title'>Share with Friends</div>" +
                                     "</div>")
-                        .css({'clear': 'both'});
+                        .css({'clear': 'both', 'height': '40px'});
                     jqElem.append(button);
                 } else {
                     var button = $('#_willet_button_v3');
