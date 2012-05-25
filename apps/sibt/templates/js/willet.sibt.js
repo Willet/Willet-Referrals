@@ -387,7 +387,7 @@ _willet.sibt = (function (me) {
                          <div id='_willet_button' class='button' \
                              title='Ask your friends if you should buy this!'>\
                              <img alt='logo' src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' />\
-                             <div class='title'>Ask Trusted Friends</div>\
+                             <div class='title'>Share with Friends</div>\
                          </div>")
             .css({
                 'clear': 'both',
