@@ -106,18 +106,16 @@ class Email():
 
         # Grab first name only
         try:
-            name = name.split(' ')[0]
+            name = ' %s' % name.split(' ')[0]
         except:
-            pass
+            name = ''
 
         if 'SIBT' in app_name:
             app_name = "Should I Buy This"
         elif 'Buttons' in app_name:
             app_name = "ShopConnection"
-        elif 'WOSIB' in app_name:
-            return
 
-        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with %s.
+        body = """<p>Hi%s,</p> <p>Sorry to hear things didn't work out with %s.
                   <i>Can you tell us why you uninstalled?</i></p>
                   <p>Thanks,</p>
                   <p>Fraser</p>
@@ -128,7 +126,8 @@ class Email():
                          to_address=to_addr,
                          subject=subject,
                          body=body,
-                         to_name=name)
+                         to_name=name,
+                         replyto_address=FRASER)
 
     @staticmethod
     def report_smart_buttons(email="info@getwillet.com", items={},
@@ -402,6 +401,8 @@ class Email():
     @staticmethod
     def send_email(from_address, to_address, subject, body,
                    to_name= None, replyto_address= None):
+        if not replyto_address:
+            replyto_address = from_address  # who would reply to "None"?
         taskqueue.add(
                 url=url('SendEmailAsync'),
                 params={
