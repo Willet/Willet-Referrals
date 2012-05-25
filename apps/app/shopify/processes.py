@@ -82,7 +82,8 @@ class DoUninstalledApp(URIHandler):
 
                 # Say goodbye from Fraser
                 Email.goodbyeFromFraser(client.merchant.get_attr('email'),
-                                        client.merchant.get_attr('full_name'),
+                                        client.merchant.get_attr('full_name') or \
+                                        client.merchant.get_full_name(),
                                         app_class_name)
             except AttributeError, e: # e.g. merchant is missing from client
                 logging.warn('Could not email client: %s' % e, exc_info=True)
