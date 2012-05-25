@@ -12,6 +12,7 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
+from apps.app.models import App
 from apps.buttons.shopify.models import ButtonsShopify
 from apps.email.models import Email
 from apps.link.models import Link
