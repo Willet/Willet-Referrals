@@ -58,3 +58,7 @@ cron:
   url: /admin/db_integrity_check?check=all
   schedule: every monday 09:00
   timezone: America/Toronto
+
+- description: Clean old actions
+  url: /admin/clean_old_actions
+  schedule: every 1 minutes
