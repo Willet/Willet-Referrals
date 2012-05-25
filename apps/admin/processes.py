@@ -605,25 +605,22 @@ class CleanOldActions(URIHandler):
         self.post()
 
     def post(self):
-        """Grabs 50 action objects and deletes them.
+        """Grabs 100 action objects and deletes them.
 
-        Because some actions are actually useful, they are skipped:
-        - VoteAction
+        Because some actions are actually useful, they are skipped. See
+        keep_list for the list of class names (in lower case).
         """
+        a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
         actions = []
         actions_to_delete = []
         keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
                      'sibtclickaction']
 
-        a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
-        '''
-        actions = Action.all()\
-                        .filter('created <', a_month_ago)\
-                        .fetch(50)
-        '''
         while len(actions_to_delete) < 100:
             # keep fetching until we get 100 things to delete.
-            actions = Action.all().fetch(50)
+            actions = Action.all()\
+                            .filter('created <', a_month_ago)\
+                            .fetch(50)
 
             for action in actions:
                 name = action.__class__.__name__.lower()
@@ -634,5 +631,6 @@ class CleanOldActions(URIHandler):
             logging.info('USING_DEV_SERVER; skipped deletion')
         else:
             db.delete(actions_to_delete)
-            logging.info('If this is logged, we have deleted 100 Actions')
+            logging.info('If this is logged, '
+                         'we have deleted %d Actions' % len(actions_to_delete))
         return
