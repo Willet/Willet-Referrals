@@ -6,9 +6,9 @@ cron:
 #  schedule: every 6 hours
 
 # Link Crons
-#- description: Clean bad links
-#  url: /link/cleanBadLinks
-#  schedule: every 30 minutes
+- description: Clean bad links
+  url: /link/cleanBadLinks
+  schedule: every 30 minutes
 
 # App Engine Bingo Crons
 #- description: persist gae bingo experiments to datastore
@@ -44,13 +44,9 @@ cron:
 #  schedule: every 12 hours
 
 # SOME SIBT SHIT WE DONT CARE ABOUT
-#- description: scan for expired SIBT votes
-#  url: /s/getExpired
-#  schedule: every 5 minutes
-
-#- description: scan for expired WOSIB votes
-#  url: /w/getExpired
-#  schedule: every 5 minutes
+- description: scan for expired SIBT votes
+  url: /s/getExpired
+  schedule: every 5 minutes
 
 # Smart-buttons
 - description: send smart button reports
@@ -62,3 +58,7 @@ cron:
   url: /admin/db_integrity_check?check=all
   schedule: every monday 09:00
   timezone: America/Toronto
+
+- description: Clean old actions
+  url: /admin/clean_old_actions
+  schedule: every 1 minutes
