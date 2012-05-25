@@ -3,14 +3,16 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import re, logging, urllib
+import datetime, logging, re, urllib
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache, mail, taskqueue
+from google.appengine.ext import db
 from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.action.models import Action
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
 from apps.buttons.shopify.models import ButtonsShopify
 from apps.email.models import Email
@@ -591,3 +593,46 @@ class DBIntegrityCheck(URIHandler):
                     app.extra_url = app.client.domain
                     self.response.out.write('putting %r\n' % app)
                     app.put()
+
+
+class CleanOldActions(URIHandler):
+    """Grabs a couple of old (> 1 month) Actions and deletes them.
+
+    Frequency is dictated by the associated cron job.
+    """
+    def get(self):
+        """Taskqueue compat."""
+        self.post()
+
+    def post(self):
+        """Grabs 50 action objects and deletes them.
+
+        Because some actions are actually useful, they are skipped:
+        - VoteAction
+        """
+        actions = []
+        actions_to_delete = []
+        keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
+                     'sibtclickaction']
+
+        a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        '''
+        actions = Action.all()\
+                        .filter('created <', a_month_ago)\
+                        .fetch(50)
+        '''
+        while len(actions_to_delete) < 100:
+            # keep fetching until we get 100 things to delete.
+            actions = Action.all().fetch(50)
+
+            for action in actions:
+                name = action.__class__.__name__.lower()
+                if name not in keep_list:
+                    actions_to_delete.append(action)
+
+        if USING_DEV_SERVER:
+            logging.info('USING_DEV_SERVER; skipped deletion')
+        else:
+            db.delete(actions_to_delete)
+            logging.info('If this is logged, we have deleted 100 Actions')
+        return
