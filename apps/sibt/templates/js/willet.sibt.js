@@ -281,13 +281,12 @@ _willet.sibt = (function (me) {
                         'id': '_willet_button_v3'
                     });
                     button
-                        .html ("<p>Should you buy this? Can't decide?</p>" +
-                                "<div class='button' " +
+                        .html ("<div class='button' " +
                                     "title='Ask your friends if you should buy this!'>" +
-                                    "<img src='{{URL}}/static/plugin/imgs/logo_button_25x25.png' alt='logo' />" +
-                                    "<div id='_willet_button' class='title'>Ask Trusted Friends</div>" +
+                                    "<img src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' alt='logo' />" +
+                                    "<div id='_willet_button' class='title'>Share with Friends</div>" +
                                     "</div>")
-                        .css({'clear': 'both'});
+                        .css({'clear': 'both', 'height': '40px', 'background':'none'});
                     jqElem.append(button);
                 } else {
                     var button = $('#_willet_button_v3');

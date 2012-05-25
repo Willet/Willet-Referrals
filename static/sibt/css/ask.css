@@ -285,7 +285,7 @@ p {
 .message>textarea {
     float: right;
     width: 70%;
-    height: 68px; /* textarea has 16px of outer stuff */
+    height: 84px; /* textarea has 16px of outer stuff */
 }
 .message>.detailed {
     float: right;
