@@ -22,7 +22,7 @@ class CreateProduct(URIHandler):
             - client_uuid
             - (product URL) resource_url
             - (product name) title
-            
+
             Optional parameters:
             - description
             - images (CSV)
@@ -32,20 +32,20 @@ class CreateProduct(URIHandler):
 
         # initialize vars
         client = Client.get(self.request.get("client_uuid"))
-        description = self.request.get("description", "")
+        description = self.request.get("description", "").strip()
         images = self.request.get("images", "").split(',')  # if empty string, -> [''] (True)
         price = float(self.request.get("price", "0.0"))
         resource_url = self.request.get("resource_url")
         tags = self.request.get("tags", "").split(',')
         title = self.request.get("title")
         type_ = self.request.get("type", "")
-        
+
         if not images[0] and self.request.get("image", ""):
             # thus, image url field must be non-empty
             images = [self.request.get("image")] # this is a list of one object
-        
+
         # a None client will prevent creation
-        if title and images and price and client:
+        if title and images and client:
             Product.get_or_create(# will not create again if it already exists
                 title=title,
                 description=description,
