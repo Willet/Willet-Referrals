@@ -33,5 +33,6 @@ urlpatterns = [
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
     (r'/email/everyone',                EmailEveryone),
     (r'/email/someone',                 EmailSomeone),
-    (r'/admin/db_integrity_check',      DBIntegrityCheck)
+    (r'/admin/db_integrity_check',      DBIntegrityCheck),
+    (r'/admin/clean_old_actions',       CleanOldActions)
 ]
