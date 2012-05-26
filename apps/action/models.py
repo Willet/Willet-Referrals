@@ -178,6 +178,11 @@ class LoadAction(Action):
     def get_by_user_and_url(user, url):
         return LoadAction.all().filter('user = ', user).filter('url =', url)
 
+class ScriptLoadAction(LoadAction):
+    pass
+
+class ButtonLoadAction(LoadAction):
+    pass
 
 class ShowAction(Action):
     """We are showing something ..."""
