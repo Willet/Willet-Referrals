@@ -184,15 +184,18 @@ class Email():
 
         try:
             product_img = product.images[0]
-        except (TypeError, IndexError):
+        except (TypeError, IndexError), err:
+            logging.debug('error while getting product_img: %s' % err,
+                          exc_info=True)
             product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+        logging.debug('product_img is %r' % product_img)
 
         if len(products) > 1:  # WOSIB mode
             template_file = 'wosib_ask.html'
         else:
             template_file = 'sibt_ask.html'
 
-        body = template.render(Email.template_path('wosib_ask.html', client), {
+        body = template.render(Email.template_path(template_file, client), {
             'URL': URL,
             'from_name': from_name.title(),
             'from_first_name': from_first_name.title(),
@@ -203,7 +206,11 @@ class Email():
             'asker_img': asker_img,
             'client_name': client.name,
             'client_domain': client.domain,
+
+            # used in WOSIB mode
             'products': products or [None, None],  # just to shut it up
+
+            # used in SIBT mode
             'product_title': getattr(product, 'title', 'Awesome product'),
             'product_img': product_img
         })

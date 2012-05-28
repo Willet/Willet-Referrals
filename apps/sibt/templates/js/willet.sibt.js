@@ -1039,7 +1039,7 @@ _willet.sibt = (function (me) {
 
         // auto-show results on hash
         wm.on('scriptComplete', me.autoShowResults);
-        wm.on('scriptComplete', me.getVisitLength);
+        // wm.on('scriptComplete', me.getVisitLength);
 
         // hooks for other libraries
         wm.on('setSmallSIBTButton', me.setSmallSIBTButton);
