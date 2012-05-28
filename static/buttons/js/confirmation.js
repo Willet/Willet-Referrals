@@ -200,7 +200,7 @@ _willet.util = {
             }
 
             // Get next one
-            conditionalIndex = template.search(re);
+            conditionalIndex = template.search(ifStatementRe);
         }
 
         // Second handle variables of the form {{ var_name }}
@@ -542,8 +542,8 @@ _willet = (function (me) {
     var scripts = [ "//platform.twitter.com/widgets.js", "//connect.facebook.net/en_US/all.js#xfbml=1" ];
 
     //var config = {
-    //    'storeName': 'Kovacek And Sons',
-    //    'storeUrl': 'kovacek-and-sons3219.myshopify.com',
+    //    'shopName': 'Kovacek And Sons',
+    //    'shop': 'kovacek-and-sons3219.myshopify.com',
     //    'message': 'We would appreciate if we could update you every once in a while',
     //    'facebookUsername': 'fjharris',
     //    'pinterestUsername': 'fraserharris',
@@ -586,7 +586,7 @@ _willet = (function (me) {
                 var container = document.createElement('div');
                 
                 // Retrieve configuration from script query string
-                var config = me.getConfigurationFromURL();
+                //var config = me.getConfigurationFromURL();
 
                 container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
                 container.appendChild( util.createStyle(styleRules) );
