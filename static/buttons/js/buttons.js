@@ -191,22 +191,28 @@ _willet.util = {
     "renderSimpleTemplate": function (template, values) {
         // Will render templates with simple substitions
         // Inputs:
-        //    template - a string representing an HTML template, with variables of the form: {{ var_name }}
-        //               and condtionals of the form {% if var_name %} ... {% endif %}
-        //    values - a object literal, with keys corresponding to template variables, and values appropriate for the template
+        //    template - a string representing an HTML template, with variables
+        //               of the form: {{ var_name }} and condtionals of the form
+        //               {% if var_name %} ... {% endif %}
+        //               Note: does not support nested if's, and must be exactly 
+        //                     the form above (no extra whitespace)
+        //    values - a object literal, with keys corresponding to template variables,
+        //             and values appropriate for the template
         // Return:
         //    rendered template <string>
-        //
-        // Note: strings are passed by value, so we can modify it without affecting the base templates
-        var ifStatmentRe = /\{% if [\w\-]+ %\}/g,
-            varName;
+        
+        var ifStatementRe = /\{% if [\w\-]+ %\}/g,
+            ifPrefixLen = '{% if '.length,
+            endifLen = '{% endif %}'.length,
+            startIndex, endIndex, contionalIndex, varName;
 
         // First handle conditionals of the form {% if var_name %} ... {% endif %}
-        var conditionalIndex = template.search(ifStatementRe);
-        while (conditionalIndex > 0) {
+        // Note: strings are passed by value, so we can modify template without affecting
+        //       the base templates
+        conditionalIndex = template.search(ifStatementRe);
+        while (conditionalIndex >= 0) {
             // get variable name from conditional
-            // 6 is '{% if '.length
-            varName = template.substring(conditionalIndex+6, template.indexOf(' ', conditionalIndex+6));
+            varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
             
             if (values[varName]) {
                 // if variable name exists, strip conditional statements & leave code
@@ -215,8 +221,7 @@ _willet.util = {
             } else {
                 // if variable doesn't exist, strip conditional & contents
                 startIndex = conditionalIndex;
-                // 11 is '{% endif %}'.length
-                endIndex = template.indexOf('{% endif %}',startIndex)+11;
+                endIndex = template.indexOf('{% endif %}',startIndex)+endifLen;
                 template = template.replace( template.substring(startIndex, endIndex), '');
             }
 
