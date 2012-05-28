@@ -82,6 +82,13 @@ _willet.util = {
         }
         return s;
     },
+    "createScript": function (src) {
+        // Returns script element
+        var s = document.createElement('script');
+        s.type = "text/javascript";
+        s.src = src;
+        return s;
+    },
     "dictToArray": function (dict) {
         // Don't use this on DOM Elements, IE will fail
         var result = [];
@@ -181,22 +188,19 @@ _willet.util = {
     "isLocalhost": function() {
         return ((window.location.href.indexOf("http") >= 0) ? false : true);
     },
-    "renderSimpleTemplate": function (elem, template, values) {
+    "renderSimpleTemplate": function (template, values) {
         // Will render templates with simple substitions
         // Inputs:
-        //    elem - the elem that the rendered template will be attached to
         //    template - a string representing an HTML template, with variables of the form: {{ var_name }}
         //    values - a object literal, with keys corresponding to template variables, and values appropriate for the template
         // Return:
-        //    elem
+        //    rendered template <string>
         for (var i in values) {
             if (values.hasOwnProperty(i)) {
                 template = template.replace('{{ '+ i +' }}', values[i]);
             }
         }
-
-        elem.innerHTML = template;
-        return elem;
+        return template;
     }
 };
 

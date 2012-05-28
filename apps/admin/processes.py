@@ -3,14 +3,18 @@
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2011, Willet, Inc"
 
-import re, logging, urllib
+import datetime
+import logging
+import re
 
 from django.utils import simplejson as json
 from google.appengine.api import urlfetch, memcache, mail, taskqueue
+from google.appengine.ext import db
 from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+from apps.action.models import *
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
 from apps.buttons.shopify.models import ButtonsShopify
 from apps.email.models import Email
@@ -324,8 +328,9 @@ class GenerateOlderHourPeriods(URIHandler):
 
 
 class AnalyticsRPC(URIHandler):
-    @admin_required
-    def get(self, admin):
+    #@admin_required
+    #def get(self, admin):
+    def get(self):
         limit = self.request.get('limit') or 3
         offset = self.request.get('offset') or 0
 
@@ -590,3 +595,47 @@ class DBIntegrityCheck(URIHandler):
                     app.extra_url = app.client.domain
                     self.response.out.write('putting %r\n' % app)
                     app.put()
+
+
+class CleanOldActions(URIHandler):
+    """Grabs a couple of old (> 1 month) Actions and deletes them.
+
+    Frequency is dictated by the associated cron job.
+    """
+    def get(self):
+        """Taskqueue compat."""
+        self.post()
+
+    def post(self):
+        """Grabs 100 action objects and deletes them.
+
+        Because some actions are actually useful, they are skipped. See
+        keep_list for the list of class names (in lower case).
+        """
+        a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        actions_deleted = 0
+        batch_size = 50
+        keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
+                     'sibtclickaction']
+        offset = 0
+
+        while actions_deleted < 100:
+            # keep fetching until we get 100 things to delete.
+            actions_iterable = Action.all()\
+                                     .filter('created <', a_month_ago)\
+                                     .run(limit=batch_size, offset=offset)
+
+            for action in actions_iterable:
+                name = action.__class__.__name__.lower()
+                if name not in keep_list:
+                    try:
+                        db.delete(action)
+                        logging.debug('deleted %r' % action)
+                        actions_deleted += 1
+                    except:  # action still wandering in memcache or something
+                        pass
+
+            offset += batch_size  # get some more unique actions
+
+        logging.info('If this is logged, we have deleted 100 Actions')
+        return

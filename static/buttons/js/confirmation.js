@@ -56,6 +56,13 @@ _willet.util = {
         }
         return s;
     },
+    "createScript": function (src) {
+        // Returns script element
+        var s = document.createElement('script');
+        s.type = "text/javascript";
+        s.src = src;
+        return s;
+    },
     "dictToArray": function (dict) {
         // Don't use this on DOM Elements, IE will fail
         var result = [];
@@ -155,24 +162,49 @@ _willet.util = {
     "isLocalhost": function() {
         return ((window.location.href.indexOf("http") >= 0) ? false : true);
     },
-    "renderSimpleTemplate": function (elem, template, values) {
+    "renderSimpleTemplate": function (template, values) {
         // Will render templates with simple substitions
         // Inputs:
-        //    elem - the elem that the rendered template will be attached to
         //    template - a string representing an HTML template, with variables of the form: {{ var_name }}
+        //               and condtionals of the form {% if var_name %} ... {% endif %}
         //    values - a object literal, with keys corresponding to template variables, and values appropriate for the template
         // Return:
-        //    elem
+        //    rendered template <string>
         //
-        // Note: strings are passed by value, so we can modify it without affecting the base template
+        // Note: strings are passed by value, so we can modify it without affecting the base templates
+        var ifStatmentRe = /\{% if [\w\-]+ %\}/g,
+            varName;
+
+        // First handle conditionals of the form {% if var_name %} ... {% endif %}
+        var conditionalIndex = template.search(ifStatementRe);
+        while (conditionalIndex > 0) {
+            // get variable name from conditional
+            // 6 is '{% if '.length
+            varName = template.substring(conditionalIndex+6, template.indexOf(' ', conditionalIndex+6));
+            
+            if (values[varName]) {
+                // if variable name exists, strip conditional statements & leave code
+                template = template.replace('{% if '+varName+' %}', '');
+                template = template.replace('{% endif %}','');
+            } else {
+                // if variable doesn't exist, strip conditional & contents
+                startIndex = conditionalIndex;
+                // 11 is '{% endif %}'.length
+                endIndex = template.indexOf('{% endif %}',startIndex)+11;
+                template = template.replace( template.substring(startIndex, endIndex), '');
+            }
+
+            // Get next one
+            conditionalIndex = template.search(re);
+        }
+
+        // Second handle variables of the form {{ var_name }}
         for (var i in values) {
             if (values.hasOwnProperty(i)) {
                 template = template.replace('{{ '+ i +' }}', values[i]);
             }
         }
-
-        elem.innerHTML = template;
-        return elem;
+        return template;
     }
 };
 
@@ -393,47 +425,190 @@ _willet.debug = (function (willet) {
     return me;
 }(_willet));
 
-_willet = (function (me, config) {
+_willet = (function (me) {
     var util = me.util,
         debug = me.debug,
         cookies = me.cookies;
 
+    var HEAD = document.getElementsByTagName('head')[0];
+
     var sharePurchaseTemplate = ""
-        + "<div class='fb-like' data-send='true' data-layout='button_count' data-width='450' data-show-faces='false'></div><div id='fb-root'></div>"
-        + "<a href='https://twitter.com/share' class='twitter-share-button' data-url='{{ canonical_url }}' data-text='{{ default_message }}' data-lang='en'>Tweet</a>"
-        + "<a href='https://twitter.com/twitterapi' class='twitter-follow-button' data-show-count='false' data-lang='en'>Follow @twitterapi</a>";
-    var scripts = [ "//platform.twitter.com/widgets.js", "//connect.facebook.net/en_US/all.js" ];
+        + "<div class='sharing'>"
+        + "  {% if message %}<p>{{ message }}:</p>{% endif %}"
+        + "  <ul>"
+        + "    {% if facebookUsername %}<li><div class='fb-like' href='{{ shop }}' data-send='true' data-layout='button_count' data-width='150' data-show-faces='false'></div></li>{% endif %}"
+        + "    {% if pinterestUsername %}<li>"
+        + "      <div class='pinterest-button'>"
+        + "        <a target='_blank' href='//pinterest.com/{{ pinterestUsername }}/'>"
+        + "          <span>Follow us on </span>"
+        + "          <i></i>"
+        + "        </a>"
+        + "      </div>"
+        + "    </li>{% endif %}"
+        + "    {% if twitterUsername %}<li><a href='//twitter.com/{{ twitterUsername }}' class='twitter-follow-button' data-show-count='false' data-lang='en'>Follow @{{ twitterUsername }}</a></li>{% endif %}"
+        + "  </ul>"
+        + "</div>";
+
+    var styleRules = ""
+        + "div.sharing { padding: 0 15px; margin: 10px 0 0 0; background-color:#FFF }"
+        + "div.sharing ul { list-style-type:none; padding: 0 40px; line-height:40px; }"
+        + "div.sharing li { display: inline-table; width: 140px; }"
+        + ".pinterest-button,"
+        + ".pinterest-button a,"
+        + ".pinterest-button span {"
+        + "        display: -moz-inline-stack;"
+        + "        display: inline-block;"
+        + "        vertical-align: top;"
+        + "        zoom: 1;"
+        + "        margin: 0;"
+        + "}"
+        + ".pinterest-button {"
+        + "        text-align: left;"
+        + "        white-space: nowrap;"
+        + "        max-width: 100%;"
+        + "        font-family: 'Helvetica Neue', Arial, sans-serif;"
+        + "        font-size: 11px;"
+        + "        font-style: normal;"
+        + "        font-variant: normal;"
+        + "        font-weight: 500;"
+        + "        line-height: 18px;"
+        + "        color: #333;"
+        + "        background: transparent;"
+        + "}"
+        + ".pinterest-button a {"
+        + "        position: relative;"
+        + "        background-color: #f8f8f8;"
+        + "        background-image: -webkit-gradient(linear,left top,left bottom,from(#fff),to(#dedede));"
+        + "        background-image: -moz-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: -o-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: -ms-linear-gradient(top,#fff,#dedede);"
+        + "        background-image: linear-gradient(top,#fff,#dedede);"
+        + "        border: rgb(175,169,169) solid 1px;"
+        + "       -moz-border-radius: 3px;"
+        + "        -webkit-border-radius: 3px;"
+        + "        border-radius: 3px;"
+        + "        color: rgb(208,28,43);"
+        + "        font-weight: 500;"
+        + "        text-shadow: 0 1px 0 rgba(255,255,255,.5);"
+        + "        -webkit-user-select: none;"
+        + "        -moz-user-select: none;"
+        + "        -o-user-select: none;"
+        + "        user-select: none;"
+        + "        cursor: pointer;"
+        + "        height: 18px;"
+        + "        max-width: 98%;"
+        + "        overflow: hidden;"
+        + "}"
+        + ".pinterest-button a:focus,"
+        + ".pinterest-button a:hover,"
+        + ".pinterest-button a:active {"
+        + "        border-color: #bbb;"
+        + "        background-color: #f8f8f8;"
+        + "        background-image: -webkit-gradient(linear,left top,left bottom,from(#f8f8f8),to(#d9d9d9));"
+        + "        background-image: -moz-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: -o-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: -ms-linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        background-image: linear-gradient(top,#f8f8f8,#d9d9d9);"
+        + "        -webkit-box-shadow: none;"
+        + "        -moz-box-shadow: none;"
+        + "        box-shadow: none;"
+        + "}"
+        + ".pinterest-button a:active {"
+        + "        background-color: #efefef;"
+        + "        -webkit-box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "        -moz-box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "        box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);"
+        + "}"
+        + ".pinterest-button i {"
+        + "        position: absolute;"
+        + "        top: 50%;"
+        + "        right: 3px;"
+        + "        margin-top: -7px;"
+        + "        width: 14px;"
+        + "        height: 14px;"
+        + "        background: transparent url(/static/buttons/html/pinterest-p-14x14.png) 0 0 no-repeat;"
+        + "        background-image: url(data:image/png;base64,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);"
+        + "}"
+        + ".pinterest-button span {"
+        + "        padding: 0 22px 0 5px;"
+        + "        white-space: nowrap;"
+        + "}";
+
+    var scripts = [ "//platform.twitter.com/widgets.js", "//connect.facebook.net/en_US/all.js#xfbml=1" ];
+
+    //var config = {
+    //    'storeName': 'Kovacek And Sons',
+    //    'storeUrl': 'kovacek-and-sons3219.myshopify.com',
+    //    'message': 'We would appreciate if we could update you every once in a while',
+    //    'facebookUsername': 'fjharris',
+    //    'pinterestUsername': 'fraserharris',
+    //    'twitterUsername': 'fjharris'
+    //};
+
+    me.getConfigurationFromURL = function () {
+        var scripts = document.getElementsByTagName('script');
+
+        var parseQueryString = function (src) {
+            var qs = src.indexOf('?') ? src.substr(src.indexOf('?')+1) : null,
+                obj = {};
+
+            if (qs) {
+                // A little hack - convert the query string into JSON format and parse it
+                // '&' -> ',' and '=' -> ':'
+                obj = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+            }
+
+            return obj;
+        }
+
+        // Find this script
+        for (i = scripts.length; i--;) {
+            if (scripts[i].src.match('fraser-willet2.appspot.com')) {
+                // parse query string
+                return parseQueryString( scripts[i].src );
+            }
+        }
+    }
 
 
     me.init = function () {
+        // Only do something on the order confirmation page
         if (window.location.hostname.match(/^checkout\.shopify\.com$/)) {
+            // Get hook on page
             var content = document.getElementById('content');
 
             if (content) {
                 var container = document.createElement('div');
+                
+                // Retrieve configuration from script query string
+                var config = me.getConfigurationFromURL();
 
-                util.renderSimpleTemplate(container, sharePurchaseTemplate, config);
+                container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
+                container.appendChild( util.createStyle(styleRules) );
 
-                // Add the div to the pag
-                container.insertAfter(content, container);
+                for (var i = scripts.length; i--;) {
+                    HEAD.appendChild( util.createScript(scripts[i]) );
+                }
+
+                // Add the div to the page
+                content.parentNode.insertBefore(container, content);
             }
         }
     };
 
     return me;
-}(_willet, window._willet_shopconnection_config || {}));
+}(_willet));
 
 try {
     if (_willet) {
         var info = _willet.util.detectBrowser();
-        _willet.debug.set(false); //set to true if you want logging turned on
+        _willet.debug.set(true); //set to true if you want logging turned on
 
         if (!_willet.buttonsLoaded
             && !(info.browser === "Explorer" && info.version <= 7)
             && !(info.browser === "An unknown browser")
             && !(_willet.util.isLocalhost()))
         {
-            _willet.cart.init();
             _willet.init();
         } else {
             _willet.debug.log("Buttons not loaded: Unsupported browser or localhost");

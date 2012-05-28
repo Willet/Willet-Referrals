@@ -1,78 +1,23 @@
 #!/usr/bin/env/python
 
-# The Action Model
-# A parent class for all User actions
-# ie. ClickAction, VoteAction, ViewAction, etc
+"""The Action Model.
+
+A parent class for all User actions e.g. ClickAction, VoteAction, ViewAction
+"""
 
 __author__ = "Willet, Inc."
 __copyright__ = "Copyright 2012, Willet, Inc"
 
 import logging
 
-from google.appengine.api import memcache
-from google.appengine.ext import db, deferred
+from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from util.consts import *
 from util.helpers import generate_uuid
-from util.memcache_bucket_config import MemcacheBucketConfig
 from util.memcache_ref_prop import MemcacheReferenceProperty
 from util.model import Model
 
-"""Helper method to persist actions to datastore"""
-def persist_actions(bucket_key, list_keys, decrementing=False):
-    from apps.buttons.actions import *
-    from apps.gae_bingo.actions import *
-    from apps.sibt.actions import *
-    from apps.wosib.actions import *
-    action_dict = memcache.get_multi(list_keys)
 
-    mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
-
-    logging.info('batch putting a list of actions from memcache: %s' % list_keys)
-    actions_to_put = []
-    had_error = False
-    for key in list_keys:
-        data = action_dict.get(key)
-        try:
-            action = db.model_from_protobuf(entity_pb.EntityProto(data))
-            if action:
-                actions_to_put.append(action)
-        except AssertionError, e:
-            # there was an error getting all the actions
-            # let's decrement the number of buckets
-            # but before we can do this we have to save the last bucket so
-            # it's contents are not deleted
-
-            old_key = mbc.get_bucket(mbc.count)
-            if bucket_key != old_key and not decrementing and not had_error:
-                # we dont want to do this for the last bucket because it will
-                # duplicate the entries we are about to create
-                old_count = mbc.count
-                mbc.decrement_count()
-                logging.warn(
-                    'encounted error, going to decrement buckets from %s to %s'
-                    % (old_count, mbc.count), exc_info=True)
-
-                last_keys = memcache.get(old_key) or []
-                memcache.set(old_key, [], time=MEMCACHE_TIMEOUT)
-                deferred.defer(persist_actions, old_key, last_keys, decrementing=True, _queue='slow-deferred')
-                had_error = True
-        except Exception, e:
-            logging.error('error getting action: %s' % e, exc_info=True)
-
-    try:
-        db.put_async(actions_to_put)
-    except Exception, e:
-        logging.error('Error putting %s: %s' % (actions_to_put, e), exc_info=True)
-
-    if decrementing:
-        logging.warn('decremented mbc `%s` to %d and removed %s' % (
-            mbc.name, mbc.count, bucket_key))
-
-## ----------------------------------------------------------------------------
-## Action SuperClass ----------------------------------------------------------
-## ----------------------------------------------------------------------------
 class Action(Model, polymodel.PolyModel):
     """ Whenever a 'User' completes a Willet Action,
         an 'Action' obj will be stored for them.
@@ -102,27 +47,7 @@ class Action(Model, polymodel.PolyModel):
         return True
 
     def put(self):
-        """Override util.model.put with some custom shizzbang"""
-        # Not the best spot for this, but I can't think of a better spot either ..
-        self.is_admin = self.user.is_admin()
-
-        key = self.get_key()
-        memcache.set(key, db.model_to_protobuf(self).Encode(), time=MEMCACHE_TIMEOUT)
-
-        mbc = MemcacheBucketConfig.get_or_create('_willet_actions_bucket')
-        bucket = mbc.get_random_bucket()
-        # logging.info('bucket: %s' % bucket)
-
-        list_identities = memcache.get(bucket) or []
-        list_identities.append(key)
-
-        # logging.info('bucket length: %d/%d' % (len(list_identities), mbc.count))
-        if len(list_identities) > mbc.count:
-            memcache.set(bucket, [], time=MEMCACHE_TIMEOUT)
-            logging.warn('bucket overflowing, persisting!')
-            deferred.defer(persist_actions, bucket, list_identities, _queue='slow-deferred')
-        else:
-            memcache.set(bucket, list_identities, time=MEMCACHE_TIMEOUT)
+        self.put_later()
 
     def get_class_name(self):
         return self.__class__.__name__
@@ -179,9 +104,6 @@ class Action(Model, polymodel.PolyModel):
         return Action.all().filter('user =', user).filter('app_ =', app).get()
 
 
-## -----------------------------------------------------------------------------
-## ClickAction Subclass --------------------------------------------------------
-## -----------------------------------------------------------------------------
 class ClickAction(Action):
     """ Designates a 'click' action for a User.
         Currently used for 'SIBT' and 'WOSIB' Apps
@@ -204,48 +126,41 @@ class ClickAction(Action):
         )
 
 
-## -----------------------------------------------------------------------------
-## VoteAction Subclass ---------------------------------------------------------
-## -----------------------------------------------------------------------------
 class VoteAction(Action):
-    """ Designates a 'vote' action for a User.
-        Primarily used for 'SIBT' App """
+    """Designates a 'vote' action for a User.
+
+    Primarily used for 'SIBT' App.
+    """
 
     # Link that caused the vote action ...
     link = db.ReferenceProperty(db.Model, collection_name = "link_votes")
 
-    # Either 'yes' or 'no'
+    # Typically 'yes' or 'no'; occasionally product uuids
     vote = db.StringProperty(indexed = True)
 
     def __init__(self, *args, **kwargs):
         super(VoteAction, self).__init__(*args, **kwargs)
 
-        # Tell Mixplanel that we got a vote
-        #self.app_.storeAnalyticsDatum(self.class_name(), self.user, self.link.target_url)
-
     def __str__(self):
-        return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'VOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid,
+                                    self.app_.uuid)
 
     def _validate_self(self):
-        if not (self.vote == 'yes' or self.vote == 'no'):
-            raise Exception("Vote type needs to be yes or no")
+        return True
 
-    @staticmethod
-    def get_by_vote(vote):
-        return VoteAction.all().filter('vote =', vote)
+    @classmethod
+    def get_by_vote(cls, vote):
+        return cls.all().filter('vote =', vote)
 
-    @staticmethod
-    def get_all_yesses():
-        return VoteAction.all().filter('vote =', 'yes')
+    @classmethod
+    def get_all_yesses(cls):
+        return cls.get_by_vote('yes')
 
-    @staticmethod
-    def get_all_nos():
-        return VoteAction.all().filter('vote =', 'no')
+    @classmethod
+    def get_all_nos(cls):
+        return cls.get_by_vote('no')
 
 
-## -----------------------------------------------------------------------------
-## LoadAction Subclass ---------------------------------------------------------------
-## -----------------------------------------------------------------------------
 class LoadAction(Action):
     """ Parent class for Load actions.
         ie. ScriptLoad, ButtonLoad """
@@ -263,33 +178,12 @@ class LoadAction(Action):
     def get_by_user_and_url(user, url):
         return LoadAction.all().filter('user = ', user).filter('url =', url)
 
-## -----------------------------------------------------------------------------
-## ScriptLoadAction Subclass ---------------------------------------------------------
-## -----------------------------------------------------------------------------
 class ScriptLoadAction(LoadAction):
-    def __str__(self):
-        return 'ScriptLoadAction: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+    pass
 
-    ## Constructor
-    @staticmethod
-    def create(user, app, url):
-        uuid = generate_uuid(16)
-        act = ScriptLoadAction(key_name = uuid,
-                                 uuid = uuid,
-                                 user = user,
-                                 app_ = app,
-                                 url = url)
+class ButtonLoadAction(LoadAction):
+    pass
 
-        act.put()
-
-    @staticmethod
-    def get_by_app(app):
-        """docstring for get_by_app"""
-        return ScriptLoadAction.all().filter('app_ =', app)
-
-## -----------------------------------------------------------------------------
-## ShowAction Subclass ---------------------------------------------------
-## -----------------------------------------------------------------------------
 class ShowAction(Action):
     """We are showing something ..."""
 
@@ -319,9 +213,7 @@ class ShowAction(Action):
             self.url,
         )
 
-## -----------------------------------------------------------------------------
-## UserAction Subclass ---------------------------------------------------
-## -----------------------------------------------------------------------------
+
 class UserAction(Action):
     """A user action, such as clicking on a button or something like that"""
 
@@ -347,8 +239,6 @@ class UserAction(Action):
         return action
 
     def __str__(self):
-        return 'User %s did %s on %s' % (
-            self.user.get_first_name(),
-            self.what,
-            self.url,
-        )
+        return 'User %s did %s on %s' % (self.user.get_first_name(),
+                                         self.what,
+                                         self.url)

@@ -106,18 +106,16 @@ class Email():
 
         # Grab first name only
         try:
-            name = name.split(' ')[0]
+            name = ' %s' % name.split(' ')[0]
         except:
-            pass
+            name = ''
 
         if 'SIBT' in app_name:
             app_name = "Should I Buy This"
         elif 'Buttons' in app_name:
             app_name = "ShopConnection"
-        elif 'WOSIB' in app_name:
-            return
 
-        body = """<p>Hi %s,</p> <p>Sorry to hear things didn't work out with %s.
+        body = """<p>Hi%s,</p> <p>Sorry to hear things didn't work out with %s.
                   <i>Can you tell us why you uninstalled?</i></p>
                   <p>Thanks,</p>
                   <p>Fraser</p>
@@ -128,7 +126,8 @@ class Email():
                          to_address=to_addr,
                          subject=subject,
                          body=body,
-                         to_name=name)
+                         to_name=name,
+                         replyto_address=FRASER)
 
     @staticmethod
     def report_smart_buttons(email="info@getwillet.com", items={},
@@ -159,9 +158,17 @@ class Email():
                          body=body)
 
     @staticmethod
-    def SIBTAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                product_img, product_title, client_name, client_domain,
-                asker_img= None):
+    def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
+                vote_url, product=None, products=None, asker_img= None):
+        """Please, supply products as their objects.
+
+        Supplying a products list of more than one item will trigger WOSIB
+        emails.
+        """
+
+        if products is None:
+            products = []
+
         subject = "Can I get your advice?"
         to_first_name = from_first_name = ''
 
@@ -175,21 +182,31 @@ class Email():
         except:
             to_first_name = to_name
 
-        body = template.render(Email.template_path('sibt_ask.html'),
-            {
-                'from_name'         : from_name.title(),
-                'from_first_name'   : from_first_name.title(),
-                'to_name'           : to_name.title(),
-                'to_first_name'     : to_first_name.title(),
-                'message'           : message,
-                'vote_url'          : vote_url,
-                'product_title'     : product_title,
-                'product_img'       : product_img,
-                'asker_img'         : asker_img,
-                'client_name'       : client_name,
-                'client_domain'     : client_domain
-            }
-        )
+        try:
+            product_img = product.images[0]
+        except (TypeError, IndexError):
+            product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+
+        if len(products) > 1:  # WOSIB mode
+            template_file = 'wosib_ask.html'
+        else:
+            template_file = 'sibt_ask.html'
+
+        body = template.render(Email.template_path('wosib_ask.html', client), {
+            'URL': URL,
+            'from_name': from_name.title(),
+            'from_first_name': from_first_name.title(),
+            'to_name': to_name.title(),
+            'to_first_name': to_first_name.title(),
+            'message': message,
+            'vote_url': vote_url,
+            'asker_img': asker_img,
+            'client_name': client.name,
+            'client_domain': client.domain,
+            'products': products or [None, None],  # just to shut it up
+            'product_title': getattr(product, 'title', 'Awesome product'),
+            'product_img': product_img
+        })
 
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
@@ -198,20 +215,48 @@ class Email():
                          subject=subject,
                          body=body)
 
+
     @staticmethod
-    def SIBTVoteNotification(to_addr, name, vote_type, product_url, product_img, client_name, client_domain):
-        to_addr = to_addr
+    def SIBTVoteNotification(instance, vote_type):
+        """Send an "A friend Voted!" email to the asker.
+
+        vote_type is a string.
+        """
+        client = getattr(instance.app_, 'client', None)
+        if not client:
+            logging.warn('client uninstalled app; '
+                         'not emailing on behalf of it.')
+            return  # client uninstalled
+
+        if not instance.asker:
+            logging.warn('The deuce? Instance has no asker.')
+            return  # no need to email anyone
+
+        to_addr = instance.asker.get_attr('email')
+
+        if not to_addr:
+            logging.warn('asker has no email; '
+                         'not emailing him/her/it.')
+            return  # no need to email anyone
+
         subject = 'A Friend Voted!'
-        if name == "":
-            name = "Savvy Shopper"
-        body = template.render(Email.template_path('sibt_voteNotification.html'),
+        name = instance.asker.get_full_name() or "Savvy Shopper"
+
+        product_url = "%s#open=1" % instance.url  # full product link
+        product_img = instance.product_img
+
+        logging.info("product_url, product_img = %r" % [product_url,
+                                                        product_img])
+
+        body = template.render(
+            Email.template_path('sibt_voteNotification.html', client),
             {
                 'name'          : name.title(),
                 'vote_type'     : vote_type,
                 'product_url'   : product_url,
                 'product_img'   : product_img,
-                'client_name'   : client_name,
-                'client_domain' : client_domain
+                'client_name'   : client.name,
+                'client_domain' : client.domain
             }
         )
 
@@ -221,31 +266,45 @@ class Email():
                          body=body)
 
     @staticmethod
-    def SIBTVoteCompletion(to_addr, name, product_url, product_img, yesses, noes):
-        if name == "":
-            name = "Savvy Shopper"
-        subject = '%s the votes are in!' % name
+    def SIBTVoteCompletion(instance, product):
+        client = getattr(product, 'client', None)
+        if not client:
+            logging.warn('client uninstalled app; '
+                         'not emailing on behalf of it.')
+            return  # client uninstalled
+
+        if not instance.asker:
+            logging.warn('The deuce? Instance has no asker.')
+            return  # no need to email anyone
+
+        to_addr = instance.asker.get_attr('email')
+        if not to_addr:
+            logging.warn('asker has no email; '
+                         'not emailing him/her/it.')
+            return  # no need to email anyone
+
+        yesses = instance.get_yesses_count()
+        noes = instance.get_nos_count()
         total = (yesses + noes)
         if total == 0:
             buy_it_percentage = 0
         else:
             buy_it_percentage = int(float(float(yesses) / float(total)) * 100)
 
-        if yesses > noes:
-            buy_it = True
-        else:
-            buy_it = False
+        buy_it = True if yesses >= noes else False
+
+        name = instance.asker.name or "Savvy Shopper"
+        subject = '%s, the votes are in!' % name
 
         body = template.render(
-            Email.template_path('sibt_voteCompletion.html'), {
+            Email.template_path('sibt_voteCompletion.html', client), {
                 'name': name,
-                'product_url': product_url,
-                'product_img': product_img,
+                'product_url': getattr(product, 'resource_url', ''),
+                'product_img': product.images[0],
                 'yesses': yesses,
                 'noes': noes,
                 'buy_it': buy_it,
-                'buy_it_percentage': buy_it_percentage
-        })
+                'buy_it_percentage': buy_it_percentage})
 
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
@@ -255,9 +314,9 @@ class Email():
 
     @staticmethod
     def WOSIBAsk(from_name, from_addr, to_name, to_addr, message, vote_url,
-                 client_name, client_domain, asker_img= None, products=None):
+                 client, asker_img= None, products=None):
         """Please, supply products as their objects."""
-        subject = "Which one should I buy?"
+        subject = "Can I get your advice?"
         to_first_name = from_first_name = ''
 
         # Grab first name only
@@ -270,7 +329,7 @@ class Email():
         except:
             to_first_name = to_name
 
-        body = template.render(Email.template_path('wosib_ask.html'),
+        body = template.render(Email.template_path('wosib_ask.html', client),
             {
                 'URL'               : URL,
                 'from_name'         : from_name.title(),
@@ -280,8 +339,8 @@ class Email():
                 'message'           : message,
                 'vote_url'          : vote_url,
                 'asker_img'         : asker_img,
-                'client_name'       : client_name,
-                'client_domain'     : client_domain,
+                'client_name'       : client.name,
+                'client_domain'     : client.domain,
                 'products'          : products or [None, None]  # just to shut it up
             }
         )
@@ -294,49 +353,31 @@ class Email():
                          body=body)
 
     @staticmethod
-    def WOSIBVoteNotification(to_addr, name, cart_url, client_name, client_domain):
+    def WOSIBVoteNotification(instance, product):
         # similar to SIBTVoteNotification, except because you can't vote 'no',
         # you are just told someone voted on one of your product choices.
-        to_addr = to_addr
+        # pass roduct is a Product object.
+        client = getattr(instance.app_, 'client', None)
+        if not client:
+            return  # client uninstalled
+
+        to_addr = instance.asker.get_attr('email')
+        if not to_addr:
+            return  # no need to email anyone
+
         subject = 'A Friend Voted!'
-        if name == "":
-            name = "Savvy Shopper"
-        body = template.render(Email.template_path('wosib_voteNotification.html'),
-            {
-                'name'        : name.title(),
-                'cart_url'    : cart_url,
-                'client_name' : client_name,
-                'client_domain' : client_domain
-            }
-        )
+        name = instance.asker.get_full_name() or "Savvy Shopper"
 
-        logging.info("Emailing '%s'" % to_addr)
-        Email.send_email(from_address=FROM_ADDR,
-                         to_address=to_addr,
-                         subject=subject,
-                         body=body,
-                         to_name=name)
+        cart_url = "%s#open=1" % instance.link.origin_domain
 
-    @staticmethod
-    def WOSIBVoteCompletion(to_addr, name, products):
-        if name == "":
-            name = "Savvy Shopper"
-        subject = '%s, the votes are in!' % name
+        body = template.render(Email.template_path('wosib_voteNotification.html',
+                                                   client),
+                               {'name': name.title(),
+                                'cart_url': cart_url,
+                                'product': product,
+                                'client_name': client.name,
+                                'client_domain': client.domain})
 
-        # would have been much more elegant had django 0.96 gotten the
-        # {% if array|length > 1 %} notation (it doesn't work in GAE)
-        product = products[0]
-        if len (products) == 1:
-            products = False
-
-        body = template.render(
-            Email.template_path('wosib_voteCompletion.html'), {
-                'name': name,
-                'products': products,
-                'product' : product
-        })
-
-        logging.info("Emailing '%s'" % to_addr)
         Email.send_email(from_address=FROM_ADDR,
                          to_address=to_addr,
                          subject=subject,
@@ -346,12 +387,22 @@ class Email():
     ### MAILOUTS ###
 
     @staticmethod
-    def template_path(path):
+    def template_path(path, client=None):
+        """Returns the email template path for a given client, or the default
+        path if the client does not have special templates.
+        """
+        if client and client.is_vendor:
+            vendor_path = os.path.join('apps/email/templates', client.name,
+                                       path)
+            if os.path.exists(vendor_path):
+                return vendor_path
         return os.path.join('apps/email/templates/', path)
 
     @staticmethod
     def send_email(from_address, to_address, subject, body,
                    to_name= None, replyto_address= None):
+        if not replyto_address:
+            replyto_address = from_address  # who would reply to "None"?
         taskqueue.add(
                 url=url('SendEmailAsync'),
                 params={

@@ -3,7 +3,7 @@ var _willet = _willet || {};  // ensure namespace is there
 // le colorbox for willet (has a custom name, willet_colorbox)
 _willet.colorbox = (function (me) {
     var wm = _willet.mediator || {};
-    var $ = jQuery || {};  // I want jQuery here, but it won't be available
+    var $ = window.jQuery || {};  // I want jQuery here, but it won't be available
                            // until mediator says so.
 
     me._cboxobj = null;
@@ -43,7 +43,7 @@ _willet.colorbox = (function (me) {
                         }
                     });
                 } else {
-                    wm.fire('log', "Could not setup colorbox!");
+                    wm.fire('error', "Could not setup colorbox!");
                 }
             });
         }
@@ -57,8 +57,8 @@ _willet.colorbox = (function (me) {
         me._cboxobj = me._cboxobj || $.willet_colorbox || jQuery.willet_colorbox;
 
          // colorbox cannot be loaded twice on a page.
-        if (!me._cboxobj && (jQuery || window.jQuery)) {
-            me.init(jQuery || window.jQuery);
+        if (!me._cboxobj && (window.jQuery || $)) {
+            me.init(window.jQuery || $);
         }
 
         if (me._cboxobj) {
