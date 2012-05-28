@@ -89,7 +89,7 @@ class DispenseClientDiscountCode(URIHandler):
         - email: an email address with which to retrieve a user.
                  it is used only if there is no user cookie.
         """
-        le_code = 'All codes have been taken'
+        le_code = ''
 
         self.response.headers['Content-Type'] = 'text/plain'
         client = Client.get_by_url(self.request.get('store_url')) or \
