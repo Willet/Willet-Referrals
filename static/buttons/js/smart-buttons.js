@@ -82,6 +82,13 @@ _willet.util = {
         }
         return s;
     },
+    "createScript": function (src) {
+        // Returns script element
+        var s = document.createElement('script');
+        s.type = "text/javascript";
+        s.src = src;
+        return s;
+    },
     "dictToArray": function (dict) {
         // Don't use this on DOM Elements, IE will fail
         var result = [];
@@ -180,6 +187,55 @@ _willet.util = {
     },
     "isLocalhost": function() {
         return ((window.location.href.indexOf("http") >= 0) ? false : true);
+    },
+    "renderSimpleTemplate": function (template, values) {
+        // Will render templates with simple substitions
+        // Inputs:
+        //    template - a string representing an HTML template, with variables
+        //               of the form: {{ var_name }} and condtionals of the form
+        //               {% if var_name %} ... {% endif %}
+        //               Note: does not support nested if's, and must be exactly 
+        //                     the form above (no extra whitespace)
+        //    values - a object literal, with keys corresponding to template variables,
+        //             and values appropriate for the template
+        // Return:
+        //    rendered template <string>
+        
+        var ifStatementRe = /\{% if [\w\-]+ %\}/g,
+            ifPrefixLen = '{% if '.length,
+            endifLen = '{% endif %}'.length,
+            startIndex, endIndex, contionalIndex, varName;
+
+        // First handle conditionals of the form {% if var_name %} ... {% endif %}
+        // Note: strings are passed by value, so we can modify template without affecting
+        //       the base templates
+        conditionalIndex = template.search(ifStatementRe);
+        while (conditionalIndex >= 0) {
+            // get variable name from conditional
+            varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
+            
+            if (values[varName]) {
+                // if variable name exists, strip conditional statements & leave code
+                template = template.replace('{% if '+varName+' %}', '');
+                template = template.replace('{% endif %}','');
+            } else {
+                // if variable doesn't exist, strip conditional & contents
+                startIndex = conditionalIndex;
+                endIndex = template.indexOf('{% endif %}',startIndex)+endifLen;
+                template = template.replace( template.substring(startIndex, endIndex), '');
+            }
+
+            // Get next one
+            conditionalIndex = template.search(re);
+        }
+
+        // Second handle variables of the form {{ var_name }}
+        for (var i in values) {
+            if (values.hasOwnProperty(i)) {
+                template = template.replace('{{ '+ i +' }}', values[i]);
+            }
+        }
+        return template;
     }
 };
 
@@ -282,12 +338,12 @@ _willet.util.detectBrowser = function() {
             if (dataString) {
                 if (dataString.indexOf(data[i].subString) != -1) {
                     return data[i].identity;
-        }
+                }
             } else if (dataProp) {
                 return data[i].identity;
-    }
+            }
         }
-};
+    };
 
     searchVersion = function (dataString) {
         var index = dataString.indexOf(versionSearchString);
@@ -401,6 +457,10 @@ _willet.debug = (function (willet) {
 }(_willet));
 
 _willet.messaging = (function (willet) {
+    /*  
+        .ajax - Server communication
+        .xd -   Cross-domain frame communication  
+    */
     var debug = willet.debug,
         util = willet.util,
         me = {};
@@ -943,7 +1003,7 @@ _willet = (function (me, config) {
         supportedNetworks = me.networks,
         util = me.util;
 
-    // Private variables
+    // Constants
     var MY_APP_URL = "http://willet-nterwoord.appspot.com",
         WILLET_APP_URL = "http://social-referral.appspot.com",
         APP_URL = WILLET_APP_URL,
@@ -964,7 +1024,7 @@ _willet = (function (me, config) {
         ELEMENT_NODE = 1,
         NOT_FOUND = -1,
 
-        MAX_BUTTONS = 3,
+        MAX_BUTTONS = (config && config.max_buttons) || 3,
         DEFAULT_BUTTONS = (config && config.button_order) ||
                           ['Pinterest', 'Tumblr', 'Fancy'],
         DEFAULT_COUNT = 'false',
@@ -976,12 +1036,28 @@ _willet = (function (me, config) {
                               + window.location.hostname
                               + '/products/'
                               + window.location.pathname.replace(/^(.*)?\/products\/|\/$/, ''),
-            // How this regex works: replaces .../products/ or a trailing / with empty spring
+            // How this regex works: replaces .../products/ or a trailing / with empty string
             // So /collections/this-collection/products/this-product -> this-product
 
         COOKIE_NAME = "_willet_smart_buttons";
 
     _willet.APP_URL = APP_URL;
+
+    // Private variables
+    var loggedInNetworks = (function () {
+        // Load loggedInNetworks with saved array of known networks
+        var networks = {},
+            networksJSON = cookies.read(COOKIE_NAME);
+
+        if (networksJSON) {
+            try {
+                networks = JSON.parse(networksJSON);
+            } catch(e) {
+                debug.log("Buttons: Unable to parse cookie")
+            }
+        }
+        return networks;
+    }());
 
     // Private functions
     var getRequiredButtonsFromElement = function(container) {
@@ -1001,11 +1077,124 @@ _willet = (function (me, config) {
                 }
             }
         }
-        return (requiredButtons.length) ? requiredButtons : DEFAULT_BUTTONS; // default for backwards compatibilty;
+        return requiredButtons;
+    };
+
+    var updateLoggedInStatus = function(network, status, includeTime) {
+        debug.log("Buttons: "+(status ? "" : "Not ")+ network +" user");
+        if (status === true) {
+            var now = new Date();
+            loggedInNetworks[network] = { "status": status };
+            if (includeTime === true) {
+                loggedInNetworks[network]["accessed"] = now.getTime();
+            }
+            cookies.create(COOKIE_NAME, JSON.stringify(loggedInNetworks), COOKIE_EXPIRY_IN_DAYS);
+        }
+    };
+
+    var itemShared = function(network, params) {
+        //If someone shares, update the cookie
+        updateLoggedInStatus(network, true, true);
+
+        var message = JSON.stringify({
+            "name"   : params.data.product.title,
+            "network": network,
+            "img"    : params.photo
+        });
+
+        //Need to append param to avoid caching...
+        var queryString = "message="    + encodeURIComponent(message)
+                     + "&nocache=" + Math.random();
+
+        var _willetImage = document.createElement("img");
+        _willetImage.src = APP_URL + "/b/shopify/item_shared?" + queryString;
+        _willetImage.style.display = "none";
+
+        document.body.appendChild(_willetImage)
+    };
+
+    // Sorting comparators are hard to remember. For more details on sorting:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort#Description
+    var sortComparator = function(a, b, descending) {
+        var order = descending ? -1 : 1,
+            result;
+
+        if (a && b) {
+            if (a > b) {
+                result = 1;
+            } else if (a < b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        } else {
+            if (a) {
+                result = 1;
+            } else if (b) {
+                result = -1;
+            } else {
+                result = 0;
+            }
+        }
+
+        return result * order;
+    };
+
+    // Returns networks sorted by accessed (most recent first), then priority
+    var networkPrioritizedSort = function(a, b) {
+        var dateA = a.value.accessed,
+            dateB = b.value.accessed,
+            priorityA = supportedNetworks[a.key]["priority"] || 100,
+            priorityB = supportedNetworks[b.key]["priority"] || 100,
+            result;
+
+        if (dateA || dateB) {
+            result = sortComparator(dateA, dateB, true);
+        } else {
+            result = sortComparator(priorityA, priorityB)
+        }
+
+        return result;
     };
 
     var determineButtons = function(buttonsDiv) {
-        return getRequiredButtonsFromElement(buttonsDiv) || DEFAULT_BUTTONS;
+        var i,
+            networks = [],
+            requiredButtons = [];
+
+        // Queue detected networks first, if the cookie exists
+        if (loggedInNetworks) {
+            networks = util.dictToArray(loggedInNetworks);
+            networks = networks.sort(networkPrioritizedSort);
+
+            // Queue detected buttons
+            for (i = 0; i < networks.length && requiredButtons.length < MAX_BUTTONS; i++) {
+                var network = networks[i];
+                if (util.xHasKeyY(supportedNetworks, network.key)   //check that this is a network we support
+                    && network.value.status === true) {         //check that the network is enabled
+                    requiredButtons.push(network.key);
+                }
+            }
+        }
+
+        // Queue user's buttons if there is space, and they have not already been added
+        var usersButtons = getRequiredButtonsFromElement(buttonsDiv);
+        for (i = 0; i < usersButtons.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = usersButtons[i];
+            if (util.indexOf(requiredButtons, button) === NOT_FOUND) {
+                requiredButtons.push(button);
+            }
+        }
+
+        // Queue default buttons to the end, if they have not already been added
+        for (i = 0; i < DEFAULT_BUTTONS.length && requiredButtons.length < MAX_BUTTONS; i++) {
+            var button = DEFAULT_BUTTONS[i];
+            if (util.indexOf(requiredButtons, button) == NOT_FOUND) {
+                requiredButtons.push(button);
+            }
+        }
+
+        return requiredButtons;
     };
 
     var addButton = function(elem, network, button, methods, params) {
@@ -1015,12 +1204,62 @@ _willet = (function (me, config) {
             var script = document.createElement("script");
             script.type = "text/javascript";
             script.src = button["script"];
+            script.onload = function () {
+                button["onload"] && button["onload"](methods, params);
+            };
             HEAD.appendChild(script);
         }
         debug.log('Buttons: '+ network +' attached');
     };
 
     // Public functions
+    me.detectNetworks = function () {
+        // Determines which social networks are in use
+        // The detection is asynchronous & saved to a cookie
+        // for lookup later
+        debug.log("Buttons: Determining networks...")
+        var createHiddenImage = function(network, source) {
+            var image = document.createElement("img");
+            image.onload = function () {
+                updateLoggedInStatus(network, true);
+            };
+            image.onerror = function() {
+                updateLoggedInStatus(network, false);
+            };
+            image.src = source;
+            image.style.display = "none";
+            return image;
+        };
+
+        var detectNetworksDiv = document.createElement("div");
+        detectNetworksDiv.id = DETECT_NETWORKS_DIV_ID;
+
+        document.body.appendChild(detectNetworksDiv);
+
+        for (network in supportedNetworks) {
+            if (supportedNetworks.hasOwnProperty(network)) {
+                var detectNetwork = supportedNetworks[network]["detect"];
+                debug.log("Buttons: Attempting to detect " + network);
+                switch (detectNetwork["method"]) {
+                    case "image":
+                        var image = createHiddenImage(network, detectNetwork.func());
+                        detectNetworksDiv.appendChild(image);
+                    break;
+
+                    case "api":
+                        detectNetwork.func({
+                            "updateLoggedInStatus": updateLoggedInStatus,
+                            "itemShared":           itemShared
+                        });
+                    break;
+
+                    default:
+                        //Nothing to do
+                }
+            }
+        }
+    };
+
     me.createButtons = function(productData) {
         debug.log("Buttons: finding buttons placeholder on page");
         var buttonsDiv = document.getElementById(BUTTONS_DIV_ID);
@@ -1038,9 +1277,9 @@ _willet = (function (me, config) {
                 ("I found this on " + DOMAIN);
 
             var params = {
-                "domain":           DOMAIN,
-                "photo":            productData.product.images[0] ? productData.product.images[0].src : '',
-                "data":             productData,
+                "domain":       DOMAIN,
+                "photo":        productData.product.images[0] ? productData.product.images[0].src : '',
+                "data":         productData,
                 "buttonAlignment":  util.getElemValue(buttonsDiv, 'align', DEFAULT_ALIGNMENT),
                 "buttonCount":  buttonCount,
                 "buttonSpacing": buttonSpacing,
@@ -1063,14 +1302,13 @@ _willet = (function (me, config) {
             util.removeChildren(buttonsDiv);
 
             // Create the required buttons
-            var network, button,
+            var network, button, script,
                 methods = {
-                    // Not used in basic buttons, but networks still expect it
-                    "updateLoggedInStatus": function () {},
-                    "itemShared":           function () {}
+                    "updateLoggedInStatus": updateLoggedInStatus,
+                    "itemShared":           itemShared
                 };
 
-            for (var i = 0; i < requiredButtons.length; i++) {
+            for (i = 0; i < requiredButtons.length; i++) {
                 network = requiredButtons[i];
                 button = supportedNetworks[network]["button"];
 
@@ -1079,13 +1317,6 @@ _willet = (function (me, config) {
                 } catch (e) {
                     debug.error('Buttons: '+network+' encountered error: '+e);
                 }
-            }
-
-            // If FB script was already loaded, fire it off again
-            if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
-                try {
-                    window.FB.XFBML.parse();
-                } catch(e) {}
             }
 
             // Make visible if hidden
@@ -1112,22 +1343,11 @@ _willet = (function (me, config) {
         });
         debug.set(isDebugging);
 
-        if (DOMAIN === 'localhost') {
-            // Shopify won't respond on localhost, so use example data
-            me.createButtons({
-                product: {
-                    images: [{
-                        created_at: "2012-02-03T11:42:17+09:00",
-                        id: 166600132,
-                        position: 1,
-                        product_id: 81809292,
-                        updated_at: "2012-02-03T11:42:17+09:00",
-                        src:'/static/imgs/beer_200.png'
-                    }]
-                },
-                title: "Glass of beer"
-            });
-        } else if (window.location.pathname.match(/^(.*)?\/products\//)) {
+        if (!util.isDictEmpty(loggedInNetworks)) {
+            me.detectNetworks();
+        }
+
+        if (window.location.pathname.match(/^(.*)?\/products\//)) {
             // only attempt to load smart-buttons if we are on a product page
             try {
                 debug.log("Buttons: initiating product.json request");
@@ -1157,7 +1377,7 @@ _willet = (function (me, config) {
     };
 
     return me;
-}(_willet));
+}(_willet, window._willet_shopconnection_config || {}));
 
 try {
     if (_willet) {
