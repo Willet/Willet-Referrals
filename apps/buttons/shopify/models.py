@@ -89,19 +89,31 @@ class ButtonsShopify(Buttons, AppShopify):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
         version = os.environ['CURRENT_VERSION_ID']
+        
+        # Define our script tag 
+        tags = [{
+                "script_tag": {
+                    "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                        URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+            },
+            {
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                        SECURE_URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+        }]
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=False)
-        self.queue_script_tags(script_tags=[{
-            "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s&v=%s" % (
-                    URL,
-                    self.uuid,
-                    version
-                    ),
-                "event": "onload"
-            }
-        }])
+        
+        self.queue_script_tags(script_tags=tags)
 
         self.queue_assets(assets=[{
             'asset': {
