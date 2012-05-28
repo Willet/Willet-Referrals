@@ -591,7 +591,7 @@ _willet = (function (me) {
                 container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
                 container.appendChild( util.createStyle(styleRules) );
 
-                for (var i = scripts.length; i--;) {
+                for (var i = scripts.length; i >= 0; i--) {
                     HEAD.appendChild( util.createScript(scripts[i]) );
                 }
 
