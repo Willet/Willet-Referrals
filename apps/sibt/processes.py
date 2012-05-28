@@ -545,12 +545,16 @@ class SendFriendAsks(URIHandler):
         user = User.get(rget('user_uuid'))
 
         product = Product.get(rget('product_uuid'))
+        logging.debug('got uuid %s, product %r' % (rget('product_uuid'),
+                                                   product))
 
         # [uuid,uuid,uuid]
         product_uuids = rget('products').split(',')
 
         # supposedly: [Product, Product, Product]
         products = [Product.get(uuid) for uuid in product_uuids]
+        logging.debug('got uuids %r, products %r' % (product_uuids,
+                                                     products))
 
         # Default response
         response = {'success': False,
@@ -567,6 +571,7 @@ class SendFriendAsks(URIHandler):
             products = [product]
         elif not product:
             product = random.choice(products)
+        logging.debug('got product %r, products %r' % (product, products))
 
         if not user:
             logging.error('failed to get user by uuid %s' % rget('user_uuid'))
@@ -646,7 +651,9 @@ class SendFriendAsks(URIHandler):
             # Get product image
             try:
                 product_image = product.images[0]
+                logging.debug('product image = %s' % product_image)
             except (TypeError, IndexError):
+                logging.warn('Could not get product image')
                 product_image = 'http://rf.rs/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
@@ -700,7 +707,8 @@ class SendFriendAsks(URIHandler):
                                       asker_img=a['pic'])
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
-                        logging.error('we had an error sharing via email', exc_info=True)
+                        logging.error('we had an error sharing via email',
+                                      exc_info=True)
                     finally:
                         email_share_counter += 1
 
