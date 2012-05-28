@@ -139,7 +139,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
         self.install_queued()
 
-        email = self.client.email
+        email = self.client.email or u''  # what sane function returns None?
         name  = self.client.merchant.get_full_name()
         store = self.client.name
         use_full_name = False
