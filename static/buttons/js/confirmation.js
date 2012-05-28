@@ -568,7 +568,7 @@ _willet = (function (me) {
 
         // Find this script
         for (var i = scripts.length; i >= 0; i--) {
-            if (scripts[i].src.match('social-referral.appspot.com')) {
+            if (scripts[i].src.match('social-referral.appspot.com/b/shopify/load/confirmation.js')) {
                 // parse query string
                 return parseQueryString( scripts[i].src );
             }
