@@ -12,10 +12,15 @@ class MLStripper(HTMLParser):
         return ''.join(self.fed)
 
 def strip_html(html):
+    """This function has known vulnerabilities.
+
+    >>> strip_html('<script><script onload="alert(5);"></script></script>')
+    '<script onload="alert(5);">'
+
+    """
     html = html.replace('&nbsp;', ' ')\
             .replace('<br />', ' ')\
             .replace('<br>', ' ')
     s = MLStripper()
     s.feed(html)
     return s.get_data()
-

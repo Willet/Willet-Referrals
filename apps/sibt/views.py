@@ -32,6 +32,7 @@ from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
                         SHOPIFY_APPS, UNSURE_DETECTION, URL, USING_DEV_SERVER
 from util.helpers import get_target_url, url
 from util.shopify_helpers import get_shopify_url
+from util.strip_html import strip_html
 from util.urihandler import obtain, URIHandler
 
 
@@ -209,7 +210,7 @@ class AskDynamicLoader(URIHandler):
                     'title': product.title,
                     'shopify_id': product_shopify_id,
                     'product_uuid': product.uuid,
-                    'product_desc': product.description,
+                    'product_desc': strip_html(product.description),
                 })
             else:
                 logging.warning("Product not found in DB")
@@ -425,7 +426,7 @@ class VoteDynamicLoader(URIHandler):
             'percentage': percentage,
             'products': products,
             'share_url': share_url,
-            'sharing_message': sharing_message,
+            'sharing_message': strip_html(sharing_message),
             'product_url': product.resource_url,
             'store_url': app.store_url,
             'store_name': app.store_name,
