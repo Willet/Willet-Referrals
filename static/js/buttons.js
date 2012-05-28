@@ -282,12 +282,12 @@ _willet.util.detectBrowser = function() {
             if (dataString) {
                 if (dataString.indexOf(data[i].subString) != -1) {
                     return data[i].identity;
-        }
+                }
             } else if (dataProp) {
                 return data[i].identity;
-    }
+            }
         }
-};
+    };
 
     searchVersion = function (dataString) {
         var index = dataString.indexOf(versionSearchString);
