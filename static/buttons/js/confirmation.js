@@ -586,7 +586,7 @@ _willet = (function (me) {
                 var container = document.createElement('div');
                 
                 // Retrieve configuration from script query string
-                //var config = me.getConfigurationFromURL();
+                var config = me.getConfigurationFromURL();
 
                 container.innerHTML = util.renderSimpleTemplate(sharePurchaseTemplate, config);
                 container.appendChild( util.createStyle(styleRules) );
