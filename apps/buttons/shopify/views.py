@@ -88,7 +88,7 @@ class ButtonsShopifyBeta(URIHandler):
         template_values = {
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
         }
-        
+
         self.response.out.write(self.render_page('beta.html', template_values))
 
 
@@ -110,8 +110,8 @@ class ButtonsShopifyWelcome(URIHandler):
 
         if details["client"]:
             # Fetch or create the app
-            app, created = ButtonsShopify.get_or_create_app(details["client"],
-                                                            token=token)
+            app, created = ButtonsShopify.get_or_create(details["client"],
+                                                        token=token)
 
             if created or upsell:
                 price = app.get_price()
@@ -273,7 +273,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app, _ = ButtonsShopify.get_or_create_app(client, token=token)
+        app, _ = ButtonsShopify.get_or_create(client, token=token)
 
         config_enabled = app.billing_enabled
         config_url     = build_url("ButtonsShopifyConfig", qs={
@@ -335,7 +335,7 @@ class ButtonsShopifyConfig(URIHandler):
         """Display the config page for first use"""
         token = self.request.get( 't' )
         details = get_details(self)
-        app, _ = ButtonsShopify.get_or_create_app(details["client"],
+        app, _ = ButtonsShopify.get_or_create(details["client"],
                                                   token=token)
 
         query_params = {
@@ -437,7 +437,7 @@ class ButtonsShopifyInstallError(URIHandler):
         """Displays an error page for when the Buttons app fails to install
            or upgrade. Error emails are not handled by this page.
         """
-        
+
         template_values = {
             'URL' : URL,
             'reason': self.request.get('reason', None),
