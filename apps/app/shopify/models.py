@@ -95,7 +95,7 @@ class AppShopify(Model):
             self.settings = SHOPIFY_APPS[class_name]
         except Exception, e:
             logging.error('could not get settings for app %s: %s' % (class_name, e))
-    
+
     @staticmethod
     def _Shopify_str_to_datetime(dt):
         """ Convert a shopify datetime string into a datetime object
@@ -108,9 +108,9 @@ class AppShopify(Model):
 
         """
         time_offset = dt[-6:]
-        time_without_offset = dt[:-6] 
+        time_without_offset = dt[:-6]
         return datetime.datetime.strptime(time_without_offset, "%Y-%m-%dT%H:%M:%S" )
-    
+
     @staticmethod
     def _datetime_to_Shopify_str(dt):
         """ Convert a datetime object to a Shopify datetime string
@@ -125,7 +125,7 @@ class AppShopify(Model):
         # where SHHMM is signed UTC offset in hours minutes
         dts = dt.isoformat()
         return dts[:-2] + ':' + dts[-2:]
-    
+
     # Retreivers --------------------------------------------------------------
     @classmethod
     def get_by_url(cls, store_url):
@@ -144,7 +144,7 @@ class AppShopify(Model):
             verb - <String> one of GET, POST, PUT, DELETE
             call - <String> api call
             payload - <Object> Data to send with request
-        
+
         Returns:
             <Object> response data
 
@@ -153,9 +153,9 @@ class AppShopify(Model):
         if verb not in ['GET', 'get', 'POST', 'post',
                     'PUT', 'put', 'DELETE', 'delete']:
             raise ValueError('verb must be one of GET, POST, PUT, DELETE')
-        
+
         url      = '%s/admin/%s' % (self.store_url, call)
-        username = self.settings['api_key'] 
+        username = self.settings['api_key']
         password = hashlib.md5(self.settings['api_secret'] + self.store_token).hexdigest()
         header   = {'content-type':'application/json'}
         h        = httplib2.Http()
@@ -656,7 +656,7 @@ class AppShopify(Model):
                 rpc.wait()
             except DeadlineExceededError:
                 rpc.callback()
-        
+
         # All callbacks finished
         return
 # end class

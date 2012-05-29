@@ -612,6 +612,10 @@ class CleanOldActions(URIHandler):
         Because some actions are actually useful, they are skipped. See
         keep_list for the list of class names (in lower case).
         """
+        if USING_DEV_SERVER:
+            logging.debug('cleaning skipped on dev server')
+            return
+
         a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
         actions_deleted = 0
         batch_size = 50

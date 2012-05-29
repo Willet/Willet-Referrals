@@ -59,6 +59,7 @@ cron:
   schedule: every monday 09:00
   timezone: America/Toronto
 
+# enable this cron to kill old actions. intensive!
 - description: Clean old actions
   url: /admin/clean_old_actions
   schedule: every 1 minutes

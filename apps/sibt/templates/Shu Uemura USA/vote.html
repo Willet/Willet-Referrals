@@ -25,10 +25,10 @@
 
 {% block right_screens %}
     <div id="product_screen">
-        <h2><a href="{{ product_url }}">{{ product.title }}</a></h2>
+        <h2><a href="{{ product_url }}">{{ product.title|escape }}</a></h2>
         <img id="product_img" class="product-image" src="{{ product_img }}" />
         <div id="right-div" class="description">
-            {{ product.description }}
+            {{ product.description|escape }}
         </div>
     </div>
 {% endblock right_screens %}
@@ -57,7 +57,9 @@
                         type: 'post',
                         dataType: 'text',
                         success: function (data) {
-                            $("#discount_gettest").show();
+                            if (data) {
+                                $("#discount_gettest").show();
+                            }
                             $("#discount_code").val(data || "We're out!");
                         }
                     });
