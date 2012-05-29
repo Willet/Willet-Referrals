@@ -150,12 +150,12 @@ INSTALLED_APPS = [
     'order.shopify',
     'product',
     'product.shopify',
+    'reengage',
     'sibt',
     'sibt.shopify',
     'sibt.shuuemura',
     'user',
     'wosib',
-    'wosib.shopify',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]
