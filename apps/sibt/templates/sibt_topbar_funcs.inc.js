@@ -1,39 +1,44 @@
 // topbar SIBT code - included by sibt.js
 
+// raised scope
+var padding_elem = null;
+var topbar = null;
+var topbar_hide_button = null;
+
 var topbar_onclick = function(e) {
     // Onclick event handler for the 'sibt' button
     button_onclick(e, 'SIBTUserClickedTopBarAsk');
 };
 
-var unhide_topbar = function() {
+var unhideTopbar = function() {
     // When a user hides the top bar, it shows the little
     // "Show" button in the top right. This handles the clicks to that
     $.cookie('_willet_topbar_closed', false);
     topbar_hide_button.slideUp('fast');
     if (topbar === null) {
         if (instance.show_votes || hash_index !== -1) {
-            show_topbar();
-            store_analytics('SIBTUserReOpenedTopBar');
+            showTopbar();
+            wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
         } else {
-            show_topbar_ask();
-            store_analytics('SIBTShowingTopBarAsk');
+            showTopbar_ask();
+            wm.fire('storeAnalytics', 'SIBTShowingTopBarAsk');
         }
     } else {
         topbar.slideDown('fast');
-        store_analytics('SIBTUserReOpenedTopBar');
+        wm.fire('storeAnalytics', 'SIBTUserReOpenedTopBar');
     }
 };
 
-var close_top_bar = function() {
+var closeTopbar = function() {
     // Hides the top bar and padding
     $.cookie('_willet_topbar_closed', true);
     topbar.slideUp('fast');
     topbar_hide_button.slideDown('fast');
-    store_analytics('SIBTUserClosedTopBar');
+    wm.fire('storeAnalytics', 'SIBTUserClosedTopBar');
 };
 
 // Expand the top bar and load the results iframe
-var do_vote = function(vote) {
+var doVote = function(vote) {
     // detecting if we just voted or not
     var doing_vote = (vote !== -1);
     var vote_result = (vote === 1);
@@ -73,10 +78,10 @@ var do_vote = function(vote) {
 
     iframe.fadeIn('medium');
 };
-var do_vote_yes = function() { do_vote(1);};
-var do_vote_no = function() { do_vote(0);};
+var doVote_yes = function() { doVote(1);};
+var doVote_no = function() { doVote(0);};
 
-var build_top_bar_html = function (is_ask_bar) {
+var buildTopBarHTML = function (is_ask_bar) {
     // Builds the top bar html
     // is_ask_bar option boolean
     // if true, loads ask_in_the_bar iframe
@@ -113,7 +118,7 @@ var build_top_bar_html = function (is_ask_bar) {
     return bar_html;
 };
 
-var show_topbar = function() {
+var showTopbar = function() {
     // Shows the vote top bar
     var body = $('body');
 
@@ -127,14 +132,14 @@ var show_topbar = function() {
     topbar = $(topbar)
         .attr('id', '_willet_sibt_bar')
         .css('display', "none")
-        .html(build_top_bar_html());
+        .html(buildTopBarHTML());
     body.prepend(padding_elem);
     body.prepend(topbar);
 
     // bind event handlers
-    $('#_willet_close_button').unbind().bind('click', close_top_bar);
-    $('#yesBtn').click(do_vote_yes);
-    $('#noBtn').click(do_vote_no);
+    $('#_willet_close_button').unbind().bind('click', closeTopbar);
+    $('#yesBtn').click(doVote_yes);
+    $('#noBtn').click(doVote_no);
 
     padding_elem.show();
     topbar.slideDown('slow');
@@ -142,22 +147,22 @@ var show_topbar = function() {
     if (!instance.is_live) {
         // voting is over folks!
         topbar.find('div.message').html('Voting is over!');
-        toggle_results();
+        toggleResults();
     } else if (instance.show_votes && !user.has_voted && !user.is_asker) {
         // show voting!
         topbar.find('div.vote').show();
     } else if (user.has_voted && !user.is_asker) {
         // someone has voted && not the asker!
         topbar.find('div.message').html('Thanks for voting!').fadeIn();
-        toggle_results();
+        toggleResults();
     } else if (user.is_asker) {
         // showing top bar to asker!
         topbar.find('div.message').html('Your friends say:   ').fadeIn();
-        toggle_results();
+        toggleResults();
     }
 };
 
-var show_topbar_ask = function() {
+var showTopbar_ask = function() {
     //Shows the ask top bar
 
     // create the padding for the top bar
@@ -171,17 +176,17 @@ var show_topbar_ask = function() {
         'id': '_willet_sibt_ask_bar',
         'class': 'willet_reset',
         'css': {
-            'display', 'none'
+            'display': 'none'
         }
     });
-    topbar.html(build_top_bar_html(true));
+    topbar.html(buildTopBarHTML(true));
 
     $("body").prepend(padding_elem).prepend(topbar);
 
     var iframe = topbar.find('div.iframe iframe');
     var iframe_div = topbar.find('div.iframe');
 
-    $('#_willet_close_button').unbind().bind('click', close_top_bar);
+    $('#_willet_close_button').unbind().bind('click', closeTopbar);
 
     topbar.find( '._willet_wrapper p')
         .css('cursor', 'pointer')
@@ -190,10 +195,10 @@ var show_topbar_ask = function() {
     topbar.slideDown('slow');
 };
 
-var topbar_ask_success = function () {
+var topbarAskSuccess = function () {
     // if we get a postMessage from the iframe
     // that the share was successful
-    store_analytics('SIBTTopBarShareSuccess');
+    wm.fire('storeAnalytics', 'SIBTTopBarShareSuccess');
     var iframe = topbar.find('div.iframe iframe');
     var iframe_div = topbar.find('div.iframe');
 
@@ -202,13 +207,13 @@ var topbar_ask_success = function () {
     iframe_div.fadeOut('fast', function() {
         topbar.animate({height: '40'}, 500);
         iframe.attr('src', '');
-        toggle_results();
+        toggleResults();
     });
 };
 
-var toggle_results = function() {
+var toggleResults = function() {
     // Used to toggle the results view
     // iframe has no source, hasnt been loaded yet
     // and we are FOR SURE showing it
-    do_vote(-1);
+    doVote(-1);
 };

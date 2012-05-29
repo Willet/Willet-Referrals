@@ -172,6 +172,7 @@
         border: 1px dotted #000;
         margin-left: 200px;
         margin-right: 20px;
+        line-height: initial;
     }
 
     .tab-bar {
@@ -229,6 +230,19 @@
 
     .small {
         font-size: 0.65em;
+    }
+
+    .grabbable {
+        cursor: hand;
+        cursor: grab;
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+    }
+
+    .grabbable:active {
+        cursor: grabbing;
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
     }
 </style>
 <!--[if IE 7]>
@@ -474,6 +488,7 @@
 
 <div class="page span-24 last box-design content-container"
      style="margin-top: 0px;">
+<<<<<<< HEAD
     <div id="configuration">
         <h1>ShopConnection Configuration</h1>
 
@@ -527,6 +542,8 @@
                                 </li>
                                 {% endfor %}
                             </ul>
+                            <img src="/static/imgs/draganddrop.png"
+                                 style="position: relative; top: -10px;">
                         </div>
                         <div class="config-option">
                             <span class="left-column">

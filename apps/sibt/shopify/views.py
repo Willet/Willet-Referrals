@@ -1,36 +1,28 @@
 #!/usr/bin/env python
 
 __author__ = "Willet, Inc."
-__copyright__ = "Copyright 2011, Willet, Inc"
+__copyright__ = "Copyright 2012, Willet, Inc"
 
-import datetime
+import logging
+import os
 
-from datetime import datetime, timedelta
-from time import time
-from urlparse import urlparse
+from datetime import datetime
 
 from google.appengine.api import taskqueue
-from google.appengine.api import memcache
+#from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext.webapp import template
 
-from apps.action.models import ButtonLoadAction, ScriptLoadAction
-from apps.app.models import *
-from apps.client.models import *
-from apps.client.shopify.models import *
+from apps.app.models import App
 from apps.email.models import Email
 from apps.gae_bingo.gae_bingo import ab_test
-from apps.link.models import Link
-from apps.order.models import *
-from apps.product.models import Product
-from apps.sibt.actions import SIBTClickAction, SIBTShowingButton, SIBTVoteAction
-from apps.sibt.models import SIBT, SIBTInstance
+#from apps.order.models import Order
+from apps.sibt.models import SIBT
 from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
-from apps.wosib.shopify.models import WOSIBShopify
 
-from util.consts import *
-from util.helpers import *
+from util.consts import P3P_HEADER, SHOPIFY_APPS, URL  # MEMCACHE_TIMEOUT
+from util.helpers import admin_required, get_target_url
 from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
@@ -46,7 +38,11 @@ class ShowBetaPage(URIHandler):
 class SIBTShopifyWelcome(URIHandler):
     # "install done" page. actually installs the apps.
     def get(self):
-        client_email = shop_owner = shop_name = ''
+        client_email = ''
+        client_url = ''
+        shop_name = ''
+        shop_owner = ''
+
         logging.info('SIBTShopifyWelcome: trying to create app')
         try:
             client = self.get_client() # May be None if not authenticated
@@ -55,19 +51,23 @@ class SIBTShopifyWelcome(URIHandler):
 
             # update client token (needed when reinstalling)
             if client and client.token != token:
+                logging.warn('Tokens mismatch! Client probably installed '
+                             'two or more of our apps. Updating token.')
                 client.token = token
                 client.put()
 
             if not client:
                 # client was just put, expected to be in memcache
                 logging.error('Memcache is lagging!')
+                raise IOError('The server is busy. '
+                              'Please refresh the page to try again!')
 
+            client_url = client.url
             app = SIBTShopify.get_or_create(client, token=token) # calls do_install()
-            # app2 = WOSIBShopify.get_or_create(client, token=token) # calls do_install()
 
             shop_owner = 'Shopify Merchant'
             shop_name = 'Your Shopify Store'
-            if client is not None and client.merchant is not None:
+            if client.merchant:
                 client_email = client.email
                 shop_owner = client.merchant.name or 'Merchant'
                 shop_name = client.name
@@ -83,9 +83,9 @@ class SIBTShopifyWelcome(URIHandler):
 
             # Switched to new order tracking code on Jan 16
             if app.created > datetime(2012, 01, 16):
-                new_order_code = 1
+                new_order_code = True
             else:
-                new_order_code = 0
+                new_order_code = False
 
             template_values = {
                 'app': app,
@@ -96,17 +96,20 @@ class SIBTShopifyWelcome(URIHandler):
                 'client_uuid' : client.uuid,
                 'new_order_code' : new_order_code
             }
+            path = 'welcome.html'
 
-            self.response.out.write(self.render_page('welcome.html', template_values))
-        except Exception, e:
-            logging.error('SIbt install error, may require reinstall', exc_info=True)
+        except Exception, err:
+            logging.error('SIBT install error, may require reinstall (%s)' % err,
+                          exc_info=True)
             # Email DevTeam
-            Email.emailDevTeam(
-                'SIBT install error, may require reinstall: %s, %s, %s, %s' %
-                    (client_email, shop_owner, client.url, shop_name)
-            )
-            self.redirect ("%s?reason=%s" % (build_url ('SIBTShopifyInstallError'), e))
-            return
+            Email.emailDevTeam('SIBT install error, may require reinstall: %s, %s, %s, %s' %
+                               (client_email, shop_owner, client_url, shop_name))
+            template_values = {'URL': URL,
+                              'reason': err}
+            path = 'install_error.html'
+
+        self.response.out.write(self.render_page(path, template_values))
+        return
 
 class SIBTShopifyEditStyle(URIHandler):
     """ Modifies SIBT button style - internal use only. """
@@ -188,7 +191,7 @@ class ShowFinishedPage(URIHandler):
             'app' : None,
             'has_app': False
         }
-        app = App.get_by_uuid(app_id)
+        app = App.get(app_id)
         if app == None:
             self.redirect('/s/edit')
             return
@@ -213,7 +216,7 @@ class ShowEditPage(URIHandler):
 
 class ShowCodePage(URIHandler):
     def get(self):
-       pass
+        pass
 
 
 class SIBTShopifyServeAB (URIHandler):
@@ -289,7 +292,6 @@ class SIBTShopifyProductDetection(URIHandler):
                 # commonly caused by naughty visitors who disables referrer info
                 # http://en.wikipedia.org/wiki/Referrer_spoofing
                 target = "http://no-referrer.com"
-            ScriptLoadAction.create(user, app, target)
 
             template_values = {
                 'URL' : URL,
@@ -304,7 +306,7 @@ class SIBTShopifyProductDetection(URIHandler):
         return
 
 
-class SIBTShopifyInstallError (URIHandler):
+class SIBTShopifyInstallError(URIHandler):
     def get (self):
         """ Displays an error page for when the SIBT app fails to install.
             Error emails are not handled by this page.
@@ -319,44 +321,3 @@ class SIBTShopifyInstallError (URIHandler):
         self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
         self.response.out.write(template.render(path, template_values))
         return
-
-
-class SIBTShopifyVersion2To3(URIHandler):
-    """ TEMPORARY!!! """
-    @admin_required
-    def get(self, admin):
-        """ Updates all version 2 SIBT apps to version 3 """
-        logging.warn('TEMPORARY HANDLER')
-
-        apps = SIBTShopify.all().fetch(limit=500)
-        app_stats = {
-            'v1': 0,
-            'v2': 0,
-            'v3': 0
-        }
-        updated_apps = []
-
-        for app in apps:
-            if app.version == '1':
-                app_stats['v1'] += 1
-
-            elif app.version == '2':
-                app_stats['v2'] += 1
-                app.version = '3'
-                db.put_async(app)
-                updated_apps.append(app)
-
-            elif app.version == '3':
-                app_stats['v3'] += 1
-
-            else:
-                logging.warn('App has no version: %r' % app)
-
-        # Now update memcache
-        for app in updated_apps:
-            key = app.get_key()
-            if key:
-                memcache.set(key, db.model_to_protobuf(app).Encode(), time=MEMCACHE_TIMEOUT)
-
-        self.response.out.write("Updated %i v2 apps. Found %i v1 and %i v3 apps." % (app_stats['v2'], app_stats['v1'], app_stats['v3']))
-

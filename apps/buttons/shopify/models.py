@@ -73,13 +73,13 @@ class ButtonsShopify(Buttons, AppShopify):
         elif monthly_orders < 20:
             price = 1.99 #basic
         elif monthly_orders < 50:
-            price = 4.99 #professional
+            price = 2.99 #professional
         elif monthly_orders < 100:
-            price = 9.99 #business
+            price = 3.99 #business
         elif monthly_orders < 200:
-            price = 14.99 #unlimited
+            price = 5.99 #unlimited
         else:
-            price = 19.99 #enterprise
+            price = 9.99 #enterprise
 
         self.recurring_billing_price = unicode(price)
         self.put()
@@ -88,60 +88,33 @@ class ButtonsShopify(Buttons, AppShopify):
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
+        version = os.environ['CURRENT_VERSION_ID']
 
-        # Define our script tag 
+        # Define our script tag
         tags = [{
-            "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                ),
-                "event": "onload"
-            }
+                "script_tag": {
+                    "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
+                        URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+            },
+            {
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                        SECURE_URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
         }]
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=False)
+
         self.queue_script_tags(script_tags=tags)
 
-        self.install_queued()
-
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", 
-                             self.client.email, 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name)
-        
-        # Email DevTeam
-        Email.emailDevTeam(
-            'ButtonsShopify Install: %s %s %s' % (
-                self.uuid,
-                self.client.name,
-                self.client.url
-            )
-        )
-
-        # Start sending email updates
-        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
-            self.client.subscribe_to_mailing_list(
-                list_name=app_name,
-                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
-            )
-        
-        return
-
-    def do_upgrade(self):
-        """ Remove button scripts and add the paid version """
-        self.uninstall_script_tags();
-        self.queue_script_tags(script_tags=[{
-            "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                ),
-                "event": "onload"
-            }
-        }])
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/willet-shopconnection.liquid',
@@ -163,6 +136,57 @@ class ButtonsShopify(Buttons, AppShopify):
                 """
             }
         }])
+
+        self.install_queued()
+
+        email = self.client.email or u''  # what sane function returns None?
+        name  = self.client.merchant.get_full_name()
+        store = self.client.name
+        use_full_name = False
+
+        if REROUTE_EMAIL:
+            name += " (%s) [%s]" % (email, self.store_url)
+            email = REROUTE_EMAIL
+            use_full_name = True
+
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient("ShopConnection", email, name, store,
+                            use_full_name=use_full_name)
+
+        # Email DevTeam
+        Email.emailDevTeam(
+            'ButtonsShopify Install: %s %s %s' % (
+                self.uuid,
+                self.client.name,
+                self.client.url
+            )
+        )
+
+        # Start sending email updates
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+            self.client.subscribe_to_mailing_list(
+                list_name=app_name,
+                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
+            )
+
+        return
+
+    def do_upgrade(self):
+        """ Remove button scripts and add the paid version """
+        self.uninstall_script_tags()
+        version = os.environ['CURRENT_VERSION_ID']
+
+        self.queue_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
+                    URL,
+                    self.uuid,
+                    version
+                ),
+                "event": "onload"
+            }
+        }])
+
         self.install_queued()
 
         # Email DevTeam
@@ -187,6 +211,39 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Correct the object, and re-index any properties
         self.put()
+
+        try:
+            # Get the previous tag...
+            results = self._call_Shopify_API("GET", "script_tags.json")
+
+            if not results.get("script_tags"):
+                # What?
+                return
+
+            tag = None
+            for script_tag in results.get("script_tags"):
+                if "/b/shopify/load/" in script_tag.get("src", ""):
+                    tag = script_tag
+                    break
+
+            if not tag:
+                # What?
+                return
+
+            # Update the tag...
+            version = os.environ['CURRENT_VERSION_ID']
+            button_type = ""
+            if self.billing_enabled:
+                button_type = "smart-"
+
+            tag["src"] = "%s/b/shopify/load/%sbuttons.js?app_uuid=%s&v=%s" %\
+                      (URL, button_type, self.uuid, version)
+
+            self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
+                                   payload={"script_tag": tag})
+        except ShopifyAPIError:
+            logging.warning("Couldn't get or put script")
+
 
     def update_prefs(self, preferences):
         """Update preferences for the application."""
@@ -221,40 +278,41 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_prefs(self):
         """Get preferences, provided that they exist."""
         #need to get theme id first...
-        result = self._call_Shopify_API("GET", "themes.json")
-
-        theme_id = None
-        for theme in result['themes']:
-            if 'role' in theme and 'id' in theme:
-                if theme['role'] == 'main':
-                    theme_id = theme['id']
-                    break
-
-        query_params = urlencode({
-            "asset[key]": "snippets/willet-shopconnection.liquid",
-            "theme_id": theme_id
-        })
-
         prefs = {}
+
         try:
+            result = self._call_Shopify_API("GET", "themes.json")
+
+            theme_id = None
+            for theme in result['themes']:
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        theme_id = theme['id']
+                        break
+
+            query_params = urlencode({
+                "asset[key]": "snippets/willet-shopconnection.liquid",
+                "theme_id": theme_id
+            })
+
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
                                    (theme_id, query_params),
                                    suppress_errors = True)
 
-            if result["asset"] and result["asset"]["value"]:
+            if result.get("asset") and result["asset"].get("value"):
                 value           = result["asset"]["value"]
                 _, var_value, _ = value.split("/*----*/")
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
-            pass  # Explicitly catch this
+            pass  # Either user is unbilled, or doesn't have the snippet.
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 
         return prefs
 
-    # Constructors ------------------------------------------------------------------------------
+    # Constructors ------------------------------------------------------------
     @classmethod
     def create_app(cls, client, app_token):
         """ Constructor """
@@ -266,16 +324,16 @@ class ButtonsShopify(Buttons, AppShopify):
                   store_url=client.url,  # Store url
                   store_id=client.id,   # Store id
                   store_token=app_token,
-                  button_selector="_willet_buttons_app") 
+                  button_selector="_willet_buttons_app")
         app.put()
 
         app.do_install()
-            
+
         return app
 
-    # 'Retreive or Construct'ers -----------------------------------------------------------------
+    # 'Retreive or Construct'ers ----------------------------------------------
     @classmethod
-    def get_or_create_app(cls, client, token):
+    def get_or_create(cls, client, token):
         """Try to retrieve the app.  If no app, create one.
 
         Returns:
@@ -284,11 +342,11 @@ class ButtonsShopify(Buttons, AppShopify):
         """
         created = False
         app = cls.get_by_url(client.url)
-        
+
         if app is None:
             app = cls.create_app(client, token)
             created = True
-        
+
         elif token != None and token != '':
             if app.store_token != token:
                 # TOKEN mis match, this might be a re-install
@@ -298,14 +356,14 @@ class ButtonsShopify(Buttons, AppShopify):
                         app.store_token,
                         token
                     )
-                ) 
+                )
                 try:
                     app.store_token = token
                     app.client = client
                     app.old_client = None
                     app.created = datetime.utcnow()
                     app.put()
-                    
+
                     app.do_install()
                     created = True
                 except:
@@ -418,17 +476,3 @@ class SharePeriod(Model):
                                       reverse=True)
             items_by_name.append(item)
         return items_by_name
-
-
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-def create_shopify_buttons_app(client, app_token):
-    raise DeprecationWarning('Replaced by ButtonShopify.create_app')
-
-def get_or_create_buttons_shopify_app(client, token):
-    raise DeprecationWarning('Replaced by ButtonShopify.get_or_create_app')
-    ButtonShopify.get_or_create_app(client, token)[0]
-
-def get_shopify_buttons_by_url(store_url):
-    raise DeprecationWarning('Replaced by ButtonShopify.get_by_url')
-    ButtonShopify.get_by_url(store_url)
-

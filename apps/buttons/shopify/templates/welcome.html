@@ -104,7 +104,8 @@
                                     box-design instruction-step">
                             <div class="step-info">i</div>
                             <div class="video-holder">
-                                <iframe width="560" height="315" src="http://www.youtube.com/embed/YlGaizJwEiE?rel=0" frameborder="0" allowfullscreen></iframe>
+                                <iframe width="560" height="315"
+                                        src="http://www.youtube.com/embed/YlGaizJwEiE?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>
                             </div>
                         </div>
                     </div>
@@ -159,18 +160,13 @@
                             <div class="step-num">4.</div>
                             <p>
                                 <strong>Once </strong>you've picked a spot, add this code:
-                                {% if not config_enabled %}
-                                <input style='font-size:13px; max-width: 275px; width: 245px;' type='text' readonly='readonly'
-                                       value='<div id="_willet_buttons_app"></div>'/>
-                                {% else %}
                                 <textarea style='font-size:13px;
                                     max-width:275px; width: 245px;
                                     vertical-align: middle; margin-bottom:0px;
                                     height:40px'
                                     type='text'
                                     readonly='readonly'>&#0123;% include &apos;willet-shopconnection&apos; %&#0125;
-<div id="_willet_buttons_app"></div></textarea>
-                                {% endif %}
+&lt;div id="_willet_buttons_app"&gt;&lt;/div&gt;</textarea>
                             </p>
                         </div>
                     </div>

@@ -19,6 +19,7 @@ from apps.action.models import UserAction
 from apps.action.models import VoteAction
 
 from apps.gae_bingo.gae_bingo import bingo
+from apps.product.models import Product
 
 from util.helpers import generate_uuid
 from util.consts import MEMCACHE_TIMEOUT
@@ -125,33 +126,50 @@ class SIBTVoteAction(VoteAction):
 
     sibt_instance = db.ReferenceProperty(db.Model, collection_name="vote_actions")
 
+    # added if multi-product.
+    product_uuid = db.StringProperty(indexed=True, required=False)
+
     # URL that was voted on
     url = db.LinkProperty(indexed = True)
 
     ## Constructor
     @staticmethod
     def create(user, instance, vote):
+        """vote can be yes, no, or a product uuid."""
         # Make the action
         uuid = generate_uuid(16)
-        action = SIBTVoteAction( key_name = uuid,
-                                uuid = uuid,
-                                user = user,
-                                app_ = instance.app_,
-                                link = instance.link,
-                                url = instance.link.target_url,
-                                sibt_instance = instance,
-                                vote = vote)
-        #super(SIBTVoteAction, act).create()
+
+        try:
+            # if vote is a product object (which is wrong)
+            product_uuid = product.uuid
+            logging.debug('product_uuid = %s? Is it right?' % product_uuid)
+        except:
+            logging.debug('product_uuid = %s' % vote)
+            product_uuid = vote  # if vote is UUID (which is expected)
+
+        action = SIBTVoteAction(key_name=uuid,
+                                uuid=uuid,
+                                user=user,
+                                app_=instance.app_,
+                                link=instance.link,
+                                url=instance.link.target_url,
+                                product_uuid=product_uuid,
+                                sibt_instance=instance,
+                                vote=vote)
         action.put()
 
         # we memcache by classname-instance_uuid-user_uuid
         # so we can look it up really easily later on
-        memcache.set(action.get_tracking_key(), action.get_key(), time=MEMCACHE_TIMEOUT)
+        memcache.set(action.get_tracking_key(),
+                     action.get_key(),
+                     time=MEMCACHE_TIMEOUT)
 
         return action
 
     def __str__(self):
-        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(), self.user.uuid, self.app_.uuid)
+        return 'SIBTVOTE: %s(%s) %s' % (self.user.get_full_name(),
+                                        self.user.uuid,
+                                        self.app_.uuid)
 
     @classmethod
     def get_tracking_by_user_and_instance(cls, user, sibt_instance):
@@ -264,14 +282,12 @@ class SIBTShowingButton(ShowAction):
 
         what = 'SIBTShowingButton'
         uuid = generate_uuid(16)
-        action = SIBTShowingButton(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                what = what,
-                url = url
-        )
+        action = SIBTShowingButton(key_name=uuid,
+                                   uuid=uuid,
+                                   user=user,
+                                   app_=app,
+                                   what=what,
+                                   url=url)
         action.put()
 
         # tracking urls for fast lookup

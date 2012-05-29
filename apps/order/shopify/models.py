@@ -22,10 +22,10 @@ class OrderShopify(Order):
     order_token = db.StringProperty(indexed = True)
     order_id = db.StringProperty(indexed = True)
     order_number = db.StringProperty(indexed = False)
-    
+
     store_name = db.StringProperty(indexed = False)
     store_url = db.StringProperty(indexed = False, required=False, default=None)
-    
+
     referring_site = db.StringProperty(indexed = False, required=False, default=None) # might be useful
 
     def __init__(self, *args, **kwargs):
@@ -37,16 +37,16 @@ class OrderShopify(Order):
 
     # Constructor
     @staticmethod
-    def create(user, client, order_token, order_id = "", 
+    def create(user, client, order_token, order_id = "",
                order_num = "", subtotal = 0.0, referrer = ""):
         """ Create an Order for a Shopify store """
 
         # Don't duplicate orders!
-        o = OrderShopify.get_by_token(order_token) 
+        o = OrderShopify.get_by_token(order_token)
         if o != None:
             logging.info("Not duplicating Order %s" % (order_token))
             return o
-        
+
         logging.info("Creating new Order with ref: %s" % referrer)
 
         uuid = generate_uuid(16)
@@ -59,7 +59,7 @@ class OrderShopify(Order):
                          store_name=client.name,
                          store_url=client.url,
                          order_number=str(order_num),
-                         subtotal_price=float(subtotal), 
+                         subtotal_price=float(subtotal),
                          referring_site=referrer,
                          user=user)
         o.put()

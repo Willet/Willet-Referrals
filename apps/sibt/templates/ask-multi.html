@@ -9,12 +9,12 @@
 
 
 {% block screens %}
-    <!---------------------------- Splash Screen ------------------------------>
+    <!--                          Splash Screen                             -->
 
     <div id="splash">
         <div class="title_bar">
             <img alt="Logo" src="/static/plugin/imgs/blue_logo_shdw_50x60.png" />
-            <div>Not sure which one you should buy?</div>
+            <div>Share with friends, ask which they prefer!</div>
         </div>
         <div style="margin-top:10px">
             <!-- div class="step">Select items to ask.</div -->
@@ -25,7 +25,7 @@
         <div class="options">
             <div class="restrictedWidth">
                 <!-- div class="step">2. Add a message:</div -->
-                <textarea id="fbComment" name="fbComment">Hello! Which one should I buy?</textarea>
+                <textarea id="fbComment" name="fbComment">I like both of these items. Which one do you like more?</textarea>
                 <br />
                 <div class="option left">
                     <div class="button" id="postOnWall" title="Post to your wall">
@@ -56,21 +56,7 @@
 
 {% block ajax_methods %}
     var storeAnalytics = function( evnt ) {
-        var payload = { what          : evnt,
-                        instance_uuid : '',
-                        app_uuid      : '{{ app_uuid }}',
-                        user_uuid     : '{{ user_uuid }}',
-                        target_url    : '{{ target_url }}'
-                      };
-        $.ajax({
-            url      : "{{ URL }}{% url TrackSIBTUserAction %}",
-            dataType : 'json',
-            data     : payload,
-            type     : 'post',
-            success  : function (response) {
-                return;
-            }
-        });
+        _willet.mediator.fire('storeAnalytics', evnt);
     };
 
     var updateServerUser = function( accessToken, userId ) {
@@ -93,34 +79,17 @@
     };
 
     var startPartialInstance = function() {
+        storeAnalytics('SIBTStartPartialInstanceOnAskMulti');
         if (get_selected_objects ()) {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code   : "{{willt_code}}" };
+            var payload = {
+                app_uuid  : "{{app_uuid}}",
+                user_uuid : "{{user_uuid}}",
+              //product_uuid: "{{ product_uuid }}", // single-product mode only
+                products  : get_selected_objects(),
+                willt_code: "{{willt_code}}"
+            };
             $.ajax({
                 url      : "{{ URL }}{% url StartPartialSIBTInstance %}",
-                type     : 'post',
-                dataType : 'json',
-                data     : payload,
-                success  : function (tr) {
-                    window._willet_sibt_partial_instance_uuid = tr;
-                }
-            });
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    var startFullInstance = function() {
-        if (get_selected_objects ()) {
-            var payload = { app_uuid     : "{{app_uuid}}",
-                            user_uuid    : "{{user_uuid}}",
-                            product_uuids : get_selected_objects (),
-                            willt_code   : "{{willt_code}}" };
-            $.ajax({
-                url      : "{{ URL }}{% url StartSIBTInstance %}",
                 type     : 'post',
                 dataType : 'json',
                 data     : payload,
@@ -174,6 +143,7 @@
                 statusCode : {
                     200: function () {
                         // Success
+                        updateEmailAddress();
                         showScreen('success');
                     },
                     400: function (resp, status) {
@@ -201,10 +171,10 @@
         }
     };
 
-    var updateEmailAddress = function() {
+    /*var updateEmailAddress = function() {
         var addr = document.getElementById( 'email-field' ).value;
         $.ajax({
-            url: "/updateEmailAddress",
+            url: "{{ URL }}{% url UpdateEmailAddress %}",
             type: 'post',
             data: { email : addr },
             success: function (tr) {
@@ -212,7 +182,7 @@
                 window.close();
             }
         });
-    };
+    };*/
 {% endblock ajax_methods %}
 
 
@@ -225,7 +195,7 @@
                 FB.ui({ method:  "feed",
                         display: "popup",
                         link:    "{{share_url}}",
-                        picture: "{{image|first}}",
+                        picture: "{{ image }}",
                         name:    "{{title|escape}}",
                         caption: "{{store_domain}}",
                         description: $('#fbComment').val(),
@@ -328,7 +298,11 @@
         $selection_box_container
             .append($('<img />', { // 1st image is just a tag
                 'src': cart_products[0].image,
-                'alt': cart_products[0].uuid
+                'alt': cart_products[0].uuid,
+                'css': {
+                    'max-width': '150px',
+                    'max-height': '150px'
+                }
             }))
             .append($('<img />', {
                 'src': '/static/imgs/or-150.png'

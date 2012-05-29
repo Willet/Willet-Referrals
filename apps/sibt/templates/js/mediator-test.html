@@ -1,0 +1,20 @@
+<html>
+<body>
+    <script src="willet.mediator.js"></script>
+    <script>
+        _willet.mediator.on('derp', function () {
+            alert('derp');
+        });
+        _willet.mediator.on('Herp', function (param) {
+            // first hook
+            alert(param);
+        });
+        _willet.mediator.on('Herp', function (param) {
+            // second hook
+            alert("LOL " + param);
+        });
+        _willet.mediator.fire('derp');
+        _willet.mediator.fire('Herp', 'har har I can has parameter');
+    </script>
+</body>
+</html>

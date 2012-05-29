@@ -12,6 +12,12 @@
         <!-- Add styles here! Try to reuse as much of ask.css as possible -->
         {% block styles %}{% endblock styles %}
 
+        <script type="text/javascript">
+            {% include "../../sibt/templates/js/willet.mediator.js" %}
+            {% include "../../sibt/templates/js/willet.debug.js" %}
+            {% include "../../sibt/templates/js/willet.loader.js" %}
+            {% include "../../sibt/templates/js/willet.analytics.js" %}
+        </script>
     </head>
     <body>
         <div class="wrapper" id="wrapper">
@@ -19,7 +25,7 @@
             <!-- Add your screens here.  Use Choose Friends as template-->
             {% block screens %}{% endblock screens %}
 
-            <!---------------------- Choose Friends Screen ------------------------------>
+            <!--                   Choose Friends Screen                    -->
 
             <div id="choose">
                 <div class="title_bar">
@@ -44,7 +50,7 @@
                 </div>
             </div>
 
-            <!------------------------- Asker Info Screen ------------------------------>
+            <!--                   Asker Info Screen                        -->
 
             <div id="asker_info">
                 <div class="title_bar">
@@ -66,7 +72,7 @@
                 </div>
             </div>
 
-            <!--------------------------- Asking Screen -------------------------------->
+            <!--                        Asking Screen                       -->
 
             <div id="asking">
                 <div class="title_bar">
@@ -81,7 +87,7 @@
                 </div>
             </div>
 
-            <!-------------------------- Success Screen -------------------------------->
+            <!--                       Success Screen                       -->
 
             <div id="success">
                 <div class="title_bar">
@@ -109,7 +115,7 @@
                 </div>
             </div>
 
-            <!-------------------------- Failure Screen -------------------------------->
+            <!--                      Failure Screen                        -->
 
             <div class="narrow_screen" id="failure">
                 <div class="title_bar">
@@ -128,7 +134,7 @@
                 </div>
             </div>
 
-            <!------------------------------- End Screens -------------------------------->
+            <!--                       End Screens                          -->
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
     <script type="text/javascript">
@@ -334,6 +340,7 @@
                     <div class='helpful'>The best way to get advice</div> \
                     <div class='fb_connect' alt='Connect with Facebook'></div> \
                 ").find('.fb_connect').click( function () {
+                    storeAnalytics('SIBTFBStartConnect');
                     runFBConnect(fetchFBFriends);
                 });
             }
@@ -856,11 +863,11 @@
                 $.ajax({
                     url: "{{ URL }}{% url UpdateEmailAddress %}",
                     type: 'post',
-                    data: { email : addr },
+                    data: { email : addr }/*,
                     success: function (tr) {
                         doPostMessage('close');
                         window.close();
-                    }
+                    }*/
                 });
             }
         };
@@ -871,22 +878,22 @@
         // See sibt/templates/ask.html for example implementations
 
         // Sends analytic data point to server
-        var storeAnalytics = function( evnt ) {
+        var storeAnalytics = function (evnt) {
             // Stub function!
-            throw new Error("Attemp to use stub function 'storeAnalytics'");
+            throw new Error("Attempt to use stub function 'storeAnalytics'");
         };
 
         // Initiates an instance of your app on the server
         // Note: Only used for non-Facebook Connect (ie: using FB dialog)
-        var startPartialInstance = function() {
+        var startPartialInstance = function () {
             // Stub function!
-            throw new Error("Attemp to use stub function 'startPartialInstance'");
+            throw new Error("Attempt to use stub function 'startPartialInstance'");
         };
 
         // Sends information to server to ask friends & handles response
-        var sendMessages = function() {
+        var sendMessages = function () {
             // Stub function!
-            throw new Error("Attemp to use stub function 'sendMessages'");
+            throw new Error("Attempt to use stub function 'sendMessages'");
         };
         {% endblock ajax_methods %}
 
@@ -1100,17 +1107,30 @@
                 doPostMessage('close');
             });
 
-            $('#postOnWall').click(postOnWall);
+            $('#postOnWall').click(function () {
+                storeAnalytics('SIBTAskUserClickedPostOnWall');
+                postOnWall();
+            });
 
             $('#showChooseScreen').click(function () {
+                storeAnalytics('SIBTAskUserClickedChooseFriends');
                 showScreen('choose');
             });
 
-            $('#addFriend>div').click(addFriend);
+            $('#addFriend>div').click(function () {
+                storeAnalytics('SIBTAskUserClickedAddFriend');
+                addFriend();
+            });
 
-            $('#chosenButton').click(reviewFriendsThenGetInfo);
+            $('#chosenButton').click(function () {
+                storeAnalytics('SIBTAskUserClickedChosenButton');
+                reviewFriendsThenGetInfo();
+            });
 
-            $('#askButton').click(reviewThenAsk);
+            $('#askButton').click(function () {
+                storeAnalytics('SIBTAskUserClickedAskButton');
+                reviewThenAsk();
+            });
 
             $('#askers').append(asker.getElement());
 
