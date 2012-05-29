@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 """ 'Get' functions for the ShopConnection application
 """
-import logging
 import datetime
-from google.appengine.ext.webapp    import template
-from apps.buttons.shopify.models    import ButtonsShopify, SharedItem, SharePeriod
-from apps.client.shopify.models     import ClientShopify
-from util.consts                    import *
-from util.errors                    import ShopifyBillingError
-from util.urihandler                import URIHandler
-from apps.email.models              import Email
-from util.helpers                   import url as build_url
-from urlparse                       import urlparse
-from django.utils                   import simplejson as json
-from django.utils.html              import strip_tags
+import logging
+from urlparse import urlparse
+
+from django.utils import simplejson as json
+from django.utils.html import strip_tags
+
+from apps.buttons.shopify.models import ButtonsShopify, SharedItem, SharePeriod
+from apps.client.shopify.models import ClientShopify
+from apps.email.models import Email
+
+from util.consts import *
+from util.errors import ShopifyBillingError
+from util.helpers import url as build_url
+from util.shopify_helpers import get_shopify_url
+from util.urihandler import URIHandler
 
 #TODO: move these functions elsewhere.  More appropriate places would be...
 def catch_error(fn):
@@ -56,6 +59,7 @@ def get_details(uri_handler=None, provided_client=None):
     client = merchant = None
     details = {}
     details["shop_url"] = request.get("shop") or request.get("shop_url")
+    details["shop_url"] = get_shopify_url(details["shop_url"])  # fix domain
 
     client = provided_client or ClientShopify.get_by_url(details["shop_url"])
 
@@ -88,7 +92,7 @@ class ButtonsShopifyBeta(URIHandler):
         template_values = {
             "SHOPIFY_API_KEY": SHOPIFY_APPS['ButtonsShopify']['api_key']
         }
-        
+
         self.response.out.write(self.render_page('beta.html', template_values))
 
 
@@ -110,8 +114,8 @@ class ButtonsShopifyWelcome(URIHandler):
 
         if details["client"]:
             # Fetch or create the app
-            app, created = ButtonsShopify.get_or_create_app(details["client"],
-                                                            token=token)
+            app, created = ButtonsShopify.get_or_create(details["client"],
+                                                        token=token)
 
             if created or upsell:
                 price = app.get_price()
@@ -176,8 +180,9 @@ class ButtonsShopifyUpgrade(URIHandler):
         confirm_url = existing_app.setup_recurring_billing({
             "price":        price,
             "name":         "ShopConnection",
-            "return_url":   "%s/b/shopify/billing_callback?app_uuid=%s" %
-                            (URL, existing_app.uuid),
+            "return_url":   "%s%s?app_uuid=%s" % (URL,
+                                                  build_url('ButtonsShopifyBillingCallback'),
+                                                  existing_app.uuid),
             "test":         USING_DEV_SERVER,
             "trial_days":   15
         })
@@ -203,7 +208,7 @@ class ButtonsShopifyBillingCallback(URIHandler):
     def get(self):
         """Activate the billing charges after Shopify has setup the charge."""
 
-        app_uuid =self.request.get('app_uuid')
+        app_uuid = self.request.get('app_uuid')
         app = ButtonsShopify.get_by_uuid(app_uuid)
 
         # Fetch the client
@@ -273,7 +278,7 @@ class ButtonsShopifyInstructions(URIHandler):
             client.put()
 
         # Fetch or create the app
-        app, _ = ButtonsShopify.get_or_create_app(client, token=token)
+        app, _ = ButtonsShopify.get_or_create(client, token=token)
 
         config_enabled = app.billing_enabled
         config_url     = build_url("ButtonsShopifyConfig", qs={
@@ -335,7 +340,7 @@ class ButtonsShopifyConfig(URIHandler):
         """Display the config page for first use"""
         token = self.request.get( 't' )
         details = get_details(self)
-        app, _ = ButtonsShopify.get_or_create_app(details["client"],
+        app, _ = ButtonsShopify.get_or_create(details["client"],
                                                   token=token)
 
         query_params = {
@@ -437,7 +442,7 @@ class ButtonsShopifyInstallError(URIHandler):
         """Displays an error page for when the Buttons app fails to install
            or upgrade. Error emails are not handled by this page.
         """
-        
+
         template_values = {
             'URL' : URL,
             'reason': self.request.get('reason', None),
