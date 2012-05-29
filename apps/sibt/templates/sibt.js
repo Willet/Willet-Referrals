@@ -114,7 +114,6 @@
     try {
         // set up a list of scripts to load asynchronously.
         var scripts_to_load = [
-            '{{ URL }}{% url SIBTShopifyServeAB %}?jsonp=1&store_url={{ store_url }}',  // AB call to action text
             ('https:' == d.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js' // Google analytics
         ];
 
