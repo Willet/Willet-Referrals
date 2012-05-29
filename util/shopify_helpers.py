@@ -44,6 +44,9 @@ def get_url_variants(domain, keep_path=True):
     if not (isinstance(domain, basestring) and isinstance(keep_path, bool)):
         raise TypeError('Parameters not of proper type')
 
+    if not 'http://' in domain:
+        domain = '%s%s' ('http://', domain)
+    
     www_domain = domain
     ua = urlparse.urlsplit(domain)
     if len(ua.scheme) <= 0 or len(ua.netloc) <= 0:
