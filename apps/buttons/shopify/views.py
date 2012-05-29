@@ -171,6 +171,8 @@ class ButtonsShopifyUpgrade(URIHandler):
             logging.error("error calling billing callback: "
                           "'existing_app' not found. Install first?")
 
+        # charge the app the same price as we promised back then, even
+        # if it is cheaper now?
         if existing_app.recurring_billing_price:
             price = existing_app.recurring_billing_price
         else:
@@ -191,6 +193,38 @@ class ButtonsShopifyUpgrade(URIHandler):
 
         if confirm_url:
             self.redirect(confirm_url)
+            return
+        else:
+            # Can this even occur?
+            raise ShopifyBillingError('No confirmation URL provided by '
+                                      'Shopify API', {})
+
+
+class ButtonsShopifyInstallService(URIHandler):
+    """Starts the auto-install process."""
+    @catch_error
+    def get(self):
+        """Begin the upgrade process."""
+        details = get_details(self)
+        price = 10.0
+
+        app = ButtonsShopify.get_by_url(details["shop_url"])
+        if not app:
+            logging.error("error calling billing callback: "
+                          "'app' not found. Install first?")
+
+        # Start the billing process
+        return_url = app.setup_one_time_billing({
+            "price": price,
+            "name": "ShopConnection",
+            "return_url": "%s%s?app_uuid=%s" % (URL,
+                                                build_url('ButtonsShopifyBillingCallback'),
+                                                app.uuid),
+            "test": USING_DEV_SERVER
+        })
+
+        if return_url:
+            self.redirect(return_url)
             return
         else:
             # Can this even occur?

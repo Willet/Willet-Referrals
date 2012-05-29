@@ -154,11 +154,6 @@ class App(Model, polymodel.PolyModel):
         self.add_shares(1)
 
 
-def get_app_by_id(id):
-    raise DeprecationWarning('Replaced by App.get_by_uuid')
-    return App.get_by_uuid(id)
-
-
 class ShareCounter(db.Model):
     """Sharded counter for link click-throughs"""
     app_id = db.StringProperty(indexed=True, required=True)

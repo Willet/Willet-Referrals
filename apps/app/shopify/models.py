@@ -304,6 +304,39 @@ class AppShopify(Model):
 
         return
 
+    def setup_one_time_billing(self, settings):
+        """ returns a url where the user can pay for a one-time charge.
+
+        Inputs:
+            settings = {
+                "price": <Number>,
+                "name": <String> app name / name on invoice,
+                "return_url": <String> redirect after store owner has
+                              confirmed/denied charges
+                ["test": <Boolean> true or false]
+            }
+
+        Returns:
+            return_url
+        """
+
+        result = self._call_Shopify_API('POST', 'application_charges.json',
+                                { "application_charge": settings })
+
+        data = result["application_charge"]
+
+        if data['status'] != 'pending':
+            raise ShopifyBillingError("Setup of recurring billing was denied", data)
+
+        self.recurring_billing_id = data['id']
+        self.recurring_billing_name = data['name']
+        self.recurring_billing_price = data['price']
+        self.recurring_billing_created = self._Shopify_str_to_datetime(data['created_at'])
+        self.recurring_billing_status = data['status']
+        self.recurring_billing_trial_days = data['trial_days']
+
+        return data['confirmation_url']
+
     # TODO: Refactor billing common functionality
     def setup_recurring_billing(self, settings):
         """ Setup store with a recurring blling charge for this app.
