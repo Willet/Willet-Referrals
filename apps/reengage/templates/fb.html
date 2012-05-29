@@ -52,10 +52,13 @@ label {
         <div class="box-design">
             <form method="POST" action="/reengage/fb">
                 <label for="url">URL</label>
-                <input type="text" id="url" name="url"/><br/>
+                <input type="text" id="url" name="url"
+                       value="http://dl.dropbox.com/u/3618086/product.html"
+                       readonly="readonly" style="background: #eee;"/><br/>
 
                 <label for="message">Message:</label>
-                <textarea rows="" cols="" id="message" name="message"></textarea>
+                <textarea rows="6" cols="20" id="message"
+                          name="message"></textarea>
                 <br/>
 
                 <div style="text-align: center">
