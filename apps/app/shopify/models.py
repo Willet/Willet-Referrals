@@ -318,6 +318,8 @@ class AppShopify(Model):
 
         Returns:
             return_url
+
+        Redirect user to return_url to confirm the charge.
         """
 
         result = self._call_Shopify_API('POST', 'application_charges.json',
@@ -327,13 +329,6 @@ class AppShopify(Model):
 
         if data['status'] != 'pending':
             raise ShopifyBillingError("Setup of recurring billing was denied", data)
-
-        self.recurring_billing_id = data['id']
-        self.recurring_billing_name = data['name']
-        self.recurring_billing_price = data['price']
-        self.recurring_billing_created = self._Shopify_str_to_datetime(data['created_at'])
-        self.recurring_billing_status = data['status']
-        self.recurring_billing_trial_days = data['trial_days']
 
         return data['confirmation_url']
 
@@ -388,6 +383,67 @@ class AppShopify(Model):
         Returns: <Object> billing info
         """
         return self._call_Shopify_API('GET', 'recurring_application_charges/%s.json' % self.recurring_billing_id)
+
+    def _retrieve_one_time_billing(self):
+        """ Retrieve billing info for customer
+
+        Returns: <Object> billing info
+        """
+        return self._call_Shopify_API('GET', 'application_charges/%s.json' % self.recurring_billing_id)
+
+    def activate_one_time_billing(self, settings):
+        """ Activate billing for customer that has approved it
+
+        Note:
+            First setup one time billing, then redirect to confirmation_url.
+            Store owner's confirmation/denial hits the return_url.  return_url
+            handler should activate for confirmed charges.
+
+        Inputs:
+            settings = {
+                    return_url: <String> ...
+                    "test": None or "true"
+
+                }
+
+            Example: settings = {
+                    "return_url": "http://yourapp.com?charge_id=455696195",
+                    "test": null
+                }
+
+        Returns:
+            None
+        """
+        # First retrieve most of the data from Shopify
+        result = self._retrieve_recurring_billing()
+
+        recurring_billing_data = result['application_charge']
+
+        # Check that status isn't cancelled
+        if recurring_billing_data["status"] == 'accepted':
+            # Update status
+            recurring_billing_data.update({
+                "status": "accepted",
+                "billing_on": recurring_billing_data["updated_at"]
+            })
+            recurring_billing_data.update(settings)
+
+            data = self._call_Shopify_API('POST',
+                        'recurring_application_charges/%s/activate.json' % self.recurring_billing_id,
+                        { "recurring_application_charge": recurring_billing_data })
+
+            if data is True:
+                self.recurring_billing_status = "accepted"
+            else:
+                raise ShopifyBillingError('Recurring billing activation denied', data)
+            return True
+        elif recurring_billing_data["status"] == 'active':
+            return True  # Do not update the data, but succeed anyway
+        elif recurring_billing_data["status"] == 'declined':
+            return False
+        else:
+            raise ShopifyBillingError('Unexpected billing status reached!',
+                                      recurring_billing_data)
 
     def activate_recurring_billing(self, settings):
         """ Activate billing for customer that has approved it

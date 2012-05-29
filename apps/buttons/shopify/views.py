@@ -200,36 +200,90 @@ class ButtonsShopifyUpgrade(URIHandler):
                                       'Shopify API', {})
 
 
-class ButtonsShopifyInstallService(URIHandler):
-    """Starts the auto-install process."""
+class ButtonsShopifyTailoredInstall(URIHandler):
+    """View where the user goes to pay us 8 sweet dollars (2 to Shopify)."""
     @catch_error
     def get(self):
         """Begin the upgrade process."""
-        details = get_details(self)
-        price = 10.0
+        price = 10.0  # "we're charging people ten bucks to install it for em"
 
-        app = ButtonsShopify.get_by_url(details["shop_url"])
+        app = ButtonsShopify.get_by_url(self.request.get('store_url', ''))
         if not app:
-            logging.error("error calling billing callback: "
-                          "'app' not found. Install first?")
+            logging.error("ButtonsShopifyTailoredInstall: "
+                          "I don't think you're calling it right")
 
         # Start the billing process
+        callback = build_url('ButtonsShopifyOneTimeBillingCallback')
         return_url = app.setup_one_time_billing({
             "price": price,
             "name": "ShopConnection",
-            "return_url": "%s%s?app_uuid=%s" % (URL,
-                                                build_url('ButtonsShopifyBillingCallback'),
-                                                app.uuid),
+            "return_url": "%s%s?app_uuid=%s" % (URL, callback, app.uuid),
             "test": USING_DEV_SERVER
         })
 
         if return_url:
-            self.redirect(return_url)
+            self.redirect(return_url)  # client then goes to confirm the charge
             return
         else:
-            # Can this even occur?
             raise ShopifyBillingError('No confirmation URL provided by '
                                       'Shopify API', {})
+
+
+class ButtonsShopifyOneTimeBillingCallback(URIHandler):
+    """When a customer confirms / denies billing, they are redirected here.
+
+    Activates billing with Shopify, then redirects customer to installation
+    instructions.
+    """
+    @catch_error
+    def get(self):
+        """Activate the billing charges after Shopify has setup the charge."""
+
+        app_uuid = self.request.get('app_uuid')
+        app = ButtonsShopify.get_by_uuid(app_uuid)
+
+
+        if not app:
+            logging.error("error calling billing callback: 'app' not found")
+
+        client  = app.client
+        charge_id = int(self.request.get('charge_id'))
+
+        '''
+        if charge_id != app.recurring_billing_id:
+            raise ShopifyBillingError('Charge id in request does not match '
+                                      'expected charge id',
+                                      app.recurring_billing_id)
+
+        # Good to go, activate!
+        success = app.activate_recurring_billing({
+            'return_url': self.request.url,
+            'test': 'true'
+        })
+
+        if success:
+            app.billing_enabled = True
+            app.put()
+            app.do_upgrade()
+
+            # Render the page
+            page = build_url("ButtonsShopifyInstructions", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+            self.redirect(page)
+
+        else:
+            #The user declined to pay, redirect to upsell page
+            page = build_url("ButtonsShopifyWelcome", qs={
+                "t"   : app.store_token,
+                "shop": app.store_url,
+                "app" : "ButtonsShopify"
+            })
+
+            self.redirect(page)
+        '''
 
 
 class ButtonsShopifyBillingCallback(URIHandler):
@@ -521,7 +575,7 @@ class ButtonsShopifyItemShared(URIHandler):
                               product_page,
                               img_url=details.get("img"))
 
-            share_period = SharePeriod.get_or_create(app);
+            share_period = SharePeriod.get_or_create(app)
             share_period.shares.append(item)
             share_period.put()
 

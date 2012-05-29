@@ -8,7 +8,7 @@ urlpatterns = [
     (r'/b/shopify/learn',               ButtonsShopifyLearn),
     (r'/b/shopify/welcome',             ButtonsShopifyWelcome),
     (r'/b/shopify/upgrade',             ButtonsShopifyUpgrade),
-    (r'/b/shopify/install4u',           ButtonsShopifyInstallService),
+    (r'/b/shopify/install4u',           ButtonsShopifyTailoredInstall),
     (r'/b/shopify/billing_callback',    ButtonsShopifyBillingCallback),
     (r'/b/shopify/instructions',        ButtonsShopifyInstructions),
     (r'/b/shopify/config',              ButtonsShopifyConfig),

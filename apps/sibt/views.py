@@ -26,6 +26,7 @@ from apps.sibt.actions import SIBTClickAction, SIBTNoConnectFBCancelled, \
                               SIBTShowingVote, SIBTShowingResults, \
                               SIBTShowingResultsToAsker, SIBTVoteAction
 from apps.sibt.models import SIBT, SIBTInstance, PartialSIBTInstance
+from apps.sibt.shopify.models import SIBTShopify
 from apps.user.models import User
 
 from util.consts import ADMIN_IPS, DOMAIN, P3P_HEADER, PROTOCOL, \
@@ -966,8 +967,11 @@ class SIBTServeScript(URIHandler):
         # have client, app, user, and maybe instance
         try:
             app_css = app.get_css()  # only Shopify apps have CSS
+            if not app_css:
+                raise AttributeError('Empty CSS is illegal!')
         except AttributeError:
-            app_css = ''  # it was not a SIBTShopify
+            # it was not a SIBTShopify, but we will have to pass one out
+            app_css = SIBTShopify.get_default_css()
 
         # see if we should run this script as a vendor.
         vendor_name = getattr(client, 'name', '') if client.is_vendor else ''
