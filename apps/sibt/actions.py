@@ -282,14 +282,12 @@ class SIBTShowingButton(ShowAction):
 
         what = 'SIBTShowingButton'
         uuid = generate_uuid(16)
-        action = SIBTShowingButton(
-                key_name = uuid,
-                uuid = uuid,
-                user = user,
-                app_ = app,
-                what = what,
-                url = url
-        )
+        action = SIBTShowingButton(key_name=uuid,
+                                   uuid=uuid,
+                                   user=user,
+                                   app_=app,
+                                   what=what,
+                                   url=url)
         action.put()
 
         # tracking urls for fast lookup

@@ -88,60 +88,21 @@ class ButtonsShopify(Buttons, AppShopify):
     def do_install(self):
         """ Install Buttons scripts and webhooks for this store """
         app_name = self.__class__.__name__
-
-        # Define our script tag 
-        tags = [{
-            "script_tag": {
-                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s" % (
-                    URL,
-                    self.uuid
-                ),
-                "event": "onload"
-            }
-        }]
+        version = os.environ['CURRENT_VERSION_ID']
 
         # Install yourself in the Shopify store
         self.queue_webhooks(product_hooks_too=False)
-        self.queue_script_tags(script_tags=tags)
-
-        self.install_queued()
-
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", 
-                             self.client.email, 
-                             self.client.merchant.get_full_name(), 
-                             self.client.name)
-        
-        # Email DevTeam
-        Email.emailDevTeam(
-            'ButtonsShopify Install: %s %s %s' % (
-                self.uuid,
-                self.client.name,
-                self.client.url
-            )
-        )
-
-        # Start sending email updates
-        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
-            self.client.subscribe_to_mailing_list(
-                list_name=app_name,
-                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
-            )
-        
-        return
-
-    def do_upgrade(self):
-        """ Remove button scripts and add the paid version """
-        self.uninstall_script_tags();
         self.queue_script_tags(script_tags=[{
             "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s" % (
+                "src": "%s/b/shopify/load/buttons.js?app_uuid=%s&v=%s" % (
                     URL,
-                    self.uuid
-                ),
+                    self.uuid,
+                    version
+                    ),
                 "event": "onload"
             }
         }])
+
         self.queue_assets(assets=[{
             'asset': {
                 'key': 'snippets/willet-shopconnection.liquid',
@@ -163,6 +124,57 @@ class ButtonsShopify(Buttons, AppShopify):
                 """
             }
         }])
+
+        self.install_queued()
+
+        email = self.client.email
+        name  = self.client.merchant.get_full_name()
+        store = self.client.name
+        use_full_name = False
+
+        if REROUTE_EMAIL:
+            name += " (%s) [%s]" % (email, self.store_url)
+            email = REROUTE_EMAIL
+            use_full_name = True
+
+        # Fire off "personal" email from Fraser
+        Email.welcomeClient("ShopConnection", email, name, store,
+                            use_full_name=use_full_name)
+        
+        # Email DevTeam
+        Email.emailDevTeam(
+            'ButtonsShopify Install: %s %s %s' % (
+                self.uuid,
+                self.client.name,
+                self.client.url
+            )
+        )
+
+        # Start sending email updates
+        if app_name in SHOPIFY_APPS and 'mailchimp_list_id' in SHOPIFY_APPS[app_name]:
+            self.client.subscribe_to_mailing_list(
+                list_name=app_name,
+                list_id=SHOPIFY_APPS[app_name]['mailchimp_list_id']
+            )
+        
+        return
+
+    def do_upgrade(self):
+        """ Remove button scripts and add the paid version """
+        self.uninstall_script_tags()
+        version = os.environ['CURRENT_VERSION_ID']
+
+        self.queue_script_tags(script_tags=[{
+            "script_tag": {
+                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
+                    URL,
+                    self.uuid,
+                    version
+                ),
+                "event": "onload"
+            }
+        }])
+        
         self.install_queued()
 
         # Email DevTeam
@@ -187,6 +199,39 @@ class ButtonsShopify(Buttons, AppShopify):
 
         # Correct the object, and re-index any properties
         self.put()
+
+        try:
+            # Get the previous tag...
+            results = self._call_Shopify_API("GET", "script_tags.json")
+
+            if not results.get("script_tags"):
+                # What?
+                return
+
+            tag = None
+            for script_tag in results.get("script_tags"):
+                if "/b/shopify/load/" in script_tag.get("src", ""):
+                    tag = script_tag
+                    break
+
+            if not tag:
+                # What?
+                return
+
+            # Update the tag...
+            version = os.environ['CURRENT_VERSION_ID']
+            button_type = ""
+            if self.billing_enabled:
+                button_type = "smart-"
+
+            tag["src"] = "%s/b/shopify/load/%sbuttons.js?app_uuid=%s&v=%s" %\
+                      (URL, button_type, self.uuid, version)
+
+            self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
+                                   payload={"script_tag": tag})
+        except ShopifyAPIError:
+            logging.warning("Couldn't get or put script")
+
 
     def update_prefs(self, preferences):
         """Update preferences for the application."""
@@ -221,22 +266,23 @@ class ButtonsShopify(Buttons, AppShopify):
     def get_prefs(self):
         """Get preferences, provided that they exist."""
         #need to get theme id first...
-        result = self._call_Shopify_API("GET", "themes.json")
-
-        theme_id = None
-        for theme in result['themes']:
-            if 'role' in theme and 'id' in theme:
-                if theme['role'] == 'main':
-                    theme_id = theme['id']
-                    break
-
-        query_params = urlencode({
-            "asset[key]": "snippets/willet-shopconnection.liquid",
-            "theme_id": theme_id
-        })
-
         prefs = {}
+
         try:
+            result = self._call_Shopify_API("GET", "themes.json")
+
+            theme_id = None
+            for theme in result['themes']:
+                if 'role' in theme and 'id' in theme:
+                    if theme['role'] == 'main':
+                        theme_id = theme['id']
+                        break
+
+            query_params = urlencode({
+                "asset[key]": "snippets/willet-shopconnection.liquid",
+                "theme_id": theme_id
+            })
+
             result = self._call_Shopify_API("GET",
                                    "themes/%s/assets.json?%s" %
                                    (theme_id, query_params),
@@ -248,7 +294,7 @@ class ButtonsShopify(Buttons, AppShopify):
                 _, json_str     = var_value.split("=")
                 prefs           = json.loads(json_str.strip().strip(";"))
         except ShopifyAPIError:
-            pass  # Explicitly catch this
+            pass  # Either user is unbilled, or doesn't have the snippet.
         except ValueError:
             pass  # TODO: Problem parsing the JSON
 

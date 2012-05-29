@@ -79,10 +79,8 @@ class ProductShopify(Product):
             logging.warn('Could not get product for url: %s' % url)
             try:
                 # for either reason, we have to obtain the new product JSON
-                result = urlfetch.fetch(
-                        url='%s.json' % url,
-                        method=urlfetch.GET
-                )
+                result = urlfetch.fetch(url='%s.json' % url,
+                                        method=urlfetch.GET)
                 # data is the 'product' key within the JSON object: http://api.shopify.com/product.html
                 data = json.loads(result.content)['product']
                 product = ProductShopify.get_by_shopify_id(str(data['id']))
@@ -91,8 +89,12 @@ class ProductShopify(Product):
                 else:
                     logging.warn('failed to get product for id: %s; creating one.' % str(data['id']))
                     product = ProductShopify.create_from_json(client, data, url=url)
+            except ValueError:
+                logging.warn("No JSON equivalent for this page: %s" % url,
+                             exc_info=True)
             except:
-                logging.error("error fetching and storing product for url %s" % url, exc_info=True)
+                logging.error("error fetching and storing product for url %s" % url,
+                              exc_info=True)
         return product
 
     def update_from_json(self, data):

@@ -20,12 +20,8 @@ from apps.buttons.shopify.models import *
 
 from util.consts import MEMCACHE_TIMEOUT
 
-#from apps.action.models import *
-
-#from apps.sibt.actions import *
-
 actions_to_count = [
-    'ScriptLoadAction',
+  # 'ScriptLoadAction',
 
     'SIBTUserClickedTopBarAsk',
     'SIBTUserClickedButtonAsk',
@@ -55,29 +51,9 @@ actions_to_count = [
     'SIBTNoConnectFBCancelled',
     'SIBTConnectFBDialog',
     'SIBTConnectFBCancelled',
-    'SIBTFriendChoosingCancelled',
-
-    #'WOSIBUserClickedButtonAsk',
-    #'WOSIBAskUserClickedShare',
-
-    #'WOSIBShowingButton',
-    #'WOSIBShowingAskIframe',
-    #'WOSIBShowingResults',
-
-    #'WOSIBAskUserClickedShare',
-
-    #'WOSIBInstanceCreated',
-    #'WOSIBVoteAction',
-    #'WOSIBUserAction',
-    #'WOSIBFBConnected',
-
-    #'WOSIBAskIframeCancelled',
-    #'WOSIBNoConnectFBDialog',
-    #'WOSIBNoConnectFBCancelled',
-    #'WOSIBConnectFBDialog',
-    #'WOSIBConnectFBCancelled',
-    #'WOSIBFriendChoosingCancelled',
+    'SIBTFriendChoosingCancelled'
 ]
+
 # removing duplicates for the lazy
 actions_to_count = list(set(actions_to_count))
 
@@ -122,11 +98,11 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
     def put(self):
         """Stores model instance in memcache and database"""
         key = self.get_key()
-        logging.debug('Model::save(): Saving %s to memcache and datastore.' % 
+        logging.debug('Model::save(): Saving %s to memcache and datastore.' %
                 key)
         timeout_ms = 100
         while True:
-            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' % 
+            logging.debug('Model::save(): Trying %s.put, timeout_ms=%i.' %
                     (self.__class__.__name__.lower(), timeout_ms))
             try:
                 db.put(self)
@@ -138,9 +114,9 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
         # Memcache *after* model is given datastore key
         #if self.key():
         #    logging.debug('setting new memcache entity: %s' % key)
-        #    memcache.set(key, db.model_to_protobuf(self).Encode(), 
+        #    memcache.set(key, db.model_to_protobuf(self).Encode(),
         #            time=MEMCACHE_TIMEOUT)
-            
+
         return True
 
     def get_key(self):
@@ -150,7 +126,7 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
     @classmethod
     def build_key(cls, app_, start):
         return '%s:%s:%s' % (cls.__name__, app_.uuid, start)
-    
+
     @classmethod
     def _get_from_datastore(cls, app_, start):
         return cls.all()\
@@ -169,7 +145,7 @@ class AppAnalyticsTimeSlice(AnalyticsTimeSlice):
 
 
 class AppAnalyticsHourSlice(AppAnalyticsTimeSlice):
-    """A TimeSlice is a period of time with a start and end datetime that 
+    """A TimeSlice is a period of time with a start and end datetime that
     reflects the start and the end of the period.
 
     We count the number of each action for this time slice.
@@ -237,9 +213,9 @@ class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
             else:
                 break
         #if self.key():
-        #    memcache.set(key, db.model_to_protobuf(self).Encode(), 
+        #    memcache.set(key, db.model_to_protobuf(self).Encode(),
         #            time=MEMCACHE_TIMEOUT)
-            
+
         return True
 
     def get_key(self):
@@ -248,7 +224,7 @@ class GlobalAnalyticsTimeSlice(AnalyticsTimeSlice):
     @classmethod
     def build_key(cls, start):
         return '%s:%s' % (cls.__name__, start)
-    
+
     @classmethod
     def _get_from_datastore(cls, start):
         return cls.all().filter('start =', start).get()

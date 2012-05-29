@@ -16,12 +16,11 @@ from google.appengine.api.app_identity import get_application_id
 NAME = 'Willet'
 
 # Domain Stuff
-USING_DEV_SERVER = False # Never change - use local_consts.py
 PROTOCOL = 'http'
 SECURE_PROTOCOL = 'https'
 APP_DOMAIN = 'social-referral.appspot.com'
 APP_LIVE = 'social-referral'
-APP_LIVE_DEBUG = bool(get_application_id() != APP_LIVE) # False on live
+USING_DEV_SERVER = bool(get_application_id() != APP_LIVE) # False on live
 DOMAIN = os.environ['HTTP_HOST'] if USING_DEV_SERVER else APP_DOMAIN
 URL = urlunsplit((PROTOCOL, DOMAIN, '', '', '')) # no trailing slash
 SECURE_URL = urlunsplit((SECURE_PROTOCOL, DOMAIN, '', '', ''))
@@ -90,9 +89,13 @@ SHOPIFY_APPS = {
     }
 }
 
+# REROUTE_EMAIL: Email to use if we want to redirect ShopConnection install
+# emails. Otherwise, set to None
+REROUTE_EMAIL = "fraser@getwillet.com"
+
 # UNSURE_DETECTION: values for deciding whether a user is "unsure".
 UNSURE_DETECTION = {
-    'url_count_for_app_and_user': 5,
+    'url_count_for_app_and_user': 4,
 }
 
 # controls the number of memcache buckets
@@ -124,7 +127,8 @@ ADMIN_EMAILS = [ 'harrismc@gmail.com', 'matt@getwillet.com',
 ADMIN_IPS = [ '70.83.160.171',      # Notman House
               '69.166.16.20',       # VeloCity @ Hub
               '216.16.232.86',      # Brian Desktop network drop
-              '206.126.92.56'       # Brian House
+              '206.126.92.56',      # Brian House
+              '216.16.232.86'       # TenantWifi
             ]
 
 # the apps we are using
@@ -137,6 +141,7 @@ INSTALLED_APPS = [
     'buttons.shopify',
     'client',
     'client.shopify',
+    'code',
     'email',
     'gae_bingo',
     'gae_bingo.tests',
@@ -147,9 +152,10 @@ INSTALLED_APPS = [
     'product.shopify',
     'sibt',
     'sibt.shopify',
+    'sibt.shuuemura',
+    'user',
     'wosib',
     'wosib.shopify',
-    'user',
     # LINK MUST ALWAYS BE LAST
     'link',
 ]

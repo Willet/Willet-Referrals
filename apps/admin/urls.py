@@ -21,6 +21,7 @@ urlpatterns = [
     (r'/admin/analytics/compare',   AppAnalyticsCompare),
     (r'/admin/analytics/(.*)/',     ShowAppAnalytics),
     (r'/admin/analytics',           ShowAnalytics),
+    (r'/admin/find',                RealFetch),
 
     # Processes
     (r'/admin/analytics/generate',      GenerateOlderHourPeriods),
@@ -31,5 +32,7 @@ urlpatterns = [
     (r'/admin/updateStore',             UpdateStore),
     (r'/admin/uploadEmailsToMailChimp', UploadEmailsToMailChimp),
     (r'/email/everyone',                EmailEveryone),
-    (r'/email/someone',                 EmailSomeone)
+    (r'/email/someone',                 EmailSomeone),
+    (r'/admin/db_integrity_check',      DBIntegrityCheck),
+    (r'/admin/clean_old_actions',       CleanOldActions)
 ]

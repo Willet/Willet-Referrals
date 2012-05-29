@@ -23,7 +23,7 @@ from apps.product.models import Product
 from apps.sibt.actions import *
 from apps.sibt.models import SIBT
 from apps.sibt.models import SIBTInstance, PartialSIBTInstance
-from apps.user.actions import UserIsFBLoggedIn
+from apps.user.actions import UserCreate, UserIsFBLoggedIn
 from apps.user.models import User
 from apps.wosib.actions import *
 
@@ -111,117 +111,6 @@ class SIBTSignUp(URIHandler):
         return
 
 
-class ShareSIBTInstanceOnFacebook(URIHandler):
-    def post(self):
-        logging.info("SHARE SIBT ON FACEBOOK")
-
-        app = App.get_by_uuid(self.request.get('app_uuid'))
-        user = User.get(self.request.get('user_uuid'))
-        if not user:
-            logging.warn('failed to get user by uuid %s' % self.request.get('user_uuid'))
-            user = User.get_or_create_by_cookie(self, app)
-        willt_code = self.request.get('willt_code')
-        link = Link.get_by_code(willt_code)
-        img = self.request.get('product_img')
-        product_name = self.request.get('name')
-        product_desc = None
-        product_id = self.request.get('product_id')
-        motivation = self.request.get('motivation')
-        fb_token = self.request.get('fb_token')
-        fb_id = self.request.get('fb_id')
-        message = self.request.get('msg')
-
-        product = None
-        try:
-            product = ProductShopify.get_by_shopify_id(str(product_id))
-        except:
-            logging.info('Could not get product by id %s' % product_id, exc_info=True)
-        try:
-            #product_desc = '.'.join(product.description[:150].split('.')[:-1]) + '.'
-            #product_desc = remove_html_tags(product_desc)
-            ex = '[!\.\?]+'
-            product_desc = strip_html(product.description)
-            parts = re.split(ex, product_desc[:150])
-            product_desc = '.'.join(parts[:-1])
-            if product_desc[:-1] not in ex:
-                product_desc += '.'
-        except:
-            logging.info('could not get product description')
-
-        try:
-            if isinstance(message, str):
-                message = unicode(message, errors='ignore')
-
-            if isinstance(img, str):
-                img = unicode(img, errors='ignore')
-
-            if isinstance(product_name, str):
-                product_name = unicode(product_name, errors='ignore')
-
-            if isinstance(product_desc, str):
-                product_desc = unicode(product_desc, errors='ignore')
-        except:
-            logging.info('error transcoding to unicode', exc_info=True)
-
-        # defaults
-        response = {
-            'success': False,
-            'data': {}
-        }
-
-        # first do sharing on facebook
-        if fb_token and fb_id:
-            logging.info('token and id set, updating user')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            )
-        if not hasattr(user, 'fb_access_token') or \
-            not hasattr(user, 'fb_identity'):
-            logging.info('Setting users facebook info')
-            user.update(
-                fb_identity = fb_id,
-                fb_access_token = fb_token
-            )
-
-        try:
-            facebook_share_id, plugin_response = user.facebook_share(
-                message,
-                img,
-                product_name,
-                product_desc,
-                link
-            )
-            logging.info('shared on facebook, got share id and response %s %s' % (
-                facebook_share_id,
-                plugin_response
-            ))
-
-            # if it wasn't successful ...
-            if facebook_share_id == None or plugin_response == 'fail':
-                # posting failed!
-                response['data']['message'] = 'Could not post to facebook'
-            else:
-                # create the instance!
-                # Make the Instance!
-                instance = app.create_instance(user,
-                        None, link, img, motivation=motivation,
-                        dialog="ConnectFB")
-
-                # increment link stuff
-                link.app_.increment_shares()
-                link.add_user(user)
-                logging.info('incremented link and added user')
-
-                response['success'] = True
-        except Exception,e:
-            response['data']['message'] = str(e)
-            logging.error('we had an error sharing on facebook', exc_info=True)
-
-        logging.info('response: %s' % response)
-        self.response.out.write(json.dumps(response))
-
-
 class StartSIBTInstance(URIHandler):
     def post(self):
         app = App.get_by_uuid(self.request.get('app_uuid'))
@@ -242,9 +131,13 @@ class StartSIBTInstance(URIHandler):
 
         try:
             # Make the Instance!
-            instance = app.create_instance(user, None, link, img,
-                                           motivation=None, dialog="ConnectFB")
-
+            instance = app.create_instance(user=user,
+                                           end=None,
+                                           link=link,
+                                           dialog="ConnectFB",
+                                           img=img,
+                                           motivation=None,
+                                           sharing_message="")
             response['success'] = True
             response['data']['instance_uuid'] = instance.uuid
         except Exception,e:
@@ -287,27 +180,16 @@ class DoVote(URIHandler):
             instance.increment_yesses()
 
         # Tell the Asker they got a vote!
-        email = instance.asker.get_attr('email')
-        if email:
-            logging.info('going to email shopper.')
-            if which.lower() == "yes" or which.lower() == "no":  # SIBT
-                logging.debug('SIBT email')
-                Email.SIBTVoteNotification(to_addr=email,
-                                           name=instance.asker.get_full_name(),
-                                           vote_type=which,
-                                           product_url="%s#open=1" % instance.url, # full product link
-                                           product_img=instance.product_img,
-                                           client_name=app.client.name,
-                                           client_domain=app.client.domain)
-            else:
-                logging.debug('WOSIB email')
-                Email.WOSIBVoteNotification(to_addr=email,
-                                            name=instance.asker.get_full_name(),
-                                            cart_url="%s#open=1" % instance.link.origin_domain,  # cart url
-                                            client_name=app.client.name,
-                                            client_domain=app.client.domain)
+        if which.lower() == "yes" or which.lower() == "no":  # SIBT
+            logging.info('going to SIBT email shopper.')
+            Email.SIBTVoteNotification(instance=instance, vote_type=which)
         else:
-            logging.info('shopper has no email - not going to send one.')
+            logging.info('going to WOSIB email shopper.')
+            try:
+                product = Product.get(which)  # note that None is okay here.
+            except:
+                product = None
+            Email.WOSIBVoteNotification(instance=instance, product=product)
 
         self.response.out.write('ok')
 
@@ -356,73 +238,58 @@ class RemoveExpiredSIBTInstance(URIHandler):
         instance = SIBTInstance.get(instance_uuid)
         if instance:
             result_instance = db.run_in_transaction(txn, instance)
-            email = instance.asker.get_attr('email')
-            if email:
-                Email.SIBTVoteCompletion(
-                    to_addr=email,
-                    name=result_instance.asker.get_full_name(),
-                    product_url=result_instance.url, # original product URL
-                    product_img=result_instance.product_img,
-                    yesses=result_instance.get_yesses_count(),
-                    noes=result_instance.get_nos_count()
-                )
+            Email.SIBTVoteCompletion(instance=instance,
+                                     product=instance.products[0])
         else:
             logging.error("could not get instance for uuid %s" % instance_uuid)
         logging.info('done expiring')
 
 
 class TrackSIBTShowAction(URIHandler):
+    """DB Action tracking is *being* replaced by Google Analytics."""
     def get(self):
-        """Compatibility with iframe shizz"""
+        """Compatibility with iframe scheisse."""
         self.post()
 
     def post(self):
         """So javascript can track a sibt specific show actions"""
-        app = None
+        app = App.get(self.request.get('app_uuid'))
         action = None
-        duration = 0.0
-        instance = None
-        success = False
-        user = None
-
-        if self.request.get('instance_uuid'):
-            instance = SIBTInstance.get(self.request.get('instance_uuid'))
-        if self.request.get('app_uuid'):
-            app = App.get(self.request.get('app_uuid'))
-        if self.request.get('user_uuid'):
-            user = User.get(self.request.get('user_uuid'))
-        if self.request.get('duration'):
-            duration = self.request.get('duration')
+        duration = self.request.get('duration', 0.0)
         event = self.request.get('evnt')
+        instance = SIBTInstance.get(self.request.get('instance_uuid'))
+        success = False
         url = self.request.get('target_url')
+        user = User.get(self.request.get('user_uuid'))
 
-        if not event or not user:
+        if not (app and event and user):
             return # we can't track who did what or what they did; logging this item is not useful.
 
         try:
-            logging.debug ('TrackSIBTShowAction: user = %s, instance = %s, event = %s' % (user, instance, event))
+            logging.debug ('user = %s, instance = %s, event = %s' % (user, instance, event))
             action_class = globals()[event]
             action = action_class.create(user,
-                    instance=instance,
-                    url=url,
-                    app=app,
-                    duration=duration
-            )
+                                         instance=instance,
+                                         url=url,
+                                         app=app,
+                                         duration=duration)
         except Exception,e:
-            logging.warn('(this is not serious) could not create class: %s' % e)
-            try:
-                logging.debug ('TrackSIBTShowAction 2: user = %s, instance = %s, event = %s' % (user, instance, event))
-                action = SIBTShowAction.create(user, instance, event)
-            except Exception, e:
-                logging.error('this is serious: %s' % e, exc_info=True)
-            else:
-                logging.info('tracked action: %s' % action)
-                success = True
+            logging.debug('Could not create Action class %s: %s' % (event, e))
         else:
             logging.info('tracked action: %s' % action)
-            success = True
+            self.response.out.write('')
+            return
+
+        try:
+            logging.debug('Retrying by creating generic action class')
+            action = SIBTShowAction.create(user, instance, event)
+        except Exception, e:
+            logging.error('Could not log action!: %s' % e, exc_info=True)
+        else:
+            logging.info('tracked action: %s' % action)
 
         self.response.out.write('')
+        return
 
 
 class TrackSIBTUserAction(URIHandler):
@@ -502,7 +369,9 @@ class StartPartialSIBTInstance(URIHandler):
         # product_uuids: ['uuid','uuid','uuid'] or [''] edge case
         # product_uuid (singular, deprecated) is used only if
         # product_uuids is missing.
+        logging.debug('products = %s' % self.request.get('products'))
         product_uuids = self.request.get('products', '').split(',')
+        logging.debug('product_uuids = %r' % product_uuids)
         if not product_uuids[0]:  # ? '' evals to False; [''] evals to True.
             product_uuids = [self.request.get('product_uuid')]
 
@@ -626,17 +495,21 @@ class StartSIBTAnalytics(URIHandler):
 
 
 class SendFriendAsks(URIHandler):
-    """ Sends messages to email & FB friends
+    """Sends messages to email & FB friends.
 
     Expected inputs:
-        friends: JSON-encoded <Array> [ <array> [ <string> type, <string> name, <string> identifier ]
-        asker: JSON-encoded <array> [<string> name, <string> email_address [, <string> picture_url ]]
+        friends: JSON-encoded <Array> [ <array> [ <string> type,
+                                                  <string> name,
+                                                  <string> identifier ]
+        asker: JSON-encoded <array> [<string> name,
+                                     <string> email_address [,
+                                     <string> picture_url ]]
         msg: <string> message
         default_msg: <string> message before user edited it
         app_uuid: <string> a SIBT app uuid
         product_uuid: <string> a <Product> uuid
         products: <string> a CSV of <Product> uuids
-        willt_code: <string> willt_code corresponding to a parital SIBT instance
+        willt_code: <string> willt_code corresponding to a PartialSIBTInstance
         user_uuid: <string> a <User> uuid
         fb_access_token: <string> a Facebook API access token for this user
         fb_id: <string> a Facebook user id for this user
@@ -645,52 +518,58 @@ class SendFriendAsks(URIHandler):
         success: <Boolean> at least some friends were successfully contacted
         data: <Dict>
             message: <String> description of outcome
-            warnings: <Array> [ <string> explanation of any incompleted friend asks ]
+            warnings: <Array> [ <string> explanation of any incompleted
+                                friend asks ]
     """
     def post(self):
+        """See class docstring for details."""
         logging.info("TARGETTED_SHARE_SIBT_EMAIL_AND_FB")
 
-        # Fetch arguments
-        app = App.get(self.request.get('app_uuid')) # Could be <SIBT>, <SIBTShopify> or something...
-        asker = json.loads(self.request.get('asker'))
-        default_msg = self.request.get('default_msg')
+        # Shorthand
+        rget = self.request.get
+
+        # app is returned as its subclass - a characteristic of App Engine.
+        app = App.get(rget('app_uuid'))
+        asker = json.loads(rget('asker'))
+        default_msg = rget('default_msg')
         email_friends = []
         email_share_counter = 0
         fb_friends = []
-        fb_id = self.request.get('fb_id')
+        fb_id = rget('fb_id')
         fb_share_counter = 0
-        fb_token = self.request.get('fb_access_token')
-        friends = json.loads(self.request.get('friends'))
-        link = Link.get_by_code(self.request.get('willt_code'))
-        msg = self.request.get('msg')
-        product = Product.get(self.request.get('product_uuid'))
-        products = []
-        product_uuids = self.request.get('products').split(',') # [uuid,uuid,uuid]
-        user = User.get(self.request.get('user_uuid'))
+        fb_token = rget('fb_access_token')
+        friends = json.loads(rget('friends'))
+        instance = None
+        link = Link.get_by_code(rget('willt_code'))
+        msg = rget('msg', '')[:1000]  # sharing message is limited to 1k chars
+        user = User.get(rget('user_uuid'))
 
-        # Default response
-        response = {
-            'success': False,
-            'data': {
-                'message': "",
-                'warnings': []
-            }
-        }
+        product = Product.get(rget('product_uuid'))
 
-        logging.debug('asker: %r \n\
-            friends: %r \n\
-            msg: %s \n\
-            link: %s' % (asker, friends, msg, link))
+        # [uuid,uuid,uuid]
+        product_uuids = rget('products').split(',')
 
         # supposedly: [Product, Product, Product]
         products = [Product.get(uuid) for uuid in product_uuids]
+
+        # Default response
+        response = {'success': False,
+                    'data': {'message': "",
+                             'warnings': []}}
+
+        logging.debug('asker: %r \n'
+                      'friends: %r \n'
+                      'msg: %s \n'
+                      'link: %s' % (asker, friends, msg, link))
+
+        # back-fill the product variable
         if not products[0] and product:
             products = [product]
-        elif not product:  # back-fill the product variable
+        elif not product:
             product = random.choice(products)
 
         if not user:
-            logging.error('failed to get user by uuid %s' % self.request.get('user_uuid'))
+            logging.error('failed to get user by uuid %s' % rget('user_uuid'))
             self.response.set_status(401) # Unauthorized
             response['data']['message'] = 'Unauthorized: Could not find user by supplied id'
 
@@ -732,10 +611,13 @@ class SendFriendAsks(URIHandler):
             # Add spam warning if there are > 5 email friends
             if len(email_friends) > 5:
                 logging.warning('SPAMMER? Emailing %i friends' % len(email_friends))
-                Email.emailDevTeam('<p>SIBT SPAMMER? Emailing %i friends</p> \
-                    <p>Asker: %s</p> \
-                    <p>Message: %s</p> \
-                    <p>Instance: %s</p>' % (email_share_counter, asker, msg, instance.uuid))
+                Email.emailDevTeam('<p>SIBT SPAMMER? Emailing %i friends</p>'
+                                   '<p>Asker: %s</p>'
+                                   '<p>Message: %s</p>'
+                                   '<p>Instance: %s</p>' % (email_share_counter,
+                                                            asker,
+                                                            msg,
+                                                            instance.uuid))
 
             # Format the product's desc for sharing
             try:
@@ -765,7 +647,7 @@ class SendFriendAsks(URIHandler):
             try:
                 product_image = product.images[0]
             except (TypeError, IndexError):
-                product_image = 'http://social-referral.appspot.com/static/imgs/blank.png' # blank
+                product_image = 'http://rf.rs/static/imgs/blank.png' # blank
                 response['data']['warnings'].append('Could not get product image')
 
             #--- Start with sharing to FB friends ---#
@@ -806,29 +688,16 @@ class SendFriendAsks(URIHandler):
             if email_friends: # [] is falsy
                 for (_, fname, femail) in email_friends:
                     try:
-                        if len(products) > 1:
-                            Email.WOSIBAsk(from_name=a['name'],
-                                           from_addr=a['email'],
-                                           to_name=fname,
-                                           to_addr=femail,
-                                           message=msg,
-                                           vote_url=link.get_willt_url(),
-                                           asker_img=a['pic'],
-                                           client_name=app.client.name,
-                                           client_domain=app.client.domain,
-                                           products=products)
-                        else:
-                            Email.SIBTAsk(from_name=a['name'],
-                                          from_addr=a['email'],
-                                          to_name=fname,
-                                          to_addr=femail,
-                                          message=msg,
-                                          vote_url=link.get_willt_url(),
-                                          product_img=product_image,
-                                          asker_img=a['pic'],
-                                          product_title=product.title,
-                                          client_name=app.client.name,
-                                          client_domain=app.client.domain)
+                        Email.SIBTAsk(client=app.client,
+                                      from_name=a['name'],
+                                      from_addr=a['email'],
+                                      to_name=fname,
+                                      to_addr=femail,
+                                      message=msg,
+                                      vote_url=link.get_willt_url(),
+                                      product=product or None,
+                                      products=products or [],
+                                      asker_img=a['pic'])
                     except Exception,e:
                         response['data']['warnings'].append('Error sharing via email: %s' % str(e))
                         logging.error('we had an error sharing via email', exc_info=True)
@@ -839,12 +708,13 @@ class SendFriendAsks(URIHandler):
 
             if friend_share_counter > 0:
                 # create the instance!
-                instance = app.create_instance(user,
-                                               None,
-                                               link,
-                                               product_image,
-                                               motivation="",
+                instance = app.create_instance(user=user,
+                                               end=None,
+                                               link=link,
                                                dialog="ConnectFB",
+                                               img=product_image,
+                                               motivation="",
+                                               sharing_message=msg,
                                                products=product_uuids)
 
                 # change link to reflect to the vote page.
@@ -874,26 +744,82 @@ class SendFriendAsks(URIHandler):
             if not response['data']['warnings']:
                 del response['data']['warnings']
 
-            try:
-                iuid = instance.uuid
-            except:
-                iuid = None
+            iuid = getattr(instance, 'uuid', None)
 
-            logging.info('Asker: %s\n \
-                Friends: %s\n \
-                Successful shares on FB: %d\n \
-                Successful shares via email: %d\n \
-                Message: %s\n \
-                Instance: %s' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
+            logging.info('Asker: %s\n'
+                         'Friends: %s\n'
+                         'Successful shares on FB: %d\n'
+                         'Successful shares via email: %d\n'
+                         'Message: %s\n'
+                         'Instance: %s' % (asker, friends, fb_share_counter,
+                                           email_share_counter, msg, iuid))
 
-            Email.emailDevTeam('<p>SIBT Share!\n</p> \
-                <p>Asker: %s\n</p> \
-                <p>Friends: %s</p> \
-                <p>Successful shares on FB: %d</p> \
-                <p>Successful shares via email: %d</p> \
-                <p>Message: %s</p> \
-                <p>Instance: %s</p>' % (asker, friends, fb_share_counter, email_share_counter, msg, iuid))
+            Email.emailDevTeam('<p>SIBT Share!\n</p>'
+                '<p>Asker: %s\n</p>'
+                '<p>Friends: %s</p>'
+                '<p>Successful shares on FB: %d</p>'
+                '<p>Successful shares via email: %d</p>'
+                '<p>Message: %s</p>'
+                '<p>Instance: %s</p>'
+                '<p>Link: %s</p>' % (asker, friends, fb_share_counter,
+                                     email_share_counter, msg, iuid,
+                                     link.get_willt_url()))
 
         logging.info('response: %s' % response)
         self.response.headers['Content-Type'] = "application/json"
         self.response.out.write(json.dumps(response))
+
+
+def VendorSignUp(request_handler, domain, email, first_name, last_name, phone):
+    """Function to create a vendor's Client, SIBT App, and User.
+
+    Returns (<bool>success?, <string>code), where code is the error message
+    if it fails, or a javascript snippet if it succeeds.
+
+    If previous user/client/app objects exist, they will be reused.
+    """
+    user = User.get_or_create_by_email(email=email,
+                                       request_handler=request_handler,
+                                       app=None)
+    if not user:
+        return (False, 'wtf, no user?')
+
+    full_name = "%s %s" % (first_name, last_name)
+    user.update(email=email,
+                first_name=first_name,
+                last_name=last_name,
+                full_name=full_name,
+                phone=phone,
+                accepts_marketing=False)
+
+    client = Client.get_or_create(url=domain,
+                                  request_handler=request_handler,
+                                  user=user)
+    if not client:
+        return (False, 'wtf, no client?')
+
+    # got a client; update its info
+    client.email = email
+    client.name = full_name
+    client.is_vendor = True
+    client.put()
+
+    user.update(client=client)  # can't bundle with previous user update
+
+    app = SIBT.get_or_create(client=client, domain=domain)
+    if not client:
+        return (False, 'wtf, no app?')
+
+    # put back the UserAction that we skipped making
+    UserCreate.create(user, app)
+
+    template_values = {'app': app,
+                       'URL': URL,
+                       'shop_name': client.name,
+                       'shop_owner': client.merchant.name,
+                       'client': client,
+                       'sibt_version': app.version,
+                       'new_order_code': True}
+
+    return (True, request_handler.render_page('templates/vendor_include.js',
+                                              template_values))
