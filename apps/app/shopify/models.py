@@ -277,11 +277,14 @@ class AppShopify(Model):
             None
         """
 
-        data = self._retrieve_application_charge()
+        result = self._retrieve_application_charge()
 
         charge_data = result['application_charge']
+        logging.debug('charge_data = %r' % charge_data)
 
         if charge_data == 'pending':
+            logging.debug('we can now activate the charge')
+
             # Update status
             charge_data.update({
                 "status":"accepted"
@@ -298,9 +301,11 @@ class AppShopify(Model):
                         self.charge_statuses[i] = "accepted"
                         break
             else:
+                logging.debug('activation denied')
                 raise ShopifyBillingError('Charge activation denied', data)
         else:
-            raise ShopifyBillingError('Charge cancelled before activation request', recurring_billing_data)
+            logging.debug('Charge cancelled before activation request')
+            raise ShopifyBillingError('Charge cancelled before activation request', charge_data)
 
         return
 
