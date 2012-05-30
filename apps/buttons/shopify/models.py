@@ -145,13 +145,15 @@ class ButtonsShopify(Buttons, AppShopify):
         use_full_name = False
 
         if REROUTE_EMAIL:
-            name += " (%s) [%s]" % (email, self.store_url)
-            email = REROUTE_EMAIL
-            use_full_name = True
-
-        # Fire off "personal" email from Fraser
-        Email.welcomeClient("ShopConnection", email, name, store,
-                            use_full_name=use_full_name)
+            Email.welcomeFraser(app_name="ShopConnection",
+                                to_addr=email,
+                                name=name, 
+                                store_name=store,
+                                store_url=self.store_url)
+        else:
+            # Fire off "personal" email from Fraser
+            Email.welcomeClient("ShopConnection", email, name, store,
+                                use_full_name=use_full_name)
 
         # Email DevTeam
         Email.emailDevTeam(
