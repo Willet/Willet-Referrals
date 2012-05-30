@@ -284,8 +284,8 @@ _willet.sibt = (function (me) {
                         .html ("<div class='button' " +
                                     "title='Ask your friends if you should buy this!'>" +
                                     "<img src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' alt='logo' />" +
-                                    "<div id='_willet_button' class='title'>Share with Friends</div>" +
-                                    "</div>")
+                                    "<div id='_willet_button' class='title'>Shop with Friends</div>" +
+                               "</div>")
                         .css({'clear': 'both', 'height': '40px', 'background':'none'});
                     jqElem.append(button);
                 } else {
@@ -387,7 +387,7 @@ _willet.sibt = (function (me) {
                          <div id='_willet_button' class='button' \
                              title='Ask your friends if you should buy this!'>\
                              <img alt='logo' src='{{URL}}/static/plugin/imgs/chat_button_25x25.png' />\
-                             <div class='title'>Share with Friends</div>\
+                             <div class='title'>Shop with Friends</div>\
                          </div>")
             .css({
                 'clear': 'both',
@@ -468,7 +468,7 @@ _willet.sibt = (function (me) {
             if (this && $this) {
                 var nDim = parseFloat($this.width()) * parseFloat($this.height());
                 if (nDim > nMaxDim) {
-                    largest_image = $this.prop('src');
+                    largest_image = $prop('src');
                     nMaxDim = nDim;
                 }
             }
