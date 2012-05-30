@@ -150,7 +150,7 @@ class ButtonsShopify(Buttons, AppShopify):
         use_full_name = False
 
         if REROUTE_EMAIL:
-            name += " (%s) [%s]" % (email, self.store_url)
+            name += " <%s> [%s]" % (email, self.store_url)
             email = REROUTE_EMAIL
             use_full_name = True
 
