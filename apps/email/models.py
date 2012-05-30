@@ -77,9 +77,7 @@ class Email():
         body += "<p>Hi %s,</p>" % (name,)
 
         if app_name == 'ShopConnection':
-            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
-                  <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
-                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
+            body += """<p>Thanks for installing! Please lets us know if you have any suggestion to improve ShopConnection.</p>"""
 
         elif app_name == 'Should I Buy This':
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
@@ -95,6 +93,35 @@ class Email():
 
         Email.send_email(from_address=FRASER,
                          to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
+
+    @staticmethod
+    def welcomeFraser(app_name, to_addr, name, store_name, store_url,
+                      use_full_name=False):
+        subject = 'Thanks for Installing "%s"' % (app_name)
+
+        if not app_name:
+            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
+            return
+
+        if not use_full_name:
+            # Grab first name only
+            try:
+                name = name.split(' ')[0]
+            except:
+                pass
+
+        body = """<p>%s</p>
+                  <p>Hi %s,</p>
+                  <p>We are looking forward to your store launching!  Please lets us know if you have any suggestion to improve %s.</p>
+                  <p>Fraser</p>
+                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href='http://twitter.com/fjharris'>@FJHarris</a></p>""" % (store_url, name, app_name)
+
+        Email.send_email(from_address=FRASER,
+                         to_address=FRASER,
+                         replyto_address=to_addr,
                          subject=subject,
                          body=body,
                          to_name=name)
@@ -167,12 +194,12 @@ class Email():
         subject = 'Buttons Custom Install Request'
         client_addr = getattr(client, 'email')
         client_name = getattr(client, 'name')
-        client_domain = getattr(client, 'domain')
+        client_domain = getattr(client, 'url', getattr(client, 'domain'))
 
         msg = '''Client %s <%s> has request a custom Buttons installation.
-                 Please go to %s to install the app.''' % (client_name,
-                                                           client_addr,
-                                                           client_domain)
+                 Please go to %s/admin to install the app.''' % (client_name,
+                                                                 client_addr,
+                                                                 client_domain)
         logging.info(msg)  # lazy boy strikes again
         Email.emailDevTeam(msg=msg,
                            subject=subject,
