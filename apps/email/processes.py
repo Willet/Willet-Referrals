@@ -32,7 +32,7 @@ class SendEmailAsync(URIHandler):
         replyto_address = self.request.get('replyto_address')
 
         params = {  # all fields must be strings!
-            "api_user" : "BarbaraEMac",
+            "api_user" : "fraser@getwillet.com",
             "api_key"  : "w1llet!!",
             "to"       : to_address,
             "subject"  : subject,
