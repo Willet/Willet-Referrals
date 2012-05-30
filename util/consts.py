@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     'analytics_backend',
     'buttons',
     'buttons.shopify',
+    'charge',
     'client',
     'client.shopify',
     'code',

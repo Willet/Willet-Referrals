@@ -211,9 +211,11 @@ class ButtonsShopifyTailoredInstall(URIHandler):
         if not app:
             logging.error("ButtonsShopifyTailoredInstall: "
                           "I don't think you're calling it right")
+        logging.debug('app = %r' % app)
 
         # Start the billing process
         callback = build_url('ButtonsShopifyOneTimeBillingCallback')
+        logging.debug('setting up billing at %s%s?app_uuid=%s' % (URL, callback, app.uuid))
         return_url = app.setup_one_time_billing({
             "price": price,
             "name": "ShopConnection",
@@ -222,11 +224,25 @@ class ButtonsShopifyTailoredInstall(URIHandler):
         })
 
         if return_url:
+            logging.debug('going to return_url!')
             self.redirect(return_url)  # client then goes to confirm the charge
             return
         else:
             raise ShopifyBillingError('No confirmation URL provided by '
                                       'Shopify API', {})
+
+
+class ButtonsShopifyPaidInstallThanks(URIHandler):
+    """The client has paid (a one-time charge).
+
+    Shows the client the steps necessary to let us go into their store and
+    approve charges.
+
+    """
+    @catch_error
+    def get(self):
+        logging.debug('success!')
+        self.response.out.write('YAY')
 
 
 class ButtonsShopifyOneTimeBillingCallback(URIHandler):
@@ -238,36 +254,42 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
     @catch_error
     def get(self):
         """Activate the billing charges after Shopify has setup the charge."""
-
+        logging.debug('redirected to ButtonsShopifyOneTimeBillingCallback')
         app_uuid = self.request.get('app_uuid')
-        app = ButtonsShopify.get_by_uuid(app_uuid)
-
+        store_url = self.request.get('store_url')
+        app = ButtonsShopify.get(app_uuid) or ButtonsShopify.get_by_url(store_url)
+        logging.debug('app = %r' % app)
 
         if not app:
             logging.error("error calling billing callback: 'app' not found")
 
         client  = app.client
+        logging.debug('client = %r' % client)
+
         charge_id = int(self.request.get('charge_id'))
+        logging.debug('charge_id = %r' % charge_id)
 
-        '''
-        if charge_id != app.recurring_billing_id:
-            raise ShopifyBillingError('Charge id in request does not match '
-                                      'expected charge id',
-                                      app.recurring_billing_id)
+        # an AppShopify can only be one-time-charged once.
+        # to be exact, you can charge it multiple times, but it only saves the
+        # shopify charge ID of the latest charge.
+        app.charge_id = charge_id  # polymodel prop; saved if success (below)
 
-        # Good to go, activate!
-        success = app.activate_recurring_billing({
+        logging.debug('activating application charge at %s' % self.request.url)
+        success = app.activate_application_charge({
+            'charge_id': charge_id,
             'return_url': self.request.url,
             'test': 'true'
         })
 
         if success:
+            logging.debug('activate application charge success!')
             app.billing_enabled = True
             app.put()
-            app.do_upgrade()
+            # app.do_upgrade()
 
             # Render the page
-            page = build_url("ButtonsShopifyInstructions", qs={
+            logging.debug('redirecting to thanks page')
+            page = build_url("ButtonsShopifyPaidInstallThanks", qs={
                 "t"   : app.store_token,
                 "shop": app.store_url,
                 "app" : "ButtonsShopify"
@@ -276,6 +298,7 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
 
         else:
             #The user declined to pay, redirect to upsell page
+            logging.debug('redirecting to welcome page')
             page = build_url("ButtonsShopifyWelcome", qs={
                 "t"   : app.store_token,
                 "shop": app.store_url,
@@ -283,7 +306,6 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
             })
 
             self.redirect(page)
-        '''
 
 
 class ButtonsShopifyBillingCallback(URIHandler):
