@@ -975,8 +975,8 @@ _willet.networks = (function (willet) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
-                    if (params.sharing_message) {
-                        link.setAttribute('data-text', params.sharing_message);
+                    if (params.sharingMessage) {
+                        link.setAttribute('data-text', params.sharingMessage);
                     }
 
                     button.appendChild(link);
