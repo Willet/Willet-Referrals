@@ -29,7 +29,7 @@
         font-size: 1.5em;
     }
     .page {
-        margin-top: 20px;
+        margin-top: 30px;
     }
     #config-free {
         display: block;
@@ -362,7 +362,7 @@
         {% if not config_enabled %}<script src="/static/js/jquery.loadmask.min.js" type="text/javascript"></script>{% endif %}
 <script>
     $(document).ready(function () {
-        var redirectPageTo,
+        var redirectToUpgrade,
             changeTabs,
             maxButtons,
             update,
@@ -374,12 +374,12 @@
             + "<h3>Sorry, only paid users can access this feature</h3>"
             + "<div>"
             + "    <a href='{{ learn_more_url }}'>Learn more</a>"
-            + "    <button class='red' onclick='redirectToUpgrade();' style='float: right;'>"
+            + "    <button class='red' style='float: right;'>"
             + "        <span style='float: right;display: block;'>Upgrade Now</span>"
             + "    </button>"
             + "</div>";
 
-        redirectToUpgrade = function () {
+        var redirectToUpgrade = function () {
             window.location = "{{ upgrade_url }}";
         };
 
@@ -458,7 +458,7 @@
             $(page).show();
 
             {% if not config_enabled %}
-            $(page).find('.mask-target').mask(maskMessage);
+            $(page).find('.mask-target').mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
             {% endif %}
 
             event.preventDefault();
@@ -468,7 +468,7 @@
 
         {% if not config_enabled %}
         // Display a mask if the user has not paid
-        $("#configuration .mask-target").mask(maskMessage);
+        $("#configuration .mask-target").mask(maskMessage).find('.loadmask-msg button').click(redirectToUpgrade);
         {% endif %}
 
         // Set the default selected element
@@ -554,167 +554,164 @@
 
 <div class="span-24 last box-design content-container"
      style="margin-top: 0px;">
-    <div id="configuration" class="page">
-        <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
-            <div class="box-design mask-target">
-                <div class="preview">
-                    <span class="left-column">
-                        <label for="buttons-preview">Preview:</label>
-                    </span>
-                    <span style="margin-right: 20px;">
-                        See how your ShopConnection buttons
-                        will appear in your store.
-                    </span>
+    <div id="configuration" class="page prepend-top prepend-3 span-18 append-3 append-bottom last">
+        <div class="box-design mask-target">
+            <div class="preview">
+                <span class="left-column">
+                    <label for="buttons-preview">Preview:</label>
+                </span>
+                <span style="margin-right: 20px;">
+                    See how your ShopConnection buttons
+                    will appear in your store.
+                </span>
 
-                    <span id="buttons-preview">
-                    </span>
-                </div>
-                <form method="POST" action="{{ action }}">
-                    <div id="config-free">
-                        <div class="config-option buttons">
-                            <span class="left-column">
-                                <label for="default-buttons">
-                                    Default Buttons:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="These buttons will be displayed by default
-                                         when less than three networks are detected.<br/><br/>
-                                         You are limited to selecting 3 buttons.<br/><br/>
-                                         <i>Default: Pinterest, Tumblr, Fancy</i>"
-                                     class="help">
-                            </span>
-                            <ul id="default-buttons" class="connectedSortable">
-                                {% for button in button_order %}
-                                <li class="icon {{ button }}">
-                                    <span>{{ button }}</span>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="config-option buttons">
-                            <span class="left-column">
-                                <label for="unused-buttons"
-                                       class="disabled">
-                                    Available Buttons:
-                                </label>
-                            </span>
-                            <ul id="unused-buttons" class="connectedSortable">
-                                {% for button in unused_buttons %}
-                                <li class="icon {{ button }}">
-                                    <span>{{ button }}</span>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            <img src="/static/imgs/draganddrop.png"
-                                 style="position: relative; top: -10px;">
-                        </div>
-                        <div class="config-option">
-                            <span class="left-column">
-                                <label for="button-spacing">
-                                    Number of Buttons:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="Determines the maximum number of
-                                     buttons to be displayed.<br/><br/>
-                                     <i>Default: 3</i>"
-                                     class="help">
-                            </span>
-                            <select id="max-buttons" name="max_buttons">
-                                {% for number in button_range %}
-                                <option value="{{number}}">
-                                {{ number }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="config-option" style="height: 40px;">
-                            <span class="left-column">
-                                <label for="button-count">
-                                    Show Button Count:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="Determines whether or not a share count
-                                     should appear next to the share button.<br/><br/>
-                                     <i>Default: Hide</i>"
-                                     class="help">
-                            </span>
-                            <input id="button-count" name="button_count"
-                                   type="radio"
-                                   value="True"
-                                   {% if button_count %}checked{% endif %}/>
-                            <label for="button-count">Show</label>
-                            <input id="no-button-count" name="button_count"
-                                   type="radio"
-                                   value="False"
-                                   {% if not button_count %}checked{% endif %}/>
-                            <label for="no-button-count">Hide</label>
-                        </div>
-                        <div class="config-option">
-                            <span class="left-column">
-                                <label for="button-spacing">
-                                    Button Spacing:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="Determines how much space, in pixels,
-                                     should be put between the buttons.<br/><br/>
-                                     <i>Default: 5px</i>"
-                                     class="help">
-                            </span>
-                            <input id="button-spacing" name="button_spacing"
-                                   type="text" value="{{ button_spacing }}"
-                                   style="width: 50px;"
-                                   class="textbox"/>px
-                        </div>
-                        <div class="config-option">
-                            <span class="left-column">
-                                <label for="button-padding">
-                                    Container Padding:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="Determines how much space, in pixels,
-                                     should be around the button container.<br/><br/>
-
-                                     <i>Default: 5px</i>"
-                                     class="help">
-                            </span>
-                            <input id="button-padding" name="button_padding"
-                                   type="text" value="{{ button_padding }}"
-                                   style="width: 50px;"
-                                   class="textbox"/>px
-                        </div>
-                        <div class="config-option">
-                            <span class="left-column">
-                                <label for="sharing-message">
-                                    Sharing Message:
-                                </label>
-                                <img src="/static/imgs/info.png" alt="Help Icon"
-                                     title="Determines what message will be displayed
-                                     when sharing on Twitter or Pinterest.<br/><br/>
-
-                                     <i>Default: I found this on {{shop_url}}</i>"
-                                     class="help">
-                            </span>
-                            <input id="sharing-message" name="sharing_message"
-                                   type="text" value="{{ sharing_message }}"
-                                   class="textbox"/>
-                        </div>
-                    </div>
-                    <div class="submit">
-                        <input id="button-order" type="hidden" name="button_order"
-                               value='{{ button_order|join:"," }}' />
-                        <button class="blue">Save</button>
-                    </div>
-                </form>
+                <span id="buttons-preview">
+                </span>
             </div>
+            <form method="POST" action="{{ action }}">
+                <div id="config-free">
+                    <div class="config-option buttons">
+                        <span class="left-column">
+                            <label for="default-buttons">
+                                Default Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="These buttons will be displayed by default
+                                     when less than three networks are detected.<br/><br/>
+                                     You are limited to selecting 3 buttons.<br/><br/>
+                                     <i>Default: Pinterest, Tumblr, Fancy</i>"
+                                 class="help">
+                        </span>
+                        <ul id="default-buttons" class="connectedSortable">
+                            {% for button in button_order %}
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="config-option buttons">
+                        <span class="left-column">
+                            <label for="unused-buttons"
+                                   class="disabled">
+                                Available Buttons:
+                            </label>
+                        </span>
+                        <ul id="unused-buttons" class="connectedSortable">
+                            {% for button in unused_buttons %}
+                            <li class="icon {{ button }}">
+                                <span>{{ button }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <img src="/static/imgs/draganddrop.png"
+                             style="position: relative; top: -10px;">
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Number of Buttons:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines the maximum number of
+                                 buttons to be displayed.<br/><br/>
+                                 <i>Default: 3</i>"
+                                 class="help">
+                        </span>
+                        <select id="max-buttons" name="max_buttons">
+                            {% for number in button_range %}
+                            <option value="{{number}}">
+                            {{ number }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="config-option" style="height: 40px;">
+                        <span class="left-column">
+                            <label for="button-count">
+                                Show Button Count:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines whether or not a share count
+                                 should appear next to the share button.<br/><br/>
+                                 <i>Default: Hide</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-count" name="button_count"
+                               type="radio"
+                               value="True"
+                               {% if button_count %}checked{% endif %}/>
+                        <label for="button-count">Show</label>
+                        <input id="no-button-count" name="button_count"
+                               type="radio"
+                               value="False"
+                               {% if not button_count %}checked{% endif %}/>
+                        <label for="no-button-count">Hide</label>
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-spacing">
+                                Button Spacing:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be put between the buttons.<br/><br/>
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-spacing" name="button_spacing"
+                               type="text" value="{{ button_spacing }}"
+                               style="width: 50px;"
+                               class="textbox"/>px
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="button-padding">
+                                Container Padding:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines how much space, in pixels,
+                                 should be around the button container.<br/><br/>
+
+                                 <i>Default: 5px</i>"
+                                 class="help">
+                        </span>
+                        <input id="button-padding" name="button_padding"
+                               type="text" value="{{ button_padding }}"
+                               style="width: 50px;"
+                               class="textbox"/>px
+                    </div>
+                    <div class="config-option">
+                        <span class="left-column">
+                            <label for="sharing-message">
+                                Sharing Message:
+                            </label>
+                            <img src="/static/imgs/info.png" alt="Help Icon"
+                                 title="Determines what message will be displayed
+                                 when sharing on Twitter or Pinterest.<br/><br/>
+
+                                 <i>Default: I found this on {{shop_url}}</i>"
+                                 class="help">
+                        </span>
+                        <input id="sharing-message" name="sharing_message"
+                               type="text" value="{{ sharing_message }}"
+                               class="textbox"/>
+                    </div>
+                </div>
+                <div class="submit">
+                    <input id="button-order" type="hidden" name="button_order"
+                           value='{{ button_order|join:"," }}' />
+                    <button class="blue">Save</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div id="analytics" class="page" style="display:none">
-        <div class="prepend-top prepend-3 span-18 append-3 append-bottom last">
-            <div class="box-design mask-target">
-                <div style="padding: 20px;">
-                {% include "../../../email/templates/smart_buttons_report_content.html" %}
-                </div>
+    <div id="analytics" class=" page prepend-top prepend-3 span-18 append-3 append-bottom last"
+        style="display:none">
+        <div class="box-design mask-target">
+            <div style="padding: 20px;">
+            {% include "../../../email/templates/smart_buttons_report_content.html" %}
             </div>
         </div>
     </div>
