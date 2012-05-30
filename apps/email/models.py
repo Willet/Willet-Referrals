@@ -77,9 +77,7 @@ class Email():
         body += "<p>Hi %s,</p>" % (name,)
 
         if app_name == 'ShopConnection':
-            body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
-                  <p>Our <a href='http://willetshopconnection.blogspot.com/2012/03/customization-guide-to-shopconnection.html'>Customization Guide</a> can help you modify the buttons to better suit your store.</p>
-                  <p>If you have any ideas on how to improve %s, please let us know.</p>""" % (app_name, store_name, app_name)
+            body += """<p>Thanks for installing! Please lets us know if you have any suggestion to improve ShopConnection.</p>"""
 
         elif app_name == 'Should I Buy This':
             body += """<p>Thanks for installing %s!  We are excited to see your store, %s, getting the exposure it deserves.</p>
@@ -95,6 +93,35 @@ class Email():
 
         Email.send_email(from_address=FRASER,
                          to_address=to_addr,
+                         subject=subject,
+                         body=body,
+                         to_name=name)
+
+    @staticmethod
+    def welcomeFraser(app_name, to_addr, name, store_name, store_url,
+                      use_full_name=False):
+        subject = 'Thanks for Installing "%s"' % (app_name)
+
+        if not app_name:
+            logging.warn("Attmpt to email welcome for unknown app %s" % app_name)
+            return
+
+        if not use_full_name:
+            # Grab first name only
+            try:
+                name = name.split(' ')[0]
+            except:
+                pass
+
+        body = """<p>%s</p>
+                  <p>Hi %s,</p>
+                  <p>We are looking forward to your store launching!  Please lets us know if you have any suggestion to improve %s.</p>
+                  <p>Fraser</p>
+                  <p>Founder, Willet<br /> www.willetinc.com | Cell 519-580-9876 | <a href='http://twitter.com/fjharris'>@FJHarris</a></p>""" % (store_url, name, app_name)
+
+        Email.send_email(from_address=FRASER,
+                         to_address=FRASER,
+                         replyto_address=to_addr,
                          subject=subject,
                          body=body,
                          to_name=name)
@@ -184,15 +211,18 @@ class Email():
 
         try:
             product_img = product.images[0]
-        except (TypeError, IndexError):
+        except (TypeError, IndexError), err:
+            logging.debug('error while getting product_img: %s' % err,
+                          exc_info=True)
             product_img = 'http://rf.rs/static/imgs/blank.png' # blank
+        logging.debug('product_img is %r' % product_img)
 
         if len(products) > 1:  # WOSIB mode
             template_file = 'wosib_ask.html'
         else:
             template_file = 'sibt_ask.html'
 
-        body = template.render(Email.template_path('wosib_ask.html', client), {
+        body = template.render(Email.template_path(template_file, client), {
             'URL': URL,
             'from_name': from_name.title(),
             'from_first_name': from_first_name.title(),
@@ -203,7 +233,11 @@ class Email():
             'asker_img': asker_img,
             'client_name': client.name,
             'client_domain': client.domain,
+
+            # used in WOSIB mode
             'products': products or [None, None],  # just to shut it up
+
+            # used in SIBT mode
             'product_title': getattr(product, 'title', 'Awesome product'),
             'product_img': product_img
         })

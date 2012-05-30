@@ -41,7 +41,7 @@
     </div>
     <div id="main_content" class="slight_highlight">
         <div id="product_screen">
-            <h2><a href="{{ product_url }}">{{ product.title }}</a>
+            <h2><a href="{{ product_url }}">{{ product.title|escape }}</a>
                 <br />
                 <span class="mini">From <a href="{{ store_url }}">{{ store_name }}</a></span>
             </h2>
@@ -49,7 +49,7 @@
                 <img src="{{ product_img }}" />
             </div>
             <div id="right-div" class="description">
-                {{ product.description }}
+                {{ product.description|escape }}
             </div>
         </div>
         <div id="success_screen" class="hidden">

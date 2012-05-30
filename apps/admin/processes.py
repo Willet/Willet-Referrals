@@ -14,7 +14,7 @@ from google.appengine.ext.db import ReferencePropertyResolveError
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-from apps.action.models import Action
+from apps.action.models import *
 from apps.analytics_backend.models import GlobalAnalyticsHourSlice, GlobalAnalyticsDaySlice
 from apps.buttons.shopify.models import ButtonsShopify
 from apps.email.models import Email
@@ -612,27 +612,34 @@ class CleanOldActions(URIHandler):
         Because some actions are actually useful, they are skipped. See
         keep_list for the list of class names (in lower case).
         """
+        if USING_DEV_SERVER:
+            logging.debug('cleaning skipped on dev server')
+            return
+
         a_month_ago = datetime.datetime.now() - datetime.timedelta(days=30)
-        actions = []
-        actions_to_delete = []
+        actions_deleted = 0
+        batch_size = 50
         keep_list = ['gaebingoalt', 'sibtvoteaction', 'sibtshowingbutton',
                      'sibtclickaction']
+        offset = 0
 
-        while len(actions_to_delete) < 100:
+        while actions_deleted < 100:
             # keep fetching until we get 100 things to delete.
-            actions = Action.all()\
-                            .filter('created <', a_month_ago)\
-                            .fetch(50)
+            actions_iterable = Action.all()\
+                                     .filter('created <', a_month_ago)\
+                                     .run(limit=batch_size, offset=offset)
 
-            for action in actions:
+            for action in actions_iterable:
                 name = action.__class__.__name__.lower()
                 if name not in keep_list:
-                    actions_to_delete.append(action)
+                    try:
+                        db.delete(action)
+                        logging.debug('deleted %r' % action)
+                        actions_deleted += 1
+                    except:  # action still wandering in memcache or something
+                        pass
 
-        if USING_DEV_SERVER:
-            logging.info('USING_DEV_SERVER; skipped deletion')
-        else:
-            db.delete(actions_to_delete)
-            logging.info('If this is logged, '
-                         'we have deleted %d Actions' % len(actions_to_delete))
+            offset += batch_size  # get some more unique actions
+
+        logging.info('If this is logged, we have deleted 100 Actions')
         return

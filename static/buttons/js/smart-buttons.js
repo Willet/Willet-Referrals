@@ -82,6 +82,13 @@ _willet.util = {
         }
         return s;
     },
+    "createScript": function (src) {
+        // Returns script element
+        var s = document.createElement('script');
+        s.type = "text/javascript";
+        s.src = src;
+        return s;
+    },
     "dictToArray": function (dict) {
         // Don't use this on DOM Elements, IE will fail
         var result = [];
@@ -180,6 +187,55 @@ _willet.util = {
     },
     "isLocalhost": function() {
         return ((window.location.href.indexOf("http") >= 0) ? false : true);
+    },
+    "renderSimpleTemplate": function (template, values) {
+        // Will render templates with simple substitions
+        // Inputs:
+        //    template - a string representing an HTML template, with variables
+        //               of the form: {{ var_name }} and condtionals of the form
+        //               {% if var_name %} ... {% endif %}
+        //               Note: does not support nested if's, and must be exactly 
+        //                     the form above (no extra whitespace)
+        //    values - a object literal, with keys corresponding to template variables,
+        //             and values appropriate for the template
+        // Return:
+        //    rendered template <string>
+        
+        var ifStatementRe = /\{% if [\w\-]+ %\}/g,
+            ifPrefixLen = '{% if '.length,
+            endifLen = '{% endif %}'.length,
+            startIndex, endIndex, contionalIndex, varName;
+
+        // First handle conditionals of the form {% if var_name %} ... {% endif %}
+        // Note: strings are passed by value, so we can modify template without affecting
+        //       the base templates
+        conditionalIndex = template.search(ifStatementRe);
+        while (conditionalIndex >= 0) {
+            // get variable name from conditional
+            varName = template.substring(conditionalIndex+ifPrefixLen, template.indexOf(' ', conditionalIndex+ifPrefixLen));
+            
+            if (values[varName]) {
+                // if variable name exists, strip conditional statements & leave code
+                template = template.replace('{% if '+varName+' %}', '');
+                template = template.replace('{% endif %}','');
+            } else {
+                // if variable doesn't exist, strip conditional & contents
+                startIndex = conditionalIndex;
+                endIndex = template.indexOf('{% endif %}',startIndex)+endifLen;
+                template = template.replace( template.substring(startIndex, endIndex), '');
+            }
+
+            // Get next one
+            conditionalIndex = template.search(re);
+        }
+
+        // Second handle variables of the form {{ var_name }}
+        for (var i in values) {
+            if (values.hasOwnProperty(i)) {
+                template = template.replace('{{ '+ i +' }}', values[i]);
+            }
+        }
+        return template;
     }
 };
 
@@ -401,6 +457,10 @@ _willet.debug = (function (willet) {
 }(_willet));
 
 _willet.messaging = (function (willet) {
+    /*  
+        .ajax - Server communication
+        .xd -   Cross-domain frame communication  
+    */
     var debug = willet.debug,
         util = willet.util,
         me = {};
@@ -915,8 +975,8 @@ _willet.networks = (function (willet) {
                     link.setAttribute('data-lang','en');
                     link.setAttribute('data-count', ( params.buttonCount ? 'horizontal' : 'none' ));
 
-                    if (params.sharing_message) {
-                        link.setAttribute('data-text', params.sharing_message);
+                    if (params.sharingMessage) {
+                        link.setAttribute('data-text', params.sharingMessage);
                     }
 
                     button.appendChild(link);
@@ -1287,22 +1347,7 @@ _willet = (function (me, config) {
             me.detectNetworks();
         }
 
-        if (DOMAIN === 'localhost') {
-            // Shopify won't respond on localhost, so use example data
-            me.createButtons({
-                product: {
-                    images: [{
-                        created_at: "2012-02-03T11:42:17+09:00",
-                        id: 166600132,
-                        position: 1,
-                        product_id: 81809292,
-                        updated_at: "2012-02-03T11:42:17+09:00",
-                        src:'/static/imgs/beer_200.png'
-                    }]
-                },
-                title: "Glass of beer"
-            });
-        } else if (window.location.pathname.match(/^(.*)?\/products\//)) {
+        if (window.location.pathname.match(/^(.*)?\/products\//)) {
             // only attempt to load smart-buttons if we are on a product page
             try {
                 debug.log("Buttons: initiating product.json request");
