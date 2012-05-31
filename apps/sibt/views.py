@@ -929,7 +929,6 @@ class SIBTServeScript(URIHandler):
             if not app_css:
                 raise AttributeError('Empty CSS is illegal!')
         except AttributeError:
-            # app is not a SIBTShopify! borrow default CSS from one.
             app_css = SIBTShopify.get_default_css()
 
         # indent like this: http://stackoverflow.com/questions/6388187

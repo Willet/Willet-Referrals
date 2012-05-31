@@ -49,6 +49,11 @@ class ButtonsShopify(Buttons, AppShopify):
         return ButtonsShopify.all().filter( 'uuid =', uuid ).get()
 
     def get_price(self):
+        """returns a float (e.g. 9.99) for the recurring price of the app.
+
+        The function also modifies the current app to store its price
+        at the time of execution.
+        """
         result = self._call_Shopify_API("GET", "shop.json?fields=created_at")
 
         now          = datetime.utcnow()
