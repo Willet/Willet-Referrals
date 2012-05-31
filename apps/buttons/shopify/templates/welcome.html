@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block head %}
+        <script src="/static/colorbox/colorbox/jquery.colorbox-min.js"></script>
+        <link rel="stylesheet" href="/static/css/colorbox.css" />
         <script>
             $(document).ready(function() {
                 $('#go_to_shopify').click(function() {
@@ -11,6 +13,18 @@
                 });
                 SnapABug.setUserEmail('{{ client_email }}');
                 SnapABug.startChat('Hi - if you run into any problems, i\'m here to help :-)');
+
+                $('#install4u-learnmore').click(function () {
+                    var form = "#install4u-form";
+                    $(form).show();
+                    $.colorbox({
+                        'inline': true,
+                        'href': form,
+                        'onClosed': function () {
+                            $(form).hide();
+                        }
+                    });
+                });
             });
         </script>
 
@@ -140,8 +154,7 @@
                             <!-- sarah insists on a break here -->
                             it for you!
                             <br />
-                            <a class="button"
-                               href="{% url ButtonsShopifyTailoredInstall %}?app_uuid={{app.uuid}}&amp;store_url={{app.store_url}}">
+                            <a class="button" id="install4u-learnmore">
                                 Learn more
                             </a>
                         </p>
@@ -271,6 +284,17 @@
                             </div>
                             {% endif %}
                         </div>
+                    </div>
+                    <div id="install4u-form" style="display:none;">
+                        <h1>Have it installed for $10!</h1>
+                        <ul>
+                            <li>Optimized button placement</li>
+                            <li>Custom Google+ and Facebook sharing message</li>
+                            <li>Optimize page for search engines. More viewers!</li>
+                        </ul>
+                        <p style="text-align:center">
+                            <a href="{% url ButtonsShopifyTailoredInstall %}?app_uuid={{app.uuid}}&amp;store_url={{app.store_url}}">Buy service</a>
+                        </p>
                     </div>
 
                     <div class="lower-15 prepend-top span-24 append-bottom last"></div>
