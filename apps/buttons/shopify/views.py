@@ -179,12 +179,12 @@ class ButtonsShopifyUpgrade(URIHandler):
             price = existing_app.get_price()
 
         # Start the billing process
-        callback = build_url('ButtonsShopifyBillingCallback')
+        callback_url = build_url('ButtonsShopifyBillingCallback')
         confirm_url = existing_app.setup_recurring_billing({
             "price":        price,
             "name":         "ShopConnection",
             "return_url":   "%s%s?app_uuid=%s" % (URL,
-                                                  callback,
+                                                  callback_url,
                                                   existing_app.uuid),
             "test":         USING_DEV_SERVER,
             "trial_days":   15
@@ -215,14 +215,14 @@ class ButtonsShopifyTailoredInstall(URIHandler):
         logging.debug('app = %r' % app)
 
         # Start the billing process
-        callback = build_url('ButtonsShopifyOneTimeBillingCallback')
+        callback_url = build_url('ButtonsShopifyOneTimeBillingCallback')
         logging.debug('setting up billing at %s%s?app_uuid=%s' % (URL,
-                                                                  callback,
+                                                                  callback_url,
                                                                   app.uuid))
         return_url = app.setup_application_charge({
             "price": price,
             "name": "ShopConnection",
-            "return_url": "%s%s?app_uuid=%s" % (URL, callback, app.uuid),
+            "return_url": "%s%s?app_uuid=%s" % (URL, callback_url, app.uuid),
             "test": USING_DEV_SERVER
         })
 

@@ -234,7 +234,7 @@ class AppShopify(Model):
         logging.debug('data = %r' % data)
 
         if data['status'] != 'pending':
-            raise ShopifyBillingError("Setup of recurring billing was denied", data)
+            raise ShopifyBillingError("Setup of application charge was denied", data)
 
         self.charge_ids.append(data['id'])
         self.charge_names.append(data['name'])
@@ -372,14 +372,6 @@ class AppShopify(Model):
         Returns: <Object> billing info
         """
         return self._call_Shopify_API('GET', 'recurring_application_charges/%s.json' % self.recurring_billing_id)
-
-    def _retrieve_one_time_billing(self):
-        """ Retrieve billing info for customer
-
-        Returns: <Object> billing info
-        """
-        return self._call_Shopify_API('GET', 'application_charges/%s.json' % self.recurring_billing_id)
-
 
     def activate_recurring_billing(self, settings):
         """ Activate billing for customer that has approved it
