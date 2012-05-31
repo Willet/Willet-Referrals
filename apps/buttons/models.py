@@ -16,7 +16,7 @@ NUM_VOTE_SHARDS = 15
 
 
 class Buttons(App):
-    """Clients install the buttons App"""  
+    """Clients install the buttons App"""
 
     title_selector = db.StringProperty()
     description_selector = db.StringProperty()
@@ -29,13 +29,3 @@ class Buttons(App):
 
     def _validate_self(self):
         return True
-
-
-# TODO delete these deprecated functions after April 18, 2012 (1 month warning)
-def get_buttons_app_by_uuid(id):
-    raise DeprecationWarning('Replaced by Buttons.get_by_uuid')
-    return Buttons.get_by_uuid(id)
-
-def get_buttons_app_by_client(client):
-    raise DeprecationWarning('Replaced by Buttons.get_by_client')
-    return Buttons.get_by_client(client)
