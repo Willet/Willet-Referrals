@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from itertools import groupby
 from time import time
 from urllib import urlencode
+from urlparse import urlparse
 
 from django.utils import simplejson as json
 from google.appengine.ext import db
@@ -313,6 +314,49 @@ class ButtonsShopify(Buttons, AppShopify):
             pass  # TODO: Problem parsing the JSON
 
         return prefs
+
+    def update_social_accounts(self, social_accounts):
+        """Update preferences for the application."""
+        if self.billing_enabled:
+            json_preferences = json.dumps(preferences)
+
+            social_accounts.update({ 'app_uuid': self.uuid })
+            qs = urlencode(social_accounts)
+
+            tags = [{
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?%s" % (
+                        SECURE_URL,
+                        qs
+                    ),
+                    "event": "onload"
+                }
+            }]
+
+            self.queue_script_tags(script_tags=tags)
+            self.install_queued()
+
+    def get_social_accounts(self):
+        """Get social_accounts, provided that they exist."""
+        #need to get theme id first...
+        try:
+            result = self._call_Shopify_API("GET",
+                                   "admin/script_tags.json",
+                                   suppress_errors = True)
+
+            if result.get("script_tags"):
+                for script in result.get("script_tags"):
+                    if '%s/shopify/load/confirmation.js' % (SECURE_URL) in script:
+                        return urlparse.parse_qs( urlparse(script).query )
+
+        except ShopifyAPIError:
+            logging.error('Error retrieving social accounts:', exc_info=True)
+            pass  # Either user is unbilled, or doesn't have the snippet.
+        except ValueError:
+            logging.error('Error parsing social accounts:', exc_info=True)
+            pass  # TODO: Problem parsing the JSON
+
+        return {}
 
     # Constructors ------------------------------------------------------------
     @classmethod

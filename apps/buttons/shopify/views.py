@@ -360,29 +360,33 @@ class ButtonsShopifyConfig(URIHandler):
         })
 
         preferences = app.get_prefs()
+        social_accounts = app.get_social_accounts()
 
         button_order, unused_buttons = self.determine_buttons(preferences)
         item_shares, network_shares  = self.get_button_shares(app)
 
         # Use .get in case properties don't exist yet
         template_values = {
-            'action'          : config_url,
-            'max_buttons'     : preferences.get("max_buttons", 3),
-            'button_range'    : self.button_range,
-            'button_count'    : preferences.get("button_count", False),
-            'button_spacing'  : preferences.get("button_spacing", 5),
-            'button_padding'  : preferences.get("button_padding", 5),
-            'sharing_message' : preferences.get("sharing_message", ""),
-            'message'         : self.request.get("message", "Welcome Back!"),
-            'button_order'    : button_order,
-            'unused_buttons'  : unused_buttons,
-            'shop_url'        : self.request.get("shop"),
-            'upgrade_url'     : upgrade_url,
-            'learn_more_url'  : learn_more_url,
-            'instructions_url': instructions_url,
-            'config_enabled'  : app.billing_enabled,
-            'item_shares'     : item_shares,
-            'network_shares'  : network_shares
+            'action'            : config_url,
+            'max_buttons'       : preferences.get("max_buttons", 3),
+            'button_range'      : self.button_range,
+            'button_count'      : preferences.get("button_count", False),
+            'button_spacing'    : preferences.get("button_spacing", 5),
+            'button_padding'    : preferences.get("button_padding", 5),
+            'sharing_message'   : preferences.get("sharing_message", ""),
+            'message'           : self.request.get("message", "Welcome Back!"),
+            'button_order'      : button_order,
+            'unused_buttons'    : unused_buttons,
+            'shop_url'          : self.request.get("shop"),
+            'upgrade_url'       : upgrade_url,
+            'learn_more_url'    : learn_more_url,
+            'instructions_url'  : instructions_url,
+            'config_enabled'    : app.billing_enabled,
+            'item_shares'       : item_shares,
+            'network_shares'    : network_shares,
+            'facebook_username' : social_accounts.get('facebook_username','fjharris'),
+            'twitter_username'  : social_accounts.get('twitter_username','fjharris'),
+            'pinterest_username': social_accounts.get('pinterest_username','fraserharris')
         }
 
         # prepopulate values
@@ -432,7 +436,12 @@ class ButtonsShopifyConfig(URIHandler):
         # What validation should be done here?
         prefs["button_order"]    = r.get("button_order").split(",")
 
+        social_accounts["facebook_username"] = r.get("facebook_username")
+        social_accounts["twitter_username"]  = r.get("twitter_username")
+        social_accounts["pinterest_username"] = r.get("pinterest_username")
+
         app.update_prefs(prefs)
+        app.update_social_accounts(social_accounts)
         self.redirect(config_url)
 
 
