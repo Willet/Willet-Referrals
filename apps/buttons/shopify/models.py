@@ -14,6 +14,7 @@ from itertools import groupby
 from time import time
 from urllib import urlencode
 from urlparse import urlparse
+from cgi import parse_qsl
 
 from django.utils import simplejson as json
 from google.appengine.ext import db
@@ -179,17 +180,26 @@ class ButtonsShopify(Buttons, AppShopify):
         self.uninstall_script_tags()
         version = os.environ['CURRENT_VERSION_ID']
 
-        self.queue_script_tags(script_tags=[{
-            "script_tag": {
-                "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
-                    URL,
-                    self.uuid,
-                    version
-                ),
-                "event": "onload"
-            }
-        }])
-
+        script_tags= [{
+                "script_tag": {
+                    "src": "%s/b/shopify/load/smart-buttons.js?app_uuid=%s&v=%s" % (
+                        URL,
+                        self.uuid,
+                        version
+                    ),
+                    "event": "onload"
+                }
+            },
+            {
+                "script_tag": {
+                    "src": "%s/b/shopify/load/confirmation.js?app_uuid=%s" % (
+                        SECURE_URL,
+                        self.uuid
+                    ),
+                    "event": "onload"
+                }
+        }]
+        self.queue_script_tags(script_tags)
         self.install_queued()
 
         # Email DevTeam
@@ -225,7 +235,7 @@ class ButtonsShopify(Buttons, AppShopify):
 
             tag = None
             for script_tag in results.get("script_tags"):
-                if "/b/shopify/load/" in script_tag.get("src", ""):
+                if "buttons.js" in script_tag.get("src", ""):
                     tag = script_tag
                     break
 
@@ -285,7 +295,9 @@ class ButtonsShopify(Buttons, AppShopify):
 
         try:
             result = self._call_Shopify_API("GET", "themes.json")
-
+        except ShopifyAPIError:
+            pass # User is unbilled
+        else:
             theme_id = None
             for theme in result['themes']:
                 if 'role' in theme and 'id' in theme:
@@ -298,63 +310,92 @@ class ButtonsShopify(Buttons, AppShopify):
                 "theme_id": theme_id
             })
 
-            result = self._call_Shopify_API("GET",
-                                   "themes/%s/assets.json?%s" %
-                                   (theme_id, query_params),
-                                   suppress_errors = True)
-
-            if result.get("asset") and result["asset"].get("value"):
-                value           = result["asset"]["value"]
-                _, var_value, _ = value.split("/*----*/")
-                _, json_str     = var_value.split("=")
-                prefs           = json.loads(json_str.strip().strip(";"))
-        except ShopifyAPIError:
-            pass  # Either user is unbilled, or doesn't have the snippet.
-        except ValueError:
-            pass  # TODO: Problem parsing the JSON
-
+            try:
+                result = self._call_Shopify_API("GET",
+                                       "themes/%s/assets.json?%s" %
+                                       (theme_id, query_params))
+            except ShopifyAPIError:
+                pass # Either user is unbilled, or doesn't have the snippet.
+            else:
+                try:
+                    if result.get("asset") and result["asset"].get("value"):
+                        value           = result["asset"]["value"]
+                        _, var_value, _ = value.split("/*----*/")
+                        _, json_str     = var_value.split("=")
+                        prefs           = json.loads(json_str.strip().strip(";"))
+                except ValueError:
+                    pass  # TODO: Problem parsing the JSON
         return prefs
 
     def update_social_accounts(self, social_accounts):
         """Update preferences for the application."""
-        if self.billing_enabled:
-            json_preferences = json.dumps(preferences)
+        if not self.billing_enabled:
+            return
+        logging.info('here')
 
-            social_accounts.update({ 'app_uuid': self.uuid })
-            qs = urlencode(social_accounts)
+        try:
+            # Get the previous tag...
+            results = self._call_Shopify_API("GET", "script_tags.json")
+        except ShopifyAPIError:
+            logging.error('Error retrieving script tags:', exc_info=True)
+            pass  # Either user is unbilled, or doesn't have the snippet.
+        else:
+            if not results.get("script_tags"):
+                logging.warning("No script tags, can't update social accounts")
+                # No installed script tags?
+                return
+            logging.info('here2')
+            # Find confirmation.js script
+            tag = None
+            for script_tag in results.get("script_tags"):
+                logging.info("script_tag = %r" % script_tag)
+                if "confirmation.js" in script_tag.get("src", ""):
+                    tag = script_tag
+                    break
 
-            tags = [{
-                "script_tag": {
-                    "src": "%s/b/shopify/load/confirmation.js?%s" % (
-                        SECURE_URL,
-                        qs
-                    ),
-                    "event": "onload"
+            # Build query string
+            query_params = dict( (key, value) for key, value in social_accounts.items() if value )
+            query_params.update({ 'app_uuid': self.uuid })
+            qs = urlencode(query_params)
+
+            if tag:
+                logging.info('here3')
+                tag["src"] = "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                try:
+                    self._call_Shopify_API("PUT", "script_tags/%s.json" % tag["id"],
+                                           payload={"script_tag": tag})
+                except ShopifyAPIError:
+                    logging.error('Error saving social accounts:', exc_info=True)
+            else:
+                payload = {
+                        'script_tag': {
+                            "event": "onload",
+                            "src": "%s/b/shopify/load/confirmation.js?%s" % (SECURE_URL, qs)
+                        }
                 }
-            }]
-
-            self.queue_script_tags(script_tags=tags)
-            self.install_queued()
+                try:
+                    self._call_Shopify_API("POST", "script_tags.json",
+                                            payload=payload )
+                except ShopifyAPIError:
+                    logging.error('Error saving social accounts:', exc_info=True)
 
     def get_social_accounts(self):
         """Get social_accounts, provided that they exist."""
         #need to get theme id first...
         try:
-            result = self._call_Shopify_API("GET",
-                                   "admin/script_tags.json",
-                                   suppress_errors = True)
+            result = self._call_Shopify_API("GET", "script_tags.json")
 
             if result.get("script_tags"):
                 for script in result.get("script_tags"):
-                    if '%s/shopify/load/confirmation.js' % (SECURE_URL) in script:
-                        return urlparse.parse_qs( urlparse(script).query )
+                    src = script.get("src","")
+                    if 'confirmation.js' in src:
+                        # Return parsed query string
+                        # NOTE: parse_qs moved from cgi module to urlparse module in Python 2.6
+                        return dict( (key,value) for key,value in parse_qsl( urlparse(src).query ) )
 
         except ShopifyAPIError:
             logging.error('Error retrieving social accounts:', exc_info=True)
             pass  # Either user is unbilled, or doesn't have the snippet.
-        except ValueError:
-            logging.error('Error parsing social accounts:', exc_info=True)
-            pass  # TODO: Problem parsing the JSON
 
         return {}
 

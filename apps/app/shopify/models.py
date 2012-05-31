@@ -144,6 +144,9 @@ class AppShopify(Model):
             verb - <String> one of GET, POST, PUT, DELETE
             call - <String> api call
             payload - <Object> Data to send with request
+            suppress_errors - <Boolean> Quietly proceed if call errors
+                              NOTE: Only use this if you expect errors from this call
+                                    No error event is logged, so debugging will be difficult
 
         Returns:
             <Object> response data

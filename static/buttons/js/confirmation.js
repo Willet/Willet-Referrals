@@ -455,9 +455,21 @@ _willet = (function (me) {
         + "</div>";
 
     var styleRules = ""
-        + "div.sharing { padding: 0 15px; margin: 10px 0 0 0; background-color:#FFF }"
-        + "div.sharing ul { list-style-type:none; padding: 0 40px; line-height:40px; }"
-        + "div.sharing li { display: inline-table; width: 140px; }"
+        + "div.sharing {"
+        + "    padding: 0 15px;"
+        + "    margin: 10px 0 0 0;"
+        + "    background-color:#FFF;"
+        + "}"
+        + "div.sharing ul {"
+        + "    list-style-type:none;"
+        + "    padding: 0 40px;"
+        + "    line-height:40px;"
+        + "    margin-bottom: 0;"
+        + "}"
+        + "div.sharing li {"
+        + "    display: inline-table;"
+        + "    width: 140px;"
+        + "}"
         + ".pinterest-button,"
         + ".pinterest-button a,"
         + ".pinterest-button span {"
@@ -555,20 +567,27 @@ _willet = (function (me) {
 
         var parseQueryString = function (src) {
             var qs = src.indexOf('?') ? src.substr(src.indexOf('?')+1) : null,
-                obj = {};
+                params = {};
 
             if (qs) {
                 // A little hack - convert the query string into JSON format and parse it
                 // '&' -> ',' and '=' -> ':'
-                obj = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                var raw_obj = JSON.parse('{"' + decodeURI(qs.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
+                params = {
+                    "shop":  raw_obj.shop || '',
+                    "message": raw_obj.message || '',
+                    "facebookUsername": raw_obj.facebook_username || '',
+                    "twitterUsername":  raw_obj.twitter_username || '',
+                    "pinterestUsername": raw_obj.pinteret_username || ''
+                };
             }
 
-            return obj;
+            return params;
         }
 
         // Find this script
-        for (var i = scripts.length; i >= 0; i--) {
-            if (scripts[i].src.match('social-referral.appspot.com/b/shopify/load/confirmation.js')) {
+        for (var i = scripts.length-1; i >= 0; i--) {
+            if (scripts[i].src.match('/b/shopify/load/confirmation.js')) {
                 // parse query string
                 return parseQueryString( scripts[i].src );
             }

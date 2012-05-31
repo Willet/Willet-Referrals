@@ -395,7 +395,7 @@ class ButtonsShopifyConfig(URIHandler):
     @catch_error
     def post(self):
         """Store the results from the config form"""
-        r = self.request
+        req = self.request
         details = get_details(self)
         config_url = build_url("ButtonsShopifyConfig", qs={
             "t"   : self.request.get("t"),
@@ -421,12 +421,12 @@ class ButtonsShopifyConfig(URIHandler):
                 return default_value
 
         prefs = {}
-        prefs["button_count"]    = (r.get("button_count") == "True")
-        prefs["button_spacing"]  = tryParse(int, r.get("button_spacing"))
-        prefs["button_padding"]  = tryParse(int, r.get("button_padding"))
+        prefs["button_count"]    = (req.get("button_count") == "True")
+        prefs["button_spacing"]  = tryParse(int, req.get("button_spacing"))
+        prefs["button_padding"]  = tryParse(int, req.get("button_padding"))
         prefs["sharing_message"] = tryParse(strip_tags,
-                                            r.get("sharing_message"), "")
-        max_buttons              = tryParse(int, r.get("max_buttons"), 3)
+                                            req.get("sharing_message"), "")
+        max_buttons              = tryParse(int, req.get("max_buttons"), 3)
 
         if max_buttons in self.button_range:
             prefs["max_buttons"] = max_buttons
@@ -434,11 +434,12 @@ class ButtonsShopifyConfig(URIHandler):
             prefs["max_buttons"] = 3 #Default
 
         # What validation should be done here?
-        prefs["button_order"]    = r.get("button_order").split(",")
-
-        social_accounts["facebook_username"] = r.get("facebook_username")
-        social_accounts["twitter_username"]  = r.get("twitter_username")
-        social_accounts["pinterest_username"] = r.get("pinterest_username")
+        prefs["button_order"]    = req.get("button_order").split(",")
+        
+        social_accounts = {}
+        social_accounts["facebook_username"] = req.get("facebook_username")
+        social_accounts["twitter_username"]  = req.get("twitter_username")
+        social_accounts["pinterest_username"] = req.get("pinterest_username")
 
         app.update_prefs(prefs)
         app.update_social_accounts(social_accounts)

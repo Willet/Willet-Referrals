@@ -230,6 +230,10 @@
         cursor: -moz-grabbing;
         cursor: -webkit-grabbing;
     }
+    .widget-break {
+        width: 90%;
+        margin: 20px 5%;
+    }
 </style>
 <!--[if IE 7]>
 <style>
@@ -625,7 +629,7 @@
                            value='{{ button_order|join:"," }}' />
                     <button class="blue">Save</button>
                 </div>
-                <hr style="width:90%;padding:0 5%;">
+                <hr class="widget-break">
                 <div id="config-free">
                     <div class="config-option">
                         <span class="left-column">
@@ -638,7 +642,7 @@
                                  <i>If empty, Facebook follow button will not display.</i>"
                                  class="help">
                         </span>
-                        <input id="facebook-username" name="facebook-username"
+                        <input id="facebook-username" name="facebook_username"
                                type="text" value="{{ facebook_username }}"
                                class="textbox"/>
                     </div>
@@ -653,7 +657,7 @@
                                  <i>If empty, Twitter follow button will not display.</i>"
                                  class="help">
                         </span>
-                        <input id="twitter-username" name="twitter-username"
+                        <input id="twitter-username" name="twitter_username"
                                type="text" value="{{ twitter_username }}"
                                class="textbox"/>
                     </div>
@@ -668,14 +672,12 @@
                                  <i>If empty, Pinterest follow button will not display.</i>"
                                  class="help">
                         </span>
-                        <input id="pinterest-username" name="pinterest-username"
+                        <input id="pinterest-username" name="pinterest_username"
                                type="text" value="{{ pinterest_username }}"
                                class="textbox"/>
                     </div>
                 </div>
                 <div class="submit">
-                    <input id="button-order" type="hidden" name="button_order"
-                           value='{{ button_order|join:"," }}' />
                     <button class="blue">Save</button>
                 </div>
             </form>
