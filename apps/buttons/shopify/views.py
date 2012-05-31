@@ -310,7 +310,8 @@ class ButtonsShopifyConfig(URIHandler):
         button_order    = preferences.get("button_order",
             ["Pinterest","Tumblr","Fancy"])
 
-        # That's right! TAKE THAT MATH-HATERS!
+        button_order = [] if not button_order else button_order
+
         unused_buttons  = buttons.difference(button_order)
 
         return (button_order, unused_buttons)
@@ -429,11 +430,11 @@ class ButtonsShopifyConfig(URIHandler):
         else:
             prefs["max_buttons"] = 3 #Default
 
-        # What to do if no buttons were provided?
-        prefs["button_order"]    = r.get("button_order").split(",")
-
-        # Remove any empty strings
-        prefs["button_order"]    = filter(None, prefs["button_order"])
+        button_order = r.get("button_order")
+        if not button_order:
+            prefs["button_order"] = None
+        else:
+            prefs["button_order"] = button_order.split(",")
 
         app.update_prefs(prefs)
         self.redirect(config_url)
