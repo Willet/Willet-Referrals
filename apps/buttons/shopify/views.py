@@ -179,11 +179,12 @@ class ButtonsShopifyUpgrade(URIHandler):
             price = existing_app.get_price()
 
         # Start the billing process
+        callback = build_url('ButtonsShopifyBillingCallback')
         confirm_url = existing_app.setup_recurring_billing({
             "price":        price,
             "name":         "ShopConnection",
             "return_url":   "%s%s?app_uuid=%s" % (URL,
-                                                  build_url('ButtonsShopifyBillingCallback'),
+                                                  callback,
                                                   existing_app.uuid),
             "test":         USING_DEV_SERVER,
             "trial_days":   15
@@ -215,8 +216,10 @@ class ButtonsShopifyTailoredInstall(URIHandler):
 
         # Start the billing process
         callback = build_url('ButtonsShopifyOneTimeBillingCallback')
-        logging.debug('setting up billing at %s%s?app_uuid=%s' % (URL, callback, app.uuid))
-        return_url = app.setup_one_time_billing({
+        logging.debug('setting up billing at %s%s?app_uuid=%s' % (URL,
+                                                                  callback,
+                                                                  app.uuid))
+        return_url = app.setup_application_charge({
             "price": price,
             "name": "ShopConnection",
             "return_url": "%s%s?app_uuid=%s" % (URL, callback, app.uuid),
@@ -242,6 +245,13 @@ class ButtonsShopifyPaidInstallThanks(URIHandler):
     @catch_error
     def get(self):
         logging.debug('success!')
+        app_uuid = self.request.get('app_uuid')
+        store_url = self.request.get('shop')
+        app = ButtonsShopify.get(app_uuid) or \
+              ButtonsShopify.get_by_url(store_url)
+        logging.debug('app = %r' % app)
+
+        Email.buttons_custom_install_request(app)
 
         # Use .get in case properties don't exist yet
         template_values = {
@@ -270,7 +280,8 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
         logging.debug('redirected to ButtonsShopifyOneTimeBillingCallback')
         app_uuid = self.request.get('app_uuid')
         store_url = self.request.get('store_url')
-        app = ButtonsShopify.get(app_uuid) or ButtonsShopify.get_by_url(store_url)
+        app = ButtonsShopify.get(app_uuid) or \
+              ButtonsShopify.get_by_url(store_url)
         logging.debug('app = %r' % app)
 
         if not app:
@@ -296,7 +307,7 @@ class ButtonsShopifyOneTimeBillingCallback(URIHandler):
 
         if success:
             logging.debug('activate application charge success!')
-            app.billing_enabled = True
+            # app.billing_enabled = True
             app.put()
             # app.do_upgrade()
 

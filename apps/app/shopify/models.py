@@ -18,6 +18,7 @@ from google.appengine.ext import db
 from google.appengine.runtime import DeadlineExceededError
 
 from apps.app.models import App
+from apps.charge.models import Charge
 from apps.email.models import Email
 
 from util import httplib2
@@ -209,41 +210,46 @@ class AppShopify(Model):
             raise ShopifyAPIError(resp.status, resp.reason, "URL: %s, PAYLOAD: %s, CONTENT: %s" % (url, payload, content))
 
     def setup_application_charge(self, settings):
-        """ Setup one-time charge for store
+        """ returns a url where the user can pay for a one-time charge.
 
         Inputs:
             settings = {
-                    "price": <Number>,
-                    "name": <String> app name / name on invoice,
-                    "return_url": <String> redirect after store owner has confirmed/denied charges
-                    ["test": <Boolean> true or false ]
-                }
-            Example: settings = {
-                    "name": "Super Duper Expensive action",
-                    "price": 100.0,
-                    "return_url": "http://super-duper.shopifyapps.com",
-                    "test": true
-                }
+                "price": <Number>,
+                "name": <String> app name / name on invoice,
+                "return_url": <String> redirect after store owner has
+                              confirmed/denied charges
+                ["test": <Boolean> true or false]
+            }
 
         Returns:
-            url where store owner should be redirected to confirm / deny charges
+            return_url
+
+        Redirect user to return_url to confirm the charge.
         """
 
         result = self._call_Shopify_API('POST', 'application_charges.json',
                                 { "application_charge": settings })
 
         data = result["application_charge"]
+        logging.debug('data = %r' % data)
 
         if data['status'] != 'pending':
-            raise ShopifyBillingError("Setup of application charge was denied", data)
+            raise ShopifyBillingError("Setup of recurring billing was denied", data)
 
-        self.charge_ids.append( data['id'] )
-        self.charge_names.append( data['name'] )
-        self.charge_prices.append( data['price'] )
-        self.charge_createds.append( self._Shopify_str_to_datetime(data['created_at']) )
+        self.charge_ids.append(data['id'])
+        self.charge_names.append(data['name'])
+        self.charge_prices.append(data['price'])
+        self.charge_createds.append(self._Shopify_str_to_datetime(data['created_at']))
         self.charge_statuses.append('pending')
 
-        return data['confirmation_url']
+        # now that you have charged the client, make the Charge object.
+        Charge.create(app=self,
+                      client=getattr(self, 'client'),
+                      value=float(data['price']),
+                      shopify_charge_id=data['id'])
+
+        confirmation_url = data['confirmation_url']
+        return confirmation_url
 
     def _retrieve_application_charge(self):
         """ Retrieve billing info for customer
@@ -304,6 +310,7 @@ class AppShopify(Model):
                     if cid == settings.charge_id:
                         self.charge_statuses[i] = "accepted"
                         break
+
                 return True
             else:
                 logging.debug('activation denied')
@@ -313,34 +320,6 @@ class AppShopify(Model):
             raise ShopifyBillingError('Charge cancelled before activation request', charge_data)
 
         return False  # won't be here
-
-    def setup_one_time_billing(self, settings):
-        """ returns a url where the user can pay for a one-time charge.
-
-        Inputs:
-            settings = {
-                "price": <Number>,
-                "name": <String> app name / name on invoice,
-                "return_url": <String> redirect after store owner has
-                              confirmed/denied charges
-                ["test": <Boolean> true or false]
-            }
-
-        Returns:
-            return_url
-
-        Redirect user to return_url to confirm the charge.
-        """
-
-        result = self._call_Shopify_API('POST', 'application_charges.json',
-                                { "application_charge": settings })
-
-        data = result["application_charge"]
-
-        if data['status'] != 'pending':
-            raise ShopifyBillingError("Setup of recurring billing was denied", data)
-
-        return data['confirmation_url']
 
     # TODO: Refactor billing common functionality
     def setup_recurring_billing(self, settings):

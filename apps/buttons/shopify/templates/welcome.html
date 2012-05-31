@@ -20,6 +20,7 @@
                     $.colorbox({
                         'inline': true,
                         'href': form,
+                        'transition': 'fade',
                         'onClosed': function () {
                             $(form).hide();
                         }
@@ -130,6 +131,18 @@
             .learn-more-decal .button {
                 padding: 3px 6px;
                 margin-top: 10px;
+            }
+            #install4u-form {
+                display: none;
+                text-align:center;
+            }
+            #install4u-form h2 {
+                font-family: 'helvetica neue', helvetica, arial, sans-serif;
+                margin: 15px 0 20px 0;
+            }
+            #install4u-form ul, #install4u-form ol {
+                text-align: justify;
+                list-style-type: disc;
             }
         </style>
 {% endblock head %}
@@ -285,15 +298,17 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div id="install4u-form" style="display:none;">
-                        <h1>Have it installed for $10!</h1>
+                    <div id="install4u-form">
+                        <h2>Customized installation for $10</h2>
                         <ul>
                             <li>Optimized button placement</li>
                             <li>Custom Google+ and Facebook sharing message</li>
                             <li>Optimize page for search engines. More viewers!</li>
                         </ul>
-                        <p style="text-align:center">
-                            <a href="{% url ButtonsShopifyTailoredInstall %}?app_uuid={{app.uuid}}&amp;store_url={{app.store_url}}">Buy service</a>
+                        <p><a class="button"
+                              href="{% url ButtonsShopifyTailoredInstall %}?app_uuid={{app.uuid}}&amp;store_url={{app.store_url}}">
+                            Buy service
+                            </a>
                         </p>
                     </div>
 

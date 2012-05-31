@@ -81,7 +81,7 @@ class Charge(Model, polymodel.PolyModel):
         chrg_obj = cls(**kwargs)
         chrg_obj.put()
 
-        return code_obj
+        return chrg_obj
 
     @classmethod
     def get_or_create(cls, **kwargs):

@@ -158,6 +158,27 @@ class Email():
                          body=body)
 
     @staticmethod
+    def buttons_custom_install_request(app):
+        """Mail the dev team about an installation request."""
+        client = getattr(app, 'client', None)
+        if not client:
+            return  # client uninstalled
+
+        subject = 'Buttons Custom Install Request'
+        client_addr = getattr(client, 'email')
+        client_name = getattr(client, 'name')
+        client_domain = getattr(client, 'domain')
+
+        msg = '''Client %s <%s> has request a custom Buttons installation.
+                 Please go to %s to install the app.''' % (client_name,
+                                                           client_addr,
+                                                           client_domain)
+        logging.info(msg)  # lazy boy strikes again
+        Email.emailDevTeam(msg=msg,
+                           subject=subject,
+                           monospaced=False)
+
+    @staticmethod
     def SIBTAsk(client, from_name, from_addr, to_name, to_addr, message,
                 vote_url, product=None, products=None, asker_img= None):
         """Please, supply products as their objects.
