@@ -18,7 +18,7 @@ from util.helpers import url as build_url
 from util.shopify_helpers import get_shopify_url
 from util.urihandler import URIHandler
 
-#TODO: move these functions elsewhere.  More appropriate places would be...
+#TODO: move these functions elsewhere. More appropriate places would be...
 def catch_error(fn):
     """Decorator for catching errors in ButtonsShopify install."""
     def wrapped(self):
@@ -429,8 +429,11 @@ class ButtonsShopifyConfig(URIHandler):
         else:
             prefs["max_buttons"] = 3 #Default
 
-        # What validation should be done here?
+        # What to do if no buttons were provided?
         prefs["button_order"]    = r.get("button_order").split(",")
+
+        # Remove any empty strings
+        prefs["button_order"]    = filter(None, prefs["button_order"])
 
         app.update_prefs(prefs)
         self.redirect(config_url)
@@ -455,7 +458,7 @@ class ButtonsShopifyInstallError(URIHandler):
 
 
 class ButtonsShopifyItemShared(URIHandler):
-    """Handles whenever a share takes place"""
+    """Handles whenever a share takes place."""
     def get(self):
         """Handles a single share event.
 
